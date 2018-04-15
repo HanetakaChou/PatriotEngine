@@ -191,7 +191,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -206,7 +206,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
