@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{803e47df-9140-40ba-b0ca-cad45e479c4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System">
+      <UniqueIdentifier>{78477372-a935-4021-9fa9-f7f6b02b8294}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{5cc5fd5d-7f7e-4aeb-a9d1-508df9c2ed64}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System">
+      <UniqueIdentifier>{cf3be4e1-d9cb-4510-87fe-2a9e9de835bf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System\Posix">
+      <UniqueIdentifier>{fd616712-255e-44f3-b999-ba970d88c596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System\Posix">
+      <UniqueIdentifier>{0936624f-d76e-4366-882a-1aa484991620}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSCommon.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSFile.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSThread.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\System\Posix\PTSThread.inl">
+      <Filter>Public\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl">
+      <Filter>Private\System\Posix</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
