@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{bd992fe5-5828-43ff-a07f-403dc6803563}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System">
+      <UniqueIdentifier>{8f4382fa-6f02-4890-a8e6-4ef4ee378685}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System\Win32">
+      <UniqueIdentifier>{7477eef7-a3c8-4aac-96f0-8e866e1f81ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{7673695d-51d3-47fd-993d-5be1d4c73f2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System">
+      <UniqueIdentifier>{e5717695-32c0-4740-9a2a-6c8d8a17876e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\Win32\tbbmalloc.cpp">
+      <Filter>Private\System\Win32</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Private\System\Win32\tbbmalloc.def">
+      <Filter>Private\System\Win32</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
