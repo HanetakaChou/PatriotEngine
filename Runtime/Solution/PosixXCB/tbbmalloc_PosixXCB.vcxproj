@@ -81,46 +81,64 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <TargetExt>.so</TargetExt>
     <TargetName>libtbbmalloc</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/$(ProjectName)/</RemoteProjectDir>
+    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
     <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
     <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
