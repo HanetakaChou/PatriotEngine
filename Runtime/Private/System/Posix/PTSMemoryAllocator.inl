@@ -3,9 +3,7 @@
 #include <dirent.h>
 #elif defined (PTPOSIXANDROID)
 #include <fcntl.h>
-#include <sys/stat.h>
 #include <unistd.h>
-#include <string.h>
 #else
 #error 未知的平台
 #endif
@@ -216,13 +214,46 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 	{
 		assert(ssResult != -1);
 		assert(ssResult < 4096);
+		assert(Str_maps[ssResult - 1] == '\n');
 		Str_maps[ssResult] = '\0';
-		pStr_AddressEnd = ::strstr(Str_maps, pStr_AddressStart);
-		if (pStr_AddressEnd != NULL)
+		
+		char *pStr_RowBegin = Str_maps;
+
+		bool bIsFound = false;
+		while ((*pStr_RowBegin) != '\0')
+		{
+			bool bIsEqual = true;
+			for (int i = 0; i < Str_AddressStart_Length; ++i)
+			{
+				assert(pStr_RowBegin[i] != '\0');
+				if (pStr_RowBegin[i] != pStr_AddressStart[i])
+				{
+					bIsEqual = false;
+					break;
+				}
+			}
+
+			if (bIsEqual)
+			{
+				pStr_AddressEnd = pStr_RowBegin;
+				bIsFound = true;
+				break;
+			}
+
+			while ((*pStr_RowBegin) != '\n')
+			{
+				++pStr_RowBegin;
+			}
+
+			++pStr_RowBegin;
+		}
+
+		if (bIsFound)
 		{
 			break;
 		}
 	}
+
 	assert(pStr_AddressEnd != NULL);
 
 	int iResult = ::close(FD_maps);
