@@ -7,9 +7,6 @@
     <Filter Include="Private\System">
       <UniqueIdentifier>{8d287d45-9503-46e0-9443-7f3c979d63d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\System\Posix">
-      <UniqueIdentifier>{f35023c2-844c-436f-addc-4c1f6f07e018}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Public">
       <UniqueIdentifier>{7da3dd06-15f6-4ab5-826b-340a085cb3d9}</UniqueIdentifier>
     </Filter>
@@ -18,13 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Posix\tbbmalloc.cpp">
-      <Filter>Private\System\Posix</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
       <Filter>Public\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSCommon.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

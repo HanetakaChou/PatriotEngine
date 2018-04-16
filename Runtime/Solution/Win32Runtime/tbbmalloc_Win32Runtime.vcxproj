@@ -33,15 +33,16 @@
     <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Win32\tbbmalloc.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\Private\System\Win32\tbbmalloc.def" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PTSystem_Win32Runtime.vcxproj">
       <Project>{c0c3c751-fa2c-402d-a750-2670cea5f587}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp" />
+    <ClCompile Include="..\..\Private\System\Win32\tbbmallocDllMain.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0B768CC4-34F1-4029-B154-F645DA9F3D3A}</ProjectGuid>
@@ -161,7 +162,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -176,7 +177,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -191,7 +192,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -206,7 +207,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -221,7 +222,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -236,7 +237,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>

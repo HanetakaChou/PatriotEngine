@@ -35,10 +35,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Posix\tbbmalloc.cpp" />
+    <ClInclude Include="..\..\Public\PTCommon.h" />
+    <ClInclude Include="..\..\Public\System\PTSCommon.h" />
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{EF0C3BB1-68B6-43DC-A307-744EF21F94C9}</ProjectGuid>
@@ -146,7 +148,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -163,7 +165,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -179,7 +181,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -195,7 +197,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -211,7 +213,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -227,7 +229,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -243,7 +245,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -259,7 +261,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>

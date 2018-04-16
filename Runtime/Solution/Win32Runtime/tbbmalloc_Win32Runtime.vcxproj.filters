@@ -35,13 +35,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Win32\tbbmalloc.cpp">
-      <Filter>Private\System\Win32</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="..\..\Private\System\Win32\tbbmalloc.def">
       <Filter>Private\System\Win32</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\Win32\tbbmallocDllMain.cpp">
+      <Filter>Private\System\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp">
+      <Filter>Private</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

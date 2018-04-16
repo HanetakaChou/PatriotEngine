@@ -19,10 +19,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Win32\tbbmalloc.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\Private\System\Win32\tbbmalloc.def" />
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp" />
+    <ClCompile Include="..\..\Private\System\Win32\tbbmallocDllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PTSystem_Win32Desktop.vcxproj">
@@ -31,6 +29,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Private\System\Win32\tbbmalloc.def" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
@@ -113,7 +114,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX64;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32DESKTOP;PTX64;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
@@ -129,7 +130,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
@@ -147,7 +148,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
@@ -167,7 +168,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX64;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=;TBBCALL=__stdcall;PTWIN32;PTWIN32DESKTOP;PTX64;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
