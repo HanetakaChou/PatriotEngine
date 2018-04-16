@@ -1,4 +1,4 @@
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../Public/System/PTSMemoryAllocator.h"
 
 #include <stddef.h>
 #include <assert.h>
@@ -11,9 +11,6 @@ static struct PTS_INITONCE
 		assert(tbResult != PTFALSE);
 	}
 }s_PTS_InitOnce;
-
-#define TBBAPI __attribute__((visibility("default")))
-#define TBBCALL
 
 extern "C" TBBAPI void * TBBCALL scalable_malloc(size_t size)
 {
