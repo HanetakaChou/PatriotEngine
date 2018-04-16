@@ -1,5 +1,14 @@
 ﻿#include <sys/mman.h>
+#ifdef PTPOSIXXCB
 #include <dirent.h>
+#elif defined (PTPOSIXANDROID)
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#else
+#error 未知的平台
+#endif
 
 static uint32_t const s_Page_Size = 1024U * 4U;
 
@@ -33,15 +42,95 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	return reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
 }
 
+static inline bool PTS_Number_CharToUI(char C, uint32_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0U;
+		return true;
+	case '1':
+		(*pI) = 1U;
+		return true;
+	case '2':
+		(*pI) = 2U;
+		return true;
+	case '3':
+		(*pI) = 3U;
+		return true;
+	case '4':
+		(*pI) = 4U;
+		return true;
+	case '5':
+		(*pI) = 5U;
+		return true;
+	case '6':
+		(*pI) = 6U;
+		return true;
+	case '7':
+		(*pI) = 7U;
+		return true;
+	case '8':
+		(*pI) = 8U;
+		return true;
+	case '9':
+		(*pI) = 9U;
+		return true;
+	case 'a':
+		(*pI) = 10U;
+		return true;
+	case 'b':
+		(*pI) = 11U;
+		return true;
+	case 'c':
+		(*pI) = 12U;
+		return true;
+	case 'd':
+		(*pI) = 13U;
+		return true;
+	case 'e':
+		(*pI) = 14U;
+		return true;
+	case 'f':
+		(*pI) = 15U;
+		return true;
+	default:
+		return false;
+	}
+}
+
 static inline void PTS_MemoryMap_Free(void *pVoid)
 {
 	//在Linux中
-	//在x86架构下，用户空间只有2GB（0X7FFFFFFF 8个字符）或3GB（0X‭BFFFFFFF‬ 8个字符）
-	//在x86_64架构下，用户空间只有128TB（0X7FFFFFFFFFFF 12个字符）
-	char Str_AddressStart[12];
+	//在x86或ARM架构下，用户空间最多不超过4GB（0XFFFFFFFF 8个字符）
+	//在x86_64（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）架构下，用户空间只有128TB（0X7FFFFFFFFFFF 12个字符）
+	//在ARM64（https://www.kernel.org/doc/Documentation/arm64/memory.txt）架构下，用户空间只有512GB(0X7FFFFFFFFF 10个字符）
+
+#if defined(PTX86) || defined(PTARM)
+	char Str_AddressStart[8 + 1];
 	char *pStr_AddressStart;
 	int Str_AddressStart_Length;
 	{
+		Str_AddressStart[8] = '\0';
+		char const *pStr_Number = "0123456789abcdef";
+		int index = 8;
+		uintptr_t AddressStart = reinterpret_cast<uintptr_t>(pVoid);
+		while (AddressStart != 0U)
+		{
+			--index;
+			assert(index >= 0U);
+			Str_AddressStart[index] = pStr_Number[(AddressStart & 0XF)];
+			AddressStart >>= 4U;
+		}
+		pStr_AddressStart = Str_AddressStart + index;
+		Str_AddressStart_Length = 8 - index;
+	}
+#elif defined(PTX64)
+	char Str_AddressStart[12 + 1];
+	char *pStr_AddressStart;
+	int Str_AddressStart_Length;
+	{
+		Str_AddressStart[12] = '\0';
 		char const *pStr_Number = "0123456789abcdef";
 		int index = 12;
 		uintptr_t AddressStart = reinterpret_cast<uintptr_t>(pVoid);
@@ -55,8 +144,32 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 		pStr_AddressStart = Str_AddressStart + index;
 		Str_AddressStart_Length = 12 - index;
 	}
+#elif defined(PTARM64)
+	char Str_AddressStart[10 + 1];
+	char *pStr_AddressStart;
+	int Str_AddressStart_Length;
+	{
+		Str_AddressStart[10] = '\0';
+		char const *pStr_Number = "0123456789abcdef";
+		int index = 10;
+		uintptr_t AddressStart = reinterpret_cast<uintptr_t>(pVoid);
+		while (AddressStart != 0U)
+		{
+			--index;
+			assert(index >= 0U);
+			Str_AddressStart[index] = pStr_Number[(AddressStart & 0XF)];
+			AddressStart >>= 4U;
+		}
+		pStr_AddressStart = Str_AddressStart + index;
+		Str_AddressStart_Length = 10 - index;
+	}
+#else
+#error 未知的架构
+#endif
 
-	
+#ifdef PTPOSIXXCB
+	//proc/self/map_files
+
 	//mmap MAP_SHARED|MAP_ANONYMOUS
 	//在proc/self/map_files 链接到 /dev/zero
 	//不同的mmap之间 即使连续照样不会合并
@@ -88,69 +201,45 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 	int iResult = ::closedir(pDir_mmap);
 	assert(iResult == 0);
 
-	uintptr_t AddressEnd = 0U;
 	assert(pDirEnt_mmap->d_name[Str_AddressStart_Length] == '-');
 	char *pStr_AddressEnd = pDirEnt_mmap->d_name + (Str_AddressStart_Length + 1);
-	while ((*pStr_AddressEnd) != '\0')
+#elif defined (PTPOSIXANDROID)
+	//proc/self/maps
+
+	int FD_maps = ::open("/proc/self/maps",O_RDONLY);
+	assert(FD_maps != -1);
+	char Str_maps[4096U];
+	assert(s_Page_Size == 4096U);
+	ssize_t ssResult;
+	char *pStr_AddressEnd = NULL;
+	while ((ssResult = ::read(FD_maps, Str_maps, 4096U)) != 0)
+	{
+		assert(ssResult != -1);
+		assert(ssResult < 4096);
+		Str_maps[ssResult] = '\0';
+		pStr_AddressEnd = ::strstr(Str_maps, pStr_AddressStart);
+		if (pStr_AddressEnd != NULL)
+		{
+			break;
+		}
+	}
+	assert(pStr_AddressEnd != NULL);
+
+	int iResult = ::close(FD_maps);
+	assert(iResult == 0);
+
+	assert(pStr_AddressEnd[Str_AddressStart_Length] == '-');
+	pStr_AddressEnd += (Str_AddressStart_Length + 1);
+#else
+#error 未知的平台
+#endif
+
+	uintptr_t AddressEnd = 0U;
+	uint32_t ValueToAdd;
+	while (::PTS_Number_CharToUI(*pStr_AddressEnd, &ValueToAdd))
 	{
 		AddressEnd <<= 4U;
-
-		uintptr_t ValueToAdd;
-		switch (*pStr_AddressEnd)
-		{
-		case '0':
-			ValueToAdd = 0U;
-			break;
-		case '1':
-			ValueToAdd = 1U;
-			break;
-		case '2':
-			ValueToAdd = 2U;
-			break;
-		case '3':
-			ValueToAdd = 3U;
-			break;
-		case '4':
-			ValueToAdd = 4U;
-			break;
-		case '5':
-			ValueToAdd = 5U;
-			break;
-		case '6':
-			ValueToAdd = 6U;
-			break;
-		case '7':
-			ValueToAdd = 7U;
-			break;
-		case '8':
-			ValueToAdd = 8U;
-			break;
-		case '9':
-			ValueToAdd = 9U;
-			break;
-		case 'a':
-			ValueToAdd = 10U;
-			break;
-		case 'b':
-			ValueToAdd = 11U;
-			break;
-		case 'c':
-			ValueToAdd = 12U;
-			break;
-		case 'd':
-			ValueToAdd = 13U;
-			break;
-		case 'e':
-			ValueToAdd = 14U;
-			break;
-		case 'f':
-			ValueToAdd = 15U;
-			break;
-		default:
-			assert(0);
-		}
 		AddressEnd += ValueToAdd;
-
 		++pStr_AddressEnd;
 	}
 

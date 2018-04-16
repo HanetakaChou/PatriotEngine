@@ -1,4 +1,4 @@
-static inline void *PTS_MemoryMap_Alloc(uint32_t size)
+ï»¿static inline void *PTS_MemoryMap_Alloc(uint32_t size)
 {
 	HANDLE hSection = ::CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0U, size, NULL);
 	assert(hSection != NULL);
@@ -6,7 +6,7 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t size)
 	void *pVoid = ::MapViewOfFile(hSection, FILE_MAP_READ | FILE_MAP_WRITE, 0U, 0U, size);
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/aa366537(v=vs.85).aspx
-	BOOL wbResult = ::CloseHandle(hSection); //±»Ó³ÉäµÄÊÓÍ¼»áÔö¼ÓÒýÓÃ¼ÆÊý
+	BOOL wbResult = ::CloseHandle(hSection); //è¢«æ˜ å°„çš„è§†å›¾ä¼šå¢žåŠ å¼•ç”¨è®¡æ•°
 	assert(wbResult != FALSE);
 
 	return pVoid;
