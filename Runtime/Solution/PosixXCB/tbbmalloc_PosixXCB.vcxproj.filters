@@ -16,9 +16,6 @@
     <Filter Include="Private\System">
       <UniqueIdentifier>{db2241fb-135a-438b-8c13-858f81d70eaf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\System\Posix">
-      <UniqueIdentifier>{1875882c-c56f-4d02-b639-31e7e4578cc0}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
@@ -32,8 +29,8 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Posix\tbbmalloc.cpp">
-      <Filter>Private\System\Posix</Filter>
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp">
+      <Filter>Private\System</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

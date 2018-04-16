@@ -32,7 +32,7 @@
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Posix\tbbmalloc.cpp" />
+    <ClCompile Include="..\..\Private\System\tbbmalloc.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5A431F5D-B22C-4B33-8154-30020C24A10F}</ProjectGuid>
@@ -129,7 +129,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
@@ -145,7 +145,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
@@ -161,7 +161,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
@@ -177,7 +177,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
@@ -193,7 +193,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
@@ -209,7 +209,7 @@
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>TBBAPI=__attribute__((visibility("default")));TBBCALL=;PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link />
     <Link>
