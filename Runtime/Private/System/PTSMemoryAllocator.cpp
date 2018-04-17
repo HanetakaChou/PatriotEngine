@@ -3,8 +3,8 @@
 #include <stddef.h> 
 #include <assert.h>
 
-//Hudson, Richard L., et al. "McRT-Malloc: a scalable transactional memory allocator." Proceedings of the 5th international symposium on Memory management.ACM, 2006.
-//Kukanov, Alexey, and Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal 11.4 (2007).
+//Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". Proceedings of the 5th international symposium on Memory management ACM 2006.
+//Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.
 
 //Operating System Primitive
 static inline void *PTS_MemoryMap_Alloc(uint32_t size);
@@ -290,15 +290,14 @@ inline void PTS_BlockStore::Construct(PTS_BlockStore *pThis)
 //The locked cmpxchg16b instruction provided by the x86 is an example of such an instruction 
 //and trivially provides for a full 64 bits of versioning which is sufficient.
 
-//实际中只用到用户空间
-//在Win32中
-//x86架构下，用户空间只有2GB（31位）或3GB（32位），块地址只需要18（32-14=18）位，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
-//x86_64架构下，用户空间只有8TB（43位），块地址只需要29（43-14=29）位，可以使用64位CAS指令，其余35位用作版本号，环绕需要2天（基于论文中46位需要2年计算）
-//在Linux中
-//x86架构下与Win32中相同
-//x86_64（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）架构下，用户空间只有128TB（47位），块地址只需要33（47-14=33）位，可以使用64位CAS指令，其余31位用作版本号，环绕需要12小时（基于论文中46位需要2年计算）
-//在ARM（https://www.kernel.org/doc/Documentation/arm/memory.txt）架构下
-//在ARM64（https://www.kernel.org/doc/Documentation/arm64/memory.txt）架构下，用户空间只有512GB（39位），块地址只需要25（39-14=25）位，可以使用64位CAS指令，其余39位用作版本号，环绕需要8天（基于论文中46位需要2年计算）
+//应用程序只可能访问地址空间中的用户空间
+//x86或ARM架构下，用户空间一定不超过4GB（32位），块地址只需要18（32-14=18）位，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
+//x86_64架构下
+//在Windows（https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces）中，用户空间只有8TB（43位），块地址只需要29（43-14=29）位，可以使用64位CAS指令，其余35位用作版本号，环绕需要2天（基于论文中46位需要2年计算）
+//在Linux（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）中，用户空间只有128TB（47位），块地址只需要33（47-14=33）位，可以使用64位CAS指令，其余31位用作版本号，环绕需要12小时（基于论文中46位需要2年计算）
+//在ARM64架构下
+//在Windows中，目前不存在支持ARM64架构的Windows发行版
+//在Linux（https://www.kernel.org/doc/Documentation/arm64/memory.txt）中，用户空间只有512GB（39位），块地址只需要25（39-14=25）位，可以使用64位CAS指令，其余39位用作版本号，环绕需要8天（基于论文中46位需要2年计算）
 
 #if defined(PTX86) || defined(PTARM)
 inline void PTS_BlockStore::_Unpack(uint64_t *pVersionNumber, PTS_BlockMetadata **pBlockAddress, uint64_t Value)
@@ -1106,20 +1105,23 @@ static inline void * PTS_Internal_Alloc(uint32_t size)
 
 static inline void PTS_Internal_Free(void *pVoid)
 {
-	//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
-	PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
-
-	//区分Block和LargeObject，并不一定可靠
-	if (pBlockAssumed->m_Identity == PTS_BlockMetadata::s_BlockIdentity) //Block
+	if (pVoid != NULL)
 	{
-		//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-		PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoid);
+		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
+		PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
 
-		PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
-	}
-	else //LargeObject
-	{
-		::PTS_MemoryMap_Free(pVoid);
+		//区分Block和LargeObject，并不一定可靠
+		if (pBlockAssumed->m_Identity == PTS_BlockMetadata::s_BlockIdentity) //Block
+		{
+			//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+			PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoid);
+
+			PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
+		}
+		else //LargeObject
+		{
+			::PTS_MemoryMap_Free(pVoid);
+		}
 	}
 }
 
