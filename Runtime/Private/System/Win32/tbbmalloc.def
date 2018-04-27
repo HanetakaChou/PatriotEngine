@@ -1,5 +1,0 @@
-EXPORTS
-	scalable_malloc
-	scalable_free
-	scalable_aligned_malloc
-	scalable_aligned_free
