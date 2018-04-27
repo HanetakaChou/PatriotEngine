@@ -41,20 +41,35 @@ class PTSArena;
 //This component is responsible for assigning Worker Threads to different Arenas.
 class PTSMarket : public PTS_RML_Client
 {
-	PTSArena *m_ArenaQueueTop; //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
+	PTSArena *m_ArenaArrayMemoryS[4]; //64(1)+64(1)+128(2) //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
+	
+	//uint32_t m_ArenaCapacity;
 
-	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(void *)];
+	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(void *) * 4U];
+
+	PTSSemaphore m_Semaphore;
 
 	uint32_t const m_ThreadNumber;
 
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t)];
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(PTSSemaphore)];
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
+	
 	inline PTSArena *Arena_Allocate(float fThreadNumberRatio);
+
+	//inline PTSArena *Arena_Acquire(float fThreadNumberRatio);
+
+#ifdef PTWIN32
+	static inline unsigned __stdcall Worker_Thread_Main(void *pMarketVoid);
+#elif defined(PTPOSIX)
+	static inline void * Worker_Thread_Main(void *pMarketVoid);
+#else
+#error 未知的平台
+#endif
 
 	static inline bool constexpr StaticAssert()
 	{
-		return (offsetof(PTSMarket, m_ThreadNumber) == s_CacheLine_Size) && (sizeof(PTSMarket) == s_CacheLine_Size * 2U);
+		return (offsetof(PTSMarket, m_Semaphore) == s_CacheLine_Size) && (sizeof(PTSMarket) == s_CacheLine_Size * 2U);
 	}
 };
 static_assert(PTSMarket::StaticAssert(), "PTSMarket: Padding Not Correct");
@@ -69,16 +84,14 @@ class PTSArenaSlot;
 //and market refcount is incremented.
 class PTSArena
 {
-	PTSArena *m_Market_Next;
-
-	uint32_t m_Size;
+	uint32_t m_SlotArraySize;
 
 	//避免伪共享
-	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void *)];
+	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t)];
 
-	PTSArenaSlot * const m_ArenaSlotMemory;
+	PTSArenaSlot * const m_SlotArrayMemory;
 	
-	uint32_t const m_Capacity;
+	uint32_t const m_SlotArrayCapacity;
 
 	//对齐到CacheLine
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
@@ -88,19 +101,18 @@ class PTSArena
 public:
 	inline PTSArena(uint32_t Capacity);
 
-	inline PTSArenaSlot *ArenaSlot(uint32_t Index);
+	inline PTSArenaSlot *Slot(uint32_t Index);
 
-	inline uint32_t Size_Acquire(); //Atomic_Get语义
+	inline uint32_t Size_Load_Acquire(); //Atomic_Get语义
 
-	inline uint32_t ArenaSlot_Acquire();
+	inline uint32_t Slot_Acquire();
 
 	static inline bool constexpr StaticAssert()
 	{
-		return (offsetof(PTSArena, m_ArenaSlotMemory) == s_CacheLine_Size) && (sizeof(PTSArena) == s_CacheLine_Size * 2U);
+		return (offsetof(PTSArena, m_SlotArrayMemory) == s_CacheLine_Size) && (sizeof(PTSArena) == s_CacheLine_Size * 2U);
 	}
 };
 static_assert(PTSArena::StaticAssert(), "PTSArena: Padding Not Correct");
-
 
 class PTSTaskPrefixImpl;
 
@@ -127,14 +139,14 @@ class PTSArenaSlot
 
 	PTSTaskPrefixImpl * * m_TaskDequeMemoryS[4]; //64(1)+64(1)+128(2)
 
-	uint32_t m_Capacity;
+	uint32_t m_TaskDequeCapacity;
 
 	//分隔Metadata和用户数据
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*) * 4U];
 
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
-	friend uint32_t PTSArena::ArenaSlot_Acquire();
+	friend uint32_t PTSArena::Slot_Acquire();
 
 public:
 	inline PTSArenaSlot();
@@ -202,7 +214,7 @@ class PTSTaskSchedulerImpl : public IPTSTaskScheduler
 	//Worker Thread : The Serviced Arena
 
 	PTSArena *m_pArena; //Arena For Master
-	uint32_t m_ArenaSlot_Index; //Arena Slot For Master
+	uint32_t m_Slot_Index; //Arena Slot For Master
 
 	//TBB不允许应用程序显示控制并行
 	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
@@ -216,7 +228,7 @@ class PTSTaskSchedulerImpl : public IPTSTaskScheduler
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
 public:
-	inline PTSTaskSchedulerImpl(PTSArena *pArena, uint32_t ArenaSlot_Index);
+	inline PTSTaskSchedulerImpl(PTSArena *pArena, uint32_t Slot_Index);
 };
 
 //! Represents a client's job for an execution context.
