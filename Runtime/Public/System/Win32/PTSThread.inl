@@ -3,7 +3,7 @@
 
 #include "PTSConvUTF.h"
 
-inline PTBOOL PTCALL PTThreadCreate(PTThreadEntry *pThreadEntry, void *pThreadParam, PTThread *pThreadOut)
+inline PTBOOL PTCALL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
 {
 	HANDLE hThread = reinterpret_cast<HANDLE>(::_beginthreadex(NULL, 0U, pThreadEntry, pThreadParam, 0U, NULL));
 	assert(hThread != NULL);
@@ -13,7 +13,13 @@ inline PTBOOL PTCALL PTThreadCreate(PTThreadEntry *pThreadEntry, void *pThreadPa
 	return (hThread != NULL) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTCALL PTThreadWait(PTThread *pThread)
+inline PTBOOL PTCALL PTSThread_Detach(PTSThread *pThread)
+{
+	HANDLE hThread = *pThread;
+	return (::CloseHandle(hThread) != FALSE) ? PTTRUE : PTFALSE;
+}
+
+inline PTBOOL PTCALL PTSThread_Join(PTSThread *pThread)
 {
 	HANDLE hThread = *pThread;
 	return ((::WaitForSingleObjectEx(hThread, INFINITE, FALSE) == WAIT_OBJECT_0) && (::CloseHandle(hThread) != FALSE)) ? PTTRUE : PTFALSE;
@@ -270,7 +276,7 @@ inline PTBOOL PTCALL PTSocketWrite(PTSocket *pSocket, void *pBuffer, uint32_t Nu
 
 #endif
 
-inline int64_t PTCALL PTTickCount()
+inline int64_t PTCALL PTSTick_Count()
 {
 	LARGE_INTEGER PerformanceCount;
 	BOOL bResult = ::QueryPerformanceCounter(&PerformanceCount);
@@ -278,7 +284,7 @@ inline int64_t PTCALL PTTickCount()
 	return PerformanceCount.QuadPart;
 }
 
-inline int64_t PTCALL PTTickFrequency()
+inline int64_t PTCALL PTSTick_Frequency()
 {
 	LARGE_INTEGER Frequency;
 	BOOL bResult = ::QueryPerformanceFrequency(&Frequency);

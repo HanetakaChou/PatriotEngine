@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
-    <ClInclude Include="..\..\Private\System\PTSThreadPoolImpl.h" />
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
@@ -30,12 +29,10 @@
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
     <ClInclude Include="..\..\Public\System\PTSThreadPool.h" />
     <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
-    <ClInclude Include="..\..\Public\tbb\task.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
-    <ClCompile Include="..\..\Private\System\PTSThreadPoolImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp" />
   </ItemGroup>

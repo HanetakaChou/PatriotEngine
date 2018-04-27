@@ -25,21 +25,42 @@ static uint32_t const s_CacheLine_Size = 64U;
 #error 未知的架构
 #endif
 
-//Resource Management Layer
-struct PTS_RML_Client
-{
+class PTSArena;
 
+//TaskScheduler
+//外观（Facade）模式
+//Associated with this Master Thread is created.
+//Any thread executing TBB tasks (whether Master or Worker) has its own instance of this component, which is stored in a TLS slot.
+class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
+{
+	PTSArena *m_pArena;
+	uint32_t m_Slot_Index;
+
+public:
+	//TBB不允许应用程序显示控制并行
+	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
+	//Worker_Sleep: arena::is_out_of_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
+	void Worker_Wake() override;
+	void Worker_Sleep() override;
+
+private:
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
+
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
+
+public:
+	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index);
 };
 
-//RML合并到Market？？？
-
-class PTSArena;
+//Resource Management Layer
+//RML合并到Market
 
 //市场
 //Market
 //Singleton is instantiated.
 //This component is responsible for assigning Worker Threads to different Arenas.
-class PTSMarket : public PTS_RML_Client
+class PTSMarket
 {
 	PTSArena * * m_ArenaPointerArrayMemory; //64
 	
@@ -47,13 +68,15 @@ class PTSMarket : public PTS_RML_Client
 
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void *)];
 
+	PTSThread *m_ThreadArrayMemory;
+
 	PTSSemaphore m_Semaphore;
 
 	uint32_t const m_ThreadNumber;
 
 	uint32_t const m_ArenaPointerArrayCapacity; //64
 
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore)];
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore) - sizeof(void *)];
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
 	
@@ -62,6 +85,8 @@ public:
 	inline PTSArena *Arena_Acquire(uint32_t *pSlot_Index);
 
 	inline void Worker_Wake(uint32_t ThreadNumber);
+
+	inline void Worker_Sleep(uint32_t ThreadNumber);
 
 #ifdef PTWIN32
 	static inline unsigned __stdcall Worker_Thread_Main(void *pMarketVoid);
@@ -73,7 +98,7 @@ public:
 
 	static inline bool constexpr StaticAssert()
 	{
-		return (offsetof(PTSMarket, m_Semaphore) == s_CacheLine_Size) && (sizeof(PTSMarket) == s_CacheLine_Size * 2U);
+		return (offsetof(PTSMarket, m_ThreadArrayMemory) == s_CacheLine_Size) && (sizeof(PTSMarket) == s_CacheLine_Size * 2U);
 	}
 };
 static_assert(PTSMarket::StaticAssert(), "PTSMarket: Padding Not Correct");
@@ -104,7 +129,8 @@ class PTSArena
 
 	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
 	friend PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index);
-
+	friend void PTSTaskSchedulerMasterImpl::Worker_Wake();
+	friend void PTSTaskSchedulerMasterImpl::Worker_Sleep();
 public:
 	inline PTSArena(uint32_t Capacity);
 
@@ -213,33 +239,6 @@ public:
 static uint32_t const s_TaskPrefix_Alignment = 32U;
 static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 
-//TaskScheduler
-//外观（Facade）模式
-//Associated with this Master Thread is created.
-//Any thread executing TBB tasks (whether Master or Worker) has its own instance of this component, which is stored in a TLS slot.
-class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
-{
-	//Master Thread : The Owning Arena
-	//Worker Thread : The Serviced Arena
-
-	PTSArena *m_pArena; //Arena For Master
-	uint32_t m_Slot_Index; //Arena Slot For Master
-
-	//TBB不允许应用程序显示控制并行
-	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
-	//Worker_Sleep: arena::is_out_of_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
-	void Worker_Wake() override;
-	void Worker_Sleep() override;
-
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
-
-public:
-	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index);
-};
-
 class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
@@ -254,65 +253,7 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);
+
 public:
 	inline PTSTaskSchedulerWorkerImpl();
 };
-
-
-//! Represents a client's job for an execution context.
-/** A job object is constructed by the client.
-Not derived from versioned_object because version is same as for client. */
-struct PTS_RML_JOB
-{
-	//! Word for use by server
-	/** Typically the server uses it to speed up internal lookup.
-	Clients must not modify the word. */
-	void* scratch_ptr;
-};
-
-//Singleton is created. 
-//This is a component that hosts a pool of TBB worker threads.
-struct PTS_RML_Server
-{
-
-};
-
-#if 0
-
-class PTSTaskSchedulerImpl :public IPTSTaskScheduler
-{
-	inline ~PTSTaskSchedulerImpl();
-	void Destruct() override;
-
-	//PTSTaskStorage
-	//--------
-	//PTSTaskImpl //IPTSTask *pThis
-	//--------
-	//Pad //ui_StorageCustom_Align
-	//--------
-	//StorageCustom //void *pVoid_StorageCustom
-	//->ui_StorageCustom_Size
-	//--------
-
-	void Task_Allocate( //IPTTask *pParent, //SetParent 
-		size_t ui_StorageCustom_Size,
-		size_t ui_StorageCustom_Align,
-		void *pVoid_StorageCustom_ConstructorArgument,
-		void(*pFn_StorageCustom_Constructor)(
-			void *pVoid_StorageCustom,
-			void *pVoid_StorageCustom_ConstructorArgument
-			),
-		void(*pFn_Execute)(
-			void *pVoid_StorageCustom,
-			IPTSTask *pThis,
-			IPTSTask **const ppNextToExecute //Scheduler Bypass
-			)
-	) override;
-
-	void SpawnRootAndWait(IPTSTask *pFirst, IPTSTask *pNext) override;
-};
-
-static_assert(alignof(PTSTaskSchedulerStorage) == alignof(PTSTaskSchedulerImpl), "alignof(PTSTaskSchedulerStorage) != alignof(PTSTaskSchedulerImpl)");
-static_assert(sizeof(PTSTaskSchedulerStorage) == sizeof(PTSTaskSchedulerImpl), "sizeof(PTSTaskSchedulerStorage) != sizeof(PTSTaskSchedulerImpl)");
-
-#endif

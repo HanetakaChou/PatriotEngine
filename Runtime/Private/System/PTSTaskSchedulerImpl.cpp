@@ -48,6 +48,7 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Inde
 static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index);
 
 static PTSMarket *s_Market_Singleton_Pointer = NULL;
+static PTSTSD_KEY s_TaskScheduler_Index;
 
 //Linear Congruential Generator
 class PTS_Random_LCG
@@ -73,15 +74,18 @@ public:
 inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :
 	m_ArenaPointerArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena) * 64U, alignof(PTSArena)))PTSArena *[64]{}),
 	m_ArenaPointerArraySize(0U),
+	m_ThreadArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSThread)*ThreadNumber, alignof(PTSThread)))PTSThread[ThreadNumber]{}),
 	m_ThreadNumber(ThreadNumber),
 	m_ArenaPointerArrayCapacity(64U)
 {
 	PTBOOL tbResult = ::PTSSemaphore_Create(0U, &m_Semaphore);
 	assert(tbResult != PTFALSE);
 
-	PTThread m_Thread;
-	tbResult = ::PTThreadCreate(Worker_Thread_Main, this, &m_Thread);
-	assert(tbResult != PTFALSE);
+	for (uint32_t i = 0; i < m_ThreadNumber; ++i)
+	{
+		tbResult = ::PTSThread_Create(Worker_Thread_Main, this, m_ThreadArrayMemory + i);
+		assert(tbResult != PTFALSE);
+	}
 }
 
 inline PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio)
@@ -256,10 +260,27 @@ inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 	return 0U;
 }
 
-inline void  PTSMarket::Worker_Wake(uint32_t ThreadNumber)
+inline void PTSMarket::Worker_Wake(uint32_t ThreadNumber)
 {
-	PTBOOL tbResult = ::PTSSemaphore_Vrijgeven(&m_Semaphore);
-	assert(tbResult != PTFALSE);
+	PTBOOL tbResult;
+	
+	for (uint32_t i = 0; i < ThreadNumber; ++i)
+	{
+		tbResult = ::PTSSemaphore_Vrijgeven(&m_Semaphore);
+		assert(tbResult != PTFALSE);
+	}
+}
+
+inline void PTSMarket::Worker_Sleep(uint32_t ThreadNumber)
+{
+	PTBOOL tbResult;
+
+	for (uint32_t i = 0; i < ThreadNumber; ++i)
+	{
+		assert(s_Market_Singleton_Pointer != NULL);
+		tbResult = ::PTSSemaphore_Passern(&s_Market_Singleton_Pointer->m_Semaphore);
+		assert(tbResult != PTFALSE);
+	}
 }
 
 //-----------------------------------------------------------------------------------------------------------
@@ -617,12 +638,12 @@ inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena, 
 
 void PTSTaskSchedulerMasterImpl::Worker_Wake()
 {
-	s_Market_Singleton_Pointer->Worker_Wake(1);
+	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->m_SlotArrayCapacity);
 }
 
 void PTSTaskSchedulerMasterImpl::Worker_Sleep()
 {
-
+	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->m_SlotArrayCapacity);
 }
 
 IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
@@ -1145,26 +1166,22 @@ static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Inde
 }
 
 //------------------------------------------------------------------------------------------------------------
-static PTS_RML_Server s_RML_Server_Singleton;
-
-static PTSTSD_KEY s_TaskScheduler_Index;
-
 static int32_t s_TaskScheduler_Initialize_RefCount = 0;
 PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 {
 	if (::PTSAtomic_GetAndAdd(&s_TaskScheduler_Initialize_RefCount, 1) == 0)
 	{
-		if (ThreadNumber == 0U)
-		{
-			//默认值
-			ThreadNumber = ::PTS_Info_HardwareThreadNumber() - 1U;
-		}
-		s_Market_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSMarket), alignof(PTSMarket)))PTSMarket(ThreadNumber);
-		assert(s_Market_Singleton_Pointer != NULL);
-
 		PTBOOL tbResult;
 		tbResult = ::PTSTSD_Create(&s_TaskScheduler_Index, NULL);
 		assert(tbResult != PTFALSE);
+		
+		if (ThreadNumber == 0U)
+		{
+			ThreadNumber = ::PTS_Info_HardwareThreadNumber() - 1U; //默认值
+		}
+		s_Market_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSMarket), alignof(PTSMarket)))PTSMarket(ThreadNumber);
+		assert(s_Market_Singleton_Pointer != NULL);
+		
 		return tbResult;
 	}
 	else

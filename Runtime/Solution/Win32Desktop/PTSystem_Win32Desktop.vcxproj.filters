@@ -19,9 +19,6 @@
     <Filter Include="Public\System\Win32">
       <UniqueIdentifier>{5c34ddd7-5d9c-4e40-b9fe-760f872c76cf}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public\tbb">
-      <UniqueIdentifier>{d858f671-a55b-484f-909f-38df5e95bb67}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\PTCommon.h">
@@ -48,17 +45,11 @@
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h">
       <Filter>Private\System\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\tbb\task.h">
-      <Filter>Public\tbb</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSThreadPool.h">
       <Filter>Public\System</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Private\System\PTSThreadPoolImpl.h">
-      <Filter>Private\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -72,9 +63,6 @@
       <Filter>Private\System</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
-      <Filter>Private\System</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Private\System\PTSThreadPoolImpl.cpp">
       <Filter>Private\System</Filter>
     </ClCompile>
   </ItemGroup>

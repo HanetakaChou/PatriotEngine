@@ -9,18 +9,19 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <process.h>
-typedef unsigned __stdcall PTThreadEntry(void *pThreadParam);
-typedef HANDLE PTThread;
+typedef unsigned __stdcall PTSThreadEntry(void *pThreadParam);
+typedef HANDLE PTSThread;
 #elif defined(PTPOSIX)
 #include <pthread.h>
 #include <sched.h>
-typedef void * PTThreadEntry(void *);
-typedef pthread_t PTThread;
+typedef void * PTSThreadEntry(void *);
+typedef pthread_t PTSThread;
 #else
 #error 未知的平台
 #endif
-inline PTBOOL PTCALL PTThreadCreate(PTThreadEntry *, void *pThreadParam, PTThread *pThreadOut);
-inline PTBOOL PTCALL PTThreadWait(PTThread *pThread);
+inline PTBOOL PTCALL PTSThread_Create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
+inline PTBOOL PTCALL PTSThread_Detach(PTSThread *pThread);
+inline PTBOOL PTCALL PTSThread_Join(PTSThread *pThread);
 
 inline PTBOOL PTCALL PTS_Yield();
 
@@ -97,8 +98,8 @@ inline PTBOOL PTCALL PTSocketWrite(PTSocket *pSocket, void *pBuffer, uint32_t Nu
 #else
 #error 未知的平台
 #endif
-inline int64_t PTCALL PTTickCount();
-inline int64_t PTCALL PTTickFrequency();
+inline int64_t PTCALL PTSTick_Count();
+inline int64_t PTCALL PTSTick_Frequency();
 
 //Intrinsic
 
