@@ -61,6 +61,8 @@ public:
 
 	inline PTSArena *Arena_Acquire(uint32_t *pSlot_Index);
 
+	inline void Worker_Wake(uint32_t ThreadNumber);
+
 #ifdef PTWIN32
 	static inline unsigned __stdcall Worker_Thread_Main(void *pMarketVoid);
 #elif defined(PTPOSIX)
@@ -215,7 +217,7 @@ static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 //外观（Facade）模式
 //Associated with this Master Thread is created.
 //Any thread executing TBB tasks (whether Master or Worker) has its own instance of this component, which is stored in a TLS slot.
-class PTSTaskSchedulerImpl : public IPTSTaskScheduler
+class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
 {
 	//Master Thread : The Owning Arena
 	//Worker Thread : The Serviced Arena
@@ -235,8 +237,26 @@ class PTSTaskSchedulerImpl : public IPTSTaskScheduler
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
 public:
-	inline PTSTaskSchedulerImpl(PTSArena *pArena, uint32_t Slot_Index);
+	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index);
 };
+
+class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
+{
+	PTSArena *m_pArena;
+	uint32_t m_Slot_Index;
+
+	void Worker_Wake() override;
+	void Worker_Sleep() override;
+
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
+
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
+
+public:
+	inline PTSTaskSchedulerWorkerImpl(PTSArena *pArena, uint32_t Slot_Index);
+};
+
 
 //! Represents a client's job for an execution context.
 /** A job object is constructed by the client.
