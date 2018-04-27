@@ -86,10 +86,12 @@ class PTSArenaSlot;
 //and market refcount is incremented.
 class PTSArena
 {
+	uint32_t m_SlotIndexMaximum;
+
 	uint32_t m_SlotArraySize;
 
 	//±‹√‚Œ±π≤œÌ
-	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t)];
+	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) * 2U];
 
 	PTSArenaSlot * const m_SlotArrayMemory;
 	
@@ -106,9 +108,11 @@ public:
 
 	inline PTSArenaSlot *Slot(uint32_t Index);
 
-	inline uint32_t Size_Load_Acquire(); //Atomic_Get”Ô“Â
+	inline uint32_t SlotIndexMaximum_Load_Acquire(); //Atomic_Get”Ô“Â
 
 	inline PTSArenaSlot *Slot_Acquire(uint32_t *pSlot_Index);
+
+	inline void Slot_Release(uint32_t Slot_Index);
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -150,7 +154,7 @@ class PTSArenaSlot
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
 	friend PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index);
-
+	friend void PTSArena::Slot_Release(uint32_t Slot_Index);
 public:
 	inline PTSArenaSlot();
 

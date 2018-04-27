@@ -44,7 +44,7 @@ static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment);
 
 static inline void PTS_Internal_Spawn(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskToSpawnPrefix);
 static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
-static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix);
+static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index);
 
 //Linear Congruential Generator
 class PTS_Random_LCG
@@ -200,13 +200,10 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 			{
 				if (::PTSAtomic_Get(&pArena->m_SlotArraySize) < pArena->m_SlotArrayCapacity)
 				{
-					if (::PTSAtomic_CompareAndSet(&pArena->m_SlotArraySize, 0U, 1U) == 0U)
+					if (pArena->Slot_Acquire(pSlot_Index) != NULL)
 					{
-						if (pArena->Slot_Acquire(pSlot_Index) != NULL)
-						{
-							pArenaAcquired = pArena;
-							break;
-						}
+						pArenaAcquired = pArena;
+						break;
 					}
 				}
 			}
@@ -225,7 +222,17 @@ inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 	tbResult = ::PTSSemaphore_Vrijgeven(&pMarket->m_Semaphore);
 	assert(tbResult != PTFALSE);
 
-	//pMarket->Arena_Allocate
+	PTSArena *pArena;
+	uint32_t Slot_Index;
+
+	pArena = pMarket->Arena_Acquire(&Slot_Index);
+
+	if (pArena != NULL)
+	{
+		::PTS_Internal_Worker_Main(pArena, Slot_Index);
+	}
+
+	//pArena->Slot_Acquire
 }
 
 
@@ -243,49 +250,88 @@ inline PTSArenaSlot *PTSArena::Slot(uint32_t Index)
 	return m_SlotArrayMemory + Index;
 }
 
-inline uint32_t PTSArena::Size_Load_Acquire()
+inline uint32_t PTSArena::SlotIndexMaximum_Load_Acquire()
 {
-	return ::PTSAtomic_Get(&m_SlotArraySize);
+	return ::PTSAtomic_Get(&m_SlotIndexMaximum);
 }
 
 inline PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index)
 {
 	PTSArenaSlot *pSlotAcquired = NULL;
 
+	uint32_t Slot_Index;
+
 	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pSlotAcquired)));
 
 	assert(m_SlotArrayCapacity != 0U);
 	uint32_t IndexRandom = RandomTemp.Generate() % (m_SlotArrayCapacity - 1U) + 1U; //MasterThread的ArenaSlotIndex默认为0
 
-	for (uint32_t i = IndexRandom; i < m_SlotArrayCapacity; ++i)
+	//if (pSlotAcquired == NULL)
 	{
-		if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+		for (uint32_t i = IndexRandom; i < m_SlotArrayCapacity; ++i)
 		{
-			::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
-			(*pSlot_Index) = i;
-			pSlotAcquired = m_SlotArrayMemory + i;
-			break;
+			if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+			{
+				::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
+				Slot_Index = i;
+				pSlotAcquired = m_SlotArrayMemory + i;
+				break;
+			}
+		}
+	}
+	
+	if (pSlotAcquired == NULL)
+	{
+		for (uint32_t i = 1U; i < IndexRandom; ++i)
+		{
+			if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+			{
+				::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
+				Slot_Index = i;
+				pSlotAcquired = m_SlotArrayMemory + i;
+				break;
+			}
 		}
 	}
 
 	if (pSlotAcquired != NULL)
 	{
-		return pSlotAcquired;
-	}
+		uint32_t SlotIndexMaximumOld = ::PTSAtomic_Get(&m_SlotIndexMaximum);
 
-	for (uint32_t i = 1U; i < IndexRandom; ++i)
-	{
-		if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+		while (Slot_Index > SlotIndexMaximumOld)
 		{
-			::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
-			(*pSlot_Index) = i;
-			pSlotAcquired = m_SlotArrayMemory + i;
-			break;
+			if (::PTSAtomic_CompareAndSet(&m_SlotIndexMaximum, SlotIndexMaximumOld, Slot_Index) == SlotIndexMaximumOld)
+			{
+				break;
+			}
 		}
+
+		(*pSlot_Index) = Slot_Index;
 	}
 
 	return pSlotAcquired;
 }
+
+inline void PTSArena::Slot_Release(uint32_t Slot_Index)
+{
+	union
+	{
+		struct
+		{
+			uint32_t m_Head;
+			uint32_t m_Tail;
+		}m_OneWord;
+		uint64_t m_TwoWord;
+	}HeadAndTailOld;
+	HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_SlotArrayMemory[Slot_Index].m_HeadAndTail.m_TwoWord);
+	assert(HeadAndTailOld.m_OneWord.m_Head == HeadAndTailOld.m_OneWord.m_Tail);
+
+	uint32_t HasBeenAcquiredOld = ::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[Slot_Index].m_HasBeenAcquired, 1U, 0U);
+	assert(HasBeenAcquiredOld == 1U);
+
+	::PTSAtomic_GetAndAdd(&m_SlotArraySize, uint32_t(-1));
+}
+
 
 //------------------------------------------------------------------------------------------------------------
 inline PTSArenaSlot::PTSArenaSlot() :m_HeadAndTail{ 0U,0U }, m_HasBeenAcquired(0U), m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL }, m_TaskDequeCapacity(0U)
@@ -730,7 +776,7 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Inde
 		}
 
 		//Victim Task Deque
-		uint32_t CountSlot = pArena->Size_Load_Acquire(); //Acquire
+		uint32_t CountSlot = pArena->SlotIndexMaximum_Load_Acquire() + 1U; //Acquire
 		int32_t CountFailure = 0;
 		int32_t CountYield = 0;
 
@@ -796,7 +842,7 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Inde
 						break;
 					}
 
-					CountSlot = pArena->Size_Load_Acquire(); //Acquire
+					CountSlot = pArena->SlotIndexMaximum_Load_Acquire() + 1U; //Acquire
 				}
 			}
 
@@ -806,7 +852,10 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Inde
 
 }
 
-static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix);
+static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index)
+{
+
+}
 
 //------------------------------------------------------------------------------------------------------------
 static PTS_RML_Server s_RML_Server_Singleton;
