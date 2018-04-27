@@ -59,7 +59,7 @@ public:
 	
 	inline PTSArena *Arena_Allocate(float fThreadNumberRatio);
 
-	//inline PTSArena *Arena_Acquire(float fThreadNumberRatio);
+	inline PTSArena *Arena_Acquire(uint32_t *pSlot_Index);
 
 #ifdef PTWIN32
 	static inline unsigned __stdcall Worker_Thread_Main(void *pMarketVoid);
@@ -99,6 +99,7 @@ class PTSArena
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
 
 	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
+	friend PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index);
 
 public:
 	inline PTSArena(uint32_t Capacity);
