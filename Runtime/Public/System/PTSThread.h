@@ -35,28 +35,18 @@ typedef pthread_t PTSThreadID;
 inline PTSThreadID PTCALL PTSThreadID_Self();
 inline PTBOOL PTCALL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2);
 
-struct PTSpinLock
-{
-	PTBOOL volatile bIsLocked;
-};
-
-inline PTBOOL PTCALL PTSpinLockCreate(PTSpinLock *pSpinLock);
-inline PTBOOL PTCALL PTSpinLockEnter(PTSpinLock *pSpinLock);
-inline PTBOOL PTCALL PTSpinLockLeave(PTSpinLock *pSpinLock);
-inline PTBOOL PTCALL PTSpinLockDestory(PTSpinLock *pSpinLock);
-
 #ifdef PTWIN32
-typedef HANDLE PTSemaphore;
+typedef HANDLE PTSSemaphore;
 #elif defined(PTPOSIX)
 #include <semaphore.h>
-typedef sem_t PTSemaphore;
+typedef sem_t PTSSemaphore;
 #else
 #error 未知的平台
 #endif
-inline PTBOOL PTCALL PTSemaphoreCreate(uint32_t iInitialValue, PTSemaphore *pSemaphoreOut);
-inline PTBOOL PTCALL PTSemaphorePassern(PTSemaphore *pSemaphore);
-inline PTBOOL PTCALL PTSemaphoreVrijgeven(PTSemaphore *pSemaphore);
-inline PTBOOL PTCALL PTSemaphoreDestory(PTSemaphore *pSemaphore);
+inline PTBOOL PTCALL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut);
+inline PTBOOL PTCALL PTSSemaphore_Passern(PTSSemaphore *pSemaphore);
+inline PTBOOL PTCALL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore);
+inline PTBOOL PTCALL PTSSemaphore_Delete(PTSSemaphore *pSemaphore);
 
 #ifdef PTWIN32
 typedef DWORD PTSTSD_KEY;

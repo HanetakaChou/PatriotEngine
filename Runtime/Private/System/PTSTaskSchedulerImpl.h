@@ -41,17 +41,19 @@ class PTSArena;
 //This component is responsible for assigning Worker Threads to different Arenas.
 class PTSMarket : public PTS_RML_Client
 {
-	PTSArena *m_ArenaArrayMemoryS[4]; //64(1)+64(1)+128(2) //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
+	PTSArena * * m_ArenaPointerArrayMemory; //64
 	
-	//uint32_t m_ArenaCapacity;
+	uint32_t m_ArenaPointerArraySize; //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
 
-	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(void *) * 4U];
+	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void *)];
 
 	PTSSemaphore m_Semaphore;
 
 	uint32_t const m_ThreadNumber;
 
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(PTSSemaphore)];
+	uint32_t const m_ArenaPointerArrayCapacity; //64
+
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore)];
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
 	
@@ -105,7 +107,7 @@ public:
 
 	inline uint32_t Size_Load_Acquire(); //Atomic_Get语义
 
-	inline uint32_t Slot_Acquire();
+	inline PTSArenaSlot *Slot_Acquire(uint32_t *pSlot_Index);
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -146,7 +148,7 @@ class PTSArenaSlot
 
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
-	friend uint32_t PTSArena::Slot_Acquire();
+	friend PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index);
 
 public:
 	inline PTSArenaSlot();

@@ -34,35 +34,7 @@ inline PTBOOL PTCALL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (TID1 == TID2) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTCALL PTSpinLockCreate(PTSpinLock *pSpinLock)
-{
-	pSpinLock->bIsLocked = PTFALSE;
-	return PTTRUE;
-}
-
-inline PTBOOL PTCALL PTSpinLockEnter(PTSpinLock *pSpinLock)
-{
-	while (::InterlockedExchange(&pSpinLock->bIsLocked, PTTRUE) != PTFALSE)
-	{
-		::PTS_Yield();
-	}
-	return PTTRUE;
-}
-
-inline PTBOOL PTCALL PTSpinLockLeave(PTSpinLock *pSpinLock)
-{
-	PTBOOL ptbResult = ::InterlockedExchange(&pSpinLock->bIsLocked, PTFALSE);
-	assert(ptbResult == PTTRUE);
-
-	return PTTRUE;
-}
-
-inline PTBOOL PTCALL PTSpinLockDestory(PTSpinLock *pSpinLock)
-{
-	return PTTRUE;
-}
-
-inline PTBOOL PTCALL PTSemaphoreCreate(uint32_t iInitialValue, PTSemaphore *pSemaphoreOut)
+inline PTBOOL PTCALL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	HANDLE hSemaphore = ::CreateSemaphoreExW(NULL, iInitialValue, 32767, NULL, 0U, DELETE | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE);//#define _POSIX_SEM_VALUE_MAX  32767 //与Posix一致
 	assert(hSemaphore != NULL);
@@ -72,19 +44,19 @@ inline PTBOOL PTCALL PTSemaphoreCreate(uint32_t iInitialValue, PTSemaphore *pSem
 	return(hSemaphore != NULL) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTCALL PTSemaphorePassern(PTSemaphore *pSemaphore)
+inline PTBOOL PTCALL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
 	return (::WaitForSingleObjectEx(hSemaphore, INFINITE, FALSE) == WAIT_OBJECT_0) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTCALL PTSemaphoreVrijgeven(PTSemaphore *pSemaphore)
+inline PTBOOL PTCALL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
 	return (::ReleaseSemaphore(hSemaphore, 1, NULL) != FALSE) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTCALL PTSemaphoreDestory(PTSemaphore *pSemaphore)
+inline PTBOOL PTCALL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
 	return (::CloseHandle(hSemaphore) != FALSE) ? PTTRUE : PTFALSE;

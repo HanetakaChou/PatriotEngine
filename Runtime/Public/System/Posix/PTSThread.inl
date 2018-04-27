@@ -26,34 +26,6 @@ PTBOOL PTCALL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (::pthread_equal(TID1, TID2) != 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTSpinLockCreate(PTSpinLock *pSpinLock)
-{
-	pSpinLock->bIsLocked = PTFALSE;
-	return PTTRUE;
-}
-
-PTBOOL PTCALL PTSpinLockEnter(PTSpinLock *pSpinLock)
-{
-	while (::__sync_lock_test_and_set(&pSpinLock->bIsLocked, PTTRUE) != PTFALSE)
-	{
-		::PTS_Yield();
-	}
-	return PTTRUE;
-}
-
-PTBOOL PTCALL PTSpinLockLeave(PTSpinLock *pSpinLock)
-{
-	PTBOOL ptbResult = ::__sync_lock_test_and_set(&pSpinLock->bIsLocked, PTFALSE);
-	assert(ptbResult == PTTRUE);
-
-	return PTTRUE;
-}
-
-PTBOOL PTCALL PTSpinLockDestory(PTSpinLock *pSpinLock)
-{
-	return PTTRUE;
-}
-
 PTBOOL PTCALL PTSemaphoreCreate(uint32_t iInitialValue, PTSemaphore *pSemaphoreOut)
 {
 	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? PTTRUE : PTFALSE;
