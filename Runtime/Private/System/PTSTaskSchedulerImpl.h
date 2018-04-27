@@ -162,14 +162,14 @@ class PTSTaskPrefixImpl :public IPTSTaskPrefix
 
 	void RefCount_Set(uint32_t RefCount) override;
 
-	void OverrideExecute(void *(*pFn_Execute)(void *pTaskThisVoid))  override;
+	void OverrideExecute(IPTSTask *(*pFn_Execute)(IPTSTask *pTaskThisVoid))  override;
 
 public:
 	PTSTaskPrefixImpl * m_Parent;
 
 	uint32_t m_RefCount; //Count Of Child
 
-	void *(*m_pFn_Execute)(void *pTaskThis);
+	IPTSTask *(*m_pFn_Execute)(IPTSTask *pTaskThis);
 
 	enum :uint8_t
 	{
@@ -188,7 +188,7 @@ public:
 };
 
 static uint32_t const s_TaskPrefix_Alignment = 32U;
-static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(void *pTask);
+static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 
 //TaskScheduler
 //外观（Facade）模式
@@ -208,10 +208,10 @@ class PTSTaskSchedulerImpl : public IPTSTaskScheduler
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	void *Task_Allocate(size_t Size, size_t Alignment) override;
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 
-	void Task_Spawn(void *pTask) override;
-	void Task_Spawn_Root_And_Wait(void *pTask) override;
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
 public:
 	inline PTSTaskSchedulerImpl(PTSArena *pArena, uint32_t ArenaSlot_Index);
