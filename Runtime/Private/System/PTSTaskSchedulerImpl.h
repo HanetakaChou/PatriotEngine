@@ -253,8 +253,9 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	void Task_Spawn(IPTSTask *pTask) override;
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
+	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);
 public:
-	inline PTSTaskSchedulerWorkerImpl(PTSArena *pArena, uint32_t Slot_Index);
+	inline PTSTaskSchedulerWorkerImpl();
 };
 
 

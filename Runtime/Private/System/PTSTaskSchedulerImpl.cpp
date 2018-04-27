@@ -222,22 +222,35 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 
 inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 {
+	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl)))PTSTaskSchedulerWorkerImpl{};
+	assert(pTaskScheduler != NULL);
+
+	PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
+	assert(tbResult != PTFALSE);
+
 	PTSMarket *pMarket = static_cast<PTSMarket *>(pMarketVoid);
-	
-	PTBOOL tbResult = ::PTSSemaphore_Passern(&pMarket->m_Semaphore);
-	assert(tbResult != PTFALSE);
-	tbResult = ::PTSSemaphore_Vrijgeven(&pMarket->m_Semaphore);
-	assert(tbResult != PTFALSE);
 
-	PTSArena *pArena;
-	uint32_t Slot_Index;
-
-	pArena = pMarket->Arena_Acquire(&Slot_Index);
-
-	if (pArena != NULL)
+	while (true)
 	{
-		::PTS_Internal_Worker_Main(pArena, Slot_Index);
-		pArena->Slot_Release(Slot_Index);
+		tbResult = ::PTSSemaphore_Passern(&pMarket->m_Semaphore);
+		assert(tbResult != PTFALSE);
+		tbResult = ::PTSSemaphore_Vrijgeven(&pMarket->m_Semaphore);
+		assert(tbResult != PTFALSE);
+
+		PTSArena *pArena;
+		uint32_t Slot_Index;
+
+		pArena = pMarket->Arena_Acquire(&Slot_Index);
+
+		if (pArena != NULL)
+		{
+			pTaskScheduler->m_pArena = pArena;
+			pTaskScheduler->m_Slot_Index = Slot_Index;
+
+			::PTS_Internal_Worker_Main(pArena, Slot_Index);
+
+			pArena->Slot_Release(Slot_Index);
+		}
 	}
 
 	return 0U;
@@ -664,7 +677,7 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 }
 
 //------------------------------------------------------------------------------------------------------------
-inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl(PTSArena *pArena, uint32_t Slot_Index) :m_pArena(pArena), m_Slot_Index(Slot_Index)
+inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl()
 {
 
 }
