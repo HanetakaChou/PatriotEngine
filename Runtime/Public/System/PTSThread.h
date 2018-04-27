@@ -110,7 +110,9 @@ inline PTBOOL PTCALL PTSocketWrite(PTSocket *pSocket, void *pBuffer, uint32_t Nu
 inline int64_t PTCALL PTTickCount();
 inline int64_t PTCALL PTTickFrequency();
 
-//Atomic
+//Intrinsic
+
+inline void PTCALL PTS_Pause();
 
 inline int32_t PTCALL PTSAtomic_CompareAndSetI32(int32_t volatile *pTarget, int32_t expect, int32_t update);
 inline int64_t PTCALL PTSAtomic_CompareAndSetI64(int64_t volatile *pTarget, int64_t expect, int64_t update);
@@ -131,6 +133,16 @@ inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue) 
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue) { return ::PTSAtomic_GetAndSetI64(pTarget, newValue); }
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue) { return ::PTSAtomic_GetAndSetUI32(pTarget, newValue); }
 inline uint64_t PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue) { return ::PTSAtomic_GetAndSetUI64(pTarget, newValue); }
+
+inline int32_t PTCALL PTSAtomic_GetAndAddI32(int32_t volatile *pTarget, int32_t delta);
+inline int64_t PTCALL PTSAtomic_GetAndAddI64(int64_t volatile *pTarget, int64_t delta);
+inline uint32_t PTCALL PTSAtomic_GetAndAddUI32(uint32_t volatile *pTarget, uint32_t delta);
+inline uint64_t PTCALL PTSAtomic_GetAndAddUI64(uint64_t volatile *pTarget, uint64_t delta);
+
+inline int32_t PTSAtomic_GetAndAdd(int32_t volatile *pTarget, int32_t delta) { return ::PTSAtomic_GetAndAddI32(pTarget, delta); }
+inline int64_t PTSAtomic_GetAndAdd(int64_t volatile *pTarget, int64_t delta) { return ::PTSAtomic_GetAndAddI64(pTarget, delta); }
+inline uint32_t PTSAtomic_GetAndAdd(uint32_t volatile *pTarget, uint32_t delta) { return ::PTSAtomic_GetAndAddUI32(pTarget, delta); }
+inline uint64_t PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta) { return ::PTSAtomic_GetAndAddUI64(pTarget, delta); }
 
 inline int32_t PTCALL PTSAtomic_GetI32(int32_t volatile *pTarget);
 inline int64_t PTCALL PTSAtomic_GetI64(int64_t volatile *pTarget);

@@ -968,21 +968,29 @@ inline void PTS_BlockMetadata::Free(PTS_ThreadLocalBinArray *pTLS, PTS_BlockMeta
 }
 
 //------------------------------------------------------------------------------------------------------------
-
+static int32_t s_MemoryAllocator_Initialize_RefCount = 0;
 PTBOOL PTCALL PTSMemoryAllocator_Initialize()
 {
-	PTS_BlockStore::Construct(&s_BlockStore_Singleton);
-	
-	PTBOOL tbResult = ::PTSTSD_Create(
-		&s_TLBinArray_Index,
-		[](void *pVoid)->void {
-		PTS_ThreadLocalBinArray *pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(pVoid);
-		PTS_ThreadLocalBinArray::Destruct(pTLBinArray);
-		::PTS_MemoryMap_Free(pVoid);
-	}
-	);
+	if (::PTSAtomic_GetAndAdd(&s_MemoryAllocator_Initialize_RefCount, 1) == 0)
+	{
+		PTS_BlockStore::Construct(&s_BlockStore_Singleton);
 
-	return tbResult;
+		PTBOOL tbResult = ::PTSTSD_Create(
+			&s_TLBinArray_Index,
+			[](void *pVoid)->void {
+			PTS_ThreadLocalBinArray *pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(pVoid);
+			PTS_ThreadLocalBinArray::Destruct(pTLBinArray);
+			::PTS_MemoryMap_Free(pVoid);
+		}
+		);
+		
+		return tbResult;
+	}
+	else
+	{
+		return PTTRUE;
+	}
+	
 }
 
 static inline void * PTS_Internal_Alloc(uint32_t size)
@@ -1127,16 +1135,22 @@ static inline void PTS_Internal_Free(void *pVoid)
 
 void * PTCALL PTSMemoryAllocator_Alloc(uint32_t size)
 {
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
 	return ::PTS_Internal_Alloc(size);
 }
 
 void PTCALL PTSMemoryAllocator_Free(void *pVoid)
 {
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
 	return ::PTS_Internal_Free(pVoid);
 }
 
 void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t size, uint32_t alignment)
 {
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
 	assert(::PTS_Size_IsPowerOfTwo(alignment));
 
 	void *pVoidToAlloc;
@@ -1165,6 +1179,8 @@ void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t size, uint32_t alignment
 
 void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
 {
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
 	return ::PTS_Internal_Free(pVoid);
 }
 

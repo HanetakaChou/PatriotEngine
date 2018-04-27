@@ -316,6 +316,21 @@ inline int64_t PTCALL PTTickFrequency()
 
 #include <intrin.h>
 
+#if defined(PTARM) || defined(PTARM64)
+//#include <arm_acle.h> __yield
+inline void PTCALL PTS_Pause()
+{
+	::__yield();
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTCALL PTS_Pause()
+{
+	::_mm_pause();
+}
+#else
+#error 未知的架构
+#endif
+
 inline int32_t PTCALL PTSAtomic_CompareAndSetI32(int32_t volatile *pTarget, int32_t expect, int32_t update)
 { 
 	return ::_InterlockedCompareExchange(reinterpret_cast<LONG volatile *>(pTarget), update, expect);
@@ -351,51 +366,72 @@ inline uint64_t PTCALL PTSAtomic_GetAndSetUI64(uint64_t volatile *pTarget, uint6
 	return static_cast<uint64_t>(::InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(newValue)));
 }
 
+inline int32_t PTCALL PTSAtomic_GetAndAddI32(int32_t volatile *pTarget, int32_t delta)
+{
+	return ::_InterlockedExchangeAdd(reinterpret_cast<LONG volatile *>(pTarget), delta);
+}
+
+inline int64_t PTCALL PTSAtomic_GetAndAddI64(int64_t volatile *pTarget, int64_t delta)
+{
+	return ::_InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), delta);
+}
+
+inline uint32_t PTCALL PTSAtomic_GetAndAddUI32(uint32_t volatile *pTarget, uint32_t delta)
+{
+	return static_cast<uint32_t>(::_InterlockedExchangeAdd(reinterpret_cast<LONG volatile *>(pTarget), static_cast<LONG>(delta)));
+}
+
+inline uint64_t PTCALL PTSAtomic_GetAndAddUI64(uint64_t volatile *pTarget, uint64_t delta)
+{
+
+	return static_cast<uint64_t>(::_InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(delta)));
+}
+
 inline int32_t PTCALL PTSAtomic_GetI32(int32_t volatile *pTarget)
 {
 	int32_t value = *pTarget;
-	::_ReadWriteBarrier();
+	::_ReadBarrier();
 	return value;
 }
 inline int64_t PTCALL PTSAtomic_GetI64(int64_t volatile *pTarget)
 {
 	int64_t value = *pTarget;
-	::_ReadWriteBarrier();
+	::_ReadBarrier();
 	return value;
 }
 inline uint32_t PTCALL PTSAtomic_GetUI32(uint32_t volatile *pTarget)
 {
 	uint32_t value = *pTarget;
-	::_ReadWriteBarrier();
+	::_ReadBarrier();
 	return value;
 }
 inline uint64_t PTCALL PTSAtomic_GetUI64(uint64_t volatile *pTarget)
 {
 	uint64_t value = *pTarget;
-	::_ReadWriteBarrier();
+	::_ReadBarrier();
 	return value;
 }
 
 inline void PTCALL PTSAtomic_SetI32(int32_t volatile *pTarget, int32_t newValue)
 {
-	::_ReadWriteBarrier();
+	::_WriteBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTCALL PTSAtomic_SetI64(int64_t volatile *pTarget, int64_t newValue)
 {
-	::_ReadWriteBarrier();
+	::_WriteBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTCALL PTSAtomic_SetUI32(uint32_t volatile *pTarget, uint32_t newValue)
 {
-	::_ReadWriteBarrier();
+	::_WriteBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTCALL PTSAtomic_SetUI64(uint64_t volatile *pTarget, uint64_t newValue)
 {
-	::_ReadWriteBarrier();
+	::_WriteBarrier();
 	(*pTarget) = newValue;
 }

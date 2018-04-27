@@ -19,24 +19,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
+    <ClInclude Include="..\..\Private\System\PTSThreadPoolImpl.h" />
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h" />
-    <ClInclude Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSFile.h" />
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
+    <ClInclude Include="..\..\Public\System\PTSThreadPool.h" />
     <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
+    <ClInclude Include="..\..\Public\tbb\task.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSThreadPoolImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp" />
-    <ClCompile Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl" />
+    <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl" />
     <None Include="..\..\Public\System\Win32\PTSThread.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -44,32 +49,32 @@
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PTSystem_Win32Desktop</RootNamespace>
     <ProjectName>PTSystem_Win32Desktop</ProjectName>
-    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141_xp</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>

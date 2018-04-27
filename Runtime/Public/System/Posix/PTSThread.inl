@@ -305,9 +305,20 @@ inline int64_t PTTickFrequency()
 	return 1000000LL;
 }
 
-//uint64_t mask;
-//int rtval = sched_getaffinity(0, sizeof(uint64_t), reinterpret_cast<cpu_set_t *>(&mask));
-//assert(rtval == 0);
+#if defined(PTARM) || defined(PTARM64)
+//#include <arm_acle.h> __yield
+inline void PTCALL PTS_Pause()
+{
+	__builtin_arm_yield();
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTCALL PTS_Pause()
+{
+	__builtin_ia32_pause();
+}
+#else
+#error 未知的架构
+#endif
 
 inline int32_t PTCALL PTSAtomic_CompareAndSetI32(int32_t volatile *pTarget, int32_t expect, int32_t update)
 {
@@ -344,51 +355,56 @@ inline uint64_t PTCALL PTSAtomic_GetAndSetUI64(uint64_t volatile *pTarget, uint6
 	return ::__sync_lock_test_and_set(pTarget, newValue);
 }
 
+
+inline int32_t PTCALL PTSAtomic_GetAndAddI32(int32_t volatile *pTarget, int32_t delta)
+{
+	return ::__sync_fetch_and_add(pTarget, delta);
+}
+inline int64_t PTCALL PTSAtomic_GetAndAddI64(int64_t volatile *pTarget, int64_t delta)
+{
+	return ::__sync_fetch_and_add(pTarget, delta);
+}
+inline uint32_t PTCALL PTSAtomic_GetAndAddUI32(uint32_t volatile *pTarget, uint32_t delta)
+{
+	return ::__sync_fetch_and_add(pTarget, delta);
+}
+inline uint64_t PTCALL PTSAtomic_GetAndAddUI64(uint64_t volatile *pTarget, uint64_t delta)
+{
+	return ::__sync_fetch_and_add(pTarget, delta);
+}
+
+
 inline int32_t PTCALL PTSAtomic_GetI32(int32_t volatile *pTarget)
 {
-	int32_t value = *pTarget;
-	__asm__ __volatile__("": : : "memory");
-	return value;
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
 }
 inline int64_t PTCALL PTSAtomic_GetI64(int64_t volatile *pTarget)
 {
-	int64_t value = *pTarget;
-	__asm__ __volatile__("": : : "memory");
-	return value;
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
 }
 inline uint32_t PTCALL PTSAtomic_GetUI32(uint32_t volatile *pTarget)
 {
-	uint32_t value = *pTarget;
-	__asm__ __volatile__("": : : "memory");
-	return value;
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
 }
 inline uint64_t PTCALL PTSAtomic_GetUI64(uint64_t volatile *pTarget)
 {
-	uint64_t value = *pTarget;
-	__asm__ __volatile__("": : : "memory");
-	return value;
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
 }
+
 
 inline void PTCALL PTSAtomic_SetI32(int32_t volatile *pTarget, int32_t newValue)
 {
-	__asm__ __volatile__("": : : "memory");
-	(*pTarget) = newValue;
+	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-
 inline void PTCALL PTSAtomic_SetI64(int64_t volatile *pTarget, int64_t newValue)
 {
-	__asm__ __volatile__("": : : "memory");
-	(*pTarget) = newValue;
+	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-
 inline void PTCALL PTSAtomic_SetUI32(uint32_t volatile *pTarget, uint32_t newValue)
 {
-	__asm__ __volatile__("": : : "memory");
-	(*pTarget) = newValue;
+	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-
 inline void PTCALL PTSAtomic_SetUI64(uint64_t volatile *pTarget, uint64_t newValue)
 {
-	__asm__ __volatile__("": : : "memory");
-	(*pTarget) = newValue;
+	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
