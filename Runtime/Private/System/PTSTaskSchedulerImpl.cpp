@@ -44,6 +44,27 @@ static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment);
 
 static inline void PTS_Internal_Spawn(PTSArena *pArena, uint32_t ArenaSlot_Index, PTSTaskPrefixImpl *pTaskToSpawnPrefix);
 static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t ArenaSlot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
+static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t ArenaSlot_Index, PTSTaskPrefixImpl * pTaskRootPrefix);
+
+//Linear Congruential Generator
+class PTS_Random_LCG
+{
+	static const uint32_t c = 12345U;
+	static const uint32_t a = 1103515245U;
+	uint32_t x;
+
+public:
+	inline PTS_Random_LCG(uint32_t Seed) :x(Seed)
+	{
+
+	}
+
+	uint32_t Generate()
+	{
+		x = a * x + c;
+		return (x << 1U) >> 17U;
+	}
+};
 
 //------------------------------------------
 inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :m_ArenaQueueTop(NULL),m_ThreadNumber(ThreadNumber)
@@ -51,7 +72,7 @@ inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :m_ArenaQueueTop(NULL),m_Thre
 
 }
 
-inline PTSArena *PTSMarket::Arena_Acquire(float fThreadNumberRatio)
+inline PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio)
 {
 	uint32_t Capacity = static_cast<uint32_t>(::ceilf(static_cast<float>(m_ThreadNumber) * fThreadNumberRatio));
 
@@ -116,6 +137,34 @@ inline PTSArenaSlot *PTSArena::ArenaSlot(uint32_t Index)
 inline uint32_t PTSArena::Size_Acquire()
 {
 	return ::PTSAtomic_Get(&m_Size);
+}
+
+inline uint32_t PTSArena::ArenaSlot_Acquire()
+{
+	uint32_t SeedTemp;
+
+	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&SeedTemp)));
+
+	assert(m_Capacity != 0U);
+	uint32_t Index = RandomTemp.Generate() % (m_Capacity - 1U) + 1U; //MasterThread的ArenaSlotIndex默认为0
+
+	for (uint32_t i = Index; i < m_Capacity; ++i)
+	{
+		if (::PTSAtomic_CompareAndSet(&m_ArenaSlotMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+		{
+			::PTSAtomic_GetAndAdd(&m_Size, 1U);
+			return i;
+		}
+	}
+
+	for (uint32_t i = 1U; i < Index; ++i)
+	{
+		if (::PTSAtomic_CompareAndSet(&m_ArenaSlotMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
+		{
+			::PTSAtomic_GetAndAdd(&m_Size, 1U);
+			return i;
+		}
+	}
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -484,26 +533,6 @@ static inline void PTS_Internal_Spawn(PTSArena *pArena, uint32_t ArenaSlot_Index
 	pArenaSlot->TaskDeque_Push(pTaskToSpawnPrefix);
 }
 
-//Linear Congruential Generator
-class PTS_Random_LCG
-{
-	static const uint32_t c = 12345U;
-	static const uint32_t a = 1103515245U;
-	uint32_t x;
-
-public:
-	inline PTS_Random_LCG(uint32_t Seed) :x(Seed)
-	{
-
-	}
-
-	uint32_t Generate()
-	{
-		x = a * x + c;
-		return (x << 1U) >> 17U;
-	}
-};
-
 static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t ArenaSlot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, uint32_t *pHasBeenFinished)
 {
 	assert(pTaskRootPrefix != NULL);
@@ -657,6 +686,8 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t ArenaSlot
 
 }
 
+static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t ArenaSlot_Index, PTSTaskPrefixImpl * pTaskRootPrefix);
+
 //------------------------------------------------------------------------------------------------------------
 static PTS_RML_Server s_RML_Server_Singleton;
 
@@ -708,7 +739,7 @@ PTBOOL PTCALL PTSTaskScheduler_Local_Initialize(float fThreadNumberRatio)
 
 	if (pTaskScheduler == NULL)
 	{
-		PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Acquire(fThreadNumberRatio);
+		PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate(fThreadNumberRatio);
 		assert(pArena != NULL);
 
 		pTaskScheduler = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerImpl), alignof(PTSTaskSchedulerImpl)))PTSTaskSchedulerImpl(pArena, 0U); //MasterThread的ArenaSlotIndex默认为0

@@ -50,7 +50,7 @@ class PTSMarket : public PTS_RML_Client
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t)];
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
-	inline PTSArena *Arena_Acquire(float fThreadNumberRatio);
+	inline PTSArena *Arena_Allocate(float fThreadNumberRatio);
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -83,15 +83,16 @@ class PTSArena
 	//对齐到CacheLine
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
 
-	friend PTSArena *PTSMarket::Arena_Acquire(float fThreadNumberRatio);
+	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
 
 public:
 	inline PTSArena(uint32_t Capacity);
 
 	inline PTSArenaSlot *ArenaSlot(uint32_t Index);
 
-	//Atomic_Get语义
-	inline uint32_t Size_Acquire(); 
+	inline uint32_t Size_Acquire(); //Atomic_Get语义
+
+	inline uint32_t ArenaSlot_Acquire();
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -132,7 +133,8 @@ class PTSArenaSlot
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*) * 4U];
 
 	friend PTSArena::PTSArena(uint32_t Capacity);
-	friend PTSArena *PTSMarket::Arena_Acquire(float fThreadNumberRatio);
+	friend PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio);
+	friend uint32_t PTSArena::ArenaSlot_Acquire();
 
 public:
 	inline PTSArenaSlot();
