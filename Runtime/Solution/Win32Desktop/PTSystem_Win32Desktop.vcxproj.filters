@@ -48,9 +48,6 @@
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\System\PTSThreadPool.h">
-      <Filter>Public\System</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">

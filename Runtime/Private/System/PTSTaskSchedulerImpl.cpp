@@ -99,73 +99,66 @@ inline PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio)
 	{
 		PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pArenaAllocated)));
 
-		uint32_t IndexRandom = RandomTemp.Generate() % m_ArenaPointerArraySize; //MasterThread的ArenaSlotIndex默认为0
+		uint32_t IndexRandom = RandomTemp.Generate() % m_ArenaPointerArraySize;
 
-		for (uint32_t i = IndexRandom; i < m_ArenaPointerArraySize; ++i)
 		{
-			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
-
-			if (pArena != NULL) //初始化为NULL
+			for (uint32_t i = IndexRandom; i < m_ArenaPointerArraySize; ++i)
 			{
-				if (pArena->m_SlotArrayCapacity == ArenaCapacity) //实际中Capacity相等的可能性较大
+				PTSArena *pArenaToRecycle = m_ArenaPointerArrayMemory[i];
+
+				if (pArenaToRecycle != NULL) //数组中指针初始化为NULL
 				{
-					if (::PTSAtomic_CompareAndSet(&pArena->m_SlotArraySize, 0U, 1U) == 0U)
+					if (pArenaToRecycle->Capacity() == ArenaCapacity) //应该认为Capacity相等存在较大的可能性 以8线程为例 Capacity可能的取值有1 2 3 4 5 6 7 共7种
 					{
-						pArena->m_SlotArrayMemory[0].m_HasBeenAcquired = 1U; //MasterThread的ArenaSlotIndex默认为0
-						pArenaAllocated = pArena;
-						break;
+						//MasterThread的SlotIndex一定为0
+						if (pArenaToRecycle->Slot_Acquire_Master())
+						{
+							pArenaAllocated = pArenaToRecycle;
+							break;
+						}
 					}
 				}
 			}
 		}
 
-		if (pArenaAllocated != NULL)
+		if (pArenaAllocated == NULL)
 		{
-			return pArenaAllocated;
-		}
-
-		for (uint32_t i = 0U; i < IndexRandom; ++i)
-		{
-			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
-
-			if (pArena != NULL) //初始化为NULL
+			for (uint32_t i = 0U; i < IndexRandom; ++i)
 			{
-				if (pArena->m_SlotArrayCapacity == ArenaCapacity) //实际中Capacity相等的可能性较大
+				PTSArena *pArenaToRecycle = m_ArenaPointerArrayMemory[i];
+
+				if (pArenaToRecycle != NULL) //数组中指针初始化为NULL
 				{
-					if (::PTSAtomic_CompareAndSet(&pArena->m_SlotArraySize, 0U, 1U) == 0U)
+					if (pArenaToRecycle->Capacity() == ArenaCapacity) //应该认为Capacity相等存在较大的可能性 以8线程为例 Capacity可能的取值有1 2 3 4 5 6 7 共7种
 					{
-						pArena->m_SlotArrayMemory[0].m_HasBeenAcquired = 1U; //MasterThread的ArenaSlotIndex默认为0
-						pArenaAllocated = pArena;
-						break;
+						//MasterThread的SlotIndex一定为0
+						if (pArenaToRecycle->Slot_Acquire_Master())
+						{
+							pArenaAllocated = pArenaToRecycle;
+							break;
+						}
 					}
 				}
-			}	
+			}
 		}
-	}
-
-	if (pArenaAllocated != NULL)
-	{
-		return pArenaAllocated;
 	}
 
 	//New
+	if (pArenaAllocated == NULL)
 	{
-		PTSArena *newArenaPtr = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena), alignof(PTSArena)))PTSArena(ArenaCapacity); //MasterThread的ArenaSlotIndex默认为0
-		assert(newArenaPtr != NULL);
+		//MasterThread调用本函数时，Arena尚未在到Market中被标记为可用，不存在与WorkerThread并发访问的可能性
+		//MasterThread的SlotIndex一定为0
+		PTSArena *pArenaNew = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena), alignof(PTSArena)))PTSArena(ArenaCapacity);
+		assert(pArenaNew != NULL);
 
-		//
-		++newArenaPtr->m_SlotArraySize;
-		newArenaPtr->m_SlotArrayMemory[0].m_HasBeenAcquired = 1U; //MasterThread的ArenaSlotIndex默认为0
-
-		uint32_t Index = ::PTSAtomic_GetAndAdd(&m_ArenaPointerArraySize, 1U);
 		//只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
+		uint32_t Index = ::PTSAtomic_GetAndAdd(&m_ArenaPointerArraySize, 1U);
 		assert(Index < m_ArenaPointerArrayCapacity);
 
-		//指针初始化为NULL，无害
+		//数组中指针初始化为NULL，无害
+		m_ArenaPointerArrayMemory[Index] = pArenaNew;
 
-		m_ArenaPointerArrayMemory[Index] = newArenaPtr;
-
-		pArenaAllocated = newArenaPtr;
+		pArenaAllocated = pArenaNew;
 	}
 
 	return pArenaAllocated;
@@ -179,7 +172,7 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 	{
 		PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pArenaAcquired)));
 
-		uint32_t IndexRandom = RandomTemp.Generate() % m_ArenaPointerArraySize; //MasterThread的ArenaSlotIndex默认为0
+		uint32_t IndexRandom = RandomTemp.Generate() % m_ArenaPointerArraySize;
 
 		for (uint32_t i = IndexRandom; i < m_ArenaPointerArraySize; ++i)
 		{
@@ -287,20 +280,30 @@ inline void PTSMarket::Worker_Sleep(uint32_t ThreadNumber)
 inline PTSArena::PTSArena(uint32_t Capacity) :
 	m_SlotIndexMaximum(0U),
 	m_SlotArraySize(0U),
-	m_SlotArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArenaSlot)*Capacity, alignof(PTSArenaSlot)))PTSArenaSlot[Capacity]),
+	m_SlotArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArenaSlot)*Capacity, alignof(PTSArenaSlot)))PTSArenaSlot[Capacity]{}),
 	m_SlotArrayCapacity(Capacity)
 {
-	
+	//MasterThread调用本函数时，Arena尚未在到Market中被标记为可用，不存在与WorkerThread并发访问的可能性
+	//MasterThread的SlotIndex一定为0
+	assert(m_SlotArraySize == 0U);
+	++m_SlotArraySize;
+	assert(m_SlotArrayMemory[0].m_HasBeenAcquired == 0U);
+	m_SlotArrayMemory[0].m_HasBeenAcquired = 1U;
 }
 
-inline PTSArenaSlot *PTSArena::Slot(uint32_t Index)
+inline bool PTSArena::Slot_Acquire_Master()
 {
-	return m_SlotArrayMemory + Index;
-}
-
-inline uint32_t PTSArena::SlotIndexMaximum_Load_Acquire()
-{
-	return ::PTSAtomic_Get(&m_SlotIndexMaximum);
+	//MasterThread的SlotIndex一定为0
+	if (::PTSAtomic_CompareAndSet(&m_SlotArraySize, 0U, 1U) == 0U)
+	{
+		assert(m_SlotArrayMemory[0].m_HasBeenAcquired == 0U);
+		m_SlotArrayMemory[0].m_HasBeenAcquired = 1U;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 inline PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index)
@@ -312,9 +315,8 @@ inline PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index)
 	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pSlotAcquired)));
 
 	assert(m_SlotArrayCapacity != 0U);
-	uint32_t IndexRandom = RandomTemp.Generate() % (m_SlotArrayCapacity - 1U) + 1U; //MasterThread的ArenaSlotIndex默认为0
+	uint32_t IndexRandom = RandomTemp.Generate() % (m_SlotArrayCapacity - 1U) + 1U; //MasterThread的SlotIndex默认为0
 
-	//if (pSlotAcquired == NULL)
 	{
 		for (uint32_t i = IndexRandom; i < m_SlotArrayCapacity; ++i)
 		{
@@ -327,7 +329,7 @@ inline PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index)
 			}
 		}
 	}
-	
+
 	if (pSlotAcquired == NULL)
 	{
 		for (uint32_t i = 1U; i < IndexRandom; ++i)
@@ -374,12 +376,26 @@ inline void PTSArena::Slot_Release(uint32_t Slot_Index)
 	HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_SlotArrayMemory[Slot_Index].m_HeadAndTail.m_TwoWord);
 	assert(HeadAndTailOld.m_OneWord.m_Head == HeadAndTailOld.m_OneWord.m_Tail);
 
-	uint32_t HasBeenAcquiredOld = ::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[Slot_Index].m_HasBeenAcquired, 1U, 0U);
+	uint32_t HasBeenAcquiredOld = ::PTSAtomic_GetAndSet(&m_SlotArrayMemory[Slot_Index].m_HasBeenAcquired, 0U);
 	assert(HasBeenAcquiredOld == 1U);
 
 	::PTSAtomic_GetAndAdd(&m_SlotArraySize, uint32_t(-1));
 }
 
+inline uint32_t PTSArena::SlotIndexMaximum_Load_Acquire()
+{
+	return ::PTSAtomic_Get(&m_SlotIndexMaximum);
+}
+
+inline PTSArenaSlot *PTSArena::Slot(uint32_t Index)
+{
+	return m_SlotArrayMemory + Index;
+}
+
+inline uint32_t PTSArena::Capacity()
+{
+	return m_SlotArrayCapacity;
+}
 
 //------------------------------------------------------------------------------------------------------------
 inline PTSArenaSlot::PTSArenaSlot() :m_HeadAndTail{ 0U,0U }, m_HasBeenAcquired(0U), m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL }, m_TaskDequeCapacity(0U)

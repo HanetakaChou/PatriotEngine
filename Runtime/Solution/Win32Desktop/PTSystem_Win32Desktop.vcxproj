@@ -27,7 +27,6 @@
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
-    <ClInclude Include="..\..\Public\System\PTSThreadPool.h" />
     <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
   </ItemGroup>
   <ItemGroup>
