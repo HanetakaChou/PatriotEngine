@@ -35,20 +35,18 @@ struct IPTSTask
 
 struct IPTSTaskScheduler
 {
-	virtual void Worker_Wake() = 0;
-	virtual void Worker_Sleep() = 0;
-
 	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
 
 	virtual void Task_Spawn(IPTSTask *pTask) = 0;
 	virtual void Task_Spawn_Root_And_Wait(IPTSTask *pTask) = 0;
+
+	virtual void Worker_Wake() = 0;
+	virtual void Worker_Sleep() = 0;
 };
 
 extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Uninitialize();
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Local_Initialize(float fThreadNumberRatio = 1.0f);
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Local_Uninitialize();
-extern "C" PTSYSTEMAPI IPTSTaskScheduler * PTCALL PTSTaskScheduler_Local();
+extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
+extern "C" PTSYSTEMAPI IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread();
 extern "C" PTSYSTEMAPI IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask);
 
 //Helper Function
@@ -58,7 +56,7 @@ inline void * IPTSTaskPrefix::Allocate_Root(TaskImpl *, size_t Size, size_t Alig
 {
 	if (pTaskScheduler == NULL)
 	{
-		pTaskScheduler = ::PTSTaskScheduler_Local();
+		pTaskScheduler = ::PTSTaskScheduler_ForThread();
 	}
 
 	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(Size, Alignment);
@@ -73,7 +71,7 @@ inline void * IPTSTaskPrefix::Allocate_Child(TaskImpl *, size_t Size, size_t Ali
 {
 	if (pTaskScheduler == NULL)
 	{
-		pTaskScheduler = ::PTSTaskScheduler_Local();
+		pTaskScheduler = ::PTSTaskScheduler_ForThread();
 	}
 
 	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(Size, Alignment);
@@ -91,7 +89,7 @@ inline void * IPTSTaskPrefix::Allocate_Continuation(TaskImpl *, size_t Size, siz
 {
 	if (pTaskScheduler == NULL)
 	{
-		pTaskScheduler = ::PTSTaskScheduler_Local();
+		pTaskScheduler = ::PTSTaskScheduler_ForThread();
 	}
 
 	IPTSTaskPrefix *pTaskParentPrefix = this->Parent();

@@ -195,54 +195,6 @@ inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 	return pArenaAttached;
 }
 
-#ifdef PTWIN32
-inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
-#elif defined(PTPOSIX)
-inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
-#else
-#error 未知的平台
-#endif
-{
-	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl)))PTSTaskSchedulerWorkerImpl{};
-	assert(pTaskScheduler != NULL);
-
-	PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
-	assert(tbResult != PTFALSE);
-
-	PTSMarket *pMarket = static_cast<PTSMarket *>(pMarketVoid);
-
-	while (true)
-	{
-		tbResult = ::PTSSemaphore_Passern(&pMarket->m_Semaphore);
-		assert(tbResult != PTFALSE);
-		tbResult = ::PTSSemaphore_Vrijgeven(&pMarket->m_Semaphore);
-		assert(tbResult != PTFALSE);
-
-		PTSArena *pArena;
-		uint32_t Slot_Index;
-
-		pArena = pMarket->Arena_Attach_Worker(&Slot_Index);
-
-		if (pArena != NULL)
-		{
-			pTaskScheduler->m_pArena = pArena;
-			pTaskScheduler->m_Slot_Index = Slot_Index;
-
-			::PTS_Internal_Worker_Execute_Main(pArena, Slot_Index);
-
-			pArena->Slot_Release(Slot_Index);
-		}
-	}
-
-#ifdef PTWIN32
-	return 0U;
-#elif defined(PTPOSIX)
-	return NULL;
-#else
-#error 未知的平台
-#endif
-}
-
 inline void PTSMarket::Worker_Wake(uint32_t ThreadNumber)
 {
 	PTBOOL tbResult;
@@ -682,18 +634,33 @@ inline PTSTaskPrefixImpl *PTSTaskPrefixImpl::Execute()
 //------------------------------------------------------------------------------------------------------------
 //PTSTaskSchedulerMasterImpl
 //------------------------------------------------------------------------------------------------------------
-inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index) :m_pArena(pArena), m_Slot_Index(Slot_Index)
+inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena)
+	:
+	m_pArena(pArena),
+	m_HasWaked(0U)
 {
 
 }
 
+inline PTSTaskSchedulerMasterImpl::~PTSTaskSchedulerMasterImpl()
+{
+	assert(m_pArena != NULL);
+	assert(m_HasWaked == 0U);
+	//MasterThread的SlotIndex一定为0
+	m_pArena->Slot_Release(0U);
+}
+
 void PTSTaskSchedulerMasterImpl::Worker_Wake()
 {
+	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
+	assert((m_HasWaked == 0U) ? (m_HasWaked = 1U, 1) : 0);
 	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->Capacity());
 }
 
 void PTSTaskSchedulerMasterImpl::Worker_Sleep()
 {
+	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
+	assert((m_HasWaked == 1U) ? (m_HasWaked = 0U, 1) : 0);
 	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->Capacity());
 }
 
@@ -704,7 +671,7 @@ IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t Alig
 
 void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 {
-	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTask));
+	::PTS_Internal_Task_Spawn(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTask));
 }
 
 void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
@@ -744,7 +711,7 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
 
 	assert(pTaskRootPrefix->m_pFn_Execute != NULL);
-	::PTS_Internal_Master_Execute_Main(m_pArena, m_Slot_Index, pTaskRootPrefix, &HasBeenFinished);
+	::PTS_Internal_Master_Execute_Main(m_pArena, 0U, pTaskRootPrefix, &HasBeenFinished);
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -753,16 +720,6 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl()
 {
 
-}
-
-void PTSTaskSchedulerWorkerImpl::Worker_Wake()
-{
-	assert(0);
-}
-
-void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
-{
-	assert(0);
 }
 
 IPTSTask *PTSTaskSchedulerWorkerImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
@@ -776,6 +733,16 @@ void PTSTaskSchedulerWorkerImpl::Task_Spawn(IPTSTask *pTask)
 }
 
 void PTSTaskSchedulerWorkerImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTask)
+{
+	assert(0);
+}
+
+void PTSTaskSchedulerWorkerImpl::Worker_Wake()
+{
+	assert(0);
+}
+
+void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
 {
 	assert(0);
 }
@@ -1219,6 +1186,59 @@ static inline void PTS_Internal_Worker_Execute_Main(PTSArena *pArena, uint32_t S
 	}
 }
 
+#ifdef PTWIN32
+inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
+#elif defined(PTPOSIX)
+inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
+#else
+#error 未知的平台
+#endif
+{
+	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new(
+		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl))
+		)PTSTaskSchedulerWorkerImpl{};
+	assert(pTaskScheduler != NULL);
+
+	PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
+	assert(tbResult != PTFALSE);
+
+	PTSMarket *pMarket = static_cast<PTSMarket *>(pMarketVoid);
+
+	while (true)
+	{
+		tbResult = ::PTSSemaphore_Passern(&pMarket->m_Semaphore);
+		assert(tbResult != PTFALSE);
+		tbResult = ::PTSSemaphore_Vrijgeven(&pMarket->m_Semaphore);
+		assert(tbResult != PTFALSE);
+
+		PTSArena *pArena;
+		uint32_t Slot_Index;
+
+		pArena = pMarket->Arena_Attach_Worker(&Slot_Index);
+
+		if (pArena != NULL)
+		{
+			pTaskScheduler->m_pArena = pArena;
+			pTaskScheduler->m_Slot_Index = Slot_Index;
+
+			::PTS_Internal_Worker_Execute_Main(pArena, Slot_Index);
+
+			pArena->Slot_Release(Slot_Index);
+		}
+	}
+
+	::PTSMemoryAllocator_Free_Aligned(pTaskScheduler);
+	::PTSTSD_SetValue(s_TaskScheduler_Index, NULL);
+
+#ifdef PTWIN32
+	return 0U;
+#elif defined(PTPOSIX)
+	return NULL;
+#else
+#error 未知的平台
+#endif
+}
+
 //------------------------------------------------------------------------------------------------------------
 //PTSYSTEMAPI
 //------------------------------------------------------------------------------------------------------------
@@ -1228,7 +1248,17 @@ PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 	if (::PTSAtomic_GetAndAdd(&s_TaskScheduler_Initialize_RefCount, 1) == 0)
 	{
 		PTBOOL tbResult;
-		tbResult = ::PTSTSD_Create(&s_TaskScheduler_Index, NULL);
+		tbResult = ::PTSTSD_Create(
+			&s_TaskScheduler_Index,
+			[](void *pVoid)->void {
+			//Destructtor
+			//WorkThread在退出前已将TSD设置为NULL
+			//一定是MasterThread
+			PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(pVoid);
+			pTaskScheduler->~PTSTaskSchedulerMasterImpl();
+			::PTSMemoryAllocator_Free_Aligned(pVoid);
+		}
+		);
 		assert(tbResult != PTFALSE);
 		
 		if (ThreadNumber == 0U)
@@ -1246,55 +1276,27 @@ PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 	}
 }
 
-PTBOOL PTCALL PTSTaskScheduler_Uninitialize()
-{
-	if (::PTSAtomic_GetAndAdd(&s_TaskScheduler_Initialize_RefCount, -1) == 1)
-	{
-		return PTTRUE;
-	}
-	else
-	{
-		return PTTRUE;
-	}
-}
-
-PTBOOL PTCALL PTSTaskScheduler_Local_Initialize(float fThreadNumberRatio)
+PTBOOL PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio)
 {
 	assert(::PTSAtomic_Get(&s_TaskScheduler_Initialize_RefCount) > 0);
+	assert(::PTSTSD_GetValue(s_TaskScheduler_Index) == NULL);
 
-	PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(::PTSTSD_GetValue(s_TaskScheduler_Index));
+	PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate_Master(fThreadNumberRatio);
+	assert(pArena != NULL);
 
-	if (pTaskScheduler == NULL)
-	{
-		PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate_Master(fThreadNumberRatio);
-		assert(pArena != NULL);
+	PTSTaskSchedulerMasterImpl *pTaskScheduler = new(
+		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl))
+		)PTSTaskSchedulerMasterImpl(pArena); //MasterThread的SlotIndex一定为0
+	assert(pTaskScheduler != NULL);
 
-		pTaskScheduler = new(
-			::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl))
-			)PTSTaskSchedulerMasterImpl(pArena, 0U); //MasterThread的SlotIndex一定为0
-		assert(pTaskScheduler != NULL);
+	PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
+	assert(tbResult != PTFALSE);
 
-		PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
-		assert(tbResult != PTFALSE);
-
-		return tbResult;
-	}
-	else
-	{
-		return PTTRUE;
-	}
+	return tbResult;
 }
 
-PTBOOL PTCALL PTSTaskScheduler_Local_Uninitialize()
+IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread()
 {
-	assert(::PTSAtomic_Get(&s_TaskScheduler_Initialize_RefCount) > 0);
-	return PTTRUE;
-}
-
-IPTSTaskScheduler * PTCALL PTSTaskScheduler_Local()
-{
-	assert(::PTSAtomic_Get(&s_TaskScheduler_Initialize_RefCount) > 0);
-
 	PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(::PTSTSD_GetValue(s_TaskScheduler_Index));
 	assert(pTaskScheduler != NULL);
 

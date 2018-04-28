@@ -226,7 +226,14 @@ static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
-	uint32_t m_Slot_Index;
+	//MasterThread的SlotIndex一定为0
+
+	uint32_t m_HasWaked;
+
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
+
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
 	//TBB不允许应用程序显示控制并行
 	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
@@ -234,13 +241,9 @@ class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
-
 public:
-	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index);
+	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
+	inline ~PTSTaskSchedulerMasterImpl();
 };
 
 //TaskScheduler
@@ -251,13 +254,13 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	PTSArena *m_pArena;
 	uint32_t m_Slot_Index;
 
-	void Worker_Wake() override;
-	void Worker_Sleep() override;
-
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 
 	void Task_Spawn(IPTSTask *pTask) override;
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
+
+	void Worker_Wake() override;
+	void Worker_Sleep() override;
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);

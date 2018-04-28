@@ -838,7 +838,7 @@ inline PTS_ObjectMetadata *PTS_BlockMetadata::_FreeListPrivatePop(PTS_BlockMetad
 inline void PTS_BlockMetadata::_FreeListPublicPush(PTS_BlockMetadata *pThis, PTS_ObjectMetadata *pObjectToPush)
 {
 	//Foreign Thread
-	assert((pThis->m_pTLS != NULL) || (::PTSThreadID_Equal(pThis->m_TID_Owning, ::PTSThreadID_Self()) == PTFALSE));
+	assert((pThis->m_pTLS == NULL) || (::PTSThreadID_Equal(pThis->m_TID_Owning, ::PTSThreadID_Self()) == PTFALSE));
 
 	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush
 	//---------------------------------------------------------
