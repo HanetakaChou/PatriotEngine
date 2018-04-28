@@ -35,6 +35,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSFile.h" />
@@ -44,9 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl" />
+    <None Include="..\..\Private\System\Posix\PTSTaskSchedulerImpl.inl" />
     <None Include="..\..\Public\System\Posix\PTSThread.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -173,7 +176,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -188,7 +191,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -203,7 +206,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -218,7 +221,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -233,7 +236,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -248,7 +251,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -263,7 +266,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -278,7 +281,7 @@
     <Link>
       <IgnoreSpecificDefaultLibraries>
       </IgnoreSpecificDefaultLibraries>
-      <LibraryDependencies>$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

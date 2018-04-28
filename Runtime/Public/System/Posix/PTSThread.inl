@@ -1,12 +1,17 @@
 ﻿#include <assert.h>
 #include <errno.h>
 
-PTBOOL PTCALL PTThreadCreate(PTThreadEntry *pThreadEntry, void *pThreadParam, PTThread *pThreadOut)
+PTBOOL PTCALL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
 {
 	return (::pthread_create(pThreadOut, NULL, pThreadEntry, pThreadParam) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTThreadWait(PTThread *pThread)
+inline PTBOOL PTSThread_Detach(PTSThread *pThread)
+{
+	return (::pthread_detach(*pThread) == 0) ? PTTRUE : PTFALSE;
+}
+
+PTBOOL PTCALL PTSThread_Join(PTSThread *pThread)
 {
 	return (::pthread_join(*pThread, NULL) == 0) ? PTTRUE : PTFALSE;
 }
@@ -26,22 +31,22 @@ PTBOOL PTCALL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (::pthread_equal(TID1, TID2) != 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTSemaphoreCreate(uint32_t iInitialValue, PTSemaphore *pSemaphoreOut)
+PTBOOL PTCALL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTSemaphorePassern(PTSemaphore *pSemaphore)
+PTBOOL PTCALL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
 {
 	return (::sem_wait(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTSemaphoreVrijgeven(PTSemaphore *pSemaphore)
+PTBOOL PTCALL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
 {
 	return (::sem_post(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTCALL PTSemaphoreDestory(PTSemaphore *pSemaphore)
+PTBOOL PTCALL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
 {
 	return (::sem_destroy(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
@@ -69,202 +74,7 @@ PTBOOL PTCALL PTSTSD_Delete(PTSTSD_KEY TSD_Key)
 	return (iResult == 0) ? PTTRUE : PTFALSE;
 }
 
-#ifdef PTSYSTEM_SOCKET
-
-PTBOOL PTCALL PTSocketCreateTCP(PTSocket *pSocketOut)
-{
-	int hSocket = ::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	assert(hSocket != -1);
-
-	(*pSocketOut) = hSocket;
-
-	return(hSocket != -1) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketCreateUDP(PTSocket *pSocketOut)
-{
-	int hSocket = ::socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	assert(hSocket != -1);
-
-	(*pSocketOut) = hSocket;
-
-	return(hSocket != -1) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketControlNonBlock(PTSocket *pSocket, PTBOOL bNonBlock)
-{
-	int hSocket = *pSocket;
-
-	//Overlapped I/O 不同于 NonBlock I/O
-
-	int FileFlags = ::fcntl(hSocket, F_GETFL);
-	assert(FileFlags != -1);
-	if (FileFlags == -1)
-	{
-		return PTFALSE;
-	}
-
-	if (bNonBlock)
-	{
-		FileFlags |= O_NONBLOCK;
-	}
-	else
-	{
-		FileFlags &= ~O_NONBLOCK;
-	}
-
-	int iResult = fcntl(hSocket, F_SETFL, FileFlags);
-	assert(iResult != -1);
-
-	return(iResult != -1) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketBindIPV4(PTSocket *pSocket, uint8_t AddressIPV4[4], uint16_t Port)
-{
-	int hSocket = *pSocket;
-
-	sockaddr_in AddressSocket;
-	AddressSocket.sin_family = AF_INET;
-	uint8_t *pUByte = reinterpret_cast<uint8_t *>(&AddressSocket.sin_addr);
-	pUByte[0] = AddressIPV4[0];
-	pUByte[1] = AddressIPV4[1];
-	pUByte[2] = AddressIPV4[2];
-	pUByte[3] = AddressIPV4[3];
-	AddressSocket.sin_port = ::htons(Port);
-	if (::bind(hSocket, reinterpret_cast<sockaddr *>(&AddressSocket), sizeof(sockaddr)) != 0)
-	{
-		assert(errno == EADDRINUSE);
-		return PTFALSE;
-	}
-	else
-	{
-		return PTTRUE;
-	}
-}
-
-PTBOOL PTCALL PTSocketDestory(PTSocket *pSocket)
-{
-	int hSocket = *pSocket;
-
-	int iResult = ::close(hSocket);
-	assert(iResult == 0);
-	//在不设置SO_LINGER的情况下不会阻塞
-
-	return(iResult == 0) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketTCPListen(PTSocket *pSocket)
-{
-	int hSocket = *pSocket;
-
-	int iResult = ::listen(hSocket, SOMAXCONN);
-	assert(iResult == 0);
-
-	return(iResult == 0) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketTCPAccept(PTSocket *pSocketListen, PTSocket *pSocketAcceptOut)
-{
-	int hSocketListen = *pSocketListen;
-
-	int hSocketAcceptOut = ::accept(hSocketListen, NULL, NULL);
-
-	(*pSocketAcceptOut) = hSocketAcceptOut;
-
-	if (hSocketAcceptOut == -1)
-	{
-		assert(errno == EAGAIN || errno == EWOULDBLOCK);
-		return PTFALSE;
-	}
-	else
-	{
-		return PTTRUE;
-	}
-}
-
-PTBOOL PTCALL PTSocketTCPConnectIPV4(PTSocket *pSocket, uint8_t AddressIPV4[4], uint16_t Port)
-{
-	int hSocket = *pSocket;
-
-	sockaddr_in AddressSocket;
-	AddressSocket.sin_family = AF_INET;
-	uint8_t *pUByte = reinterpret_cast<uint8_t *>(&AddressSocket.sin_addr);
-	pUByte[0] = AddressIPV4[0];
-	pUByte[1] = AddressIPV4[1];
-	pUByte[2] = AddressIPV4[2];
-	pUByte[3] = AddressIPV4[3];
-	AddressSocket.sin_port = ::htons(Port);
-	if (::connect(hSocket, reinterpret_cast<sockaddr *>(&AddressSocket), sizeof(sockaddr)) != 0)
-	{
-		if (errno == EISCONN)
-		{
-			return PTTRUE;
-		}
-		else
-		{
-			assert(errno == EAGAIN || errno == EWOULDBLOCK || errno == EALREADY);
-			return PTFALSE;
-		}
-	}
-	else
-	{
-		return PTTRUE;
-	}
-}
-
-PTBOOL PTCALL PTSocketTCPShutdown(PTSocket *pSocket)
-{
-	int hSocket = *pSocket;
-
-	int iResult = ::shutdown(hSocket, SHUT_WR);
-	assert(iResult == 0);
-
-	return(iResult == 0) ? PTTRUE : PTFALSE;
-}
-
-PTBOOL PTCALL PTSocketRead(PTSocket *pSocket, void *pBuffer, uint32_t NumberOfBytesToRead, uint32_t *pNumberOfBytesRead)
-{
-	int hSocket = *pSocket;
-
-	ssize_t NumberOfBytesRecvd = ::recv(hSocket, pBuffer, NumberOfBytesToRead, 0);
-
-	if (NumberOfBytesRecvd == -1)
-	{
-		assert(errno == EAGAIN || errno == EWOULDBLOCK);
-		return PTFALSE;
-	}
-	else
-	{
-		//NumberOfBytesRecvd为0表示对端已经关闭写入（即Shutdown或Close）
-		*pNumberOfBytesRead = static_cast<uint32_t>(NumberOfBytesRecvd);
-		return PTTRUE;
-	}
-}
-
-PTBOOL PTCALL PTSocketWrite(PTSocket *pSocket, void *pBuffer, uint32_t NumberOfBytesToWrite, uint32_t *pNumberOfBytesWritten)
-{
-	int hSocket = *pSocket;
-
-	ssize_t NumberOfBytesSent = ::send(hSocket, pBuffer, NumberOfBytesToWrite, 0);
-	
-	if (NumberOfBytesSent == -1)
-	{
-		//即使是非阻塞I/O也不应当出现WSAEWOULDBLOCK
-		//屏蔽信号
-		//Posix下返回EPIPE且产生SIGPIPE信号
-		assert(errno == ECONNABORTED || errno == ECONNRESET);
-		return PTFALSE;
-	}
-	else
-	{
-		*pNumberOfBytesWritten = static_cast<uint32_t>(NumberOfBytesSent);
-		return PTTRUE;
-	}
-}
-
-#endif
-
-inline int64_t PTTickCount()
+inline int64_t PTSTick_Count()
 {
 	timeval tv;
 	int rtval = ::gettimeofday(&tv, NULL);
@@ -272,7 +82,7 @@ inline int64_t PTTickCount()
 	return 1000000LL * static_cast<int64_t>(tv.tv_sec) + static_cast<int64_t>(tv.tv_usec);
 }
 
-inline int64_t PTTickFrequency()
+inline int64_t PTSTick_Frequency()
 {
 	return 1000000LL;
 }
@@ -292,91 +102,88 @@ inline void PTCALL PTS_Pause()
 #error 未知的架构
 #endif
 
-inline int32_t PTCALL PTSAtomic_CompareAndSetI32(int32_t volatile *pTarget, int32_t expect, int32_t update)
+inline int32_t PTCALL PTSAtomic_CompareAndSet(int32_t volatile *pTarget, int32_t expect, int32_t update)
 {
 	return ::__sync_val_compare_and_swap(pTarget, expect, update);
 }
-inline int64_t PTCALL PTSAtomic_CompareAndSetI64(int64_t volatile *pTarget, int64_t expect, int64_t update)
+inline int64_t PTCALL PTSAtomic_CompareAndSet(int64_t volatile *pTarget, int64_t expect, int64_t update)
 {
 	return ::__sync_val_compare_and_swap(pTarget, expect, update);
 }
-inline uint32_t PTCALL PTSAtomic_CompareAndSetUI32(uint32_t volatile *pTarget, uint32_t expect, uint32_t update)
+inline uint32_t PTCALL PTSAtomic_CompareAndSet(uint32_t volatile *pTarget, uint32_t expect, uint32_t update)
 {
 	return ::__sync_val_compare_and_swap(pTarget, expect, update);
 }
-inline uint64_t PTCALL PTSAtomic_CompareAndSetUI64(uint64_t volatile *pTarget, uint64_t expect, uint64_t update)
+inline uint64_t PTCALL PTSAtomic_CompareAndSet(uint64_t volatile *pTarget, uint64_t expect, uint64_t update)
 {
 	return ::__sync_val_compare_and_swap(pTarget, expect, update);
 }
 
-inline int32_t PTCALL PTSAtomic_GetAndSetI32(int32_t volatile *pTarget, int32_t newValue)
+inline int32_t PTCALL PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue)
 {
 	return ::__sync_lock_test_and_set(pTarget, newValue);
 }
-inline int64_t PTCALL PTSAtomic_GetAndSetI64(int64_t volatile *pTarget, int64_t newValue)
+inline int64_t PTCALL PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue)
 {
 	return ::__sync_lock_test_and_set(pTarget, newValue);
 
 }
-inline uint32_t PTCALL PTSAtomic_GetAndSetUI32(uint32_t volatile *pTarget, uint32_t newValue)
+inline uint32_t PTCALL PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue)
 {
 	return ::__sync_lock_test_and_set(pTarget, newValue);
 }
-inline uint64_t PTCALL PTSAtomic_GetAndSetUI64(uint64_t volatile *pTarget, uint64_t newValue)
+inline uint64_t PTCALL PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue)
 {
 	return ::__sync_lock_test_and_set(pTarget, newValue);
 }
 
-
-inline int32_t PTCALL PTSAtomic_GetAndAddI32(int32_t volatile *pTarget, int32_t delta)
+inline int32_t PTCALL PTSAtomic_GetAndAdd(int32_t volatile *pTarget, int32_t delta)
 {
 	return ::__sync_fetch_and_add(pTarget, delta);
 }
-inline int64_t PTCALL PTSAtomic_GetAndAddI64(int64_t volatile *pTarget, int64_t delta)
+inline int64_t PTCALL PTSAtomic_GetAndAdd(int64_t volatile *pTarget, int64_t delta)
 {
 	return ::__sync_fetch_and_add(pTarget, delta);
 }
-inline uint32_t PTCALL PTSAtomic_GetAndAddUI32(uint32_t volatile *pTarget, uint32_t delta)
+inline uint32_t PTCALL PTSAtomic_GetAndAdd(uint32_t volatile *pTarget, uint32_t delta)
 {
 	return ::__sync_fetch_and_add(pTarget, delta);
 }
-inline uint64_t PTCALL PTSAtomic_GetAndAddUI64(uint64_t volatile *pTarget, uint64_t delta)
+inline uint64_t PTCALL PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta)
 {
 	return ::__sync_fetch_and_add(pTarget, delta);
 }
 
+inline int32_t PTCALL PTSAtomic_Get(int32_t volatile *pTarget)
+{
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+}
+inline int64_t PTCALL PTSAtomic_Get(int64_t volatile *pTarget)
+{
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+}
+inline uint32_t PTCALL PTSAtomic_Get(uint32_t volatile *pTarget)
+{
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+}
+inline uint64_t PTCALL PTSAtomic_Get(uint64_t volatile *pTarget)
+{
+	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+}
 
-inline int32_t PTCALL PTSAtomic_GetI32(int32_t volatile *pTarget)
-{
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
-}
-inline int64_t PTCALL PTSAtomic_GetI64(int64_t volatile *pTarget)
-{
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
-}
-inline uint32_t PTCALL PTSAtomic_GetUI32(uint32_t volatile *pTarget)
-{
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
-}
-inline uint64_t PTCALL PTSAtomic_GetUI64(uint64_t volatile *pTarget)
-{
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
-}
-
-
-inline void PTCALL PTSAtomic_SetI32(int32_t volatile *pTarget, int32_t newValue)
+inline void PTCALL PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue)
 {
 	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-inline void PTCALL PTSAtomic_SetI64(int64_t volatile *pTarget, int64_t newValue)
+inline void PTCALL PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue)
 {
 	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-inline void PTCALL PTSAtomic_SetUI32(uint32_t volatile *pTarget, uint32_t newValue)
+inline void PTCALL PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue)
 {
 	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
-inline void PTCALL PTSAtomic_SetUI64(uint64_t volatile *pTarget, uint64_t newValue)
+inline void PTCALL PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue)
 {
 	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
 }
