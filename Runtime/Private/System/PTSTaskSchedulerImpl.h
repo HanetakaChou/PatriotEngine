@@ -128,7 +128,6 @@ class PTSArena
 	//¶ÔÆëµ½CacheLine
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
 
-	friend PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index);
 	friend void PTSTaskSchedulerMasterImpl::Worker_Wake();
 	friend void PTSTaskSchedulerMasterImpl::Worker_Sleep();
 
@@ -143,6 +142,8 @@ public:
 	inline void Slot_Release(uint32_t Slot_Index);
 
 	inline uint32_t SlotIndexMaximum_Load_Acquire();
+
+	inline uint32_t Size_Load_Acquire();
 
 	inline PTSArenaSlot *Slot(uint32_t Index);
 

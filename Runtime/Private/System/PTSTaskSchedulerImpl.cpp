@@ -178,9 +178,9 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 		{
 			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
 
-			if (pArena != NULL) //初始化为NULL
+			if (pArena != NULL)  //数组中指针初始化为NULL
 			{
-				if (::PTSAtomic_Get(&pArena->m_SlotArraySize) < pArena->m_SlotArrayCapacity)
+				if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotArraySize的操作并不是原子的 可能会导致无法充分调度
 				{
 					if (pArena->Slot_Acquire(pSlot_Index) != NULL)
 					{
@@ -200,9 +200,9 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 		{
 			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
 
-			if (pArena != NULL) //初始化为NULL
+			if (pArena != NULL)  //数组中指针初始化为NULL
 			{
-				if (::PTSAtomic_Get(&pArena->m_SlotArraySize) < pArena->m_SlotArrayCapacity)
+				if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotArraySize的操作并不是原子的 可能会导致无法充分调度
 				{
 					if (pArena->Slot_Acquire(pSlot_Index) != NULL)
 					{
@@ -385,6 +385,11 @@ inline void PTSArena::Slot_Release(uint32_t Slot_Index)
 inline uint32_t PTSArena::SlotIndexMaximum_Load_Acquire()
 {
 	return ::PTSAtomic_Get(&m_SlotIndexMaximum);
+}
+
+inline uint32_t PTSArena::Size_Load_Acquire()
+{
+	return ::PTSAtomic_Get(&m_SlotArraySize);
 }
 
 inline PTSArenaSlot *PTSArena::Slot(uint32_t Index)
