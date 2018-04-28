@@ -153,12 +153,12 @@ class PTSArenaSlot
 	//ºı«·Œ±π≤œÌ
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(int64_t)];
 
-	PTSTaskPrefixImpl **m_TaskDequeMemoryS[4]; //64(1)+64(1)+128(2)
+	PTSTaskPrefixImpl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
 
 	uint32_t m_TaskDequeCapacity;
 
 	//∂‘∆ÎµΩCacheLine
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*) * 4U];
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size*3U - sizeof(uint32_t) - sizeof(void*) * 16U];
 
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend bool PTSArena::Slot_Acquire_Master();
@@ -175,7 +175,7 @@ public:
 
 	static inline bool constexpr StaticAssert()
 	{
-		return (offsetof(PTSArenaSlot, m_TaskDequeMemoryS[0]) == s_CacheLine_Size) && (sizeof(PTSArenaSlot) == s_CacheLine_Size * 2U);
+		return (offsetof(PTSArenaSlot, m_TaskDequeMemoryS[0]) == s_CacheLine_Size) && (sizeof(PTSArenaSlot) == s_CacheLine_Size * 4U);
 	}
 };
 static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct");

@@ -401,8 +401,8 @@ inline void PTSArenaSlot::TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush)
 	//Allocate
 	if ((HeadAndTailOld.m_OneWord.m_Tail - HeadAndTailOld.m_OneWord.m_Head) + 1 >= m_TaskDequeCapacity)
 	{
-		//64(1) + 64(1) + 128(2)
-		//0       1       2 3   
+		//64(1) + 64(1) + 128(2) + 256(4) + 512(8)
+		//0       1       2 3      4 5 6 7  8 9 10 11 12 13 14 15
 		switch (m_TaskDequeCapacity)
 		{
 		case 0U:
@@ -442,13 +442,50 @@ inline void PTSArenaSlot::TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush)
 			::PTSAtomic_Set(&m_TaskDequeCapacity, 256U);
 		}
 		break;
+		case 256U:
+		{
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[4]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[5]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[6]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[7]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			for (uint32_t i = HeadAndTailOld.m_OneWord.m_Head; i < HeadAndTailOld.m_OneWord.m_Tail; ++i)
+			{
+				uint32_t indexOld = i % 256U;
+				uint32_t indexNew = i % 512U;
+				if (indexNew >= 256U)
+				{
+					::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[indexOld / 64][indexOld % 64]), reinterpret_cast<uintptr_t>(m_TaskDequeMemoryS[indexNew / 64][indexNew % 64]));
+				}
+			}
+			::PTSAtomic_Set(&m_TaskDequeCapacity, 512U);
+		}
+		break;
+		case 512U:
+		{
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[8]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[9]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[10]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[11]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[12]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[13]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[14]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[15]), reinterpret_cast<uintptr_t>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskPrefixImpl *) * 64U, s_CacheLine_Size)));
+			for (uint32_t i = HeadAndTailOld.m_OneWord.m_Head; i < HeadAndTailOld.m_OneWord.m_Tail; ++i)
+			{
+				uint32_t indexOld = i % 512U;
+				uint32_t indexNew = i % 1024U;
+				if (indexNew >= 512U)
+				{
+					::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(&m_TaskDequeMemoryS[indexOld / 64][indexOld % 64]), reinterpret_cast<uintptr_t>(m_TaskDequeMemoryS[indexNew / 64][indexNew % 64]));
+				}
+			}
+			::PTSAtomic_Set(&m_TaskDequeCapacity, 1024U);
+		}
+		break;
 		default:
 			assert(0);
 		}
 	}
-
-	//__TBB_ASSERT(t->state() == task::allocated, "attempt to spawn task that is not in 'allocated' state");
-	//t->prefix().state = task::ready;
 
 	//Capacity只可能被Owner线程写入
 	uint32_t Index = HeadAndTailOld.m_OneWord.m_Tail % m_TaskDequeCapacity;
