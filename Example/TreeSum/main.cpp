@@ -36,7 +36,6 @@ public:
 	static IPTSTask * Execute(IPTSTask *pVoid);
 };
 
-
 class Task_TreeCreation : public IPTSTask
 {
 	TreeNode **m_ppRootOfSubTree;
@@ -49,7 +48,6 @@ public:
 
 	static IPTSTask * Execute(IPTSTask *pVoid);
 };
-
 
 TreeNode *TreeCreation_Serial(int32_t NodeCount);
 
@@ -153,7 +151,6 @@ IPTSTask * Task_TreeCreation::Execute(IPTSTask *pVoid)
 		return NULL;
 	}
 }
-
 
 TreeNode *TreeCreation_Serial(int32_t NodeCount)
 {
