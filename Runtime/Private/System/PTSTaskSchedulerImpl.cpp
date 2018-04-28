@@ -1,13 +1,8 @@
 ﻿#include "../../Public/System/PTSThread.h"
 #include "../../Public/System/PTSMemoryAllocator.h"
 #include "PTSTaskSchedulerImpl.h"
-
+#include <math.h>
 #include <new>
-
-//uint64_t mask;
-//int rtval = sched_getaffinity(0, sizeof(uint64_t), reinterpret_cast<cpu_set_t *>(&mask));
-//assert(rtval == 0);
-
 
 #if 0
 
@@ -217,7 +212,13 @@ inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
 	return pArenaAcquired;
 }
 
+#ifdef PTWIN32
 inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
+#elif defined(PTPOSIX)
+inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
+#else
+#error 未知的平台
+#endif
 {
 	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl)))PTSTaskSchedulerWorkerImpl{};
 	assert(pTaskScheduler != NULL);
@@ -250,7 +251,13 @@ inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 		}
 	}
 
+#ifdef PTWIN32
 	return 0U;
+#elif defined(PTPOSIX)
+	return NULL;
+#else
+#error 未知的平台
+#endif
 }
 
 inline void PTSMarket::Worker_Wake(uint32_t ThreadNumber)
@@ -1273,7 +1280,7 @@ IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask)
 #if defined PTWIN32
 #include "Win32/PTSTaskSchedulerImpl.inl"
 #elif defined PTPOSIX
-#include "Posix/PTSMemoryAllocator.inl"
+#include "Posix/PTSTaskSchedulerImpl.inl"
 #else
 #error 未知的平台
 #endif

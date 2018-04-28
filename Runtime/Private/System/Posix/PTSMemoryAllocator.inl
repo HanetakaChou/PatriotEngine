@@ -280,5 +280,5 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 {
-	return 31 - ::__builtin_clz(233);
+	return 31 - ::__builtin_clz(Value);
 }

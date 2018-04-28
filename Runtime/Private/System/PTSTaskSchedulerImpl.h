@@ -260,7 +260,13 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	void Task_Spawn(IPTSTask *pTask) override;
 	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
 
+#ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);
+#elif defined(PTPOSIX)
+	friend void * PTSMarket::Worker_Thread_Main(void *pMarketVoid);
+#else
+#error 未知的平台
+#endif
 
 public:
 	inline PTSTaskSchedulerWorkerImpl();
