@@ -23,7 +23,7 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 {
 	DWORD Index;
-	BOOL wbResult = ::_BitScanReverse(&Index, Value - 1U);
+	BOOL wbResult = ::_BitScanReverse(&Index, Value);
 	assert(wbResult != FALSE);
 	return Index;
 }

@@ -4,48 +4,29 @@
 #include <math.h>
 #include <new>
 
-#if 0
-
-int FD_stat = ::open("/proc/thread-self/stat", O_RDONLY);
-assert(FD_stat != -1);
-char Str_stat[4096U];
-assert(s_Page_Size == 4096U);
-ssize_t ssResult;
-ssResult = ::read(FD_stat, Str_stat, 4096U);
-assert(ssResult != -1);
-int iResult1 = ::close(FD_stat);
-assert(iResult1 == 0);
-
-long unsigned startstack;
-::sscanf(Str_stat, "%*d %*s %*c %*d %*d %*d %*d %*d %*u %*lu %*lu %*lu %*lu %*lu %*lu %*ld %*ld %*ld %*ld %*ld %*ld %*llu %*lu %*ld %*lu %*lu %*lu %lu", &startstack);
-
-#endif
-
-#if __TBB_WIN8UI_SUPPORT
-// In Win8UI mode, TBB uses a thread creation API that does not allow to specify the stack size.
-// Still, the thread stack size value, either explicit or default, is used by the scheduler.
-// So here we set the default value to match the platform's default of 1MB.
-const size_t ThreadStackSize = 1024 * 1024 * MByte;
-#else
-const size_t ThreadStackSize = 1024U * 1024U * (sizeof(uintptr_t) <= 4U ? 2U : 4U);
-#endif
-
+//-----------------------------------------------------------------------------------------------------------
+//Declaration
+//-----------------------------------------------------------------------------------------------------------
 static inline uint32_t PTS_Info_HardwareThreadNumber();
 
 static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
 static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
 static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment); 
+static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
+static inline uint32_t PTS_Size_BitPopCount(uint32_t Value);
 
 static inline IPTSTask *PTS_Internal_Task_Alloc(size_t SizeTask, size_t AlignmentTask);
 static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskToSpawnPrefix);
-static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
-static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index);
+static inline void PTS_Internal_Master_Execute_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
+static inline void PTS_Internal_Worker_Execute_Main(PTSArena *pArena, uint32_t Slot_Index);
 
 static PTSMarket *s_Market_Singleton_Pointer = NULL;
 static PTSTSD_KEY s_TaskScheduler_Index;
 
+//-----------------------------------------------------------------------------------------------------------
 //Linear Congruential Generator
+//-----------------------------------------------------------------------------------------------------------
 class PTS_Random_LCG
 {
 	static const uint32_t c = 12345U;
@@ -58,13 +39,15 @@ public:
 
 	}
 
-	uint32_t Generate()
+	inline uint32_t Generate()
 	{
 		x = a * x + c;
 		return (x << 1U) >> 17U;
 	}
 };
 
+//-----------------------------------------------------------------------------------------------------------
+//PTSMarket
 //------------------------------------------
 inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :
 	m_ArenaPointerArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena) * 64U, alignof(PTSArena)))PTSArena *[64]{}),
@@ -83,7 +66,7 @@ inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :
 	}
 }
 
-inline PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio)
+inline PTSArena *PTSMarket::Arena_Allocate_Master(float fThreadNumberRatio)
 {
 	uint32_t ArenaCapacity = static_cast<uint32_t>(::ceilf(static_cast<float>(m_ThreadNumber) * fThreadNumberRatio));
 
@@ -159,57 +142,57 @@ inline PTSArena *PTSMarket::Arena_Allocate(float fThreadNumberRatio)
 	return pArenaAllocated;
 }
 
-inline PTSArena *PTSMarket::Arena_Acquire(uint32_t *pSlot_Index)
+inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 {
-	PTSArena *pArenaAcquired = NULL;
+	PTSArena *pArenaAttached = NULL;
 
 	if (m_ArenaPointerArraySize != 0U)
 	{
-		PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pArenaAcquired)));
+		PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pArenaAttached)));
 
 		uint32_t IndexRandom = RandomTemp.Generate() % m_ArenaPointerArraySize;
 
-		for (uint32_t i = IndexRandom; i < m_ArenaPointerArraySize; ++i)
 		{
-			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
-
-			if (pArena != NULL)  //数组中指针初始化为NULL
+			for (uint32_t i = IndexRandom; i < m_ArenaPointerArraySize; ++i)
 			{
-				if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotArraySize的操作并不是原子的 可能会导致无法充分调度
+				PTSArena *pArena = m_ArenaPointerArrayMemory[i];
+
+				if (pArena != NULL)  //数组中指针初始化为NULL
 				{
-					if (pArena->Slot_Acquire(pSlot_Index) != NULL)
+					if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotIndexMask的操作并不是原子的 可能会导致无法充分调度
 					{
-						pArenaAcquired = pArena;
-						break;
+						if (pArena->Slot_Acquire_Worker(pSlot_Index))
+						{
+							pArenaAttached = pArena;
+							break;
+						}
 					}
 				}
 			}
-		}
+		}	
 
-		if (pArenaAcquired != NULL)
+		if (pArenaAttached == NULL)
 		{
-			return pArenaAcquired;
-		}
-
-		for (uint32_t i = 0U; i < IndexRandom; ++i)
-		{
-			PTSArena *pArena = m_ArenaPointerArrayMemory[i];
-
-			if (pArena != NULL)  //数组中指针初始化为NULL
+			for (uint32_t i = 0U; i < IndexRandom; ++i)
 			{
-				if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotArraySize的操作并不是原子的 可能会导致无法充分调度
+				PTSArena *pArena = m_ArenaPointerArrayMemory[i];
+
+				if (pArena != NULL)  //数组中指针初始化为NULL
 				{
-					if (pArena->Slot_Acquire(pSlot_Index) != NULL)
+					if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotIndexMask的操作并不是原子的 可能会导致无法充分调度
 					{
-						pArenaAcquired = pArena;
-						break;
+						if (pArena->Slot_Acquire_Worker(pSlot_Index))
+						{
+							pArenaAttached = pArena;
+							break;
+						}
 					}
 				}
 			}
 		}
 	}
 
-	return pArenaAcquired;
+	return pArenaAttached;
 }
 
 #ifdef PTWIN32
@@ -238,14 +221,14 @@ inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 		PTSArena *pArena;
 		uint32_t Slot_Index;
 
-		pArena = pMarket->Arena_Acquire(&Slot_Index);
+		pArena = pMarket->Arena_Attach_Worker(&Slot_Index);
 
 		if (pArena != NULL)
 		{
 			pTaskScheduler->m_pArena = pArena;
 			pTaskScheduler->m_Slot_Index = Slot_Index;
 
-			::PTS_Internal_Worker_Main(pArena, Slot_Index);
+			::PTS_Internal_Worker_Execute_Main(pArena, Slot_Index);
 
 			pArena->Slot_Release(Slot_Index);
 		}
@@ -284,89 +267,104 @@ inline void PTSMarket::Worker_Sleep(uint32_t ThreadNumber)
 }
 
 //-----------------------------------------------------------------------------------------------------------
+//PTSArena
+//-----------------------------------------------------------------------------------------------------------
 inline PTSArena::PTSArena(uint32_t Capacity) :
-	m_SlotIndexMaximum(0U),
-	m_SlotArraySize(0U),
+	m_SlotIndexAffinityMask(0U),
 	m_SlotArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArenaSlot)*Capacity, alignof(PTSArenaSlot)))PTSArenaSlot[Capacity]{}),
 	m_SlotArrayCapacity(Capacity)
 {
+	//由于SlotIndexMask的约束，SlotArrayCapacity不得大于32
+	assert(Capacity <= 32U);
 	//MasterThread调用本函数时，Arena尚未在到Market中被标记为可用，不存在与WorkerThread并发访问的可能性
 	//MasterThread的SlotIndex一定为0
-	assert(m_SlotArraySize == 0U);
-	++m_SlotArraySize;
 	assert(m_SlotArrayMemory[0].m_HasBeenAcquired == 0U);
 	m_SlotArrayMemory[0].m_HasBeenAcquired = 1U;
+	assert(m_SlotIndexAffinityMask == 0U);
+	m_SlotIndexAffinityMask |= (1U << 0U);
 }
 
 inline bool PTSArena::Slot_Acquire_Master()
 {
+	bool HasAcquired = false;
+
 	//MasterThread的SlotIndex一定为0
-	if (::PTSAtomic_CompareAndSet(&m_SlotArraySize, 0U, 1U) == 0U)
+	if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[0].m_HasBeenAcquired, 0U, 1U) == 0U)
 	{
-		assert(m_SlotArrayMemory[0].m_HasBeenAcquired == 0U);
-		m_SlotArrayMemory[0].m_HasBeenAcquired = 1U;
-		return true;
+		uint32_t SlotIndexMask = 1U << 0U;
+		uint32_t SlotIndexAffinityMaskOld;
+		do
+		{
+			SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
+			assert((SlotIndexAffinityMaskOld&SlotIndexMask) == 0U);
+		} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld | SlotIndexMask)) != SlotIndexAffinityMaskOld);
+
+		HasAcquired = true;
 	}
-	else
-	{
-		return false;
-	}
+	
+	return HasAcquired;
 }
 
-inline PTSArenaSlot * PTSArena::Slot_Acquire(uint32_t *pSlot_Index)
+inline bool PTSArena::Slot_Acquire_Worker(uint32_t *pSlot_Index)
 {
-	PTSArenaSlot *pSlotAcquired = NULL;
-
 	uint32_t Slot_Index;
 
-	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pSlotAcquired)));
+	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&Slot_Index)));
+
+	bool HasAcquired = false;
+
+	//-----HasBeenAcquired---------------------------------------------
 
 	assert(m_SlotArrayCapacity != 0U);
-	uint32_t IndexRandom = RandomTemp.Generate() % (m_SlotArrayCapacity - 1U) + 1U; //MasterThread的SlotIndex默认为0
-
+	//MasterThread的SlotIndex一定为0
+	//将0从IndexRandom中的取值范围中排除
+	uint32_t IndexRandom = RandomTemp.Generate() % (m_SlotArrayCapacity - 1U) + 1U;
 	{
 		for (uint32_t i = IndexRandom; i < m_SlotArrayCapacity; ++i)
 		{
 			if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
 			{
-				::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
 				Slot_Index = i;
-				pSlotAcquired = m_SlotArrayMemory + i;
+				HasAcquired = true;
 				break;
 			}
 		}
 	}
 
-	if (pSlotAcquired == NULL)
+	if (!HasAcquired)
 	{
+		//MasterThread的SlotIndex一定为0
+		//将0从迭代中排除
 		for (uint32_t i = 1U; i < IndexRandom; ++i)
 		{
 			if (::PTSAtomic_CompareAndSet(&m_SlotArrayMemory[i].m_HasBeenAcquired, 0U, 1U) == 0U)
 			{
-				::PTSAtomic_GetAndAdd(&m_SlotArraySize, 1U);
 				Slot_Index = i;
-				pSlotAcquired = m_SlotArrayMemory + i;
+				HasAcquired = true;
 				break;
 			}
 		}
 	}
 
-	if (pSlotAcquired != NULL)
-	{
-		uint32_t SlotIndexMaximumOld = ::PTSAtomic_Get(&m_SlotIndexMaximum);
+	//-----SlotIndexAffinityMask---------------------------------------------
 
-		while (Slot_Index > SlotIndexMaximumOld)
+	if (HasAcquired)
+	{
+		//由于SlotIndexMask的约束，SlotArrayCapacity不得大于32
+		assert(Slot_Index < 32U);
+
+		uint32_t SlotIndexMask = 1U << Slot_Index;
+		uint32_t SlotIndexAffinityMaskOld;
+		do
 		{
-			if (::PTSAtomic_CompareAndSet(&m_SlotIndexMaximum, SlotIndexMaximumOld, Slot_Index) == SlotIndexMaximumOld)
-			{
-				break;
-			}
-		}
+			SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
+			assert((SlotIndexAffinityMaskOld&SlotIndexMask) == 0U);
+		} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld | SlotIndexMask)) != SlotIndexAffinityMaskOld);
 
 		(*pSlot_Index) = Slot_Index;
 	}
 
-	return pSlotAcquired;
+	return HasAcquired;
 }
 
 inline void PTSArena::Slot_Release(uint32_t Slot_Index)
@@ -381,22 +379,35 @@ inline void PTSArena::Slot_Release(uint32_t Slot_Index)
 		uint64_t m_TwoWord;
 	}HeadAndTailOld;
 	HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_SlotArrayMemory[Slot_Index].m_HeadAndTail.m_TwoWord);
+	//Local Task Deque Should Be Empty !!!
 	assert(HeadAndTailOld.m_OneWord.m_Head == HeadAndTailOld.m_OneWord.m_Tail);
+
+	uint32_t SlotIndexMask = 1U << Slot_Index;
+	uint32_t SlotIndexMaskInverse = ~SlotIndexMask;
+	uint32_t SlotIndexAffinityMaskOld;
+	do
+	{
+		SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
+		assert((SlotIndexAffinityMaskOld&SlotIndexMask) != 0U);
+	} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld & SlotIndexMaskInverse)) != SlotIndexAffinityMaskOld);
+
+	//关于ABA
+	//在Acquire时，SlotIndexAffinityMask的更新在HasBeenAcquired之后
+	//在Release时，SlotIndexAffinityMask的更新在HasBeenAcquired之前
+	//SlotIndexAffinityMask中的Index始终不大于HasBeenAcquired的真实Index，不存在发生死锁的可能性
 
 	uint32_t HasBeenAcquiredOld = ::PTSAtomic_GetAndSet(&m_SlotArrayMemory[Slot_Index].m_HasBeenAcquired, 0U);
 	assert(HasBeenAcquiredOld == 1U);
-
-	::PTSAtomic_GetAndAdd(&m_SlotArraySize, uint32_t(-1));
 }
 
 inline uint32_t PTSArena::SlotIndexMaximum_Load_Acquire()
 {
-	return ::PTSAtomic_Get(&m_SlotIndexMaximum);
+	return ::PTS_Size_BitScanReverse(::PTSAtomic_Get(&m_SlotIndexAffinityMask));
 }
 
 inline uint32_t PTSArena::Size_Load_Acquire()
 {
-	return ::PTSAtomic_Get(&m_SlotArraySize);
+	return ::PTS_Size_BitPopCount(::PTSAtomic_Get(&m_SlotIndexAffinityMask));
 }
 
 inline PTSArenaSlot *PTSArena::Slot(uint32_t Index)
@@ -410,7 +421,13 @@ inline uint32_t PTSArena::Capacity()
 }
 
 //------------------------------------------------------------------------------------------------------------
-inline PTSArenaSlot::PTSArenaSlot() :m_HeadAndTail{ 0U,0U }, m_HasBeenAcquired(0U), m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL }, m_TaskDequeCapacity(0U)
+//PTSArenaSlot
+//------------------------------------------------------------------------------------------------------------
+inline PTSArenaSlot::PTSArenaSlot() :
+	m_HeadAndTail{ 0U,0U }, 
+	m_HasBeenAcquired(0U),
+	m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL }, 
+	m_TaskDequeCapacity(0U)
 {
 
 }
@@ -604,6 +621,8 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
 }
 
 //------------------------------------------------------------------------------------------------------------
+//PTSTaskPrefixImpl
+//------------------------------------------------------------------------------------------------------------
 static uint32_t const  s_TaskPrefix_Reservation_Size = ::PTS_Size_AlignUpFrom(static_cast<uint32_t>(sizeof(PTSTaskPrefixImpl)), s_TaskPrefix_Alignment);
 
 static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask)
@@ -611,7 +630,11 @@ static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask)
 	return reinterpret_cast<PTSTaskPrefixImpl *>(reinterpret_cast<uintptr_t>(pTask) - s_TaskPrefix_Reservation_Size);
 }
 
-inline PTSTaskPrefixImpl::PTSTaskPrefixImpl() :m_Parent(NULL), m_RefCount(0U), m_pFn_Execute(NULL), m_State(Allocated)
+inline PTSTaskPrefixImpl::PTSTaskPrefixImpl() :
+	m_Parent(NULL),
+	m_RefCount(0U), 
+	m_pFn_Execute(NULL),
+	m_State(Allocated)
 {
 
 }
@@ -656,8 +679,8 @@ inline PTSTaskPrefixImpl *PTSTaskPrefixImpl::Execute()
 	return (pTaskByPass != NULL) ? (::PTS_Internal_Task_Prefix(pTaskByPass)) : NULL;
 }
 
-
-
+//------------------------------------------------------------------------------------------------------------
+//PTSTaskSchedulerMasterImpl
 //------------------------------------------------------------------------------------------------------------
 inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena, uint32_t Slot_Index) :m_pArena(pArena), m_Slot_Index(Slot_Index)
 {
@@ -666,12 +689,12 @@ inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena, 
 
 void PTSTaskSchedulerMasterImpl::Worker_Wake()
 {
-	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->m_SlotArrayCapacity);
+	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->Capacity());
 }
 
 void PTSTaskSchedulerMasterImpl::Worker_Sleep()
 {
-	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->m_SlotArrayCapacity);
+	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->Capacity());
 }
 
 IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
@@ -683,7 +706,6 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 {
 	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTask));
 }
-
 
 void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 {
@@ -722,9 +744,11 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
 
 	assert(pTaskRootPrefix->m_pFn_Execute != NULL);
-	::PTS_Internal_Master_Main(m_pArena, m_Slot_Index, pTaskRootPrefix, &HasBeenFinished);
+	::PTS_Internal_Master_Execute_Main(m_pArena, m_Slot_Index, pTaskRootPrefix, &HasBeenFinished);
 }
 
+//------------------------------------------------------------------------------------------------------------
+//PTSTaskSchedulerWorkerImpl
 //------------------------------------------------------------------------------------------------------------
 inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl()
 {
@@ -741,7 +765,6 @@ void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
 	assert(0);
 }
 
-
 IPTSTask *PTSTaskSchedulerWorkerImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
 {
 	return ::PTS_Internal_Task_Alloc(SizeTask, AlignmentTask);
@@ -757,7 +780,8 @@ void PTSTaskSchedulerWorkerImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTask)
 	assert(0);
 }
 
-
+//------------------------------------------------------------------------------------------------------------
+//PTS_Size
 //------------------------------------------------------------------------------------------------------------
 static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value)
 {
@@ -779,6 +803,8 @@ static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
 	return ((Value - 1U) | (Alignment - 1U)) + 1U;
 }
 
+//------------------------------------------------------------------------------------------------------------
+//PTS_Internal
 //------------------------------------------------------------------------------------------------------------
 static inline IPTSTask *PTS_Internal_Task_Alloc(size_t SizeTask, size_t AlignmentTask)
 {
@@ -812,7 +838,7 @@ static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index
 	pArenaSlot->TaskDeque_Push(pTaskToSpawnPrefix);
 }
 
-static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, uint32_t *pHasBeenFinished)
+static inline void PTS_Internal_Master_Execute_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, uint32_t *pHasBeenFinished)
 {
 	assert(pTaskRootPrefix != NULL);
 
@@ -965,7 +991,7 @@ static inline void PTS_Internal_Master_Main(PTSArena *pArena, uint32_t Slot_Inde
 
 }
 
-static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Index)
+static inline void PTS_Internal_Worker_Execute_Main(PTSArena *pArena, uint32_t Slot_Index)
 {
 	PTSTaskPrefixImpl *pTaskExecuting = NULL;
 	
@@ -1194,6 +1220,8 @@ static inline void PTS_Internal_Worker_Main(PTSArena *pArena, uint32_t Slot_Inde
 }
 
 //------------------------------------------------------------------------------------------------------------
+//PTSYSTEMAPI
+//------------------------------------------------------------------------------------------------------------
 static int32_t s_TaskScheduler_Initialize_RefCount = 0;
 PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 {
@@ -1238,10 +1266,12 @@ PTBOOL PTCALL PTSTaskScheduler_Local_Initialize(float fThreadNumberRatio)
 
 	if (pTaskScheduler == NULL)
 	{
-		PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate(fThreadNumberRatio);
+		PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate_Master(fThreadNumberRatio);
 		assert(pArena != NULL);
 
-		pTaskScheduler = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl)))PTSTaskSchedulerMasterImpl(pArena, 0U); //MasterThread的ArenaSlotIndex默认为0
+		pTaskScheduler = new(
+			::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl))
+			)PTSTaskSchedulerMasterImpl(pArena, 0U); //MasterThread的SlotIndex一定为0
 		assert(pTaskScheduler != NULL);
 
 		PTBOOL tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
@@ -1275,7 +1305,6 @@ IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask)
 {
 	return ::PTS_Internal_Task_Prefix(pTask);
 }
-
 
 #if defined PTWIN32
 #include "Win32/PTSTaskSchedulerImpl.inl"

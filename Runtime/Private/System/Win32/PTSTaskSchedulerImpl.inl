@@ -1,3 +1,5 @@
+#include <intrin.h>
+
 static inline uint32_t PTS_Info_HardwareThreadNumber()
 {
 	DWORD_PTR ProcessAffinityMask;
@@ -5,17 +7,28 @@ static inline uint32_t PTS_Info_HardwareThreadNumber()
 	BOOL wbResult = ::GetProcessAffinityMask(::GetCurrentProcess(), &ProcessAffinityMask, &SystemAffinityMask);
 	assert(wbResult != FALSE);
 	assert((ProcessAffinityMask&SystemAffinityMask) == ProcessAffinityMask);
-
-	uint32_t ProcessProcessorNumber = 0U;
-	for (DWORD_PTR i = 0U; i < (DWORD_PTR(CHAR_BIT) * sizeof(DWORD_PTR)); ++i)
-	{
-		DWORD_PTR ProcessorAffinityMask = (DWORD_PTR(1U) << i);
-
-		if (ProcessAffinityMask & ProcessorAffinityMask)
-		{
-			++ProcessProcessorNumber;
-		}
-	}
-
+	uint32_t ProcessProcessorNumber;
+#if defined(PTX86)
+	static_assert(sizeof(DWORD_PTR) == 4U, "");
+	ProcessProcessorNumber = ::__popcnt(ProcessAffinityMask);
+#elif defined(PTX64)
+	static_assert(sizeof(DWORD_PTR) == 8U, "");
+	ProcessProcessorNumber = static_cast<uint32_t>(::__popcnt64(ProcessAffinityMask));
+#else
+#error δ֪�ļܹ�
+#endif
 	return ProcessProcessorNumber;
+}
+
+static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
+{
+	DWORD Index;
+	BOOL wbResult = ::_BitScanReverse(&Index, Value);
+	assert(wbResult != FALSE);
+	return Index;
+}
+
+static inline uint32_t PTS_Size_BitPopCount(uint32_t Value)
+{
+	return ::__popcnt(Value);
 }
