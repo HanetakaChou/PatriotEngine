@@ -120,7 +120,7 @@ int main()
 
 	pTaskCreation = new(
 		IPTSTaskPrefix::Allocate_Root(pTaskCreation, pTaskScheduler)
-		)Task_TreeCreation(&pRoot, 100000000);
+		)Task_TreeCreation(&pRoot, 10000000);
 
 	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskCreation);
 
