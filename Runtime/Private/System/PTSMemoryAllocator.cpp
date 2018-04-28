@@ -738,11 +738,6 @@ static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pO
 		//7168  01110000000000
 		//8192  10000000000000
 
-		if (RequestSize == s_NonLargeObject_SizeMax)
-		{
-			int huhu = 0;
-		}
-
 		uint32_t Order = ::PTS_Size_BitScanReverse(RequestSize - 1U);
 		assert(Order >= 6U && Order <= 12U);
 
