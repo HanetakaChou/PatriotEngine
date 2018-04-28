@@ -19,13 +19,13 @@ struct IPTSTaskPrefix
 	virtual void OverrideExecute(IPTSTask *(*pFn_Execute)(IPTSTask *pTaskThisVoid)) = 0;
 
 	template<typename TaskImpl>
-	static inline void * Allocate_Root(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler = NULL);
+	static inline void * Allocate_Root(TaskImpl *, IPTSTaskScheduler *pTaskScheduler = NULL);
 
 	template<typename TaskImpl>
-	inline void * Allocate_Child(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler = NULL);
+	inline void * Allocate_Child(TaskImpl *, IPTSTaskScheduler *pTaskScheduler = NULL);
 
 	template<typename TaskImpl>
-	inline void * Allocate_Continuation(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler = NULL);
+	inline void * Allocate_Continuation(TaskImpl *, IPTSTaskScheduler *pTaskScheduler = NULL);
 };
 
 struct IPTSTask
@@ -52,14 +52,14 @@ extern "C" PTSYSTEMAPI IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTS
 //Helper Function
 
 template<typename TaskImpl>
-inline void * IPTSTaskPrefix::Allocate_Root(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler)
+inline void * IPTSTaskPrefix::Allocate_Root(TaskImpl *, IPTSTaskScheduler *pTaskScheduler)
 {
 	if (pTaskScheduler == NULL)
 	{
 		pTaskScheduler = ::PTSTaskScheduler_ForThread();
 	}
 
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(Size, Alignment);
+	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
 	IPTSTaskPrefix *pTaskNewPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
 	pTaskNewPrefix->OverrideExecute(TaskImpl::Execute);
 
@@ -67,14 +67,14 @@ inline void * IPTSTaskPrefix::Allocate_Root(TaskImpl *, size_t Size, size_t Alig
 }
 
 template<typename TaskImpl>
-inline void * IPTSTaskPrefix::Allocate_Child(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler)
+inline void * IPTSTaskPrefix::Allocate_Child(TaskImpl *, IPTSTaskScheduler *pTaskScheduler)
 {
 	if (pTaskScheduler == NULL)
 	{
 		pTaskScheduler = ::PTSTaskScheduler_ForThread();
 	}
 
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(Size, Alignment);
+	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
 	IPTSTaskPrefix *pTaskNewPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
 	pTaskNewPrefix->ParentSet(this);
 	pTaskNewPrefix->OverrideExecute(TaskImpl::Execute);
@@ -85,7 +85,7 @@ inline void * IPTSTaskPrefix::Allocate_Child(TaskImpl *, size_t Size, size_t Ali
 }
 
 template<typename TaskImpl>
-inline void * IPTSTaskPrefix::Allocate_Continuation(TaskImpl *, size_t Size, size_t Alignment, IPTSTaskScheduler *pTaskScheduler)
+inline void * IPTSTaskPrefix::Allocate_Continuation(TaskImpl *, IPTSTaskScheduler *pTaskScheduler)
 {
 	if (pTaskScheduler == NULL)
 	{
@@ -95,7 +95,7 @@ inline void * IPTSTaskPrefix::Allocate_Continuation(TaskImpl *, size_t Size, siz
 	IPTSTaskPrefix *pTaskParentPrefix = this->Parent();
 	this->ParentSet(NULL);
 
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(Size, Alignment);
+	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
 	IPTSTaskPrefix *pTaskNewPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
 	pTaskNewPrefix->ParentSet(pTaskParentPrefix);
 	pTaskNewPrefix->OverrideExecute(TaskImpl::Execute);

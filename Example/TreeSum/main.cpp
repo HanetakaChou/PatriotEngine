@@ -10,7 +10,7 @@
 
 static float const s_PI = 3.14159265358979f;
 
-struct TreeNode 
+struct TreeNode
 {
 	TreeNode* left;
 	TreeNode* right;
@@ -20,7 +20,7 @@ struct TreeNode
 
 class Task_TreeCreation_Continuation : public IPTSTask
 {
-	TreeNode **m_ppRootOfSubTree;
+	TreeNode **const m_ppRootOfSubTree;
 	int32_t m_NodeCount;
 
 	TreeNode *m_pRightOfSubTree;
@@ -28,7 +28,10 @@ class Task_TreeCreation_Continuation : public IPTSTask
 	friend class Task_TreeCreation;
 
 public:
-	inline Task_TreeCreation_Continuation(TreeNode **ppRootOfSubTree, int32_t NodeCount) :m_ppRootOfSubTree(ppRootOfSubTree), m_NodeCount(NodeCount)
+	inline Task_TreeCreation_Continuation(TreeNode **ppRootOfSubTree, int32_t NodeCount)
+		:
+		m_ppRootOfSubTree(ppRootOfSubTree),
+		m_NodeCount(NodeCount)
 	{
 
 	}
@@ -41,7 +44,9 @@ class Task_TreeCreation : public IPTSTask
 	TreeNode **m_ppRootOfSubTree;
 	int32_t m_NodeCount;
 public:
-	inline Task_TreeCreation(TreeNode **ppRootOfSubTree, int32_t NodeCount) :m_ppRootOfSubTree(ppRootOfSubTree), m_NodeCount(NodeCount)
+	inline Task_TreeCreation(TreeNode **ppRootOfSubTree, int32_t NodeCount) :
+		m_ppRootOfSubTree(ppRootOfSubTree),
+		m_NodeCount(NodeCount)
 	{
 
 	}
@@ -51,51 +56,104 @@ public:
 
 TreeNode *TreeCreation_Serial(int32_t NodeCount);
 
+class Task_TreeSum_Continuation : public IPTSTask
+{
+	float * const m_pSumofSubTree;
+	float m_ValueOfMiddle;
+
+	float m_SumOfLeft;
+	float m_SumOfRight;
+	friend class Task_TreeSum;
+
+public:
+	inline Task_TreeSum_Continuation(float *pSumofSubTree, float ValueOfMiddle)
+		:
+		m_pSumofSubTree(pSumofSubTree),
+		m_ValueOfMiddle(ValueOfMiddle)
+	{
+
+	}
+
+	static IPTSTask * Execute(IPTSTask *pVoid);
+};
+
+class Task_TreeSum : public IPTSTask
+{
+	float * m_pSumofSubTree;
+	TreeNode *m_pRootOfSubTree;
+
+public:
+	inline Task_TreeSum(float *pSumofSubTree, TreeNode *pRootOfSubTree)
+		:
+		m_pSumofSubTree(pSumofSubTree),
+		m_pRootOfSubTree(pRootOfSubTree)
+	{
+
+	}
+
+	static IPTSTask * Execute(IPTSTask *pVoid);
+};
+
+float TreeSum_Serial(TreeNode* root);
+
 int main()
 {
 	::PTSMemoryAllocator_Initialize();
 	::PTSTaskScheduler_Initialize();
-	::PTSTaskScheduler_Local_Initialize();
+	::PTSTaskScheduler_Initialize_ForThread();
 
-	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_Local();
+	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
 	TreeNode *pRoot;
+	float Sum;
 
-	Task_TreeCreation *pTask = NULL;
+	Task_TreeCreation *pTaskCreation = NULL;
+	Task_TreeSum *pTaskSum = NULL;
 
-	int64_t Frequency = PTSTick_Frequency();
-	int64_t t1;
-	int64_t t2;
+	int64_t TickPerSecond = PTSTick_Frequency();
+	int64_t TickStart;
+	int64_t TickEnd;
+
+	TickStart = ::PTSTick_Count();
 
 	pTaskScheduler->Worker_Wake();
 
-	t1 = ::PTSTick_Count();
+	pTaskCreation = new(
+		IPTSTaskPrefix::Allocate_Root(pTaskCreation, pTaskScheduler)
+		)Task_TreeCreation(&pRoot, 100000000);
 
-	pTask = new(
-		IPTSTaskPrefix::Allocate_Root<Task_TreeCreation>(pTask, sizeof(Task_TreeCreation), alignof(Task_TreeCreation), pTaskScheduler)
-		)Task_TreeCreation(&pRoot, 10000000);
-
-	pTaskScheduler->Task_Spawn_Root_And_Wait(pTask);
-
-	t2 = ::PTSTick_Count();
-
-	std::cout << (static_cast<float>(t2 - t1) / static_cast<float>(Frequency))*1000.0f << std::endl;
-
-	t1 = ::PTSTick_Count();
-
-	pTask = new(
-		IPTSTaskPrefix::Allocate_Root<Task_TreeCreation>(pTask, sizeof(Task_TreeCreation), alignof(Task_TreeCreation), pTaskScheduler)
-		)Task_TreeCreation(&pRoot, 10000000);
-
-	pTaskScheduler->Task_Spawn_Root_And_Wait(pTask);
-
-	t2 = ::PTSTick_Count();
-
-	std::cout << (static_cast<float>(t2 - t1) / static_cast<float>(Frequency))*1000.0f << std::endl;
+	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskCreation);
 
 	pTaskScheduler->Worker_Sleep();
 
-    return 0;
+	TickEnd = ::PTSTick_Count();
+
+	std::cout << (static_cast<float>(TickEnd - TickStart) / static_cast<float>(TickPerSecond))*1000.0f << std::endl;
+
+	for (int i = 0; i < 5000000; ++i)
+	{
+		::PTS_Yield();
+	}
+
+	TickStart = ::PTSTick_Count();
+
+	pTaskScheduler->Worker_Wake();
+
+	pTaskSum = new(
+		IPTSTaskPrefix::Allocate_Root(pTaskSum, pTaskScheduler)
+		)Task_TreeSum(&Sum, pRoot);
+
+	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskSum);
+
+	pTaskScheduler->Worker_Sleep();
+
+	TickEnd = ::PTSTick_Count();
+
+	std::cout << (static_cast<float>(TickEnd - TickStart) / static_cast<float>(TickPerSecond))*1000.0f << std::endl;
+
+	std::cout << Sum << std::endl;
+
+	return 0;
 }
 
 IPTSTask * Task_TreeCreation_Continuation::Execute(IPTSTask *pVoid)
@@ -116,14 +174,14 @@ IPTSTask * Task_TreeCreation::Execute(IPTSTask *pVoid)
 
 	assert(pThis->m_ppRootOfSubTree != NULL);
 
-	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_Local();
+	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
 	if (pThis->m_NodeCount >= 1000) //Recursive
 	{
 		//Divide
 		Task_TreeCreation_Continuation *pTaskContinuation = NULL;
 		pTaskContinuation = new(
-			pThisPrefix->Allocate_Continuation(pTaskContinuation, sizeof(Task_TreeCreation_Continuation), alignof(Task_TreeCreation_Continuation), pTaskScheduler)
+			pThisPrefix->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
 			) Task_TreeCreation_Continuation(pThis->m_ppRootOfSubTree, pThis->m_NodeCount);
 
 		IPTSTaskPrefix *pTaskContinuationPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskContinuation);
@@ -132,7 +190,7 @@ IPTSTask * Task_TreeCreation::Execute(IPTSTask *pVoid)
 
 		Task_TreeCreation *pTaskChildRight = NULL;
 		pTaskChildRight = new(
-			pTaskContinuationPrefix->Allocate_Child(pTaskChildRight, sizeof(Task_TreeCreation_Continuation), alignof(Task_TreeCreation_Continuation), pTaskScheduler)
+			pTaskContinuationPrefix->Allocate_Child(pTaskChildRight, pTaskScheduler)
 			)Task_TreeCreation(&pTaskContinuation->m_pRightOfSubTree, pThis->m_NodeCount / 2);
 
 		pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
@@ -168,4 +226,101 @@ TreeNode *TreeCreation_Serial(int32_t NodeCount)
 		n->right = TreeCreation_Serial(NodeCount - NodeCount / 2);
 		return n;
 	}
+}
+
+
+IPTSTask * Task_TreeSum_Continuation::Execute(IPTSTask *pVoid)
+{
+	Task_TreeSum_Continuation *pThis = static_cast<Task_TreeSum_Continuation *>(pVoid);
+	(*pThis->m_pSumofSubTree) = pThis->m_ValueOfMiddle + pThis->m_SumOfLeft + pThis->m_SumOfRight;
+	return NULL;
+}
+
+IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
+{
+	Task_TreeSum *pThis = static_cast<Task_TreeSum *>(pVoid);
+	IPTSTaskPrefix *pThisPrefix = ::PTSTaskScheduler_Task_Prefix(pThis);
+
+	assert(pThis->m_pRootOfSubTree != NULL);
+
+	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
+
+	if (pThis->m_pRootOfSubTree->node_count >= 1000) //Recursive
+	{
+		//Divide
+		Task_TreeSum_Continuation *pTaskContinuation = NULL;
+		pTaskContinuation = new(
+			pThisPrefix->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
+			) Task_TreeSum_Continuation(pThis->m_pSumofSubTree, pThis->m_pRootOfSubTree->value);
+		
+		IPTSTaskPrefix *pTaskContinuationPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskContinuation);
+
+		//Maybe Modified By Recycle
+		TreeNode *pRootOfSubTree = pThis->m_pRootOfSubTree;
+
+		Task_TreeSum *pTaskChildNext = NULL;
+		Task_TreeSum *pTaskChildSpawn = NULL;
+
+		Task_TreeSum *pTaskChildLeft = NULL;
+		if (pRootOfSubTree->left != NULL)
+		{
+			pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
+			pThis->m_pSumofSubTree = &pTaskContinuation->m_SumOfLeft;
+			pThis->m_pRootOfSubTree = pRootOfSubTree->left;
+			pTaskChildLeft = pThis;
+			pTaskChildNext = pTaskChildLeft;
+		}
+		else
+		{
+			pTaskContinuation->m_SumOfLeft = 0.0f;
+		}
+
+
+		Task_TreeSum *pTaskChildRight = NULL;
+		if (pRootOfSubTree->right != NULL)
+		{
+			if (pTaskChildNext != NULL)
+			{
+				pTaskChildRight = new(
+					pTaskContinuationPrefix->Allocate_Child(pTaskChildRight, pTaskScheduler)
+					)Task_TreeSum(&pTaskContinuation->m_SumOfRight, pRootOfSubTree->right);
+				pTaskChildSpawn = pTaskChildRight;
+			}
+			else //!!!Still Can Recycle
+			{
+				pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
+				pThis->m_pSumofSubTree = &pTaskContinuation->m_SumOfRight;
+				pThis->m_pRootOfSubTree = pRootOfSubTree->right;
+				pTaskChildRight = pThis;
+				pTaskChildNext = pTaskChildRight;
+			}
+		}
+		else
+		{
+			pTaskContinuation->m_SumOfRight = 0.0f;
+		}
+
+		//Conquer
+		pTaskContinuationPrefix->RefCount_Set(((pTaskChildRight != NULL) ? 1 : 0) + ((pTaskChildLeft != NULL) ? 1 : 0));
+		if (pTaskChildSpawn != NULL)
+		{
+			pTaskScheduler->Task_Spawn(pTaskChildSpawn);
+		}
+		return pTaskChildNext;
+	}
+	else //Base Case
+	{
+		(*pThis->m_pSumofSubTree) = TreeSum_Serial(pThis->m_pRootOfSubTree);
+		return NULL;
+	}
+}
+
+float TreeSum_Serial(TreeNode* root)
+{
+	float result = root->value;
+	if (root->left)
+		result += TreeSum_Serial(root->left);
+	if (root->right)
+		result += TreeSum_Serial(root->right);
+	return result;
 }
