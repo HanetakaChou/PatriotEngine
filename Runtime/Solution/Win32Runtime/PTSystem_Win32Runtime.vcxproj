@@ -28,13 +28,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
-    <ClCompile Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h" />
-    <ClInclude Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl" />
+    <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{c0c3c751-fa2c-402d-a750-2670cea5f587}</ProjectGuid>
@@ -192,7 +193,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -206,7 +207,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>

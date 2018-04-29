@@ -144,7 +144,7 @@ inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue)
 }
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue)
 {
-	return ::_InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), newValue);
+	return InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), newValue);
 
 }
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue)
@@ -153,7 +153,7 @@ inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValu
 }
 inline uint64_t PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue)
 {
-	return static_cast<uint64_t>(::_InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(newValue)));
+	return static_cast<uint64_t>(InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(newValue)));
 }
 
 inline int32_t PTSAtomic_GetAndAdd(int32_t volatile *pTarget, int32_t delta)
@@ -163,18 +163,18 @@ inline int32_t PTSAtomic_GetAndAdd(int32_t volatile *pTarget, int32_t delta)
 
 inline int64_t PTSAtomic_GetAndAdd(int64_t volatile *pTarget, int64_t delta)
 {
-	return ::_InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), delta);
+	return InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), delta);
 }
 
 inline uint32_t PTSAtomic_GetAndAdd(uint32_t volatile *pTarget, uint32_t delta)
 {
-	return static_cast<uint32_t>(::_InterlockedExchangeAdd(reinterpret_cast<LONG volatile *>(pTarget), static_cast<LONG>(delta)));
+	return static_cast<uint32_t>(::InterlockedExchangeAdd(reinterpret_cast<LONG volatile *>(pTarget), static_cast<LONG>(delta)));
 }
 
 inline uint64_t PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta)
 {
 
-	return static_cast<uint64_t>(::_InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(delta)));
+	return static_cast<uint64_t>(InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(delta)));
 }
 
 inline int32_t PTSAtomic_Get(int32_t volatile *pTarget)

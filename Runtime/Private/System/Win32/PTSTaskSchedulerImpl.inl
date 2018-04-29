@@ -1,5 +1,13 @@
 #include <intrin.h>
 
+#if defined(PTARM)
+static inline unsigned int __popcnt(unsigned int value)
+{
+	assert(value == 0U);
+	return 0U;
+}
+#endif
+
 static inline uint32_t PTS_Info_HardwareThreadNumber()
 {
 	DWORD_PTR ProcessAffinityMask;
@@ -7,17 +15,17 @@ static inline uint32_t PTS_Info_HardwareThreadNumber()
 	BOOL wbResult = ::GetProcessAffinityMask(::GetCurrentProcess(), &ProcessAffinityMask, &SystemAffinityMask);
 	assert(wbResult != FALSE);
 	assert((ProcessAffinityMask&SystemAffinityMask) == ProcessAffinityMask);
-	uint32_t ProcessProcessorNumber;
-#if defined(PTX86)
+	uint32_t ProcessProcessorCount;
+#if defined(PTARM)|| defined(PTX86)
 	static_assert(sizeof(DWORD_PTR) == 4U, "");
-	ProcessProcessorNumber = ::__popcnt(ProcessAffinityMask);
+	ProcessProcessorCount = ::__popcnt(ProcessAffinityMask);
 #elif defined(PTX64)
 	static_assert(sizeof(DWORD_PTR) == 8U, "");
-	ProcessProcessorNumber = static_cast<uint32_t>(::__popcnt64(ProcessAffinityMask));
+	ProcessProcessorCount = static_cast<uint32_t>(::__popcnt64(ProcessAffinityMask));
 #else
 #error δ֪�ļܹ�
 #endif
-	return ProcessProcessorNumber;
+	return ProcessProcessorCount;
 }
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)

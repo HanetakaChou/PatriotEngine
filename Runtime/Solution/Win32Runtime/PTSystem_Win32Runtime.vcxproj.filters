@@ -27,10 +27,10 @@
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">
       <Filter>Private\System\Win32</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.cpp">
-      <Filter>Private\System\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,15 +56,18 @@
     <ClInclude Include="..\..\Public\System\PTSCommon.h">
       <Filter>Public\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.h">
-      <Filter>Private\System\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h">
       <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
+      <Filter>Private\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl">
+      <Filter>Private\System\Win32</Filter>
+    </None>
+    <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl">
       <Filter>Private\System\Win32</Filter>
     </None>
   </ItemGroup>

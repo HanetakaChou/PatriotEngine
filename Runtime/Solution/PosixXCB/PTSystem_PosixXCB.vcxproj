@@ -1,138 +1,38 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|ARM">
       <Configuration>Debug</Configuration>
       <Platform>ARM</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Debug|x86">
       <Configuration>Debug</Configuration>
       <Platform>x86</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|ARM">
+    <ProjectConfiguration Include="Release|x86">
       <Configuration>Release</Configuration>
-      <Platform>ARM</Platform>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x86">
-      <Configuration>Release</Configuration>
-      <Platform>x86</Platform>
-    </ProjectConfiguration>
   </ItemGroup>
-  <PropertyGroup Label="Globals">
-    <ProjectGuid>{7515c8a1-b849-44e5-a588-f29c65d7d78f}</ProjectGuid>
-    <Keyword>Linux</Keyword>
-    <RootNamespace>PTSystem_PosixXCB</RootNamespace>
-    <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
-    <ApplicationType>Linux</ApplicationType>
-    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
-    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
-    <LinuxProjectType>{D51BCBC9-82E9-4017-911E-C93873C4EA2B}</LinuxProjectType>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
-    <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
-    <UseDebugLibraries>false</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <RemoteRootDir>`echo ~`/Documents/Visual_Studio_201X/Projects</RemoteRootDir>
-  </PropertyGroup>
-  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
-  <ImportGroup Label="Shared" />
-  <ImportGroup Label="PropertySheets" />
-  <PropertyGroup Label="UserMacros" />
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <TargetExt>.so</TargetExt>
-    <TargetName>libPTSystem</TargetName>
-    <RemoteProjectDir>$(RemoteRootDir)/PatriotEngine/Runtime/Solution/PosixXCB/</RemoteProjectDir>
-    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
-    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
-    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
-    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
-    <RemoteLdToolExe>clang++</RemoteLdToolExe>
-  </PropertyGroup>
   <ItemGroup>
+    <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl" />
+    <None Include="..\..\Private\System\Posix\PTSTaskSchedulerImpl.inl" />
+    <None Include="..\..\Public\System\Posix\PTSThread.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSFile.h" />
@@ -141,94 +41,191 @@
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl" />
-    <None Include="..\..\Public\System\Posix\PTSThread.inl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
   </ItemGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <ClCompile>
-      <PositionIndependentCode>true</PositionIndependentCode>
-      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
-      <ExceptionHandling>Disabled</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link />
-    <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <ClCompile>
-      <PositionIndependentCode>true</PositionIndependentCode>
-      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
-      <ExceptionHandling>Disabled</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link />
-    <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{86d69ab2-bcde-4487-9c04-5ac912091498}</ProjectGuid>
+    <Keyword>Linux</Keyword>
+    <RootNamespace>PTSystem_PosixXCB</RootNamespace>
+    <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
+    <ApplicationType>Linux</ApplicationType>
+    <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
+    <TargetLinuxPlatform>Generic</TargetLinuxPlatform>
+    <LinuxProjectType>{2238F9CD-F817-4ECC-BD14-2524D2669B35}</LinuxProjectType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <RemoteRootDir>~/Documents/Visual_Studio_201X/Projects/PatriotEngine/Runtime/Solution/</RemoteRootDir>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <OutDir>$(ProjectDir)../../../Binary/PosixXCB/$(Platform)/$(Configuration)/</OutDir>
+    <IntDir>$(ProjectDir)../../../Intermediate/$(ProjectName)/$(Platform)/$(Configuration)/</IntDir>
+    <TargetName>libPTSystem</TargetName>
+    <RemoteCCompileToolExe>clang++</RemoteCCompileToolExe>
+    <RemoteCppCompileToolExe>clang++</RemoteCppCompileToolExe>
+    <RemoteLdToolExe>clang++</RemoteLdToolExe>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link />
     <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <ClCompile>
-      <PositionIndependentCode>true</PositionIndependentCode>
-      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
-      <ExceptionHandling>Disabled</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link />
-    <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-    </Link>
-  </ItemDefinitionGroup>
-  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <ClCompile>
-      <PositionIndependentCode>true</PositionIndependentCode>
-      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
-      <ExceptionHandling>Disabled</ExceptionHandling>
-      <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-    <Link />
-    <Link>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <Link />
     <Link>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;</PreprocessorDefinitions>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
       <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;</PreprocessorDefinitions>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <ClCompile>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PositionIndependentCode>true</PositionIndependentCode>
+      <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
+      <ExceptionHandling>Disabled</ExceptionHandling>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>`echo ~`/Documents/Visual_Studio_201X/Projects/PatriotEngine/Binary/PosixXCB/$(Platform)/$(Configuration)/;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
