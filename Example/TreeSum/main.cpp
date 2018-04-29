@@ -1,11 +1,9 @@
-﻿
+﻿#include <stddef.h>
 #include "../../Runtime/Public/System/PTSMemoryAllocator.h"
 #include "../../Runtime/Public/System/PTSTaskScheduler.h"
 #include "../../Runtime/Public/System/PTSThread.h"
-
 #include <new>
 #include <assert.h>
-
 #include <iostream>
 
 static float const s_PI = 3.14159265358979f;
