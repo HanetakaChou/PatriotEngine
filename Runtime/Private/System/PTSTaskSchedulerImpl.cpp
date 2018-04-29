@@ -12,7 +12,6 @@ static inline uint32_t PTS_Info_HardwareThreadNumber();
 static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
 static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
-static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment); 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
 static inline uint32_t PTS_Size_BitPopCount(uint32_t Value);
 
@@ -376,9 +375,9 @@ inline uint32_t PTSArena::Capacity()
 //PTSArenaSlot
 //------------------------------------------------------------------------------------------------------------
 inline PTSArenaSlot::PTSArenaSlot() :
-	m_HeadAndTail{ 0U,0U }, 
+	m_HeadAndTail{{0U,0U}},
 	m_HasBeenAcquired(0U),
-	m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL }, 
+	m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL },
 	m_TaskDequeCapacity(0U)
 {
 
@@ -798,11 +797,6 @@ static bool PTS_Size_IsAligned(size_t Value, size_t Alignment)
 }
 
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment)
-{
-	return ((Value - 1U) | (Alignment - 1U)) + 1U;
-}
-
-static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
 {
 	return ((Value - 1U) | (Alignment - 1U)) + 1U;
 }

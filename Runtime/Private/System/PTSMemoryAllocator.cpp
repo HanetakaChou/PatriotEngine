@@ -518,6 +518,7 @@ inline PTS_BlockMetadata *PTS_BlockStore::PopEmpty(PTS_ThreadLocalBinArray *pTLS
 	{
 		//启发式，而非在初始化时一次性分配
 		pBlockAdded  = static_cast<PTS_BlockMetadata *>(::PTS_MemoryMap_Alloc(s_Block_Size));
+		assert(pBlockAdded != NULL);
 
 		//严格意义上16KB应当是对齐而非大小
 		assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pBlockAdded), s_Block_Size));
@@ -988,7 +989,6 @@ PTBOOL PTCALL PTSMemoryAllocator_Initialize()
 	{
 		return PTTRUE;
 	}
-	
 }
 
 static inline void * PTS_Internal_Alloc(uint32_t size)
@@ -1101,6 +1101,7 @@ static inline void * PTS_Internal_Alloc(uint32_t size)
 	else
 	{
 		PTS_ObjectMetadata *pObjectToAlloc = static_cast<PTS_ObjectMetadata *>(::PTS_MemoryMap_Alloc(size));
+		assert(pObjectToAlloc != NULL);
 
 		//确保LargeObject一定对齐到16KB，以确保在PTS_Internal_Free中访问BlockAssumed（假定的）一定不会发生冲突
 		assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pObjectToAlloc), s_Block_Size));

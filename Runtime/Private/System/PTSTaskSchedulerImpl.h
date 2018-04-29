@@ -18,6 +18,7 @@
 
 
 #include "../../Public/System/PTSTaskScheduler.h"
+#include <stddef.h>
 #include <stdlib.h>
 
 #if defined(PTARM) || defined(PTARM64) || defined(PTX86) || defined(PTX64)

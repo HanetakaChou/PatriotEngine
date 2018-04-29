@@ -19,7 +19,9 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	assert(s_Block_Size == (s_Page_Size * 4U));
 
 	uint32_t PageNumber = ((Size - 1U) >> 12U) + 1U;
-	uintptr_t AddressWholeBegin = reinterpret_cast<uintptr_t>(::mmap(NULL, s_Page_Size*(PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U));
+	void *pMMapVoid = ::mmap(NULL, s_Page_Size*(PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U);
+	assert(pMMapVoid != MAP_FAILED);
+	uintptr_t AddressWholeBegin = reinterpret_cast<uintptr_t>(pMMapVoid);
 	assert(::PTS_Size_IsAligned(AddressWholeBegin, s_Page_Size));
 
 	uintptr_t PageWholeBegin = AddressWholeBegin >> 12U;
@@ -40,62 +42,7 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	return reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
 }
 
-static inline bool PTS_Number_CharToUI(char C, uint32_t *pI)
-{
-	switch (C)
-	{
-	case '0':
-		(*pI) = 0U;
-		return true;
-	case '1':
-		(*pI) = 1U;
-		return true;
-	case '2':
-		(*pI) = 2U;
-		return true;
-	case '3':
-		(*pI) = 3U;
-		return true;
-	case '4':
-		(*pI) = 4U;
-		return true;
-	case '5':
-		(*pI) = 5U;
-		return true;
-	case '6':
-		(*pI) = 6U;
-		return true;
-	case '7':
-		(*pI) = 7U;
-		return true;
-	case '8':
-		(*pI) = 8U;
-		return true;
-	case '9':
-		(*pI) = 9U;
-		return true;
-	case 'a':
-		(*pI) = 10U;
-		return true;
-	case 'b':
-		(*pI) = 11U;
-		return true;
-	case 'c':
-		(*pI) = 12U;
-		return true;
-	case 'd':
-		(*pI) = 13U;
-		return true;
-	case 'e':
-		(*pI) = 14U;
-		return true;
-	case 'f':
-		(*pI) = 15U;
-		return true;
-	default:
-		return false;
-	}
-}
+static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI);
 
 static inline void PTS_MemoryMap_Free(void *pVoid)
 {
@@ -236,6 +183,8 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 			if (bIsEqual)
 			{
 				pStr_AddressEnd = pStr_RowBegin;
+				assert(pStr_AddressEnd[Str_AddressStart_Length] == '-');
+				pStr_AddressEnd += (Str_AddressStart_Length + 1);
 				bIsFound = true;
 				break;
 			}
@@ -259,15 +208,13 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 	int iResult = ::close(FD_maps);
 	assert(iResult == 0);
 
-	assert(pStr_AddressEnd[Str_AddressStart_Length] == '-');
-	pStr_AddressEnd += (Str_AddressStart_Length + 1);
 #else
 #error 未知的平台
 #endif
 
 	uintptr_t AddressEnd = 0U;
 	uint32_t ValueToAdd;
-	while (::PTS_Number_CharToUI(*pStr_AddressEnd, &ValueToAdd))
+	while (::PTS_Number_CharToInt_HEX(*pStr_AddressEnd, &ValueToAdd))
 	{
 		AddressEnd <<= 4U;
 		AddressEnd += ValueToAdd;
@@ -280,5 +227,318 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 {
-	return 31 - ::__builtin_clz(Value);
+	int Index = 31 - ::__builtin_clz(Value);
+	return static_cast<uint32_t>(Index);
 }
+
+static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0U;
+		return true;
+	case '1':
+		(*pI) = 1U;
+		return true;
+	case '2':
+		(*pI) = 2U;
+		return true;
+	case '3':
+		(*pI) = 3U;
+		return true;
+	case '4':
+		(*pI) = 4U;
+		return true;
+	case '5':
+		(*pI) = 5U;
+		return true;
+	case '6':
+		(*pI) = 6U;
+		return true;
+	case '7':
+		(*pI) = 7U;
+		return true;
+	case '8':
+		(*pI) = 8U;
+		return true;
+	case '9':
+		(*pI) = 9U;
+		return true;
+	case 'a':
+		(*pI) = 10U;
+		return true;
+	case 'b':
+		(*pI) = 11U;
+		return true;
+	case 'c':
+		(*pI) = 12U;
+		return true;
+	case 'd':
+		(*pI) = 13U;
+		return true;
+	case 'e':
+		(*pI) = 14U;
+		return true;
+	case 'f':
+		(*pI) = 15U;
+		return true;
+	default:
+		return false;
+	}
+}
+
+//-----------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------
+//-----------------------------------------------------------------------------------------------------------
+
+#if defined(PTPOSIXXCB)
+
+//There Is Some Bugs In The IDE —— "Visual C++ For Linux Development"
+//To Force IDE To Locate The Source Code
+
+#ifndef NDEBUG
+#include <unistd.h>
+#include <fcntl.h>
+
+static inline bool PTS_Number_CharToInt_DEC(char C, int32_t *pI);
+static inline bool PTS_Number_CharToInt_DEC(char C, uint32_t *pI);
+static inline bool PTS_Number_CharToInt_DEC(char C, int64_t *pI);
+static inline bool PTS_Number_CharToInt_DEC(char C, uint64_t *pI);
+
+static struct PTS_Init_DebugBreak
+{
+	inline PTS_Init_DebugBreak()
+	{
+		char Str_status[4096U];
+		//assert(s_Page_Size == 4096U);
+		{
+			int FD_status = ::open("/proc/thread-self/status", O_RDONLY);
+			assert(FD_status != -1);
+			ssize_t ssResult = ::read(FD_status, Str_status, 4096U);
+			assert(ssResult != -1);
+			int iResult = ::close(FD_status);
+			assert(iResult == 0);
+		}
+
+		char *Str_TracerPidEnd = NULL;
+
+		char Str_TracerPidStart[10] = { "TracerPid" };
+		int Str_TracerPidStart_Length = 9U;
+
+		char *pStr_RowBegin = Str_status;
+
+		bool bIsFound = false;
+		while ((*pStr_RowBegin) != '\0')
+		{
+			bool bIsEqual = true;
+			for (int i = 0; i < Str_TracerPidStart_Length; ++i)
+			{
+				assert(pStr_RowBegin[i] != '\0');
+				if (pStr_RowBegin[i] != Str_TracerPidStart[i])
+				{
+					bIsEqual = false;
+					break;
+				}
+			}
+
+			if (bIsEqual)
+			{
+				Str_TracerPidEnd = pStr_RowBegin;
+				assert(Str_TracerPidEnd[Str_TracerPidStart_Length] == ':');
+				Str_TracerPidEnd += (Str_TracerPidStart_Length + 1);
+				assert((*Str_TracerPidEnd) == '\t');
+				while ((*Str_TracerPidEnd) == '\t')
+				{
+					++Str_TracerPidEnd;
+				}
+				bIsFound = true;
+				break;
+			}
+
+			while ((*pStr_RowBegin) != '\n')
+			{
+				++pStr_RowBegin;
+			}
+
+			++pStr_RowBegin;
+		}
+
+		assert(Str_TracerPidEnd != NULL);
+
+		pid_t TracerPid = 0;
+		pid_t ValueToAdd;
+		while (::PTS_Number_CharToInt_DEC(*Str_TracerPidEnd, &ValueToAdd))
+		{
+			TracerPid *= 10U;
+			TracerPid += ValueToAdd;
+			++Str_TracerPidEnd;
+		}
+
+		if (TracerPid != pid_t(0))
+		{
+			//__debugbreak In MSVC
+			__builtin_debugtrap();
+		}
+
+	}
+}s_Init_DebugBreak;
+
+static inline bool PTS_Number_CharToInt_DEC(char C, int32_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0;
+		return true;
+	case '1':
+		(*pI) = 1;
+		return true;
+	case '2':
+		(*pI) = 2;
+		return true;
+	case '3':
+		(*pI) = 3;
+		return true;
+	case '4':
+		(*pI) = 4;
+		return true;
+	case '5':
+		(*pI) = 5;
+		return true;
+	case '6':
+		(*pI) = 6;
+		return true;
+	case '7':
+		(*pI) = 7;
+		return true;
+	case '8':
+		(*pI) = 8;
+		return true;
+	case '9':
+		(*pI) = 9;
+		return true;
+	default:
+		return false;
+	}
+}
+static inline bool PTS_Number_CharToInt_DEC(char C, uint32_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0U;
+		return true;
+	case '1':
+		(*pI) = 1U;
+		return true;
+	case '2':
+		(*pI) = 2U;
+		return true;
+	case '3':
+		(*pI) = 3U;
+		return true;
+	case '4':
+		(*pI) = 4U;
+		return true;
+	case '5':
+		(*pI) = 5U;
+		return true;
+	case '6':
+		(*pI) = 6U;
+		return true;
+	case '7':
+		(*pI) = 7U;
+		return true;
+	case '8':
+		(*pI) = 8U;
+		return true;
+	case '9':
+		(*pI) = 9U;
+		return true;
+	default:
+		return false;
+	}
+}
+static inline bool PTS_Number_CharToInt_DEC(char C, int64_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0;
+		return true;
+	case '1':
+		(*pI) = 1;
+		return true;
+	case '2':
+		(*pI) = 2;
+		return true;
+	case '3':
+		(*pI) = 3;
+		return true;
+	case '4':
+		(*pI) = 4;
+		return true;
+	case '5':
+		(*pI) = 5;
+		return true;
+	case '6':
+		(*pI) = 6;
+		return true;
+	case '7':
+		(*pI) = 7;
+		return true;
+	case '8':
+		(*pI) = 8;
+		return true;
+	case '9':
+		(*pI) = 9;
+		return true;
+	default:
+		return false;
+	}
+}
+static inline bool PTS_Number_CharToInt_DEC(char C, uint64_t *pI)
+{
+	switch (C)
+	{
+	case '0':
+		(*pI) = 0U;
+		return true;
+	case '1':
+		(*pI) = 1U;
+		return true;
+	case '2':
+		(*pI) = 2U;
+		return true;
+	case '3':
+		(*pI) = 3U;
+		return true;
+	case '4':
+		(*pI) = 4U;
+		return true;
+	case '5':
+		(*pI) = 5U;
+		return true;
+	case '6':
+		(*pI) = 6U;
+		return true;
+	case '7':
+		(*pI) = 7U;
+		return true;
+	case '8':
+		(*pI) = 8U;
+		return true;
+	case '9':
+		(*pI) = 9U;
+		return true;
+	default:
+		return false;
+	}
+}
+#endif
+
+#elif defined(PTPOSIXANDROID)
+#else
+#error 未知的平台
+#endif
