@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{E9D0906C-9BA3-4E38-80A1-5C07BF4DDF66}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>TreeSum</RootNamespace>
+    <RootNamespace>TreeSum_Win32Desktop</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -72,23 +72,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>TreeSum</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>TreeSum</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>TreeSum</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <TargetName>TreeSum</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -159,12 +163,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
+      <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
