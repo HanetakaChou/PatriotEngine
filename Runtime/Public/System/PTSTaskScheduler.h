@@ -52,7 +52,7 @@ struct IPTSTaskScheduler
 	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
 
 	virtual void Task_Spawn(IPTSTask *pTask) = 0;
-	virtual void Task_Spawn_Root_And_Wait(IPTSTask *pTask) = 0;
+	virtual void Task_WaitRoot(IPTSTask *pTask) = 0;
 
 	virtual void Worker_Wake() = 0;
 	virtual void Worker_Sleep() = 0;
@@ -232,7 +232,7 @@ inline void PTSParallel_Map(
 		IPTSTask::Allocate_Root(pTaskMap, pTaskScheduler)
 		)__PTSInternal_Parallel_Map::PTSTask_Map<PTSLambda_Serial_Map>(Threshold, Begin, End, rLambdaSerialMap);
 
-	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskMap);
+	pTaskScheduler->Task_WaitRoot(pTaskMap);
 }
 
 #endif
