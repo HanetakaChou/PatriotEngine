@@ -93,14 +93,6 @@ public:
 
 float TreeSum_Serial(TreeNode* root);
 
-class TaskTest :IPTSTask
-{
-	IPTSTask *Execute() override
-	{
-		return NULL;
-	}
-};
-
 int main()
 {
 	::PTSMemoryAllocator_Initialize();
