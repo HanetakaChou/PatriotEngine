@@ -618,10 +618,14 @@ static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask)
 	return reinterpret_cast<PTSTaskPrefixImpl *>(reinterpret_cast<uintptr_t>(pTask) - s_TaskPrefix_Reservation_Size);
 }
 
+static inline IPTSTask * PTS_Internal_TaskPrefix_Task(PTSTaskPrefixImpl *pTaskPrefix)
+{
+	return reinterpret_cast<IPTSTask *>(reinterpret_cast<uintptr_t>(pTaskPrefix) + s_TaskPrefix_Reservation_Size);
+}
+
 inline PTSTaskPrefixImpl::PTSTaskPrefixImpl() :
 	m_Parent(NULL),
 	m_RefCount(0U), 
-	m_pFn_Execute(NULL),
 	m_State(Allocated)
 {
 
@@ -654,16 +658,11 @@ void PTSTaskPrefixImpl::RefCount_Set(uint32_t RefCount)
 	m_RefCount = RefCount;
 }
 
-void PTSTaskPrefixImpl::OverrideExecute(IPTSTask *(*pFn_Execute)(IPTSTask *pTaskThisVoid))
-{
-	m_pFn_Execute = pFn_Execute;
-}
-
 inline PTSTaskPrefixImpl *PTSTaskPrefixImpl::Execute()
 {
 	assert(m_pFn_Execute != NULL);
-	IPTSTask *pTask = reinterpret_cast<IPTSTask *>(reinterpret_cast<uintptr_t>(this) + s_TaskPrefix_Reservation_Size);
-	IPTSTask *pTaskByPass = static_cast<IPTSTask *>(m_pFn_Execute(pTask));
+	IPTSTask *pTask = ::PTS_Internal_TaskPrefix_Task(this);
+	IPTSTask *pTaskByPass = pTask->Execute();
 	return (pTaskByPass != NULL) ? (::PTS_Internal_Task_Prefix(pTaskByPass)) : NULL;
 }
 
@@ -725,17 +724,16 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 
 		}
 
-		static IPTSTask * Execute(IPTSTask *pTaskThisVoid)
+		IPTSTask * Execute() override
 		{
-			PTSTaskWait *pTaskThis = static_cast<PTSTaskWait *>(pTaskThisVoid);
-			::PTSAtomic_Set(pTaskThis->m_pHasBeenFinished, 1U);
+			::PTSAtomic_Set(m_pHasBeenFinished, 1U);
 			return NULL;
 		}
 	};
 
 	PTSTaskWait *pTaskWait = new(this->Task_Allocate(sizeof(PTSTaskWait), alignof(PTSTaskWait)))PTSTaskWait(&HasBeenFinished);
 	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
-	pTaskWaitPrefix->m_pFn_Execute = PTSTaskWait::Execute;
+	//pTaskWaitPrefix->m_pFn_Execute = PTSTaskWait::Execute;
 
 	PTSTaskPrefixImpl *pTaskRootPrefix = ::PTS_Internal_Task_Prefix(pTaskRoot);
 	

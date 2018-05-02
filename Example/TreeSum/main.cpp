@@ -1,5 +1,4 @@
-﻿#include <stddef.h>
-#include "../../Runtime/Public/System/PTSMemoryAllocator.h"
+﻿#include "../../Runtime/Public/System/PTSMemoryAllocator.h"
 #include "../../Runtime/Public/System/PTSTaskScheduler.h"
 #include "../../Runtime/Public/System/PTSThread.h"
 #include <new>
@@ -34,7 +33,7 @@ public:
 
 	}
 
-	static IPTSTask * Execute(IPTSTask *pVoid);
+	IPTSTask * Execute() override;
 };
 
 class Task_TreeCreation : public IPTSTask
@@ -48,8 +47,8 @@ public:
 	{
 
 	}
-
-	static IPTSTask * Execute(IPTSTask *pVoid);
+	
+	IPTSTask * Execute() override;
 };
 
 TreeNode *TreeCreation_Serial(int32_t NodeCount);
@@ -72,7 +71,7 @@ public:
 
 	}
 
-	static IPTSTask * Execute(IPTSTask *pVoid);
+	IPTSTask * Execute() override;
 };
 
 class Task_TreeSum : public IPTSTask
@@ -89,10 +88,18 @@ public:
 
 	}
 
-	static IPTSTask * Execute(IPTSTask *pVoid);
+	IPTSTask * Execute() override;
 };
 
 float TreeSum_Serial(TreeNode* root);
+
+class TaskTest :IPTSTask
+{
+	IPTSTask *Execute() override
+	{
+		return NULL;
+	}
+};
 
 int main()
 {
@@ -117,7 +124,7 @@ int main()
 	pTaskScheduler->Worker_Wake();
 
 	pTaskCreation = new(
-		IPTSTaskPrefix::Allocate_Root(pTaskCreation, pTaskScheduler)
+		IPTSTask::Allocate_Root(pTaskCreation, pTaskScheduler)
 		)Task_TreeCreation(&pRoot, 10000000);
 
 	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskCreation);
@@ -138,7 +145,7 @@ int main()
 	pTaskScheduler->Worker_Wake();
 
 	pTaskSum = new(
-		IPTSTaskPrefix::Allocate_Root(pTaskSum, pTaskScheduler)
+		IPTSTask::Allocate_Root(pTaskSum, pTaskScheduler)
 		)Task_TreeSum(&Sum, pRoot);
 
 	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskSum);
@@ -154,56 +161,51 @@ int main()
 	return 0;
 }
 
-IPTSTask * Task_TreeCreation_Continuation::Execute(IPTSTask *pVoid)
+IPTSTask * Task_TreeCreation_Continuation::Execute()
 {
-	Task_TreeCreation_Continuation *pThis = static_cast<Task_TreeCreation_Continuation *>(pVoid);
-	(*pThis->m_ppRootOfSubTree) = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(TreeNode), alignof(TreeNode)))TreeNode{};
-	(*pThis->m_ppRootOfSubTree)->right = pThis->m_pRightOfSubTree;
-	(*pThis->m_ppRootOfSubTree)->left = pThis->m_pLeftOfSubTree;
-	(*pThis->m_ppRootOfSubTree)->node_count = pThis->m_NodeCount;
-	(*pThis->m_ppRootOfSubTree)->value = s_PI * pThis->m_NodeCount;
+	(*this->m_ppRootOfSubTree) = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(TreeNode), alignof(TreeNode)))TreeNode{};
+	(*this->m_ppRootOfSubTree)->right = this->m_pRightOfSubTree;
+	(*this->m_ppRootOfSubTree)->left = this->m_pLeftOfSubTree;
+	(*this->m_ppRootOfSubTree)->node_count = this->m_NodeCount;
+	(*this->m_ppRootOfSubTree)->value = s_PI * this->m_NodeCount;
 	return NULL;
 }
 
-IPTSTask * Task_TreeCreation::Execute(IPTSTask *pVoid)
+IPTSTask * Task_TreeCreation::Execute()
 {
-	Task_TreeCreation *pThis = static_cast<Task_TreeCreation *>(pVoid);
-	IPTSTaskPrefix *pThisPrefix = ::PTSTaskScheduler_Task_Prefix(pThis);
-
 	assert(pThis->m_ppRootOfSubTree != NULL);
 
 	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
-	if (pThis->m_NodeCount >= 1000) //Recursive
+	if (this->m_NodeCount >= 1000) //Recursive
 	{
 		//Divide
 		Task_TreeCreation_Continuation *pTaskContinuation = NULL;
 		pTaskContinuation = new(
-			pThisPrefix->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
-			) Task_TreeCreation_Continuation(pThis->m_ppRootOfSubTree, pThis->m_NodeCount);
+			this->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
+			) Task_TreeCreation_Continuation(this->m_ppRootOfSubTree, this->m_NodeCount);
 
-		IPTSTaskPrefix *pTaskContinuationPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskContinuation);
 
-		--pThis->m_NodeCount;
+		--this->m_NodeCount;
 
 		Task_TreeCreation *pTaskChildRight = NULL;
 		pTaskChildRight = new(
-			pTaskContinuationPrefix->Allocate_Child(pTaskChildRight, pTaskScheduler)
-			)Task_TreeCreation(&pTaskContinuation->m_pRightOfSubTree, pThis->m_NodeCount / 2);
+			pTaskContinuation->Allocate_Child(pTaskChildRight, pTaskScheduler)
+			)Task_TreeCreation(&pTaskContinuation->m_pRightOfSubTree, this->m_NodeCount / 2);
 
-		pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
-		pThis->m_ppRootOfSubTree = &pTaskContinuation->m_pLeftOfSubTree;
-		pThis->m_NodeCount = pThis->m_NodeCount - pThis->m_NodeCount / 2;
+		this->Recycle_AsChildOf(pTaskContinuation);
+		this->m_ppRootOfSubTree = &pTaskContinuation->m_pLeftOfSubTree;
+		this->m_NodeCount = this->m_NodeCount - this->m_NodeCount / 2;
 
-		pTaskContinuationPrefix->RefCount_Set(2);
+		pTaskContinuation->RefCount_Set(2);
 
 		pTaskScheduler->Task_Spawn(pTaskChildRight);
 
-		return pThis;
+		return this;
 	}
 	else //Base Case
 	{
-		(*pThis->m_ppRootOfSubTree) = TreeCreation_Serial(pThis->m_NodeCount);
+		(*this->m_ppRootOfSubTree) = TreeCreation_Serial(this->m_NodeCount);
 		return NULL;
 	}
 }
@@ -227,34 +229,28 @@ TreeNode *TreeCreation_Serial(int32_t NodeCount)
 }
 
 
-IPTSTask * Task_TreeSum_Continuation::Execute(IPTSTask *pVoid)
+IPTSTask * Task_TreeSum_Continuation::Execute()
 {
-	Task_TreeSum_Continuation *pThis = static_cast<Task_TreeSum_Continuation *>(pVoid);
-	(*pThis->m_pSumofSubTree) = pThis->m_ValueOfMiddle + pThis->m_SumOfLeft + pThis->m_SumOfRight;
+	(*this->m_pSumofSubTree) = this->m_ValueOfMiddle + this->m_SumOfLeft + this->m_SumOfRight;
 	return NULL;
 }
 
-IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
+IPTSTask * Task_TreeSum::Execute()
 {
-	Task_TreeSum *pThis = static_cast<Task_TreeSum *>(pVoid);
-	IPTSTaskPrefix *pThisPrefix = ::PTSTaskScheduler_Task_Prefix(pThis);
-
 	assert(pThis->m_pRootOfSubTree != NULL);
 
 	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
-	if (pThis->m_pRootOfSubTree->node_count >= 1000) //Recursive
+	if (this->m_pRootOfSubTree->node_count >= 1000) //Recursive
 	{
 		//Divide
 		Task_TreeSum_Continuation *pTaskContinuation = NULL;
 		pTaskContinuation = new(
-			pThisPrefix->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
-			) Task_TreeSum_Continuation(pThis->m_pSumofSubTree, pThis->m_pRootOfSubTree->value);
+			this->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
+			) Task_TreeSum_Continuation(this->m_pSumofSubTree, this->m_pRootOfSubTree->value);
 		
-		IPTSTaskPrefix *pTaskContinuationPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskContinuation);
-
 		//Maybe Modified By Recycle
-		TreeNode *pRootOfSubTree = pThis->m_pRootOfSubTree;
+		TreeNode *pRootOfSubTree = this->m_pRootOfSubTree;
 
 		Task_TreeSum *pTaskChildNext = NULL;
 		Task_TreeSum *pTaskChildSpawn = NULL;
@@ -262,10 +258,10 @@ IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
 		Task_TreeSum *pTaskChildLeft = NULL;
 		if (pRootOfSubTree->left != NULL)
 		{
-			pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
-			pThis->m_pSumofSubTree = &pTaskContinuation->m_SumOfLeft;
-			pThis->m_pRootOfSubTree = pRootOfSubTree->left;
-			pTaskChildLeft = pThis;
+			this->Recycle_AsChildOf(pTaskContinuation);
+			this->m_pSumofSubTree = &pTaskContinuation->m_SumOfLeft;
+			this->m_pRootOfSubTree = pRootOfSubTree->left;
+			pTaskChildLeft = this;
 			pTaskChildNext = pTaskChildLeft;
 		}
 		else
@@ -280,16 +276,16 @@ IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
 			if (pTaskChildNext != NULL)
 			{
 				pTaskChildRight = new(
-					pTaskContinuationPrefix->Allocate_Child(pTaskChildRight, pTaskScheduler)
+					pTaskContinuation->Allocate_Child(pTaskChildRight, pTaskScheduler)
 					)Task_TreeSum(&pTaskContinuation->m_SumOfRight, pRootOfSubTree->right);
 				pTaskChildSpawn = pTaskChildRight;
 			}
 			else //!!!Still Can Recycle
 			{
-				pThisPrefix->Recycle_AsChildOf(pTaskContinuationPrefix);
-				pThis->m_pSumofSubTree = &pTaskContinuation->m_SumOfRight;
-				pThis->m_pRootOfSubTree = pRootOfSubTree->right;
-				pTaskChildRight = pThis;
+				this->Recycle_AsChildOf(pTaskContinuation);
+				this->m_pSumofSubTree = &pTaskContinuation->m_SumOfRight;
+				this->m_pRootOfSubTree = pRootOfSubTree->right;
+				pTaskChildRight = this;
 				pTaskChildNext = pTaskChildRight;
 			}
 		}
@@ -299,7 +295,7 @@ IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
 		}
 
 		//Conquer
-		pTaskContinuationPrefix->RefCount_Set(((pTaskChildRight != NULL) ? 1 : 0) + ((pTaskChildLeft != NULL) ? 1 : 0));
+		pTaskContinuation->RefCount_Set(((pTaskChildRight != NULL) ? 1 : 0) + ((pTaskChildLeft != NULL) ? 1 : 0));
 		if (pTaskChildSpawn != NULL)
 		{
 			pTaskScheduler->Task_Spawn(pTaskChildSpawn);
@@ -308,7 +304,7 @@ IPTSTask * Task_TreeSum::Execute(IPTSTask *pVoid)
 	}
 	else //Base Case
 	{
-		(*pThis->m_pSumofSubTree) = TreeSum_Serial(pThis->m_pRootOfSubTree);
+		(*this->m_pSumofSubTree) = TreeSum_Serial(this->m_pRootOfSubTree);
 		return NULL;
 	}
 }

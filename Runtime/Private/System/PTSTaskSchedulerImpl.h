@@ -187,21 +187,16 @@ static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct")
 class PTSTaskPrefixImpl :public IPTSTaskPrefix
 {
 	IPTSTaskPrefix * Parent() override;
-
 	void ParentSet(IPTSTaskPrefix *pParent) override;
 
 	void Recycle_AsChildOf(IPTSTaskPrefix *pParent) override;
 
 	void RefCount_Set(uint32_t RefCount) override;
 
-	void OverrideExecute(IPTSTask *(*pFn_Execute)(IPTSTask *pTaskThisVoid))  override;
-
 public:
 	PTSTaskPrefixImpl * m_Parent;
 
 	uint32_t m_RefCount; //Count Of Child
-
-	IPTSTask *(*m_pFn_Execute)(IPTSTask *pTaskThis);
 
 	enum :uint8_t
 	{

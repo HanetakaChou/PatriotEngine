@@ -163,15 +163,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
-      <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
