@@ -139,10 +139,7 @@ inline void * IPTSTask::Allocate_Continuation(TaskImpl *pTaskNull, IPTSTaskSched
 	return pTaskNew;
 }
 
-//RECURSIVE IMPLEMENTATION OF MAP
 //James Reinders,Arch Robison,Michael McCool. "Recursive Implementation Of Map". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.3, 2012.
-
-
 namespace __PTSInternal_Parallel_Map
 {
 	class PTSTask_Map_Continuation :public IPTSTask
@@ -208,7 +205,7 @@ namespace __PTSInternal_Parallel_Map
 						this->m_End, 
 						this->m_rSerialMap);
 
-				//Scheduler ByPass
+				//Recycle
 				this->Recycle_AsChildOf(pTaskContinuation);
 				this->m_End = Middle;
 
@@ -216,6 +213,7 @@ namespace __PTSInternal_Parallel_Map
 
 				pTaskScheduler->Task_Spawn(pTaskChildRight);
 
+				//Scheduler ByPass
 				return this;
 			}
 			else //Base Case
@@ -245,6 +243,8 @@ inline void PTSParallel_Map(
 	pTaskScheduler->Task_WaitRoot(pTaskMap);
 }
 
+
+//James Reinders,Arch Robison,Michael McCool. "Reductions And HypeObjects". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.10, 2012.
 namespace __PTSInternal_Parallel_Reduce
 {
 	template<typename PTSTYPE_Value, typename PTSTYPE_Lambda_Function_Combine>
@@ -334,7 +334,7 @@ namespace __PTSInternal_Parallel_Reduce
 						this->m_rFunctionCombine
 					);
 
-				//Scheduler ByPass
+				//Recycle
 				this->Recycle_AsChildOf(pTaskContinuation);
 				this->m_End = Middle;
 				this->m_pResultRoot = &pTaskContinuation->m_ResultChildLeft;
@@ -343,6 +343,7 @@ namespace __PTSInternal_Parallel_Reduce
 
 				pTaskScheduler->Task_Spawn(pTaskChildRight);
 
+				//Scheduler ByPass
 				return this;
 			}
 			else //Base Case
