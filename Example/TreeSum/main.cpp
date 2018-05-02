@@ -165,7 +165,7 @@ IPTSTask * Task_TreeCreation_Continuation::Execute()
 
 IPTSTask * Task_TreeCreation::Execute()
 {
-	assert(pThis->m_ppRootOfSubTree != NULL);
+	assert(this->m_ppRootOfSubTree != NULL);
 
 	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
@@ -229,7 +229,7 @@ IPTSTask * Task_TreeSum_Continuation::Execute()
 
 IPTSTask * Task_TreeSum::Execute()
 {
-	assert(pThis->m_pRootOfSubTree != NULL);
+	assert(this->m_pRootOfSubTree != NULL);
 
 	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
