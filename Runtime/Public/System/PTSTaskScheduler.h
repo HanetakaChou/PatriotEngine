@@ -202,7 +202,11 @@ namespace __PTSInternal_Parallel_Map
 				PTSTask_Map<PTSTYPE_Lambda_Serial_Map> *pTaskChildRight = NULL;
 				pTaskChildRight = new(
 					pTaskContinuation->Allocate_Child(pTaskChildRight, pTaskScheduler)
-					)PTSTask_Map<PTSTYPE_Lambda_Serial_Map>(this->m_Threshold, Middle, this->m_End, this->m_rSerialMap);
+					)PTSTask_Map<PTSTYPE_Lambda_Serial_Map>(
+						this->m_Threshold, 
+						Middle,
+						this->m_End, 
+						this->m_rSerialMap);
 
 				//Scheduler ByPass
 				this->Recycle_AsChildOf(pTaskContinuation);
@@ -304,10 +308,10 @@ namespace __PTSInternal_Parallel_Reduce
 		{
 			IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
-			if ((m_End - m_Begin) > m_Threshold) //Recursive
+			if ((this->m_End - this->m_Begin) > this->m_Threshold) //Recursive
 			{
 				//Divide
-				uint32_t Middle = m_Begin + (m_End - m_Begin) / 2U;
+				uint32_t Middle = this->m_Begin + (this->m_End - this->m_Begin) / 2U;
 
 				//Continuation Passing Style
 				PTSTask_Reduce_Continuation<PTSTYPE_Value, PTSTYPE_Lambda_Function_Combine> *pTaskContinuation = NULL;
