@@ -17,8 +17,9 @@ static inline uint32_t PTS_Size_BitPopCount(uint32_t Value);
 
 static inline IPTSTask *PTS_Internal_Task_Alloc(size_t SizeTask, size_t AlignmentTask);
 static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskToSpawnPrefix);
-static inline void PTS_Internal_Master_Execute_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
-static inline void PTS_Internal_Worker_Execute_Main(PTSArena *pArena, uint32_t Slot_Index);
+static inline void PTS_Internal_Task_WaitRoot(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix);
+static inline void PTS_Internal_ExecuteAndWaitRoot_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, uint32_t *pHasBeenFinished);
+static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t Slot_Index);
 
 static PTSMarket *s_Market_Singleton_Pointer = NULL;
 static PTSTSD_KEY s_TaskScheduler_Index;
@@ -708,50 +709,9 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 	::PTS_Internal_Task_Spawn(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTask));
 }
 
-void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
+void PTSTaskSchedulerMasterImpl::Task_WaitRoot(IPTSTask *pTaskRoot)
 {
-	assert(pTaskRoot != NULL);
-	PTSTaskPrefixImpl *pTaskRootPrefix = ::PTS_Internal_Task_Prefix(pTaskRoot);
-
-	uint32_t HasBeenFinished = 0U;
-
-	class PTSTaskWait :public IPTSTask
-	{
-		uint32_t *m_pHasBeenFinished;
-	public:
-		inline PTSTaskWait(uint32_t *pHasBeenFinished) :m_pHasBeenFinished(pHasBeenFinished)
-		{
-
-		}
-
-		IPTSTask * Execute() override
-		{
-			::PTSAtomic_Set(m_pHasBeenFinished, 1U);
-			return NULL;
-		}
-	};
-
-	struct IPTSTaskForOffset
-	{
-		//__vfptr并不一定在结构体最前端（比如在Linux平台下）
-		virtual IPTSTask *Execute() = 0;
-		IPTSTaskPrefix * m_pPrefix;
-	};
-
-	IPTSTask *pTaskWaitAssert = this->Task_Allocate(sizeof(PTSTaskWait), alignof(PTSTaskWait));
-	(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
-
-	PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
-	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
-
-	assert(pTaskRootPrefix->m_Parent == NULL); //Root
-	pTaskRootPrefix->m_Parent = pTaskWaitPrefix;
-	pTaskWaitPrefix->m_RefCount = 1U;
-
-	assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
-	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
-
-	::PTS_Internal_Master_Execute_Main(m_pArena, 0U, pTaskRootPrefix, &HasBeenFinished);
+	::PTS_Internal_Task_WaitRoot(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTaskRoot));
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -772,9 +732,9 @@ void PTSTaskSchedulerWorkerImpl::Task_Spawn(IPTSTask *pTask)
 	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTask));
 }
 
-void PTSTaskSchedulerWorkerImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTask)
+void PTSTaskSchedulerWorkerImpl::Task_WaitRoot(IPTSTask *pTaskRoot)
 {
-	assert(0);
+	::PTS_Internal_Task_WaitRoot(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTaskRoot));
 }
 
 void PTSTaskSchedulerWorkerImpl::Worker_Wake()
@@ -840,7 +800,52 @@ static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index
 	pArenaSlot->TaskDeque_Push(pTaskToSpawnPrefix);
 }
 
-static inline void PTS_Internal_Master_Execute_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, uint32_t *pHasBeenFinished)
+static inline void PTS_Internal_Task_WaitRoot(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix)
+{
+	assert(pTaskRootPrefix != NULL);
+
+	uint32_t HasBeenFinished = 0U;
+
+	class PTSTaskWait :public IPTSTask
+	{
+		uint32_t *m_pHasBeenFinished;
+	public:
+		inline PTSTaskWait(uint32_t *pHasBeenFinished) :m_pHasBeenFinished(pHasBeenFinished)
+		{
+
+		}
+
+		IPTSTask * Execute() override
+		{
+			::PTSAtomic_Set(m_pHasBeenFinished, 1U);
+			return NULL;
+		}
+	};
+
+	struct IPTSTaskForOffset
+	{
+		//__vfptr并不一定在结构体最前端（比如在Linux平台下）
+		virtual IPTSTask *Execute() = 0;
+		IPTSTaskPrefix * m_pPrefix;
+	};
+
+	IPTSTask *pTaskWaitAssert = ::PTS_Internal_Task_Alloc(sizeof(PTSTaskWait), alignof(PTSTaskWait));
+	(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
+
+	PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
+	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
+
+	assert(pTaskRootPrefix->m_Parent == NULL); //Root
+	pTaskRootPrefix->m_Parent = pTaskWaitPrefix;
+	pTaskWaitPrefix->m_RefCount = 1U;
+
+	assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
+	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
+
+	::PTS_Internal_ExecuteAndWaitRoot_Main(pArena, Slot_Index, pTaskRootPrefix, &HasBeenFinished);
+}
+
+static inline void PTS_Internal_ExecuteAndWaitRoot_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, uint32_t *pHasBeenFinished)
 {
 	assert(pTaskRootPrefix != NULL);
 
@@ -993,7 +998,7 @@ static inline void PTS_Internal_Master_Execute_Main(PTSArena *pArena, uint32_t S
 
 }
 
-static inline void PTS_Internal_Worker_Execute_Main(PTSArena *pArena, uint32_t Slot_Index)
+static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t Slot_Index)
 {
 	PTSTaskPrefixImpl *pTaskExecuting = NULL;
 	
@@ -1256,7 +1261,7 @@ inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 			pTaskScheduler->m_pArena = pArena;
 			pTaskScheduler->m_Slot_Index = Slot_Index;
 
-			::PTS_Internal_Worker_Execute_Main(pArena, Slot_Index);
+			::PTS_Internal_StealAndExecute_Main(pArena, Slot_Index);
 
 			pArena->Slot_Release(Slot_Index);
 		}

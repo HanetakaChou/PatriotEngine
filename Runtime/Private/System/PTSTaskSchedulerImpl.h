@@ -229,7 +229,7 @@ class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 
 	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
+	void Task_WaitRoot(IPTSTask *pTask) override;
 
 	//TBB不允许应用程序显示控制并行
 	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
@@ -244,7 +244,7 @@ public:
 
 //TaskScheduler
 //WorkerThread在执行Task时，会通过TLS访问TaskScheduler
-//正常情况下，WorkerThread只可能访问TaskScheduler的Task_Allocate和Task_Spawn方法
+//正常情况下，WorkerThread只可能访问TaskScheduler的Task_Allocate、Task_Spawn和Task_WaitRoot方法
 class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
@@ -253,7 +253,7 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 
 	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_Spawn_Root_And_Wait(IPTSTask *pTask) override;
+	void Task_WaitRoot(IPTSTask *pTask) override;//For Nested Parallel
 
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
