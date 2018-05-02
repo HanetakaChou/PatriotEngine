@@ -660,7 +660,6 @@ void PTSTaskPrefixImpl::RefCount_Set(uint32_t RefCount)
 
 inline PTSTaskPrefixImpl *PTSTaskPrefixImpl::Execute()
 {
-	assert(m_pFn_Execute != NULL);
 	IPTSTask *pTask = ::PTS_Internal_TaskPrefix_Task(this);
 	IPTSTask *pTaskByPass = pTask->Execute();
 	return (pTaskByPass != NULL) ? (::PTS_Internal_Task_Prefix(pTaskByPass)) : NULL;
@@ -712,6 +711,7 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 {
 	assert(pTaskRoot != NULL);
+	PTSTaskPrefixImpl *pTaskRootPrefix = ::PTS_Internal_Task_Prefix(pTaskRoot);
 
 	uint32_t HasBeenFinished = 0U;
 
@@ -731,20 +731,26 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn_Root_And_Wait(IPTSTask *pTaskRoot)
 		}
 	};
 
-	PTSTaskWait *pTaskWait = new(this->Task_Allocate(sizeof(PTSTaskWait), alignof(PTSTaskWait)))PTSTaskWait(&HasBeenFinished);
-	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
-	//pTaskWaitPrefix->m_pFn_Execute = PTSTaskWait::Execute;
+	struct IPTSTaskForOffset
+	{
+		//__vfptr并不一定在结构体最前端（比如在Linux平台下）
+		virtual IPTSTask *Execute() = 0;
+		IPTSTaskPrefix * m_pPrefix;
+	};
 
-	PTSTaskPrefixImpl *pTaskRootPrefix = ::PTS_Internal_Task_Prefix(pTaskRoot);
-	
-	pTaskWaitPrefix->m_RefCount = 1U;
+	IPTSTask *pTaskWaitAssert = this->Task_Allocate(sizeof(PTSTaskWait), alignof(PTSTaskWait));
+	(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
+
+	PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
+	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
+
 	assert(pTaskRootPrefix->m_Parent == NULL); //Root
 	pTaskRootPrefix->m_Parent = pTaskWaitPrefix;
+	pTaskWaitPrefix->m_RefCount = 1U;
 
 	assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
 	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
 
-	assert(pTaskRootPrefix->m_pFn_Execute != NULL);
 	::PTS_Internal_Master_Execute_Main(m_pArena, 0U, pTaskRootPrefix, &HasBeenFinished);
 }
 
