@@ -133,4 +133,106 @@ inline void * IPTSTask::Allocate_Continuation(TaskImpl *, IPTSTaskScheduler *pTa
 	return pTaskNew;
 }
 
+//RECURSIVE IMPLEMENTATION OF MAP
+//James Reinders,Arch Robison,Michael McCool. "Recursive Implementation Of Map". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.3, 2012.
+
+
+namespace __PTSInternal_Parallel_Map
+{
+	class PTSTask_Map_Continuation :public IPTSTask
+	{
+	public:
+		inline PTSTask_Map_Continuation()
+		{
+
+		}
+
+		IPTSTask *Execute() override
+		{
+			//Conquer
+			return NULL;
+		}
+	};
+
+	template<typename PTSLambda_Serial_Map>
+	class PTSTask_Map :public IPTSTask
+	{
+		uint32_t const m_Threshold;
+		uint32_t m_Begin;
+		uint32_t m_End;
+		PTSLambda_Serial_Map const &m_rLambdaSerialMap;
+
+	public:
+		inline PTSTask_Map(
+			uint32_t Threshold,
+			uint32_t Begin,
+			uint32_t End,
+			PTSLambda_Serial_Map const &rLambdaSerialMap
+		)
+			:
+			m_Threshold(Threshold),
+			m_Begin(Begin),
+			m_End(End),
+			m_rLambdaSerialMap(rLambdaSerialMap)
+		{
+
+		}
+
+		IPTSTask *Execute() override
+		{
+			IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();//Master And Worker Divergence
+
+			if ((m_End - m_Begin) > m_Threshold) //Recursive
+			{
+				//Divide
+				uint32_t Middle = m_Begin + (m_End - m_Begin) / 2U;
+
+				//Continuation Passing Style
+				PTSTask_Map_Continuation *pTaskContinuation = NULL;
+				pTaskContinuation = new(
+					this->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
+					) PTSTask_Map_Continuation{};
+
+				PTSTask_Map *pTaskChildRight = NULL;
+				pTaskChildRight = new(
+					pTaskContinuation->Allocate_Child(pTaskChildRight, pTaskScheduler)
+					)PTSTask_Map(m_Threshold, Middle, m_End, m_rLambdaSerialMap);
+
+				//Scheduler ByPass
+				this->Recycle_AsChildOf(pTaskContinuation);
+				this->m_End = Middle;
+
+				pTaskContinuation->RefCount_Set(2);
+
+				pTaskScheduler->Task_Spawn(pTaskChildRight);
+
+				return this;
+			}
+			else //Base Case
+			{
+				m_rLambdaSerialMap(m_Begin, m_End);
+				return NULL;
+			}
+		}
+	};
+}
+
+template<typename PTSLambda_Serial_Map>
+inline void PTSParallel_Map(
+	uint32_t Threshold,
+	uint32_t Begin,
+	uint32_t End,
+	PTSLambda_Serial_Map const &rLambdaSerialMap
+)
+{
+	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
+
+	__PTSInternal_Parallel_Map::PTSTask_Map<PTSLambda_Serial_Map> *pTaskMap = NULL;
+	pTaskMap = new(
+		IPTSTask::Allocate_Root(pTaskMap, pTaskScheduler)
+		)__PTSInternal_Parallel_Map::PTSTask_Map<PTSLambda_Serial_Map>(Threshold, Begin, End, rLambdaSerialMap);
+
+	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskMap);
+}
+
 #endif
