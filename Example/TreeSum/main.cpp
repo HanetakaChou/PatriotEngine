@@ -119,7 +119,7 @@ int main()
 		IPTSTask::Allocate_Root(pTaskCreation, pTaskScheduler)
 		)Task_TreeCreation(&pRoot, 10000000);
 
-	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskCreation);
+	pTaskScheduler->Task_WaitRoot(pTaskCreation);
 
 	pTaskScheduler->Worker_Sleep();
 
@@ -140,7 +140,7 @@ int main()
 		IPTSTask::Allocate_Root(pTaskSum, pTaskScheduler)
 		)Task_TreeSum(&Sum, pRoot);
 
-	pTaskScheduler->Task_Spawn_Root_And_Wait(pTaskSum);
+	pTaskScheduler->Task_WaitRoot(pTaskSum);
 
 	pTaskScheduler->Worker_Sleep();
 
