@@ -89,6 +89,10 @@ inline PTSArena *PTSMarket::Arena_Allocate_Master(float fThreadNumberRatio)
 					if (pArenaToRecycle->Capacity() == ArenaCapacity) //应该认为Capacity相等存在较大的可能性 以8线程为例 Capacity可能的取值有1 2 3 4 5 6 7 共7种
 					{
 						//MasterThread的SlotIndex一定为0
+						//WorkerThread尚未Release，并不会影响新MasterThread的Acquire
+						//新MasterThread可能会执行前MasterThread遗留的Task（通过Steal WorkerThread的Slot）
+						//但是WorkerThread的Slot可能已经不存在Task，正处于Steal的等待循环中
+						//一旦新MasterThread Spawn Task，会立即被WorkerThread Steal，相对于WorkerThread Release后再次Acquire更加高效
 						if (pArenaToRecycle->Slot_Acquire_Master())
 						{
 							pArenaAllocated = pArenaToRecycle;
@@ -248,6 +252,10 @@ inline bool PTSArena::Slot_Acquire_Master()
 		do
 		{
 			SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
+			//WorkerThread尚未Release，并不会影响新MasterThread的Acquire
+			//新MasterThread可能会执行前MasterThread遗留的Task（通过Steal WorkerThread的Slot）
+			//但是WorkerThread的Slot可能已经不存在Task，正处于Steal的等待循环中
+			//一旦新MasterThread Spawn Task，会立即被WorkerThread Steal，相对于WorkerThread Release后再次Acquire更加高效
 			assert((SlotIndexAffinityMaskOld&SlotIndexMask) == 0U);
 		} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld | SlotIndexMask)) != SlotIndexAffinityMaskOld);
 
