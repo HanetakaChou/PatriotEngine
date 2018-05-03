@@ -806,41 +806,44 @@ static inline void PTS_Internal_Task_WaitRoot(PTSArena *pArena, uint32_t Slot_In
 
 	uint32_t HasBeenFinished = 0U;
 
-	class PTSTaskWait :public IPTSTask
+	//Task Wait
 	{
-		uint32_t *m_pHasBeenFinished;
-	public:
-		inline PTSTaskWait(uint32_t *pHasBeenFinished) :m_pHasBeenFinished(pHasBeenFinished)
+		class PTSTaskWait :public IPTSTask
 		{
+			uint32_t *m_pHasBeenFinished;
+		public:
+			inline PTSTaskWait(uint32_t *pHasBeenFinished) :m_pHasBeenFinished(pHasBeenFinished)
+			{
 
-		}
+			}
 
-		IPTSTask * Execute() override
+			IPTSTask * Execute() override
+			{
+				::PTSAtomic_Set(m_pHasBeenFinished, 1U);
+				return NULL;
+			}
+		};
+
+		struct IPTSTaskForOffset
 		{
-			::PTSAtomic_Set(m_pHasBeenFinished, 1U);
-			return NULL;
-		}
-	};
+			//__vfptr并不一定在结构体最前端（比如在Linux平台下）
+			virtual IPTSTask *Execute() = 0;
+			IPTSTaskPrefix * m_pPrefix;
+		};
 
-	struct IPTSTaskForOffset
-	{
-		//__vfptr并不一定在结构体最前端（比如在Linux平台下）
-		virtual IPTSTask *Execute() = 0;
-		IPTSTaskPrefix * m_pPrefix;
-	};
+		IPTSTask *pTaskWaitAssert = ::PTS_Internal_Task_Alloc(sizeof(PTSTaskWait), alignof(PTSTaskWait));
+		(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
 
-	IPTSTask *pTaskWaitAssert = ::PTS_Internal_Task_Alloc(sizeof(PTSTaskWait), alignof(PTSTaskWait));
-	(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
+		PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
+		PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
 
-	PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
-	PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
+		assert(pTaskRootPrefix->m_Parent == NULL); //Root
+		pTaskRootPrefix->m_Parent = pTaskWaitPrefix;
+		pTaskWaitPrefix->m_RefCount = 1U;
 
-	assert(pTaskRootPrefix->m_Parent == NULL); //Root
-	pTaskRootPrefix->m_Parent = pTaskWaitPrefix;
-	pTaskWaitPrefix->m_RefCount = 1U;
-
-	assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
-	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
+		assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
+		pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
+	}
 
 	::PTS_Internal_ExecuteAndWaitRoot_Main(pArena, Slot_Index, pTaskRootPrefix, &HasBeenFinished);
 }

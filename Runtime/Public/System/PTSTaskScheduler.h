@@ -139,6 +139,11 @@ inline void * IPTSTask::Allocate_Continuation(TaskImpl *pTaskNull, IPTSTaskSched
 	return pTaskNew;
 }
 
+
+//Parallel Programming Pattern
+
+#include <new>
+
 //James Reinders,Arch Robison,Michael McCool. "Recursive Implementation Of Map". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.3, 2012.
 namespace __PTSInternal_Parallel_Map
 {
@@ -185,6 +190,7 @@ namespace __PTSInternal_Parallel_Map
 		{
 			IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();//Master And Worker Divergence
 
+			assert(this->m_Threshold > 0);
 			if ((this->m_End - this->m_Begin) > this->m_Threshold) //Recursive
 			{
 				//Divide
@@ -308,6 +314,7 @@ namespace __PTSInternal_Parallel_Reduce
 		{
 			IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
 
+			assert(this->m_Threshold > 0);
 			if ((this->m_End - this->m_Begin) > this->m_Threshold) //Recursive
 			{
 				//Divide

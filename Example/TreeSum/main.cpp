@@ -155,6 +155,7 @@ int main()
 
 IPTSTask * Task_TreeCreation_Continuation::Execute()
 {
+	//Conquer
 	(*this->m_ppRootOfSubTree) = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(TreeNode), alignof(TreeNode)))TreeNode{};
 	(*this->m_ppRootOfSubTree)->right = this->m_pRightOfSubTree;
 	(*this->m_ppRootOfSubTree)->left = this->m_pLeftOfSubTree;
@@ -172,6 +173,8 @@ IPTSTask * Task_TreeCreation::Execute()
 	if (this->m_NodeCount >= 1000) //Recursive
 	{
 		//Divide
+
+		//Continuation Passing Style
 		Task_TreeCreation_Continuation *pTaskContinuation = NULL;
 		pTaskContinuation = new(
 			this->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
@@ -185,6 +188,7 @@ IPTSTask * Task_TreeCreation::Execute()
 			pTaskContinuation->Allocate_Child(pTaskChildRight, pTaskScheduler)
 			)Task_TreeCreation(&pTaskContinuation->m_pRightOfSubTree, this->m_NodeCount / 2);
 
+		//Recycle
 		this->Recycle_AsChildOf(pTaskContinuation);
 		this->m_ppRootOfSubTree = &pTaskContinuation->m_pLeftOfSubTree;
 		this->m_NodeCount = this->m_NodeCount - this->m_NodeCount / 2;
@@ -193,6 +197,7 @@ IPTSTask * Task_TreeCreation::Execute()
 
 		pTaskScheduler->Task_Spawn(pTaskChildRight);
 
+		//Scheduler ByPass
 		return this;
 	}
 	else //Base Case
@@ -223,6 +228,7 @@ TreeNode *TreeCreation_Serial(int32_t NodeCount)
 
 IPTSTask * Task_TreeSum_Continuation::Execute()
 {
+	//Conquer
 	(*this->m_pSumofSubTree) = this->m_ValueOfMiddle + this->m_SumOfLeft + this->m_SumOfRight;
 	return NULL;
 }
@@ -236,6 +242,8 @@ IPTSTask * Task_TreeSum::Execute()
 	if (this->m_pRootOfSubTree->node_count >= 1000) //Recursive
 	{
 		//Divide
+
+		//Continuation Passing Style
 		Task_TreeSum_Continuation *pTaskContinuation = NULL;
 		pTaskContinuation = new(
 			this->Allocate_Continuation(pTaskContinuation, pTaskScheduler)
@@ -250,6 +258,7 @@ IPTSTask * Task_TreeSum::Execute()
 		Task_TreeSum *pTaskChildLeft = NULL;
 		if (pRootOfSubTree->left != NULL)
 		{
+			//Recycle
 			this->Recycle_AsChildOf(pTaskContinuation);
 			this->m_pSumofSubTree = &pTaskContinuation->m_SumOfLeft;
 			this->m_pRootOfSubTree = pRootOfSubTree->left;
@@ -286,12 +295,14 @@ IPTSTask * Task_TreeSum::Execute()
 			pTaskContinuation->m_SumOfRight = 0.0f;
 		}
 
-		//Conquer
 		pTaskContinuation->RefCount_Set(((pTaskChildRight != NULL) ? 1 : 0) + ((pTaskChildLeft != NULL) ? 1 : 0));
+		
 		if (pTaskChildSpawn != NULL)
 		{
 			pTaskScheduler->Task_Spawn(pTaskChildSpawn);
 		}
+
+		//Scheduler ByPass
 		return pTaskChildNext;
 	}
 	else //Base Case
