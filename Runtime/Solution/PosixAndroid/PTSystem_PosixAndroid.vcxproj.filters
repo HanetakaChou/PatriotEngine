@@ -42,7 +42,7 @@
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\System\Posix\PTSFileImpl.h">
+    <ClInclude Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.h">
       <Filter>Private\System\Posix</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,7 +53,7 @@
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Private\System\Posix\PTSFileImpl.cpp">
+    <ClCompile Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.cpp">
       <Filter>Private\System\Posix</Filter>
     </ClCompile>
   </ItemGroup>
