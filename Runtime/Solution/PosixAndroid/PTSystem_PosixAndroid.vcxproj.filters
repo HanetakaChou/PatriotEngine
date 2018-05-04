@@ -42,6 +42,9 @@
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Private\System\Posix\PTSFileImpl.h">
+      <Filter>Private\System\Posix</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
@@ -49,6 +52,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\Posix\PTSFileImpl.cpp">
+      <Filter>Private\System\Posix</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

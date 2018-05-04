@@ -42,18 +42,15 @@
     <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h">
       <Filter>Public\System\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h">
-      <Filter>Private\System\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.h">
+      <Filter>Private\System\Win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">
-      <Filter>Private\System\Win32</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp">
       <Filter>Private\System\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
@@ -61,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.cpp">
+      <Filter>Private\System\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

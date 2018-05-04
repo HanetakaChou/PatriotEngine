@@ -99,7 +99,7 @@ extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 	return pFileSystem;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::PTSFile_Create(char const *pFileName, uint32_t eOpenMode)
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
 {
 	HRESULT hResult;
 
@@ -148,13 +148,13 @@ IPTSFile * PTCALL PTSFileSystemImpl::PTSFile_Create(char const *pFileName, uint3
 		ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::Streams::IRandomAccessStream*> *pAsyncOperation;
 		switch (eOpenMode)
 		{
-		case ReadOnly:
+		case FILE_OPEN_READONLY:
 		{
 			hResult = pFile->OpenAsync(ABI::Windows::Storage::FileAccessMode_Read, &pAsyncOperation);
 			assert(SUCCEEDED(hResult));
 		}
 		break;
-		case ReadWrite:
+		case FILE_OPEN_READWRITE:
 		{
 			hResult = pFile->OpenAsync(ABI::Windows::Storage::FileAccessMode_ReadWrite, &pAsyncOperation);
 			assert(SUCCEEDED(hResult));
@@ -196,13 +196,13 @@ IPTSFile * PTCALL PTSFileSystemImpl::PTSFile_Create(char const *pFileName, uint3
 	{
 		switch (eOpenMode)
 		{
-		case ReadOnly:
+		case FILE_OPEN_READONLY:
 		{
 			hResult = pFileStream->QueryInterface(IID_PPV_ARGS(&pFileStreamInput));
 			assert(SUCCEEDED(hResult));
 		}
 		break;
-		case ReadWrite:
+		case FILE_OPEN_READWRITE:
 		{
 			hResult = pFileStream->QueryInterface(IID_PPV_ARGS(&pFileStreamInput));
 			assert(SUCCEEDED(hResult));
@@ -280,7 +280,7 @@ void PTCALL PTSFileImpl::Release()
 	::PTSMemoryAllocator_Free_Aligned(this);
 }
 
-int64_t PTCALL PTSFileImpl::Size_Get()
+int64_t PTCALL PTSFileImpl::Size()
 {
 	UINT64 uiSize;
 	HRESULT hResult = m_pFileStream->get_Size(&uiSize);
@@ -289,7 +289,7 @@ int64_t PTCALL PTSFileImpl::Size_Get()
 	return static_cast<int64_t>(uiSize);
 }
 
-int32_t PTCALL PTSFileImpl::Read(void *pBuffer, uint32_t uiNumberOfBytesToRead)
+intptr_t PTCALL PTSFileImpl::Read(void *pBuffer, uintptr_t Count)
 {
 	class :public ABI::Windows::Storage::Streams::IBuffer, public Windows::Storage::Streams::IBufferByteAccess, public IAgileObject
 	{
@@ -370,14 +370,14 @@ int32_t PTCALL PTSFileImpl::Read(void *pBuffer, uint32_t uiNumberOfBytesToRead)
 	}l_Lambda;
 	//当前线程会基于IAsyncInfo::get_Status忙式等待，因此存放在当前线程的栈中是安全的
 	
-	l_Lambda.m_Capacity = uiNumberOfBytesToRead;
+	l_Lambda.m_Capacity = Count;
 	l_Lambda.m_Length = 0U;
 	l_Lambda.pByte = static_cast<BYTE *>(pBuffer);
 
 	HRESULT hResult;
 
 	ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer*, UINT32> *pAsyncOperation;
-	hResult = m_pFileStreamInput->ReadAsync(&l_Lambda, uiNumberOfBytesToRead, ABI::Windows::Storage::Streams::InputStreamOptions_None, &pAsyncOperation);
+	hResult = m_pFileStreamInput->ReadAsync(&l_Lambda, Count, ABI::Windows::Storage::Streams::InputStreamOptions_None, &pAsyncOperation);
 	assert(SUCCEEDED(hResult));
 
 	ABI::Windows::Foundation::IAsyncInfo *pAsycInfo;
@@ -406,10 +406,10 @@ int32_t PTCALL PTSFileImpl::Read(void *pBuffer, uint32_t uiNumberOfBytesToRead)
 
 	pAsyncOperation->Release();
 
-	return l_Lambda.m_Length;
+	return SUCCEEDED(hResult) ? static_cast<intptr_t>(l_Lambda.m_Length) : -1;
 }
 
-int32_t PTCALL PTSFileImpl::Write(void *pBuffer, uint32_t uiNumberOfBytesToWrite)
+intptr_t PTCALL PTSFileImpl::Write(void *pBuffer, uintptr_t Count)
 {
 	assert(m_pFileStreamOutput != NULL);
 
@@ -492,8 +492,8 @@ int32_t PTCALL PTSFileImpl::Write(void *pBuffer, uint32_t uiNumberOfBytesToWrite
 	}l_Lambda;
 	//当前线程会基于IAsyncInfo::get_Status忙式等待，因此存放在当前线程的栈中是安全的
 
-	l_Lambda.m_Capacity = uiNumberOfBytesToWrite;
-	l_Lambda.m_Length = uiNumberOfBytesToWrite;
+	l_Lambda.m_Capacity = Count;
+	l_Lambda.m_Length = Count;
 	l_Lambda.pByte = static_cast<BYTE *>(pBuffer);
 
 	HRESULT hResult;
@@ -516,8 +516,8 @@ int32_t PTCALL PTSFileImpl::Write(void *pBuffer, uint32_t uiNumberOfBytesToWrite
 
 	assert(eAsyncStatus == ABI::Windows::Foundation::AsyncStatus::Completed);
 
-	UINT32 uiNumberOfBytesWritten;
-	hResult = pAsyncOperation->GetResults(&uiNumberOfBytesWritten);
+	UINT32 CountDone;
+	hResult = pAsyncOperation->GetResults(&CountDone);
 	assert(SUCCEEDED(hResult));
 
 	hResult = pAsycInfo->Close();
@@ -527,46 +527,45 @@ int32_t PTCALL PTSFileImpl::Write(void *pBuffer, uint32_t uiNumberOfBytesToWrite
 
 	pAsyncOperation->Release();
 
-	return uiNumberOfBytesWritten;
+	return SUCCEEDED(hResult) ? static_cast<intptr_t>(CountDone) : -1;
 }
 
-int64_t PTCALL PTSFileImpl::Seek(uint32_t eMoveMethod, int64_t iDistanceToMove)
+int64_t PTCALL PTSFileImpl::Seek(uint32_t Whence, int64_t Offset)
 {
+	UINT64 Position_Seek;
 	HRESULT hResult;
 
-	int64_t Position_Seek;
-
-	switch (eMoveMethod)
+	switch (Whence)
 	{
-	case Begin:
+	case FILE_SEEK_BEGIN:
 	{
-		Position_Seek = iDistanceToMove;
+		Position_Seek = Offset;
 	}
 	break;
-	case Current:
+	case FILE_SEEK_CURRENT:
 	{
 		UINT64 Position_Current;
 		hResult = m_pFileStream->get_Position(&Position_Current);
 		assert(SUCCEEDED(hResult));
-		Position_Seek = static_cast<int64_t>(Position_Current) + iDistanceToMove;
+		Position_Seek = Position_Current + Offset;
 	}
 	break;
-	case End:
+	case FILE_SEEK_END:
 	{
 		UINT64 Position_End;
 		hResult = m_pFileStream->get_Size(&Position_End);
 		assert(SUCCEEDED(hResult));
-		Position_Seek = static_cast<int64_t>(Position_End) + iDistanceToMove;
+		Position_Seek = Position_End + Offset;
 	}
 	break;
 	default:
 		assert(0);
 	}
 
-	hResult = m_pFileStream->Seek(static_cast<UINT64>(Position_Seek));
+	hResult = m_pFileStream->Seek(Position_Seek);
 	assert(SUCCEEDED(hResult));
 
-	return SUCCEEDED(hResult) ? Position_Seek : -1;
+	return SUCCEEDED(hResult) ? static_cast<int64_t>(Position_Seek) : -1;
 }
 
 

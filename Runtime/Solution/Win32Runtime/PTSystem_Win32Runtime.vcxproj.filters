@@ -21,9 +21,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp">
-      <Filter>Private\System\Win32</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">
       <Filter>Private\System\Win32</Filter>
     </ClCompile>
@@ -33,6 +30,9 @@
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.cpp">
+      <Filter>Private\System\Win32</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\PTCommon.h">
@@ -40,9 +40,6 @@
     </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSFile.h">
       <Filter>Public\System</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h">
-      <Filter>Private\System\Win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSThread.h">
       <Filter>Public\System</Filter>
@@ -61,6 +58,9 @@
     </ClInclude>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.h">
+      <Filter>Private\System\Win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

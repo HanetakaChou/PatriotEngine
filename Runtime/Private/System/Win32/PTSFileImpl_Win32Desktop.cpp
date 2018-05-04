@@ -45,7 +45,7 @@ extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 	return s_FileSystem_Singleton_Pointer;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::PTSFile_Create(char const *pFileName, uint32_t eOpenMode)
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
 {
 	wchar_t wFileName[0X10000];
 	size_t InCharsLeft = ::strlen(reinterpret_cast<const char *>(pFileName)) + 1U;//°üÀ¨'\0'
@@ -112,7 +112,7 @@ void PTCALL PTSFileImpl::Release()
 	::PTSMemoryAllocator_Free_Aligned(this);
 }
 
-int64_t PTCALL PTSFileImpl::Size_Get()
+int64_t PTCALL PTSFileImpl::Size()
 {
 	LARGE_INTEGER FileSize;
 	BOOL wbResult = ::GetFileSizeEx(m_hFile, &FileSize);
@@ -132,29 +132,29 @@ intptr_t PTCALL PTSFileImpl::Write(void *pBuffer, uintptr_t Count)
 	return (::WriteFile(m_hFile, pBuffer, static_cast<DWORD>(Count), &CountDone, NULL) != FALSE) ? static_cast<intptr_t>(CountDone) : -1;
 }
 
-int64_t PTCALL PTSFileImpl::Seek(uint32_t eMoveMethod, int64_t nDistanceToMove)
+int64_t PTCALL PTSFileImpl::Seek(uint32_t Whence, int64_t Offset)
 {
-	LARGE_INTEGER li;
-	li.QuadPart = nDistanceToMove;
-	LARGE_INTEGER liNew;
+	LARGE_INTEGER liOffset;
+	liOffset.QuadPart = Offset;
+	LARGE_INTEGER liOffsetNew;
 	BOOL wbResult;
-	switch (eMoveMethod)
+	switch (Whence)
 	{
 	case FILE_SEEK_BEGIN:
 	{
-		wbResult = ::SetFilePointerEx(m_hFile, li, &liNew, FILE_BEGIN);
+		wbResult = ::SetFilePointerEx(m_hFile, liOffset, &liOffsetNew, FILE_BEGIN);
 		assert(wbResult != FALSE);
 	}
 	break;
 	case FILE_SEEK_CURRENT:
 	{
-		wbResult = ::SetFilePointerEx(m_hFile, li, &liNew, FILE_CURRENT);
+		wbResult = ::SetFilePointerEx(m_hFile, liOffset, &liOffsetNew, FILE_CURRENT);
 		assert(wbResult != FALSE);
 	}
 	break;
 	case FILE_SEEK_END:
 	{
-		wbResult = ::SetFilePointerEx(m_hFile, li, &liNew, FILE_END);
+		wbResult = ::SetFilePointerEx(m_hFile, liOffset, &liOffsetNew, FILE_END);
 		assert(wbResult != FALSE);
 	}
 	break;
@@ -162,5 +162,5 @@ int64_t PTCALL PTSFileImpl::Seek(uint32_t eMoveMethod, int64_t nDistanceToMove)
 		assert(0);
 	}
 
-	return (wbResult != FALSE) ? liNew.QuadPart : -1;
+	return (wbResult != FALSE) ? liOffsetNew.QuadPart : -1;
 }

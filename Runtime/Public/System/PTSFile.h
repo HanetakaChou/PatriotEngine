@@ -15,7 +15,7 @@ struct IPTSFileSystem
 		FILE_OPEN_READWRITE = 1
 	};
 
-	virtual IPTSFile * PTCALL PTSFile_Create(char const *pFileName, uint32_t eOpenMode) = 0;
+	virtual IPTSFile * PTCALL File_Create(char const *pFileName, uint32_t eOpenMode) = 0;
 	virtual void PTCALL RootPath_Get(char *pPathName, size_t PathLength) = 0;
 };
 
@@ -30,7 +30,7 @@ struct IPTSFile
 
 	virtual void PTCALL Release() = 0;
 
-	virtual int64_t PTCALL Size_Get() = 0;
+	virtual int64_t PTCALL Size() = 0;
 	virtual intptr_t PTCALL Read(void *pBuffer, uintptr_t Count) = 0;
 	virtual intptr_t PTCALL Write(void *pBuffer, uintptr_t Count) = 0;
 	virtual int64_t PTCALL Seek(uint32_t Whence, int64_t Offset) = 0;

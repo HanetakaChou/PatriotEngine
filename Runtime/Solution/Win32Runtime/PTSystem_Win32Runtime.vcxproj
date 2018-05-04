@@ -29,12 +29,12 @@
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
-    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl.cpp" />
+    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
-    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl.h" />
+    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />

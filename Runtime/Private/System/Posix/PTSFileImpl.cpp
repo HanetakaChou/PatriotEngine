@@ -44,7 +44,7 @@ extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 	return s_FileSystem_Singleton_Pointer;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::PTSFile_Create(char const *pFileName, uint32_t eOpenMode)
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
 {
 	int fd = -1;
 	switch (eOpenMode)
@@ -98,7 +98,7 @@ void PTCALL PTSFileImpl::Release()
 }
 
 
-int64_t PTCALL PTSFileImpl::Size_Get()
+int64_t PTCALL PTSFileImpl::Size()
 {
 	struct stat64 FileStatus;
 	int iResult = ::fstat64(m_fd, &FileStatus);

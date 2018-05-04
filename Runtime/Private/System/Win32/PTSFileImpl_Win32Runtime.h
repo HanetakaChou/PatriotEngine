@@ -9,7 +9,7 @@ class PTSFileSystemImpl :public IPTSFileSystem
 {
 	ABI::Windows::Storage::IStorageFolder * const m_pStorageFolder;
 
-	IPTSFile * PTCALL PTSFile_Create(char const *pFileName, uint32_t eOpenMode) override;
+	IPTSFile * PTCALL File_Create(char const *pFileName, uint32_t eOpenMode) override;
 	void PTCALL RootPath_Get(char *pPathName, size_t PathLength) override;
 
 	inline ~PTSFileSystemImpl();
@@ -20,15 +20,15 @@ public:
 
 class PTSFileImpl :public IPTSFile
 {
-	ABI::Windows::Storage::IStorageFile *m_pFile;
-	ABI::Windows::Storage::Streams::IRandomAccessStream *m_pFileStream;
-	ABI::Windows::Storage::Streams::IInputStream *m_pFileStreamInput;
-	ABI::Windows::Storage::Streams::IOutputStream *m_pFileStreamOutput;
+	ABI::Windows::Storage::IStorageFile * const m_pFile;
+	ABI::Windows::Storage::Streams::IRandomAccessStream *const m_pFileStream;
+	ABI::Windows::Storage::Streams::IInputStream * const m_pFileStreamInput;
+	ABI::Windows::Storage::Streams::IOutputStream * const m_pFileStreamOutput;
 
-	int64_t PTCALL Size_Get() override;
-	int32_t PTCALL Read(void *pBuffer, uint32_t nNumberOfBytesToRead) override;
-	int32_t PTCALL Write(void *pBuffer, uint32_t nNumberOfBytesToWrite)  override;
-	int64_t PTCALL Seek(uint32_t eMoveMethod, int64_t nDistanceToMove)  override;
+	int64_t PTCALL Size() override;
+	intptr_t PTCALL Read(void *pBuffer, uintptr_t Count) override;
+	intptr_t PTCALL Write(void *pBuffer, uintptr_t Count)  override;
+	int64_t PTCALL Seek(uint32_t Whence, int64_t Offset)  override;
 
 	inline ~PTSFileImpl();
 	void PTCALL Release() override;
