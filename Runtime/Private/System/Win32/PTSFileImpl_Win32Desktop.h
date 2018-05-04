@@ -6,8 +6,10 @@
 
 class PTSFileSystemImpl :public IPTSFileSystem
 {
+	char m_RootPath[0X10000];
+
+	char const * PTCALL RootPath() override;
 	IPTSFile * PTCALL File_Create(char const *pFileName, uint32_t eOpenMode) override;
-	void PTCALL RootPath_Get(char *pPathPathName, size_t PathLength) override;
 
 	inline ~PTSFileSystemImpl();
 	inline void PTCALL Internal_Release();

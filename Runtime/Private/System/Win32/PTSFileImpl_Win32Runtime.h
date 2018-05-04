@@ -8,9 +8,10 @@
 class PTSFileSystemImpl :public IPTSFileSystem
 {
 	ABI::Windows::Storage::IStorageFolder * const m_pStorageFolder;
+	char m_RootPath[0X10000];
 
+	char const * PTCALL RootPath() override;
 	IPTSFile * PTCALL File_Create(char const *pFileName, uint32_t eOpenMode) override;
-	void PTCALL RootPath_Get(char *pPathName, size_t PathLength) override;
 
 	inline ~PTSFileSystemImpl();
 public:

@@ -11,7 +11,23 @@ inline PTSFileSystemImpl::PTSFileSystemImpl(ABI::Windows::Storage::IStorageFolde
 	:
 	m_pStorageFolder(pStorageFolder)
 {
+	ABI::Windows::Storage::IStorageItem *pStorageItem;
+	HRESULT hResult = m_pStorageFolder->QueryInterface(IID_PPV_ARGS(&pStorageItem));
+	assert(SUCCEEDED(hResult));
 
+	HSTRING hStr_Path;
+	hResult = pStorageItem->get_Path(&hStr_Path);
+	assert(SUCCEEDED(hResult));
+
+	pStorageItem->Release();
+
+	UINT32 uiResult;
+	wchar_t const *wStr_Path = ::WindowsGetStringRawBuffer(hStr_Path, &uiResult);
+	assert(uiResult != 0U);
+
+	size_t InCharsLeft = static_cast<size_t>(uiResult) + 1U;//包括'\0'
+	size_t OutCharsLeft = 0X10000U;
+	::PTSConv_UTF16ToUTF8(wStr_Path, &InCharsLeft, m_RootPath, &OutCharsLeft);
 }
 
 inline PTSFileSystemImpl::~PTSFileSystemImpl()
@@ -97,6 +113,11 @@ extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 	}
 
 	return pFileSystem;
+}
+
+char const * PTCALL PTSFileSystemImpl::RootPath()
+{
+	return m_RootPath;
 }
 
 IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
@@ -220,30 +241,6 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t
 		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileImpl),alignof(PTSFileImpl))
 		)PTSFileImpl(pFile, pFileStream, pFileStreamInput, pFileStreamOutput));
 }
-
-void PTCALL PTSFileSystemImpl::RootPath_Get(char *pPathName, size_t PathLength)
-{
-	HRESULT hResult;
-
-	ABI::Windows::Storage::IStorageItem *pStorageItem;
-	hResult = m_pStorageFolder->QueryInterface(IID_PPV_ARGS(&pStorageItem));
-	assert(SUCCEEDED(hResult));
-
-	HSTRING hPath;
-	hResult = pStorageItem->get_Path(&hPath);
-	assert(SUCCEEDED(hResult));
-
-	pStorageItem->Release();
-
-	UINT32 uiResult;
-	wchar_t const *wPathName = ::WindowsGetStringRawBuffer(hPath, &uiResult);
-	assert(uiResult != 0U);
-
-	size_t InCharsLeft = static_cast<size_t>(uiResult) + 1U;//包括'\0'
-	size_t OutCharsLeft = PathLength;
-	::PTSConv_UTF16ToUTF8(wPathName, &InCharsLeft, pPathName, &OutCharsLeft);
-}
-
 
 inline PTSFileImpl::PTSFileImpl(
 	ABI::Windows::Storage::IStorageFile *pFile, 
@@ -370,14 +367,14 @@ intptr_t PTCALL PTSFileImpl::Read(void *pBuffer, uintptr_t Count)
 	}l_Lambda;
 	//当前线程会基于IAsyncInfo::get_Status忙式等待，因此存放在当前线程的栈中是安全的
 	
-	l_Lambda.m_Capacity = Count;
+	l_Lambda.m_Capacity = static_cast<UINT32>(Count);
 	l_Lambda.m_Length = 0U;
 	l_Lambda.pByte = static_cast<BYTE *>(pBuffer);
 
 	HRESULT hResult;
 
 	ABI::Windows::Foundation::IAsyncOperationWithProgress<ABI::Windows::Storage::Streams::IBuffer*, UINT32> *pAsyncOperation;
-	hResult = m_pFileStreamInput->ReadAsync(&l_Lambda, Count, ABI::Windows::Storage::Streams::InputStreamOptions_None, &pAsyncOperation);
+	hResult = m_pFileStreamInput->ReadAsync(&l_Lambda, static_cast<UINT32>(Count), ABI::Windows::Storage::Streams::InputStreamOptions_None, &pAsyncOperation);
 	assert(SUCCEEDED(hResult));
 
 	ABI::Windows::Foundation::IAsyncInfo *pAsycInfo;
@@ -492,8 +489,8 @@ intptr_t PTCALL PTSFileImpl::Write(void *pBuffer, uintptr_t Count)
 	}l_Lambda;
 	//当前线程会基于IAsyncInfo::get_Status忙式等待，因此存放在当前线程的栈中是安全的
 
-	l_Lambda.m_Capacity = Count;
-	l_Lambda.m_Length = Count;
+	l_Lambda.m_Capacity = static_cast<UINT32>(Count);
+	l_Lambda.m_Length = static_cast<UINT32>(Count);
 	l_Lambda.pByte = static_cast<BYTE *>(pBuffer);
 
 	HRESULT hResult;

@@ -15,8 +15,8 @@ struct IPTSFileSystem
 		FILE_OPEN_READWRITE = 1
 	};
 
-	virtual IPTSFile * PTCALL File_Create(char const *pFileName, uint32_t eOpenMode) = 0;
-	virtual void PTCALL RootPath_Get(char *pPathName, size_t PathLength) = 0;
+	virtual char const * PTCALL RootPath() = 0;
+	virtual IPTSFile * PTCALL File_Create(uint32_t OpenMode, char const *pFileName) = 0;
 };
 
 struct IPTSFile

@@ -1,11 +1,13 @@
-#include "PTSFileImpl.h"
+#include "PTSFileImpl_PosixAndroid.h"
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <errno.h>
 #include <new>
+#include <assert.h>
 #include "../../../Public/System/PTSMemoryAllocator.h"
 #include "../../../Public/System/PTSThread.h"
 
-inline PTSFileSystemImpl::PTSFileSystemImpl()
+inline PTSFileSystemImpl::PTSFileSystemImpl(int iFDDir_DataExternal, char const * StrPath_DataExternal) :m_iFDDir_DataExternal(iFDDir_DataExternal), m_StrPath_DataExternal(StrPath_DataExternal)
 {
 
 }
@@ -22,6 +24,8 @@ void PTCALL PTSFileSystemImpl::Internal_Release()
 }
 
 static PTSFileSystemImpl *s_FileSystem_Singleton_Pointer = NULL;
+extern "C" PTSYSTEMAPI int PTS_iFDDir_DataExternal = -1;
+extern "C" PTSYSTEMAPI char PTS_StrPath_DataExternal[0X10000] = { "" };
 
 static int32_t s_FileSystem_Initialize_RefCount = 0;
 extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
@@ -29,7 +33,9 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
 		assert(s_FileSystem_Singleton_Pointer == NULL);
-		s_FileSystem_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileSystemImpl), alignof(PTSFileSystemImpl)))PTSFileSystemImpl{};
+		assert(PTS_iFDDir_DataExternal != -1);
+		assert(PTS_StrPath_DataExternal[0] != '\0');
+		s_FileSystem_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileSystemImpl), alignof(PTSFileSystemImpl)))PTSFileSystemImpl(PTS_iFDDir_DataExternal, PTS_StrPath_DataExternal);
 		assert(s_FileSystem_Singleton_Pointer != NULL);
 		return PTTRUE;
 	}
@@ -44,22 +50,28 @@ extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 	return s_FileSystem_Singleton_Pointer;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
+char const * PTCALL PTSFileSystemImpl::RootPath()
+{
+	return m_StrPath_DataExternal;
+}
+
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *pFileName)
 {
 	int fd = -1;
-	switch (eOpenMode)
+	switch (OpenMode)
 	{
 	case FILE_OPEN_READONLY:
 	{
-		fd = ::open64(pFileName, O_RDONLY);
+		fd = ::openat64(m_iFDDir_DataExternal, pFileName, O_RDONLY);
 	}
 	break;
 	case FILE_OPEN_READWRITE:
 	{
-		fd = ::open64(pFileName, O_RDWR);
+		fd = ::openat64(m_iFDDir_DataExternal, pFileName, O_RDWR);
 		if (fd == -1)
 		{
-			fd = ::open64(pFileName, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+			assert(errno == ENOENT);
+			fd = ::openat64(m_iFDDir_DataExternal, pFileName, O_RDWR | O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
 		}
 	}
 	break;
@@ -75,19 +87,14 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t
 	}
 }
 
-void PTCALL PTSFileSystemImpl::RootPath_Get(char *pPathName, size_t PathLength)
-{
-
-}
-
-inline PTSFileImpl::PTSFileImpl(int fd) :m_fd(fd)
+inline PTSFileImpl::PTSFileImpl(int iFD) :m_iFD(iFD)
 {
 
 }
 
 inline PTSFileImpl::~PTSFileImpl()
 {
-	int iResult = ::close(m_fd);
+	int iResult = ::close(m_iFD);
 	assert(iResult != -1);
 }
 
@@ -101,7 +108,7 @@ void PTCALL PTSFileImpl::Release()
 int64_t PTCALL PTSFileImpl::Size()
 {
 	struct stat64 FileStatus;
-	int iResult = ::fstat64(m_fd, &FileStatus);
+	int iResult = ::fstat64(m_iFD, &FileStatus);
 	assert(iResult != -1);
 
 	return FileStatus.st_size;
@@ -109,14 +116,14 @@ int64_t PTCALL PTSFileImpl::Size()
 
 intptr_t PTCALL PTSFileImpl::Read(void *pBuffer, uintptr_t Count)
 {
-	intptr_t CountDone = ::read(m_fd, pBuffer, Count);
+	intptr_t CountDone = ::read(m_iFD, pBuffer, Count);
 	assert(CountDone != -1);
 	return CountDone;
 }
 
 intptr_t PTCALL PTSFileImpl::Write(void *pBuffer, uintptr_t Count)
 {
-	intptr_t CountDone = ::write(m_fd, pBuffer, Count);
+	intptr_t CountDone = ::write(m_iFD, pBuffer, Count);
 	assert(CountDone != -1);
 	return CountDone;
 }
@@ -129,19 +136,19 @@ int64_t PTCALL PTSFileImpl::Seek(uint32_t Whence, int64_t Offset)
 	{
 	case FILE_SEEK_BEGIN:
 	{
-		ret = ::lseek64(m_fd, Offset, SEEK_SET);
+		ret = ::lseek64(m_iFD, Offset, SEEK_SET);
 		assert(ret != -1);
 	}
 	break;
 	case FILE_SEEK_CURRENT:
 	{
-		ret = ::lseek64(m_fd, Offset, SEEK_CUR);
+		ret = ::lseek64(m_iFD, Offset, SEEK_CUR);
 		assert(ret != -1);
 	}
 	break;
 	case FILE_SEEK_END:
 	{
-		ret = ::lseek64(m_fd, Offset, SEEK_END);
+		ret = ::lseek64(m_iFD, Offset, SEEK_END);
 		assert(ret != -1);
 	}
 	break;

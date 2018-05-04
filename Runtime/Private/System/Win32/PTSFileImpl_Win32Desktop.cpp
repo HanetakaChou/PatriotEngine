@@ -8,7 +8,12 @@
 
 inline PTSFileSystemImpl::PTSFileSystemImpl()
 {
-
+	wchar_t wPathName[0X10000];
+	DWORD uiResult = ::GetCurrentDirectoryW(0X10000, wPathName);
+	assert(uiResult != 0U);
+	size_t InCharsLeft = static_cast<size_t>(uiResult) + 1U;//°üÀ¨'\0'
+	size_t OutCharsLeft = 0X10000U;
+	::PTSConv_UTF16ToUTF8(wPathName, &InCharsLeft, m_RootPath, &OutCharsLeft);
 }
 
 inline PTSFileSystemImpl::~PTSFileSystemImpl()
@@ -43,6 +48,11 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 {
 	return s_FileSystem_Singleton_Pointer;
+}
+
+char const * PTCALL PTSFileSystemImpl::RootPath()
+{
+	return m_RootPath;
 }
 
 IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
@@ -83,16 +93,6 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t
 	{
 		return static_cast<IPTSFile *>(::new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileImpl), alignof(PTSFileImpl)))PTSFileImpl(hFile));
 	}
-}
-
-void PTCALL PTSFileSystemImpl::RootPath_Get(char *pPathName, size_t PathLength)
-{
-	wchar_t wPathName[0X10000];
-	DWORD uiResult = ::GetCurrentDirectoryW(0X10000, wPathName);
-	assert(uiResult != 0U);
-	size_t InCharsLeft = static_cast<size_t>(uiResult) + 1U;//°üÀ¨'\0'
-	size_t OutCharsLeft = PathLength;
-	::PTSConv_UTF16ToUTF8(wPathName, &InCharsLeft, pPathName, &OutCharsLeft);
 }
 
 inline PTSFileImpl::PTSFileImpl(HANDLE hFile) :m_hFile(hFile)
