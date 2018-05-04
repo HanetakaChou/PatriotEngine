@@ -52,6 +52,7 @@ public:
 inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :
 	m_ArenaPointerArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena) * 64U, alignof(PTSArena)))PTSArena *[64]{}),
 	m_ArenaPointerArraySize(0U),
+	m_HasExited(0U),
 	m_ThreadArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSThread)*ThreadNumber, alignof(PTSThread)))PTSThread[ThreadNumber]{}),
 	m_ThreadNumber(ThreadNumber),
 	m_ArenaPointerArrayCapacity(64U)
@@ -840,7 +841,11 @@ static inline void PTS_Internal_Task_WaitRoot(PTSArena *pArena, uint32_t Slot_In
 		};
 
 		IPTSTask *pTaskWaitAssert = ::PTS_Internal_Task_Alloc(sizeof(PTSTaskWait), alignof(PTSTaskWait));
-		(*reinterpret_cast<IPTSTaskPrefix **>(reinterpret_cast<uintptr_t>(pTaskWaitAssert) + offsetof(IPTSTaskForOffset, m_pPrefix))) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
+
+		(*reinterpret_cast<IPTSTaskPrefix **>(
+			reinterpret_cast<uintptr_t>(pTaskWaitAssert)
+			+ offsetof(IPTSTaskForOffset, m_pPrefix)
+			)) = ::PTS_Internal_Task_Prefix(pTaskWaitAssert);
 
 		PTSTaskWait *pTaskWait = new(pTaskWaitAssert)PTSTaskWait(&HasBeenFinished);
 		PTSTaskPrefixImpl *pTaskWaitPrefix = ::PTS_Internal_Task_Prefix(pTaskWait);
@@ -1255,7 +1260,7 @@ inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 
 	PTSMarket *pMarket = static_cast<PTSMarket *>(pMarketVoid);
 
-	while (true)
+	while (!pMarket->m_HasExited)
 	{
 		tbResult = ::PTSSemaphore_Passern(&pMarket->m_Semaphore);
 		assert(tbResult != PTFALSE);
@@ -1312,6 +1317,7 @@ PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 		);
 		assert(tbResult != PTFALSE);
 		
+		assert(s_Market_Singleton_Pointer == NULL);
 		if (ThreadNumber == 0U)
 		{
 			ThreadNumber = ::PTS_Info_HardwareThreadNumber() - 1U; //默认值

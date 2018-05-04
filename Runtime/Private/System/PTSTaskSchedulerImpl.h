@@ -47,8 +47,11 @@ class PTSMarket
 	
 	uint32_t m_ArenaPointerArraySize; //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
 
+	//To Do: 允许UnInitialize
+	uint32_t m_HasExited;
+
 	//减轻伪共享
-	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void *)];
+	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(void *)];
 
 	PTSThread *m_ThreadArrayMemory;
 
