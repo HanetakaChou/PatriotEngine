@@ -18,6 +18,17 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 	assert(wbResult != FALSE);
 }
 
+static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
+{
+	MEMORY_BASIC_INFORMATION Buffer;
+	SIZE_T wsResult = ::VirtualQuery(pVoid, &Buffer, sizeof(Buffer));
+	assert(wsResult == sizeof(Buffer));
+	assert(wsResult != 0U);
+	assert(Buffer.Protect == PAGE_READWRITE);
+	assert(Buffer.Type == MEM_MAPPED);
+	return static_cast<uint32_t>(Buffer.RegionSize);
+}
+
 #include <intrin.h>
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)

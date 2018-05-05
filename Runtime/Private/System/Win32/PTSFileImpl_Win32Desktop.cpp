@@ -55,7 +55,7 @@ char const * PTCALL PTSFileSystemImpl::RootPath()
 	return m_RootPath;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *pFileName)
 {
 	wchar_t wFileName[0X10000];
 	size_t InCharsLeft = ::strlen(reinterpret_cast<const char *>(pFileName)) + 1U;//°üÀ¨'\0'
@@ -64,7 +64,7 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t
 
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 
-	switch (eOpenMode)
+	switch (OpenMode)
 	{
 	case FILE_OPEN_READONLY:
 	{

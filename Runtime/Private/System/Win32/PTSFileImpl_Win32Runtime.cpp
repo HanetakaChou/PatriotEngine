@@ -120,7 +120,7 @@ char const * PTCALL PTSFileSystemImpl::RootPath()
 	return m_RootPath;
 }
 
-IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t eOpenMode)
+IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *pFileName)
 {
 	HRESULT hResult;
 
@@ -167,7 +167,7 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(char const *pFileName, uint32_t
 	ABI::Windows::Storage::Streams::IRandomAccessStream *pFileStream = NULL;
 	{
 		ABI::Windows::Foundation::IAsyncOperation<ABI::Windows::Storage::Streams::IRandomAccessStream*> *pAsyncOperation;
-		switch (eOpenMode)
+		switch (OpenMode)
 		{
 		case FILE_OPEN_READONLY:
 		{

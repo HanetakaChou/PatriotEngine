@@ -44,7 +44,7 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 
 static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI);
 
-static inline void PTS_MemoryMap_Free(void *pVoid)
+static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 {
 	//在Linux中
 	//在x86或ARM架构下，用户空间最多不超过4GB（0XFFFFFFFF 8个字符）
@@ -151,7 +151,7 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 #elif defined (PTPOSIXANDROID)
 	//proc/self/maps
 
-	int FD_maps = ::open("/proc/self/maps",O_RDONLY);
+	int FD_maps = ::open("/proc/self/maps", O_RDONLY);
 	assert(FD_maps != -1);
 	char Str_maps[4096U];
 	assert(s_Page_Size == 4096U);
@@ -163,7 +163,7 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 		assert(ssResult < 4096);
 		assert(Str_maps[ssResult - 1] == '\n');
 		Str_maps[ssResult] = '\0';
-		
+
 		char *pStr_RowBegin = Str_maps;
 
 		bool bIsFound = false;
@@ -221,8 +221,19 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 		++pStr_AddressEnd;
 	}
 
-	iResult = ::munmap(pVoid, AddressEnd - reinterpret_cast<uintptr_t>(pVoid));
+	return AddressEnd - reinterpret_cast<uintptr_t>(pVoid);
+}
+
+static inline void PTS_MemoryMap_Free(void *pVoid)
+{
+	size_t Len = ::PTS_MemoryMap_Internal_Size(pVoid);
+	int iResult = ::munmap(pVoid, Len);
 	assert(iResult == 0);
+}
+
+static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
+{
+	return static_cast<uint32_t>(::PTS_MemoryMap_Internal_Size(pVoid));
 }
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
