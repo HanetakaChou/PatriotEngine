@@ -456,7 +456,9 @@ inline void PTS_BlockStore::PushNonEmpty(PTS_BlockStore *pThis, uint32_t BinInde
 	assert(pBlockToPush->m_ObjectAllocated_Number > 0U);
 
 	pBlockToPush->m_pTLS = NULL;
-	//pBlockToPush->m_TID_Owning = ~PTSThreadID(0U);
+#ifndef NDEBUG
+	pBlockToPush->m_TID_Owning = PTSThreadID(5201314U);
+#endif
 
 	PTS_BlockStore::_AtmoicPush(&pThis->m_QueueNonEmptyTops[BinIndex], pBlockToPush);
 }
@@ -471,7 +473,9 @@ inline void PTS_BlockStore::PushEmpty(PTS_BlockStore *pThis, PTS_BlockMetadata *
 	assert(pBlockToPush->m_ObjectAllocated_Number == 0U);
 
 	pBlockToPush->m_pTLS = NULL;
-	//pBlockToPush->m_TID_Owning = ~PTSThreadID(0U);
+#ifndef NDEBUG
+	pBlockToPush->m_TID_Owning = PTSThreadID(5201314U);
+#endif
 
 	//pBlockToPush->m_FreeListPrivate = NULL;
 	//pBlockToPush->m_BumpPointer = NULL;//BumpPointer的初始化依赖于ObjectSize
@@ -1081,7 +1085,7 @@ static inline void * PTS_Internal_Alloc(uint32_t Size)
 					return pObjectToAlloc;
 				}
 
-				pBlockFull = pBlockFull->m_BlockStore_Next;
+				pBlockFull = pBlockFull->m_Bin_Next;
 			}
 
 			//UnOwned Yet NonEmpty Block
