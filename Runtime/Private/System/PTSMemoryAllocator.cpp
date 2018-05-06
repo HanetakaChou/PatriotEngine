@@ -1072,7 +1072,10 @@ static inline void * PTS_Internal_Alloc(uint32_t Size)
 				PTS_BlockMetadata::_FreeListPublicRepatriate(pBlockFull); 
 
 				//EmptyEnough
-				if ((pBlockFull->m_Object_Size*pBlockFull->m_ObjectAllocated_Number) <= (((s_Block_Size - sizeof(PTS_BlockMetadata)) / 5U) * 4U))
+				if (
+					((pBlockFull->m_Object_Size*pBlockFull->m_ObjectAllocated_Number) <= (((s_Block_Size - sizeof(PTS_BlockMetadata)) / 5U) * 4U))
+					&& ((pBlockFull->m_Object_Size*(pBlockFull->m_ObjectAllocated_Number + 1U)) <= (s_Block_Size - sizeof(PTS_BlockMetadata)))
+					)
 				{
 					//Move From "Next" To "Previous"
 					PTS_ThreadLocalBinArray::Remove(pTLBinArray, pBlockFull->m_Bin_Index, pBlockFull);
