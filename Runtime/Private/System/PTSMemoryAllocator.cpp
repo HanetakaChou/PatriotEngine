@@ -1215,14 +1215,15 @@ void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
 			{
 				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
 				assert(pVoidNew != NULL);
+				if (pVoidNew != NULL)
+				{
+					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+					::memcpy(pVoidNew, pVoidOld, SizeCopy);
 
-				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-				::memcpy(pVoidNew, pVoidOld, SizeCopy);
-
-				//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-				PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
-				PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
-
+					//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+					PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
+					PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
+				}
 				return pVoidNew;
 			}
 			else
@@ -1237,12 +1238,13 @@ void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
 			{
 				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
 				assert(pVoidNew != NULL);
+				if (pVoidNew != NULL)
+				{
+					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+					::memcpy(pVoidNew, pVoidOld, SizeCopy);
 
-				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-				::memcpy(pVoidNew, pVoidOld, SizeCopy);
-
-				::PTS_MemoryMap_Free(pVoidOld);
-
+					::PTS_MemoryMap_Free(pVoidOld);
+				}
 				return pVoidNew;
 			}
 			else
@@ -1299,15 +1301,16 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
 			{
 				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
-				assert(pVoidNew != NULL);
+				assert((pVoidNew != NULL));
+				if(pVoidNew != NULL)
+				{
+					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+					::memcpy(pVoidNew, pVoidOld, SizeCopy);
 
-				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-				::memcpy(pVoidNew, pVoidOld, SizeCopy);
-
-				//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-				PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
-				PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
-
+					//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+					PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
+					PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
+				}
 				return pVoidNew;
 			}
 			else
@@ -1322,12 +1325,13 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			{
 				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
 				assert(pVoidNew != NULL);
+				if (pVoidNew != NULL)
+				{
+					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+					::memcpy(pVoidNew, pVoidOld, SizeCopy);
 
-				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-				::memcpy(pVoidNew, pVoidOld, SizeCopy);
-
-				::PTS_MemoryMap_Free(pVoidOld);
-
+					::PTS_MemoryMap_Free(pVoidOld);
+				}
 				return pVoidNew;
 			}
 			else
