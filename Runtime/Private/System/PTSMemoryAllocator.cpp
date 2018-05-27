@@ -1280,8 +1280,11 @@ void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment
 void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
 {
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	return ::PTS_Internal_Free(pVoid);
+	
+	if (pVoid != NULL)
+	{
+		::PTS_Internal_Free(pVoid);
+	}
 }
 
 void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNew, uint32_t AlignmentNew)
