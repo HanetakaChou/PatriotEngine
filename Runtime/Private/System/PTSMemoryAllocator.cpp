@@ -1009,153 +1009,143 @@ PTBOOL PTCALL PTSMemoryAllocator_Initialize()
 
 static inline void * PTS_Internal_Alloc(uint32_t Size)
 {
-	if (Size != 0U)
+	PTS_ThreadLocalBinArray *pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(::PTSTSD_GetValue(s_TLBinArray_Index));
+
+	if (pTLBinArray == NULL)
 	{
-		PTS_ThreadLocalBinArray *pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(::PTSTSD_GetValue(s_TLBinArray_Index));
+		pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBinArray)));
+		assert(pTLBinArray != NULL);
 
-		if (pTLBinArray == NULL)
+		PTS_ThreadLocalBinArray::Construct(pTLBinArray);
+
+		PTBOOL tbResult = ::PTSTSD_SetValue(s_TLBinArray_Index, pTLBinArray);
+		assert(tbResult != PTFALSE);
+	}
+
+	if (Size <= s_NonLargeObject_SizeMax)
+	{
+		uint32_t BinIndex;
+		uint32_t ObjectSize;
+		::PTS_Size_ResolveRequestSize(&BinIndex, &ObjectSize, Size);
+
+		PTS_ObjectMetadata *pObjectToAlloc = NULL;
+
+		//Bin
+		//Traverse
+		PTS_BlockMetadata ** const ppBlockActive = &pTLBinArray->m_Bins[BinIndex];
+		PTS_BlockMetadata *pBlockEmptyEnough = NULL;
+		PTS_BlockMetadata *pBlockFull = NULL;
+		if ((*ppBlockActive) != NULL)
 		{
-			pTLBinArray = static_cast<PTS_ThreadLocalBinArray *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBinArray)));
-			assert(pTLBinArray != NULL);
+			pBlockEmptyEnough = (*ppBlockActive)->m_Bin_Previous;
+			pBlockFull = (*ppBlockActive)->m_Bin_Next;
 
-			PTS_ThreadLocalBinArray::Construct(pTLBinArray);
-
-			PTBOOL tbResult = ::PTSTSD_SetValue(s_TLBinArray_Index, pTLBinArray);
-			assert(tbResult != PTFALSE);
+			//Active
+			pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, (*ppBlockActive));
+			if (pObjectToAlloc != NULL)
+			{
+				return pObjectToAlloc;
+			}
 		}
 
-		if (Size <= s_NonLargeObject_SizeMax)
+		//Previous: EmptyEnough Block
+		while (pBlockEmptyEnough != NULL)
 		{
-			uint32_t BinIndex;
-			uint32_t ObjectSize;
-			::PTS_Size_ResolveRequestSize(&BinIndex, &ObjectSize, Size);
+			(*ppBlockActive) = pBlockEmptyEnough;//Active前移
 
-			PTS_ObjectMetadata *pObjectToAlloc = NULL;
+			pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockEmptyEnough);
 
-			//Bin
-			//Traverse
-			PTS_BlockMetadata ** const ppBlockActive = &pTLBinArray->m_Bins[BinIndex];
-			PTS_BlockMetadata *pBlockEmptyEnough = NULL;
-			PTS_BlockMetadata *pBlockFull = NULL;
-			if ((*ppBlockActive) != NULL)
+			if (pObjectToAlloc != NULL)
 			{
-				pBlockEmptyEnough = (*ppBlockActive)->m_Bin_Previous;
-				pBlockFull = (*ppBlockActive)->m_Bin_Next;
-
-				//Active
-				pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, (*ppBlockActive));
-				if (pObjectToAlloc != NULL)
-				{
-					return pObjectToAlloc;
-				}
+				return pObjectToAlloc;
 			}
 
-			//Previous: EmptyEnough Block
-			while (pBlockEmptyEnough != NULL)
+			pBlockEmptyEnough = pBlockEmptyEnough->m_Bin_Previous;
+		}
+
+		//Next: Full Block
+		while (pBlockFull != NULL)
+		{
+			//Be Here Or Be In Free ???
+			PTS_BlockMetadata::_FreeListPublicRepatriate(pBlockFull);
+
+			//EmptyEnough
+			if (
+				((pBlockFull->m_Object_Size*pBlockFull->m_ObjectAllocated_Number) <= (((s_Block_Size - sizeof(PTS_BlockMetadata)) / 5U) * 4U))
+				&& ((pBlockFull->m_Object_Size*(pBlockFull->m_ObjectAllocated_Number + 1U)) <= (s_Block_Size - sizeof(PTS_BlockMetadata)))
+				)
 			{
-				(*ppBlockActive) = pBlockEmptyEnough;//Active前移
+				//Move From "Next" To "Previous"
+				PTS_ThreadLocalBinArray::Remove(pTLBinArray, pBlockFull->m_Bin_Index, pBlockFull);
+				PTS_ThreadLocalBinArray::Insert(pTLBinArray, pBlockFull->m_Bin_Index, pBlockFull);
 
-				pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockEmptyEnough);
+				(*ppBlockActive) = pBlockFull;//Active前移
 
-				if (pObjectToAlloc != NULL)
-				{
-					return pObjectToAlloc;
-				}
-
-				pBlockEmptyEnough = pBlockEmptyEnough->m_Bin_Previous;
+				pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockFull);
+				assert(pObjectToAlloc != NULL);
+				return pObjectToAlloc;
 			}
 
-			//Next: Full Block
-			while (pBlockFull != NULL)
-			{
-				//Be Here Or Be In Free ???
-				PTS_BlockMetadata::_FreeListPublicRepatriate(pBlockFull); 
+			pBlockFull = pBlockFull->m_Bin_Next;
+		}
 
-				//EmptyEnough
-				if (
-					((pBlockFull->m_Object_Size*pBlockFull->m_ObjectAllocated_Number) <= (((s_Block_Size - sizeof(PTS_BlockMetadata)) / 5U) * 4U))
-					&& ((pBlockFull->m_Object_Size*(pBlockFull->m_ObjectAllocated_Number + 1U)) <= (s_Block_Size - sizeof(PTS_BlockMetadata)))
-					)
-				{
-					//Move From "Next" To "Previous"
-					PTS_ThreadLocalBinArray::Remove(pTLBinArray, pBlockFull->m_Bin_Index, pBlockFull);
-					PTS_ThreadLocalBinArray::Insert(pTLBinArray, pBlockFull->m_Bin_Index, pBlockFull);
-
-					(*ppBlockActive) = pBlockFull;//Active前移
-
-					pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockFull);
-					assert(pObjectToAlloc != NULL);
-					return pObjectToAlloc;
-				}
-
-				pBlockFull = pBlockFull->m_Bin_Next;
-			}
-
-			//UnOwned Yet NonEmpty Block
-			PTS_BlockMetadata *pBlockAdded = PTS_BlockStore::PopNonEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex);
-			while (pBlockAdded != NULL)
-			{
-				PTS_ThreadLocalBinArray::Insert(pTLBinArray, pBlockAdded->m_Bin_Index, pBlockAdded);
-
-				(*ppBlockActive) = pBlockAdded;//Active前移
-
-				pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockAdded);
-				if (pObjectToAlloc != NULL)
-				{
-					return pObjectToAlloc;
-				}
-
-				pBlockAdded = PTS_BlockStore::PopNonEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex);
-			}
-
-			//Empty Block
-			pBlockAdded = PTS_BlockStore::PopEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex, ObjectSize);
-			assert(pBlockAdded != NULL);
-
+		//UnOwned Yet NonEmpty Block
+		PTS_BlockMetadata *pBlockAdded = PTS_BlockStore::PopNonEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex);
+		while (pBlockAdded != NULL)
+		{
 			PTS_ThreadLocalBinArray::Insert(pTLBinArray, pBlockAdded->m_Bin_Index, pBlockAdded);
 
 			(*ppBlockActive) = pBlockAdded;//Active前移
 
 			pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockAdded);
-			assert(pObjectToAlloc != NULL);
-			return pObjectToAlloc;
-		}
-		else
-		{
-			PTS_ObjectMetadata *pObjectToAlloc = static_cast<PTS_ObjectMetadata *>(::PTS_MemoryMap_Alloc(Size));
-			assert(pObjectToAlloc != NULL);
+			if (pObjectToAlloc != NULL)
+			{
+				return pObjectToAlloc;
+			}
 
-			//确保LargeObject一定对齐到16KB，以确保在PTS_Internal_Free中访问BlockAssumed（假定的）一定不会发生冲突
-			assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pObjectToAlloc), s_Block_Size));
-
-			return pObjectToAlloc;
+			pBlockAdded = PTS_BlockStore::PopNonEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex);
 		}
+
+		//Empty Block
+		pBlockAdded = PTS_BlockStore::PopEmpty(pTLBinArray, &s_BlockStore_Singleton, BinIndex, ObjectSize);
+		assert(pBlockAdded != NULL);
+
+		PTS_ThreadLocalBinArray::Insert(pTLBinArray, pBlockAdded->m_Bin_Index, pBlockAdded);
+
+		(*ppBlockActive) = pBlockAdded;//Active前移
+
+		pObjectToAlloc = PTS_BlockMetadata::Allocate(pTLBinArray, pBlockAdded);
+		assert(pObjectToAlloc != NULL);
+		return pObjectToAlloc;
 	}
 	else
 	{
-		return NULL;
+		PTS_ObjectMetadata *pObjectToAlloc = static_cast<PTS_ObjectMetadata *>(::PTS_MemoryMap_Alloc(Size));
+		assert(pObjectToAlloc != NULL);
+
+		//确保LargeObject一定对齐到16KB，以确保在PTS_Internal_Free中访问BlockAssumed（假定的）一定不会发生冲突
+		assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pObjectToAlloc), s_Block_Size));
+
+		return pObjectToAlloc;
 	}
 }
 
 static inline void PTS_Internal_Free(void *pVoid)
 {
-	if (pVoid != NULL)
+	//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
+	PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
+
+	//区分Block和LargeObject，并不一定可靠
+	if (pBlockAssumed->m_Identity == PTS_BlockMetadata::s_BlockIdentity) //Block
 	{
-		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
-		PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
+		//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+		PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoid);
 
-		//区分Block和LargeObject，并不一定可靠
-		if (pBlockAssumed->m_Identity == PTS_BlockMetadata::s_BlockIdentity) //Block
-		{
-			//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-			PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoid);
-
-			PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
-		}
-		else //LargeObject
-		{
-			::PTS_MemoryMap_Free(pVoid);
-		}
+		PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
+	}
+	else //LargeObject
+	{
+		::PTS_MemoryMap_Free(pVoid);
 	}
 }
 
@@ -1185,26 +1175,35 @@ static inline void * PTS_Internal_Alloc_Aligned(uint32_t Size, uint32_t Alignmen
 	return pVoidToAlloc;
 }
 
-
 void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
 {
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
 
-	return ::PTS_Internal_Alloc(Size);
+	if (Size != 0U)
+	{
+		return ::PTS_Internal_Alloc(Size);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void PTCALL PTSMemoryAllocator_Free(void *pVoid)
 {
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
 
-	return ::PTS_Internal_Free(pVoid);
+	if (pVoid != NULL)
+	{
+		::PTS_Internal_Free(pVoid);
+	}
 }
 
 void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
 {
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
 
-	if (pVoidOld != NULL)
+	if (pVoidOld != NULL && SizeNew != 0U)
 	{
 		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
 		PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
@@ -1252,9 +1251,18 @@ void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
 			}
 		}
 	}
-	else
+	else if(SizeNew != 0U)
 	{
 		return ::PTS_Internal_Alloc(SizeNew);
+	}
+	else if (pVoidOld != NULL)
+	{
+		::PTS_Internal_Free(pVoidOld);
+		return NULL;
+	}
+	else
+	{
+		return NULL;
 	}
 }
 
@@ -1280,7 +1288,7 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 
 	assert(::PTS_Size_IsPowerOfTwo(AlignmentNew));
 
-	if (pVoidOld != NULL)
+	if (pVoidOld != NULL && SizeNew != 0U)
 	{
 		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
 		PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
@@ -1328,9 +1336,18 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			}
 		}
 	}
-	else
+	else if (SizeNew != 0U)
 	{
 		return ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+	}
+	else if (pVoidOld != NULL)
+	{
+		::PTS_Internal_Free(pVoidOld);
+		return NULL;
+	}
+	else
+	{
+		return NULL;
 	}
 }
 
