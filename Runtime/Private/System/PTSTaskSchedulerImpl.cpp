@@ -1128,7 +1128,7 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 					//Parent
 					if (pTaskParent != NULL)
 					{
-						uintptr_t RefCountOld = ::PTSAtomic_GetAndAdd(&pTaskParent->m_RefCount, uint32_t(-1));
+						uint32_t RefCountOld = ::PTSAtomic_GetAndAdd(&pTaskParent->m_RefCount, uint32_t(-1));
 						if (RefCountOld == 1)
 						{
 							//pTaskParent->m_State &= ~Debug_RefCount_InUse;

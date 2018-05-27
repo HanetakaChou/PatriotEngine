@@ -1159,8 +1159,51 @@ static inline void PTS_Internal_Free(void *pVoid)
 	}
 }
 
-static inline void * PTS_Internal_Realloc(void *pVoidOld, uint32_t SizeNew)
+static inline void * PTS_Internal_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
 {
+	void *pVoidToAlloc;
+
+	if (Size <= s_NonLargeObject_SizeMax && Alignment <= s_NonLargeObject_SizeMax)
+	{
+		//并不存在偏移
+		//we just align the size up, and request this amount, 
+		//because for every size aligned to some power of 2, 
+		//the allocated object is at least that aligned.
+		pVoidToAlloc = ::PTS_Internal_Alloc(::PTS_Size_AlignUpFrom(Size, Alignment));
+	}
+	else
+	{
+		//一般情况下极少发生
+		pVoidToAlloc = ::PTS_Internal_Alloc(Size);
+		if (pVoidToAlloc != NULL && !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)))
+		{
+			PTS_Internal_Free(pVoidToAlloc);
+			pVoidToAlloc = NULL;
+		}
+	}
+
+	return pVoidToAlloc;
+}
+
+
+void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return ::PTS_Internal_Alloc(Size);
+}
+
+void PTCALL PTSMemoryAllocator_Free(void *pVoid)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return ::PTS_Internal_Free(pVoid);
+}
+
+void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
 	if (pVoidOld != NULL)
 	{
 		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
@@ -1176,7 +1219,7 @@ static inline void * PTS_Internal_Realloc(void *pVoidOld, uint32_t SizeNew)
 
 				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
 				::memcpy(pVoidNew, pVoidOld, SizeCopy);
-				
+
 				//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
 				PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
 				PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
@@ -1215,53 +1258,13 @@ static inline void * PTS_Internal_Realloc(void *pVoidOld, uint32_t SizeNew)
 	}
 }
 
-void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	return ::PTS_Internal_Alloc(Size);
-}
-
-void PTCALL PTSMemoryAllocator_Free(void *pVoid)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	return ::PTS_Internal_Free(pVoid);
-}
-
-void * PTCALL PTSMemoryAllocator_Realloc(void *pVoid, uint32_t Size)
-{
-	return PTS_Internal_Realloc(pVoid, Size);
-}
-
 void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
 {
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
 
 	assert(::PTS_Size_IsPowerOfTwo(Alignment));
 
-	void *pVoidToAlloc;
-
-	if (Size <= s_NonLargeObject_SizeMax && Alignment <= s_NonLargeObject_SizeMax)
-	{
-		//并不存在偏移
-		//we just align the size up, and request this amount, 
-		//because for every size aligned to some power of 2, 
-		//the allocated object is at least that aligned.
-		pVoidToAlloc = ::PTS_Internal_Alloc(::PTS_Size_AlignUpFrom(Size, Alignment));
-	}
-	else
-	{
-		//一般情况下极少发生
-		pVoidToAlloc = ::PTS_Internal_Alloc(Size);
-		if (pVoidToAlloc != NULL && !PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)))
-		{
-			PTS_Internal_Free(pVoidToAlloc);
-			pVoidToAlloc = NULL;
-		}
-	}
-	
-	return pVoidToAlloc;
+	return ::PTS_Internal_Alloc_Aligned(Size, Alignment);
 }
 
 void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
@@ -1269,6 +1272,66 @@ void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
 	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
 
 	return ::PTS_Internal_Free(pVoid);
+}
+
+void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNew, uint32_t AlignmentNew)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	assert(::PTS_Size_IsPowerOfTwo(AlignmentNew));
+
+	if (pVoidOld != NULL)
+	{
+		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
+		PTS_BlockMetadata *pBlockAssumed = reinterpret_cast<PTS_BlockMetadata *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
+		//区分Block和LargeObject，并不一定可靠
+		if (pBlockAssumed->m_Identity == PTS_BlockMetadata::s_BlockIdentity) //Block
+		{
+			uint32_t SizeOld = pBlockAssumed->m_Object_Size;
+			if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+			{
+				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+				assert(pVoidNew != NULL);
+
+				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+				::memcpy(pVoidNew, pVoidOld, SizeCopy);
+
+				//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+				PTS_ObjectMetadata *pObjectToFree = static_cast<PTS_ObjectMetadata *>(pVoidOld);
+				PTS_BlockMetadata::Free(pBlockAssumed->m_pTLS, pBlockAssumed, pObjectToFree);
+
+				return pVoidNew;
+			}
+			else
+			{
+				return pVoidOld;
+			}
+		}
+		else //LargeObject
+		{
+			uint32_t SizeOld = ::PTS_MemoryMap_Size(pVoidOld);
+			if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+			{
+				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+				assert(pVoidNew != NULL);
+
+				uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+				::memcpy(pVoidNew, pVoidOld, SizeCopy);
+
+				::PTS_MemoryMap_Free(pVoidOld);
+
+				return pVoidNew;
+			}
+			else
+			{
+				return pVoidOld;
+			}
+		}
+	}
+	else
+	{
+		return ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+	}
 }
 
 #if defined PTWIN32

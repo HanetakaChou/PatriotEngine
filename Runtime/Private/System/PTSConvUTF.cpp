@@ -1,9 +1,22 @@
-#ifndef PT_SYSTEM_CONVUTF_H
-#define PT_SYSTEM_CONVUTF_H
+#include "../../Public/System/PTSConvUTF.h"
 
 #include <stdint.h>
 
-inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft, wchar_t *pOutbuf, size_t * const pOutCharsLeft)
+static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutbuf, uint32_t *pOutCharsLeft);
+
+static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutbuf, uint32_t *pOutCharsLeft);
+
+bool PTCALL PTSConv_UTF8ToUTF16(char const *pInBuf, uint32_t *pInCharsLeft, char16_t *pOutbuf, uint32_t *pOutCharsLeft)
+{
+	return ::PTSConv_Internal_UTF8ToUTF16(reinterpret_cast<uint8_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint16_t *>(pOutbuf), pOutCharsLeft);
+}
+
+bool PTCALL PTSConv_UTF16ToUTF8(char16_t const *pInBuf, uint32_t *pInCharsLeft, char *pOutbuf, uint32_t *pOutCharsLeft)
+{
+	return ::PTSConv_Internal_UTF16ToUTF8(reinterpret_cast<uint16_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint8_t*>(pOutbuf), pOutCharsLeft);
+}
+
+static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutbuf, uint32_t *pOutCharsLeft)
 {
 	while ((*pInCharsLeft) >= 1)
 	{
@@ -19,7 +32,7 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 		}
 		else if ((*pInBuf) < 192U) //10XX XXXX
 		{
-			return;//false
+			return false;
 		}
 		else if ((*pInBuf) < 224U)//110X XXXX 10XX XXXX
 		{
@@ -40,13 +53,13 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 
 		}
@@ -68,7 +81,7 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 
 				if ((*pInBuf) >= 128U && (*pInBuf) < 192U)//10XX XXXX
@@ -80,12 +93,12 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else // ((*pInBuf) >= 240U) 1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
@@ -106,7 +119,7 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 
 				if ((*pInBuf) >= 128U && (*pInBuf) < 192U)//10XX XXXX
@@ -118,7 +131,7 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 
 				if ((*pInBuf) >= 128U && (*pInBuf) < 192U)//10XX XXXX
@@ -130,12 +143,12 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 
@@ -152,7 +165,7 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else//ucs4code >= 0X10000U
@@ -171,15 +184,15 @@ inline void PTSConv_UTF8ToUTF16(const char *pInBuf, size_t * const pInCharsLeft,
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 	}
 
-	return;//true
+	return true;
 }
 
-inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLeft, char *pOutbuf, size_t * const pOutCharsLeft)
+static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutbuf, uint32_t *pOutCharsLeft)
 {
 	while ((*pInCharsLeft) >= 1)
 	{
@@ -204,7 +217,7 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 				}
 				else
 				{
-					return;//false
+					return false;
 				}
 
 				ucs4code += 0X10000U;
@@ -212,7 +225,7 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else
@@ -235,7 +248,7 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else if (ucs4code < 2048U)//110X XXXX 10XX XXXX
@@ -254,7 +267,7 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else if (ucs4code < 0X10000U)//1110 XXXX 10XX XXXX 10XX XXXX
@@ -278,7 +291,7 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 			}
 			else
 			{
-				return;//false
+				return false;
 			}
 		}
 		else if (ucs4code < 0X200000U)//1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
@@ -307,11 +320,10 @@ inline void PTSConv_UTF16ToUTF8(const wchar_t *pInBuf, size_t * const pInCharsLe
 			}
 			else//ucs4code >= 0X200000U
 			{
-				return;//false
+				return false;
 			}
 		}
 	}
+
+	return true;
 }
-
-#endif
-

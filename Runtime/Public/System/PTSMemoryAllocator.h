@@ -16,6 +16,8 @@ extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t S
 
 extern "C" PTSYSTEMAPI void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid);
 
+extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoid, uint32_t Size, uint32_t Alignment);
+
 #include <memory>
 #include <new>
 
@@ -65,8 +67,7 @@ public:
 	inline pointer allocate(size_type n, const void * = 0)
 	{
 		pointer p = static_cast<pointer>(::PTSMemoryAllocator_Alloc(static_cast<uint32_t>(sizeof(value_type)*n)));
-		if (!p)
-			throw std::bad_alloc();
+		assert(p != NULL);
 		return p;
 	}
 

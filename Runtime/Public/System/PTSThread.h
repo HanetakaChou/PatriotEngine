@@ -89,6 +89,12 @@ inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue);
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue);
 inline uint64_t PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue);
 
+template <typename T>
+inline T* PTSAtomic_GetAndSet(T* *pTarget, T* newValue)
+{
+	return reinterpret_cast<T*>(::PTSAtomic_GetAndSet(reinterpret_cast<uintptr_t *>(pTarget), reinterpret_cast<uintptr_t>(newValue)));
+}
+
 inline int32_t PTSAtomic_GetAndAdd(int32_t volatile *pTarget, int32_t delta);
 inline int64_t PTSAtomic_GetAndAdd(int64_t volatile *pTarget, int64_t delta);
 inline uint32_t PTSAtomic_GetAndAdd(uint32_t volatile *pTarget, uint32_t delta);
@@ -99,10 +105,23 @@ inline int64_t PTSAtomic_Get(int64_t volatile *pTarget);
 inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget);
 inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget);
 
+template <typename T>
+inline T* PTSAtomic_Get(T* *pTarget)
+{
+	return reinterpret_cast<T*>(::PTSAtomic_Get(reinterpret_cast<uintptr_t *>(pTarget)));
+}
+
 inline void PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue);
 inline void PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue);
 inline void PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue);
 inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue);
+
+template <typename T>
+inline void PTSAtomic_Set(T* *pTarget, T* newValue)
+{
+	::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(pTarget), reinterpret_cast<uintptr_t>(newValue));
+}
+
 
 #if defined PTWIN32
 #include "Win32/PTSThread.inl"

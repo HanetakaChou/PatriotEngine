@@ -88,15 +88,20 @@ inline int64_t PTSTick_Frequency()
 }
 
 #if defined(PTARM) || defined(PTARM64)
-//#include <arm_acle.h> __yield
+//#include <arm_acle.h>
+//__yield
+//__builtin_arm_yield
 inline void PTS_Pause()
 {
-	__builtin_arm_yield();
+	__asm__ volatile ("yield");
 }
 #elif defined(PTX86) || defined(PTX64)
+//#include <emmintrin.h>
+//_mm_pause
+//__builtin_ia32_pause
 inline void PTS_Pause()
 {
-	__builtin_ia32_pause();
+	__asm__ volatile ("pause");
 }
 #else
 #error 未知的架构

@@ -4,16 +4,17 @@
 #include <assert.h>
 #include "../../../Public/System/PTSMemoryAllocator.h"
 #include "../../../Public/System/PTSThread.h"
-#include "../../../Public/System/Win32/PTSConvUTF.h"
+#include "../../../Public/System/PTSConvUTF.h"
 
 inline PTSFileSystemImpl::PTSFileSystemImpl()
 {
 	wchar_t wPathName[0X10000];
 	DWORD uiResult = ::GetCurrentDirectoryW(0X10000, wPathName);
 	assert(uiResult != 0U);
-	size_t InCharsLeft = static_cast<size_t>(uiResult) + 1U;//包括'\0'
-	size_t OutCharsLeft = 0X10000U;
-	::PTSConv_UTF16ToUTF8(wPathName, &InCharsLeft, m_RootPath, &OutCharsLeft);
+	uint32_t InCharsLeft = static_cast<uint32_t>(uiResult) + 1U;//包括'\0'
+	uint32_t OutCharsLeft = 0X10000U;
+	bool bResult = ::PTSConv_UTF16ToUTF8(reinterpret_cast<char16_t *>(wPathName), &InCharsLeft, m_RootPath, &OutCharsLeft);
+	assert(bResult);
 }
 
 inline PTSFileSystemImpl::~PTSFileSystemImpl()
@@ -35,7 +36,7 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
 		assert(s_FileSystem_Singleton_Pointer == NULL);
-		s_FileSystem_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileSystemImpl), alignof(PTSFileSystemImpl)))PTSFileSystemImpl{};
+		::PTSAtomic_Set(&s_FileSystem_Singleton_Pointer, new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileSystemImpl), alignof(PTSFileSystemImpl)))PTSFileSystemImpl{});
 		assert(s_FileSystem_Singleton_Pointer != NULL);
 		return PTTRUE;
 	}
@@ -58,9 +59,10 @@ char const * PTCALL PTSFileSystemImpl::RootPath()
 IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *pFileName)
 {
 	wchar_t wFileName[0X10000];
-	size_t InCharsLeft = ::strlen(reinterpret_cast<const char *>(pFileName)) + 1U;//包括'\0'
-	size_t OutCharsLeft = 0X10000;
-	::PTSConv_UTF8ToUTF16(pFileName, &InCharsLeft, wFileName, &OutCharsLeft);
+	uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pFileName))) + 1U;//包括'\0'
+	uint32_t OutCharsLeft = 0X10000;
+	bool bResult = ::PTSConv_UTF8ToUTF16(pFileName, &InCharsLeft, reinterpret_cast<char16_t *>(wFileName), &OutCharsLeft);
+	assert(bResult);
 
 	HANDLE hFile = INVALID_HANDLE_VALUE;
 
