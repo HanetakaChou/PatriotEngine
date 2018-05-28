@@ -60,7 +60,7 @@ IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *
 {
 	wchar_t wFileName[0X10000];
 	uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pFileName))) + 1U;//°üÀ¨'\0'
-	uint32_t OutCharsLeft = 0X10000;
+	uint32_t OutCharsLeft = 0X10000U;
 	bool bResult = ::PTSConv_UTF8ToUTF16(pFileName, &InCharsLeft, reinterpret_cast<char16_t *>(wFileName), &OutCharsLeft);
 	assert(bResult);
 

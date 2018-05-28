@@ -1274,7 +1274,14 @@ void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment
 
 	assert(::PTS_Size_IsPowerOfTwo(Alignment));
 
-	return ::PTS_Internal_Alloc_Aligned(Size, Alignment);
+	if (Size != 0U)
+	{
+		return ::PTS_Internal_Alloc_Aligned(Size, Alignment);
+	}
+	else
+	{
+		return NULL;
+	}
 }
 
 void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
