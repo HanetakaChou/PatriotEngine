@@ -39,14 +39,14 @@
     <ClInclude Include="..\..\Public\System\PTSThread.h">
       <Filter>Public\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h">
-      <Filter>Public\System\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.h">
       <Filter>Private\System\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSConvUTF.h">
+      <Filter>Public\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -61,6 +61,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.cpp">
       <Filter>Private\System\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSConvUTF.cpp">
+      <Filter>Private\System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

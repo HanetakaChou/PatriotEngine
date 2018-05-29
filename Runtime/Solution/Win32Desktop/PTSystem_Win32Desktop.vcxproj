@@ -23,13 +23,14 @@
     <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
+    <ClInclude Include="..\..\Public\System\PTSConvUTF.h" />
     <ClInclude Include="..\..\Public\System\PTSFile.h" />
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
-    <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Private\System\PTSConvUTF.cpp" />
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
