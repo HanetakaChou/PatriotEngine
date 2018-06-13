@@ -1,4 +1,4 @@
-#ifndef PT_SYSTEM_TASKSCHEDULER_H
+﻿#ifndef PT_SYSTEM_TASKSCHEDULER_H
 #define PT_SYSTEM_TASKSCHEDULER_H
 
 #include <stddef.h>
@@ -16,11 +16,11 @@ struct IPTSTaskPrefix
 	virtual void Recycle_AsChildOf(IPTSTaskPrefix *pParent) = 0;
 	//virtual void Recycle_AsContinuation() = 0;
 
-	//Ӧ����SpawnTask֮ǰSetRefCount
+	//应当在SpawnTask之前SetRefCount
 	virtual void RefCount_Set(uint32_t RefCount) = 0;
 };
 
-//���ñ���ʱǿ���ͣ����ٴ�����
+//利用编译时强类型，减少错误发生
 struct IPTSTask
 {
 	virtual IPTSTask *Execute() = 0;
@@ -49,13 +49,21 @@ public:
 
 struct IPTSTaskScheduler
 {
-	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
+	//模拟GPGPU中的语义
+	//与TSD（ThreadSpecificData）的语义略有不同
+	//并发执行的Thread对应的ID一定不同
+	//但是ID可以被复用，同一ID并不一定始终被同一Thread使用
+	//目前的实现中，MasterThread的ID一定为0，但是并不鼓励应用程序依赖于此特定的实现细节
+	virtual uint32_t Warp_Size() = 0;
+	virtual uint32_t Warp_ThreadID() = 0;
 
-	virtual void Task_Spawn(IPTSTask *pTask) = 0;
-	virtual void Task_WaitRoot(IPTSTask *pTask) = 0;
-
+	//TBB不允许应用程序显式控制并行
 	virtual void Worker_Wake() = 0;
 	virtual void Worker_Sleep() = 0;
+
+	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
+	virtual void Task_Spawn(IPTSTask *pTask) = 0;
+	virtual void Task_WaitRoot(IPTSTask *pTask) = 0;
 };
 
 extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);

@@ -694,18 +694,15 @@ inline PTSTaskSchedulerMasterImpl::~PTSTaskSchedulerMasterImpl()
 	m_pArena->Slot_Release(0U);
 }
 
-void PTSTaskSchedulerMasterImpl::Worker_Wake()
+uint32_t PTSTaskSchedulerMasterImpl::Warp_Size()
 {
-	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
-	assert((m_HasWaked == 0U) ? (m_HasWaked = 1U, 1) : 0);
-	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->Capacity());
+	return m_pArena->Capacity();
 }
 
-void PTSTaskSchedulerMasterImpl::Worker_Sleep()
+uint32_t PTSTaskSchedulerMasterImpl::Warp_ThreadID()
 {
-	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
-	assert((m_HasWaked == 1U) ? (m_HasWaked = 0U, 1) : 0);
-	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->Capacity());
+	//MasterThread的SlotIndex一定为0
+	return 0U;
 }
 
 IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
@@ -723,6 +720,20 @@ void PTSTaskSchedulerMasterImpl::Task_WaitRoot(IPTSTask *pTaskRoot)
 	::PTS_Internal_Task_WaitRoot(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTaskRoot));
 }
 
+void PTSTaskSchedulerMasterImpl::Worker_Wake()
+{
+	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
+	assert((m_HasWaked == 0U) ? (m_HasWaked = 1U, 1) : 0);
+	s_Market_Singleton_Pointer->Worker_Wake(m_pArena->Capacity());
+}
+
+void PTSTaskSchedulerMasterImpl::Worker_Sleep()
+{
+	//TaskScheduler中的方法只可能被唯一的MasterThread串行访问
+	assert((m_HasWaked == 1U) ? (m_HasWaked = 0U, 1) : 0);
+	s_Market_Singleton_Pointer->Worker_Sleep(m_pArena->Capacity());
+}
+
 //------------------------------------------------------------------------------------------------------------
 //PTSTaskSchedulerWorkerImpl
 //------------------------------------------------------------------------------------------------------------
@@ -730,6 +741,27 @@ inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl()
 {
 
 }
+
+uint32_t PTSTaskSchedulerWorkerImpl::Warp_Size()
+{
+	return m_pArena->Capacity();
+}
+
+uint32_t PTSTaskSchedulerWorkerImpl::Warp_ThreadID()
+{
+	return m_Slot_Index;
+}
+
+void PTSTaskSchedulerWorkerImpl::Worker_Wake()
+{
+	assert(0);
+}
+
+void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
+{
+	assert(0);
+}
+
 
 IPTSTask *PTSTaskSchedulerWorkerImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
 {
@@ -744,16 +776,6 @@ void PTSTaskSchedulerWorkerImpl::Task_Spawn(IPTSTask *pTask)
 void PTSTaskSchedulerWorkerImpl::Task_WaitRoot(IPTSTask *pTaskRoot)
 {
 	::PTS_Internal_Task_WaitRoot(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTaskRoot));
-}
-
-void PTSTaskSchedulerWorkerImpl::Worker_Wake()
-{
-	assert(0);
-}
-
-void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
-{
-	assert(0);
 }
 
 //------------------------------------------------------------------------------------------------------------

@@ -22,7 +22,7 @@ extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pV
 #include <new>
 
 template<typename T>
-class PTSCPP_allocator 
+class PTSCPP_Allocator 
 {
 public:
 	typedef typename std::allocator<T>::value_type value_type;
@@ -35,21 +35,21 @@ public:
 	template<class U> 
 	struct rebind 
 	{
-		typedef PTSCPP_allocator<U> other;
+		typedef PTSCPP_Allocator<U> other;
 	};
 
-	inline PTSCPP_allocator() throw() 
+	inline PTSCPP_Allocator() throw()
 	{
 
 	}
 
-	inline PTSCPP_allocator(const PTSCPP_allocator&) throw() 
+	inline PTSCPP_Allocator(const PTSCPP_Allocator&) throw()
 	{
 
 	}
 
 	template<typename U> 
-	inline PTSCPP_allocator(const PTSCPP_allocator<U>&) throw()
+	inline PTSCPP_Allocator(const PTSCPP_Allocator<U>&) throw()
 	{
 
 	}
@@ -94,7 +94,7 @@ public:
 };
 
 template<>
-class PTSCPP_allocator<void> {
+class PTSCPP_Allocator<void> {
 public:
 	typedef void* pointer;
 	typedef const void* const_pointer;
@@ -102,18 +102,18 @@ public:
 	template<class U> 
 	struct rebind 
 	{
-		typedef PTSCPP_allocator<U> other;
+		typedef PTSCPP_Allocator<U> other;
 	};
 };
 
 template<typename T, typename U>
-inline bool operator==(const PTSCPP_allocator<T>&, const PTSCPP_allocator<U>&)
+inline bool operator==(const PTSCPP_Allocator<T>&, const PTSCPP_Allocator<U>&)
 { 
 	return true;
 }
 
 template<typename T, typename U>
-inline bool operator!=(const PTSCPP_allocator<T>&, const PTSCPP_allocator<U>&) 
+inline bool operator!=(const PTSCPP_Allocator<T>&, const PTSCPP_Allocator<U>&)
 { 
 	return false;
 }

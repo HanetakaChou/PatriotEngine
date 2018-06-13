@@ -226,19 +226,19 @@ class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
 	//MasterThread的SlotIndex一定为0
+	uint32_t Warp_Size() override;
+	uint32_t Warp_ThreadID() override;
 
 	uint32_t m_HasWaked;
-
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_WaitRoot(IPTSTask *pTask) override;
-
-	//TBB不允许应用程序显示控制并行
+	//TBB不允许应用程序显式控制并行
 	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
 	//Worker_Sleep: arena::is_out_of_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
+
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_WaitRoot(IPTSTask *pTask) override;
 
 public:
 	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
@@ -252,14 +252,16 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
 	uint32_t m_Slot_Index;
+	uint32_t Warp_Size() override;
+	uint32_t Warp_ThreadID() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_WaitRoot(IPTSTask *pTask) override;//For Nested Parallel
-
+	//WorkerThread不应当调用此方法
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
+
+	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
+	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_WaitRoot(IPTSTask *pTask) override;//For Nested Parallel
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);

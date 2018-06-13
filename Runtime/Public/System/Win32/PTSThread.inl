@@ -22,9 +22,14 @@ inline PTBOOL PTSThread_Join(PTSThread *pThread)
 	return ((::WaitForSingleObjectEx(hThread, INFINITE, FALSE) == WAIT_OBJECT_0) && (::CloseHandle(hThread) != FALSE)) ? PTTRUE : PTFALSE;
 }
 
-inline PTBOOL PTS_Yield()
+inline void PTS_Yield()
 {
-	return (::SwitchToThread() != FALSE) ? PTTRUE : PTFALSE;
+	::SwitchToThread();
+}
+
+inline void PTS_Sleep(uint32_t MilliSecond)
+{
+	::SleepEx(MilliSecond, FALSE);
 }
 
 inline PTSThreadID PTSThreadID_Self()
@@ -177,51 +182,118 @@ inline uint64_t PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta)
 	return static_cast<uint64_t>(InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(pTarget), static_cast<LONGLONG>(delta)));
 }
 
+#if defined(PTARM) || defined(PTARM64)
+inline void PTS_AcquireBarrier()
+{
+	::PTS_HardwareReadBarrier();
+}
+inline void PTS_ReleaseBarrier()
+{
+	::PTS_HardwareWriteBarrier();
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTS_AcquireBarrier()
+{
+	::PTS_CompilerReadBarrier();
+}
+inline void PTS_ReleaseBarrier()
+{
+	::PTS_CompilerWriteBarrier();
+}
+#else
+#error 未知的架构
+#endif
+
 inline int32_t PTSAtomic_Get(int32_t volatile *pTarget)
 {
 	int32_t value = *pTarget;
-	::_ReadBarrier();
+	::PTS_AcquireBarrier();
 	return value;
 }
 inline int64_t PTSAtomic_Get(int64_t volatile *pTarget)
 {
 	int64_t value = *pTarget;
-	::_ReadBarrier();
+	::PTS_AcquireBarrier();
 	return value;
 }
 inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget)
 {
 	uint32_t value = *pTarget;
-	::_ReadBarrier();
+	::PTS_AcquireBarrier();
 	return value;
 }
 inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget)
 {
 	uint64_t value = *pTarget;
-	::_ReadBarrier();
+	::PTS_AcquireBarrier();
 	return value;
 }
 
 inline void PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue)
 {
-	::_WriteBarrier();
+	::PTS_ReleaseBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue)
 {
-	::_WriteBarrier();
+	::PTS_ReleaseBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue)
 {
-	::_WriteBarrier();
+	::PTS_ReleaseBarrier();
 	(*pTarget) = newValue;
 }
 
 inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue)
 {
-	::_WriteBarrier();
+	::PTS_ReleaseBarrier();
 	(*pTarget) = newValue;
 }
+
+inline void PTS_CompilerReadBarrier()
+{
+	::_ReadBarrier();
+}
+
+inline void PTS_CompilerWriteBarrier()
+{
+	::_WriteBarrier();
+}
+
+inline void PTS_CompilerReadWriteBarrier()
+{
+	::_ReadWriteBarrier();
+}
+
+#if defined(PTARM) || defined(PTARM64)
+inline void PTS_HardwareReadBarrier()
+{
+	__dmb(_ARM_BARRIER_SY);
+}
+inline void PTS_HardwareWriteBarrier()
+{
+	__dmb(_ARM_BARRIER_ST);
+}
+inline void PTS_HardwareReadWriteBarrier()
+{
+	__dmb(_ARM_BARRIER_SY);
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTS_HardwareReadBarrier()
+{
+	_mm_mfence();
+}
+inline void PTS_HardwareWriteBarrier()
+{
+	_mm_mfence();
+}
+inline void PTS_HardwareReadWriteBarrier()
+{
+	_mm_mfence();
+}
+#else
+#error 未知的架构
+#endif

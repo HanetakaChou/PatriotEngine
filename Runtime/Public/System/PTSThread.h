@@ -23,7 +23,8 @@ inline PTBOOL PTSThread_Create(PTSThreadEntry *, void *pThreadParam, PTSThread *
 inline PTBOOL PTSThread_Detach(PTSThread *pThread);
 inline PTBOOL PTSThread_Join(PTSThread *pThread);
 
-inline PTBOOL PTS_Yield();
+inline void PTS_Yield();
+inline void PTS_Sleep(uint32_t MilliSecond);
 
 #ifdef PTWIN32
 typedef DWORD PTSThreadID;
@@ -122,6 +123,13 @@ inline void PTSAtomic_Set(T* *pTarget, T* newValue)
 	::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(pTarget), reinterpret_cast<uintptr_t>(newValue));
 }
 
+inline void PTS_CompilerReadBarrier();
+inline void PTS_CompilerWriteBarrier();
+inline void PTS_CompilerReadWriteBarrier();
+
+inline void PTS_HardwareReadBarrier();
+inline void PTS_HardwareWriteBarrier();
+inline void PTS_HardwareReadWriteBarrier();
 
 #if defined PTWIN32
 #include "Win32/PTSThread.inl"

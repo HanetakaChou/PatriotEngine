@@ -1,7 +1,8 @@
 ﻿#include <assert.h>
 #include <errno.h>
+#include <time.h>
 
-PTBOOL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
+inline PTBOOL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
 {
 	return (::pthread_create(pThreadOut, NULL, pThreadEntry, pThreadParam) == 0) ? PTTRUE : PTFALSE;
 }
@@ -11,53 +12,62 @@ inline PTBOOL PTSThread_Detach(PTSThread *pThread)
 	return (::pthread_detach(*pThread) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSThread_Join(PTSThread *pThread)
+inline PTBOOL PTSThread_Join(PTSThread *pThread)
 {
 	return (::pthread_join(*pThread, NULL) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTS_Yield()
+inline void PTS_Yield()
 {
-	return (::sched_yield() == 0) ? PTTRUE : PTFALSE;
+	::sched_yield();
 }
 
-PTSThreadID PTSThreadID_Self()
+inline void PTS_Sleep(uint32_t MilliSecond)
+{
+	struct timespec request;
+	struct timespec remain;
+	request.tv_sec = static_cast<time_t>(MilliSecond / 1000U);
+	request.tv_nsec = static_cast<long>(1000000U * (MilliSecond % 1000U));
+	::nanosleep(&request, &remain);
+}
+
+inline PTSThreadID PTSThreadID_Self()
 {
 	return ::pthread_self();
 }
 
-PTBOOL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
+inline PTBOOL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 {
 	return (::pthread_equal(TID1, TID2) != 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
+inline PTBOOL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
+inline PTBOOL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
 {
 	return (::sem_wait(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
+inline PTBOOL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
 {
 	return (::sem_post(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
+inline PTBOOL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
 {
 	return (::sem_destroy(pSemaphore) == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
+inline PTBOOL PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
 {
 	int iResult = ::pthread_key_create(pTSD_Key, pDestructor);
 	return (iResult == 0) ? PTTRUE : PTFALSE;
 }
 
-PTBOOL PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
+inline PTBOOL PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
 {
 	int iResult = ::pthread_setspecific(TSD_Key, TSD_Value);
 	return (iResult == 0) ? PTTRUE : PTFALSE;
@@ -68,7 +78,7 @@ inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key)
 	return ::pthread_getspecific(TSD_Key);
 }
 
-PTBOOL PTSTSD_Delete(PTSTSD_KEY TSD_Key)
+inline PTBOOL PTSTSD_Delete(PTSTSD_KEY TSD_Key)
 {
 	int iResult = ::pthread_key_delete(TSD_Key);
 	return (iResult == 0) ? PTTRUE : PTFALSE;
@@ -159,36 +169,120 @@ inline uint64_t PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta)
 	return ::__sync_fetch_and_add(pTarget, delta);
 }
 
+#if defined(PTARM) || defined(PTARM64)
+inline void PTS_AcquireBarrier()
+{
+	::PTS_HardwareReadBarrier();
+}
+inline void PTS_ReleaseBarrier()
+{
+	::PTS_HardwareWriteBarrier();
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTS_AcquireBarrier()
+{
+	::PTS_CompilerReadBarrier();
+}
+inline void PTS_ReleaseBarrier()
+{
+	::PTS_CompilerWriteBarrier();
+}
+#else
+#error 未知的架构
+#endif
+
 inline int32_t PTSAtomic_Get(int32_t volatile *pTarget)
 {
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+	int32_t value = *pTarget;
+	::PTS_AcquireBarrier();
+	return value;
 }
 inline int64_t PTSAtomic_Get(int64_t volatile *pTarget)
 {
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+	int64_t value = *pTarget;
+	::PTS_AcquireBarrier();
+	return value;
 }
 inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget)
 {
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+	uint32_t value = *pTarget;
+	::PTS_AcquireBarrier();
+	return value;
 }
 inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget)
 {
-	return ::__atomic_load_n(pTarget, __ATOMIC_ACQUIRE);
+	uint64_t value = *pTarget;
+	::PTS_AcquireBarrier();
+	return value;
 }
 
 inline void PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue)
 {
-	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
+	::PTS_ReleaseBarrier();
+	(*pTarget) = newValue;
 }
+
 inline void PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue)
 {
-	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
+	::PTS_ReleaseBarrier();
+	(*pTarget) = newValue;
 }
+
 inline void PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue)
 {
-	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
+	::PTS_ReleaseBarrier();
+	(*pTarget) = newValue;
 }
+
 inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue)
 {
-	::__atomic_store_n(pTarget, newValue, __ATOMIC_RELEASE);
+	::PTS_ReleaseBarrier();
+	(*pTarget) = newValue;
 }
+
+inline void PTS_CompilerReadBarrier()
+{
+	__asm__ __volatile__("": : : "memory");
+}
+
+inline void PTS_CompilerWriteBarrier()
+{
+	__asm__ __volatile__("": : : "memory");
+}
+
+inline void PTS_CompilerReadWriteBarrier()
+{
+	__asm__ __volatile__("": : : "memory");
+}
+
+#if defined(PTARM) || defined(PTARM64)
+inline void PTS_HardwareReadBarrier()
+{
+	__asm__ __volatile__("dmb sy": : : "memory");
+}
+inline void PTS_HardwareWriteBarrier()
+{
+	__asm__ __volatile__("dmb st": : : "memory");
+}
+inline void PTS_HardwareReadWriteBarrier()
+{
+	__asm__ __volatile__("dmb sy": : : "memory");
+}
+#elif defined(PTX86) || defined(PTX64)
+inline void PTS_HardwareReadBarrier()
+{
+	__asm__ __volatile__("mfence": : : "memory");
+}
+inline void PTS_HardwareWriteBarrier()
+{
+	__asm__ __volatile__("mfence": : : "memory");
+}
+inline void PTS_HardwareReadWriteBarrier()
+{
+	__asm__ __volatile__("mfence": : : "memory");
+}
+#else
+#error 未知的架构
+#endif
+
+
