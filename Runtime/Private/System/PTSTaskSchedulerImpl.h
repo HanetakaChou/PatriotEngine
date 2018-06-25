@@ -238,7 +238,7 @@ class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_WaitRoot(IPTSTask *pTask) override;
+	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
 
 public:
 	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
@@ -261,7 +261,7 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_WaitRoot(IPTSTask *pTask) override;//For Nested Parallel
+	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);

@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <assert.h>
+#include "PTSThread.h"
 
 struct IPTSTaskScheduler;
 
@@ -63,7 +64,43 @@ struct IPTSTaskScheduler
 
 	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
 	virtual void Task_Spawn(IPTSTask *pTask) = 0;
-	virtual void Task_WaitRoot(IPTSTask *pTask) = 0;
+	virtual void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
+	
+	inline void Task_WaitRoot(IPTSTask *pTaskRoot)
+	{
+		assert(pTaskRoot != NULL);
+
+		uint32_t HasBeenFinished = 0U;
+
+		//Task Wait
+		{
+			class PTSTaskWait :public IPTSTask
+			{
+				uint32_t *m_pHasBeenFinished;
+			public:
+				inline PTSTaskWait(uint32_t *pHasBeenFinished) :m_pHasBeenFinished(pHasBeenFinished)
+				{
+
+				}
+
+				IPTSTask * Execute() override
+				{
+					::PTSAtomic_Set(m_pHasBeenFinished, 1U);
+					return NULL;
+				}
+			};
+
+			IPTSTask *pTaskWait = NULL;
+
+			pTaskWait = new(IPTSTask::Allocate_Root(pTaskWait, this))PTSTaskWait(&HasBeenFinished);
+
+			//assert(pTaskRootPrefix->m_Parent == NULL); //Root
+			pTaskRoot->ParentSet(pTaskWait);
+			pTaskWait->RefCount_Set(1U);
+		}
+
+		this->Task_ExecuteAndWait(pTaskRoot, &HasBeenFinished, [](void *pVoidForPredicate)->bool {return ::PTSAtomic_Get(static_cast<uint32_t *>(pVoidForPredicate)); });
+	}
 };
 
 extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
