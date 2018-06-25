@@ -18,6 +18,7 @@ extern "C" PTSYSTEMAPI void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid);
 
 extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoid, uint32_t Size, uint32_t Alignment);
 
+#include <stddef.h>
 #include <memory>
 #include <new>
 

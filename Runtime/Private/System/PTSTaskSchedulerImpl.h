@@ -187,7 +187,7 @@ static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct")
 
 //Task
 //即"Task"-Based Work-Stealing Scheduler中的"Task"
-class PTSTaskPrefixImpl :public IPTSTaskPrefix
+class PTSTaskPrefixImpl final :public IPTSTaskPrefix
 {
 	IPTSTaskPrefix * Parent() override;
 	void ParentSet(IPTSTaskPrefix *pParent) override;
@@ -222,7 +222,7 @@ static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 
 //TaskScheduler
 //外观（Facade）模式
-class PTSTaskSchedulerMasterImpl : public IPTSTaskScheduler
+class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
 	//MasterThread的SlotIndex一定为0

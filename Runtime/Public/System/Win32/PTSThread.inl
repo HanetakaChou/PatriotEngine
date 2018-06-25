@@ -191,6 +191,10 @@ inline void PTS_ReleaseBarrier()
 {
 	::PTS_HardwareWriteBarrier();
 }
+inline void PTS_AcquireReleaseBarrier()
+{
+	::PTS_HardwareReadWriteBarrier();
+}
 #elif defined(PTX86) || defined(PTX64)
 inline void PTS_AcquireBarrier()
 {
@@ -199,6 +203,10 @@ inline void PTS_AcquireBarrier()
 inline void PTS_ReleaseBarrier()
 {
 	::PTS_CompilerWriteBarrier();
+}
+inline void PTS_AcquireReleaseBarrier()
+{
+	::PTS_CompilerReadWriteBarrier();
 }
 #else
 #error 未知的架构
@@ -210,18 +218,21 @@ inline int32_t PTSAtomic_Get(int32_t volatile *pTarget)
 	::PTS_AcquireBarrier();
 	return value;
 }
+
 inline int64_t PTSAtomic_Get(int64_t volatile *pTarget)
 {
 	int64_t value = *pTarget;
 	::PTS_AcquireBarrier();
 	return value;
 }
+
 inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget)
 {
 	uint32_t value = *pTarget;
 	::PTS_AcquireBarrier();
 	return value;
 }
+
 inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget)
 {
 	uint64_t value = *pTarget;

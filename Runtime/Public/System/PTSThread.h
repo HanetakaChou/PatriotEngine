@@ -123,6 +123,10 @@ inline void PTSAtomic_Set(T* *pTarget, T* newValue)
 	::PTSAtomic_Set(reinterpret_cast<uintptr_t *>(pTarget), reinterpret_cast<uintptr_t>(newValue));
 }
 
+inline void PTS_AcquireBarrier();
+inline void PTS_ReleaseBarrier();
+inline void PTS_AcquireReleaseBarrier();
+
 inline void PTS_CompilerReadBarrier();
 inline void PTS_CompilerWriteBarrier();
 inline void PTS_CompilerReadWriteBarrier();

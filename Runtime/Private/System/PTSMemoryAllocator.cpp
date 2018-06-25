@@ -2,6 +2,7 @@
 #include "../../Public/System/PTSMemoryAllocator.h"
 #include <stddef.h> 
 #include <assert.h>
+#include <string.h>
 
 //Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". Proceedings of the 5th international symposium on Memory management ACM 2006.
 //Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.
@@ -1021,7 +1022,7 @@ static inline void * PTS_Internal_Alloc(uint32_t Size)
 		PTBOOL tbResult = ::PTSTSD_SetValue(s_TLBinArray_Index, pTLBinArray);
 		assert(tbResult != PTFALSE);
 	}
-
+	
 	if (Size <= s_NonLargeObject_SizeMax)
 	{
 		uint32_t BinIndex;
