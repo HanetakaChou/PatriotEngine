@@ -553,10 +553,10 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Private()
 			HeadAndTailNew.m_OneWord.m_Tail = HeadAndTailOld.m_OneWord.m_Tail - 1U;
 
 			uint32_t Index = HeadAndTailNew.m_OneWord.m_Tail % m_TaskDequeCapacity;
-			PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
 
 			if (::PTSAtomic_CompareAndSet(&m_HeadAndTail.m_TwoWord, HeadAndTailOld.m_TwoWord, HeadAndTailNew.m_TwoWord) == HeadAndTailOld.m_TwoWord)
 			{
+				PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
 				return pTaskToPop;
 			}
 			//else
@@ -603,10 +603,11 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
 			HeadAndTailNew.m_OneWord.m_Tail = HeadAndTailOld.m_OneWord.m_Tail;
 
 			uint32_t Index = HeadAndTailOld.m_OneWord.m_Head % ::PTSAtomic_Get(&m_TaskDequeCapacity);
-			PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
 
 			if (::PTSAtomic_CompareAndSet(&m_HeadAndTail.m_TwoWord, HeadAndTailOld.m_TwoWord, HeadAndTailNew.m_TwoWord) == HeadAndTailOld.m_TwoWord)
 			{
+				PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
+
 				return pTaskToPop;
 			}
 			//else
