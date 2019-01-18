@@ -23,7 +23,7 @@ extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pV
 #include <new>
 
 template<typename T>
-class PTSCPP_Allocator 
+class PTS_CPP_Allocator 
 {
 public:
 	typedef typename std::allocator<T>::value_type value_type;
@@ -36,21 +36,21 @@ public:
 	template<class U> 
 	struct rebind 
 	{
-		typedef PTSCPP_Allocator<U> other;
+		typedef PTS_CPP_Allocator<U> other;
 	};
 
-	inline PTSCPP_Allocator() throw()
+	inline PTS_CPP_Allocator() throw()
 	{
 
 	}
 
-	inline PTSCPP_Allocator(const PTSCPP_Allocator&) throw()
+	inline PTS_CPP_Allocator(const PTS_CPP_Allocator&) throw()
 	{
 
 	}
 
 	template<typename U> 
-	inline PTSCPP_Allocator(const PTSCPP_Allocator<U>&) throw()
+	inline PTS_CPP_Allocator(const PTS_CPP_Allocator<U>&) throw()
 	{
 
 	}
@@ -95,7 +95,7 @@ public:
 };
 
 template<>
-class PTSCPP_Allocator<void> {
+class PTS_CPP_Allocator<void> {
 public:
 	typedef void* pointer;
 	typedef const void* const_pointer;
@@ -103,20 +103,42 @@ public:
 	template<class U> 
 	struct rebind 
 	{
-		typedef PTSCPP_Allocator<U> other;
+		typedef PTS_CPP_Allocator<U> other;
 	};
 };
 
 template<typename T, typename U>
-inline bool operator==(const PTSCPP_Allocator<T>&, const PTSCPP_Allocator<U>&)
+inline bool operator==(const PTS_CPP_Allocator<T>&, const PTS_CPP_Allocator<U>&)
 { 
 	return true;
 }
 
 template<typename T, typename U>
-inline bool operator!=(const PTSCPP_Allocator<T>&, const PTSCPP_Allocator<U>&)
+inline bool operator!=(const PTS_CPP_Allocator<T>&, const PTS_CPP_Allocator<U>&)
 { 
 	return false;
 }
+
+#include <vector>
+#include <string>
+#include <set>
+#include <map>
+
+template <typename T>
+using PTS_CPP_Vector = std::vector<T, ::PTS_CPP_Allocator<T>>;
+
+using PTS_CPP_String = std::basic_string<char, std::char_traits<char>, ::PTS_CPP_Allocator<char>>;
+
+template <typename Key, typename Compare = std::less<Key >>
+using PTS_CPP_Set = std::set<Key, Compare, ::PTS_CPP_Allocator<Key>>;
+
+template <typename Key, typename Compare = std::less<Key >>
+using PTS_CPP_MultiSet = std::multiset<Key, Compare, ::PTS_CPP_Allocator<Key>>;
+
+template <typename Key, typename T, typename Compare = std::less<Key>>
+using PTS_CPP_Map = std::map<Key, T, Compare, ::PTS_CPP_Allocator<std::pair<const Key, T>>>;
+
+template <typename Key, typename T, typename Compare = std::less<Key>>
+using PTS_CPP_MultiMap = std::multimap<Key, T, Compare, ::PTS_CPP_Allocator<std::pair<const Key, T>>>;
 
 #endif

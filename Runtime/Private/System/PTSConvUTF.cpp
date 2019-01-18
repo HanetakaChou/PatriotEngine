@@ -2,21 +2,21 @@
 
 #include <stdint.h>
 
-static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutbuf, uint32_t *pOutCharsLeft);
+static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutBuf, uint32_t *pOutCharsLeft);
 
-static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutbuf, uint32_t *pOutCharsLeft);
+static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft);
 
-bool PTCALL PTSConv_UTF8ToUTF16(char const *pInBuf, uint32_t *pInCharsLeft, char16_t *pOutbuf, uint32_t *pOutCharsLeft)
+extern "C" bool PTCALL PTSConv_UTF8ToUTF16(char const *pInBuf, uint32_t *pInCharsLeft, char16_t *pOutBuf, uint32_t *pOutCharsLeft)
 {
-	return ::PTSConv_Internal_UTF8ToUTF16(reinterpret_cast<uint8_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint16_t *>(pOutbuf), pOutCharsLeft);
+	return ::PTSConv_Internal_UTF8ToUTF16(reinterpret_cast<uint8_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint16_t *>(pOutBuf), pOutCharsLeft);
 }
 
-bool PTCALL PTSConv_UTF16ToUTF8(char16_t const *pInBuf, uint32_t *pInCharsLeft, char *pOutbuf, uint32_t *pOutCharsLeft)
+extern "C" bool PTCALL PTSConv_UTF16ToUTF8(char16_t const *pInBuf, uint32_t *pInCharsLeft, char *pOutBuf, uint32_t *pOutCharsLeft)
 {
-	return ::PTSConv_Internal_UTF16ToUTF8(reinterpret_cast<uint16_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint8_t*>(pOutbuf), pOutCharsLeft);
+	return ::PTSConv_Internal_UTF16ToUTF8(reinterpret_cast<uint16_t const *>(pInBuf), pInCharsLeft, reinterpret_cast<uint8_t*>(pOutBuf), pOutCharsLeft);
 }
 
-static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutbuf, uint32_t *pOutCharsLeft)
+static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutBuf, uint32_t *pOutCharsLeft)
 {
 	while ((*pInCharsLeft) >= 1)
 	{
@@ -158,9 +158,9 @@ static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t 
 		{
 			if ((*pOutCharsLeft) >= 1)
 			{
-				(*pOutbuf) = static_cast<uint16_t>(ucs4code);
+				(*pOutBuf) = static_cast<uint16_t>(ucs4code);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else
@@ -172,14 +172,14 @@ static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t 
 		{
 			if ((*pOutCharsLeft) >= 2)
 			{
-				(*pOutbuf) = static_cast<uint16_t>((((ucs4code - 65536U)&(0XFFC00U)) >> 10U) + 0XD800U);//110110xxxxxxxxxx 
+				(*pOutBuf) = static_cast<uint16_t>((((ucs4code - 65536U)&(0XFFC00U)) >> 10U) + 0XD800U);//110110xxxxxxxxxx 
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint16_t>(((ucs4code - 65536U)&(0X3FFU)) + 0XDC00U);//110111xxxxxxxxxx
+				(*pOutBuf) = static_cast<uint16_t>(((ucs4code - 65536U)&(0X3FFU)) + 0XDC00U);//110111xxxxxxxxxx
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else
@@ -192,7 +192,7 @@ static inline bool PTSConv_Internal_UTF8ToUTF16(uint8_t const *pInBuf, uint32_t 
 	return true;
 }
 
-static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutbuf, uint32_t *pOutCharsLeft)
+static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft)
 {
 	while ((*pInCharsLeft) >= 1)
 	{
@@ -241,9 +241,9 @@ static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t
 		{
 			if ((*pOutCharsLeft) >= 1)
 			{
-				(*pOutbuf) = static_cast<uint8_t>(ucs4code);
+				(*pOutBuf) = static_cast<uint8_t>(ucs4code);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else
@@ -255,14 +255,14 @@ static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t
 		{
 			if ((*pOutCharsLeft) >= 2)
 			{
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0X7C0U) >> 6U) + 192U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X7C0U) >> 6U) + 192U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else
@@ -274,19 +274,19 @@ static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t
 		{
 			if ((*pOutCharsLeft) >= 3)
 			{
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0XF000U) >> 12U) + 224U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XF000U) >> 12U) + 224U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else
@@ -298,24 +298,24 @@ static inline bool PTSConv_Internal_UTF16ToUTF8(uint16_t const *pInBuf, uint32_t
 		{
 			if ((*pOutCharsLeft) >= 4)
 			{
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0X1C0000U) >> 18U) + 240U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X1C0000U) >> 18U) + 240U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0X3F000U) >> 12U) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X3F000U) >> 12U) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 
-				(*pOutbuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+				(*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
 
-				++pOutbuf;
+				++pOutBuf;
 				--(*pOutCharsLeft);
 			}
 			else//ucs4code >= 0X200000U

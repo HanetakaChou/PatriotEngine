@@ -49,7 +49,7 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 	//在Linux中
 	//在x86或ARM架构下，用户空间最多不超过4GB（0XFFFFFFFF 8个字符）
 	//在x86_64（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）架构下，用户空间只有128TB（0X7FFFFFFFFFFF 12个字符）
-	//在ARM64（https://www.kernel.org/doc/Documentation/arm64/memory.txt）架构下，用户空间只有512GB(0X7FFFFFFFFF 10个字符）
+	//在ARM64（https://www.kernel.org/doc/Documentation/arm64/memory.txt）架构下，用户空间只有512GB(0X7FFFFFFFFF 10个字符）/256TB(0XFFFFFFFFFFFF 12个字符）/4TB(0X3FFFFFFFFFF 11个字符）
 
 #if defined(PTX86) || defined(PTARM)
 	char Str_AddressStart[8 + 1];
@@ -70,7 +70,7 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 		pStr_AddressStart = Str_AddressStart + index;
 		Str_AddressStart_Length = 8 - index;
 	}
-#elif defined(PTX64)
+#elif defined(PTX64) || defined(PTARM64)
 	char Str_AddressStart[12 + 1];
 	char *pStr_AddressStart;
 	int Str_AddressStart_Length;
@@ -88,25 +88,6 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 		}
 		pStr_AddressStart = Str_AddressStart + index;
 		Str_AddressStart_Length = 12 - index;
-	}
-#elif defined(PTARM64)
-	char Str_AddressStart[10 + 1];
-	char *pStr_AddressStart;
-	int Str_AddressStart_Length;
-	{
-		Str_AddressStart[10] = '\0';
-		char const *pStr_Number = "0123456789abcdef";
-		int index = 10;
-		uintptr_t AddressStart = reinterpret_cast<uintptr_t>(pVoid);
-		while (AddressStart != 0U)
-		{
-			--index;
-			assert(index >= 0U);
-			Str_AddressStart[index] = pStr_Number[(AddressStart & 0XF)];
-			AddressStart >>= 4U;
-		}
-		pStr_AddressStart = Str_AddressStart + index;
-		Str_AddressStart_Length = 10 - index;
 	}
 #else
 #error 未知的架构

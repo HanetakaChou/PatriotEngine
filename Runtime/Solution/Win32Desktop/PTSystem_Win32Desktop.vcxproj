@@ -20,21 +20,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
-    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
-    <ClInclude Include="..\..\Public\System\PTSConvUTF.h" />
-    <ClInclude Include="..\..\Public\System\PTSFile.h" />
+    <ClInclude Include="..\..\Public\System\PTSMemory.h" />
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\PTSConvUTF.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSMemory.cpp" />
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
-    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Desktop.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl" />

@@ -255,10 +255,23 @@ inline void PTS_CompilerReadWriteBarrier()
 	__asm__ __volatile__("": : : "memory");
 }
 
-#if defined(PTARM) || defined(PTARM64)
+#if defined(PTARM)
 inline void PTS_HardwareReadBarrier()
 {
 	__asm__ __volatile__("dmb sy": : : "memory");
+}
+inline void PTS_HardwareWriteBarrier()
+{
+	__asm__ __volatile__("dmb st": : : "memory");
+}
+inline void PTS_HardwareReadWriteBarrier()
+{
+	__asm__ __volatile__("dmb sy": : : "memory");
+}
+#elif defined(PTARM64)
+inline void PTS_HardwareReadBarrier()
+{
+	__asm__ __volatile__("dmb ld": : : "memory");
 }
 inline void PTS_HardwareWriteBarrier()
 {

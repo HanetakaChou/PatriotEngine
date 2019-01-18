@@ -1,0 +1,10 @@
+/Runtime/Solution/Win32Runtime/.vs
+/Runtime/Solution/Win32Desktop/.vs
+/Runtime/Solution/Win32Desktop/PTSystem_Win32Desktop.vcxproj.user
+/Intermediate
+/Binary
+/Runtime/Solution/PosixAndroid/.vs
+/Example/TreeSum/Solution/TreeSum_Win32Desktop.vcxproj.user
+/Example/MapReduce/Solution/MapReduce_Win32Desktop.vcxproj.user
+/Runtime/Solution/PosixAndroid/PTSystem_PosixAndroid.vcxproj.user
+/Runtime/Solution/PosixXCB/.vs

@@ -51,7 +51,9 @@ class PTSMarket
 	uint32_t m_HasExited;
 
 	//减轻伪共享
+public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(void *)];
+private:
 
 	PTSThread *m_ThreadArrayMemory;
 
@@ -63,7 +65,10 @@ class PTSMarket
 	uint32_t const m_ArenaPointerArrayCapacity; 
 
 	//对齐到CacheLine
+public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore) - sizeof(void *)];
+private:
+
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
 	
@@ -99,14 +104,18 @@ class PTSArena
 	uint32_t m_SlotIndexAffinityMask;
 
 	//减轻伪共享
+public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t)];
+private:
 
 	PTSArenaSlot * const m_SlotArrayMemory;
 	
 	uint32_t const m_SlotArrayCapacity; 
 
 	//对齐到CacheLine
+public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
+private:
 
 public:
 	//由于SlotIndexMask的约束，SlotArrayCapacity不得大于32
@@ -155,14 +164,18 @@ class PTSArenaSlot
 	uint32_t m_HasBeenAcquired;
 
 	//减轻伪共享
+public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(int64_t)];
+private:
 
 	PTSTaskPrefixImpl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
 
 	uint32_t m_TaskDequeCapacity;
 
 	//对齐到CacheLine
+public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size*3U - sizeof(uint32_t) - sizeof(void*) * 16U];
+private:
 
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend bool PTSArena::Slot_Acquire_Master();

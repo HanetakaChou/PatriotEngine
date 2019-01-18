@@ -27,25 +27,24 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Private\System\PTSMemory.cpp" />
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
-    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.cpp" />
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
-    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
+    <ClInclude Include="..\..\Public\System\PTSMemory.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
-    <ClInclude Include="..\..\Public\System\PTSFile.h" />
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
-    <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl" />
     <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl" />
+    <None Include="..\..\Public\System\Win32\PTSThread.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{c0c3c751-fa2c-402d-a750-2670cea5f587}</ProjectGuid>

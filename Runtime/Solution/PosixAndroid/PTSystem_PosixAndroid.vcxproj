@@ -35,17 +35,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.h" />
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
-    <ClInclude Include="..\..\Public\System\PTSFile.h" />
+    <ClInclude Include="..\..\Public\System\PTSMemory.h" />
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h" />
     <ClInclude Include="..\..\Public\System\PTSThread.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.cpp" />
+    <ClCompile Include="..\..\Private\System\PTSMemory.cpp" />
     <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp" />
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp" />
   </ItemGroup>
