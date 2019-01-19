@@ -9,13 +9,27 @@
 //Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". Proceedings of the 5th international symposium on Memory management ACM 2006.
 //Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.
 
-//Operating System Primitive
+//Platform-Dependent OS Primitive
 static inline void *PTS_MemoryMap_Alloc(uint32_t size);
 static inline void PTS_MemoryMap_Free(void *pVoid);
-//To Do: 不同Map可能连续 在Windows中得到的结果可能大于实际分配的值 在多线程环境下 线程B可能在线程A读取（Calloc）时释放
 static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 
+//Intel TBB
+//Front-End McRT Malloc (Nature Is A Bucket Allocator)
+//Back-End Slab Allocator (Nature A Buddy Allocator) //We Use System Call "FileMemoryMap" Directly As The Paper "McRT Malloc" Suggests
+
+#define PTS_USE_QUEUEEMPTY 1
+
+bool PTCALL PTSMemoryAllocator_Initialize();
+
+struct PTS_BucketObjectHeader;
+struct PTS_BucketBlockHeader;
+class PTS_BucketBlockManager;
+class PTS_ThreadLocalBucketAllocator;
+
 //Hudson 2006 / 3.McRT-MALLOC
+
+//PTS_BucketBlockManager
 //At initialization, McRT-Malloc reserves a large piece of virtual memory for its heap 
 //(using an operating system primitive like the Linux mmap and munmap primitives)
 //and divides the heap into 16K-byte aligned blocks that initially reside in a global block store.
@@ -35,20 +49,13 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 //Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations
 //we use the bits freed up due to the alignment of the blocks to accomplish our non-blocking properties,
 //in particular to avoid the ABA problem
-
-
-//Intel TBB
-//Front-End McRT Malloc (Nature Is A Bucket Allocator)
-//Back-End Slab Allocator (Nature A Buddy Allocator) //We Use System Call "FileMemoryMap" Directly As The Paper "McRT Malloc" Suggests
-
-#define PTS_USE_QUEUEEMPTY 1
-
-//When a thread dies, the scheduler notifies McRT-Malloc,（作为PTSTSD_DESTRUCTOR触发）
+//--------------------------------------------------------
+//作为PTSTSD_DESTRUCTOR触发
+//When a thread dies, the scheduler notifies McRT-Malloc,
 //which then returns the dead thread’s blocks back to the block store.
 
-bool PTCALL PTSMemoryAllocator_Initialize();
-
-//Hudson 2006 / 3.McRT-MALLOC
+//PTS_ThreadLocalBucketAllocator
+//--------------------------------------------------------
 //Each thread maintains a small thread-local array of bins,
 //each bin containing a list of blocks holding the same sized objects.
 //--------------------------------------------------------
@@ -96,36 +103,14 @@ bool PTCALL PTSMemoryAllocator_Initialize();
 //and thus becomes available for further allocation.
 //A block with all its objects freed returns back to the global heap; 
 //new blocks are taken from there as required.
-
-struct PTS_BucketObjectHeader;
-struct PTS_BucketBlockHeader;
-class PTS_BucketBlockManager;
-class PTS_ThreadLocalBucketAllocator;
-
-//Hudson 2006 / 3.McRT-MALLOC
+//--------------------------------------------------------
 //The array contains a bin for every multiple of four between 4 bytes and 64 bytes, 
 //and a bin for every power of two between 128 bytes and 8096 bytes.
 //Allocation of objects greater than 8096 bytes is handled by the operating system(e.g., on Linux we use mmap and munmap).
 //Large objects are rare so we don’t discuss them further.
 
-//严格意义上16KB应当是对齐而非大小
-static uint32_t const s_Block_Size = 16U * 1024U;
-
-//Part1 [ 8/16/32/48/64 ]
-//Part2 [ 80/96/112/128 || 60/192/224/256 || 320/384/448/512 || 640/768/896/1024 || 1280/1536/1792/2048 || 2560/3072/3584/4096 || 5120/6144/7168/8192 ]
-//static uint32_t const s_Bucket_Number = 32U; //5+27=32
-static uint32_t const s_Bucket_Number = 32U;
-static uint32_t const s_NonLargeObject_SizeMax = 7168U;
-
-static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
-static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
-static inline size_t PTS_Size_AlignDownFrom(size_t Value, size_t alignment);
-static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
-static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment);
-static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
-static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pObjectSize, uint32_t RequestSize);
-
-//Hudson 2006 / 3.McRT-MALLOC
+//PTS_BucketBlockHeader
+//--------------------------------------------------------
 //After acquiring a block, a thread divides it into equal-sized objects
 //initially placed on the block’s private free list.
 //The thread owning a block also owns theobjects in the block.
@@ -170,6 +155,23 @@ static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pO
 //we maintain two free lists, one private and trivially non-blocking,
 //and another a public version which is managed as a single consumer, multiple-producer queue 
 //and implemented as a non-blocking structure.
+
+//严格意义上16KB应当是对齐而非大小
+static uint32_t const s_Block_Size = 16U * 1024U;
+
+//Part1 [ 8/16/32/48/64 ]
+//Part2 [ 80/96/112/128 || 60/192/224/256 || 320/384/448/512 || 640/768/896/1024 || 1280/1536/1792/2048 || 2560/3072/3584/4096 || 5120/6144/7168/8192 ]
+//static uint32_t const s_Bucket_Number = 32U; //5+27=32
+static uint32_t const s_Bucket_Number = 32U;
+static uint32_t const s_NonLargeObject_SizeMax = 7168U;
+
+static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
+static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
+static inline size_t PTS_Size_AlignDownFrom(size_t Value, size_t alignment);
+static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
+static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment);
+static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
+static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pObjectSize, uint32_t RequestSize);
 
 #if defined(PTARM) || defined(PTARM64) || defined(PTX86) || defined(PTX64)
 static uint32_t const s_CacheLine_Size = 64U;
@@ -1396,6 +1398,11 @@ static inline void * PTS_Internal_Alloc(uint32_t Size)
 
 	if (pThreadLocalBucketAllocator == NULL)
 	{
+		//To Do：
+		//Map在大多数平台上的实现是至少分配一页（4096字节）内存
+		//而PTS_ThreadLocalBucketAllocator不到500字节
+		//整个进程共浪费3500×线程数的字节
+		//是否需要调整代码进行节省？
 		pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBucketAllocator)));
 		assert(pThreadLocalBucketAllocator != NULL);
 

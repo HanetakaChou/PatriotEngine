@@ -20,6 +20,11 @@ static inline void PTS_MemoryMap_Free(void *pVoid)
 
 static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
 {
+	//在Windows中
+	//即使不同Map连续
+	//VirtualQuery的结果不会将不同的Map合并
+	//可以正确运行
+
 	MEMORY_BASIC_INFORMATION Buffer;
 	SIZE_T wsResult = ::VirtualQuery(pVoid, &Buffer, sizeof(Buffer));
 	assert(wsResult == sizeof(Buffer));
