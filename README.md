@@ -22,6 +22,6 @@ CentOS和Android都是Linux发行版，但是CentOS上编译生成的二进制�
 
 当应用程序启动时，Glibc版本的操作系统由/lib/ld-linux.so.2加载动态链接库，而Bionic版本的操作系统由/system/bin/linker加载动态链接库，可以用"readelf -d"查看Executable文件的动态链接库加载器。
 
-Glibc版本的操作系统在加载动态链接库时会依赖LD_LIBRARY_PATH环境变量，还可能发生全局符号介入的问题，而Bionic版本的操作系统并不会没有以上行为。
+Glibc版本的操作系统在加载动态链接库时会依赖LD_LIBRARY_PATH环境变量，还可能发生全局符号介入的问题，而Bionic版本的操作系统并没有以上行为。
 
 
