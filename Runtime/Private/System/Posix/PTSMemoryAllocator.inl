@@ -1,12 +1,17 @@
-﻿#include <sys/mman.h>
-#ifdef PTPOSIXLINUXGLIBC
+﻿#ifdef PTPOSIXLINUXGLIBC
+#include <sys/mman.h>
 #include <dirent.h>
 #elif defined (PTPOSIXLINUXBIONIC)
+#include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+#elif defined (PTPOSIXMACH)
+#include <mach/mach.h>
 #else
 #error 未知的平台
 #endif
+
+#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
 
 static uint32_t const s_Page_Size = 1024U * 4U;
 
@@ -266,7 +271,9 @@ static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
 	}
 }
 
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-//#include "../../../Public/System/Posix/PTSLocateSourceCode.inl"
+#elif defined (PTPOSIXMACH)
+
+#else
+#error 未知的平台
+#endif
+

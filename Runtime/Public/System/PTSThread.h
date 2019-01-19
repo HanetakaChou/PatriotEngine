@@ -88,10 +88,55 @@ inline int64_t PTSAtomic_CompareAndSet(int64_t volatile *pTarget, int64_t expect
 inline uint32_t PTSAtomic_CompareAndSet(uint32_t volatile *pTarget, uint32_t expect, uint32_t update);
 inline uint64_t PTSAtomic_CompareAndSet(uint64_t volatile *pTarget, uint64_t expect, uint64_t update);
 
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+//Nothing
+#elif defined(PTPOSIXMACH)
+#include <assert.h>
+template<size_t const SizeOfPointerUnsigned>
+inline uintptr_t PTSAtomic_CompareAndSet_Helper(uintptr_t volatile *pTarget, uintptr_t expect, uintptr_t update)
+{
+	switch (SizeOfPointerUnsigned)
+	{
+	case 4U: return static_cast<uintptr_t>(PTSAtomic_CompareAndSet(reinterpret_cast<uint32_t volatile *>(pTarget), static_cast<uint32_t>(expect), static_cast<uint32_t>(update)));
+	case 8U: return static_cast<uintptr_t>(PTSAtomic_CompareAndSet(reinterpret_cast<uint64_t volatile *>(pTarget), static_cast<uint32_t>(expect), static_cast<uint64_t>(update)));
+	default: assert(0); return ~0U;
+	}
+}
+inline uintptr_t PTSAtomic_CompareAndSet(uintptr_t volatile *pTarget, uintptr_t expect, uintptr_t update)
+{
+	return PTSAtomic_CompareAndSet_Helper<sizeof(uintptr_t)>(pTarget, expect, update);
+}
+#else
+#error 未知的平台
+#endif
+
 inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue);
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue);
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue);
 inline uint64_t PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue);
+
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+//Nothing
+#elif defined(PTPOSIXMACH)
+#include <assert.h>
+template<size_t const SizeOfPointerUnsigned>
+inline uintptr_t PTSAtomic_GetAndSet_Helper(uintptr_t volatile *pTarget, uintptr_t newValue)
+{
+	switch (SizeOfPointerUnsigned)
+	{
+	case 4U: return static_cast<uintptr_t>(PTSAtomic_GetAndSet(reinterpret_cast<uint32_t volatile *>(pTarget), static_cast<uint32_t>(newValue)));
+	case 8U: return static_cast<uintptr_t>(PTSAtomic_GetAndSet(reinterpret_cast<uint64_t volatile *>(pTarget), static_cast<uint64_t>(newValue)));
+	default: assert(0); return ~0U;
+	}
+}
+inline uintptr_t PTSAtomic_GetAndSet(uintptr_t volatile *pTarget, uintptr_t newValue)
+{
+	return PTSAtomic_GetAndSet_Helper<sizeof(uintptr_t)>(pTarget, newValue);
+}
+#else
+#error 未知的平台
+#endif
+
 
 template <typename T>
 inline T* PTSAtomic_GetAndSet(T* *pTarget, T* newValue)
@@ -109,6 +154,28 @@ inline int64_t PTSAtomic_Get(int64_t volatile *pTarget);
 inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget);
 inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget);
 
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+//Nothing
+#elif defined(PTPOSIXMACH)
+#include <assert.h>
+template<size_t const SizeOfPointerUnsigned>
+inline uintptr_t PTSAtomic_Get_Helper(uintptr_t volatile *pTarget)
+{
+	switch (SizeOfPointerUnsigned)
+	{
+	case 4U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint32_t volatile *>(pTarget)));
+	case 8U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint64_t volatile *>(pTarget)));
+	default: assert(0); return ~0U;
+	}
+}
+inline uintptr_t PTSAtomic_Get(uintptr_t volatile *pTarget)
+{
+	PTSAtomic_Get_Helper<sizeof(uintptr_t)>(pTarget);
+}
+#else
+#error 未知的平台
+#endif
+
 template <typename T>
 inline T* PTSAtomic_Get(T* *pTarget)
 {
@@ -119,6 +186,29 @@ inline void PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue);
 inline void PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue);
 inline void PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue);
 inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue);
+
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+//Nothing
+#elif defined(PTPOSIXMACH)
+#include <assert.h>
+template<size_t const SizeOfPointerUnsigned>
+inline void PTSAtomic_Set_Helper(uintptr_t volatile *pTarget, uintptr_t newValue)
+{
+	switch (SizeOfPointerUnsigned)
+	{
+	case 4U: PTSAtomic_Set(reinterpret_cast<uint32_t volatile *>(pTarget), static_cast<uint32_t>(newValue)); break;
+	case 8U: PTSAtomic_Set(reinterpret_cast<uint64_t volatile *>(pTarget), static_cast<uint64_t>(newValue)); break;
+	default: assert(0);
+	}
+}
+
+inline void PTSAtomic_Set(uintptr_t volatile *pTarget, uintptr_t newValue)
+{
+	PTSAtomic_Set_Helper<sizeof(uintptr_t)>(pTarget, newValue);
+}
+#else
+#error 未知的平台
+#endif
 
 template <typename T>
 inline void PTSAtomic_Set(T* *pTarget, T* newValue)

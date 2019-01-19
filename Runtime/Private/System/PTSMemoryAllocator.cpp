@@ -235,6 +235,11 @@ public:
 };
 //static_assert(std::is_pod<PTS_ThreadLocalBucketAllocator>::value, "PTS_ThreadLocalBucketAllocator Is Not A POD");
 
+#ifndef NDEBUG
+static uint32_t const s_BucketBlockHeader_Identity_Block = 0X5765C7B8U;
+static PTSThreadID const s_BucketBlockHeader_ThreadID_Invalid = PTSThreadID(5201314U); 
+#endif
+
 struct PTS_BucketBlockHeader
 {
 private:
@@ -286,11 +291,6 @@ private:
 	friend void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
 	friend void PTS_ThreadLocalBucketAllocator::LoseEmpty(PTS_BucketBlockHeader *pBlockToOwn);
 	friend void PTS_ThreadLocalBucketAllocator::LoseNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
-
-#ifndef NDEBUG
-	static uint32_t const s_Identity_Block = 0X5765C7B8U;
-	static PTSThreadID const s_ThreadID_Invalid = PTSThreadID(5201314U);
-#endif
 
 private:
 	inline void _BumpPointerRestore(uint32_t ObjectSize);
@@ -546,7 +546,7 @@ inline void PTS_BucketBlockManager::PushEmpty(PTS_BucketBlockHeader *pBlockToPus
 	assert(pBlockToPush->m_pAllocator_Owner == NULL);
 	assert(pBlockToPush->m_ObjectFreeVector_Private == NULL);
 	assert(pBlockToPush->m_BumpPointer == NULL);
-	assert(pBlockToPush->m_ThreadID_Owner == PTS_BucketBlockHeader::s_ThreadID_Invalid);
+	assert(pBlockToPush->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToPush->m_ObjectSize == ~uint32_t(0U));
 	assert(pBlockToPush->Pm_BucketIndex_InAllocator == ~uint32_t(0U));
 	assert(pBlockToPush->m_pNext_InBucket == NULL);
@@ -564,7 +564,7 @@ inline void PTS_BucketBlockManager::PushEmpty(PTS_BucketBlockHeader *pBlockToPus
 inline void PTS_BucketBlockManager::PushNonEmpty(PTS_BucketBlockHeader *pBlockToPush)
 {
 	assert(pBlockToPush->m_pAllocator_Owner == NULL);
-	assert(pBlockToPush->m_ThreadID_Owner == PTS_BucketBlockHeader::s_ThreadID_Invalid);
+	assert(pBlockToPush->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToPush->m_pNext_InBucket == NULL);
 	assert(pBlockToPush->m_pPrevious_InBucket == NULL);
 	assert(pBlockToPush->m_ObjectAllocated_Number != 0U);
@@ -930,7 +930,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 	assert(pBlockToOwn->m_pAllocator_Owner == NULL);
 	assert(pBlockToOwn->m_ObjectFreeVector_Private == NULL);
 	assert(pBlockToOwn->m_BumpPointer == NULL);
-	assert(pBlockToOwn->m_ThreadID_Owner == PTS_BucketBlockHeader::s_ThreadID_Invalid);
+	assert(pBlockToOwn->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToOwn->m_ObjectSize == ~uint32_t(0U));
 	assert(pBlockToOwn->Pm_BucketIndex_InAllocator == ~uint32_t(0U));
 	assert(pBlockToOwn->m_pNext_InBucket == NULL);
@@ -954,7 +954,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn)
 {
 	assert(pBlockToOwn->m_pAllocator_Owner == NULL);
-	assert(pBlockToOwn->m_ThreadID_Owner == PTS_BucketBlockHeader::s_ThreadID_Invalid);
+	assert(pBlockToOwn->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToOwn->m_pNext_InBucket == NULL);
 	assert(pBlockToOwn->m_pPrevious_InBucket == NULL);
 	assert(pBlockToOwn->m_ObjectAllocated_Number != 0U);
@@ -976,7 +976,7 @@ inline void PTS_ThreadLocalBucketAllocator::LoseEmpty(PTS_BucketBlockHeader *pBl
 	pBlockToOwn->m_pAllocator_Owner = NULL;
 
 #ifndef NDEBUG
-	pBlockToOwn->m_ThreadID_Owner = PTS_BucketBlockHeader::s_ThreadID_Invalid;
+	pBlockToOwn->m_ThreadID_Owner = s_BucketBlockHeader_ThreadID_Invalid;
 	pBlockToOwn->m_ObjectFreeVector_Private = NULL;
 	pBlockToOwn->m_BumpPointer = NULL;
 	pBlockToOwn->m_ObjectSize = ~uint32_t(0U);
@@ -999,7 +999,7 @@ inline void PTS_ThreadLocalBucketAllocator::LoseNonEmpty(PTS_BucketBlockHeader *
 
 	pBlockToOwn->m_pAllocator_Owner = NULL;
 #ifndef NDEBUG
-	pBlockToOwn->m_ThreadID_Owner = PTS_BucketBlockHeader::s_ThreadID_Invalid;
+	pBlockToOwn->m_ThreadID_Owner = s_BucketBlockHeader_ThreadID_Invalid;
 #endif
 }
 
@@ -1170,7 +1170,7 @@ inline void PTS_BucketBlockHeader::Construct()
 #ifndef NDEBUG
 	m_ObjectFreeVector_Private = NULL;
 	m_BumpPointer = NULL;
-	m_ThreadID_Owner = s_ThreadID_Invalid;
+	m_ThreadID_Owner = s_BucketBlockHeader_ThreadID_Invalid;
 	m_ObjectSize = ~uint32_t(0U);
 	Pm_BucketIndex_InAllocator = ~uint32_t(0U);
 #endif
@@ -1178,7 +1178,7 @@ inline void PTS_BucketBlockHeader::Construct()
 	m_pPrevious_InBucket = NULL;
 	m_ObjectAllocated_Number = 0U;
 #ifndef NDEBUG
-	m_Identity_Block = s_Identity_Block;
+	m_Identity_Block = s_BucketBlockHeader_Identity_Block;
 #endif
 	//Public Field
 	m_pNext_InBlockManager = NULL;
@@ -1358,7 +1358,7 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 #ifndef NDEBUG
 inline bool PTS_BucketBlockHeader::IsBlock()
 {
-	return m_Identity_Block == s_Identity_Block;
+	return m_Identity_Block == s_BucketBlockHeader_Identity_Block;
 }
 
 #endif

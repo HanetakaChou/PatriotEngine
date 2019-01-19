@@ -17,3 +17,9 @@
 /Runtime/Solution/PosixLinuxBionic/.vs
 /Runtime/Solution/PosixLinuxBionic/PTSystem_PosixLinuxBionic.vcxproj.user
 /Runtime/Solution/PosixLinuxGlibc/.vs
+/BuildAll/Solution/PosixMach/.vs
+/Runtime/Solution/PosixMach/.PTSystem_PosixMach.payload.desc
+/Runtime/Solution/PosixMach/x86
+/Runtime/Solution/PosixMach/ARM64
+/Runtime/Solution/PosixMach/ARM
+/Runtime/Solution/PosixMach/x64

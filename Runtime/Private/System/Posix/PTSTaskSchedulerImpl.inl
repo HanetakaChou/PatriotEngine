@@ -1,5 +1,5 @@
+#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
 #include <unistd.h>
-
 static inline uint32_t PTS_Info_HardwareThreadNumber()
 {
 	cpu_set_t AffinityMask;
@@ -8,6 +8,11 @@ static inline uint32_t PTS_Info_HardwareThreadNumber()
 	int Count = CPU_COUNT(&AffinityMask);
 	return static_cast<uint32_t>(Count);
 }
+#elif defined (PTPOSIXMACH)
+#include <mach/mach.h>
+#else
+#error 未知的平台
+#endif
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 {
