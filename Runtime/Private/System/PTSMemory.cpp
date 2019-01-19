@@ -17,7 +17,6 @@ extern "C" void PTCALL PTS_MemoryCopy(void *pOutBuf, void const *pInBuf, size_t 
 
 #if defined(PTX86) || defined(PTX64)
 
-#include <stdint.h>
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <tmmintrin.h>

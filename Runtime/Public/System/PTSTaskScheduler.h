@@ -2,8 +2,9 @@
 #define PT_SYSTEM_TASKSCHEDULER_H
 
 #include <stddef.h>
-#include <assert.h>
+#include <stdint.h>
 #include "PTSThread.h"
+#include <assert.h>
 
 struct IPTSTaskScheduler;
 
@@ -103,8 +104,8 @@ struct IPTSTaskScheduler
 	}
 };
 
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
+extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
+extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
 extern "C" PTSYSTEMAPI IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread();
 extern "C" PTSYSTEMAPI IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask);
 

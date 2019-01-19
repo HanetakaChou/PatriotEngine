@@ -46,7 +46,7 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 //When a thread dies, the scheduler notifies McRT-Malloc,（作为PTSTSD_DESTRUCTOR触发）
 //which then returns the dead thread’s blocks back to the block store.
 
-PTBOOL PTCALL PTSMemoryAllocator_Initialize();
+bool PTCALL PTSMemoryAllocator_Initialize();
 
 //Hudson 2006 / 3.McRT-MALLOC
 //Each thread maintains a small thread-local array of bins,
@@ -848,7 +848,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex)
 {
 	//The Block Is Owned By Allocator And Current Thread 
-	assert((pBlockToAdd->m_pAllocator_Owner = this) && (::PTSThreadID_Equal(pBlockToAdd->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((pBlockToAdd->m_pAllocator_Owner = this) && (::PTSThreadID_Equal(pBlockToAdd->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	//Size Consistent
 	assert(pBlockToAdd->m_pNext_InBucket == NULL);
@@ -859,7 +859,7 @@ inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlock
 	PTS_BucketBlockHeader *const pBlockActive = m_BucketVector[BinIndex];
 
 	//The Block Is Owned By Allocator And Current Thread 
-	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE)));
+	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != false)));
 
 	//Size Consistent
 	assert(pBlockActive == NULL || pBlockActive->Pm_BucketIndex_InAllocator == pBlockToAdd->Pm_BucketIndex_InAllocator);
@@ -886,7 +886,7 @@ inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlock
 inline void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex)
 {
 	//The Block Is Owned By Allocator And Current Thread 
-	assert((pBlockToRemove->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToRemove->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((pBlockToRemove->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToRemove->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	//Size Consistent
 	assert(pBlockToRemove->Pm_BucketIndex_InAllocator == BinIndex);
@@ -895,7 +895,7 @@ inline void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlock
 	PTS_BucketBlockHeader * const pBlockActive = m_BucketVector[BinIndex];
 
 	//The Block Is Owned By Allocator And Current Thread 
-	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE)));
+	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != false)));
 
 	//Size Consistent
 	assert(pBlockActive == NULL || pBlockActive->Pm_BucketIndex_InAllocator == BinIndex);
@@ -964,7 +964,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *p
 inline void PTS_ThreadLocalBucketAllocator::LoseEmpty(PTS_BucketBlockHeader *pBlockToOwn)
 {
 	//The Block Is Owned By Current Thread 
-	assert((pBlockToOwn->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToOwn->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((pBlockToOwn->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToOwn->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 	
 	//Private Field
 	assert(pBlockToOwn->m_pNext_InBucket == NULL);
@@ -988,7 +988,7 @@ inline void PTS_ThreadLocalBucketAllocator::LoseEmpty(PTS_BucketBlockHeader *pBl
 inline void PTS_ThreadLocalBucketAllocator::LoseNonEmpty(PTS_BucketBlockHeader *pBlockToOwn)
 {
 	//The Block Is Owned By Current Thread 
-	assert((pBlockToOwn->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToOwn->m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((pBlockToOwn->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToOwn->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	//Private Field
 	assert(pBlockToOwn->m_pNext_InBucket == NULL);
@@ -1084,7 +1084,7 @@ inline void PTS_BucketBlockHeader::_BumpPointerRestore(uint32_t ObjectSize)
 inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_BumpPointer()
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	if (m_BumpPointer == NULL)
 	{
@@ -1112,7 +1112,7 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_BumpPointer()
 inline void PTS_BucketBlockHeader::_ObjectFreeVector_Private_Push(PTS_BucketObjectHeader *pObjectToPush)
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	pObjectToPush->m_pNext_InFreeVector = m_ObjectFreeVector_Private;
 	m_ObjectFreeVector_Private = pObjectToPush;
@@ -1121,7 +1121,7 @@ inline void PTS_BucketBlockHeader::_ObjectFreeVector_Private_Push(PTS_BucketObje
 inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Private_Pop()
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	if (m_ObjectFreeVector_Private == NULL)
 	{
@@ -1141,7 +1141,7 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Private_
 inline void PTS_BucketBlockHeader::_ObjectFreeVector_Public_Push(PTS_BucketObjectHeader *pObjectToPush)
 {
 	//Foreign Thread
-	assert((m_pAllocator_Owner == NULL) || (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) == PTFALSE));
+	assert((m_pAllocator_Owner == NULL) || (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) == false));
 
 	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush
 	//---------------------------------------------------------
@@ -1186,7 +1186,7 @@ inline void PTS_BucketBlockHeader::Construct()
 inline void PTS_BucketBlockHeader::LostByOwner()
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	if (!IsEmpty())
 	{
@@ -1221,7 +1221,7 @@ inline uint32_t PTS_BucketBlockHeader::ObjectSize()
 inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate()
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	//In PTS_ThreadLocalBucketAllocator::Destruct When A Thead Dies
 	//assert(pThis->m_ObjectFreeVector_Private == NULL);
@@ -1259,7 +1259,7 @@ inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate()
 inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 {
 	//The Block Is Owned By Current Thread 
-	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE));
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	PTS_BucketObjectHeader *pObjectToAlloc;
 
@@ -1306,7 +1306,7 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 
 inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 {
-	if ((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != PTFALSE))
+	if ((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false))
 	{
 		//Owning Thread
 		--m_ObjectAllocated_Number;
@@ -1367,13 +1367,13 @@ inline bool PTS_BucketBlockHeader::IsBlock()
 
 static PTSTSD_KEY s_ThreadLocalBucketAllocator_Index;
 static int32_t s_MemoryAllocator_Initialize_RefCount = 0;
-PTBOOL PTCALL PTSMemoryAllocator_Initialize()
+bool PTCALL PTSMemoryAllocator_Initialize()
 {
 	if (::PTSAtomic_GetAndAdd(&s_MemoryAllocator_Initialize_RefCount, 1) == 0)
 	{
 		s_BlockStore_Singleton.Construct();
 
-		PTBOOL tbResult = ::PTSTSD_Create(
+		bool tbResult = ::PTSTSD_Create(
 			&s_ThreadLocalBucketAllocator_Index,
 			[](void *pVoid)->void {
 			PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(pVoid);
@@ -1386,7 +1386,7 @@ PTBOOL PTCALL PTSMemoryAllocator_Initialize()
 	}
 	else
 	{
-		return PTTRUE;
+		return true;
 	}
 }
 
@@ -1401,8 +1401,8 @@ static inline void * PTS_Internal_Alloc(uint32_t Size)
 
 		pThreadLocalBucketAllocator->Construct();
 
-		PTBOOL tbResult = ::PTSTSD_SetValue(s_ThreadLocalBucketAllocator_Index, pThreadLocalBucketAllocator);
-		assert(tbResult != PTFALSE);
+		bool tbResult = ::PTSTSD_SetValue(s_ThreadLocalBucketAllocator_Index, pThreadLocalBucketAllocator);
+		assert(tbResult != false);
 	}
 	
 	if (Size <= s_NonLargeObject_SizeMax)

@@ -15,10 +15,4 @@
 #error 未知的平台
 #endif
 
-#include <stdint.h>
-
-typedef uint32_t PTBOOL;
-#define PTFALSE 0U
-#define PTTRUE 1U
-
 #endif

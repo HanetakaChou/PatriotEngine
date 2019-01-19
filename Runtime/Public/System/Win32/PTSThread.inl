@@ -1,25 +1,25 @@
 ﻿#include <assert.h>
 
-inline PTBOOL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
+inline bool PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
 {
 	HANDLE hThread = reinterpret_cast<HANDLE>(::_beginthreadex(NULL, 0U, pThreadEntry, pThreadParam, 0U, NULL));
 	assert(hThread != NULL);
 
 	(*pThreadOut) = hThread;
 
-	return (hThread != NULL) ? PTTRUE : PTFALSE;
+	return (hThread != NULL) ? true : false;
 }
 
-inline PTBOOL PTSThread_Detach(PTSThread *pThread)
+inline bool PTSThread_Detach(PTSThread *pThread)
 {
 	HANDLE hThread = *pThread;
-	return (::CloseHandle(hThread) != FALSE) ? PTTRUE : PTFALSE;
+	return (::CloseHandle(hThread) != FALSE) ? true : false;
 }
 
-inline PTBOOL PTSThread_Join(PTSThread *pThread)
+inline bool PTSThread_Join(PTSThread *pThread)
 {
 	HANDLE hThread = *pThread;
-	return ((::WaitForSingleObjectEx(hThread, INFINITE, FALSE) == WAIT_OBJECT_0) && (::CloseHandle(hThread) != FALSE)) ? PTTRUE : PTFALSE;
+	return ((::WaitForSingleObjectEx(hThread, INFINITE, FALSE) == WAIT_OBJECT_0) && (::CloseHandle(hThread) != FALSE)) ? true : false;
 }
 
 inline void PTS_Yield()
@@ -37,49 +37,49 @@ inline PTSThreadID PTSThreadID_Self()
 	return ::GetCurrentThreadId();
 }
 
-inline PTBOOL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
+inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 {
-	return (TID1 == TID2) ? PTTRUE : PTFALSE;
+	return (TID1 == TID2) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
+inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	HANDLE hSemaphore = ::CreateSemaphoreExW(NULL, iInitialValue, 32767, NULL, 0U, DELETE | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE);//#define _POSIX_SEM_VALUE_MAX  32767 //与Posix一致
 	assert(hSemaphore != NULL);
 
 	(*pSemaphoreOut) = hSemaphore;
 
-	return(hSemaphore != NULL) ? PTTRUE : PTFALSE;
+	return(hSemaphore != NULL) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
-	return (::WaitForSingleObjectEx(hSemaphore, INFINITE, FALSE) == WAIT_OBJECT_0) ? PTTRUE : PTFALSE;
+	return (::WaitForSingleObjectEx(hSemaphore, INFINITE, FALSE) == WAIT_OBJECT_0) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
-	return (::ReleaseSemaphore(hSemaphore, 1, NULL) != FALSE) ? PTTRUE : PTFALSE;
+	return (::ReleaseSemaphore(hSemaphore, 1, NULL) != FALSE) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
 {
 	HANDLE hSemaphore = *pSemaphore;
-	return (::CloseHandle(hSemaphore) != FALSE) ? PTTRUE : PTFALSE;
+	return (::CloseHandle(hSemaphore) != FALSE) ? true : false;
 }
 
-inline PTBOOL PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
+inline bool PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
 {
 	(*pTSD_Key) = ::FlsAlloc(pDestructor);
-	return ((*pTSD_Key) != FLS_OUT_OF_INDEXES) ? PTTRUE : PTFALSE;
+	return ((*pTSD_Key) != FLS_OUT_OF_INDEXES) ? true : false;
 }
 
-inline PTBOOL PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
+inline bool PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
 {
 	BOOL wbResult = ::FlsSetValue(TSD_Key, TSD_Value);
-	return (wbResult != FALSE) ? PTTRUE : PTFALSE;
+	return (wbResult != FALSE) ? true : false;
 }
 
 inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key)
@@ -87,10 +87,10 @@ inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key)
 	return ::FlsGetValue(TSD_Key);
 }
 
-inline PTBOOL PTSTSD_Delete(PTSTSD_KEY TSD_Key)
+inline bool PTSTSD_Delete(PTSTSD_KEY TSD_Key)
 {
 	BOOL wbResult = ::FlsFree(TSD_Key);
-	return (wbResult != FALSE) ? PTTRUE : PTFALSE;
+	return (wbResult != FALSE) ? true : false;
 }
 
 inline int64_t PTSTick_Count()

@@ -2,19 +2,19 @@
 #include <errno.h>
 #include <time.h>
 
-inline PTBOOL PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
+inline bool PTSThread_Create(PTSThreadEntry *pThreadEntry, void *pThreadParam, PTSThread *pThreadOut)
 {
-	return (::pthread_create(pThreadOut, NULL, pThreadEntry, pThreadParam) == 0) ? PTTRUE : PTFALSE;
+	return (::pthread_create(pThreadOut, NULL, pThreadEntry, pThreadParam) == 0) ? true : false;
 }
 
-inline PTBOOL PTSThread_Detach(PTSThread *pThread)
+inline bool PTSThread_Detach(PTSThread *pThread)
 {
-	return (::pthread_detach(*pThread) == 0) ? PTTRUE : PTFALSE;
+	return (::pthread_detach(*pThread) == 0) ? true : false;
 }
 
-inline PTBOOL PTSThread_Join(PTSThread *pThread)
+inline bool PTSThread_Join(PTSThread *pThread)
 {
-	return (::pthread_join(*pThread, NULL) == 0) ? PTTRUE : PTFALSE;
+	return (::pthread_join(*pThread, NULL) == 0) ? true : false;
 }
 
 inline void PTS_Yield()
@@ -36,41 +36,41 @@ inline PTSThreadID PTSThreadID_Self()
 	return ::pthread_self();
 }
 
-inline PTBOOL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
+inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 {
-	return (::pthread_equal(TID1, TID2) != 0) ? PTTRUE : PTFALSE;
+	return (::pthread_equal(TID1, TID2) != 0) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
+inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
-	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? PTTRUE : PTFALSE;
+	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
 {
-	return (::sem_wait(pSemaphore) == 0) ? PTTRUE : PTFALSE;
+	return (::sem_wait(pSemaphore) == 0) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore)
 {
-	return (::sem_post(pSemaphore) == 0) ? PTTRUE : PTFALSE;
+	return (::sem_post(pSemaphore) == 0) ? true : false;
 }
 
-inline PTBOOL PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
+inline bool PTSSemaphore_Delete(PTSSemaphore *pSemaphore)
 {
-	return (::sem_destroy(pSemaphore) == 0) ? PTTRUE : PTFALSE;
+	return (::sem_destroy(pSemaphore) == 0) ? true : false;
 }
 
-inline PTBOOL PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
+inline bool PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor)
 {
 	int iResult = ::pthread_key_create(pTSD_Key, pDestructor);
-	return (iResult == 0) ? PTTRUE : PTFALSE;
+	return (iResult == 0) ? true : false;
 }
 
-inline PTBOOL PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
+inline bool PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value)
 {
 	int iResult = ::pthread_setspecific(TSD_Key, TSD_Value);
-	return (iResult == 0) ? PTTRUE : PTFALSE;
+	return (iResult == 0) ? true : false;
 }
 
 inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key)
@@ -78,10 +78,10 @@ inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key)
 	return ::pthread_getspecific(TSD_Key);
 }
 
-inline PTBOOL PTSTSD_Delete(PTSTSD_KEY TSD_Key)
+inline bool PTSTSD_Delete(PTSTSD_KEY TSD_Key)
 {
 	int iResult = ::pthread_key_delete(TSD_Key);
-	return (iResult == 0) ? PTTRUE : PTFALSE;
+	return (iResult == 0) ? true : false;
 }
 
 inline int64_t PTSTick_Count()

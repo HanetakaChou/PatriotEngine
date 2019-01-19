@@ -1,8 +1,11 @@
-#ifndef PT_SYSTEM_THREAD_H
+﻿#ifndef PT_SYSTEM_THREAD_H
 #define PT_SYSTEM_THREAD_H
 
 #include "../PTCommon.h"
 #include "PTSCommon.h"
+
+#include <stddef.h>
+#include <stdint.h>
 
 #ifdef PTWIN32
 #include <sdkddkver.h>
@@ -17,11 +20,11 @@ typedef HANDLE PTSThread;
 typedef void * PTSThreadEntry(void *);
 typedef pthread_t PTSThread;
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
-inline PTBOOL PTSThread_Create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
-inline PTBOOL PTSThread_Detach(PTSThread *pThread);
-inline PTBOOL PTSThread_Join(PTSThread *pThread);
+inline bool PTSThread_Create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
+inline bool PTSThread_Detach(PTSThread *pThread);
+inline bool PTSThread_Join(PTSThread *pThread);
 
 inline void PTS_Yield();
 inline void PTS_Sleep(uint32_t MilliSecond);
@@ -31,11 +34,11 @@ typedef DWORD PTSThreadID;
 #elif defined(PTPOSIX)
 typedef pthread_t PTSThreadID;
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 
 inline PTSThreadID PTSThreadID_Self();
-inline PTBOOL PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2);
+inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2);
 
 #ifdef PTWIN32
 typedef HANDLE PTSSemaphore;
@@ -43,12 +46,12 @@ typedef HANDLE PTSSemaphore;
 #include <semaphore.h>
 typedef sem_t PTSSemaphore;
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
-inline PTBOOL PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut);
-inline PTBOOL PTSSemaphore_Passern(PTSSemaphore *pSemaphore);
-inline PTBOOL PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore);
-inline PTBOOL PTSSemaphore_Delete(PTSSemaphore *pSemaphore);
+inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut);
+inline bool PTSSemaphore_Passern(PTSSemaphore *pSemaphore);
+inline bool PTSSemaphore_Vrijgeven(PTSSemaphore *pSemaphore);
+inline bool PTSSemaphore_Delete(PTSSemaphore *pSemaphore);
 
 #ifdef PTWIN32
 typedef DWORD PTSTSD_KEY;
@@ -57,21 +60,21 @@ typedef void WINAPI PTSTSD_DESTRUCTOR(void *);
 typedef pthread_key_t PTSTSD_KEY;
 typedef void PTSTSD_DESTRUCTOR(void *);
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 typedef void *PTSTSD_VALUE;
 
-inline PTBOOL PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor);
-inline PTBOOL PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value);
+inline bool PTSTSD_Create(PTSTSD_KEY *pTSD_Key, PTSTSD_DESTRUCTOR *pDestructor);
+inline bool PTSTSD_SetValue(PTSTSD_KEY TSD_Key, PTSTSD_VALUE TSD_Value);
 inline PTSTSD_VALUE PTSTSD_GetValue(PTSTSD_KEY TSD_Key);
-inline PTBOOL PTSTSD_Delete(PTSTSD_KEY TSD_Key);
+inline bool PTSTSD_Delete(PTSTSD_KEY TSD_Key);
 
 #ifdef PTWIN32
 
 #elif defined(PTPOSIX)
 #include <sys/time.h>
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 inline int64_t PTSTick_Count();
 inline int64_t PTSTick_Frequency();
@@ -140,7 +143,7 @@ inline void PTS_HardwareReadWriteBarrier();
 #elif defined PTPOSIX
 #include "Posix/PTSThread.inl"
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 
 #endif
