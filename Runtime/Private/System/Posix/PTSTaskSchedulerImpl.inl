@@ -1,4 +1,4 @@
-#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
+﻿#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
 #include <unistd.h>
 static inline uint32_t PTS_Info_HardwareThreadNumber()
 {
@@ -26,7 +26,7 @@ static inline uint32_t PTS_Info_HardwareThreadNumber()
 	return static_cast<uint32_t>(info.processor_count);
 }
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
