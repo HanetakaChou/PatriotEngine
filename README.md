@@ -14,7 +14,7 @@ CentOS和Android都是Linux发行版，但是CentOS上编译生成的二进制�
 
 因为Linux内核只提供了PosixAPI层的部分功能，其余功能由C运行时库提供，操作系统在PosixAPI层的行为由Linux内核和C运行时库共同决定。
 
-相同C运行时库的Linux内核的操作系统中的二进制文件是可以通用的。
+相同C运行时库的操作系统中的二进制文件是可以通用的。
 
 理论上，如果能基于Bionic编译出CentOS上除Linux内核和Glibc以外的所有软件（包括但不限于：桌面环境，C++运行时库），再将Android系统中除Linux内核和Glibc以外的所有软件（包括但不限于：桌面环境，C++运行时库，系统APP）复制到CentOS上，那么AndroidAPK文件可以直接在CentOS上运行。（实际中需要考虑到应用程序层面的因素，比如一些应用程序在检测不到IMEI码的时候会自动崩溃或者依赖于特定目录的配置）
 
