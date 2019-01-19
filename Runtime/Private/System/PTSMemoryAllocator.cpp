@@ -169,7 +169,6 @@ static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
 static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
 static inline size_t PTS_Size_AlignDownFrom(size_t Value, size_t alignment);
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
-static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment);
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
 static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pObjectSize, uint32_t RequestSize);
 
@@ -641,11 +640,6 @@ static inline size_t PTS_Size_AlignDownFrom(size_t Value, size_t alignment)
 }
 
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment)
-{
-	return ((Value - 1U) | (Alignment - 1U)) + 1U;
-}
-
-static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
 {
 	return ((Value - 1U) | (Alignment - 1U)) + 1U;
 }

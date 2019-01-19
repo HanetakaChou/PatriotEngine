@@ -1,12 +1,13 @@
 ﻿# Example程序同时支持Win32Desktop和PosixLinuxGlibc两个平台
 
-* BuildAll/Solution/Win32Desktop/PTRuntime_Win32Desktop.sln
-* BuildAll/Solution/PosixLinuxGlibc/PTRuntime_PosixLinuxGlibc.sln
+* BuildAll/Solution/Win32Desktop/PTTBB_Win32Desktop.sln
+* BuildAll/Solution/PosixLinuxGlibc/PTTBB_PosixLinuxGlibc.sln
 
-# Runtime程序同时支持Win32Desktop、Win32Runtime、PosixLinuxGlibc和PosixLinuxBionic四个平台
+# Runtime程序同时支持Win32Desktop、Win32Runtime、PosixLinuxGlibc、PosixLinuxBionic和PosixMach五个平台
 
-* BuildAll/Solution/Win32Runtime/PTRuntime_Win32Runtime.sln
-* BuildAll/Solution/PosixLinuxBionic/PTRuntime_PosixLinuxBionic.sln
+* BuildAll/Solution/Win32Runtime/PTTBB_Win32Runtime.sln
+* BuildAll/Solution/PosixLinuxBionic/PTTBB_PosixLinuxBionic.sln
+* BuildAll/Solution/PosixMach/PTTBB_PosixMach.sln
 
 # LinuxGlibc和LinuxBionic分别是指什么？
 

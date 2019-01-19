@@ -6,14 +6,29 @@
 #include <fcntl.h>
 #include <unistd.h>
 #elif defined (PTPOSIXMACH)
+#include <stdint.h>
+#include <assert.h>
 #include <mach/mach.h>
 #else
 #error 未知的平台
 #endif
 
+static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
+{
+	int Index = 31 - ::__builtin_clz(Value);
+	return static_cast<uint32_t>(Index);
+}
+
 #if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
 
-static uint32_t const s_Page_Size = 1024U * 4U;
+static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
+{
+	return ((Value - 1U) | (Alignment - 1U)) + 1U;
+}
+
+static constexpr uint32_t const s_Page_Size = 1024U * 4U;
+static constexpr uint32_t const s_Page_Size_Order = 12U;
+static constexpr uint32_t const s_Page_Per_Block = 4U;
 
 static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 {
@@ -22,10 +37,10 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 
 	void *pMemoryAllocated;
 
-	assert(s_Page_Size == (1U << 12U));
-	assert(s_Block_Size == (s_Page_Size * 4U));
+	assert(s_Block_Size == (s_Page_Size * s_Page_Per_Block));
+	assert(s_Page_Size == (1U << s_Page_Size_Order));
 
-	uint32_t PageNumber = ((Size - 1U) >> 12U) + 1U;
+	uint32_t PageNumber = ((Size - 1U) >> s_Page_Size_Order) + 1U;
 	
 	void *pMMapVoid = ::mmap(NULL, s_Page_Size*(PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U);
 	
@@ -36,8 +51,8 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 		uintptr_t AddressWholeBegin = reinterpret_cast<uintptr_t>(pMMapVoid);
 		assert(::PTS_Size_IsAligned(AddressWholeBegin, s_Page_Size));
 
-		uintptr_t PageWholeBegin = AddressWholeBegin >> 12U;
-		uintptr_t PageNeededBegin = ::PTS_Size_AlignUpFrom(PageWholeBegin, static_cast<uintptr_t>(4U));
+		uintptr_t PageWholeBegin = AddressWholeBegin >> s_Page_Size_Order;
+		uintptr_t PageNeededBegin = ::PTS_Size_AlignUpFrom(PageWholeBegin, static_cast<uintptr_t>(s_Page_Per_Block));
 		uint32_t PageToFreeBeginNumber = static_cast<uint32_t>(PageNeededBegin - PageWholeBegin);
 
 		int iResult;
@@ -241,12 +256,6 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
 	return static_cast<uint32_t>(::PTS_MemoryMap_Internal_Size(pVoid));
 }
 
-static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
-{
-	int Index = 31 - ::__builtin_clz(Value);
-	return static_cast<uint32_t>(Index);
-}
-
 static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
 {
 	switch (C)
@@ -273,6 +282,107 @@ static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
 
 #elif defined (PTPOSIXMACH)
 
+static inline uintptr_t PTS_Size_AlignUpFrom(uintptr_t Value, uintptr_t Alignment)
+{
+	return ((Value - 1U) | (Alignment - 1U)) + 1U;
+}
+
+//Mach IPC Interface
+//http://web.mit.edu/darwin/src/modules/xnu/osfmk/man/
+
+static constexpr uint32_t const s_Page_Size = 1024U * 4U;
+static constexpr uint32_t const s_Page_Size_Order = 12U;
+static constexpr uint32_t const s_Page_Per_Block = 4U;
+
+static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
+{
+	//在mach中仅对齐到页大小（1024*4），并不保证对齐到块大小（1024*4*4）
+	//先用vm_allocate分配（SizeAligned/PageSize+3）个页，再用vm_deallocate释放多余的3个页（前0后3/前1后2/前3后0）
+
+	assert(s_Block_Size == (s_Page_Size * s_Page_Per_Block));
+	assert(s_Page_Size == (1U << s_Page_Size_Order));
+
+#ifndef NDEBUG
+	{
+		vm_size_t pagesize;
+		kern_return_t kResult = ::host_page_size(::mach_host_self(), &pagesize);
+		assert((kResult == KERN_SUCCESS) && (pagesize == s_Page_Size));
+	}
+#endif
+
+	void *pMemoryAllocated;
+
+	uint32_t PageNumber = ((Size - 1U) >> s_Page_Size_Order) + 1U;
+
+	vm_address_t kAddress = NULL;
+	kern_return_t kResult = ::vm_allocate(mach_task_self(), &kAddress, s_Page_Size*(PageNumber + 3U), TRUE);
+	if (kResult == KERN_SUCCESS)
+	{
+		uintptr_t AddressWholeBegin = static_cast<uintptr_t>(kAddress);
+		assert(::PTS_Size_IsAligned(AddressWholeBegin, s_Page_Size));
+
+		uintptr_t PageWholeBegin = AddressWholeBegin >> s_Page_Size_Order;
+		uintptr_t PageNeededBegin = ::PTS_Size_AlignUpFrom(PageWholeBegin, static_cast<uintptr_t>(s_Page_Per_Block));
+
+		uint32_t PageToFreeBeginNumber = static_cast<uint32_t>(PageNeededBegin - PageWholeBegin);
+		assert(PageToFreeBeginNumber <= 3U);
+
+		if (PageToFreeBeginNumber != 0U)
+		{
+			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(AddressWholeBegin), s_Page_Size*PageToFreeBeginNumber);
+			assert(kResult == KERN_SUCCESS);
+		}
+
+		if (PageToFreeBeginNumber != 3U)
+		{
+			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size*(PageNeededBegin + PageNumber)), s_Page_Size*(3U - PageToFreeBeginNumber));
+			assert(kResult == KERN_SUCCESS);
+		}
+
+		//设置继承属性后，即使分配的内存连续，内核也不会合并，vm_region_64得到单次分配的结果
+		//ToDO: 设置成VM_INHERIT_SHARE是否更可靠？
+		kResult = vm_inherit(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size*PageNeededBegin), s_Page_Size*PageNumber, VM_INHERIT_NONE);
+		assert(VM_INHERIT_NONE != VM_INHERIT_DEFAULT);
+		assert(kResult == KERN_SUCCESS);
+
+		pMemoryAllocated = reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
+	}
+	else
+	{
+		assert(kResult == KERN_NO_SPACE);
+		pMemoryAllocated = NULL;
+	}
+
+	return pMemoryAllocated;
+}
+
+static inline vm_size_t PTS_MemoryMap_Internal_Size(void *pVoid)
+{
+	vm_address_t address = reinterpret_cast<vm_address_t>(pVoid);
+	vm_size_t size;
+
+	vm_region_basic_info_data_64_t info;
+	mach_msg_type_number_t infoCnt = VM_REGION_BASIC_INFO_COUNT_64;
+
+	mach_port_t object_name;
+
+	kern_return_t kResult = ::vm_region_64(::mach_task_self(), &address, &size, VM_REGION_BASIC_INFO, reinterpret_cast<vm_region_info_t>(&info), &infoCnt, &object_name);
+	assert(kResult == KERN_SUCCESS);
+
+	return size;
+}
+
+static inline void PTS_MemoryMap_Free(void *pVoid)
+{
+	vm_size_t Len = ::PTS_MemoryMap_Internal_Size(pVoid);
+	kern_return_t kResult = ::vm_deallocate(::mach_task_self(), reinterpret_cast<vm_address_t>(pVoid), Len);
+	assert(kResult == KERN_SUCCESS);
+}
+
+static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
+{
+	return static_cast<uint32_t>(::PTS_MemoryMap_Internal_Size(pVoid));
+}
 #else
 #error 未知的平台
 #endif
