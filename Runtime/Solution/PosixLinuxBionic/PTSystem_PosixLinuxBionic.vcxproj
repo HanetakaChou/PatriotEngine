@@ -56,11 +56,11 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{157ddace-e8fc-4971-ad32-2d041336be6e}</ProjectGuid>
     <Keyword>Android</Keyword>
-    <RootNamespace>PTSystem_PosixAndroid</RootNamespace>
+    <RootNamespace>PTSystem_PosixLinuxBionic</RootNamespace>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationType>Android</ApplicationType>
     <ApplicationTypeRevision>2.0</ApplicationTypeRevision>
-    <ProjectName>PTSystem_PosixAndroid</ProjectName>
+    <ProjectName>PTSystem_PosixLinuxBionic</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
@@ -125,49 +125,49 @@
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixAndroid\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>libPTSystem</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -183,7 +183,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -198,7 +198,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -214,7 +214,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -230,7 +230,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -245,7 +245,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -260,7 +260,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
@@ -276,7 +276,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <ClCompile />
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>

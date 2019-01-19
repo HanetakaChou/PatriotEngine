@@ -19,10 +19,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\main.cpp" />
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
+    <ProjectReference Include="..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -80,26 +80,26 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>MapReduce</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>MapReduce</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>MapReduce</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
     <TargetName>MapReduce</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

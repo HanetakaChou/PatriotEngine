@@ -1,7 +1,7 @@
 ﻿#include <sys/mman.h>
-#ifdef PTPOSIXXCB
+#ifdef PTPOSIXLINUXGLIBC
 #include <dirent.h>
-#elif defined (PTPOSIXANDROID)
+#elif defined (PTPOSIXLINUXBIONIC)
 #include <fcntl.h>
 #include <unistd.h>
 #else
@@ -15,31 +15,47 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	//在Linux中仅对齐到页大小（1024*4），并不保证对齐到块大小（1024*4*4）
 	//先用mmap分配（SizeAligned/PageSize+3）个页，再用munmap释放多余的3个页（前0后3/前1后2/前3后0）
 
+	void *pMemoryAllocated;
+
 	assert(s_Page_Size == (1U << 12U));
 	assert(s_Block_Size == (s_Page_Size * 4U));
 
 	uint32_t PageNumber = ((Size - 1U) >> 12U) + 1U;
+	
 	void *pMMapVoid = ::mmap(NULL, s_Page_Size*(PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U);
-	assert(pMMapVoid != MAP_FAILED);
-	uintptr_t AddressWholeBegin = reinterpret_cast<uintptr_t>(pMMapVoid);
-	assert(::PTS_Size_IsAligned(AddressWholeBegin, s_Page_Size));
-
-	uintptr_t PageWholeBegin = AddressWholeBegin >> 12U;
-	uintptr_t PageNeededBegin = ::PTS_Size_AlignUpFrom(PageWholeBegin, static_cast<uintptr_t>(4U));
-	uint32_t PageToFreeBeginNumber = static_cast<uint32_t>(PageNeededBegin - PageWholeBegin);
-
-	int iResult;
-	if (PageToFreeBeginNumber != 0U)
+	
+	if (pMMapVoid != MAP_FAILED)
 	{
-		iResult = ::munmap(reinterpret_cast<void*>(AddressWholeBegin), s_Page_Size*PageToFreeBeginNumber);
-		assert(iResult == 0);
+		assert(pMMapVoid != NULL);
+
+		uintptr_t AddressWholeBegin = reinterpret_cast<uintptr_t>(pMMapVoid);
+		assert(::PTS_Size_IsAligned(AddressWholeBegin, s_Page_Size));
+
+		uintptr_t PageWholeBegin = AddressWholeBegin >> 12U;
+		uintptr_t PageNeededBegin = ::PTS_Size_AlignUpFrom(PageWholeBegin, static_cast<uintptr_t>(4U));
+		uint32_t PageToFreeBeginNumber = static_cast<uint32_t>(PageNeededBegin - PageWholeBegin);
+
+		int iResult;
+		if (PageToFreeBeginNumber != 0U)
+		{
+			iResult = ::munmap(reinterpret_cast<void*>(AddressWholeBegin), s_Page_Size*PageToFreeBeginNumber);
+			assert(iResult == 0);
+		}
+		if (PageToFreeBeginNumber != 3U)
+		{
+			iResult = ::munmap(reinterpret_cast<void*>(s_Page_Size*(PageNeededBegin + PageNumber)), s_Page_Size*(3U - PageToFreeBeginNumber));
+			assert(iResult == 0);
+		}
+
+		pMemoryAllocated = reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
 	}
-	if (PageToFreeBeginNumber != 3U)
+	else
 	{
-		iResult = ::munmap(reinterpret_cast<void*>(s_Page_Size*(PageNeededBegin + PageNumber)), s_Page_Size*(3U - PageToFreeBeginNumber));
-		assert(iResult == 0);
+		assert(errno == ENOMEM);
+		pMemoryAllocated = NULL;
 	}
-	return reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
+	
+	return pMemoryAllocated;
 }
 
 static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI);
@@ -93,7 +109,7 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 #error 未知的架构
 #endif
 
-#ifdef PTPOSIXXCB
+#ifdef PTPOSIXLINUXGLIBC
 	//proc/self/map_files
 
 	//mmap MAP_SHARED|MAP_ANONYMOUS
@@ -129,7 +145,7 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 
 	assert(pDirEnt_mmap->d_name[Str_AddressStart_Length] == '-');
 	char *pStr_AddressEnd = pDirEnt_mmap->d_name + (Str_AddressStart_Length + 1);
-#elif defined (PTPOSIXANDROID)
+#elif defined (PTPOSIXLINUXBIONIC)
 	//proc/self/maps
 
 	int FD_maps = ::open("/proc/self/maps", O_RDONLY);
@@ -203,6 +219,8 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 		++pStr_AddressEnd;
 	}
 
+	//assert((*pStr_AddressEnd) == '\0');
+
 	return AddressEnd - reinterpret_cast<uintptr_t>(pVoid);
 }
 
@@ -228,56 +246,23 @@ static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
 {
 	switch (C)
 	{
-	case '0':
-		(*pI) = 0U;
-		return true;
-	case '1':
-		(*pI) = 1U;
-		return true;
-	case '2':
-		(*pI) = 2U;
-		return true;
-	case '3':
-		(*pI) = 3U;
-		return true;
-	case '4':
-		(*pI) = 4U;
-		return true;
-	case '5':
-		(*pI) = 5U;
-		return true;
-	case '6':
-		(*pI) = 6U;
-		return true;
-	case '7':
-		(*pI) = 7U;
-		return true;
-	case '8':
-		(*pI) = 8U;
-		return true;
-	case '9':
-		(*pI) = 9U;
-		return true;
-	case 'a':
-		(*pI) = 10U;
-		return true;
-	case 'b':
-		(*pI) = 11U;
-		return true;
-	case 'c':
-		(*pI) = 12U;
-		return true;
-	case 'd':
-		(*pI) = 13U;
-		return true;
-	case 'e':
-		(*pI) = 14U;
-		return true;
-	case 'f':
-		(*pI) = 15U;
-		return true;
-	default:
-		return false;
+	case '0': (*pI) = 0U; return true;
+	case '1': (*pI) = 1U; return true;
+	case '2': (*pI) = 2U; return true;
+	case '3': (*pI) = 3U; return true;
+	case '4': (*pI) = 4U; return true;
+	case '5': (*pI) = 5U; return true;
+	case '6': (*pI) = 6U; return true;
+	case '7': (*pI) = 7U; return true;
+	case '8': (*pI) = 8U; return true;
+	case '9': (*pI) = 9U; return true;
+	case 'a': (*pI) = 10U; return true;
+	case 'b': (*pI) = 11U; return true;
+	case 'c': (*pI) = 12U; return true;
+	case 'd': (*pI) = 13U; return true;
+	case 'e': (*pI) = 14U; return true;
+	case 'f': (*pI) = 15U; return true;
+	default: return false;
 	}
 }
 

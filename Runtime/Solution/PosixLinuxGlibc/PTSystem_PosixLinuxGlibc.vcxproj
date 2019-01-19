@@ -48,7 +48,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{86d69ab2-bcde-4487-9c04-5ac912091498}</ProjectGuid>
     <Keyword>Linux</Keyword>
-    <RootNamespace>PTSystem_PosixXCB</RootNamespace>
+    <RootNamespace>PTSystem_PosixLinuxGlibc</RootNamespace>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <ApplicationType>Linux</ApplicationType>
     <ApplicationTypeRevision>1.0</ApplicationTypeRevision>
@@ -147,7 +147,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTARM;</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
@@ -161,7 +161,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTARM;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
@@ -175,7 +175,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTX64;</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
@@ -189,7 +189,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTX64;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
@@ -203,7 +203,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTX86;</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
@@ -217,7 +217,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
-      <PreprocessorDefinitions>PTPOSIX;PTPOSIXXCB;PTSYSTEMAPI=PTEXPORT;PTX86;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXGLIBC;PTSYSTEMAPI=PTEXPORT;PTX86;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PositionIndependentCode>true</PositionIndependentCode>
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>

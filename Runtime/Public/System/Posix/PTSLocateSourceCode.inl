@@ -1,8 +1,8 @@
-//There Is Some Bugs In The IDE ���� "Visual C++ For Linux Development"
+﻿//There Is Some Bugs In The IDE —— "Visual C++ For Linux Development"
 //To Force IDE To Locate The Source Code
 
 #if defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #ifndef NDEBUG
 #include <stdint.h>
@@ -173,84 +173,42 @@ static inline bool PTS_Number_CharToInt_DEC(char C, int64_t *pI)
 {
 	switch (C)
 	{
-	case '0':
-		(*pI) = 0;
-		return true;
-	case '1':
-		(*pI) = 1;
-		return true;
-	case '2':
-		(*pI) = 2;
-		return true;
-	case '3':
-		(*pI) = 3;
-		return true;
-	case '4':
-		(*pI) = 4;
-		return true;
-	case '5':
-		(*pI) = 5;
-		return true;
-	case '6':
-		(*pI) = 6;
-		return true;
-	case '7':
-		(*pI) = 7;
-		return true;
-	case '8':
-		(*pI) = 8;
-		return true;
-	case '9':
-		(*pI) = 9;
-		return true;
-	default:
-		return false;
+	case '0': (*pI) = 0; return true;
+	case '1': (*pI) = 1; return true;
+	case '2': (*pI) = 2; return true;
+	case '3': (*pI) = 3; return true;
+	case '4': (*pI) = 4; return true;
+	case '5': (*pI) = 5; return true;
+	case '6': (*pI) = 6; return true;
+	case '7': (*pI) = 7; return true;
+	case '8': (*pI) = 8; return true;
+	case '9': (*pI) = 9; return true;
+	default: return false;
 	}
 }
 static inline bool PTS_Number_CharToInt_DEC(char C, uint64_t *pI)
 {
 	switch (C)
 	{
-	case '0':
-		(*pI) = 0U;
-		return true;
-	case '1':
-		(*pI) = 1U;
-		return true;
-	case '2':
-		(*pI) = 2U;
-		return true;
-	case '3':
-		(*pI) = 3U;
-		return true;
-	case '4':
-		(*pI) = 4U;
-		return true;
-	case '5':
-		(*pI) = 5U;
-		return true;
-	case '6':
-		(*pI) = 6U;
-		return true;
-	case '7':
-		(*pI) = 7U;
-		return true;
-	case '8':
-		(*pI) = 8U;
-		return true;
-	case '9':
-		(*pI) = 9U;
-		return true;
-	default:
-		return false;
+	case '0': (*pI) = 0U; return true;
+	case '1': (*pI) = 1U; return true;
+	case '2': (*pI) = 2U; return true;
+	case '3': (*pI) = 3U; return true;
+	case '4': (*pI) = 4U; return true;
+	case '5': (*pI) = 5U; return true;
+	case '6': (*pI) = 6U; return true;
+	case '7': (*pI) = 7U; return true;
+	case '8': (*pI) = 8U; return true;
+	case '9': (*pI) = 9U; return true;
+	default: return false;
 	}
 }
 #endif
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
 #else
-#error δ֪��ƽ̨
+#error 未知的平台
 #endif
