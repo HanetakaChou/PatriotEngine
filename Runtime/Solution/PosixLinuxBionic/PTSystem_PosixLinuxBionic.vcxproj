@@ -170,7 +170,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link />
     <Link />
@@ -186,7 +186,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link />
     <Link>
@@ -201,7 +201,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
     </ClCompile>
     <Link />
@@ -217,7 +217,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
     </ClCompile>
     <Link />
@@ -233,7 +233,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link />
     <Link>
@@ -248,7 +248,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link />
     <Link>
@@ -263,7 +263,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
     </ClCompile>
     <Link />
@@ -279,7 +279,7 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXLINUXBIONIC;PTSYSTEMAPI=PTEXPORT;PTARM64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CLanguageStandard>c11</CLanguageStandard>
       <CppLanguageStandard>c++11</CppLanguageStandard>
-      <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-fvisibility=hidden -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
     </ClCompile>
     <Link />
