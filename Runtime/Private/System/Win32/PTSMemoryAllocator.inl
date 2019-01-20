@@ -4,6 +4,7 @@
 	assert(hSection != NULL);
 
 	void *pVoid = ::MapViewOfFile(hSection, FILE_MAP_READ | FILE_MAP_WRITE, 0U, 0U, size);
+	assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoid), s_Block_Size));
 
 	//https://msdn.microsoft.com/en-us/library/windows/desktop/aa366537(v=vs.85).aspx
 	BOOL wbResult = ::CloseHandle(hSection); //被映射的视图会增加引用计数

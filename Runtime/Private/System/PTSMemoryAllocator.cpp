@@ -10,7 +10,7 @@
 //Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.
 
 //Platform-Dependent OS Primitive
-static inline void *PTS_MemoryMap_Alloc(uint32_t size);
+static inline void *PTS_MemoryMap_Alloc(uint32_t size); //一定对齐到16KB
 static inline void PTS_MemoryMap_Free(void *pVoid);
 static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 
@@ -157,23 +157,21 @@ class PTS_ThreadLocalBucketAllocator;
 //and implemented as a non-blocking structure.
 
 //严格意义上16KB应当是对齐而非大小
-static uint32_t const s_Block_Size = 16U * 1024U;
+static constexpr uint32_t const s_Block_Size = 16U * 1024U;
 
-//Part1 [ 8/16/32/48/64 ]
-//Part2 [ 80/96/112/128 || 60/192/224/256 || 320/384/448/512 || 640/768/896/1024 || 1280/1536/1792/2048 || 2560/3072/3584/4096 || 5120/6144/7168/8192 ]
-//static uint32_t const s_Bucket_Number = 32U; //5+27=32
-static uint32_t const s_Bucket_Number = 32U;
-static uint32_t const s_NonLargeObject_SizeMax = 7168U;
+//See Funtion "PTS_Size_ResolveRequestSize"
+static constexpr uint32_t const s_Bucket_Number = 32U;
+static constexpr uint32_t const s_NonLargeObject_SizeMax = 7168U;
 
 static inline bool PTS_Size_IsPowerOfTwo(uint32_t Value);
 static inline bool PTS_Size_IsAligned(size_t Value, size_t Alignment);
 static inline size_t PTS_Size_AlignDownFrom(size_t Value, size_t alignment);
 static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment);
 static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value);
-static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pObjectSize, uint32_t RequestSize);
+static inline void PTS_Size_ResolveRequestSize(uint32_t *pBucketIndex, uint32_t *pObjectSize, uint32_t RequestSize);
 
 #if defined(PTARM) || defined(PTARM64) || defined(PTX86) || defined(PTX64)
-static uint32_t const s_CacheLine_Size = 64U;
+static constexpr uint32_t const s_CacheLine_Size = 64U;
 #else
 #error 未知的架构
 #endif
@@ -235,7 +233,7 @@ public:
 //static_assert(std::is_pod<PTS_ThreadLocalBucketAllocator>::value, "PTS_ThreadLocalBucketAllocator Is Not A POD");
 
 #ifndef NDEBUG
-static uint32_t const s_BucketBlockHeader_Identity_Block = 0X5765C7B8U;
+static constexpr uint32_t const s_BucketBlockHeader_Identity_Block = 0X5765C7B8U;
 static PTSThreadID const s_BucketBlockHeader_ThreadID_Invalid = PTSThreadID(5201314U); 
 #endif
 
@@ -292,7 +290,7 @@ private:
 	friend void PTS_ThreadLocalBucketAllocator::LoseNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
 
 private:
-	inline void _BumpPointerRestore(uint32_t ObjectSize);
+	inline void _BumpPointerRestore();
 
 	inline PTS_BucketObjectHeader *_BumpPointer();
 
@@ -644,103 +642,130 @@ static inline uint32_t PTS_Size_AlignUpFrom(uint32_t Value, uint32_t Alignment)
 	return ((Value - 1U) | (Alignment - 1U)) + 1U;
 }
 
-static inline void PTS_Size_ResolveRequestSize(uint32_t *pBinIndex, uint32_t *pObjectSize, uint32_t RequestSize)
+static inline void PTS_Size_ResolveRequestSize(uint32_t *pBucketIndex, uint32_t *pObjectSize, uint32_t RequestSize)
 {
 	//Part1↓-----------------------------
+	//------------------------------------
 	//8                 1000
+	//16              10|000
+	//32             100|000
+	//------------------------------------
+	//48             11|0000   
+	//64            100|0000
 
 	//Part2↓-----------------------------
-	//16              10|000
-	//24              11|000
-	//32             100|000
-	//48             110|000   
-
-	//Part3↓-----------------------------
-	//64            100|0000
 	//80           0101|0000
 	//96           0110|0000‬
 	//112          0111|0000‬
+	//128          1000|0000
 
-	//128          100|00000
 	//160         0101|00000‬
 	//192    ‭     0110|00000‬
 	//224         0111|00000
+	//256         1000|00000  
 
-	//256         100|000000                   
 	//320        0101|000000
 	//384       ‭ 0110|000000‬
 	//448       ‭ 0111|000000‬
+	//512        1000|000000
 
-	//512        100|0000000
 	//640       0101|0000000
 	//768       0110|0000000
 	//896       0111|0000000
-
 	//1024      100|00000000
+
 	//1280     0101|00000000
 	//1536     0110|00000000
 	//1792     0111|00000000
-
 	//2048     100|000000000
+
 	//2560    0101|000000000
 	//3072    0110|000000000
 	//3584    0111|000000000
-
 	//4096    100|0000000000
+
 	//5120   0101|0000000000
 	//6144   0110|0000000000
 	//7168   0111|0000000000
 
-	//8192   100|00000000000		
+	//End↑-----------------------------
+	
+	//8192   1000|0000000000		
 
-	static uint32_t const s_PartI_SizeMax = 64U;
-	static uint32_t const s_PartI_BinNumber = 5U;
+	static constexpr uint32_t const s_Part1_BucketNumber = 5U;
+	static constexpr uint32_t const s_Part1_ObjectSizeTotal = 64U;
+	static constexpr uint32_t const s_Part1_ObjectSizeTotal_Order = 6U;
+	assert(s_Part1_ObjectSizeTotal == (1U << s_Part1_ObjectSizeTotal_Order));
 
-	if (RequestSize <= s_PartI_SizeMax)
+	static constexpr uint32_t const s_Part2_BucketNumber = 32U; //5 + 27 = 32
+	static constexpr uint32_t const s_Part2_ObjectSizeTotal = 8192U;
+	static constexpr uint32_t const s_Part2_ObjectSizeTotal_Order = 13U;
+	static constexpr uint32_t const s_Part2_GroupSize = 4U;
+	static constexpr uint32_t const s_Part2_GroupSize_Order = 2U;
+	assert(s_Part2_ObjectSizeTotal == (1U << s_Part2_ObjectSizeTotal_Order));
+	assert(s_Part2_GroupSize == (1U << s_Part2_GroupSize_Order));
+
+	assert(s_Part2_BucketNumber == s_Bucket_Number);
+
+#ifndef NDEBUG
+	if (RequestSize <= 0U)
 	{
-		static uint32_t const s_IndexArray[8] = { 0U,1U,2U,2U,3U,3U,4U,4U };
-		(*pBinIndex) = s_IndexArray[(RequestSize - 1U) >> 3U];
+		assert(RequestSize > 0U);
+		(*pBucketIndex) = ~uint32_t(0U);
+		(*pObjectSize) = ~uint32_t(0U);
+	}
+	else
+#endif
+	if (RequestSize <= s_Part1_ObjectSizeTotal)
+	{
+		static constexpr uint32_t const s_BinIndexVector[] = { 0U,1U,2U,2U,3U,3U,4U,4U };
+		//8  -> 7  -> 0 -> 0:8
+		//16 -> 15 -> 1 -> 1:16
+		//24 -> 23 -> 2 -> 2:32
+		//32 -> 31 -> 3 -> 2:32
+		//40 -> 39 -> 4 -> 3:48
+		//48 -> 47 -> 5 -> 3:48
+		//56 -> 55 -> 6 -> 4:64
+		//64 -> 63 -> 7 -> 4:64
+		static constexpr uint32_t const s_ObjectSizeVector[] = { 8U,16U,32U,48U,64U };
+		assert((sizeof(s_ObjectSizeVector) / sizeof(s_ObjectSizeVector[0])) == s_Part1_BucketNumber);
+		assert(s_ObjectSizeVector[s_Part1_BucketNumber - 1U] == s_Part1_ObjectSizeTotal);
 
-		static uint32_t const s_SizeArray[5] = { 8U,16U,32U,48U,64U };
-		(*pObjectSize) = s_SizeArray[(*pBinIndex)];
+		(*pBucketIndex) = s_BinIndexVector[(RequestSize - 1U) >> 3U]; //== (RequestSize - 1U)/8U
+		(*pObjectSize) = s_ObjectSizeVector[(*pBucketIndex)];
 	}
 	else if (RequestSize <= s_NonLargeObject_SizeMax)
 	{
-
-
 		uint32_t Order = ::PTS_Size_BitScanReverse(RequestSize - 1U);
-		assert(Order >= 6U && Order <= 12U);
+		assert(Order >= s_Part1_ObjectSizeTotal_Order && Order < s_Part2_ObjectSizeTotal_Order);
 
-		static const uint32_t s_Order_PartITotal = 6U;
-		static const uint32_t s_Order_PartIIGroup = 2U;
+		(*pBucketIndex) = s_Part1_BucketNumber
+			+ s_Part2_GroupSize * (Order - s_Part1_ObjectSizeTotal_Order)
+			+ (((RequestSize - 1U) >> (Order - s_Part2_GroupSize_Order)/*最高三位*/) - s_Part2_GroupSize); // 100 -> 4-4=0 || 101 -> 5-4=1 || 110 -> 6-4=2 || 111 -> 7-4=3
 
-		(*pBinIndex) = s_PartI_BinNumber +
-			(1U << s_Order_PartIIGroup) * (Order - s_Order_PartITotal) +  //64:[Order=6] 80/96/112/128 -> 4*(6-6)=0 || 60/192/224/256 -> 4*(7-6)=4 || 320/384/448/512 -> 4*(8-6)=8 || 640/768/896/1024 -> 4*(9-6)=12 || 1280/1536/1792/2048 -> 4*(10-6)=16 || 2560/3072/3584/4096 -> 4*(11-6)=20 || 5120/6144/7168/8192 -> 4*(12-6)=24
-			((RequestSize - 1U) >> (Order - s_Order_PartIIGroup)) - (1U << s_Order_PartIIGroup); //最高三位 100 -> 4-4=0 || 101 -> 5-4=1 || 110 -> 6-4=2 || 111 -> 7-4=3
-
-		uint32_t AlignmentMin = 1U << (Order - s_Order_PartIIGroup);
-		assert(AlignmentMin == (1024U >> (12U - Order)));
-		assert(AlignmentMin == 16U || AlignmentMin == 32U || AlignmentMin == 64U || AlignmentMin == 128U || AlignmentMin == 256U || AlignmentMin == 512U || AlignmentMin == 1024U);
-		(*pObjectSize) = ::PTS_Size_AlignUpFrom(RequestSize, AlignmentMin);
+		uint32_t GroupAlignment_Min = 1U << (Order - s_Part2_GroupSize_Order)/*最高三位以外的其余位*/;
+		(*pObjectSize) = ::PTS_Size_AlignUpFrom(RequestSize, GroupAlignment_Min);
 	}
+#ifndef NDEBUG
 	else
 	{
 		assert(RequestSize <= s_NonLargeObject_SizeMax);
-		(*pBinIndex) = ~uint32_t(0U);
+		(*pBucketIndex) = ~uint32_t(0U);
 		(*pObjectSize) = ~uint32_t(0U);
 	}
+#endif
 }
 
 inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Size)
 {
-	uint32_t BinIndex;
+	uint32_t BucketIndex;
 	uint32_t ObjectSize;
-	::PTS_Size_ResolveRequestSize(&BinIndex, &ObjectSize, Size);
+	::PTS_Size_ResolveRequestSize(&BucketIndex, &ObjectSize, Size);
 
 	PTS_BucketObjectHeader *pObjectToAlloc = NULL;
 
 	//Test Current Active
-	PTS_BucketBlockHeader ** const ppBlockActive = &m_BucketVector[BinIndex];
+	PTS_BucketBlockHeader ** const ppBlockActive = &m_BucketVector[BucketIndex];
 	PTS_BucketBlockHeader *pBlockEmptyEnough = NULL;
 	PTS_BucketBlockHeader *pBlockFull = NULL;
 	if ((*ppBlockActive) != NULL)
@@ -784,8 +809,8 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 		if (pBlockFull->IsEmptyEnough())
 		{
 			//Move From "Next" To "Previous"
-			Remove(pBlockFull, BinIndex);
-			Insert(pBlockFull, BinIndex);
+			Remove(pBlockFull, BucketIndex);
+			Insert(pBlockFull, BucketIndex);
 
 			(*ppBlockActive) = pBlockFull; //Reset Active 
 
@@ -799,11 +824,11 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	}
 
 	//NoOwner-NonEmpty Block
-	PTS_BucketBlockHeader *pBlockAdded = s_BlockStore_Singleton.PopNonEmpty(BinIndex);
+	PTS_BucketBlockHeader *pBlockAdded = s_BlockStore_Singleton.PopNonEmpty(BucketIndex);
 	if (pBlockAdded != NULL)
 	{
 		OwnNonEmpty(pBlockAdded);
-		Insert(pBlockAdded, BinIndex);
+		Insert(pBlockAdded, BucketIndex);
 
 		(*ppBlockActive) = pBlockAdded; //Active前移
 
@@ -816,14 +841,14 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	}
 
 	//(NoOwner-)Empty Block
-	pBlockAdded = s_BlockStore_Singleton.PopEmpty(BinIndex);
+	pBlockAdded = s_BlockStore_Singleton.PopEmpty(BucketIndex);
 	//内存不足???
 	assert(pBlockAdded != NULL);
 
 	if (pBlockAdded != NULL)
 	{
-		OwnEmpty(pBlockAdded, BinIndex, ObjectSize);
-		Insert(pBlockAdded, BinIndex);
+		OwnEmpty(pBlockAdded, BucketIndex, ObjectSize);
+		Insert(pBlockAdded, BucketIndex);
 
 		(*ppBlockActive) = pBlockAdded; //Active前移
 
@@ -939,7 +964,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 
 	pBlockToOwn->Pm_BucketIndex_InAllocator = BinIndex;
 
-	pBlockToOwn->_BumpPointerRestore(ObjectSize);
+	pBlockToOwn->_BumpPointerRestore();
 
 	//Public Field
 	assert(pBlockToOwn->m_ObjectFreeVector_Public == NULL);
@@ -1065,7 +1090,7 @@ inline void PTS_ThreadLocalBucketAllocator::Destruct()
 //PTS_BucketBlockHeader
 //********************************************************************************************************************************************************************************************************************************************************************
 
-inline void PTS_BucketBlockHeader::_BumpPointerRestore(uint32_t ObjectSize)
+inline void PTS_BucketBlockHeader::_BumpPointerRestore()
 {
 	assert(m_ObjectAllocated_Number == 0U);
 	assert(m_ObjectFreeVector_Public == NULL);
@@ -1074,7 +1099,7 @@ inline void PTS_BucketBlockHeader::_BumpPointerRestore(uint32_t ObjectSize)
 
 	m_BumpPointer = reinterpret_cast<PTS_BucketObjectHeader *>(reinterpret_cast<uintptr_t>(this) + (s_Block_Size - m_ObjectSize * ((s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize)));
 	assert(reinterpret_cast<uintptr_t>(m_BumpPointer) >= (reinterpret_cast<uintptr_t>(this) + sizeof(PTS_BucketBlockHeader)));
-	assert((reinterpret_cast<uintptr_t>(m_BumpPointer) + ObjectSize) <= (reinterpret_cast<uintptr_t>(this) + s_Block_Size));
+	assert((reinterpret_cast<uintptr_t>(m_BumpPointer) + m_ObjectSize) <= (reinterpret_cast<uintptr_t>(this) + s_Block_Size));
 }
 
 inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_BumpPointer()
@@ -1280,7 +1305,7 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 	//Empty
 	if (m_ObjectAllocated_Number == 0U)
 	{
-		_BumpPointerRestore(this->m_ObjectSize);
+		_BumpPointerRestore();
 
 		//Bump Pointer Again
 		pObjectToAlloc = _BumpPointer();
@@ -1357,130 +1382,51 @@ inline bool PTS_BucketBlockHeader::IsBlock()
 
 #endif
 
+
 //********************************************************************************************************************************************************************************************************************************************************************
-//API Entry
+//PT Internal
 //********************************************************************************************************************************************************************************************************************************************************************
+
+//不区分Free和Free_Aligned
 
 static PTSTSD_KEY s_ThreadLocalBucketAllocator_Index;
-static int32_t s_MemoryAllocator_Initialize_RefCount = 0;
-bool PTCALL PTSMemoryAllocator_Initialize()
-{
-	if (::PTSAtomic_GetAndAdd(&s_MemoryAllocator_Initialize_RefCount, 1) == 0)
-	{
-		s_BlockStore_Singleton.Construct();
-
-		bool tbResult = ::PTSTSD_Create(
-			&s_ThreadLocalBucketAllocator_Index,
-			[](void *pVoid)->void {
-			PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(pVoid);
-			pThreadLocalBucketAllocator->Destruct();
-			::PTS_MemoryMap_Free(pVoid);
-		}
-		);
-		
-		return tbResult;
-	}
-	else
-	{
-		return true;
-	}
-}
 
 static inline void * PTS_Internal_Alloc(uint32_t Size)
 {
-	PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTSTSD_GetValue(s_ThreadLocalBucketAllocator_Index));
-
-	if (pThreadLocalBucketAllocator == NULL)
-	{
-		//To Do：
-		//Map在大多数平台上的实现是至少分配一页（4096字节）内存
-		//而PTS_ThreadLocalBucketAllocator不到500字节
-		//整个进程共浪费3500×线程数的字节
-		//是否需要调整代码进行节省？
-		pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBucketAllocator)));
-		assert(pThreadLocalBucketAllocator != NULL);
-
-		pThreadLocalBucketAllocator->Construct();
-
-		bool tbResult = ::PTSTSD_SetValue(s_ThreadLocalBucketAllocator_Index, pThreadLocalBucketAllocator);
-		assert(tbResult != false);
-	}
-	
-	if (Size <= s_NonLargeObject_SizeMax)
-	{
-		return pThreadLocalBucketAllocator->Alloc(Size);		
-	}
-	else
-	{
-		PTS_BucketObjectHeader *pObjectToAlloc = static_cast<PTS_BucketObjectHeader *>(::PTS_MemoryMap_Alloc(Size));
-		assert(pObjectToAlloc != NULL);
-
-		//确保LargeObject一定对齐到16KB，以确保在PTS_Internal_Free中访问BlockAssumed（假定的）一定不会发生冲突
-		assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pObjectToAlloc), s_Block_Size));
-
-		return pObjectToAlloc;
-	}
-}
-
-static inline void PTS_Internal_Free(void *pVoid)
-{
-	//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
-	PTS_BucketBlockHeader *pBlockAssumed = reinterpret_cast<PTS_BucketBlockHeader *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
-
-	//根据PTS_BlockMetadata::_BumpPointerRestore
-	if (reinterpret_cast<uintptr_t>(pBlockAssumed)!= reinterpret_cast<uintptr_t>(pVoid))
-	{
-		assert(pBlockAssumed->IsBlock());
-
-		//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-		PTS_BucketObjectHeader *pObjectToFree = static_cast<PTS_BucketObjectHeader *>(pVoid);
-
-		pBlockAssumed->Free(pObjectToFree);
-	}
-	else //LargeObject
-	{
-		//并不一定可靠
-		//但相等的概率理论上只有1/(2^32-1)
-		assert(!pBlockAssumed->IsBlock());
-
-		::PTS_MemoryMap_Free(pVoid);
-	}
-}
-
-static inline void * PTS_Internal_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
-{
-	void *pVoidToAlloc;
-
-	if (Size <= s_NonLargeObject_SizeMax && Alignment <= s_NonLargeObject_SizeMax)
-	{
-		//并不存在偏移
-		//we just align the size up, and request this amount, 
-		//because for every size aligned to some power of 2, 
-		//the allocated object is at least that aligned.
-		//见PTS_Size_ResolveRequestSize
-		pVoidToAlloc = ::PTS_Internal_Alloc(::PTS_Size_AlignUpFrom(Size, Alignment));
-	}
-	else
-	{
-		//一般情况下极少发生
-		pVoidToAlloc = ::PTS_Internal_Alloc(Size);
-		if (pVoidToAlloc != NULL && !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)))
-		{
-			PTS_Internal_Free(pVoidToAlloc);
-			pVoidToAlloc = NULL;
-		}
-	}
-
-	return pVoidToAlloc;
-}
-
-void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
 	if (Size != 0U)
 	{
-		return ::PTS_Internal_Alloc(Size);
+		if (Size <= s_NonLargeObject_SizeMax)
+		{
+			PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTSTSD_GetValue(s_ThreadLocalBucketAllocator_Index));
+
+			if (pThreadLocalBucketAllocator == NULL)
+			{
+				//To Do：
+				//Map在大多数平台上的实现是至少分配一页（4096字节）内存
+				//而PTS_ThreadLocalBucketAllocator不到500字节
+				//整个进程共浪费3500×线程数的字节
+				//是否需要调整代码进行节省？
+				pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBucketAllocator)));
+				assert(pThreadLocalBucketAllocator != NULL);
+
+				pThreadLocalBucketAllocator->Construct();
+
+				bool bResult = ::PTSTSD_SetValue(s_ThreadLocalBucketAllocator_Index, pThreadLocalBucketAllocator);
+				assert(bResult != false);
+			}
+
+			return pThreadLocalBucketAllocator->Alloc(Size);
+		}
+		else
+		{
+			void *pVoidToAlloc = static_cast<PTS_BucketObjectHeader *>(::PTS_MemoryMap_Alloc(Size));
+			assert(pVoidToAlloc != NULL);
+
+			//PTS_MemoryMap_Alloc的实现一定是对齐到16KB的
+			assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), s_Block_Size));
+
+			return pVoidToAlloc;
+		}
 	}
 	else
 	{
@@ -1488,54 +1434,126 @@ void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
 	}
 }
 
-void PTCALL PTSMemoryAllocator_Free(void *pVoid)
+static inline void * PTS_Internal_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
 {
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	if (pVoid != NULL)
+	if (::PTS_Size_IsPowerOfTwo(Alignment))
 	{
-		::PTS_Internal_Free(pVoid);
-	}
-}
-
-void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	if (pVoidOld != NULL && SizeNew != 0U)
-	{
-		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
-		PTS_BucketBlockHeader *pBlockAssumed = reinterpret_cast<PTS_BucketBlockHeader *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
-
-		//根据PTS_BlockMetadata::_BumpPointerRestore
-		if (reinterpret_cast<uintptr_t>(pBlockAssumed) != reinterpret_cast<uintptr_t>(pVoidOld))
+		if (Size != 0U)
 		{
-			//Block
-
-			assert(pBlockAssumed->IsBlock());
-
-			uint32_t SizeOld = pBlockAssumed->ObjectSize();
-			if (SizeOld < SizeNew)
+			if (Alignment <= s_NonLargeObject_SizeMax)
 			{
-				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
-				assert(pVoidNew != NULL);
-				if (pVoidNew != NULL)
+				if (Size <= s_NonLargeObject_SizeMax)
 				{
-					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-					::PTS_MemoryCopy(pVoidNew, pVoidOld, SizeCopy);
+					PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTSTSD_GetValue(s_ThreadLocalBucketAllocator_Index));
 
-					//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
-					PTS_BucketObjectHeader *pObjectToFree = static_cast<PTS_BucketObjectHeader *>(pVoidOld);
-					pBlockAssumed->Free(pObjectToFree);
+					if (pThreadLocalBucketAllocator == NULL)
+					{
+						//To Do：
+						//Map在大多数平台上的实现是至少分配一页（4096字节）内存
+						//而PTS_ThreadLocalBucketAllocator不到500字节
+						//整个进程共浪费3500×线程数的字节
+						//是否需要调整代码进行节省？
+						pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(::PTS_MemoryMap_Alloc(sizeof(PTS_ThreadLocalBucketAllocator)));
+						assert(pThreadLocalBucketAllocator != NULL);
+
+						pThreadLocalBucketAllocator->Construct();
+
+						bool bResult = ::PTSTSD_SetValue(s_ThreadLocalBucketAllocator_Index, pThreadLocalBucketAllocator);
+						assert(bResult != false);
+					}
+
+					//并不存在偏移
+					//见PTS_Size_ResolveRequestSize
+					//we just align the size up, and request this amount, 
+					//because for every size aligned to some power of 2, 
+					//the allocated object is at least that aligned.
+					void *pVoidToAlloc = pThreadLocalBucketAllocator->Alloc(::PTS_Size_AlignUpFrom(Size, Alignment));
+
+					//Verify Alignment		
+					assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)));
+
+					return pVoidToAlloc;
 				}
-				return pVoidNew;
+				else
+				{
+					void *pVoidToAlloc = static_cast<PTS_BucketObjectHeader *>(::PTS_MemoryMap_Alloc(Size));
+					//内存不足???
+					assert(pVoidToAlloc != NULL);
+
+					//PTS_MemoryMap_Alloc的实现一定是对齐到16KB的
+					assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), s_Block_Size));
+
+					//For Alignment <= s_NonLargeObject_SizeMax
+					//Max Of Alignment Is 4K (Which Is Page Size)
+					assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)));
+
+					return pVoidToAlloc;
+				}
+			}
+			else if (Alignment <= s_Block_Size)
+			{
+				void *pVoidToAlloc = static_cast<PTS_BucketObjectHeader *>(::PTS_MemoryMap_Alloc(Size));
+				//内存不足???
+				assert(pVoidToAlloc != NULL);
+
+				//PTS_MemoryMap_Alloc的实现一定是对齐到16KB的
+				assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), s_Block_Size));
+
+				//Alignment <= 16KB
+				assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)));
+
+				return pVoidToAlloc;
 			}
 			else
 			{
-				return pVoidOld;
+				//极少发生???
+				//很可能是用法上出现了错误???
+				assert(0);
+
+				void *pVoidToAlloc = static_cast<PTS_BucketObjectHeader *>(::PTS_MemoryMap_Alloc(::PTS_Size_AlignUpFrom(Size, Alignment)));
+				//内存不足???
+				assert(pVoidToAlloc != NULL);
+
+				if (pVoidToAlloc != NULL && !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidToAlloc), static_cast<size_t>(Alignment)))
+				{
+					::PTS_MemoryMap_Free(pVoidToAlloc);
+					pVoidToAlloc = NULL;
+				}
+
+				return pVoidToAlloc;
 			}
 		}
-		else 
+		else
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+static inline void PTS_Internal_Free(void *pVoid)
+{
+	if (pVoid != NULL)
+	{
+		PTS_BucketBlockHeader *pBlockAssumed = reinterpret_cast<PTS_BucketBlockHeader *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoid), static_cast<size_t>(s_Block_Size)));
+
+		//PTS_BucketObjectHeader一定不是16KB对齐 //见PTS_BucketBlockHeader::_BumpPointerRestore
+		//而PTS_MemoryMap_Alloc一定是16KB对齐的
+
+		if (reinterpret_cast<uintptr_t>(pBlockAssumed) != reinterpret_cast<uintptr_t>(pVoid))
+		{
+			//Block
+			assert(pBlockAssumed->IsBlock());
+
+			//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+			PTS_BucketObjectHeader *pObjectToFree = static_cast<PTS_BucketObjectHeader *>(pVoid);
+
+			pBlockAssumed->Free(pObjectToFree);
+		}
+		else
 		{
 			//LargeObject
 
@@ -1543,78 +1561,20 @@ void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
 			//但相等的概率理论上只有1/(2^32-1)
 			assert(!pBlockAssumed->IsBlock());
 
-			uint32_t SizeOld = ::PTS_MemoryMap_Size(pVoidOld);
-			if (SizeOld < SizeNew)
-			{
-				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
-				assert(pVoidNew != NULL);
-				if (pVoidNew != NULL)
-				{
-					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
-					::PTS_MemoryCopy(pVoidNew, pVoidOld, SizeCopy);
-
-					::PTS_MemoryMap_Free(pVoidOld);
-				}
-				return pVoidNew;
-			}
-			else
-			{
-				return pVoidOld;
-			}
+			::PTS_MemoryMap_Free(pVoid);
 		}
 	}
-	else if(SizeNew != 0U)
-	{
-		return ::PTS_Internal_Alloc(SizeNew);
-	}
-	else if (pVoidOld != NULL)
-	{
-		::PTS_Internal_Free(pVoidOld);
-		return NULL;
-	}
-	else
-	{
-		return NULL;
-	}
 }
 
-void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
+static inline void * PTS_Internal_Realloc(void *pVoidOld, uint32_t SizeNew)
 {
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	assert(::PTS_Size_IsPowerOfTwo(Alignment));
-
-	if (Size != 0U)
+	if (pVoidOld != NULL && SizeNew > 0U)
 	{
-		return ::PTS_Internal_Alloc_Aligned(Size, Alignment);
-	}
-	else
-	{
-		return NULL;
-	}
-}
-
-void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-	
-	if (pVoid != NULL)
-	{
-		::PTS_Internal_Free(pVoid);
-	}
-}
-
-void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNew, uint32_t AlignmentNew)
-{
-	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
-
-	assert(::PTS_Size_IsPowerOfTwo(AlignmentNew));
-
-	if (pVoidOld != NULL && SizeNew != 0U)
-	{
-		//在PTS_Internal_Alloc中确保LargeObject一定对齐到16KB，因此访问BlockAssumed（假定的）一定不会发生冲突
 		PTS_BucketBlockHeader *pBlockAssumed = reinterpret_cast<PTS_BucketBlockHeader *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
-		
+
+		//PTS_BucketObjectHeader一定不是16KB对齐 //见PTS_BucketBlockHeader::_BumpPointerRestore
+		//而PTS_MemoryMap_Alloc一定是16KB对齐的
+
 		if (reinterpret_cast<uintptr_t>(pBlockAssumed) != reinterpret_cast<uintptr_t>(pVoidOld))
 		{
 			//Block
@@ -1622,11 +1582,11 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			assert(pBlockAssumed->IsBlock());
 
 			uint32_t SizeOld = pBlockAssumed->ObjectSize();
-			if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+			if (SizeOld < SizeNew)
 			{
-				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
-				assert((pVoidNew != NULL));
-				if(pVoidNew != NULL)
+				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
+				assert(pVoidNew != NULL);
+				if (pVoidNew != NULL)
 				{
 					uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
 					::PTS_MemoryCopy(pVoidNew, pVoidOld, SizeCopy);
@@ -1651,9 +1611,9 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			assert(!pBlockAssumed->IsBlock());
 
 			uint32_t SizeOld = ::PTS_MemoryMap_Size(pVoidOld);
-			if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+			if (SizeOld < SizeNew)
 			{
-				void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+				void *pVoidNew = ::PTS_Internal_Alloc(SizeNew);
 				assert(pVoidNew != NULL);
 				if (pVoidNew != NULL)
 				{
@@ -1670,9 +1630,9 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 			}
 		}
 	}
-	else if (SizeNew != 0U)
+	else if (SizeNew > 0U)
 	{
-		return ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+		return ::PTS_Internal_Alloc(SizeNew);
 	}
 	else if (pVoidOld != NULL)
 	{
@@ -1683,6 +1643,163 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 	{
 		return NULL;
 	}
+}
+
+static inline void * PTS_Internal_Realloc_Aligned(void *pVoidOld, uint32_t SizeNew, uint32_t AlignmentNew)
+{
+	if (::PTS_Size_IsPowerOfTwo(AlignmentNew))
+	{
+		if (pVoidOld != NULL && SizeNew > 0U)
+		{
+			PTS_BucketBlockHeader *pBlockAssumed = reinterpret_cast<PTS_BucketBlockHeader *>(PTS_Size_AlignDownFrom(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(s_Block_Size)));
+
+			//PTS_BucketObjectHeader一定不是16KB对齐 //见PTS_BucketBlockHeader::_BumpPointerRestore
+			//而PTS_MemoryMap_Alloc一定是16KB对齐的
+
+			if (reinterpret_cast<uintptr_t>(pBlockAssumed) != reinterpret_cast<uintptr_t>(pVoidOld))
+			{
+				//Block
+
+				assert(pBlockAssumed->IsBlock());
+
+				uint32_t SizeOld = pBlockAssumed->ObjectSize();
+				if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+				{
+					void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+					assert((pVoidNew != NULL));
+					if (pVoidNew != NULL)
+					{
+						uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+						::PTS_MemoryCopy(pVoidNew, pVoidOld, SizeCopy);
+
+						//并不存在偏移，见PTSMemoryAllocator_Alloc_Aligned
+						PTS_BucketObjectHeader *pObjectToFree = static_cast<PTS_BucketObjectHeader *>(pVoidOld);
+						pBlockAssumed->Free(pObjectToFree);
+					}
+					return pVoidNew;
+				}
+				else
+				{
+					return pVoidOld;
+				}
+			}
+			else
+			{
+				//LargeObject
+
+				//并不一定可靠
+				//但相等的概率理论上只有1/(2^32-1)
+				assert(!pBlockAssumed->IsBlock());
+
+				uint32_t SizeOld = ::PTS_MemoryMap_Size(pVoidOld);
+				if (SizeOld < SizeNew || !::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pVoidOld), static_cast<size_t>(AlignmentNew)))
+				{
+					void *pVoidNew = ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+					assert(pVoidNew != NULL);
+					if (pVoidNew != NULL)
+					{
+						uint32_t SizeCopy = (SizeNew > SizeOld) ? SizeOld : SizeNew;
+						::PTS_MemoryCopy(pVoidNew, pVoidOld, SizeCopy);
+
+						::PTS_MemoryMap_Free(pVoidOld);
+					}
+					return pVoidNew;
+				}
+				else
+				{
+					return pVoidOld;
+				}
+			}
+		}
+		else if (SizeNew > 0U)
+		{
+			return ::PTS_Internal_Alloc_Aligned(SizeNew, AlignmentNew);
+		}
+		else if (pVoidOld != NULL)
+		{
+			::PTS_Internal_Free(pVoidOld);
+			return NULL;
+		}
+		else
+		{
+			return NULL;
+		}
+	}
+	else
+	{
+		return NULL;
+	}
+}
+
+
+//********************************************************************************************************************************************************************************************************************************************************************
+//API Entry
+//********************************************************************************************************************************************************************************************************************************************************************
+
+static int32_t s_MemoryAllocator_Initialize_RefCount = 0;
+bool PTCALL PTSMemoryAllocator_Initialize()
+{
+	if (::PTSAtomic_GetAndAdd(&s_MemoryAllocator_Initialize_RefCount, 1) == 0)
+	{
+		s_BlockStore_Singleton.Construct();
+
+		bool bResult = ::PTSTSD_Create(
+			&s_ThreadLocalBucketAllocator_Index,
+			[](void *pVoid)->void {
+			PTS_ThreadLocalBucketAllocator *pThreadLocalBucketAllocator = static_cast<PTS_ThreadLocalBucketAllocator *>(pVoid);
+			pThreadLocalBucketAllocator->Destruct();
+			::PTS_MemoryMap_Free(pVoid);
+		}
+		);
+		
+		return bResult;
+	}
+	else
+	{
+		return true;
+	}
+}
+
+void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return ::PTS_Internal_Alloc(Size);
+}
+
+void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return ::PTS_Internal_Alloc_Aligned(Size, Alignment);
+}
+
+void PTCALL PTSMemoryAllocator_Free(void *pVoid)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	::PTS_Internal_Free(pVoid);
+}
+
+void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+	
+	::PTS_Internal_Free(pVoid);
+}
+
+void * PTCALL PTSMemoryAllocator_Realloc(void *pVoidOld, uint32_t SizeNew)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return PTS_Internal_Realloc(pVoidOld, SizeNew);
+}
+
+void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNew, uint32_t AlignmentNew)
+{
+	assert(::PTSAtomic_Get(&s_MemoryAllocator_Initialize_RefCount) > 0);
+
+	return ::PTS_Internal_Realloc_Aligned(pVoidOld, SizeNew, AlignmentNew);
 }
 
 #if defined PTWIN32
