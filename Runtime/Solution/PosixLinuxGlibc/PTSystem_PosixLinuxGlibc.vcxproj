@@ -152,7 +152,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
@@ -166,7 +166,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
@@ -180,7 +180,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
@@ -194,7 +194,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
@@ -208,7 +208,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
@@ -222,7 +222,7 @@
       <SymbolsHiddenByDefault>true</SymbolsHiddenByDefault>
       <ExceptionHandling>Disabled</ExceptionHandling>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <AdditionalOptions>-pthread %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-pthread -fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>-pthread -Wl,--enable-new-dtags -Wl,-rpath,'$ORIGIN' %(AdditionalOptions)</AdditionalOptions>
