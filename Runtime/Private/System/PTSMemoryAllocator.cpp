@@ -18,8 +18,6 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 //Front-End McRT Malloc (Nature Is A Bucket Allocator)
 //Back-End Slab Allocator (Nature A Buddy Allocator) //We Use System Call "FileMemoryMap" Directly As The Paper "McRT Malloc" Suggests
 
-#define PTS_USE_QUEUEEMPTY 1
-
 bool PTCALL PTSMemoryAllocator_Initialize();
 
 struct PTS_BucketObjectHeader;
@@ -176,13 +174,13 @@ static constexpr uint32_t const s_CacheLine_Size = 64U;
 #error 未知的架构
 #endif
 
+static constexpr uint32_t const s_BucketBlockManager_QueueEmpty_CountThreshold = 64U;
 static class PTS_BucketBlockManager
 {
 	uint64_t m_QueueNonEmptyTops[s_Bucket_Number];
 
-#if PTS_USE_QUEUEEMPTY
 	uint64_t m_QueueEmptyTop;
-#endif
+	uint32_t m_QueueEmpty_Count;
 
 private:
 	static inline void _Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value);
@@ -269,7 +267,7 @@ private:
 	PTSThreadID m_ThreadID_Owner;
 
 	uint32_t m_ObjectSize; //Free时用到
-	uint32_t Pm_BucketIndex_InAllocator;
+	uint32_t m_BucketIndex_InAllocator;
 	uint32_t m_ObjectAllocated_Number;
 	
 #ifndef NDEBUG
@@ -339,6 +337,7 @@ struct PTS_BucketObjectHeader
 {
 private:
 	PTS_BucketObjectHeader *m_pNext_InFreeVector;
+	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_BumpPointer();
 	friend void PTS_BucketBlockHeader::_ObjectFreeVector_Private_Push(PTS_BucketObjectHeader *pObjectToPush);
 	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Private_Pop();
 	friend void PTS_BucketBlockHeader::_ObjectFreeVector_Public_Push(PTS_BucketObjectHeader *pObjectToPush);
@@ -531,31 +530,36 @@ inline void PTS_BucketBlockManager::Construct()
 		m_QueueNonEmptyTops[i] = 0U;
 	}
 
-#if PTS_USE_QUEUEEMPTY
 	m_QueueEmptyTop = 0U;
-#endif
+	m_QueueEmpty_Count = 0U;
 }
 
 inline void PTS_BucketBlockManager::PushEmpty(PTS_BucketBlockHeader *pBlockToPush)
 {
-#if PTS_USE_QUEUEEMPTY
 	//Private Field
 	assert(pBlockToPush->m_pAllocator_Owner == NULL);
 	assert(pBlockToPush->m_ObjectFreeVector_Private == NULL);
 	assert(pBlockToPush->m_BumpPointer == NULL);
 	assert(pBlockToPush->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToPush->m_ObjectSize == ~uint32_t(0U));
-	assert(pBlockToPush->Pm_BucketIndex_InAllocator == ~uint32_t(0U));
+	assert(pBlockToPush->m_BucketIndex_InAllocator == ~uint32_t(0U));
 	assert(pBlockToPush->m_pNext_InBucket == NULL);
 	assert(pBlockToPush->m_pPrevious_InBucket == NULL);
 	assert(pBlockToPush->m_ObjectAllocated_Number == 0U);
 
 	//Public Field
 	assert(pBlockToPush->m_ObjectFreeVector_Public == NULL);
-	_AtomicPush(&m_QueueEmptyTop, pBlockToPush);
-#else
-	::PTS_MemoryMap_Free(pBlockToPush);
-#endif
+
+	if (::PTSAtomic_Get(&m_QueueEmpty_Count) <= s_BucketBlockManager_QueueEmpty_CountThreshold)
+	{
+		::PTSAtomic_GetAndAdd(&m_QueueEmpty_Count, 1U); //队列中实际的个数和m_QueueEmpty_Count并不严格相等
+		_AtomicPush(&m_QueueEmptyTop, pBlockToPush);
+	}
+	else
+	{
+		::PTS_MemoryMap_Free(pBlockToPush);
+
+	}
 }
 
 inline void PTS_BucketBlockManager::PushNonEmpty(PTS_BucketBlockHeader *pBlockToPush)
@@ -566,7 +570,7 @@ inline void PTS_BucketBlockManager::PushNonEmpty(PTS_BucketBlockHeader *pBlockTo
 	assert(pBlockToPush->m_pPrevious_InBucket == NULL);
 	assert(pBlockToPush->m_ObjectAllocated_Number != 0U);
 
-	_AtomicPush(&m_QueueNonEmptyTops[pBlockToPush->Pm_BucketIndex_InAllocator], pBlockToPush);
+	_AtomicPush(&m_QueueNonEmptyTops[pBlockToPush->m_BucketIndex_InAllocator], pBlockToPush);
 }
 
 inline PTS_BucketBlockHeader *PTS_BucketBlockManager::PopNonEmpty(uint32_t BinIndex)
@@ -578,31 +582,28 @@ inline PTS_BucketBlockHeader *PTS_BucketBlockManager::PopNonEmpty(uint32_t BinIn
 
 inline PTS_BucketBlockHeader *PTS_BucketBlockManager::PopEmpty(uint32_t BinIndex)
 {
-#if PTS_USE_QUEUEEMPTY
-	PTS_BucketBlockHeader *pBlockAdded = _AtomicPop(&m_QueueEmptyTop, BinIndex);
-
-	if (pBlockAdded == NULL)
+	PTS_BucketBlockHeader *pBlockAdded;
+	
+	pBlockAdded = _AtomicPop(&m_QueueEmptyTop, BinIndex);
+	if (pBlockAdded != NULL)
 	{
-		//启发式，而非在初始化时一次性分配
-		pBlockAdded = static_cast<PTS_BucketBlockHeader *>(::PTS_MemoryMap_Alloc(s_Block_Size));
-		assert(pBlockAdded != NULL);
+		::PTSAtomic_GetAndAdd(&m_QueueEmpty_Count, uint32_t(-1)); //队列中实际的个数和m_QueueEmpty_Count并不严格相等
+		return pBlockAdded;
+	}
 
+	//启发式，而非在初始化时一次性分配
+	pBlockAdded = static_cast<PTS_BucketBlockHeader *>(::PTS_MemoryMap_Alloc(s_Block_Size));
+	//内存不足？？？
+	assert(pBlockAdded != NULL);
+	if (pBlockAdded != NULL)
+	{		
 		//严格意义上16KB应当是对齐而非大小
 		assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pBlockAdded), s_Block_Size));
-
 		pBlockAdded->Construct();
+		return pBlockAdded;
 	}
-	return pBlockAdded;
-#else
-	PTS_BucketBlockHeader *pBlockAdded = static_cast<PTS_BucketBlockHeader *>(::PTS_MemoryMap_Alloc(s_Block_Size));
 
-	//严格意义上16KB应当是对齐而非大小
-	assert(PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pBlockAdded), s_Block_Size));
-
-	PTS_BucketBlockHeader::Construct();
-
-	return pBlockAdded;
-#endif
+	return NULL;
 }
 
 
@@ -773,7 +774,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 		pBlockEmptyEnough = (*ppBlockActive)->m_pPrevious_InBucket;
 		pBlockFull = (*ppBlockActive)->m_pNext_InBucket;
 
-		//assert(m_BucketVector[(*ppBlockActive)->Pm_BucketIndex_InAllocator] == (*ppBlockActive));
+		//assert(m_BucketVector[(*ppBlockActive)->m_BucketIndex_InAllocator] == (*ppBlockActive));
 		pObjectToAlloc = (*ppBlockActive)->Alloc();
 		if (pObjectToAlloc != NULL)
 		{
@@ -786,7 +787,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	{
 		(*ppBlockActive) = pBlockEmptyEnough; //Reset Active 
 
-		//assert(m_BucketVector[pBlockEmptyEnough->Pm_BucketIndex_InAllocator] == pBlockEmptyEnough);
+		//assert(m_BucketVector[pBlockEmptyEnough->m_BucketIndex_InAllocator] == pBlockEmptyEnough);
 		pObjectToAlloc = pBlockEmptyEnough->Alloc();
 
 		if (pObjectToAlloc != NULL)
@@ -814,7 +815,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 
 			(*ppBlockActive) = pBlockFull; //Reset Active 
 
-			//assert(m_BucketVector[pBlockFull->Pm_BucketIndex_InAllocator] == pBlockFull);
+			//assert(m_BucketVector[pBlockFull->m_BucketIndex_InAllocator] == pBlockFull);
 			pObjectToAlloc = pBlockFull->Alloc();
 			assert(pObjectToAlloc != NULL);
 			return pObjectToAlloc;
@@ -832,7 +833,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 
 		(*ppBlockActive) = pBlockAdded; //Active前移
 
-		//assert(m_BucketVector[pBlockAdded->Pm_BucketIndex_InAllocator] == pBlockAdded);
+		//assert(m_BucketVector[pBlockAdded->m_BucketIndex_InAllocator] == pBlockAdded);
 		pObjectToAlloc = pBlockAdded->Alloc();
 		if (pObjectToAlloc != NULL)
 		{
@@ -852,7 +853,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 
 		(*ppBlockActive) = pBlockAdded; //Active前移
 
-		//assert(m_BucketVector[pBlockAdded->Pm_BucketIndex_InAllocator] == pBlockAdded);
+		//assert(m_BucketVector[pBlockAdded->m_BucketIndex_InAllocator] == pBlockAdded);
 		pObjectToAlloc = pBlockAdded->Alloc();
 		//The Block Is Empty???
 		assert(pObjectToAlloc != NULL);
@@ -874,8 +875,8 @@ inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlock
 	//Size Consistent
 	assert(pBlockToAdd->m_pNext_InBucket == NULL);
 	assert(pBlockToAdd->m_pPrevious_InBucket == NULL);
-	assert(pBlockToAdd->Pm_BucketIndex_InAllocator == BinIndex);
-	assert(pBlockToAdd->Pm_BucketIndex_InAllocator < s_Bucket_Number);
+	assert(pBlockToAdd->m_BucketIndex_InAllocator == BinIndex);
+	assert(pBlockToAdd->m_BucketIndex_InAllocator < s_Bucket_Number);
 
 	PTS_BucketBlockHeader *const pBlockActive = m_BucketVector[BinIndex];
 
@@ -883,7 +884,7 @@ inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlock
 	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != false)));
 
 	//Size Consistent
-	assert(pBlockActive == NULL || pBlockActive->Pm_BucketIndex_InAllocator == pBlockToAdd->Pm_BucketIndex_InAllocator);
+	assert(pBlockActive == NULL || pBlockActive->m_BucketIndex_InAllocator == pBlockToAdd->m_BucketIndex_InAllocator);
 
 	if (pBlockActive == NULL)
 	{
@@ -910,8 +911,8 @@ inline void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlock
 	assert((pBlockToRemove->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToRemove->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
 	//Size Consistent
-	assert(pBlockToRemove->Pm_BucketIndex_InAllocator == BinIndex);
-	assert(pBlockToRemove->Pm_BucketIndex_InAllocator < s_Bucket_Number);
+	assert(pBlockToRemove->m_BucketIndex_InAllocator == BinIndex);
+	assert(pBlockToRemove->m_BucketIndex_InAllocator < s_Bucket_Number);
 
 	PTS_BucketBlockHeader * const pBlockActive = m_BucketVector[BinIndex];
 
@@ -919,7 +920,7 @@ inline void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlock
 	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != false)));
 
 	//Size Consistent
-	assert(pBlockActive == NULL || pBlockActive->Pm_BucketIndex_InAllocator == BinIndex);
+	assert(pBlockActive == NULL || pBlockActive->m_BucketIndex_InAllocator == BinIndex);
 
 	if (pBlockActive == pBlockToRemove)
 	{
@@ -951,7 +952,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 	assert(pBlockToOwn->m_BumpPointer == NULL);
 	assert(pBlockToOwn->m_ThreadID_Owner == s_BucketBlockHeader_ThreadID_Invalid);
 	assert(pBlockToOwn->m_ObjectSize == ~uint32_t(0U));
-	assert(pBlockToOwn->Pm_BucketIndex_InAllocator == ~uint32_t(0U));
+	assert(pBlockToOwn->m_BucketIndex_InAllocator == ~uint32_t(0U));
 	assert(pBlockToOwn->m_pNext_InBucket == NULL);
 	assert(pBlockToOwn->m_pPrevious_InBucket == NULL);
 	assert(pBlockToOwn->m_ObjectAllocated_Number == 0U);
@@ -962,7 +963,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 
 	pBlockToOwn->m_ObjectSize = ObjectSize;
 
-	pBlockToOwn->Pm_BucketIndex_InAllocator = BinIndex;
+	pBlockToOwn->m_BucketIndex_InAllocator = BinIndex;
 
 	pBlockToOwn->_BumpPointerRestore();
 
@@ -999,7 +1000,7 @@ inline void PTS_ThreadLocalBucketAllocator::LoseEmpty(PTS_BucketBlockHeader *pBl
 	pBlockToOwn->m_ObjectFreeVector_Private = NULL;
 	pBlockToOwn->m_BumpPointer = NULL;
 	pBlockToOwn->m_ObjectSize = ~uint32_t(0U);
-	pBlockToOwn->Pm_BucketIndex_InAllocator = ~uint32_t(0U);
+	pBlockToOwn->m_BucketIndex_InAllocator = ~uint32_t(0U);
 #endif
 
 	//Public Field
@@ -1114,6 +1115,7 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::_BumpPointer()
 	}
 
 	PTS_BucketObjectHeader *pObjectToAlloc = m_BumpPointer;
+	pObjectToAlloc->m_pNext_InFreeVector = NULL;
 
 	++m_ObjectAllocated_Number;
 	assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
@@ -1191,7 +1193,7 @@ inline void PTS_BucketBlockHeader::Construct()
 	m_BumpPointer = NULL;
 	m_ThreadID_Owner = s_BucketBlockHeader_ThreadID_Invalid;
 	m_ObjectSize = ~uint32_t(0U);
-	Pm_BucketIndex_InAllocator = ~uint32_t(0U);
+	m_BucketIndex_InAllocator = ~uint32_t(0U);
 #endif
 	m_pNext_InBucket = NULL;
 	m_pPrevious_InBucket = NULL;
@@ -1221,7 +1223,7 @@ inline void PTS_BucketBlockHeader::LostByOwner()
 
 inline void PTS_BucketBlockHeader::RemoveFromOwner()
 {
-	m_pAllocator_Owner->Remove(this, Pm_BucketIndex_InAllocator);
+	m_pAllocator_Owner->Remove(this, m_BucketIndex_InAllocator);
 }
 
 inline bool PTS_BucketBlockHeader::IsEmpty()
@@ -1284,15 +1286,18 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 
 	PTS_BucketObjectHeader *pObjectToAlloc;
 
-	//Bump Pointer First
-	pObjectToAlloc = _BumpPointer();
+	//In Paper | First Bump Pointer | Next Private FreeList (Hudson 2006)
+	//In Intel TBB | First Private FreeList | For Better Cache Locality (Kukanov 2007)
+
+	//Private FreeList First 
+	pObjectToAlloc = _ObjectFreeVector_Private_Pop();
 	if (pObjectToAlloc != NULL)
 	{
 		return pObjectToAlloc;
 	}
 
-	//Private FreeList Next //Private FreeList Should Be First For Better Cache Locality (Kukanov 2007) ???
-	pObjectToAlloc = _ObjectFreeVector_Private_Pop();
+	//Bump Pointer Next
+	pObjectToAlloc = _BumpPointer();
 	if (pObjectToAlloc != NULL)
 	{
 		return pObjectToAlloc;
@@ -1327,6 +1332,9 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 
 inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 {
+	//严格意义上这两个计算应当原子进行
+	assert(m_BumpPointer == NULL || pObjectToFree < m_BumpPointer);
+
 	if ((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false))
 	{
 		//Owning Thread
@@ -1334,27 +1342,26 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 		assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
 
 		//It Can Save Memory But Also Will Take Time 
-		//PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate(pThis);
+		//ObjectFreeVector_Public_Repatriate();
 
 		if (m_ObjectAllocated_Number == 0U)
 		{
 			//Empty
 
 			//FreeListPrivate清零，不再有Push的必要
-			//assert(pThis->m_ObjectFreeVector_Public == NULL);
-			//pThis->PTS_BucketBlockHeader::_BumpPointerRestore(pThis->m_ObjectSize);
+			assert(m_ObjectFreeVector_Public == NULL);
+			_BumpPointerRestore();
 
-			RemoveFromOwner();
 
-			LostByOwner();
-
-			s_BlockStore_Singleton.PushEmpty(this);
+			//一般认为Free是一个轻量级的操作？
+			//不Push到BlockStore
 
 			//如果不Repatriate
 			//那么实际中出现概率会较低
 
-			//一般认为Free是一个轻量级的操作？
-			//不Push到BlockStore
+			//RemoveFromOwner();
+			//LostByOwner();
+			//s_BlockStore_Singleton.PushEmpty(this);		
 		}
 		else
 		{
