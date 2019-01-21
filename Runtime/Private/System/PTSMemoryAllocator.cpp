@@ -1332,8 +1332,12 @@ inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
 
 inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 {
-	//严格意义上这两个计算应当原子进行
-	assert(m_BumpPointer == NULL || pObjectToFree < m_BumpPointer);
+#ifndef NDEBUG
+	{
+		PTS_BucketObjectHeader *BumpPointer = m_BumpPointer; 
+		assert(m_BumpPointer == NULL || pObjectToFree < m_BumpPointer);
+	}
+#endif
 
 	if ((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false))
 	{
