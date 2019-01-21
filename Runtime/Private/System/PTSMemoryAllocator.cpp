@@ -214,7 +214,9 @@ public:
 
 	inline PTS_BucketObjectHeader *Alloc(uint32_t Size);
 
-	inline void Insert(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
+	inline void InsertToPrevious(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
+
+	inline void InsertToNext(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
 
 	inline void Remove(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex);
 
@@ -255,7 +257,8 @@ private:
 
 	PTS_BucketBlockHeader *m_pNext_InBucket; //Full Block //Bucket=BlockDoublyLinkedList
 	PTS_BucketBlockHeader *m_pPrevious_InBucket; //Empty Enough Block //Bucket=BlockDoublyLinkedList
-	friend void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
+	friend void PTS_ThreadLocalBucketAllocator::InsertToPrevious(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
+	friend void PTS_ThreadLocalBucketAllocator::InsertToNext(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex);
 	friend void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex);
 	friend PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Size);
 	friend void PTS_ThreadLocalBucketAllocator::Destruct();
@@ -789,6 +792,8 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 
 		//assert(m_BucketVector[pBlockEmptyEnough->m_BucketIndex_InAllocator] == pBlockEmptyEnough);
 		pObjectToAlloc = pBlockEmptyEnough->Alloc();
+		//The Block Is EmptyEnough???
+		assert(pObjectToAlloc != NULL);
 
 		if (pObjectToAlloc != NULL)
 		{
@@ -811,7 +816,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 		{
 			//Move From "Next" To "Previous"
 			Remove(pBlockFull, BucketIndex);
-			Insert(pBlockFull, BucketIndex);
+			InsertToPrevious(pBlockFull, BucketIndex);
 
 			(*ppBlockActive) = pBlockFull; //Reset Active 
 
@@ -825,13 +830,25 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	}
 
 	//NoOwner-NonEmpty Block
-	PTS_BucketBlockHeader *pBlockAdded = s_BlockStore_Singleton.PopNonEmpty(BucketIndex);
-	if (pBlockAdded != NULL)
+	for (PTS_BucketBlockHeader *pBlockAdded = s_BlockStore_Singleton.PopNonEmpty(BucketIndex);
+		pBlockAdded != NULL;
+		pBlockAdded = s_BlockStore_Singleton.PopNonEmpty(BucketIndex))
 	{
 		OwnNonEmpty(pBlockAdded);
-		Insert(pBlockAdded, BucketIndex);
-
-		(*ppBlockActive) = pBlockAdded; //Active前移
+		
+		pBlockFull->ObjectFreeVector_Public_Repatriate();
+		
+		if (pBlockAdded->IsEmptyEnough())
+		{
+			InsertToPrevious(pBlockAdded, BucketIndex);
+			(*ppBlockActive) = pBlockAdded; //Active前移
+		}
+		else
+		{
+			InsertToNext(pBlockAdded, BucketIndex);
+			
+			//其它线程终止时添加
+		}
 
 		//assert(m_BucketVector[pBlockAdded->m_BucketIndex_InAllocator] == pBlockAdded);
 		pObjectToAlloc = pBlockAdded->Alloc();
@@ -842,14 +859,14 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	}
 
 	//(NoOwner-)Empty Block
-	pBlockAdded = s_BlockStore_Singleton.PopEmpty(BucketIndex);
+	PTS_BucketBlockHeader *pBlockAdded = s_BlockStore_Singleton.PopEmpty(BucketIndex);
 	//内存不足???
 	assert(pBlockAdded != NULL);
 
 	if (pBlockAdded != NULL)
 	{
 		OwnEmpty(pBlockAdded, BucketIndex, ObjectSize);
-		Insert(pBlockAdded, BucketIndex);
+		InsertToPrevious(pBlockAdded, BucketIndex);
 
 		(*ppBlockActive) = pBlockAdded; //Active前移
 
@@ -867,10 +884,13 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	return NULL;
 }
 
-inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex)
+inline void PTS_ThreadLocalBucketAllocator::InsertToPrevious(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex)
 {
 	//The Block Is Owned By Allocator And Current Thread 
 	assert((pBlockToAdd->m_pAllocator_Owner = this) && (::PTSThreadID_Equal(pBlockToAdd->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
+
+	//Only Empty Enough Block Can Insert To Previous
+	assert(pBlockToAdd->IsEmptyEnough());
 
 	//Size Consistent
 	assert(pBlockToAdd->m_pNext_InBucket == NULL);
@@ -901,6 +921,47 @@ inline void PTS_ThreadLocalBucketAllocator::Insert(PTS_BucketBlockHeader *pBlock
 		if (pBlockToAdd->m_pPrevious_InBucket != NULL)
 		{
 			pBlockToAdd->m_pPrevious_InBucket->m_pNext_InBucket = pBlockToAdd;
+		}
+	}
+}
+
+inline void PTS_ThreadLocalBucketAllocator::InsertToNext(PTS_BucketBlockHeader *pBlockToAdd, uint32_t BinIndex)
+{
+	//The Block Is Owned By Allocator And Current Thread 
+	assert((pBlockToAdd->m_pAllocator_Owner = this) && (::PTSThreadID_Equal(pBlockToAdd->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
+
+	//Only Not Empty Enough Block Can Insert To Next
+	assert(!pBlockToAdd->IsEmptyEnough());
+
+	//Size Consistent
+	assert(pBlockToAdd->m_pNext_InBucket == NULL);
+	assert(pBlockToAdd->m_pPrevious_InBucket == NULL);
+	assert(pBlockToAdd->m_BucketIndex_InAllocator == BinIndex);
+	assert(pBlockToAdd->m_BucketIndex_InAllocator < s_Bucket_Number);
+
+	PTS_BucketBlockHeader *const pBlockActive = m_BucketVector[BinIndex];
+
+	//The Block Is Owned By Allocator And Current Thread 
+	assert(pBlockActive == NULL || ((pBlockActive->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockActive->m_ThreadID_Owner, ::PTSThreadID_Self()) != false)));
+
+	//Size Consistent
+	assert(pBlockActive == NULL || pBlockActive->m_BucketIndex_InAllocator == pBlockToAdd->m_BucketIndex_InAllocator);
+
+	if (pBlockActive == NULL)
+	{
+		m_BucketVector[BinIndex] = pBlockToAdd; //Active初始化
+	}
+
+	//pBlockToAdd位于pBlockActive的Next
+	pBlockToAdd->m_pPrevious_InBucket = pBlockActive;
+	if (pBlockActive != NULL)
+	{
+		pBlockToAdd->m_pNext_InBucket = pBlockActive->m_pNext_InBucket;
+		pBlockActive->m_pNext_InBucket = pBlockToAdd;
+
+		if (pBlockToAdd->m_pNext_InBucket != NULL)
+		{
+			pBlockToAdd->m_pNext_InBucket->m_pPrevious_InBucket = pBlockToAdd;
 		}
 	}
 }
