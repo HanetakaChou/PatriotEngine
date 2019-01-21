@@ -18,12 +18,10 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid);
 //Front-End McRT Malloc (Nature Is A Bucket Allocator)
 //Back-End Slab Allocator (Nature A Buddy Allocator) //We Use System Call "FileMemoryMap" Directly As The Paper "McRT Malloc" Suggests
 
-bool PTCALL PTSMemoryAllocator_Initialize();
-
 struct PTS_BucketObjectHeader;
 struct PTS_BucketBlockHeader;
+struct PTS_ThreadLocalBucketAllocator;
 class PTS_BucketBlockManager;
-class PTS_ThreadLocalBucketAllocator;
 
 //Hudson 2006 / 3.McRT-MALLOC
 
@@ -175,9 +173,12 @@ static constexpr uint32_t const s_CacheLine_Size = 64U;
 #endif
 
 static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value);
+
 static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBlockHeader *BlockAddress);
+
 template<typename TypeBlock, typename TypeBlockNextAccessor>
 static inline void PTS_AtomicQueue_Push(uint64_t *pQueueTop, TypeBlock *blockPtr);
+
 template<typename TypeBlock, typename TypeBlockNextAccessor>
 static inline TypeBlock *PTS_AtomicQueue_Pop(uint64_t *pQueueTop);
 
@@ -190,7 +191,7 @@ static class PTS_BucketBlockManager
 	uint32_t m_QueueEmpty_Count;
 
 private:
-	class BlockNextAccessor
+	class BucketBlockHeader_Next_InBlockManager
 	{
 		static inline PTS_BucketBlockHeader **Access(PTS_BucketBlockHeader *pBlockToAccess);
 		
@@ -218,10 +219,12 @@ public:
 }s_BlockStore_Singleton;
 //static_assert(std::is_pod<PTS_BucketBlockManager>::value, "PTS_BucketBlockManager Is Not A POD");
 
-class PTS_ThreadLocalBucketAllocator
+//Mean Owned By The BlockManager
+static struct PTS_BucketObjectHeader * const s_ThreadLocalBucketAllocator_PseudoPointer = reinterpret_cast<struct PTS_BucketObjectHeader *>(0X1U);
+
+struct PTS_ThreadLocalBucketAllocator
 {
-	PTS_BucketBlockHeader *m_BucketVector[s_Bucket_Number]; //Bucket=BlockDoublyLinkedList
-	
+private:
 	//----------------------------------------------------------------------------
 	//Hudson 2006 / 3.McRT-MALLOC / 3.3 Framework for Managing Blocks
 	//One final wrinkle is that if we inspect 10 blocks without finding a free object then we add a new block for the bin.
@@ -229,6 +232,11 @@ class PTS_ThreadLocalBucketAllocator
 	//-----------------------------------
 	//我们对以上处理方式进行优化
 	uint64_t m_BlockRepatriatableQueueVector[s_Bucket_Number];
+
+	//To Avoid False Sharing，将可能被Foreign线程访问的Public域和只能被Owner线程访问的Private域分隔在不同的缓存行中
+	//uint8_t __PaddingForPublicFields[0];
+
+	PTS_BucketBlockHeader *m_BucketVector[s_Bucket_Number]; //Bucket=BlockDoublyLinkedList
 
 	class BucketBlockHeader_Next_InBlockRepatriatableQueue
 	{
@@ -250,6 +258,7 @@ class PTS_ThreadLocalBucketAllocator
 	inline void _RemoveInDestruct(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex);
 
 	friend struct PTS_BucketBlockHeader;
+	friend struct PTS_BucketObjectHeader;
 public:
 	inline void Construct();
 
@@ -266,8 +275,14 @@ public:
 	inline void OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
 
 	inline void Destruct();
+
+	static inline constexpr size_t StaticAssertPaddingForPublicFields()
+	{
+		return (offsetof(PTS_ThreadLocalBucketAllocator, m_BucketVector)) == s_CacheLine_Size * 4U;
+	}
 };
 //static_assert(std::is_pod<PTS_ThreadLocalBucketAllocator>::value, "PTS_ThreadLocalBucketAllocator Is Not A POD");
+static_assert(PTS_ThreadLocalBucketAllocator::StaticAssertPaddingForPublicFields(), "Padding For Public Fields Of PTS_ThreadLocalBucketAllocator Is Not Correct");
 
 #ifndef NDEBUG
 static constexpr uint32_t const s_BucketBlockHeader_Identity_Block = 0X5765C7B8U;
@@ -278,7 +293,7 @@ struct PTS_BucketBlockHeader
 {
 private:
 	PTS_BucketBlockHeader *m_pNext_InBlockManager;
-	friend PTS_BucketBlockHeader **PTS_BucketBlockManager::BlockNextAccessor::Access(PTS_BucketBlockHeader *pBlockToAccess);
+	friend PTS_BucketBlockHeader **PTS_BucketBlockManager::BucketBlockHeader_Next_InBlockManager::Access(PTS_BucketBlockHeader *pBlockToAccess);
 	friend void PTS_BucketBlockManager::PushEmpty(PTS_BucketBlockHeader *pBlockToPush);
 	friend void PTS_BucketBlockManager::PushNonEmpty(PTS_BucketBlockHeader *pBlockToPush);
 	
@@ -398,6 +413,8 @@ private:
 	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Private_Pop();
 	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Public_Push(PTS_BucketObjectHeader *pObjectToPush);
 	friend void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate();
+	friend void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
+	friend void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex);
 };
 //static_assert(std::is_pod<PTS_BucketObjectHeader>::value, "PTS_BucketObjectHeader Is Not A POD");
 
@@ -582,7 +599,7 @@ static inline TypeBlock *PTS_AtomicQueue_Pop(uint64_t *pQueueTop)
 }
 
 //----------------------------------------------------------------------------------------------------------------
-inline PTS_BucketBlockHeader **PTS_BucketBlockManager::BlockNextAccessor::Access(PTS_BucketBlockHeader *pBlockToAccess)
+inline PTS_BucketBlockHeader **PTS_BucketBlockManager::BucketBlockHeader_Next_InBlockManager::Access(PTS_BucketBlockHeader *pBlockToAccess)
 {
 	return &pBlockToAccess->m_pNext_InBlockManager;
 }
@@ -612,12 +629,12 @@ inline void PTS_BucketBlockManager::PushEmpty(PTS_BucketBlockHeader *pBlockToPus
 	assert(pBlockToPush->m_ObjectAllocated_Number == 0U);
 
 	//Public Field
-	assert(pBlockToPush->m_ObjectFreeVector_Public == NULL);
+	assert(pBlockToPush->m_ObjectFreeVector_Public == s_ThreadLocalBucketAllocator_PseudoPointer);
 
 	if (::PTSAtomic_Get(&m_QueueEmpty_Count) <= s_BucketBlockManager_QueueEmpty_CountThreshold)
 	{
 		::PTSAtomic_GetAndAdd(&m_QueueEmpty_Count, 1U); //队列中实际的个数和m_QueueEmpty_Count并不严格相等
-		::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, BlockNextAccessor>(&m_QueueEmptyTop, pBlockToPush);
+		::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, BucketBlockHeader_Next_InBlockManager>(&m_QueueEmptyTop, pBlockToPush);
 	}
 	else
 	{
@@ -633,12 +650,12 @@ inline void PTS_BucketBlockManager::PushNonEmpty(PTS_BucketBlockHeader *pBlockTo
 	assert(pBlockToPush->m_pPrevious_InBucket == NULL);
 	assert(pBlockToPush->m_ObjectAllocated_Number != 0U);
 
-	::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, BlockNextAccessor>(&m_QueueNonEmptyTops[pBlockToPush->m_BucketIndex_InAllocator], pBlockToPush);
+	::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, BucketBlockHeader_Next_InBlockManager>(&m_QueueNonEmptyTops[pBlockToPush->m_BucketIndex_InAllocator], pBlockToPush);
 }
 
 inline PTS_BucketBlockHeader *PTS_BucketBlockManager::PopNonEmpty(uint32_t BinIndex)
 {
-	PTS_BucketBlockHeader *pBlockAdded = ::PTS_AtomicQueue_Pop<PTS_BucketBlockHeader, BlockNextAccessor>(&m_QueueNonEmptyTops[BinIndex]);
+	PTS_BucketBlockHeader *pBlockAdded = ::PTS_AtomicQueue_Pop<PTS_BucketBlockHeader, BucketBlockHeader_Next_InBlockManager>(&m_QueueNonEmptyTops[BinIndex]);
 
 	return pBlockAdded;
 }
@@ -647,7 +664,7 @@ inline PTS_BucketBlockHeader *PTS_BucketBlockManager::PopEmpty(uint32_t BinIndex
 {
 	PTS_BucketBlockHeader *pBlockAdded;
 	
-	pBlockAdded = ::PTS_AtomicQueue_Pop<PTS_BucketBlockHeader, BlockNextAccessor>(&m_QueueEmptyTop);
+	pBlockAdded = ::PTS_AtomicQueue_Pop<PTS_BucketBlockHeader, BucketBlockHeader_Next_InBlockManager>(&m_QueueEmptyTop);
 	if (pBlockAdded != NULL)
 	{
 		::PTSAtomic_GetAndAdd(&m_QueueEmpty_Count, uint32_t(-1)); //队列中实际的个数和m_QueueEmpty_Count并不严格相等
@@ -871,9 +888,10 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 	//One final wrinkle is that if we inspect 10 blocks without finding a free object then we add a new block for the bin.
 	//This places an upper bound on the time malloc will take before returning an object.
 
-	//我们对以上处理方式进行优化
-	//见BucketBlockHeader::Free
+	//TBB对以上处理方式进行优化
+	//在ForeignThread调用BucketBlockHeader::Free时
 	//分别对Private和Public进行处理
+
 	for (
 		PTS_BucketBlockHeader *pBlockRepatriatable = ::PTS_AtomicQueue_Pop<PTS_BucketBlockHeader, BucketBlockHeader_Next_InBlockRepatriatableQueue>(&m_BlockRepatriatableQueueVector[BucketIndex]);
 		pBlockRepatriatable != NULL;
@@ -894,7 +912,7 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 
 		assert(m_BucketVector[pBlockRepatriatable->m_BucketIndex_InAllocator] == pBlockRepatriatable);
 		PTS_BucketObjectHeader *pObjectToAlloc = pBlockRepatriatable->Alloc();
-		assert(pObjectToAlloc != NULL); //理论上不可能为空
+		//我们在BlockHeader::Alloc中调用了Repatriate //理论上仍可能为空
 		if (pObjectToAlloc != NULL)
 		{
 			return pObjectToAlloc;
@@ -1082,6 +1100,10 @@ inline void PTS_ThreadLocalBucketAllocator::Remove(PTS_BucketBlockHeader *pBlock
 
 inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlockToOwn, uint32_t BinIndex, uint32_t ObjectSize)
 {
+	//Public Field
+	assert(pBlockToOwn->m_ObjectFreeVector_Public == s_ThreadLocalBucketAllocator_PseudoPointer);
+	pBlockToOwn->m_ObjectFreeVector_Public = NULL;
+
 	//Private Field
 	assert(pBlockToOwn->m_pAllocator_Owner == NULL);
 	assert(pBlockToOwn->m_ObjectFreeVector_Private == NULL);
@@ -1102,9 +1124,6 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 	pBlockToOwn->m_BucketIndex_InAllocator = BinIndex;
 
 	pBlockToOwn->_BumpPointerRestore();
-
-	//Public Field
-	assert(pBlockToOwn->m_ObjectFreeVector_Public == NULL);
 }
 
 inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn)
@@ -1117,6 +1136,33 @@ inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *p
 
 	pBlockToOwn->m_pAllocator_Owner = this;
 	pBlockToOwn->m_ThreadID_Owner = ::PTSThreadID_Self();
+
+	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
+
+	PTS_BucketObjectHeader *FreeListPublic_Begin = reinterpret_cast<PTS_BucketObjectHeader *>(::PTSAtomic_GetAndSet(reinterpret_cast<uintptr_t *>(&pBlockToOwn->m_ObjectFreeVector_Public), static_cast<uintptr_t>(NULL)));
+
+	//The End Is A PseudoPointer
+	//See: PTS_ThreadLocalBucketAllocator::_RemoveInDestruct
+
+	if (FreeListPublic_Begin != s_ThreadLocalBucketAllocator_PseudoPointer)
+	{
+		--pBlockToOwn->m_ObjectAllocated_Number;
+		assert(pBlockToOwn->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToOwn->m_ObjectSize);
+
+		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
+		while ((*FreeListPublic_End)!= s_ThreadLocalBucketAllocator_PseudoPointer)
+		{
+			--pBlockToOwn->m_ObjectAllocated_Number;
+			assert(pBlockToOwn->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToOwn->m_ObjectSize);
+
+			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
+		}
+
+		(*FreeListPublic_End) = pBlockToOwn->m_ObjectFreeVector_Private;
+		pBlockToOwn->m_ObjectFreeVector_Private = FreeListPublic_Begin;
+	}
+
+
 }
 
 inline void PTS_ThreadLocalBucketAllocator::_LoseEmpty(PTS_BucketBlockHeader *pBlockToOwn)
@@ -1140,7 +1186,7 @@ inline void PTS_ThreadLocalBucketAllocator::_LoseEmpty(PTS_BucketBlockHeader *pB
 #endif
 
 	//Public Field
-	assert(pBlockToOwn->m_ObjectFreeVector_Public == NULL);
+	assert(pBlockToOwn->m_ObjectFreeVector_Public == s_ThreadLocalBucketAllocator_PseudoPointer);
 }
 
 inline void PTS_ThreadLocalBucketAllocator::_LoseNonEmpty(PTS_BucketBlockHeader *pBlockToOwn)
@@ -1164,6 +1210,32 @@ inline void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHea
 	//The Block Is Owned By Allocator And Current Thread 
 	assert((pBlockToRemove->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToRemove->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
+
+	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
+
+	//Push A PseudoPointer
+	//从而确保：在m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的AtomicQueue_Push不会被触发
+	PTS_BucketObjectHeader *FreeListPublic_Begin = reinterpret_cast<PTS_BucketObjectHeader *>(::PTSAtomic_GetAndSet(reinterpret_cast<uintptr_t *>(&pBlockToRemove->m_ObjectFreeVector_Public), reinterpret_cast<uintptr_t>(s_ThreadLocalBucketAllocator_PseudoPointer)));
+
+	if (FreeListPublic_Begin != NULL)
+	{
+		--pBlockToRemove->m_ObjectAllocated_Number;
+		assert(pBlockToRemove->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToRemove->m_ObjectSize);
+
+		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
+		while ((*FreeListPublic_End) != NULL)
+		{
+			--pBlockToRemove->m_ObjectAllocated_Number;
+			assert(pBlockToRemove->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToRemove->m_ObjectSize);
+
+			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
+		}
+
+		(*FreeListPublic_End) = pBlockToRemove->m_ObjectFreeVector_Private;
+		pBlockToRemove->m_ObjectFreeVector_Private = FreeListPublic_Begin;
+	}
+
+
 	//Size Consistent
 	assert(pBlockToRemove->m_BucketIndex_InAllocator == BinIndex);
 	assert(pBlockToRemove->m_BucketIndex_InAllocator < s_Bucket_Number);
@@ -1177,7 +1249,7 @@ inline void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHea
 	pBlockToRemove->m_pPrevious_InBucket = NULL;
 
 	//Verify Repatriatable
-	assert(pBlockToRemove->m_ObjectFreeVector_Public == NULL); //确保在下一次ForeignThread的Free中可以被添加到RepatriatableQueue
+	assert(pBlockToRemove->m_ObjectFreeVector_Public != NULL); //See: s_ThreadLocalBucketAllocator_PseudoPointer //确保：在m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的AtomicQueue_Push不会被触发
 
 	pBlockToRemove->m_pNext_InBlockRepatriatableQueue = NULL;
 }
@@ -1195,8 +1267,6 @@ inline void PTS_ThreadLocalBucketAllocator::Destruct()
 
 		while (pBlockToRemove != NULL)
 		{
-			pBlockToRemove->ObjectFreeVector_Public_Repatriate();
-
 			PTS_BucketBlockHeader *pTemp = pBlockToRemove->m_pPrevious_InBucket;
 			
 			_RemoveInDestruct(pBlockToRemove, BinIndex);
@@ -1220,8 +1290,6 @@ inline void PTS_ThreadLocalBucketAllocator::Destruct()
 
 		while (pBlockToRemove != NULL)
 		{
-			pBlockToRemove->ObjectFreeVector_Public_Repatriate();
-
 			PTS_BucketBlockHeader *pTemp = pBlockToRemove->m_pNext_InBucket;
 			
 			_RemoveInDestruct(pBlockToRemove, BinIndex);
@@ -1373,7 +1441,7 @@ inline void PTS_BucketBlockHeader::Construct()
 	//Public Field
 	m_pNext_InBlockManager = NULL;
 	m_pNext_InBlockRepatriatableQueue = NULL;
-	m_ObjectFreeVector_Public = NULL;
+	m_ObjectFreeVector_Public = s_ThreadLocalBucketAllocator_PseudoPointer;
 }
 
 inline void PTS_BucketBlockHeader::RemoveFromOwner()
@@ -1421,7 +1489,7 @@ inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate()
 		assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
 
 		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
-		while ((*FreeListPublic_End))
+		while ((*FreeListPublic_End) != NULL)
 		{
 			--m_ObjectAllocated_Number;
 			assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
@@ -1509,8 +1577,8 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 	//OwningThread只访问Private域 
 	//不会ObjectFreeVector_Public_Repatriate
 	//不会PushEmpty
-	//Foreign Thread除了进行McRT-Malloc中的行为
-	//
+	//ForeignThread会访问Public域
+	//除了进行McRT-Malloc中的行为,还会Push到Queue
 
 	if ((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false))
 	{
@@ -1560,17 +1628,8 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 		
 		if (pPublicBefore == NULL)
 		{
-			//if (m_pAllocator_Owner != NULL)
-			{
-				//A Block Can Only Be Pushed Once
-				::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, Next_InBlockRepatriatableQueue>(&m_pAllocator_Owner->m_BlockRepatriatableQueueVector[m_BucketIndex_InAllocator], this);
-
-			}
-			//else
-			{
-				//To Do
-				//Use A Global ThreadLocalBucketAllocator Manager
-			}
+			//A Block Can Only Be Pushed Once
+			::PTS_AtomicQueue_Push<PTS_BucketBlockHeader, Next_InBlockRepatriatableQueue>(&m_pAllocator_Owner->m_BlockRepatriatableQueueVector[m_BucketIndex_InAllocator], this);
 		}
 	}
 }
