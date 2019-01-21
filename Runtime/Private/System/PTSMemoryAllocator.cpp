@@ -4,7 +4,7 @@
 #include <stddef.h> 
 #include <assert.h>
 #include <string.h>
-#include <type_traits>
+//#include <type_traits>
 
 //Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". Proceedings of the 5th international symposium on Memory management ACM 2006.
 //Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.
@@ -2002,6 +2002,13 @@ bool PTCALL PTSMemoryAllocator_Initialize()
 	if (::PTSAtomic_GetAndAdd(&s_MemoryAllocator_Initialize_RefCount, 1) == 0)
 	{
 		s_BlockStore_Singleton.Construct();
+
+		for (uint32_t i = 0U; i < s_BucketBlockManager_QueueEmpty_CountThreshold; ++i)
+		{
+			//PTS_MemoryMap_Alloc会串行化
+			//预先分配Block以提高并行度
+			s_BlockStore_Singleton.PushEmpty(s_BlockStore_Singleton.PopEmpty(0U));
+		}
 
 		bool bResult = ::PTSTSD_Create(
 			&s_ThreadLocalBucketAllocator_Index,
