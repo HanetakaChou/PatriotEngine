@@ -1184,11 +1184,22 @@ inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *p
 	{
 		pBlockToOwn->_BumpPointerRestore();
 	}
+
+
+	//Race Condition
+	//Q:
+	//1.The m_ObjectFreeVector_Public Is PseudoPointer
+	//2.The Foreign Thread Test if (pPublicBefore == NULL)
+	//3.The Owning Thread Do The "Repatriate" And Set pPublicBefore To NULL
+	//4.The Foreign Thread Don't Push To The BlockRepatriatableVector
+	//5.No Other Thread Call Free //The Object Will Never Be Used?
+	//A:
+	//As Long As A Foreign Thread Alloc, The Object May Be Reused When The Foreign Thread Free.
 }
 
 inline void PTS_ThreadLocalBucketAllocator::_LoseEmpty(PTS_BucketBlockHeader *pBlockToOwn)
 {
-	//The Block Is Owned By Current Thread 
+	//The Block Is Owned By Allocator And Current Thread 
 	assert((pBlockToOwn->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToOwn->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 	
 	//Private Field
@@ -1299,6 +1310,7 @@ inline void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHea
 
 inline void PTS_ThreadLocalBucketAllocator::_BlockRepatriatableVector_Public_Push(PTS_BucketBlockHeader *pBlockToPush, uint32_t BucketIndex)
 {
+	assert((pBlockToPush->m_pAllocator_Owner == NULL) || (::PTSThreadID_Equal(pBlockToPush->m_ThreadID_Owner, ::PTSThreadID_Self()) == false));
 
 	PTS_BucketBlockHeader *oldBlockRepatriatableVector;
 	do
@@ -1685,6 +1697,7 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 			//A Block Can Only Be Pushed Once
 
 			//There Is Still Race Condition
+			//See:PTS_ThreadLocalBucketAllocator::OwnNonEmpty
 			//See:PTS_ThreadLocalBucketAllocator::_RemoveInContruct
 
 			//No ABA Problem
