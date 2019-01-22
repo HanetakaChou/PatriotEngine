@@ -110,6 +110,12 @@ inline uintptr_t PTSAtomic_CompareAndSet(uintptr_t volatile *pTarget, uintptr_t 
 #error 未知的平台
 #endif
 
+template <typename T>
+inline T* PTSAtomic_CompareAndSet(T* *pTarget, T* expect,T* update)
+{
+	return reinterpret_cast<T*>(::PTSAtomic_CompareAndSet(reinterpret_cast<uintptr_t *>(pTarget), reinterpret_cast<uintptr_t>(expect), reinterpret_cast<uintptr_t>(update)));
+}
+
 inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue);
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue);
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue);
@@ -136,7 +142,6 @@ inline uintptr_t PTSAtomic_GetAndSet(uintptr_t volatile *pTarget, uintptr_t newV
 #else
 #error 未知的平台
 #endif
-
 
 template <typename T>
 inline T* PTSAtomic_GetAndSet(T* *pTarget, T* newValue)

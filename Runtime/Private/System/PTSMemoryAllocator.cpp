@@ -367,7 +367,11 @@ public:
 
 	inline uint32_t ObjectSize();
 
+	inline void ObjectFreeVector_Public_Repatriate_AfterOwn();
+
 	inline void ObjectFreeVector_Public_Repatriate();
+
+	inline void ObjectFreeVector_Public_Repatriate_BeforeLose();
 
 	inline PTS_BucketObjectHeader *Alloc();
 
@@ -394,9 +398,9 @@ private:
 	friend void PTS_BucketBlockHeader::_ObjectFreeVector_Private_Push(PTS_BucketObjectHeader *pObjectToPush);
 	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Private_Pop();
 	friend PTS_BucketObjectHeader *PTS_BucketBlockHeader::_ObjectFreeVector_Public_Push(PTS_BucketObjectHeader *pObjectToPush);
+	friend void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate_AfterOwn();
 	friend void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate();
-	friend void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *pBlockToOwn);
-	friend void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHeader *pBlockToRemove, uint32_t BinIndex);
+	friend void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate_BeforeLose();
 };
 //static_assert(std::is_pod<PTS_BucketObjectHeader>::value, "PTS_BucketObjectHeader Is Not A POD");
 
@@ -934,6 +938,8 @@ inline PTS_BucketObjectHeader *PTS_ThreadLocalBucketAllocator::Alloc(uint32_t Si
 		)
 	{
 		OwnNonEmpty(pBlockAdded);
+
+		pBlockAdded->ObjectFreeVector_Public_Repatriate_AfterOwn();
 				
 		if (pBlockAdded->IsEmptyEnough())
 		{
@@ -1112,7 +1118,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnEmpty(PTS_BucketBlockHeader *pBlo
 	pBlockToOwn->m_ObjectFreeVector_Public = NULL;
 	//Race Condition Can Make It Not NULL
 	//assert(pBlockToOwn->m_pNext_InRepatriatableVector == NULL);
-	//We Will Set The Pointer To The Correct Value In Atomic Queue Push. We Don't Need To Set It To NULL Here
+	//We Will Set The Pointer To The Correct Value When Push To The BlockRepatriatableVector. We Don't Need To Set It To NULL Here
 	//pBlockToOwn->m_pNext_InRepatriatableVector = NULL;
 
 	//Private Field
@@ -1142,7 +1148,7 @@ inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *p
 	//Public Field
 	//Race Condition Can Make It Not NULL
 	//assert(pBlockToOwn->m_pNext_InRepatriatableVector == NULL);
-	//We Will Set The Pointer To The Correct Value In Atomic Queue Push. We Don't Need To Set It To NULL Here
+	//We Will Set The Pointer To The Correct Value When Push To The BlockRepatriatableVector . We Don't Need To Set It To NULL Here
 	//pBlockToOwn->m_pNext_InRepatriatableVector = NULL;
 
 	//Private Field
@@ -1154,47 +1160,6 @@ inline void PTS_ThreadLocalBucketAllocator::OwnNonEmpty(PTS_BucketBlockHeader *p
 
 	pBlockToOwn->m_pAllocator_Owner = this;
 	pBlockToOwn->m_ThreadID_Owner = ::PTSThreadID_Self();
-
-	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
-
-	PTS_BucketObjectHeader *FreeListPublic_Begin = reinterpret_cast<PTS_BucketObjectHeader *>(::PTSAtomic_GetAndSet(reinterpret_cast<uintptr_t *>(&pBlockToOwn->m_ObjectFreeVector_Public), static_cast<uintptr_t>(NULL)));
-
-	//The End Is A PseudoPointer
-	//See: PTS_ThreadLocalBucketAllocator::_RemoveInDestruct
-
-	if (FreeListPublic_Begin != s_ThreadLocalBucketAllocator_PseudoPointer)
-	{
-		--pBlockToOwn->m_ObjectAllocated_Number;
-		assert(pBlockToOwn->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToOwn->m_ObjectSize);
-
-		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
-		while ((*FreeListPublic_End)!= s_ThreadLocalBucketAllocator_PseudoPointer)
-		{
-			--pBlockToOwn->m_ObjectAllocated_Number;
-			assert(pBlockToOwn->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToOwn->m_ObjectSize);
-
-			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
-		}
-
-		(*FreeListPublic_End) = pBlockToOwn->m_ObjectFreeVector_Private;
-		pBlockToOwn->m_ObjectFreeVector_Private = FreeListPublic_Begin;
-	}
-
-	if (pBlockToOwn->IsEmpty())
-	{
-		pBlockToOwn->_BumpPointerRestore();
-	}
-
-
-	//Race Condition
-	//Q:
-	//1.The m_ObjectFreeVector_Public Is PseudoPointer
-	//2.The Foreign Thread Test if (pPublicBefore == NULL)
-	//3.The Owning Thread Do The "Repatriate" And Set pPublicBefore To NULL
-	//4.The Foreign Thread Don't Push To The BlockRepatriatableVector
-	//5.No Other Thread Call Free //The Object Will Never Be Used?
-	//A:
-	//As Long As A Foreign Thread Alloc, The Object May Be Reused When The Foreign Thread Free.
 }
 
 inline void PTS_ThreadLocalBucketAllocator::_LoseEmpty(PTS_BucketBlockHeader *pBlockToOwn)
@@ -1242,51 +1207,6 @@ inline void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHea
 	//The Block Is Owned By Allocator And Current Thread 
 	assert((pBlockToRemove->m_pAllocator_Owner == this) && (::PTSThreadID_Equal(pBlockToRemove->m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
 
-
-	//Public Field
-
-	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
-
-	//Push A PseudoPointer
-	//从而确保：在m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的AtomicQueue_Push不会被触发
-	PTS_BucketObjectHeader *FreeListPublic_Begin = reinterpret_cast<PTS_BucketObjectHeader *>(::PTSAtomic_GetAndSet(reinterpret_cast<uintptr_t *>(&pBlockToRemove->m_ObjectFreeVector_Public), reinterpret_cast<uintptr_t>(s_ThreadLocalBucketAllocator_PseudoPointer)));
-
-	if (FreeListPublic_Begin != NULL)
-	{
-		--pBlockToRemove->m_ObjectAllocated_Number;
-		assert(pBlockToRemove->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToRemove->m_ObjectSize);
-
-		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
-		while ((*FreeListPublic_End) != NULL)
-		{
-			--pBlockToRemove->m_ObjectAllocated_Number;
-			assert(pBlockToRemove->m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / pBlockToRemove->m_ObjectSize);
-
-			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
-		}
-
-		(*FreeListPublic_End) = pBlockToRemove->m_ObjectFreeVector_Private;
-		pBlockToRemove->m_ObjectFreeVector_Private = FreeListPublic_Begin;
-	}
-
-	//Verify Repatriatable
-	assert(pBlockToRemove->m_ObjectFreeVector_Public != NULL); //See: s_ThreadLocalBucketAllocator_PseudoPointer //确保：在m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的AtomicQueue_Push不会被触发
-
-	//1.Since We Repatriate In "OwnNonEmpty", We Will Not Miss Any Block
-	//2.We Will Set The Pointer To The Correct Value In Atomic Queue Push. We Don't Need To Set It To NULL Here
-	//pBlockToRemove->m_pNext_InRepatriatableVector = NULL;
-
-	//Race Condition
-	//Q:
-	//1.The m_ObjectFreeVector_Public Is NULL
-	//2.The Foreign Thread Test if (pPublicBefore == NULL)
-	//3.The Owning Thread Do The "Repatriate"
-	//4.The Owning Thread Destruct The ThreadLocalBucketAllocator.
-	//5.The Foreign Thread Push To The Atomic Queue //It Will Crash Here?
-	//A:
-	//In TBB, The Owning Thread Yield Here To Wait.
-	//In PatriotTBB, The Destruction Of The ThreadLocalBucketAllocator Takes A Long Time And We Simply Ignore This Case.
-
 	//Private Field
 
 	//Size Consistent
@@ -1300,12 +1220,6 @@ inline void PTS_ThreadLocalBucketAllocator::_RemoveInDestruct(PTS_BucketBlockHea
 
 	pBlockToRemove->m_pNext_InBucket = NULL;
 	pBlockToRemove->m_pPrevious_InBucket = NULL;
-
-	//The Block Will Be Pushed To The BlockManager
-	//if (pBlockToRemove->IsEmpty())
-	//{
-	//	pBlockToRemove->_BumpPointerRestore();
-	//}
 }
 
 inline void PTS_ThreadLocalBucketAllocator::_BlockRepatriatableVector_Public_Push(PTS_BucketBlockHeader *pBlockToPush, uint32_t BucketIndex)
@@ -1355,6 +1269,8 @@ inline void PTS_ThreadLocalBucketAllocator::Destruct()
 		{
 			PTS_BucketBlockHeader *pTemp = pBlockToRemove->m_pPrevious_InBucket;
 			
+			pBlockToRemove->ObjectFreeVector_Public_Repatriate_BeforeLose();
+
 			_RemoveInDestruct(pBlockToRemove, BucketIndex);
 
 			if (!pBlockToRemove->IsEmpty())
@@ -1378,6 +1294,8 @@ inline void PTS_ThreadLocalBucketAllocator::Destruct()
 		{
 			PTS_BucketBlockHeader *pTemp = pBlockToRemove->m_pNext_InBucket;
 			
+			pBlockToRemove->ObjectFreeVector_Public_Repatriate_BeforeLose();
+
 			_RemoveInDestruct(pBlockToRemove, BucketIndex);
 
 			if (!pBlockToRemove->IsEmpty())
@@ -1551,6 +1469,55 @@ inline uint32_t PTS_BucketBlockHeader::ObjectSize()
 	return m_ObjectSize;
 }
 
+inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate_AfterOwn()
+{
+	//Race Condition
+	//Q:
+	//1.The m_ObjectFreeVector_Public Is PseudoPointer
+	//2.The Foreign Thread Test if (pPublicBefore == NULL)
+	//3.The Owning Thread Do The "Repatriate" And Set pPublicBefore To NULL
+	//4.The Foreign Thread Don't Push To The BlockRepatriatableVector
+	//5.No Other Thread Call Free //The Object Will Never Be Used?
+	//A:
+	//As Long As A Foreign Thread Alloc, The Object May Be Reused When The Foreign Thread Free.
+
+	//The Block Is Owned By Current Thread 
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
+
+	//Public Field
+
+	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
+
+	PTS_BucketObjectHeader *FreeListPublic_Begin = ::PTSAtomic_GetAndSet(&m_ObjectFreeVector_Public, static_cast<PTS_BucketObjectHeader *>(NULL));
+
+	//The End Is A PseudoPointer
+	//See: Repatriate_BeforeLose
+
+	if (FreeListPublic_Begin != s_ThreadLocalBucketAllocator_PseudoPointer)
+	{
+		--m_ObjectAllocated_Number;
+		assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
+
+		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
+		while ((*FreeListPublic_End) != s_ThreadLocalBucketAllocator_PseudoPointer)
+		{
+			--m_ObjectAllocated_Number;
+			assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
+
+			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
+		}
+
+		(*FreeListPublic_End) = m_ObjectFreeVector_Private;
+		m_ObjectFreeVector_Private = FreeListPublic_Begin;
+	}
+
+	//Private Field
+	if (IsEmpty())
+	{
+		_BumpPointerRestore();
+	}
+}
+
 inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate()
 {
 	//The Block Is Owned By Current Thread 
@@ -1595,6 +1562,65 @@ inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate()
 	{
 		_BumpPointerRestore();
 	}
+}
+
+inline void PTS_BucketBlockHeader::ObjectFreeVector_Public_Repatriate_BeforeLose()
+{
+	//1.Since We Repatriate In "AfterOwn", We Will Not Miss Any Block
+	//2.We Will Set The Pointer To The Correct Value When Push To The BlockRepatriatableVector. We Don't Need To Set It To NULL Here
+	//pBlockToRemove->m_pNext_InRepatriatableVector = NULL;
+
+	//Race Condition
+	//Q:
+	//1.The m_ObjectFreeVector_Public Is NULL
+	//2.The Foreign Thread Test if (pPublicBefore == NULL)
+	//3.The Owning Thread Do The "Repatriate"
+	//4.The Owning Thread Destruct The ThreadLocalBucketAllocator.
+	//5.The Foreign Thread Push To The BlockRepatriatableVector //It Will Crash Here?
+	//A:
+	//In TBB, The Owning Thread Yield Here To Wait.
+	//In PatriotTBB, The Destruction Of The ThreadLocalBucketAllocator Takes A Long Time And We Simply Ignore This Case.
+
+
+	//The Block Is Owned By Current Thread 
+	assert((m_pAllocator_Owner != NULL) && (::PTSThreadID_Equal(m_ThreadID_Owner, ::PTSThreadID_Self()) != false));
+
+	//Public Field
+
+	//Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / repatriatePublicFreeList
+
+	//Push A PseudoPointer
+	//从而确保：在m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的AtomicQueue_Push不会被触发
+	PTS_BucketObjectHeader *FreeListPublic_Begin =::PTSAtomic_GetAndSet(&m_ObjectFreeVector_Public, s_ThreadLocalBucketAllocator_PseudoPointer);
+
+	if (FreeListPublic_Begin != NULL)
+	{
+		--m_ObjectAllocated_Number;
+		assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
+
+		PTS_BucketObjectHeader **FreeListPublic_End = &FreeListPublic_Begin->m_pNext_InFreeVector;
+		while ((*FreeListPublic_End) != NULL)
+		{
+			--m_ObjectAllocated_Number;
+			assert(m_ObjectAllocated_Number <= (s_Block_Size - sizeof(PTS_BucketBlockHeader)) / m_ObjectSize);
+
+			FreeListPublic_End = &((*FreeListPublic_End)->m_pNext_InFreeVector);
+		}
+
+		(*FreeListPublic_End) = m_ObjectFreeVector_Private;
+		m_ObjectFreeVector_Private = FreeListPublic_Begin;
+	}
+
+	//Verify Repatriatable
+	//See: s_ThreadLocalBucketAllocator_PseudoPointer 
+	//尽可能（存在Race Condition）使m_pAllocator_Owner为NULL时，ForeignThread在PTS_BucketBlockHeader::Free中的_BlockRepatriatableVector_Public_Push不会被触发
+	assert(m_ObjectFreeVector_Public != NULL);
+
+	//The Block Will Be Pushed To The BlockManager
+	//if (IsEmpty())
+	//{
+	//	_BumpPointerRestore();
+	//}
 }
 
 inline PTS_BucketObjectHeader *PTS_BucketBlockHeader::Alloc()
@@ -1657,7 +1683,7 @@ inline void PTS_BucketBlockHeader::Free(PTS_BucketObjectHeader *pObjectToFree)
 		//It Can Save Memory But Also Will Take Time 
 		//ObjectFreeVector_Public_Repatriate();
 
-		if (m_ObjectAllocated_Number == 0U)
+		if (IsEmpty())
 		{
 			//Empty
 
