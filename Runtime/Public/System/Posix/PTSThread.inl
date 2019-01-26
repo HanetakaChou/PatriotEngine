@@ -191,25 +191,25 @@ inline void PTS_ReleaseBarrier()
 #error 未知的架构
 #endif
 
-inline int32_t PTSAtomic_Get(int32_t volatile *pTarget)
+inline int32_t PTSAtomic_Get(int32_t const volatile *pTarget)
 {
 	int32_t value = *pTarget;
 	::PTS_AcquireBarrier();
 	return value;
 }
-inline int64_t PTSAtomic_Get(int64_t volatile *pTarget)
+inline int64_t PTSAtomic_Get(int64_t const volatile *pTarget)
 {
 	int64_t value = *pTarget;
 	::PTS_AcquireBarrier();
 	return value;
 }
-inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget)
+inline uint32_t PTSAtomic_Get(uint32_t const volatile *pTarget)
 {
 	uint32_t value = *pTarget;
 	::PTS_AcquireBarrier();
 	return value;
 }
-inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget)
+inline uint64_t PTSAtomic_Get(uint64_t const volatile *pTarget)
 {
 	uint64_t value = *pTarget;
 	::PTS_AcquireBarrier();

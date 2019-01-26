@@ -154,17 +154,17 @@ inline int64_t PTSAtomic_GetAndAdd(int64_t volatile *pTarget, int64_t delta);
 inline uint32_t PTSAtomic_GetAndAdd(uint32_t volatile *pTarget, uint32_t delta);
 inline uint64_t PTSAtomic_GetAndAdd(uint64_t volatile *pTarget, uint64_t delta);
 
-inline int32_t PTSAtomic_Get(int32_t volatile *pTarget);
-inline int64_t PTSAtomic_Get(int64_t volatile *pTarget);
-inline uint32_t PTSAtomic_Get(uint32_t volatile *pTarget);
-inline uint64_t PTSAtomic_Get(uint64_t volatile *pTarget);
+inline int32_t PTSAtomic_Get(int32_t const volatile *pTarget);
+inline int64_t PTSAtomic_Get(int64_t const volatile *pTarget);
+inline uint32_t PTSAtomic_Get(uint32_t const volatile *pTarget);
+inline uint64_t PTSAtomic_Get(uint64_t const volatile *pTarget);
 
 #if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
 //Nothing
 #elif defined(PTPOSIXMACH)
 #include <assert.h>
 template<size_t const SizeOfPointerUnsigned>
-inline uintptr_t PTSAtomic_Get_Helper(uintptr_t volatile *pTarget)
+inline uintptr_t PTSAtomic_Get_Helper(uintptr_t const volatile *pTarget)
 {
 	switch (SizeOfPointerUnsigned)
 	{
@@ -173,7 +173,7 @@ inline uintptr_t PTSAtomic_Get_Helper(uintptr_t volatile *pTarget)
 	default: assert(0); return ~0U;
 	}
 }
-inline uintptr_t PTSAtomic_Get(uintptr_t volatile *pTarget)
+inline uintptr_t PTSAtomic_Get(uintptr_t const volatile *pTarget)
 {
 	PTSAtomic_Get_Helper<sizeof(uintptr_t)>(pTarget);
 }
@@ -182,9 +182,9 @@ inline uintptr_t PTSAtomic_Get(uintptr_t volatile *pTarget)
 #endif
 
 template <typename T>
-inline T* PTSAtomic_Get(T* *pTarget)
+inline T* PTSAtomic_Get(T const* *pTarget)
 {
-	return reinterpret_cast<T*>(::PTSAtomic_Get(reinterpret_cast<uintptr_t *>(pTarget)));
+	return reinterpret_cast<T*>(::PTSAtomic_Get(reinterpret_cast<uintptr_t const*>(pTarget)));
 }
 
 inline void PTSAtomic_Set(int32_t volatile *pTarget, int32_t newValue);
