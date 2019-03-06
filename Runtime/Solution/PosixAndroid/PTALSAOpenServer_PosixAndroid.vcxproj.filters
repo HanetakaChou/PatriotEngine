@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{9752cda8-3eee-4bf1-8a1d-324d7db133e5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Audio">
+      <UniqueIdentifier>{64d62ac9-43c7-40f4-8952-9786ffa3e028}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Audio\TinyALSA">
+      <UniqueIdentifier>{09685354-1b5b-4878-bb09-562238da48f9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\Private\Audio\TinyALSA\PTALSAOpenServer.cpp">
+      <Filter>Private\Audio\TinyALSA</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>

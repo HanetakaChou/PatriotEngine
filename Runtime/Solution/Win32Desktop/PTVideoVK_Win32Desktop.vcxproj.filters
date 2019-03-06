@@ -1,0 +1,101 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{c9951e9e-6146-487f-bf70-9896ee0856a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{46e28385-6705-44c3-8d77-cd1bd111d76d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{4168b892-6d1c-4684-8792-6f53d48c741a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{a0bbb667-fd4f-443f-87b9-20da6f0ee938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video">
+      <UniqueIdentifier>{52ad3c63-03b5-4aca-88dd-9ceb840bbddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common">
+      <UniqueIdentifier>{18a46514-9a91-4c37-b64d-c8e2570a586c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common\Animation">
+      <UniqueIdentifier>{45488698-fe4c-4571-b8f8-55e0e042efed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common\Animation\Morph">
+      <UniqueIdentifier>{fa661573-83c5-4c30-917e-c77ec8a60306}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common\Animation\Skin">
+      <UniqueIdentifier>{6b696c66-8e22-42bf-8325-526b887b821e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common\Assert">
+      <UniqueIdentifier>{3f787295-b245-47ac-ad57-cec223c34a2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Common\Scene">
+      <UniqueIdentifier>{4410482c-193a-4d2e-a8ad-3ab98c0d241c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video\Vulkan">
+      <UniqueIdentifier>{75897d1a-412d-4d06-b1c8-7989ded7e79e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Video">
+      <UniqueIdentifier>{66c6ff07-f80f-4825-b8ec-da0aa23de0f1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Video\PTVDInstance.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Video\PTVDCommon.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\VK\PTVDInstanceImpl.h">
+      <Filter>Private\Video\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\VK\PTVDVulkanHeader.h">
+      <Filter>Private\Video\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Video\PTVDSceneTree.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\Common\PTVDSceneTreeImpl.h">
+      <Filter>Private\Video\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\PTVDMemoryAllocator.h">
+      <Filter>Private\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\VK\PTVDVKMemoryAllocator.h">
+      <Filter>Private\Video\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Video\PTVDBufferAllocator.h">
+      <Filter>Private\Video</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\Video\VK\PTVDInstanceImpl.cpp">
+      <Filter>Private\Video\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\Video\Common\PTVDSceneTreeImpl.cpp">
+      <Filter>Private\Video\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\Video\Common\PTVDDllMain.cpp">
+      <Filter>Private\Video\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\Video\PTVDMemoryAllocator.cpp">
+      <Filter>Private\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\Video\VK\PTVDVKMemoryAllocator.cpp">
+      <Filter>Private\Video\Vulkan</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+  </ItemGroup>
+</Project>

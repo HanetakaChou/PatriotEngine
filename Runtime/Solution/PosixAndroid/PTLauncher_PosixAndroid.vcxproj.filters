@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{6dabcf3b-5c7d-46fe-ba7e-b46af26de84f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Window">
+      <UniqueIdentifier>{e8f04c0a-471d-4ee7-ab5c-6480497ac60f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{8b881df3-183a-475d-aeab-756c273b5e2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Window">
+      <UniqueIdentifier>{a74a5729-8378-4e09-9c0b-6229fe11057c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Window\PosixAndroid">
+      <UniqueIdentifier>{6c93bcd4-59c7-4c16-84a2-8f078dcc742d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\Window\PTWWindow.h">
+      <Filter>Public\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Window\PTWCommon.h">
+      <Filter>Public\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Window\PosixAndroid\PTWindowImpl.h">
+      <Filter>Private\Window\PosixAndroid</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\Window\PosixAndroid\PTWindowImpl.cpp">
+      <Filter>Private\Window\PosixAndroid</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

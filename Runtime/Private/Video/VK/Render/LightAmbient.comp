@@ -1,0 +1,305 @@
+#version 450 core
+
+layout(set = 0, binding = 0) uniform g_CBuffer_Viewport
+{
+	vec4 g_Viewport_Rect;//x:TopLeftX y:TopLeftY z:Width w:Height 
+vec2 g_Viewport_Depth;//x:MinDepth y:MaxDepth
+};
+
+layout(set = 0, binding = 1) uniform g_CBuffer_Perspective
+{
+	vec4 g_Perspective;//x:Width y:Height z:NearZ w:FarZ
+};
+
+layout(set = 0, binding = 2) uniform g_CBuffer_Occlusion
+{
+	float g_Occlusion_SphereRadiusEye;//Default:0.01f
+	float g_Occlusion_BiasAngle;//Default:0.2f
+	float g_Occlusion_Scale;//Default:1.0f
+};
+
+layout(set = 0, binding = 3) uniform g_CBuffer_Light
+{
+	vec4 g_LightRadiance;
+};
+
+layout(set = 0, binding = 3) uniform texture2D g_TextureGBufferDepth;
+
+layout(set = 0, binding = 4) uniform texture2D g_TextureGBufferNormal;
+
+layout(set = 0, binding = 5) uniform texture2D g_TextureGBufferColorDiffuse;
+
+layout(set = 0, binding = 6) uniform texture2D g_TextureRadiancePrevious;
+
+layout(set = 0, binding = 7, rgba32f) uniform writeonly image2D g_TextureRadianceNow;
+
+layout(set = 0, binding = 8) uniform sampler g_SamplerTexelFetch;
+
+float ComputeOcclusionInverse(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, float l_SphereRadiusTexture, float l_SampleDirection_TextureRotationAngleRandom, float l_SampleLength_TextureTranslateRatioRandom,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+);
+
+float ComputeOcclusionInversePerDirection(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, float l_SampleLength_TextureTranslateStep, float l_SampleDirection_TextureRotationAngle, float l_SampleLength_TextureTranslateRatioRandom,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+);
+
+float ComputeOcclusionInversePerDirectionSample(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, vec2 l_SampleDirection_Texture, float l_SampleLength_Texture,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+);
+
+layout(local_size_x = 4, local_size_y = 4, local_size_z = 1) in;
+
+//uvec3 gl_WorkGroupID in
+//uvec3 gl_LocalInvocationID in
+
+void main()
+{
+	//1. Ambient Occlusion
+
+	vec4 l_Perspective = g_Perspective;
+	vec4 l_Viewport_Rect = g_Viewport_Rect;
+	vec2 l_Viewport_Depth = g_Viewport_Depth;
+	float l_SphereRadius_Eye = g_Occlusion_SphereRadiusEye;
+	float l_Occlusion_BiasAngleSin = sin(g_Occlusion_BiasAngle);
+	float l_Occlusion_Scale = g_Occlusion_Scale;
+	mat4x4 l_Random4x4_Angle = mat4x4(
+		0.367931575f, 0.0249740928f, 0.304209858f, 0.141995281f,
+		0.185859770f, 0.573927343f, 0.461712837f, 0.185075939f,
+		0.192656606f, 0.559165776f, 0.182406366f, 0.255917281f,
+		0.507797599f, 0.476437449f, 0.678749740f, 0.101216622f
+	);
+	mat4x4 l_Random4x4_Ratio = mat4x4(
+		0.979269028f, 0.778312981f, 0.179841995f, 0.101347998f,
+		0.981091022f, 0.00856199954f, 0.437979996f, 0.0444369987f,
+		0.786985993f, 0.368645996f, 0.366948009f, 0.955089986f,
+		0.228856996f, 0.757256985f, 0.877119005f, 0.591566980f
+	);
+
+	ivec2 l_SphereCenter_PositionTexture = ivec2(gl_WorkGroupID.xy * 4U + gl_LocalInvocationID.xy);
+
+	precise vec3 l_SphereCenter_PositionEye;
+	{
+		precise float l_Depth = texelFetch(sampler2D(g_TextureGBufferDepth, g_SamplerTexelFetch), l_SphereCenter_PositionTexture.xy, 0).x;
+		precise float l_DepthBeforeViewport = l_Depth*(l_Viewport_Depth.y - l_Viewport_Depth.x) + l_Viewport_Depth.x;
+		l_SphereCenter_PositionEye.z = (l_Perspective.z*l_Perspective.w) / ((l_Perspective.w - l_Perspective.z)*l_DepthBeforeViewport + l_Perspective.z);
+		precise vec2 l_PositionXYBeforeViewport = ((vec2(l_SphereCenter_PositionTexture.xy) - l_Viewport_Rect.xy) / l_Viewport_Rect.zw)*vec2(2.0f, -2.0f).xy + vec2(-1.0f, 1.0f).xy;
+		l_SphereCenter_PositionEye.xy = l_PositionXYBeforeViewport*l_Perspective.xy*l_SphereCenter_PositionEye.zz;
+	}
+
+	precise vec3 l_SphereCenter_NormalEyeNormalized;
+	{
+		//x=RsinAcosB
+		//y=RsinAsinB
+		//z=RcosA
+		//A 0 To PI
+		//B -PI To PI
+		vec2 AB = texelFetch(sampler2D(g_TextureGBufferNormal, g_SamplerTexelFetch), l_SphereCenter_PositionTexture.xy, 0).xy;
+		float sinA;
+		float cosA;
+		float sinB;
+		float cosB;
+		sinA = sin(AB.x);
+		cosA = cos(AB.x);
+		sinB = sin(AB.y);
+		cosB = cos(AB.y);
+		l_SphereCenter_NormalEyeNormalized.x = sinA*cosB;
+		l_SphereCenter_NormalEyeNormalized.y = sinA*sinB;
+		l_SphereCenter_NormalEyeNormalized.z = cosA;
+	}
+
+	float l_SphereRadiusTexture;
+	{
+		vec2 WidthAndHeight = (l_SphereRadius_Eye.xx / (l_SphereCenter_PositionEye.zz*g_Perspective.xy))*float(0.5f).xx*g_Viewport_Rect.zw;
+		l_SphereRadiusTexture = (WidthAndHeight.x + WidthAndHeight.y) / 2.0f;
+	}
+
+	float l_SampleDirection_TextureRotationAngleRandom = l_Random4x4_Angle[gl_LocalInvocationID.x][gl_LocalInvocationID.y];
+	float l_SampleLength_TextureTranslateRatioRandom = l_Random4x4_Ratio[gl_LocalInvocationID.x][gl_LocalInvocationID.y];
+
+	float l_OcclusionInverse = ComputeOcclusionInverse(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SphereRadiusTexture, l_SampleDirection_TextureRotationAngleRandom, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+
+	float l_Occlusion = 1.0f - l_OcclusionInverse*2.0f*l_Occlusion_Scale;
+
+	//2. BRDF Lambert
+
+	vec3 l_ColorDiffuse = texelFetch(sampler2D(g_TextureGBufferColorDiffuse, g_SamplerTexelFetch), l_SphereCenter_PositionTexture.xy, 0).xyz;
+
+	vec3 l_LightIncident_Radiance = g_LightRadiance.xyz;
+
+	vec3 l_OutputRadiance_Accumulator = l_ColorDiffuse.xyz*(l_LightIncident_Radiance.xyz*l_Occlusion.xxx).xyz;
+
+	imageStore(g_TextureRadianceNow, l_SphereCenter_PositionTexture.xy, vec4(texelFetch(sampler2D(g_TextureRadiancePrevious, g_SamplerTexelFetch), l_SphereCenter_PositionTexture.xy, 0).xyz + l_OutputRadiance_Accumulator, 1.0f));
+}
+
+float ComputeOcclusionInverse(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, float l_SphereRadiusTexture, float l_SampleDirection_TextureRotationAngleRandom, float l_SampleLength_TextureTranslateRatioRandom,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+)
+{
+	float l_SampleDirection_TextureRotationAngleStep = 0.785398163f;//2PI/8
+	float l_SampleLength_TextureTranslateStep = l_SphereRadiusTexture / (4.0f + 1.0f);//+1.0f for the l_SampleLength_TextureTranslateRatioRandom
+
+	float l_OcclusionInverseAccumulator = 0.0f;
+
+	//[unroll]
+	//NumDirection:8
+	float l_SampleDirection_TextureRotationAngle;
+	//Step 1
+	l_SampleDirection_TextureRotationAngle = (l_SampleDirection_TextureRotationAngleRandom + l_SampleDirection_TextureRotationAngleStep);
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 2
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 3
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 4
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 5
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 6
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 7
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 8
+	l_SampleDirection_TextureRotationAngle += l_SampleDirection_TextureRotationAngleStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirection(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleLength_TextureTranslateStep, l_SampleDirection_TextureRotationAngle, l_SampleLength_TextureTranslateRatioRandom,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+
+	return l_OcclusionInverseAccumulator / 32.0f;
+}
+
+
+float ComputeOcclusionInversePerDirection(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, float l_SampleLength_TextureTranslateStep, float l_SampleDirection_TextureRotationAngle, float l_SampleLength_TextureTranslateRatioRandom,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+)
+{
+	vec2 l_SampleDirection_Texture;
+	l_SampleDirection_Texture.x = cos(l_SampleDirection_TextureRotationAngle);
+	l_SampleDirection_Texture.y = sin(l_SampleDirection_TextureRotationAngle);
+
+	float l_OcclusionInverseAccumulator = 0.0f;
+
+	//[unroll]
+	//NumStep:4
+	float l_SampleLength_Texture;
+	//Step 1
+	l_SampleLength_Texture = (1.0f + l_SampleLength_TextureTranslateStep*l_SampleLength_TextureTranslateRatioRandom);
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirectionSample(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleDirection_Texture, l_SampleLength_Texture,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 2
+	l_SampleLength_Texture += l_SampleLength_TextureTranslateStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirectionSample(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleDirection_Texture, l_SampleLength_Texture,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 3
+	l_SampleLength_Texture += l_SampleLength_TextureTranslateStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirectionSample(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleDirection_Texture, l_SampleLength_Texture,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	//Step 4
+	l_SampleLength_Texture += l_SampleLength_TextureTranslateStep;
+	l_OcclusionInverseAccumulator += ComputeOcclusionInversePerDirectionSample(
+		l_SphereCenter_PositionEye, l_SphereCenter_NormalEyeNormalized, l_SphereRadius_Eye,
+		l_SphereCenter_PositionTexture, l_SampleDirection_Texture, l_SampleLength_Texture,
+		l_Perspective, l_Viewport_Rect, l_Viewport_Depth,
+		l_Occlusion_BiasAngleSin
+	);
+	return l_OcclusionInverseAccumulator;
+}
+
+float ComputeOcclusionInversePerDirectionSample(
+	vec3 l_SphereCenter_PositionEye, vec3 l_SphereCenter_NormalEyeNormalized, float l_SphereRadius_Eye,
+	ivec2 l_SphereCenter_PositionTexture, vec2 l_SampleDirection_Texture, float l_SampleLength_Texture,
+	vec4 l_Perspective, vec4 l_Viewport_Rect, vec2 l_Viewport_Depth,
+	float l_Occlusion_BiasAngleSin
+)
+{
+	ivec2 l_Sample_PositionTexture = l_SphereCenter_PositionTexture + ivec2((l_SampleDirection_Texture.xy*l_SampleLength_Texture.xx).xy);
+	precise vec3 l_Sample_PositionEye;
+	{
+		precise float l_Depth = texelFetch(sampler2D(g_TextureGBufferDepth, g_SamplerTexelFetch), l_Sample_PositionTexture.xy, 0).x;
+		precise float l_DepthBeforeViewport = l_Depth*(l_Viewport_Depth.y - l_Viewport_Depth.x) + l_Viewport_Depth.x;
+		l_Sample_PositionEye.z = (l_Perspective.z*l_Perspective.w) / ((l_Perspective.w - l_Perspective.z)*l_Depth + l_Perspective.z);
+		precise vec2 l_PositionXYBeforeViewport = ((vec2(l_Sample_PositionTexture.xy) - l_Viewport_Rect.xy) / l_Viewport_Rect.zw)*vec2(2.0f, -2.0f).xy + vec2(-1.0f, 1.0f).xy;
+		l_Sample_PositionEye.xy = l_PositionXYBeforeViewport*l_Perspective.xy*l_Sample_PositionEye.zz;
+	}
+	vec3 l_LightDirectionEye = l_Sample_PositionEye - l_SphereCenter_PositionEye;
+	float AngularFalloff = max(dot(normalize(l_LightDirectionEye), l_SphereCenter_NormalEyeNormalized) - l_Occlusion_BiasAngleSin, 0.0f);
+	float DistanceFalloff = max((1.0f - length(l_LightDirectionEye) / l_SphereRadius_Eye), 0.0f);
+	return AngularFalloff*DistanceFalloff;
+}
+
+

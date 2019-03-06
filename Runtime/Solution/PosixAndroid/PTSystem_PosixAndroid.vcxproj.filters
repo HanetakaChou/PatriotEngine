@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{8927209a-cf36-4304-bd44-1fc253896cb0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{e5c9323f-db25-4c65-916b-a9d32fb17c40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System">
+      <UniqueIdentifier>{8d287d45-9503-46e0-9443-7f3c979d63d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System\Posix">
+      <UniqueIdentifier>{f35023c2-844c-436f-addc-4c1f6f07e018}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System">
+      <UniqueIdentifier>{7de5b5b1-92d7-4d2b-9363-f7d2078d8ebd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System\Posix">
+      <UniqueIdentifier>{108d8c74-c00f-4b57-8efa-db93f9bf2d3a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSCommon.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSFile.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSThread.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
+      <Filter>Private\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.h">
+      <Filter>Private\System\Posix</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSMemory.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\Posix\PTSFileImpl_PosixAndroid.cpp">
+      <Filter>Private\System\Posix</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSConvUTF.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSMemory.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl">
+      <Filter>Private\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Public\System\Posix\PTSThread.inl">
+      <Filter>Public\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Private\System\Posix\PTSTaskSchedulerImpl.inl">
+      <Filter>Private\System\Posix</Filter>
+    </None>
+  </ItemGroup>
+</Project>

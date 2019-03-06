@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{5e84a47a-800f-42ed-9baa-aff3c275ca7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System">
+      <UniqueIdentifier>{70b58226-b87a-4506-85f7-672fc5343dc7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System\Posix">
+      <UniqueIdentifier>{8bbc1ef6-53eb-4734-addf-595df6219346}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{a733d6a2-9ba4-46ee-9f26-924639d3fad4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System">
+      <UniqueIdentifier>{0f3497d4-6b06-4c90-8e7c-a7f39a29a1dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System\Posix">
+      <UniqueIdentifier>{93430fa8-fd28-4d6d-b803-a9c79920e81d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\System\Posix\PTSThread.inl">
+      <Filter>Public\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Private\System\Posix\PTSMemoryAllocator.inl">
+      <Filter>Private\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Private\System\Posix\PTSTaskSchedulerImpl.inl">
+      <Filter>Private\System\Posix</Filter>
+    </None>
+    <None Include="..\..\Public\System\Posix\PTSLocateSourceCode.inl">
+      <Filter>Public\System\Posix</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\System\PTSCommon.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSFile.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSThread.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
+      <Filter>Private\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

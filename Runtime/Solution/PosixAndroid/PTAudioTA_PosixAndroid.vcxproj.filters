@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{906d3bd2-96e8-4090-89d4-22e2bff2e132}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{e92d40b2-f4a9-4474-8ce6-b7afd6a96ea1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Audio">
+      <UniqueIdentifier>{2b3e1234-827c-4e2a-8877-1a41ec20cf1d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Audio">
+      <UniqueIdentifier>{40016f29-16bc-4233-b722-0e71ade8d607}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Audio\TinyALSA">
+      <UniqueIdentifier>{af3b0397-b5d7-46c9-a6b7-66d09d7de27a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Audio\PTADCommon.h">
+      <Filter>Public\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Audio\PTADInstance.h">
+      <Filter>Public\Audio</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\Audio\TinyALSA\PTADInstanceImpl.cpp">
+      <Filter>Private\Audio\TinyALSA</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,1 @@
+layout (set=m, binding=n, r32f) uniform image2D myStorageImage;

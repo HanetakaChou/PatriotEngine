@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{fefc830c-2d23-46ef-8577-ae1c06157bf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{aef97019-1991-46fd-9940-cddb0b8e8e0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\App">
+      <UniqueIdentifier>{0ddcd840-deff-4c36-92b4-5feda52dd3fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\App">
+      <UniqueIdentifier>{67c7d190-f4a7-45f6-aa93-ace3b4bd6955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\App\Win32">
+      <UniqueIdentifier>{f76bff6d-68a8-4c05-87c1-1e005936dc40}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\App\PTACommon.h">
+      <Filter>Public\App</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\App\PTAExport.h">
+      <Filter>Public\App</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\App\Win32\PTADllMain.cpp">
+      <Filter>Private\App\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\App\PTAExport.cpp">
+      <Filter>Private\App</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,130 @@
+﻿#include "HLSLSupport.cginc"
+//UNITY_REVERSED_Z
+
+cbuffer cFrameBufferSize
+{
+	float4 g_vec2FrameBufferSize;
+}
+
+Texture2DArray<float> g_TextureDepthDeinterleaved;
+
+static const int g_nOcclusionKernelCount = 32;
+static const float4 g_aryKernelOffsets[g_nOcclusionKernelCount] = {
+	float4(-0.57735026, -0.57735026, +0.57735026, +0),
+	float4(-0.64363003, +0.64363003, +0.64363003, +0),
+	float4(+0.71751881, +0.71751881, +0.71751881, +0),
+	float4(+0.79988992, -0.79988992, +0.79988992, +0),
+	float4(-0.89171726, -0.89171726, -0.89171726, +0),
+	float4(-0.99408638, +0.99408638, -0.99408638, +0),
+	float4(+1.1082075, +1.1082075, -1.1082075, +0),
+	float4(+1.2354296, -1.2354296, -1.2354296, +0),
+	float4(-1.377257, -1.377257, +1.377257, +0),
+	float4(-1.5353662, +1.5353662, +1.5353662, +0),
+	float4(+1.7116262, +1.7116262, +1.7116262, +0),
+	float4(+1.9081208, -1.9081208, +1.9081208, +0),
+	float4(-2.1271729, -2.1271729, -2.1271729, +0),
+	float4(-2.3713725, +2.3713725, -2.3713725, +0),
+	float4(+2.6436059, +2.6436059, -2.6436059, +0),
+	float4(+2.9470918, -2.9470918, -2.9470918, +0),
+	float4(-3.2854178, -3.2854178, +3.2854178, +0),
+	float4(-3.6625838, +3.6625838, +3.6625838, +0),
+	float4(+4.0830483, +4.0830483, +4.0830483, +0),
+	float4(+4.5517821, -4.5517821, +4.5517821, +0),
+	float4(-5.074327, -5.074327, -5.074327, +0),
+	float4(-5.6568594, +5.6568594, -5.6568594, +0),
+	float4(+6.3062668, +6.3062668, -6.3062668, +0),
+	float4(+7.0302258, -7.0302258, -7.0302258, +0),
+	float4(-7.8372955, -7.8372955, +7.8372955, +0),
+	float4(-8.7370167, +8.7370167, +8.7370167, +0),
+	float4(+9.7400255, +9.7400255, +9.7400255, +0),
+	float4(+10.858181, -10.858181, +10.858181, +0),
+	float4(-12.1047, -12.1047, -12.1047, +0),
+	float4(-13.494319, +13.494319, -13.494319, +0),
+	float4(+15.043467, +15.043467, -15.043467, +0),
+	float4(+16.770456, -16.770456, -16.770456, +0),
+};
+
+static const float4 g_vec4RaduisOffsetContrast = float4(2.8f, 2.8f, 0.000128f, 1.275f); //Radius Radius Offset Contrast
+
+static const int g_nOcclusionJitterTextureSize = 4;
+static const float4 g_OcclusionJitterTexture2D[g_nOcclusionJitterTextureSize*g_nOcclusionJitterTextureSize] = {
+	float4(0.671f,0.0667f,0.314f,0.0f), float4(0.349f,0.443f,0.0235f,0.0f), float4(0.588f,0.141f,0.157f,0.0f), float4(0.835f,0.322f,0.82f,0.0f),
+	float4(0.576f,0.0275f,0.345f,0.0f), float4(0.188f,0.816f,0.733f,0.0f), float4(0.773f,0.478f,0.0824f,0.0f), float4(0.0314f,0.51f,0.322f,0.0f),
+	float4(0.00392f,0.569f,0.459f,0.0f), float4(0.769f,0.749f,0.161f,0.0f), float4(0.145f,0.42f,0.0843f,0.0f), float4(0.643f,0.204f,0.875f,0.0f),
+	float4(0.337f,0.478f,0.0235f,0.0f), float4(0.851f,0.145f,0.455f,0.0f), float4(0.0157f,0.388f,0.42f,0.0f), float4(0.62f,0.0157f,0.537f,0.0f)
+};
+
+RWTexture2DArray<unorm float> g_TextureAOInverseDeinterleaved;
+
+const float3 DecodeNormal(const float3 vec3Normal)
+{
+	return (vec3Normal - 0.5f)*2.0f;
+}
+
+const float3 MirrorKernelOffset(const float3 vec3KernelOffset, const float3 vec3PlaneNormal)
+{
+	return vec3KernelOffset - 2.0f*vec3PlaneNormal*dot(vec3KernelOffset, vec3PlaneNormal);
+}
+
+#pragma kernel main
+
+[numthreads(16, 16, 1)]
+void main(uint3 CS_Global_ID : SV_DispatchThreadID)
+{
+	float3 vec3MirrorPlaneNormal = DecodeNormal(
+		g_OcclusionJitterTexture2D[CS_Global_ID.z].xyz
+	);
+
+	float fPixelDepth = g_TextureDepthDeinterleaved.mips[0][CS_Global_ID.xyz];
+
+	float fAccumulatedAccessible = 0.0f;
+
+	for (int i = 0; i < g_nOcclusionKernelCount / 4; ++i)
+	{
+		float3 aryMirrorKernelOffsets[4];
+		aryMirrorKernelOffsets[0] = MirrorKernelOffset(g_aryKernelOffsets[i * 4 + 0].xyz, vec3MirrorPlaneNormal);
+		aryMirrorKernelOffsets[1] = MirrorKernelOffset(g_aryKernelOffsets[i * 4 + 1].xyz, vec3MirrorPlaneNormal);
+		aryMirrorKernelOffsets[2] = MirrorKernelOffset(g_aryKernelOffsets[i * 4 + 2].xyz, vec3MirrorPlaneNormal);
+		aryMirrorKernelOffsets[3] = MirrorKernelOffset(g_aryKernelOffsets[i * 4 + 3].xyz, vec3MirrorPlaneNormal);
+
+#if defined(UNITY_REVERSED_Z)
+		float fTempRaduis = (g_vec4RaduisOffsetContrast.xy /g_vec2FrameBufferSize.xy) / (1.0f - fPixelDepth);
+#else
+		float fTempRaduis = (g_vec4RaduisOffsetContrast.xy /g_vec2FrameBufferSize.xy) / fPixelDepth;
+#endif
+		aryMirrorKernelOffsets[0].xy *= fTempRaduis;
+		aryMirrorKernelOffsets[1].xy *= fTempRaduis;
+		aryMirrorKernelOffsets[2].xy *= fTempRaduis;
+		aryMirrorKernelOffsets[3].xy *= fTempRaduis;
+
+		float4 vec4MirrorKernelOffsetZ;
+		vec4MirrorKernelOffsetZ.x = aryMirrorKernelOffsets[0].z;
+		vec4MirrorKernelOffsetZ.y = aryMirrorKernelOffsets[1].z;
+		vec4MirrorKernelOffsetZ.z = aryMirrorKernelOffsets[2].z;
+		vec4MirrorKernelOffsetZ.w = aryMirrorKernelOffsets[3].z;
+
+		float4 vec4RayDepth = fPixelDepth + vec4MirrorKernelOffsetZ * g_vec4RaduisOffsetContrast.z;
+
+		float2 vec2TexCoord = float2(CS_Global_ID.xy) / (g_vec2FrameBufferSize.xy*0.25f);
+
+		uint2 arySamplerTexCoords[4];
+		arySamplerTexCoords[0] = (vec2TexCoord + aryMirrorKernelOffsets[0].xy)*(g_vec2FrameBufferSize.xy*0.25f);
+		arySamplerTexCoords[1] = (vec2TexCoord + aryMirrorKernelOffsets[1].xy)*(g_vec2FrameBufferSize.xy*0.25f);
+		arySamplerTexCoords[2] = (vec2TexCoord + aryMirrorKernelOffsets[2].xy)*(g_vec2FrameBufferSize.xy*0.25f);
+		arySamplerTexCoords[3] = (vec2TexCoord + aryMirrorKernelOffsets[3].xy)*(g_vec2FrameBufferSize.xy*0.25f);
+
+		float4 vec4SamplerDepth;
+		vec4SamplerDepth.x = g_TextureDepthDeinterleaved.mips[0][uint3(arySamplerTexCoords[0], CS_Global_ID.z)];
+		vec4SamplerDepth.y = g_TextureDepthDeinterleaved.mips[0][uint3(arySamplerTexCoords[1], CS_Global_ID.z)];
+		vec4SamplerDepth.z = g_TextureDepthDeinterleaved.mips[0][uint3(arySamplerTexCoords[2], CS_Global_ID.z)];
+		vec4SamplerDepth.w = g_TextureDepthDeinterleaved.mips[0][uint3(arySamplerTexCoords[3], CS_Global_ID.z)];
+
+#if defined(UNITY_REVERSED_Z)
+		fAccumulatedAccessible += dot(vec4SamplerDepth < vec4RayDepth, 1.0f);
+#else
+		fAccumulatedAccessible += dot(vec4SamplerDepth > vec4RayDepth, 1.0f);
+#endif
+	}
+
+	g_TextureAOInverseDeinterleaved[CS_Global_ID.xyz] = pow(fAccumulatedAccessible / g_nOcclusionKernelCount, g_vec4RaduisOffsetContrast.w);
+}

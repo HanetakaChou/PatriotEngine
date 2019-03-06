@@ -1,0 +1,15 @@
+/Binary
+/Intermediate
+/Runtime/Solution/Win32Desktop/.vs
+/Runtime/Solution/Win32Desktop/*.vcxproj.user
+/Runtime/Solution/Win32Runtime/.vs
+/Runtime/Solution/Win32Runtime/*.vcxproj.user
+/Runtime/Solution/PosixAndroid/.vs
+/Runtime/Solution/PosixAndroid/*.vcxproj.user
+/Runtime/Solution/PosixXCB/.vs
+/Runtime/Solution/PosixXCB/*.vcxproj.user
+/Runtime/Private/Video/D3D12/PTShader_*.h
+
+Runtime/Solution/PosixMach/PTRuntime_PosixMach.xcworkspace/xcuserdata
+Runtime/Solution/PosixMach/PTSystem_PosixMach.xcodeproj/xcuserdata
+Runtime/Solution/PosixMach/PTSystem_PosixMach.xcodeproj/project.xcworkspace/xcuserdata

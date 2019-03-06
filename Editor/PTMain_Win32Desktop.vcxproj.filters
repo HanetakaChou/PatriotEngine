@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{fefc830c-2d23-46ef-8577-ae1c06157bf2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Main">
+      <UniqueIdentifier>{870e5d80-ae0c-4913-956f-edaaa71c3775}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{aef97019-1991-46fd-9940-cddb0b8e8e0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Main">
+      <UniqueIdentifier>{67c7d190-f4a7-45f6-aa93-ace3b4bd6955}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{478d4145-039b-4ebb-8971-2713fd946167}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{762b3b89-a279-4d01-8bcd-0ee1f3ca30ef}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Runtime\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Runtime\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Runtime\Public\Math\SSE\PTMathSIMD.h">
+      <Filter>Public\Math\SSE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Runtime\Public\Main\PTMain.h">
+      <Filter>Public\Main</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Runtime\Public\Main\PTMainCommon.h">
+      <Filter>Public\Main</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="PTMain\PTDllMain_Win32.cpp">
+      <Filter>Private\Main</Filter>
+    </ClCompile>
+    <ClCompile Include="PTMain\PTMain.cpp">
+      <Filter>Private\Main</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Runtime\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+  </ItemGroup>
+</Project>

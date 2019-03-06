@@ -1,0 +1,10 @@
+
+struct PTGCameraVR
+{
+
+};
+
+struct IPTGRenderVR
+{
+
+};

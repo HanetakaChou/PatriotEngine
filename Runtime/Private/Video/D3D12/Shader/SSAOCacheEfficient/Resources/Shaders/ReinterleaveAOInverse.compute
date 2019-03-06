@@ -1,0 +1,15 @@
+﻿Texture2DArray<float> g_TextureAOInverseDeinterleaved;
+RWTexture2D<float> g_TextureAOInverse;
+
+#pragma kernel main
+
+[numthreads(16, 16, 1)]
+void main(uint3 CS_Global_ID : SV_DispatchThreadID)
+{
+	g_TextureAOInverse[
+		uint2(
+			CS_Global_ID.x * 4 + CS_Global_ID.z % 4,
+			CS_Global_ID.y * 4 + CS_Global_ID.z / 4
+			)
+	] = g_TextureAOInverseDeinterleaved.mips[0][CS_Global_ID.xyz];
+}
