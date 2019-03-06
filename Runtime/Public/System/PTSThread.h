@@ -1,4 +1,4 @@
-#ifndef PT_SYSTEM_THREAD_H
+﻿#ifndef PT_SYSTEM_THREAD_H
 #define PT_SYSTEM_THREAD_H
 
 #include "../PTCommon.h"
