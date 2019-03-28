@@ -1,4 +1,4 @@
-#ifndef PT_COMMON_H
+﻿#ifndef PT_COMMON_H
 #define PT_COMMON_H
 
 #if defined(PTWIN32)
@@ -13,7 +13,7 @@
     #define PTEXPORT __attribute__((visibility("default")))
     #if defined(PTPOSIXLINUX)
 
-    #elif defined(PTPOSIXMACH) //Mach-O Support Universal Binary
+    #elif defined(PTPOSIXMACH) //Mach-O Support Universal Binary, We Must Depend On The Compiler Predefined Macros To Infer The Architecture.
         #if defined(__i386__)
             #define PTX86
         #elif defined(__x86_64__)
@@ -23,7 +23,7 @@
         #elif defined(__aarch64__)
             #define PTARM64
         #else
-            #error Unknown Architecture
+            #error 未知的架构
         #endif
     #else
         #error 未知的平台
