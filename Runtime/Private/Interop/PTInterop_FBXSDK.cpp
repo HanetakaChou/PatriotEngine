@@ -1,4 +1,4 @@
-#include <fbxsdk.h>
+﻿#include <fbxsdk.h>
 
 #include "../../Public/PTCommon.h"
 #include "../../Public/System/PTSFile.h"
@@ -60,13 +60,15 @@ static inline fbxsdk::FbxManager * PTI_FBXSDK_FbxManager_Singleton()
 class PTI_FBXSDK_FBXInputStream : public fbxsdk::FbxStream
 {
 	IPTSFile *m_pFile;
+	int m_ReaderID;
 	fbxsdk::FbxStream::EState m_State;
 	mutable int m_Error;
 	mutable long m_Position;
 public:
-	inline PTI_FBXSDK_FBXInputStream(IPTSFile *pFile)
+	inline PTI_FBXSDK_FBXInputStream(IPTSFile *pFile, int pFileFormat)
 		:
 		m_pFile(pFile),
+		m_ReaderID(pFileFormat),
 		m_State(fbxsdk::FbxStream::eEmpty),
 		m_Error(0),
 		m_Position(0)
@@ -110,12 +112,7 @@ public:
 	}
 	int GetReaderID() const override
 	{
-		//��FbxImporter::Initialize�д���ReaderID
-		assert(0);
-		int ReaderID;
-		bool bResult = ::PTI_FBXSDK_FbxManager_Singleton()->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", ReaderID);
-		assert(bResult);
-		return ReaderID;
+		return m_ReaderID;
 	}
 	int GetWriterID() const override
 	{
@@ -1501,13 +1498,15 @@ extern "C" PTEXPORT void PTCALL PTI_FBXSDK_FBXToPTTF(IPTSFile *pFileFBX, IPTSFil
 		{
 			fbxsdk::FbxImporter *pImporter = fbxsdk::FbxImporter::Create(pManager, "");
 
-			int ReaderID = 0;
-			bool bResult = pManager->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", ReaderID);
+			//FbxImporter::Initialize根据传入的pFileName确定ReadID
+			//在传入pStream时，pFileName的相关信息丢失，需要由应用程序显式地进行这个过程
+			int pFileFormat; //ReaderID
+			bool bResult = pManager->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", pFileFormat);
 			assert(bResult);
 
-			PTI_FBXSDK_FBXInputStream InputStream(pFileFBX);
+			PTI_FBXSDK_FBXInputStream InputStream(pFileFBX, pFileFormat);
 
-			bResult = pImporter->Initialize(&InputStream, NULL, ReaderID, NULL);
+			bResult = pImporter->Initialize(&InputStream, NULL, pFileFormat, NULL);
 			assert(bResult);
 
 			bResult = pImporter->Import(pScene, false);
