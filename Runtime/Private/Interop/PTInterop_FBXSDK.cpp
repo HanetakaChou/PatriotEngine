@@ -1019,8 +1019,27 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 				::PTS_CPP_Allocator<std::pair<int, PTGRender_MeshSkeletal_Intermediate_FBX>>
 			> MeshArray_Intermediate_FBX;
 
-			fbxsdk::FbxAMatrix TransformFBXCoord = pNodeToProcess->GetAnimationEvaluator()->GetNodeGlobalTransform(pNodeToProcess, FBXSDK_TIME_INFINITE, fbxsdk::FbxNode::eSourcePivot, false, false);
+			//ObjectTM
+			fbxsdk::FbxAMatrix objectTM;
+			{
+				// Get the geometry offset to a node. It is never inherited by the children.
+				fbxsdk::FbxVector4 const lT = nodemesh_fbx->GetGeometricTranslation(fbxsdk::FbxNode::eSourcePivot);
+				fbxsdk::FbxVector4 const lR = nodemesh_fbx->GetGeometricRotation(fbxsdk::FbxNode::eSourcePivot);
+				fbxsdk::FbxVector4 const lS = nodemesh_fbx->GetGeometricScaling(fbxsdk::FbxNode::eSourcePivot);
 
+				objectTM = std::move(fbxsdk::FbxAMatrix(lT, lR, lS));
+			}
+
+			//NodeTM
+			fbxsdk::FbxAMatrix nodeTM = pNodeToProcess->GetAnimationEvaluator()->GetNodeGlobalTransform(pNodeToProcess, FBXSDK_TIME_INFINITE, fbxsdk::FbxNode::eSourcePivot, false, false);
+			
+			//In Max SDK
+			//objectTM = objectOffsetTM * stretchTM * nodeTM
+
+			//FBXSDK的[operator*]有BUG，禁止使用！
+			//fbxsdk::FbxAMatrix TransformFBXCoord_Bug = objectTM * nodeTM;
+			fbxsdk::FbxAMatrix TransformFBXCoord = PTSIMDMatrixMultiply(Load(nodeTM),Load(objectTM));
+			
 			PTMatrix4x4F TransformFCoord;
 			TransformFCoord.r[0].x = static_cast<float>(TransformFBXCoord.mData[0][0]);
 			TransformFCoord.r[0].y = static_cast<float>(TransformFBXCoord.mData[1][0]);
