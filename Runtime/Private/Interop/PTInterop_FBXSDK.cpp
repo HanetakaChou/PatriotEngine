@@ -300,6 +300,9 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 				for (int IndexJoint = 0; IndexJoint < CountJoint; ++IndexJoint)
 				{
 					fbxsdk::FbxCluster *pCluster = pSkin->GetCluster(IndexJoint);
+
+					//fbxsdk::FbxCluster::GetTransformLinkMatrix //GetBindPose
+
 					fbxsdk::FbxNode *pNodeJoint = pCluster->GetLink();
 					char const *pJointName = pNodeJoint->GetName();
 					assert(pNodeJoint->GetNodeAttributeCount() == 1U);
