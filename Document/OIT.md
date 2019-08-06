@@ -12,7 +12,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 ## Alpha通道  
 &nbsp;&nbsp;&nbsp;&nbsp;Porter在1984年提出了Alpha通道（1.[Porter 1984]），目前在实时渲染中已被广泛地用于模拟物体的透明效果。  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;我们设对应到同一个像素（Pixel）的一系列片元（Fragment）的颜色、Alpha、深度为三元组$\lbrack C_i A_i Z_i\rbrack$，该像素最终的颜色$C_{Final}$为：$C_{Final}=\sum_i\lparen\lparen\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen\rparen A_iC_i\rparen$ //其中：$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$又被称为可见性函数，即$C_{Final}=\sum_i\lparen V\lparen Z_i\rparen A_iC_i\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;我们设对应到同一个像素（Pixel）的一系列片元（Fragment）的颜色、Alpha、深度为三元组$\lbrack C_i A_i Z_i\rbrack$，该像素最终的颜色$C_{Final}$为：$C_{Final}=\sum_i((\prod_{z_j\,Nearer\,Z_i}(1-A_j)) A_iC_i)$ //其中：$V( Z_i)=\prod_{z_j\,Nearer\,Z_i}(1-A_j)$又被称为可见性函数，即$C_{Final}=\sum_i( V( Z_i) A_iC_i)$。  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;值得注意的是，在物理含义上， Alpha模拟的是局部覆盖（Partial Coverage）而非透射率（Transmittance）。  
 &nbsp;&nbsp;&nbsp;&nbsp;Alpha的含义是片元覆盖的面积占像素面积的比例（这也是我们用标量float而非向量RGB来表示Alpha的原因；这种情况在一些文献中被称作波长无关的（Wavelength-Independent））。比如，我们透过一条蓝色的真丝围巾观察一块红色的砖，我们看到砖的颜色大体为蓝色和红色“**相加**”； 真丝围巾的纤维本身是不透明的，只是真丝围巾的纤维之间存在着间隙，我们通过这些间隙看到了红色的砖，即真丝围巾“局部覆盖”了砖。  
@@ -20,7 +20,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://gitee.com/YuqiaoZhang/PatriotEngine/raw/master/Document/OIT_1.png)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;图来自：[《科学七年级下册》（ISBN: 9787553603162）/第2章对环境的感觉/第4节光的颜色/物体的颜色]  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;根据Alpha的含义，不难理解可见性函数$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$，即只有比当前片元“更近”（Nearer）的片元才会局部覆盖当前片元。（一些文献中将可见性函数$V\lparen Z_i\rparen$称作透射率$T\lparen Z_i\rparen$，在严格意义上是错误的。）  
+&nbsp;&nbsp;&nbsp;&nbsp;根据Alpha的含义，不难理解可见性函数$V( Z_i)=\prod_{z_j\,Nearer\,Z_i}(1-A_j)$，即只有比当前片元“更近”（Nearer）的片元才会局部覆盖当前片元。（一些文献中将可见性函数$V( Z_i)$称作透射率$T( Z_i)$，在严格意义上是错误的。）  
 &nbsp;  
 ## 顺序性透明  
 &nbsp;&nbsp;&nbsp;&nbsp;在实时渲染中，比较常见的做法是将几何体排序后用Over/Under操作（1.[Porter 1984]、4. [Dunn 2014]）以递归的方式求解$C_{Final}$：  
@@ -30,14 +30,14 @@ You should have received a copy of the GNU Lesser General Public License along w
 ### Over操作  
 &nbsp;&nbsp;&nbsp;&nbsp;将片元从后往前排序允许用Over操作以递归的方式求解$C_{Final}$  
 &nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_0}=BackgroundColor$  
-&nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_n}=\lparen A_nC_n\rparen+\lparen1-A_n\rparen C_{Final\_n-1}$ 
+&nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_n}=( A_nC_n)+(1-A_n) C_{Final\_n-1}$ 
 &nbsp;
 ### Under操作
 &nbsp;&nbsp;&nbsp;&nbsp;将片元从前往后排序允许用Under操作以递归的方式求解$C_{Final}$  
 &nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_0}=0$  
 &nbsp;&nbsp;&nbsp;&nbsp;$A_{Total\_0}=1$  
-&nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_n}=A_{Total\_n-1}\lparen A_nC_n\rparen+C_{Final\_n-1}$  
-&nbsp;&nbsp;&nbsp;&nbsp;$A_{Total\_n}=A_{Total\_n-1}\lparen 1-A_n\rparen$ //$A_{Total}$即可见性函数$V\lparen Z_i\rparen$  
+&nbsp;&nbsp;&nbsp;&nbsp;$C_{Final\_n}=A_{Total\_n-1}( A_nC_n)+C_{Final\_n-1}$  
+&nbsp;&nbsp;&nbsp;&nbsp;$A_{Total\_n}=A_{Total\_n-1}( 1-A_n)$ //$A_{Total}$即可见性函数$V( Z_i)$  
 &nbsp;&nbsp;&nbsp;&nbsp;OpaquePass得到的图像将在最后以A = 1, C = BackgroundColor的形式合成上去  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;在严格意义上，只有将**片元**从后往前/从前往后排序，才能保证Over/Under操作的正确性。然而在实时渲染中，排序的粒度是基于**物体**而非基于**片元**；如果物体内部存在穿插，那么片元的顺序将不符合从后往前/从前往后，从而导致Over/Under操作的结果存在错误。因此，人们不得不探索OIT算法来解决这个问题。  
@@ -64,27 +64,27 @@ N+2.CompositePass //FullScreenTrianglePass
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;//注：深度剥离本身并不依赖于片元的顺序，之所以将透明物体从前往后排序是为了充分发挥硬件的EarlyDepthTest来提升性能  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;在理论上，深度剥离也可以从远到近剥离各层，并用Over操作合成到$C_{Final}$。只不过，在Under操作中，如果应用程序选择的Pass个数过低，不能剥离得到所有的层，那么最远处的若干层会被忽略；由于$A_Total$（即可见性函数$V\lparen Z_i\rparen$）是单调递减的，最远处的若干层对$C_{Final}$的贡献是较低的，产生的误差也是较低的。这也是深度剥离采用Under操作而非Over操作的原因。  
+&nbsp;&nbsp;&nbsp;&nbsp;在理论上，深度剥离也可以从远到近剥离各层，并用Over操作合成到$C_{Final}$。只不过，在Under操作中，如果应用程序选择的Pass个数过低，不能剥离得到所有的层，那么最远处的若干层会被忽略；由于$A_Total$（即可见性函数$V( Z_i)$）是单调递减的，最远处的若干层对$C_{Final}$的贡献是较低的，产生的误差也是较低的。这也是深度剥离采用Under操作而非Over操作的原因。  
 &nbsp;  
 ### 综合评价  
 &nbsp;&nbsp;&nbsp;&nbsp;显然，深度剥离有一个显著的缺陷——Pass个数过多——在效率上存在着比较严重的问题；因此在被提出以后的数十年间并没有流行起来。  
 &nbsp;  
 ## 随机透明（Stochastic Transparency）  
-&nbsp;&nbsp;&nbsp;&nbsp;可见性函数$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$的求解依赖于片元的顺序，导致了$C_{Final}=\sum_i\lparen V\lparen Z_i\rparen A_iC_i\rparen$的求解依赖于片元的顺序。基于这个事实，Enderton在2010年提出了随机透明：随机透明基于概率论的原理，利用硬件的MSAA特性进行随机抽样，给出了一种顺序无关地求解可见性函数$V\lparen Z_i\rparen$的方式，以达到以顺序无关的方式求解$C_{Final}$的目的（6.[Enderton 2010]）。  
+&nbsp;&nbsp;&nbsp;&nbsp;可见性函数$V( Z_i)=\prod_{z_j\,Nearer\,Z_i}(1-A_j)$的求解依赖于片元的顺序，导致了$C_{Final}=\sum_i( V( Z_i) A_iC_i)$的求解依赖于片元的顺序。基于这个事实，Enderton在2010年提出了随机透明：随机透明基于概率论的原理，利用硬件的MSAA特性进行随机抽样，给出了一种顺序无关地求解可见性函数$V( Z_i)$的方式，以达到以顺序无关的方式求解$C_{Final}$的目的（6.[Enderton 2010]）。  
 &nbsp;  
 ### 随机深度（Stochastic Depth）  
-&nbsp;&nbsp;&nbsp;&nbsp;我们设：通过设置gl_SampleMask/SV_Coverage的值，以确保片元$\lbrack C_i A_i Z_i\rbrack$在生成采样点$\lbrack Z_i\rbrack$时，每个采样点被覆盖的概率为$A_i$；开启深度测试和深度写入，以确保较近的片元生成的采样点一定覆盖较远的片元生成的采样点；不同片元生成采样点时，每个采样点被覆盖的概率相互独立（Uncorrelated）；那么在最终生成的Depth图像中，对任意采样点$\lbrack Z_s\rbrack$，满足$Z_i$ NearerOrEqual $Z_s$的概率即为可见性函数$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;我们设：通过设置gl_SampleMask/SV_Coverage的值，以确保片元$\lbrack C_i A_i Z_i\rbrack$在生成采样点$\lbrack Z_i\rbrack$时，每个采样点被覆盖的概率为$A_i$；开启深度测试和深度写入，以确保较近的片元生成的采样点一定覆盖较远的片元生成的采样点；不同片元生成采样点时，每个采样点被覆盖的概率相互独立（Uncorrelated）；那么在最终生成的Depth图像中，对任意采样点$\lbrack Z_s\rbrack$，满足$Z_i$ NearerOrEqual $Z_s$的概率即为可见性函数$V( Z_i)=\prod_{z_j\,Nearer\,Z_i}(1-A_j)$。  
 &nbsp;   
-&nbsp;&nbsp;&nbsp;&nbsp;可以根据概率论的相关知识证明：满足$Z_i$ NearerOrEqual $Z_s$即采样点$\lbrack Z_s\rbrack$被片元$\lbrack C_i A_i Z_i\rbrack$或被比片元$\lbrack C_i A_i Z_i\rbrack$更远的片元覆盖，即采样点$\lbrack Z_s\rbrack$**不被**比片元$\lbrack C_i A_i Z_i\rbrack$更近的片元$\lbrack C_j A_j Z_j\rbrack$覆盖，由于采样点$Z_s$**不被**片元$\lbrack C_j A_j Z_j\rbrack$覆盖的概率为1 - $A_j$，且概率之间相互独立，最终的概率为各概率相乘，即$\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;可以根据概率论的相关知识证明：满足$Z_i$ NearerOrEqual $Z_s$即采样点$\lbrack Z_s\rbrack$被片元$\lbrack C_i A_i Z_i\rbrack$或被比片元$\lbrack C_i A_i Z_i\rbrack$更远的片元覆盖，即采样点$\lbrack Z_s\rbrack$**不被**比片元$\lbrack C_i A_i Z_i\rbrack$更近的片元$\lbrack C_j A_j Z_j\rbrack$覆盖，由于采样点$Z_s$**不被**片元$\lbrack C_j A_j Z_j\rbrack$覆盖的概率为1 - $A_j$，且概率之间相互独立，最终的概率为各概率相乘，即$\prod_{z_j\,Nearer\,Z_i}(1-A_j)$。  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;注：希望读者不要混淆$Z_i$、$Z_j$和$Z_s$的含义：$Z_j$是指对应于同一像素的一系列片元$Z_0$ $Z_1$ $Z_2$ ... $Z_n$中任意的某一个片元；$Z_s$是指在最终生成的Depth图像（即后文具体实现中的StochasticDepth）中存在的片元（由于存储空间的限制，只能存储一个片元，图像中的一个采样点最终只可能被这一系列片元$Z_0$ $Z_1$ $Z_2$ ... $Z_n$中的某一个片元覆盖）；而$Z_i$是指我们当前讨论的片元（在具体实现中，可以认为是当前片元着色器执行的片元）  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;我们设，在MSAA中，1个像素对应的采样点个数为S，满足$Z_i$ NearerOrEqual  $Z_s$的采样点的个数为$\operatorname{Count}\lparen Z_i\rparen$，$\operatorname{SV}\lparen Z_i\rparen=\frac{\operatorname{Count}(Z_i)}{S}$；不难证明$\operatorname{SV}\lparen Z_i\rparen$的数学期望为$\operatorname{V}\lparen Z_i\rparen$，$\operatorname{Count}\lparen Z_i\rparen$可以通过纹理采样得到，可以用$\operatorname{SV}\lparen Z_i\rparen$近似地表示可见性函数$\operatorname{V}\lparen Z_i\rparen$。 //注：在OpenGL中，需要启用ARB_texture_multisample扩展才能用texelFetch对sampler2DMS进行采样  
+&nbsp;&nbsp;&nbsp;&nbsp;我们设，在MSAA中，1个像素对应的采样点个数为S，满足$Z_i$ NearerOrEqual  $Z_s$的采样点的个数为$\operatorname{Count}( Z_i)$，$\operatorname{SV}( Z_i)=\frac{\operatorname{Count}(Z_i)}{S}$；不难证明$\operatorname{SV}( Z_i)$的数学期望为$\operatorname{V}( Z_i)$，$\operatorname{Count}( Z_i)$可以通过纹理采样得到，可以用$\operatorname{SV}( Z_i)$近似地表示可见性函数$\operatorname{V}( Z_i)$。 //注：在OpenGL中，需要启用ARB_texture_multisample扩展才能用texelFetch对sampler2DMS进行采样  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;注：希望读者不要混淆片元、像素和采样点的含义：一个像素可能对应于若干个采样点（比如8X MSAA即对应于8个采样点）；同时，一个像素可能对应于若干个片元，但是同一像素中的同一采样点最终只能被其中的某一个片元覆盖（由于存储空间的限制，只能存储一个片元，这是显然的）  
 &nbsp;  
 ### Alpha校正（Alpha Correction）  
-&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen=1-\prod_i\lparen 1-A_i\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i(\operatorname{V}( Z_i) A_i)=1-\prod_i( 1-A_i)$。  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;不妨设$A_0$ = 0.4 $A_1$ = 0.7 $A_2$ = 0.6，我们有：  
 左边 = 0.4 + (1 - 0.4)×0.7 + (1 - 0.4)×(1 - 0.7)×0.6  
@@ -96,9 +96,9 @@ N+2.CompositePass //FullScreenTrianglePass
 = **0.4 + (1 - 0.4)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
 = **1** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6) = 右边   
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen$的数学期望为$\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen$即$1-\prod_i\lparen 1-A_i\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i(\operatorname{SV}( Z_i) A_i)$的数学期望为$\sum_i(\operatorname{V}( Z_i) A_i)$即$1-\prod_i( 1-A_i)$。  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;Alpha校正可以认为是对$\operatorname{SV}\lparen Z_i\rparen$进行归一化（Normalize），即假定$\frac{\operatorname{SV}\lparen Z_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}=\frac{\operatorname{V}\lparen Z_i\rparen}{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}$，从而得到${\operatorname{V}\lparen Z_i\rparen}={\operatorname{SV}\lparen Z_i\rparen}{\frac{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}}={\operatorname{SV}\lparen Z_i\rparen}{\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}}$。  
+&nbsp;&nbsp;&nbsp;&nbsp;Alpha校正可以认为是对$\operatorname{SV}( Z_i)$进行归一化（Normalize），即假定$\frac{\operatorname{SV}( Z_i)}{\sum_i(\operatorname{SV}( Z_i) A_i)}=\frac{\operatorname{V}( Z_i)}{\sum_i(\operatorname{V}( Z_i) A_i)}$，从而得到${\operatorname{V}( Z_i)}={\operatorname{SV}( Z_i)}{\frac{\sum_i(\operatorname{V}( Z_i) A_i)}{\sum_i(\operatorname{SV}( Z_i) A_i)}}={\operatorname{SV}( Z_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i(\operatorname{SV}( Z_i) A_i)}}$。  
 &nbsp;  
 ### Render Pass  
 1.OpaquePass  
@@ -109,16 +109,16 @@ N+2.CompositePass //FullScreenTrianglePass
 &nbsp;&nbsp;&nbsp;&nbsp;值得注意的是：  
 &nbsp;&nbsp;&nbsp;&nbsp;1.StochasticDepthPass开启的MSAA是用于随机抽样的，随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA；如果应用程序有空间性反走样（Spatial AntiAliasing）的需求，那么可以在除StochasticDepthPass以外的Pass开启MSAA（当然，也可以使用其它的空间性反走样算法（比如：FXAA））；除StochasticDepthPass以外的Pass用于空间反走样的MSAA和StochasticDepthPass用于随机抽样的MSAA并没有任何关系，比如：允许在用于空间反走样的MSAA是4X的同时，用于随机抽样的MSAA为8X。  
 &nbsp;&nbsp;&nbsp;&nbsp;2.为了确保采样点被片元覆盖的概率相互独立，必须用伪随机函数基于片元$\lbrack C_i A_i Z_i\rbrack$的$A_i$生成gl_SampleMask/SV_Coverage的值，而不得使用硬件的AlphaToCoverage特性。  
-&nbsp;&nbsp;&nbsp;&nbsp;3.在AccumulatePass中计算$\operatorname{SV}\lparen Z_i\rparen$为着色点的深度；为了保持一致，应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth（在默认情况下，采样点而非着色点的深度会被写入到最终生成的Depth图像中）。  
+&nbsp;&nbsp;&nbsp;&nbsp;3.在AccumulatePass中计算$\operatorname{SV}( Z_i)$为着色点的深度；为了保持一致，应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth（在默认情况下，采样点而非着色点的深度会被写入到最终生成的Depth图像中）。  
 &nbsp;&nbsp;&nbsp;&nbsp;4.由于硬件的限制，MSAA最多为8X，即1个片元对应的采样点的个数最多为8；在论文原文中，作者提出可以使用多个Pass来模拟更多的采样点（6.[Enderton 2010]），但是出于效率的原因，实际应用中往往只使用1个Pass。  
 &nbsp;  
 3.AccumulateAndTotalAlphaPass //GeometryPass  
-&nbsp;&nbsp;&nbsp;&nbsp;将Depth初始化为BackgroundDepth 开启深度测试关闭深度写入 将StochasticDepth绑定到片元着色器的纹理单元并在片元着色器采样纹理得到$\operatorname{SV}\lparen Z_i\rparen$ 开启MRT和SeparateBlend/IndependentBlend 将透明物体按材质排序后绘制得到$StochasticColor=\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_iC_i\rparen}$、$CorrectAlphaTotal=1-\prod_i\lparen 1-A_i\rparen$、$StochasticTotalAlpha=\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}$ //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序；AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal，术语”TotalAlpha”来自随机透明（6.[Enderton 2010]），术语”AlphaTotal”来自Under操作（1.[Porter 1984]、4. [Dunn 2014]）；StochasticTotalAlpha只有在启用Alpha校正时才会被用到（理论上，在没有启用Alpha校正时，可以省1个RT）  
+&nbsp;&nbsp;&nbsp;&nbsp;将Depth初始化为BackgroundDepth 开启深度测试关闭深度写入 将StochasticDepth绑定到片元着色器的纹理单元并在片元着色器采样纹理得到$\operatorname{SV}( Z_i)$ 开启MRT和SeparateBlend/IndependentBlend 将透明物体按材质排序后绘制得到$StochasticColor=\sum_i{({\operatorname{SV}( Z_i)}A_iC_i)}$、$CorrectAlphaTotal=1-\prod_i( 1-A_i)$、$StochasticTotalAlpha=\sum_i{({\operatorname{SV}( Z_i)}A_i)}$ //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序；AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal，术语”TotalAlpha”来自随机透明（6.[Enderton 2010]），术语”AlphaTotal”来自Under操作（1.[Porter 1984]、4. [Dunn 2014]）；StochasticTotalAlpha只有在启用Alpha校正时才会被用到（理论上，在没有启用Alpha校正时，可以省1个RT）  
 &nbsp;&nbsp;&nbsp;&nbsp;注：在论文原文中，AccumulatePass（计算StochasticColor和StochasticTotalAlpha）和TotalAlphaPass（计算CorrectAlphaTotal）是2个分离的Pass（6.[Enderton 2010]）；但实际上，完全可以将它们合并到同一个Pass；这种情况的出现可能是由于SeparateBlend/IndependentBlend在论文发表时并没有被硬件广泛支持。  
 &nbsp;  
 4.CompositePass //FullScreenTrianglePass  
-&nbsp;&nbsp;&nbsp;&nbsp;没有启用Alpha校正时，透明物体对$C_{Final}$的总贡献为：$TransparentColor=\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_iC_i\rparen}=StochasticColor$    
-&nbsp;&nbsp;&nbsp;&nbsp;在启用Alpha校正时，透明物体对$C_{Final}$的总贡献为：$TransparentColor={\begin{cases} \sum_i{\lparen{\lparen{\operatorname{SV}\lparen Z_i\rparen}\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}\rparen}A_iC_i\rparen} &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}>0} \\0 &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}=0} \end{cases}}={\begin{cases} {\lparen\sum_i{\operatorname{SV}\lparen Z_i\rparen}A_iC_i\rparen}{\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}} &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}>0} \\0 &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}=0} \end{cases}}={\begin{cases} StochasticColor\frac{1-CorrectAlphaTotal}{StochasticTotalAlpha} &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}>0} \\0 &{if\;\sum_i{\lparen{\operatorname{SV}\lparen Z_i\rparen}A_i\rparen}=0} \end{cases}}$ //注：显然，不透明物体的StochasticTotalAlpha为0；但是，由于采样点是随机生成的，透明物体的StochasticTotalAlpha也可能为0  
+&nbsp;&nbsp;&nbsp;&nbsp;没有启用Alpha校正时，透明物体对$C_{Final}$的总贡献为：$TransparentColor=\sum_i{({\operatorname{SV}( Z_i)}A_iC_i)}=StochasticColor$    
+&nbsp;&nbsp;&nbsp;&nbsp;在启用Alpha校正时，透明物体对$C_{Final}$的总贡献为：$TransparentColor={\begin{cases} \sum_i{({({\operatorname{SV}( Z_i)}\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{SV}( Z_i)}A_i)})}A_iC_i)} &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}>0} \\0 &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}=0} \end{cases}}={\begin{cases} {(\sum_i{\operatorname{SV}( Z_i)}A_iC_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{SV}( Z_i)}A_i)}} &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}>0} \\0 &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}=0} \end{cases}}={\begin{cases} StochasticColor\frac{1-CorrectAlphaTotal}{StochasticTotalAlpha} &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}>0} \\0 &{if\;\sum_i{({\operatorname{SV}( Z_i)}A_i)}=0} \end{cases}}$ //注：显然，不透明物体的StochasticTotalAlpha为0；但是，由于采样点是随机生成的，透明物体的StochasticTotalAlpha也可能为0  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;随后，基于CorrectAlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}=TransparentColor+CorrectAlphaTotal×BackgroundColor$ ） //注：可以在片元着色器中输出TransparentColor和CorrectAlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
 &nbsp;  
@@ -172,7 +172,7 @@ N+2.CompositePass //FullScreenTrianglePass
 #### Metal  
 &nbsp;&nbsp;&nbsp;&nbsp;Metal在API层面并没有InputAttachment的概念，而是通过[color(m)]Attribute允许在片元着色器中读取ColorAttachment；但是，这样的设计存在着缺陷：[color(m)]Attribute只允许读取ColorAttachment，而不允许读取DepthAttachment，需要增加1个额外的ColorAttachment并将Depth写入到该ColorAttachment中（17.[Apple]）。  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;并且，在Metal中开启MSAA时，通过[color(m)]Attribute读取ColorAttachment会导致片元着色器对每个采样点执行一次，得到ColorAttachment在该采样点处的值，从而导致无法求解$SV\lparen Z_i\rparen$（因为在片元着色器的一次执行中，我们无法得到所有采样点的数据，而只能得到某一个采样点的数据）；因此，硬件的MSAA不可用，我们只能尝试用多个ColorAttachment来模拟MSAA，考虑到ColorAttachment的存在着个数上限（A7->4个 A8,A9,A10,A11->8个）和大小上限（A7->128位 A8,A9,A10->256位 A11->512位），最多可以模拟20X MSAA；由于没有开启硬件的MSAA，硬件的深度测试不可用（DepthAttachment中只有1个采样点），只能在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入，硬件会保证该RMW操作的原子性（下文在介绍K-Buffer时会对**可编程融合**的具体细节进行介绍）。  
+&nbsp;&nbsp;&nbsp;&nbsp;并且，在Metal中开启MSAA时，通过[color(m)]Attribute读取ColorAttachment会导致片元着色器对每个采样点执行一次，得到ColorAttachment在该采样点处的值，从而导致无法求解$SV( Z_i)$（因为在片元着色器的一次执行中，我们无法得到所有采样点的数据，而只能得到某一个采样点的数据）；因此，硬件的MSAA不可用，我们只能尝试用多个ColorAttachment来模拟MSAA，考虑到ColorAttachment的存在着个数上限（A7->4个 A8,A9,A10,A11->8个）和大小上限（A7->128位 A8,A9,A10->256位 A11->512位），最多可以模拟20X MSAA；由于没有开启硬件的MSAA，硬件的深度测试不可用（DepthAttachment中只有1个采样点），只能在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入，硬件会保证该RMW操作的原子性（下文在介绍K-Buffer时会对**可编程融合**的具体细节进行介绍）。  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;//注：Metal中不存在SubPass的概念，因此缺少某种将DepthAttachment转换成InputAttachment的屏障（Barrier）机制。  
 &nbsp;  
@@ -226,7 +226,7 @@ N+2.CompositePass //FullScreenTrianglePass
 &nbsp;&nbsp;&nbsp;&nbsp;Demo地址：[https://gitee.com/YuqiaoZhang/StochasticTransparency](https://gitee.com/YuqiaoZhang/StochasticTransparency) / [https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)。该Demo改编自NVIDIA SDK11 Samples中的StochasticTransparency（9.[Bavoil 2011]），在NVIDIA提供的原始代码中，存在着3个比较严重的问题：  
 &nbsp;&nbsp;&nbsp;&nbsp;1.我在前文中指出：“随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA”； 在NVIDIA提供的原始代码中，所有Pass都使用了相同的MSAA设置，导致随机透明的帧率反而低于深度剥离（个人测试的结果是：修正该问题后，帧率从670提升至1170（用于对比的深度剥离为1070））。  
 &nbsp;&nbsp;&nbsp;&nbsp;2.我在前文中指出：“论文原文中的2个分离的Pass（AccumulatePass和TotalAlphaPass）应当合并到同一个Pass”；NVIDIA提供的原始代码并没有这么做（个人测试的结果是：修正该问题后，帧率从1170提升至1370）。  
-&nbsp;&nbsp;&nbsp;&nbsp;3.我在前文中指出：“在AccumulatePass中计算$SV\lparen Z_i\rparen$时，$Z_i$为着色点的深度；为了保持一致，在StochasticDepthPass中应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth”；NVIDIA提供的原始代码并没有这么做，导致在求解$SV\lparen Z_i\rparen$时，$Z_i$ Equal $Z_s$几乎不可能成立，产生较大的误差；不过Alpha校正可以很好地修正这个误差，在效果上并没有产生太大的影响。  
+&nbsp;&nbsp;&nbsp;&nbsp;3.我在前文中指出：“在AccumulatePass中计算$SV( Z_i)$时，$Z_i$为着色点的深度；为了保持一致，在StochasticDepthPass中应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth”；NVIDIA提供的原始代码并没有这么做，导致在求解$SV( Z_i)$时，$Z_i$ Equal $Z_s$几乎不可能成立，产生较大的误差；不过Alpha校正可以很好地修正这个误差，在效果上并没有产生太大的影响。  
 &nbsp;  
 ## K-Buffer  
 &nbsp;&nbsp;&nbsp;&nbsp;在Porter提出Alpha通道的同一年，Carpenter提出了A-Buffer：在A-Buffer中，每个像素对应于一个链表，存放对应到该像素的所有片元；基于深度对链表中的片元排序后，用Over/Under操作即可得到$C_{Final}$（11.[Carpenter 1984]）。虽然，目前的硬件在理论上已经可以通过UAV(Direct3D)和原子操作实现A-Buffer，但是，由于实现的过程极其繁琐（编程是一门艺术，A-Buffer的实现极不优雅）且效率低下（主要是链表的地址不连续导致缓存命中率下降），几乎不存在A-Buffer的实际应用。  
@@ -341,7 +341,7 @@ N+2.CompositePass //FullScreenTrianglePass
 #### K-Buffer  
 &nbsp;&nbsp;&nbsp;&nbsp;MLAB将K-Buffer中片元的格式定义为$\lbrack A_iC_i\;1-A_i\;Z_i\rbrack$。  
 &nbsp;&nbsp;&nbsp;&nbsp;首先将K-Buffer中的片元全部初始化为$C_i$ = 0, $A_i$ = 0, $Z_i$ = 无限远（即[0 1 无限远]）的“空片元”。 //在实际实现中，由于$Z_i$的取值在0到1之间，只需要保证比$Z_i$所有可能的取值都远即可。  
-&nbsp;&nbsp;&nbsp;&nbsp;在片元生成时，K-Buffer的Modify操作会根据$Z_i$从近到远排序，将当前片元插入到合适的位置，得到K+1个片元；再基于Under操作的规则，将最远的2个片元融合（$\lbrack A_iC_i\;1-A_i\;Z_i\rbrack$和$\lbrack A_{i+1}C_{i+1}\;1-A_{i+1}\;Z_{i+1}\rbrack$融合后得到$\lbrack A_iC_i+\lparen 1-A_i\rparen A_{i+1}C_{i+1}\quad\lparen 1-A_i\rparen\lparen 1-A_{i+1}\rparen\quad Z_i\rbrack$ //注：这个融合规则兼容初始化产生的“空片元”），再次得到K个片元。 //当之后插入的片元在两个被融合的片元之间时，会产生误差；根据Salvi的说法，融合最远的2个片元的误差是最小的，这可能与较远的片元对$C_{Final}$的贡献较低有一定关系（可见性函数$\operatorname{V}\lparen Z_i\rparen$是单调递减的，较远的片元的$\operatorname{V}\lparen Z_i\rparen$的值较低）。  
+&nbsp;&nbsp;&nbsp;&nbsp;在片元生成时，K-Buffer的Modify操作会根据$Z_i$从近到远排序，将当前片元插入到合适的位置，得到K+1个片元；再基于Under操作的规则，将最远的2个片元融合（$\lbrack A_iC_i\;1-A_i\;Z_i\rbrack$和$\lbrack A_{i+1}C_{i+1}\;1-A_{i+1}\;Z_{i+1}\rbrack$融合后得到$\lbrack A_iC_i+( 1-A_i) A_{i+1}C_{i+1}\quad( 1-A_i)( 1-A_{i+1})\quad Z_i\rbrack$ //注：这个融合规则兼容初始化产生的“空片元”），再次得到K个片元。 //当之后插入的片元在两个被融合的片元之间时，会产生误差；根据Salvi的说法，融合最远的2个片元的误差是最小的，这可能与较远的片元对$C_{Final}$的贡献较低有一定关系（可见性函数$\operatorname{V}( Z_i)$是单调递减的，较远的片元的$\operatorname{V}( Z_i)$的值较低）。  
 &nbsp;&nbsp;&nbsp;&nbsp;最后，使用Under操作，基于K-Buffer中的K个片元，求出透明物体对$C_{Final}$的总贡献。  
 &nbsp;  
 #### Render Pass
@@ -395,7 +395,7 @@ MLAB在Metal中可以在1个RenderPass中实现，具体如下： //假设K-Buff
 ### 综合评价  
 &nbsp;&nbsp;&nbsp;&nbsp;由于移动GPU上的K-Buffer是高效的，MLAB在本质上是比较适合移动GPU的。我们可以使用次世代API充分挖掘移动GPU的相关优势。但是，由于Vulkan尚未支持FrameBufferFetch，目前无法用Vulkan基于可编程融合实现K-Buffer（不过，OpenGL支持FrameBufferFetch，可以考虑用OpenGL基于可编程融合实现K-Buffer，只是OpenGL无法显式地控制将K-Buffer保存在Tile/On-Chip Memory中）。  
 &nbsp;&nbsp;&nbsp;&nbsp;相对于随机透明而言，MLAB有一个明显的优势：只需要一个几何体Pass（KBufferPass），这对不擅长几何处理（10.[Harris 2019] ）的移动GPU而言是一个不错的福音。但是，K-Buffer的RWM操作必须“**互斥**”，对桌面GPU而言，会导致GPU无法并行处理对应于同一像素的片元，从而引入额外的开销，开销的大小取决于场景的深度复杂度（Depth Complexity）。（由于移动GPU本身就是串行处理的（13.[Ragan-Kelley 2011]），并不引入**额外**的开销）  
-&nbsp;&nbsp;&nbsp;&nbsp;当新插入的片元在两个被融合的片元之间时，K-Buffer会产生误差；不过，由于可见性函数$\operatorname{V}\lparen Z_i\rparen$是单调递减的，较远的片元的$\operatorname{V}\lparen Z_i\rparen$的值较低，融合最远的2个片元可以有效地降低误差，在效果上并不会产生太大的影响。  
+&nbsp;&nbsp;&nbsp;&nbsp;当新插入的片元在两个被融合的片元之间时，K-Buffer会产生误差；不过，由于可见性函数$\operatorname{V}( Z_i)$是单调递减的，较远的片元的$\operatorname{V}( Z_i)$的值较低，融合最远的2个片元可以有效地降低误差，在效果上并不会产生太大的影响。  
 &nbsp;  
 ### Demo  
 &nbsp;&nbsp;&nbsp;&nbsp;Demo地址：[https://gitee.com/YuqiaoZhang/MultiLayerAlphaBlending](https://gitee.com/YuqiaoZhang/MultiLayerAlphaBlending) / [https://github.com/YuqiaoZhang/MultiLayerAlphaBlending](https://github.com/YuqiaoZhang/MultiLayerAlphaBlending)。该Demo改编自Metal Sample Code中的Order Independent Transparency with Imageblocks（21.[Imbrogno 2017]）。在Apple提供的原始代码中，用到了A11 GPU（iPhone 8以后）中才具有的特性Imageblock；但是，PixelLocalStorage(OpenGL) / Imageblock(Metal)的本质是允许自定义FrameBuffer中像素的格式（16.[Bjorge 2014]、21.[Imbrogno 2017]），这与K-Buffer的本质（为RMW操作构造临界区）并没有任何关系；于是我对Demo进行了修改，使用[color(m)]Attribute实现了相关的功能，在iPhone 6（A8 GPU）上顺利运行，**粉碎了Apple企图忽悠我换iPhone新机型的阴谋**！  
@@ -403,34 +403,34 @@ MLAB在Metal中可以在1个RenderPass中实现，具体如下： //假设K-Buff
 &nbsp;&nbsp;&nbsp;&nbsp;//注：Metal特性和OpenGL特性之间的对应关系为：[Color(m)]Attribute对应于FrameBufferFetch，本质是用于实现可编程融合；而ImageBlock对应于PixelLocalStorage，本质是用于自定义像素格式。  
 &nbsp;  
 ## 加权融合（Weighted Blended）  
-&nbsp;&nbsp;&nbsp;&nbsp;可见性函数$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$的求解依赖于片元的顺序，导致了$C_{Final}=\sum_i\lparen V\lparen Z_i\rparen A_iC_i\rparen$的求解依赖于片元的顺序。同样是基于这个事实，McGuire在2013年提出了加权融合：用一个预定义的权重函数$\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen$作为可见性函数$\operatorname{V}\lparen Z_i\rparen$的估计值，从而达到以顺序无关的方式求解$C_{Final}$的目的（22.[McGuire 2013]、4.[Dunn 2014]）。  
+&nbsp;&nbsp;&nbsp;&nbsp;可见性函数$V( Z_i)=\prod_{z_j\,Nearer\,Z_i}(1-A_j)$的求解依赖于片元的顺序，导致了$C_{Final}=\sum_i( V( Z_i) A_iC_i)$的求解依赖于片元的顺序。同样是基于这个事实，McGuire在2013年提出了加权融合：用一个预定义的权重函数$\operatorname{W}( EyeSpaceZ_i,A_i)$作为可见性函数$\operatorname{V}( Z_i)$的估计值，从而达到以顺序无关的方式求解$C_{Final}$的目的（22.[McGuire 2013]、4.[Dunn 2014]）。  
 &nbsp;  
 ### 权重函数  
 &nbsp;&nbsp;&nbsp;&nbsp;McGuire认为，只依赖于$EyeSpaceZ_i$的权重函数可能会导致$A_i$较低的“**极近**”的片元对$C_{Final}$产生过大的影响，权重函数应当同时依赖于$EyeSpaceZ_i$和$A_i$。同时，McGuire给出了三个建议的权重函数（经McGuire验证，当$EyeSpaceZ_i$的范围在0.1到500之间且$EyeSpaceZ_i$为16位浮点数时，效果良好）：  
-&nbsp;&nbsp;&nbsp;&nbsp;1.${\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}=\operatorname{clamp}{\lparen{\frac{10.0f}{0.00001f+{\lparen\frac{EyeSpaceZ_i}{5.0f}\rparen}^{2.0f}+{\lparen\frac{EyeSpaceZ_i}{200.0f}\rparen}^{6.0f}}},0.01f,3000.0f\rparen}*A_i$  
-&nbsp;&nbsp;&nbsp;&nbsp;2.${\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}=\operatorname{clamp}{\lparen{\frac{10.0f}{0.00001f+{\lparen\frac{EyeSpaceZ_i}{10.0f}\rparen}^{3.0f}+{\lparen\frac{EyeSpaceZ_i}{200.0f}\rparen}^{6.0f}}},0.01f,3000.0f\rparen}*A_i$  
-&nbsp;&nbsp;&nbsp;&nbsp;3.${\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}=\operatorname{clamp}{\lparen{\frac{0.03f}{0.00001f+{\lparen\frac{EyeSpaceZ_i}{200.0f}\rparen}^{4.0f}}},0.01f,3000.0f\rparen}*A_i$  
+&nbsp;&nbsp;&nbsp;&nbsp;1.${\operatorname{W}( EyeSpaceZ_i,A_i)}=\operatorname{clamp}{({\frac{10.0f}{0.00001f+{(\frac{EyeSpaceZ_i}{5.0f})}^{2.0f}+{(\frac{EyeSpaceZ_i}{200.0f})}^{6.0f}}},0.01f,3000.0f)}*A_i$  
+&nbsp;&nbsp;&nbsp;&nbsp;2.${\operatorname{W}( EyeSpaceZ_i,A_i)}=\operatorname{clamp}{({\frac{10.0f}{0.00001f+{(\frac{EyeSpaceZ_i}{10.0f})}^{3.0f}+{(\frac{EyeSpaceZ_i}{200.0f})}^{6.0f}}},0.01f,3000.0f)}*A_i$  
+&nbsp;&nbsp;&nbsp;&nbsp;3.${\operatorname{W}( EyeSpaceZ_i,A_i)}=\operatorname{clamp}{({\frac{0.03f}{0.00001f+{(\frac{EyeSpaceZ_i}{200.0f})}^{4.0f}}},0.01f,3000.0f)}*A_i$  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;//注：根据定义，可见性函数$V\lparen Z_i\rparen$不可能超过1；但是，当片元“**极近**”时，权重函数的值却可能高达3000，这可能是McGuire认为权重函数需要依赖于$A_i$的原因。  
+&nbsp;&nbsp;&nbsp;&nbsp;//注：根据定义，可见性函数$V( Z_i)$不可能超过1；但是，当片元“**极近**”时，权重函数的值却可能高达3000，这可能是McGuire认为权重函数需要依赖于$A_i$的原因。  
 &nbsp;  
 ### 归一化  
-&nbsp;&nbsp;&nbsp;&nbsp;在讨论随机透明的Alpha校正时，我们已经证明过：$\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen=1-\prod_i\lparen 1-A_i\rparen$。  
+&nbsp;&nbsp;&nbsp;&nbsp;在讨论随机透明的Alpha校正时，我们已经证明过：$\sum_i(\operatorname{V}( Z_i) A_i)=1-\prod_i( 1-A_i)$。  
 &nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;归一化即假定$\frac{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}{\sum_i\lparen\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen A_i\rparen}=\frac{\operatorname{V}\lparen Z_i\rparen}{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}$，从而得到${\operatorname{V}\lparen Z_i\rparen}={\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}{\frac{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}{\sum_i\lparen\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen A_i\rparen}}={\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}{\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen A_i\rparen}}$。  
+&nbsp;&nbsp;&nbsp;&nbsp;归一化即假定$\frac{\operatorname{W}( EyeSpaceZ_i,A_i)}{\sum_i(\operatorname{W}( EyeSpaceZ_i,A_i) A_i)}=\frac{\operatorname{V}( Z_i)}{\sum_i(\operatorname{V}( Z_i) A_i)}$，从而得到${\operatorname{V}( Z_i)}={\operatorname{W}( EyeSpaceZ_i,A_i)}{\frac{\sum_i(\operatorname{V}( Z_i) A_i)}{\sum_i(\operatorname{W}( EyeSpaceZ_i,A_i) A_i)}}={\operatorname{W}( EyeSpaceZ_i,A_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i(\operatorname{W}( EyeSpaceZ_i,A_i) A_i)}}$。  
 &nbsp;  
 ### Render Pass  
 1.OpaquePass  
 &nbsp;&nbsp;&nbsp;&nbsp;绘制不透明物体，得到BackgroundColor和BackgroundDepth  
 &nbsp;  
 2.AccumulateAndTotalAlphaPass //GeometryPass  
-&nbsp;&nbsp;&nbsp;&nbsp;将Depth初始化为BackgroundDepth 开启深度测试关闭深度写入 将透明物体按材质排序后绘制得到$WeightedColor=\sum_i{\lparen{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}A_iC_i\rparen}$、$CorrectAlphaTotal=1-\prod_i\lparen 1-A_i\rparen$、$WeightedTotalAlpha=\sum_i{\lparen{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}A_i\rparen}$ //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序；AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal，术语”TotalAlpha”来自随机透明（6.[Enderton 2010]），术语”AlphaTotal”来自Under操作（1.[Porter 1984]、4. [Dunn 2014]）  
+&nbsp;&nbsp;&nbsp;&nbsp;将Depth初始化为BackgroundDepth 开启深度测试关闭深度写入 将透明物体按材质排序后绘制得到$WeightedColor=\sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}$、$CorrectAlphaTotal=1-\prod_i( 1-A_i)$、$WeightedTotalAlpha=\sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}$ //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序；AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal，术语”TotalAlpha”来自随机透明（6.[Enderton 2010]），术语”AlphaTotal”来自Under操作（1.[Porter 1984]、4. [Dunn 2014]）  
 &nbsp;  
 3.CompositePass //FullScreenTrianglePass  
-&nbsp;&nbsp;&nbsp;&nbsp;透明物体对$C_{Final}$的总贡献为：$TransparentColor=\sum_i{\lparen{\lparen{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}A_i\rparen}\rparen}A_iC_i\rparen}={\lparen\sum_i{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}A_iC_i\rparen}{\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen{\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen}A_i\rparen}}=WeightedColor\frac{1-CorrectAlphaTotal}{WeightedTotalAlpha}$  
+&nbsp;&nbsp;&nbsp;&nbsp;透明物体对$C_{Final}$的总贡献为：$TransparentColor=\sum_i{({({\operatorname{W}( EyeSpaceZ_i,A_i)}\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)})}A_iC_i)}={(\sum_i{\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}}=WeightedColor\frac{1-CorrectAlphaTotal}{WeightedTotalAlpha}$  
 &nbsp;&nbsp;&nbsp;&nbsp;随后，基于CorrectAlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}=TransparentColor+CorrectAlphaTotal×BackgroundColor$） //注：可以在片元着色器中输出TransparentColor和CorrectAlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
 &nbsp;  
 ### 综合评价  
-&nbsp;&nbsp;&nbsp;&nbsp;加权融合用预定义的权重函数$\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen$近似地表示可见性函数$V\lparen Z_i\rparen$，省去了求解可见性函数$V\lparen Z_i\rparen$的过程，在某种程度上可以认为是随机透明的简化版（省去了StochasticDepthPass）。当然，加权融合的误差也是最大的，因为作为可见性函数$V\lparen Z_i\rparen$估计值的权重函数$\operatorname{W}\lparen EyeSpaceZ_i,A_i\rparen$与场景中的实际情况不存在任何关系。  
+&nbsp;&nbsp;&nbsp;&nbsp;加权融合用预定义的权重函数$\operatorname{W}( EyeSpaceZ_i,A_i)$近似地表示可见性函数$V( Z_i)$，省去了求解可见性函数$V( Z_i)$的过程，在某种程度上可以认为是随机透明的简化版（省去了StochasticDepthPass）。当然，加权融合的误差也是最大的，因为作为可见性函数$V( Z_i)$估计值的权重函数$\operatorname{W}( EyeSpaceZ_i,A_i)$与场景中的实际情况不存在任何关系。  
 &nbsp;  
 ### Demo  
 &nbsp;&nbsp;&nbsp;&nbsp;Demo地址：[https://gitee.com/YuqiaoZhang/WeightedBlendedOIT](https://gitee.com/YuqiaoZhang/WeightedBlendedOIT) / [https://github.com/YuqiaoZhang/WeightedBlendedOIT](https://github.com/YuqiaoZhang/WeightedBlendedOIT)。该Demo改编自NVIDIA GameWorks Vulkan and OpenGL Samples中的Weighted Blended Order-independent Transparency（23.[NVIDIA]）。加权融合是所有OIT算法中最简单的，我也并没有对Demo作任何实质性的修改。  
