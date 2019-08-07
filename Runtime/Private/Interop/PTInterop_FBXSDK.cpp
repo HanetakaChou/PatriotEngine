@@ -1,4 +1,4 @@
-#include <fbxsdk.h>
+﻿#include <fbxsdk.h>
 
 #include "../../Public/PTCommon.h"
 #include "../../Public/System/PTSFile.h"
@@ -59,14 +59,18 @@ static inline fbxsdk::FbxManager * PTI_FBXSDK_FbxManager_Singleton()
 
 class PTI_FBXSDK_FBXInputStream : public fbxsdk::FbxStream
 {
-	IPTSFile *m_pFile;
+	void *m_Buffer;
+	long m_Size;
+	int m_ReaderID;
 	fbxsdk::FbxStream::EState m_State;
-	mutable int m_Error;
+	int m_Error;
 	mutable long m_Position;
 public:
-	inline PTI_FBXSDK_FBXInputStream(IPTSFile *pFile)
+	inline PTI_FBXSDK_FBXInputStream(void *Buffer, long Size, int pFileFormat)
 		:
-		m_pFile(pFile),
+		m_Buffer(Buffer),
+		m_Size(Size),
+		m_ReaderID(pFileFormat),
 		m_State(fbxsdk::FbxStream::eEmpty),
 		m_Error(0),
 		m_Position(0)
@@ -79,16 +83,14 @@ public:
 	}
 	bool Open(void *) override
 	{
-		m_State = fbxsdk::FbxStream::eOpen;
-		m_Position = static_cast<long>(m_pFile->Seek(IPTSFile::FILE_SEEK_BEGIN, 0));
-		assert(m_Position == 0);
+		m_State = fbxsdk::FbxStream::eOpen;		
+		m_Position = 0;
 		return true;
 	}
 	bool Close() override
 	{
-		m_State = fbxsdk::FbxStream::eClosed;
-		m_Position = static_cast<long>(m_pFile->Seek(IPTSFile::FILE_SEEK_BEGIN, 0));
-		assert(m_Position == 0);
+		m_State = fbxsdk::FbxStream::eClosed;	
+		m_Position = 0;
 		return true;
 	}
 	bool Flush() override
@@ -103,55 +105,74 @@ public:
 	}
 	int Read(void *pData, int Size) const override
 	{
-		intptr_t CountDone = m_pFile->Read(pData, static_cast<uintptr_t>(Size));
-		m_Error = (CountDone != -1) ? 0 : 1;
-		m_Position += static_cast<long>(CountDone);
-		return static_cast<int>(CountDone);
+		if ((m_Position >= 0) && (m_Position <= m_Size))
+		{
+			int cbLeft = (m_Size - m_Position);
+			int cbRead = (Size <= cbLeft) ? Size : cbLeft;
+			::memcpy(pData, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(m_Buffer) + static_cast<uintptr_t>(m_Position)), cbRead);
+			m_Position += cbRead;
+			return cbRead;
+		}
+		else
+		{
+			assert(0);
+			return -1;
+		}
 	}
 	int GetReaderID() const override
 	{
-		//��FbxImporter::Initialize�д���ReaderID
-		assert(0);
-		int ReaderID;
-		bool bResult = ::PTI_FBXSDK_FbxManager_Singleton()->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", ReaderID);
-		assert(bResult);
-		return ReaderID;
+		return m_ReaderID;
 	}
 	int GetWriterID() const override
 	{
 		assert(0);
 		return -1;
 	}
-	void Seek(const fbxsdk::FbxInt64 &pOffset, const fbxsdk::FbxFile::ESeekPos &pSeekPos) override
+	void Seek(const fbxsdk::FbxInt64 &pOffset_Int64, const fbxsdk::FbxFile::ESeekPos &pSeekPos) override
 	{
-		int64_t Position;
+		assert((pOffset_Int64 >= fbxsdk::FbxInt64{ -0X80000000LL }) && (pOffset_Int64 <= fbxsdk::FbxInt64{ 0X7FFFFFFF }));
+		long pOffset = static_cast<long>(pOffset_Int64);
+
 		switch (pSeekPos)
 		{
 		case fbxsdk::FbxFile::eBegin:
-			Position = m_pFile->Seek(IPTSFile::FILE_SEEK_BEGIN, pOffset);
-			break;
+		{
+			m_Position = pOffset;
+		}
+		break;
 		case fbxsdk::FbxFile::eCurrent:
-			Position = m_pFile->Seek(IPTSFile::FILE_SEEK_CURRENT, pOffset);
-			break;
+		{
+			m_Position = m_Position + pOffset;
+		}
+		break;
 		case fbxsdk::FbxFile::eEnd:
-			Position = m_pFile->Seek(IPTSFile::FILE_SEEK_END, pOffset);
-			break;
+		{
+			m_Position = m_Size + pOffset;
+		}
+		break;
 		default:
 			assert(0);
+			m_Error = 22; //EINVAL
 		}
-		m_Error = (Position != -1) ? 0 : 1;
-		m_Position = static_cast<long>(Position);
+
+		if ((m_Position < 0) || (m_Position > m_Size))
+		{
+			assert(0);
+			m_Error = 22; //EINVAL
+		}
 	}
 	long GetPosition() const override
 	{
-		assert(m_Position == static_cast<long>(m_pFile->Seek(IPTSFile::FILE_SEEK_CURRENT, 0)));
 		return m_Position;
 	}
 	void SetPosition(long pPosition) override
 	{
-		int64_t Position = m_pFile->Seek(IPTSFile::FILE_SEEK_BEGIN, static_cast<int64_t>(pPosition));
-		m_Error = (Position != -1) ? 0 : 1;
-		m_Position = static_cast<long>(Position);
+		m_Position = pPosition;
+		if ((m_Position < 0) || (m_Position > m_Size))
+		{
+			assert(0);
+			m_Error = 22; //EINVAL
+		}
 	}
 	int GetError() const override
 	{
@@ -279,6 +300,9 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 				for (int IndexJoint = 0; IndexJoint < CountJoint; ++IndexJoint)
 				{
 					fbxsdk::FbxCluster *pCluster = pSkin->GetCluster(IndexJoint);
+
+					//fbxsdk::FbxCluster::GetTransformLinkMatrix //GetBindPose
+
 					fbxsdk::FbxNode *pNodeJoint = pCluster->GetLink();
 					char const *pJointName = pNodeJoint->GetName();
 					assert(pNodeJoint->GetNodeAttributeCount() == 1U);
@@ -414,6 +438,7 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 			fbxsdk::FbxGeometryElementNormal *pNormalArray = NULL;
 			fbxsdk::FbxVector4(*pNormalArrayAccess)(fbxsdk::FbxGeometryElementNormal *pNormalArray, int PolygonIndex, int IndexPolygonVertex, int IndexControlPoint) = NULL;
 
+#if 0
 			if (pMesh->GetElementNormalCount() == 0)
 			{
 				bool bResult = pMesh->GenerateNormals(false, true, false);
@@ -424,9 +449,22 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 				bool bResult = pMesh->GenerateNormals(true, true, false);
 				assert(bResult);
 			}
+#endif
+
+			//Set pOverwrite To true Will Cause Problem
+			//应当在GetNormals相关的方法中进行封装；当不为CW时，取相反方向
+			#Error
+			if (!tri_obj->CheckIfVertexNormalsCCW())
+			{
+				tri_obj->GenerateNormals(true, false, true);
+			}
+			else
+			{
+				tri_obj->GenerateNormals(false, false, false);
+			}
 
 			assert(pMesh->GetElementNormalCount() == 1);
-			assert(pMesh->CheckIfVertexNormalsCCW());//��Ⱦʱ��ʱ��
+			//assert(!pMesh->CheckIfVertexNormalsCCW()); 
 
 			pNormalArray = pMesh->GetLayer(0)->GetNormals();
 			assert(pMesh->GetLayerCount() == 1 || pMesh->GetLayer(1)->GetNormals() == NULL);
@@ -984,8 +1022,27 @@ static inline void PTI_FBXSDK_NodeProcess_Mesh(std::map<fbxsdk::FbxNode *, PTGAn
 				::PTS_CPP_Allocator<std::pair<int, PTGRender_MeshSkeletal_Intermediate_FBX>>
 			> MeshArray_Intermediate_FBX;
 
-			fbxsdk::FbxAMatrix TransformFBXCoord = pNodeToProcess->GetAnimationEvaluator()->GetNodeGlobalTransform(pNodeToProcess, FBXSDK_TIME_INFINITE, fbxsdk::FbxNode::eSourcePivot, false, false);
+			//ObjectTM
+			fbxsdk::FbxAMatrix objectTM;
+			{
+				// Get the geometry offset to a node. It is never inherited by the children.
+				fbxsdk::FbxVector4 const lT = nodemesh_fbx->GetGeometricTranslation(fbxsdk::FbxNode::eSourcePivot);
+				fbxsdk::FbxVector4 const lR = nodemesh_fbx->GetGeometricRotation(fbxsdk::FbxNode::eSourcePivot);
+				fbxsdk::FbxVector4 const lS = nodemesh_fbx->GetGeometricScaling(fbxsdk::FbxNode::eSourcePivot);
 
+				objectTM = std::move(fbxsdk::FbxAMatrix(lT, lR, lS));
+			}
+
+			//NodeTM
+			fbxsdk::FbxAMatrix nodeTM = pNodeToProcess->GetAnimationEvaluator()->GetNodeGlobalTransform(pNodeToProcess, FBXSDK_TIME_INFINITE, fbxsdk::FbxNode::eSourcePivot, false, false);
+			
+			//In Max SDK
+			//objectTM = objectOffsetTM * stretchTM * nodeTM
+
+			//FBXSDK的[operator*]有BUG，禁止使用！
+			//fbxsdk::FbxAMatrix TransformFBXCoord_Bug = objectTM * nodeTM;
+			fbxsdk::FbxAMatrix TransformFBXCoord = PTSIMDMatrixMultiply(Load(nodeTM),Load(objectTM));
+			
 			PTMatrix4x4F TransformFCoord;
 			TransformFCoord.r[0].x = static_cast<float>(TransformFBXCoord.mData[0][0]);
 			TransformFCoord.r[0].y = static_cast<float>(TransformFBXCoord.mData[1][0]);
@@ -1501,13 +1558,20 @@ extern "C" PTEXPORT void PTCALL PTI_FBXSDK_FBXToPTTF(IPTSFile *pFileFBX, IPTSFil
 		{
 			fbxsdk::FbxImporter *pImporter = fbxsdk::FbxImporter::Create(pManager, "");
 
-			int ReaderID = 0;
-			bool bResult = pManager->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", ReaderID);
+			//FbxImporter::Initialize根据传入的pFileName确定ReadID
+			//在传入pStream时，pFileName的相关信息丢失，需要由应用程序显式地进行这个过程
+			int pFileFormat; //ReaderID
+			bool bResult = pManager->GetIOPluginRegistry()->DetectReaderFileFormat("PTEngine.fbx", pFileFormat);
 			assert(bResult);
 
-			PTI_FBXSDK_FBXInputStream InputStream(pFileFBX);
+			//Read pFileFBX To fbxFileBuffer And fbxFileSize
+			//...
 
-			bResult = pImporter->Initialize(&InputStream, NULL, ReaderID, NULL);
+			//FBXSDK可能会以size=1为参数调用FbxStream::Read
+			//为避免读取时间过长，应当事先将整个FBX文件读取到内存
+			PTI_FBXSDK_FBXInputStream InputStream(fbxFileBuffer, fbxFileSize, pFileFormat);
+
+			bResult = pImporter->Initialize(&InputStream, NULL, -1, NULL);
 			assert(bResult);
 
 			bResult = pImporter->Import(pScene, false);
