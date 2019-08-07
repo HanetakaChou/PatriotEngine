@@ -1,9 +1,12 @@
 ﻿#include "PTWindowImpl.h"
+#include "../../../Public/System/PTSMemoryAllocator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 #include <ShellAPI.h>
 #include <stdio.h>
+
+#include "PTDInput.h"
 
 static unsigned __stdcall PTInvokeMain(void *pVoid);
 
@@ -11,7 +14,6 @@ static unsigned __stdcall PTInvokeMain(void *pVoid);
 
 //注:PTLauncher提供了IPTWWindow的示例实现，但这并不是必须的
 //PatriotEngine鼓励第三方用户自定义IPTWWindow的实现来开发编辑器或其它上层应用
-
 int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 {
 	ATOM hAtom;
@@ -24,6 +26,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 		{
 		case WM_CREATE:
 		{
+			assert(WM_CREATE == uMsg);
 
 #ifdef NDEBUG
 			HHOOK hHook = ::SetWindowsHookExW(WH_KEYBOARD_LL, [](int nCode, ::WPARAM wParam, ::LPARAM lParam)->LRESULT {
@@ -106,14 +109,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 				pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventData);
 			}
-
-			return 0;
 		}
-		case WM_DESTROY:
-		{
-			::PostQuitMessage(0U);
-			return 0;
-		}
+		return 0;
 #if 0
 		case WM_SETFOCUS:
 		{
@@ -136,6 +133,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 #endif
 		case WM_SIZE:
 		{
+			assert(WM_SIZE == uMsg);
+
 			PTWWindowImpl *pSingleton = reinterpret_cast<PTWWindowImpl *>(::GetWindowLongPtrW(hWnd, 0U));
 			assert(pSingleton != NULL);
 
@@ -163,10 +162,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 				EventData.m_Height = static_cast<uint32_t>(HIWORD(lParam));
 
 				pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventData);
-			}
-			
-			return 0;
+			}	
 		}
+		return 0;
 		default:
 		{
 			return ::DefWindowProcW(hWnd, uMsg, wParam, lParam);
@@ -198,8 +196,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	l_WindowImpl_Singleton.m_pCmdLine_Cache = lpCmdLine;
 
 	PTSThread hThreadInvoke;
-	PTBOOL tbResult = ::PTSThread_Create(&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton), &hThreadInvoke);
-	assert(tbResult != PTFALSE);
+	bool bThreadCreate = ::PTSThread_Create(&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton), &hThreadInvoke);
+	assert(bThreadCreate != false);
 
 	HWND hWnd = ::CreateWindowExW(
 		WS_EX_APPWINDOW,
@@ -218,22 +216,251 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 	l_WindowImpl_Singleton.m_hWindow_Cache = hWnd;
 
-	MSG msg;
-	BOOL wbResult;
-	while ((wbResult = ::GetMessageW(&msg, NULL, 0, 0)) != 0)
+	//GameControl Support
+	HANDLE hEventDInput = ::CreateEventExW(NULL, NULL, 0U, DELETE | SYNCHRONIZE | EVENT_MODIFY_STATE);
+	IDirectInputDevice8W *pDInputDevice = NULL;
+	DICONTROLLERTYPE eDIControllerType = DICT_UNKNOWN;
+	//DInput_Init
 	{
-		assert(wbResult != -1);
+		//::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 
-		::TranslateMessage(&msg);
-		::DispatchMessageW(&msg);
+		IDirectInput8W *pDirectInput;
+		HRESULT hsw1111 = ::NoRegCoCreate(L"dinput8.dll", __uuidof(DirectInput8), IID_PPV_ARGS(&pDirectInput));
+
+		bool bInitialize = SUCCEEDED(pDirectInput->Initialize(hInstance, DIRECTINPUT_VERSION));
+
+		struct __Z_DInput_Device {
+			PTS_CPP_Vector<GUID> m_guidInstance;
+			PTS_CPP_Vector<GUID> m_guidProduct;
+			void Insert(DIDEVICEINSTANCEW const *lpddi)
+			{
+				m_guidInstance.push_back(lpddi->guidInstance);
+				m_guidProduct.push_back(lpddi->guidProduct);
+			}
+
+		}__Z_Instance_DInput_Device;
+
+		pDirectInput->EnumDevices(
+			DI8DEVCLASS_GAMECTRL,
+			[](DIDEVICEINSTANCEW const *lpddi, LPVOID pvRef)->BOOL
+		{
+			static_cast<__Z_DInput_Device *>(pvRef)->Insert(lpddi);
+			return DIENUM_CONTINUE;
+		},
+			&__Z_Instance_DInput_Device,
+			DIEDFL_ATTACHEDONLY
+			);
+
+		//ControllerType
+		eDIControllerType = DIGetControllerTypeForGUID(__Z_Instance_DInput_Device.m_guidProduct[0]);
+
+		pDirectInput->CreateDevice(__Z_Instance_DInput_Device.m_guidInstance[0], &pDInputDevice, NULL);
+
+		//DirectInput and XUSB Devices
+		//https://docs.microsoft.com/en-us/windows/win32/xinput/directinput-and-xusb-devices
+		
+		//XInput compatible HID controller //Support Both XInput And DirectInput //Example: XboxOne Controller
+		//HID-compliant game controller //Support DirectInput Only //Example: PS4 Controller
+
+		//Taking Advantage of High-Definition Mouse Movement
+		//https://docs.microsoft.com/en-us/windows/win32/dxtecharts/taking-advantage-of-high-dpi-mouse-movement
+
+		//HID Mouse -> WM_INPUT
+		//HID Joystick -> DirectInput //The RAWHID::bRawData Is Invisible To Applications
+
+		//pDInputDevice->SetCooperativeLevel
+	
+		switch (eDIControllerType)
+		{
+		case DICT_XBOXONE:
+		{
+			assert(DICT_XBOXONE == eDIControllerType);
+
+			HRESULT hda222 = pDInputDevice->SetDataFormat(&c_dfDIXBOXONECONTROLLER);
+			assert(SUCCEEDED(hda222));
+		}
+		break;
+		case DICT_PS4:
+		{
+			assert(DICT_PS4 == eDIControllerType);
+
+			HRESULT hda222 = pDInputDevice->SetDataFormat(&c_dfDIPS4CONTROLLER);
+			assert(SUCCEEDED(hda222));
+		}
+		break;
+		default:
+		{
+			assert(0);
+		}
+		break;
+		}
+
+		//Dead Zone
+
+		//Interpreting Joystick Axis Data
+		//https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee418270(v=vs.85)
+
+		DIPROPDWORD	dipdw;
+		dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+		dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
+		dipdw.diph.dwHow = DIPH_BYOFFSET;
+
+		//https://docs.microsoft.com/en-us/windows/win32/xinput/getting-started-with-xinput#dead-zone
+		dipdw.dwData = 1200; //Dead Zone //1200/10000=12%
+		
+		//9500 //Saturation //9500/10000=95%
+
+		switch (eDIControllerType)
+		{
+		case DICT_XBOXONE:
+		{
+			assert(DICT_XBOXONE == eDIControllerType);
+
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, LTRT); //LT(Left Trigger) And RT(Right Trigger) //LT(65408)-None(32767)-RT(128)
+			HRESULT hHuhu71 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, L_X); //L(Left Stick)_X(AxisX)
+			HRESULT hHuhu712 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, L_Y); //L(Left Stick)_Y(AxisY)
+			HRESULT hHuhu716 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, R_X); //R(Left Stick)_X(AxisX)
+			HRESULT hHuhu7172 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, R_Y); //R(Left Stick)_Y(AxisY)
+			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		}
+		break;
+		case DICT_PS4:
+		{
+			assert(DICT_PS4 == eDIControllerType);
+			
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, LT); //LT(Left Trigger)
+			HRESULT hHuhu71 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, RT); //RT(Right Trigger)
+			HRESULT hHuhu711 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+		
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, L_X); //L(Left Stick)_X(AxisX)
+			HRESULT hHuhu712 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, L_Y); //L(Left Stick)_Y(AxisY)
+			HRESULT hHuhu716 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+			
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, R_X); //R(Left Stick)_X(AxisX)
+			HRESULT hHuhu7172 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
+
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, R_Y); //R(Left Stick)_Y(AxisY)
+			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);			
+		}
+		break;
+		default:
+		{
+			assert(0);
+		}
+		break;
+		}
+
+		HRESULT hHuhu8 = pDInputDevice->SetEventNotification(hEventDInput);
+
+		HRESULT hHuhu7 = pDInputDevice->Acquire();
 	}
-	assert(msg.message == WM_QUIT);
+
+	// Main message loop:
+	bool bMessageLoop = true;
+	while (bMessageLoop)
+	{
+		constexpr DWORD const nCount = 2U;
+		HANDLE handles[2] = { hEventDInput, hThreadInvoke };
+		DWORD iResult = MsgWaitForMultipleObjectsEx(nCount, handles, INFINITE, QS_ALLINPUT, 0U);
+		switch (iResult)
+		{
+		case WAIT_OBJECT_0:
+		{
+			//assert((sizeof(DWORD) * 1 + sizeof(BYTE) * 8 + sizeof(DWORD) * 6) == sizeof(DIPLAYSTATIONCONTROLLERSTATE));
+
+			//HRESULT hHuhu8 = pDInputDevice->Poll();
+			switch (eDIControllerType)
+			{
+			case DICT_XBOXONE:
+			{
+				assert(DICT_XBOXONE == eDIControllerType);
+
+				DIXBOXONESTATE js;
+
+				HRESULT hHuhu12138 = pDInputDevice->GetDeviceState(sizeof(DIXBOXONESTATE), &js);
+
+				if (js.X || js.A || js.B | js.Y || js.LB || js.RB)
+				{
+					int huhu = 0;
+				}
+			}
+			break;
+			case DICT_PS4:
+			{
+				assert(DICT_PS4 == eDIControllerType);
+
+				DIPS4STATE js;
+
+				HRESULT hHuhu12138 = pDInputDevice->GetDeviceState(sizeof(DIPS4STATE), &js);
+
+				if (js.X || js.A || js.B | js.Y || js.LB || js.RB || js.PS4)
+				{
+					int huhu = 0;
+				}
+			}
+			break;
+			default:
+			{
+				assert(0);
+			}
+			break;
+			}
+		}
+		break;
+		case (WAIT_OBJECT_0 + 1):
+		{
+			bMessageLoop = false;
+		}
+		break;
+		case (WAIT_OBJECT_0 + nCount):
+		{
+			MSG msg;
+			while (PeekMessageW(&msg, NULL, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessageW(&msg);
+			}
+		}
+		break;
+		default:
+		{
+			assert(0);
+			bMessageLoop = false;
+		}
+		break;
+		}
+	}
 
 	//确保栈中的内存 PTInvokeParam ParamInvoke 在PTInvokeMain的整个生命期内是有效的
-	tbResult = ::PTSThread_Join(&hThreadInvoke);
-	assert(tbResult != PTFALSE);
+	bool bThreadJoin = ::PTSThread_Join(&hThreadInvoke);
+	assert(bThreadJoin != false);
 
-	return static_cast<int>(msg.wParam);
+	//DInput_Free
+	{
+
+		HRESULT hHuhu7 = pDInputDevice->Unacquire();
+
+		HRESULT hHuhu71 = pDInputDevice->SetEventNotification(NULL);
+
+		bool bCloseHandle = (::CloseHandle(hEventDInput) != FALSE);
+
+		pDInputDevice->Release();
+	}
+
+	return 0;
+	//return static_cast<int>(msg.wParam);
 }
 
 inline PTWWindowImpl::PTWWindowImpl()
@@ -337,6 +564,8 @@ static unsigned __stdcall PTInvokeMain(void *pVoid)
 		assert(bResult);
 	}
 
+	//Lexer
+
 	char *argv[0X10000];
 	int argc = 0;
 
@@ -378,7 +607,7 @@ static unsigned __stdcall PTInvokeMain(void *pVoid)
 	int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), argc, argv);
 	assert(iResult == 0);
 
-	pWindow->TermminateMessagePump();
+	//pWindow->TermminateMessagePump();
 
 	return static_cast<unsigned>(iResult);
 }
