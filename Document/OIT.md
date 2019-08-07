@@ -17,7 +17,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 &nbsp;&nbsp;&nbsp;&nbsp;值得注意的是，在物理含义上， Alpha模拟的是局部覆盖（Partial Coverage）而非透射率（Transmittance）。  
 &nbsp;&nbsp;&nbsp;&nbsp;Alpha的含义是片元覆盖的面积占像素面积的比例（这也是我们用标量float而非向量RGB来表示Alpha的原因；这种情况在一些文献中被称作波长无关的（Wavelength-Independent））。比如，我们透过一条蓝色的真丝围巾观察一块红色的砖，我们看到砖的颜色大体为蓝色和红色“**相加**”； 真丝围巾的纤维本身是不透明的，只是真丝围巾的纤维之间存在着间隙，我们通过这些间隙看到了红色的砖，即真丝围巾“局部覆盖”了砖。  
 &nbsp;&nbsp;&nbsp;&nbsp;而透射率是波长相关的（Wavelengh-Dependent）；比如，我们透过一块蓝色的塑料薄膜观察一块红色的砖，我们看到的砖的颜色大体为黑色（即蓝色和红色“**相乘**”）；红色的砖只反射红色的光，而蓝色的塑料薄膜只允许蓝色的光通过，红色的砖的反射光全部会被蓝色的塑料薄膜吸收，即呈现出黑色（参考文献：[《科学七年级下册》（ISBN: 9787553603162）/第2章对环境的感觉/第4节光的颜色/物体的颜色]）；如果需要模拟透射率相关的效果，那么我们应当使用参与介质（Participating Media）（2.[Yusor 2013]、3.[Hoobler 2016]）相关的技术。  
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://gitee.com/YuqiaoZhang/PatriotEngine/raw/master/Document/OIT_1.png)  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](https://raw.githubusercontent.com/YuqiaoZhang/PatriotEngine/master/Document/OIT_1.png)  
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;图来自：[《科学七年级下册》（ISBN: 9787553603162）/第2章对环境的感觉/第4节光的颜色/物体的颜色]  
 &nbsp;  
 &nbsp;&nbsp;&nbsp;&nbsp;根据Alpha的含义，不难理解可见性函数$V\lparen Z_i\rparen=\prod_{z_j\,Nearer\,Z_i}\lparen1-A_j\rparen$，即只有比当前片元“更近”（Nearer）的片元才会局部覆盖当前片元。（一些文献中将可见性函数$V\lparen Z_i\rparen$称作透射率$T\lparen Z_i\rparen$，在严格意义上是错误的。）  
