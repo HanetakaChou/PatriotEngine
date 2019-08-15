@@ -9,7 +9,7 @@
 
 extern "C" PTAPPAPI int PTCALL PTAMain(IPTWWindow *pWindow, int argc, char *argv[]);
 
-extern "C" PTAPPAPI PTBOOL PTCALL PTAFileSystem_Initialize_Hook();
+extern "C" PTAPPAPI bool PTCALL PTAFileSystem_Initialize_Hook();
 extern "C" PTAPPAPI IPTSFileSystem * PTCALL PTAFileSystem_ForProcess_Hook();
 
 #endif

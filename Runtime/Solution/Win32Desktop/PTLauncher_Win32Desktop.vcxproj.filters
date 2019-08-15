@@ -33,9 +33,15 @@
     <ClInclude Include="..\..\Public\Window\PTWWindow.h">
       <Filter>Public\Window</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTDInput.h">
+      <Filter>Private\Window\Win32Desktop</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\Window\Win32Desktop\PTWindowImpl.cpp">
+      <Filter>Private\Window\Win32Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\Window\Win32Desktop\PTDInput.cpp">
       <Filter>Private\Window\Win32Desktop</Filter>
     </ClCompile>
   </ItemGroup>

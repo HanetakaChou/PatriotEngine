@@ -319,16 +319,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, LTRT); //LT(Left Trigger) And RT(Right Trigger) //LT(65408)-None(32767)-RT(128)
 			HRESULT hHuhu71 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, L_X); //L(Left Stick)_X(AxisX)
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, LS_X); //L(Left Stick)_X(AxisX)
 			HRESULT hHuhu712 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, L_Y); //L(Left Stick)_Y(AxisY)
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, LS_Y); //L(Left Stick)_Y(AxisY)
 			HRESULT hHuhu716 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, R_X); //R(Left Stick)_X(AxisX)
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, RS_X); //R(Left Stick)_X(AxisX)
 			HRESULT hHuhu7172 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, R_Y); //R(Left Stick)_Y(AxisY)
+			dipdw.diph.dwObj = offsetof(DIXBOXONESTATE, RS_Y); //R(Left Stick)_Y(AxisY)
 			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 		}
 		break;
@@ -342,16 +342,16 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, RT); //RT(Right Trigger)
 			HRESULT hHuhu711 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 		
-			dipdw.diph.dwObj = offsetof(DIPS4STATE, L_X); //L(Left Stick)_X(AxisX)
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, LS_X); //L(Left Stick)_X(AxisX)
 			HRESULT hHuhu712 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIPS4STATE, L_Y); //L(Left Stick)_Y(AxisY)
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, LS_Y); //L(Left Stick)_Y(AxisY)
 			HRESULT hHuhu716 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 			
-			dipdw.diph.dwObj = offsetof(DIPS4STATE, R_X); //R(Left Stick)_X(AxisX)
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, RS_X); //R(Left Stick)_X(AxisX)
 			HRESULT hHuhu7172 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
-			dipdw.diph.dwObj = offsetof(DIPS4STATE, R_Y); //R(Left Stick)_Y(AxisY)
+			dipdw.diph.dwObj = offsetof(DIPS4STATE, RS_Y); //R(Left Stick)_Y(AxisY)
 			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);			
 		}
 		break;

@@ -44,9 +44,6 @@
     <ClInclude Include="..\..\Public\System\PTSThread.h">
       <Filter>Public\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\System\Win32\PTSConvUTF.h">
-      <Filter>Public\System\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
       <Filter>Public\System</Filter>
     </ClInclude>
@@ -69,6 +66,9 @@
     </None>
     <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl">
       <Filter>Private\System\Win32</Filter>
+    </None>
+    <None Include="..\..\Public\System\Win32\PTSThread.inl">
+      <Filter>Public\System\Win32</Filter>
     </None>
   </ItemGroup>
 </Project>

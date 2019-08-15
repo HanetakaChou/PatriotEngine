@@ -172,13 +172,13 @@ struct DIXBOXONESTATE
 	BYTE Y;
 	BYTE LB; //LB(Left Bumper)
 	BYTE RB; //RB(Right Bumper)
-	BYTE View;
-	BYTE Menu;
+	BYTE _L; //[◁] View
+	BYTE _R; //[▷] Menu
 	DWORD LTRT; //LT(Left Trigger) And RT(Right Trigger) //LT(65408)-None(32767)-RT(128)
-	DWORD L_X; //L(Left Stick)_X(AxisX)
-	DWORD L_Y; //L(Left Stick)_Y(AxisY)
-	DWORD R_X; //L(Left Stick)_X(AxisX)
-	DWORD R_Y; //L(Left Stick)_Y(AxisY)
+	DWORD LS_X; //L(Left Stick)_X(AxisX)
+	DWORD LS_Y; //L(Left Stick)_Y(AxisY)
+	DWORD RS_X; //L(Left Stick)_X(AxisX)
+	DWORD RS_Y; //L(Left Stick)_Y(AxisY)
 	//The Xbox Button Is InVisible To Applications
 };
 
@@ -196,14 +196,14 @@ struct DIPS4STATE
 	BYTE Y;
 	BYTE LB; //LB(Left Bumper)
 	BYTE RB; //RB(Right Bumper)
-	BYTE Share;
-	BYTE Options;
+	BYTE _L; //[◁] Share
+	BYTE _R; //[▷] Options
 	DWORD LT; //LT(Left Trigger)
 	DWORD RT; //RT(Right Trigger)
-	DWORD L_X; //L(Left Stick)_X(AxisX)
-	DWORD L_Y; //L(Left Stick)_Y(AxisY)
-	DWORD R_X; //L(Left Stick)_X(AxisX)
-	DWORD R_Y; //L(Left Stick)_Y(AxisY)
+	DWORD LS_X; //L(Left Stick)_X(AxisX)
+	DWORD LS_Y; //L(Left Stick)_Y(AxisY)
+	DWORD RS_X; //L(Left Stick)_X(AxisX)
+	DWORD RS_Y; //L(Left Stick)_Y(AxisY)
 	BYTE PS4;
 	BYTE _1;
 	BYTE _2;

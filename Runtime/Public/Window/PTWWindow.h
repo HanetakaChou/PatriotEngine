@@ -1,4 +1,4 @@
-#ifndef PT_WINDOW_WINDOW_H
+ï»¿#ifndef PT_WINDOW_WINDOW_H
 #define PT_WINDOW_WINDOW_H
 
 #include "../PTCommon.h"
@@ -16,7 +16,7 @@ typedef HWND PTWHWindow;
 typedef void *PTWHDisplay;
 typedef IUnknown *PTWHWindow;
 #else
-#error Î´ÖªµÄÆ½Ì¨
+#error æœªçŸ¥çš„å¹³å°
 #endif
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXXCB)
@@ -28,10 +28,10 @@ typedef xcb_window_t PTWHWindow;
 typedef void *PTWHDisplay;
 typedef ANativeWindow *PTWHWindow;
 #else
-#error Î´ÖªµÄÆ½Ì¨
+#error æœªçŸ¥çš„å¹³å°
 #endif
 #else
-#error Î´ÖªµÄÆ½Ì¨
+#error æœªçŸ¥çš„å¹³å°
 #endif
 
 #include <stdint.h>
@@ -40,10 +40,10 @@ struct IPTWWindow
 {
 	//Output
 	virtual void EventOutputCallback_Hook(void *pUserData, void(PTPTR *pEventOutputCallback)(void *pUserData, void *pOutputData)) = 0;
-	//ÔÙPTGDeviceÖĞĞèÒªÎ¬»¤Ò»·İCurrent_XXX£¬±È½ÏÒÔÈ·¶¨ÊÇ·ñChanged
-	//Ò»°ã´«ÈëPTGDeviceÖĞµÄ·½·¨£¬ÓÃÓÚ¹¹Ôì½»»»ÂÉ»º³å
+	//å†PTGDeviceä¸­éœ€è¦ç»´æŠ¤ä¸€ä»½Current_XXXï¼Œæ¯”è¾ƒä»¥ç¡®å®šæ˜¯å¦Changed
+	//ä¸€èˆ¬ä¼ å…¥PTGDeviceä¸­çš„æ–¹æ³•ï¼Œç”¨äºæ„é€ äº¤æ¢å¾‹ç¼“å†²
 
-	//ÔÚOutputEventCallback_HookÎª¿ÕÊ±»áÃ¦Ê½µÈ´ı ÓÉÓÚÏµÍ³µ¼ÖÂWindowÄ£¿é±ÈApplicationÄ£¿éÇ°Æô¶¯£¨¶ø·ÇÔÚApplicationMainÖĞÓÉÓ¦ÓÃ²ã´´½¨£¬ÒòÎª±ØĞëµÈ´ıÓ¦ÓÃ²ãÒÔÍ¬²½£©
+	//åœ¨OutputEventCallback_Hookä¸ºç©ºæ—¶ä¼šå¿™å¼ç­‰å¾… ç”±äºç³»ç»Ÿå¯¼è‡´Windowæ¨¡å—æ¯”Applicationæ¨¡å—å‰å¯åŠ¨ï¼ˆè€Œéåœ¨ApplicationMainä¸­ç”±åº”ç”¨å±‚åˆ›å»ºï¼Œå› ä¸ºå¿…é¡»ç­‰å¾…åº”ç”¨å±‚ä»¥åŒæ­¥ï¼‰
 
 	struct EventOutput
 	{
@@ -78,7 +78,7 @@ struct IPTWWindow
 	};
 
 	//Input
-	//MessagePumpÏß³Ì
+	//MessagePumpçº¿ç¨‹
 	virtual void EventInputCallback_Hook(void *pUserData, void(PTPTR *pEventInputCallback)(void *pUserData, void *pInputData)) = 0;
 	//KeyDown
 	static const uint32_t InputType_KeyDown = 0;
@@ -155,6 +155,19 @@ struct IPTWWindow
 	//float Position_X
 	//float Position_Y
 	//uint32_t PointId
+
+	static const uint32_t InputType_GameController_ButtonDown = 5;
+	//uint32_t ButtonType
+	static const uint32_t GameController_ButtonType_X = 0;
+	static const uint32_t GameController_ButtonType_Y = 1;
+	static const uint32_t GameController_ButtonType_A = 2;
+	static const uint32_t GameController_ButtonType_B = 3;
+	//bool IsButtonXPressed //æ¶ˆæ¯å‘å‡ºæ—¶çš„çŠ¶æ€ //API(joyGetPos(Ex))è·å–çš„æ˜¯å½“å‰çš„çŠ¶æ€
+	//bool IsButtonYPressed
+	//bool IsButtonAPressed
+	//bool IsButtonBPressed
+
+	static const uint32_t InputType_GameController_ButtonUp = 6;
 
 	//Authority
 	virtual void Parent_Set(PTWHWindow hWindowParent) = 0;

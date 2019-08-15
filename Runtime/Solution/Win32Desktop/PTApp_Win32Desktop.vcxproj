@@ -24,14 +24,8 @@
     <ClInclude Include="..\..\Public\PTCommon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="PTAudioMM_Win32Desktop.vcxproj">
-      <Project>{ccae2daa-ce1b-4818-8f7e-760f2726454d}</Project>
-    </ProjectReference>
     <ProjectReference Include="PTSystem_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
-    </ProjectReference>
-    <ProjectReference Include="PTVideoVK_Win32Desktop.vcxproj">
-      <Project>{91f1d8a3-c9bd-42a4-90b0-5617a80e6ee7}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
