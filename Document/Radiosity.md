@@ -118,11 +118,16 @@ $B_i^{\lparen p+1\rparen} = \frac{B_i^{\lparen p\rparen} + r_i^{\lparen p\rparen
   
 目前余量$r_i=0$，重新计算“其余”的各个余量 //即$j \ne i$  
 由于$r_j^{\lparen p+1\rparen} + K_{ji}B_i^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen}$  //只有$B_i$发生改变，其余$B_j$并没有发生改变   
-$r_j^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen} - K_{ji}B_i^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} - K_{ji}{\lparen B_i^{\lparen p+1\rparen} - B_i^{\lparen p\rparen} \rparen} = r_j^{\lparen p\rparen} - K_{ji}r_i^{\lparen p\rparen}$  
+$r_j^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen} - K_{ji}B_i^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} - K_{ji}{\lparen B_i^{\lparen p+1\rparen} - B_i^{\lparen p\rparen} \rparen} = r_j^{\lparen p\rparen} - K_{ji}r_i^{\lparen p\rparen} = r_j^{\lparen p\rparen} + \rho_jF_{ji}r_i^{\lparen p\rparen} = r_j^{\lparen p\rparen} + \rho_jF_{ij}r_i^{\lparen p\rparen}$ //根据互反律$F_{ij} = F_{ji}$
 
+由于$\rho_j$小于1 且 所有(j!=i)的$F_{ij}$的和小于1（可以从HemiCube角度理解），所有余量的和在减小（//单调递减）  
+  
+初始化B=0,r=E-KB=E  
+余量的物理表示  
+  
 再次进行下一个Step  
   
-
+  
   
   
 ## 参考文献  
