@@ -1,5 +1,15 @@
 ### M(Radiant Existence, 辐射出射度)/B(Radiosity, 辐射度) 
 
+#### 颜色溢出（Color Bleeding）  
+Diffuse Inter-reflection/Color Bleeding: Diffuse inter-reflection refers to indirect
+light reflected off of diffuse surfaces onto nearby surfaces. In particular, if the diffuse
+surfaces have strong coloration, this leads to color bleeding, wherein the color of one
+surface appears to leak, or bleed, onto nearby surfaces. The Cornell box, originally
+designed by early global illumination researchers at Cornell University, is a classic testing
+environment for global illumination algorithms.（[Ramamoorthi 2009] / Lecture 3 "Global Illumination and the Rendering Equation" / 1 "Introduction to Global Illumination"、[Christensen 2008]）  
+  
+
+
 //$M_d = \int_{\Omega}{L_r \lparen\overrightarrow{\omega_i}\rparen \cos \theta_i d\omega}$
 
 //渲染方程（Rendering Equation）
@@ -85,9 +95,9 @@ K=M-PF  //$K_{ii}=1-\rho F_{ii}=1$
 Perhaps the simplest iterative scheme is to update each element Bi(k) of the solution vector by solving for that variable using the current guess Bi
 (k).  
 余量$r_i = E_i - \sum_{j=1}^{n}K_{ij}B_j$  
-$r^{\lparen k+i\rparen} + K_{ii}B^{\lparen k+i\rparen} = r^{\lparen k\rparen} + K_{ii}B^{\lparen k\rparen}$  
-//由于$r^{\lparen k+i\rparen}$为0 //$K_{ii}B^{\lparen k+i\rparen} = r^{\lparen k\rparen} + K_{ii}B^{\lparen k\rparen}$  
-//$B^{\lparen k+i\rparen} = \frac{B^{\lparen k\rparen} + r^{\lparen k\rparen}}{K_{ii}}$  //$K_{ii}=1-\rho F_{ii}=1$  //是否收敛与谱半径有关
+$r_i^{\lparen k+1\rparen} + K_{ii}B_i^{\lparen k+1\rparen} = r_i^{\lparen k\rparen} + K_{ii}B_i^{\lparen k\rparen}$  
+//由于$r_i^{\lparen k+1\rparen}$为0 //$K_{ii}B_i^{\lparen k+1\rparen} = r_i^{\lparen k\rparen} + K_{ii}B_i^{\lparen k\rparen}$  
+//$B_i^{\lparen k+1\rparen} = \frac{B_i^{\lparen k\rparen} + r_i^{\lparen k\rparen}}{K_{ii}}$  //其中$K_{ii}=1-\rho F_{ii}=1$  //是否收敛与谱半径有关
 
 高斯-赛德尔（Gauss-Seidel）迭代  
   
@@ -95,9 +105,26 @@ $B_i^{k+1} = \frac{E_i - \sum_{j=1}^{i-1}K_{ij}B_j^{k+1} - \sum_{j=i+1}^{n}K_{ij
   
 在计算$B_i^{k+1}$时，使用了在本次迭代（Iteration）中的先前步骤（Step）中计算得到的$B_1^{k+1}$,$B_2^{k+1}$,$B_3^{k+1}$,...,$B_{i-1}^{k+1}$  
   
-//norm（范数）
+//norm（范数）  
+  
+Southwell 迭代  
+不再有Iteration，只有Step  
 
+在每个Step中  
+  
+选取余量$r_i = E_i - \sum_{j=1}^{n}K_{ij}B_j$ 最大的行$r_i=\operatorname{Max}\lparen r\rparen$  
+由于$r_i^{\lparen p+1\rparen} + K_{ii}B^{\lparen p+1\rparen} = r_i^{\lparen p\rparen} + K_{ii}B^{\lparen p\rparen}$且$r_i^{\lparen p+i1\rparen}$为0  
+$B_i^{\lparen p+1\rparen} = \frac{B_i^{\lparen p\rparen} + r_i^{\lparen p\rparen}}{K_{ii}}$  //其中$K_{ii}=1-\rho F_{ii}=1$
+  
+目前余量$r_i=0$，重新计算“其余”的各个余量 //即$j \ne i$  
+由于$r_j^{\lparen p+1\rparen} + K_{ji}B_i^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen}$  //只有$B_i$发生改变，其余$B_j$并没有发生改变   
+$r_j^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen} - K_{ji}B_i^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} - K_{ji}{\lparen B_i^{\lparen p+1\rparen} - B_i^{\lparen p\rparen} \rparen} = r_j^{\lparen p\rparen} - K_{ji}r_i^{\lparen p\rparen}$  
 
+再次进行下一个Step  
+  
+
+  
+  
 ## 参考文献  
 [Ramamoorthi 2009] Ravi Ramamoorthi, James O'Brien. "Advanced Computer Graphics." University Of California at Berkeley, CS 294-13, Fall 2009.  
 [http://inst.eecs.berkeley.edu/~cs294-13/fa09/](http://inst.eecs.berkeley.edu/~cs294-13/fa09/)   
@@ -113,7 +140,12 @@ $B_i^{k+1} = \frac{E_i - \sum_{j=1}^{i-1}K_{ij}B_j^{k+1} - \sum_{j=i+1}^{n}K_{ij
 [https://collections.lib.utah.edu/details?id=101866](https://collections.lib.utah.edu/details?id=101866)  
 [Khoo 2003] Boo Cheong Khoo, Jacob White, Jaime Peraire, Anthony T. Patera. "Numerical Methods for Partial Differential Equations (SMA 5212)."  MITOpenCourseWare 2003.  
 [https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-920j-numerical-methods-for-partial-differential-equations-sma-5212-spring-2003/](https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-920j-numerical-methods-for-partial-differential-equations-sma-5212-spring-2003/)  
-[Coombe 2005] Greg Coombe, Mark Harris "Global Illumination Using Progressive Refinement Radiosity." GPU Gems 2, Chapter 39, 2005.  
-[https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter39.html](https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter39.html)  
+[Coombe 2005] Greg Coombe, Mark Harris. "Global Illumination Using Progressive Refinement Radiosity." GPU Gems 2, Chapter 39, 2005.  
+[https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter39.html](https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter39.html)   
+[Christensen 2008] Per H. Christensen. "Point-Based Approximate Color Bleeding." Pixar Technical Memo 2008.  
+[http://graphics.pixar.com/library/](http://graphics.pixar.com/library/)  
+[Christensen 2010] Per H. Christensen. "Point-Based Global Illumination for Movie Production." SIGGRAPH 2010.  
+[http://graphics.pixar.com/library/](http://graphics.pixar.com/library/)  
+
 
 
