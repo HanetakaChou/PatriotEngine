@@ -87,9 +87,14 @@ http://heattransfer.asmedigitalcollection.asme.org/article.aspx?articleid=143539
 $\cos\theta_i{\lparen \frac{\cos\theta_o}{\pi {\vert x'-x\vert}^2+\Delta A_j} \Delta A_j \rparen}$  //微分变成$\Delta A_j$后，适用该公式 //对区间的可加性 A_j分割后 蒙特卡洛方法
   
 ------------------------------------------------------      
+求解线性方程组
+
 $F_{ii}=0$ //因为$\Delta_i$和$\Delta_j$背对，即$\cos\theta_i$=0  
 K=M-PF  //$K_{ii}=1-\rho F_{ii}=1$ 
-  
+
+//雅可比迭代 和 高斯-赛德尔迭代 不需要详细介绍
+//重点介绍 Southwell迭代 和 渐进细分
+
 雅可比（Jacobi）迭代（[Khoo 2003], Lecture 6 "Solution Methods: Iterative Techniques"）  
   
 Perhaps the simplest iterative scheme is to update each element Bi(k) of the solution vector by solving for that variable using the current guess Bi
@@ -114,7 +119,7 @@ Southwell 迭代
   
 选取余量$r_i = E_i - \sum_{j=1}^{n}K_{ij}B_j$ 最大的行$r_i=\operatorname{Max}\lparen r\rparen$  
 由于$r_i^{\lparen p+1\rparen} + K_{ii}B^{\lparen p+1\rparen} = r_i^{\lparen p\rparen} + K_{ii}B^{\lparen p\rparen}$且$r_i^{\lparen p+i1\rparen}$为0  
-$B_i^{\lparen p+1\rparen} = \frac{B_i^{\lparen p\rparen} + r_i^{\lparen p\rparen}}{K_{ii}}$  //其中$K_{ii}=1-\rho F_{ii}=1$
+计算$B_i^{\lparen p+1\rparen} = \frac{B_i^{\lparen p\rparen} + r_i^{\lparen p\rparen}}{K_{ii}}$  //其中$K_{ii}=1-\rho F_{ii}=1$
   
 目前余量$r_i=0$，重新计算“其余”的各个余量 //即$j \ne i$  
 由于$r_j^{\lparen p+1\rparen} + K_{ji}B_i^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p+1\rparen} = \sum_{j \ne i} K_{ji}B_j^{\lparen p\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen}$  //只有$B_i$发生改变，其余$B_j$并没有发生改变   
@@ -122,21 +127,38 @@ $r_j^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen
 
 由于$\rho_j$小于1 且 所有(j!=i)的$F_{ij}$的和小于1（可以从HemiCube角度理解），所有余量的和在减小（//单调递减）  
   
-初始化B=0,r=E-KB=E  
-余量的物理表示  
-  
+初始化 B=0 r=E-KB=E
+
+物理解释  
+余量的 //Unshot radiosity  
+//received as illumination by the elements //Ei或Bj  
+//but has not yet been “reflected” or shot back out to contribute further to the illumination of the environment. //Bi  
+//r = Ei - (Bi - \sumBj/\*Indirect\*/) //B_i代表shot //从当前元发出reflect/shot //从而会被其它元接收contribute further //即Step中重新计算“其余”各个余量的过程（第二部分）  
+//选取最大的余量计算Bi，实际上即其它元shot的radiosity（Ei或Bj）被当前元（Bi）//即Step中receive的过程（第一部分） 
+
+//每个Step中receive后，立即reflect  
+
 再次进行下一个Step  
-  
-  
-  
+
+## Progressive Refinement //渐进细化    
+ （[Cohen 1993] 5.3.3、[Coombe 2005]） 
+   
+//The requirement is thus not only to provide an algorithm that converges quickly, but one that makes as much progress at the beginning of the algorithm as possible.  
+
+不区分光源和表面 //用$\rho$=0表示光源 //OSL(Open Shading Language)中的定义  
+
+Bi+r //Received Total
+/deltaBi 即r //Received Not Shot
+
+//初始化/deltaBi为E 即 r
   
 ## 参考文献  
-[Ramamoorthi 2009] Ravi Ramamoorthi, James O'Brien. "Advanced Computer Graphics." University Of California at Berkeley, CS 294-13, Fall 2009.  
-[http://inst.eecs.berkeley.edu/~cs294-13/fa09/](http://inst.eecs.berkeley.edu/~cs294-13/fa09/)   
 [Willcox 2014] Karen Willcox, Qiqi Wang. "Computational Methods in Aerospace Engineering." MITOpenCourseWare 2014.  
 [https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-90-computational-methods-in-aerospace-engineering-spring-2014/](https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-90-computational-methods-in-aerospace-engineering-spring-2014/)  
 [Cohen 1993] Michael F. Cohen, John R. Wallace. "Radiosity and Realistic Image Synthesis." Academic Press Professional 1993.  
 [https://dl.acm.org/citation.cfm?id=154731](https://dl.acm.org/citation.cfm?id=154731)  
+[Ramamoorthi 2009] Ravi Ramamoorthi, James O'Brien. "Advanced Computer Graphics." University Of California at Berkeley, CS 294-13, Fall 2009.  
+[http://inst.eecs.berkeley.edu/~cs294-13/fa09/](http://inst.eecs.berkeley.edu/~cs294-13/fa09/)   
 [Pharr 2017] Matt Pharr, Wenzel Jakob, and Greg Humphreys. "Physically Based Rendering:From Theory To Implementation Third Edition." Morgan Kaufmann Publishers 2017.  
 [http://www.pbr-book.org](http://www.pbr-book.org)  
 [Cohen 1985] Michael F. Cohen, Donald P. Greenberg. "The hemi-cube: a radiosity solution for complex environments." SIGGRAPH 1998.  
