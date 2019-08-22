@@ -93,7 +93,7 @@ $F_{ii}=0$ //因为$\Delta_i$和$\Delta_j$背对，即$\cos\theta_i$=0
 K=M-PF  //$K_{ii}=1-\rho F_{ii}=1$ 
 
 //雅可比迭代 和 高斯-赛德尔迭代 不需要详细介绍
-//重点介绍 Southwell迭代 和 渐进细分
+//重点介绍 Southwell迭代 和 渐进细分 //优势：在最开始，E较大往往余量较大，因此往往选中Light Source，收敛较快
 
 雅可比（Jacobi）迭代（[Khoo 2003], Lecture 6 "Solution Methods: Iterative Techniques"）  
   
@@ -135,22 +135,32 @@ $r_j^{\lparen p+1\rparen} = r_j^{\lparen p\rparen} + K_{ji}B_i^{\lparen p\rparen
 //but has not yet been “reflected” or shot back out to contribute further to the illumination of the environment. //Bi  
 //r = Ei - (Bi - \sumBj/\*Indirect\*/) //B_i代表shot //从当前元发出reflect/shot //从而会被其它元接收contribute further //即Step中重新计算“其余”各个余量的过程（第二部分）  
 //选取最大的余量计算Bi，实际上即其它元shot的radiosity（Ei或Bj）被当前元（Bi）//即Step中receive的过程（第一部分） 
-
+  
 //每个Step中receive后，立即reflect  
-
+  
 再次进行下一个Step  
-
+  
 ## Progressive Refinement //渐进细化    
  （[Cohen 1993] 5.3.3、[Coombe 2005]） 
    
 //The requirement is thus not only to provide an algorithm that converges quickly, but one that makes as much progress at the beginning of the algorithm as possible.  
-
+  
 不区分光源和表面 //用$\rho$=0表示光源 //OSL(Open Shading Language)中的定义  
-
-Bi+r //Received Total
-/deltaBi 即r //Received Not Shot
-
-//初始化/deltaBi为E 即 r
+  
+//与 Southwell迭代 等价  
+  
+B即Bi+r //Received Total  
+//Bi含义Received And Shot  
+/deltaB即r //Received Not Shot  
+  
+//初始化/deltaBi为E 即 r=E  
+  
+每次Step  
+选取/deltaB*Ai(常量基函数Ai为1)最大的行  //在最开始的时候，E较大往往余量较大，因此往往选中Light Source，收敛较快
+Bi=Bi+r r=0 //但Bi+r不变  //Not shot-> Shot
+其余各行的余量r改变//即Receive B Bi+r 和 /deltaB r 都改变   //但是随着迭代的进行，Unshot的能量被均匀地传播，收敛速度逐渐变慢
+  
+  
   
 ## 参考文献  
 [Willcox 2014] Karen Willcox, Qiqi Wang. "Computational Methods in Aerospace Engineering." MITOpenCourseWare 2014.  
