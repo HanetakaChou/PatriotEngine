@@ -25,7 +25,10 @@ Equation），可以利用刘维尔-诺伊曼级数（Liouville–Neumann series
 但在Radiosity中，我们使用有限元法求解  
 
 有限元法仅用于离散化渲染方程
-
+  
+ //余量仅代表[全局]的误差，余量大不代表[局部]误差大 
+  
+  
 //光源的表示：用Albedo为0的Element来表示光源  
 
 Form Factor
@@ -118,7 +121,7 @@ Southwell 迭代
 在每个Step中  
   
 选取余量$r_i = E_i - \sum_{j=1}^{n}K_{ij}B_j$ 最大的行$r_i=\operatorname{Max}\lparen r\rparen$  
-由于$r_i^{\lparen p+1\rparen} + K_{ii}B^{\lparen p+1\rparen} = r_i^{\lparen p\rparen} + K_{ii}B^{\lparen p\rparen}$且$r_i^{\lparen p+i1\rparen}$为0  
+由于$r_i^{\lparen p+1\rparen} + K_{ii}B^{\lparen p+1\rparen} = r_i^{\lparen p\rparen} + K_{ii}B^{\lparen p\rparen}$且$r_i^{\lparen p+i1\rparen}$为0  //即Relaxation Method  //还有Overrelaxation Method  
 计算$B_i^{\lparen p+1\rparen} = \frac{B_i^{\lparen p\rparen} + r_i^{\lparen p\rparen}}{K_{ii}}$  //其中$K_{ii}=1-\rho F_{ii}=1$
   
 目前余量$r_i=0$，重新计算“其余”的各个余量 //即$j \ne i$  
@@ -160,7 +163,54 @@ B即Bi+r //Received Total
 Bi=Bi+r r=0 //但Bi+r不变  //Not shot-> Shot
 其余各行的余量r改变//即Receive B Bi+r 和 /deltaB r 都改变   //但是随着迭代的进行，Unshot的能量被均匀地传播，收敛速度逐渐变慢
   
+Overrelexation可以被认为是OverShooting  //或super-shoot-gather  
   
+动态环境
+和PRT有一定联系 //预计算传输  
+  
+光源改变  
+KB=E中的E发生改变 
+在光源变换不大的情况下，可以将之前的解作为迭代法（Iterative Method的初始值（Starting Guess）
+
+也可以利用线性的特性  
+比如  
+     [E_1] //会改变    
+     [E_2] //会改变   
+     [E_3] //不变  
+     [E_4] //不变  
+
+预先解出  
+[1]  
+[0]  
+[0]  
+[0]  
+_______
+[0]  
+[1]  
+[0]  
+[0]  
+________  
+[0]  
+[0]  
+[E_3]  
+[E_4]  
+________   
+对于任意的  
+[E_1]  
+[E_2]  
+[E_3]  
+[E_4]  
+__________
+可以表示成
+E_1[1 0 0 0] + E_2[0 1 0 0] + [0 0 E_3 E_4]  
+对应的解即为之前解出的解的线性组合  
+
+Albedo改变  
+不影响Form Factor，但需要重新计算K  
+可以将之前的解作为迭代法（Iterative Method的初始值（Starting Guess）  
+  
+//几何改变//并行  
+
   
 ## 参考文献  
 [Willcox 2014] Karen Willcox, Qiqi Wang. "Computational Methods in Aerospace Engineering." MITOpenCourseWare 2014.  
