@@ -25,10 +25,31 @@ Equation），可以利用刘维尔-诺伊曼级数（Liouville–Neumann series
 但在Radiosity中，我们使用有限元法求解  
 
 有限元法仅用于离散化渲染方程
+
+//误差估计  
+//余量仅代表[全局]的误差，余量大不代表[局部]误差大 
   
- //余量仅代表[全局]的误差，余量大不代表[局部]误差大 
+//影响误差的特征
+//积分Kernel //Form Factor在某些情况下局部变化较大 //相邻物体 //阴影边缘 //半影 
+//解决方法是进一步分割
+
+//Radiosity定义域 //表面 //几何体 //场景  
+//在ImageSynthesis中 //可以考虑 基于Image的Pixel为定义域  进行误差度量  //An importancedriven
+radiosity algorithm. SIGGRAPH 1992  
   
-  
+基于Perceptually //涉及色度学理论  
+
+
+Mesh的各个特征对精确度的影响 //FEM中的Mesh含义与目前主流的含义不同
+
+//Reference Image //以各个Pixel作为Element
+
+//计算开销在Radiosity定义域上是均匀的 //但是对最终Image的贡献是不均匀的
+
+//Mesh密度 //即Element的（相对）大小/数量 //理想状态下 不均匀分割 在误差较大的地方细分
+
+
+
 //光源的表示：用Albedo为0的Element来表示光源  
 
 Form Factor
