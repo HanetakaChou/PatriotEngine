@@ -10,20 +10,20 @@ environment for global illumination algorithms.（[Ramamoorthi 2009] / Lecture 3
   
 
 
-//$M_d = \int_{\Omega}{L_r \lparen\overrightarrow{\omega_i}\rparen \cos \theta_i d\omega}$
-
-//渲染方程（Rendering Equation）
-
-//w_i指入射光的相反方向 
-//x指入射点的位置
-//x’指发出入射光的位置 
-
+//$M_d = \int_{\Omega}{L_r \lparen\overrightarrow{\omega_i}\rparen \cos \theta_i d\omega}$  
+  
+//渲染方程（Rendering Equation）  
+  
+//w_i指入射光的相反方向  
+//x指入射点的位置  
+//x’指发出入射光的位置  
+  
 渲染方程是第二类弗雷德霍姆积分方程（Fredholm Integral
 Equation），可以利用刘维尔-诺伊曼级数（Liouville–Neumann series
-）求解（[Ramamoorthi 2009], Scribe of Lecture 3 "Global Illumination and the Rendering Equation", 3 "Deriving the Rendering Equation"）
-
+）求解（[Ramamoorthi 2009], Scribe of Lecture 3 "Global Illumination and the Rendering Equation", 3 "Deriving the Rendering Equation"）  
+  
 但在Radiosity中，我们使用有限元法求解  
-
+  
 有限元法仅用于离散化渲染方程
 
 //误差估计  
@@ -42,18 +42,30 @@ radiosity algorithm. SIGGRAPH 1992
 
 Mesh的各个特征对精确度的影响 //FEM中的Mesh含义与目前主流的含义不同
 
-//Reference Image //以各个Pixel作为Element
+//Reference Image //以各个Pixel作为Element  
+  
+//计算开销在Radiosity定义域上是均匀的 //但是对最终Image的贡献是不均匀的  
+  
+//Mesh密度 //即Element的（相对）大小/数量 //理想状态下 不均匀分割 在误差较大的地方细分  
+  
+//元的阶 //连续性  
+  
+//元的形状  
+  
+//元的纵横比（Aspect Ratio） //内切和外切园的比 //最大为1  
+  
+//糟糕的纵横比可能会违背一些 计算Form Factor时所依赖的假定（比如 元被近似成Disk）  
+  
+//网格分级（Mesh Grading)  密度不同处平滑过渡    
 
-//计算开销在Radiosity定义域上是均匀的 //但是对最终Image的贡献是不均匀的
-
-//Mesh密度 //即Element的（相对）大小/数量 //理想状态下 不均匀分割 在误差较大的地方细分
-
-
-
-//光源的表示：用Albedo为0的Element来表示光源  
-
-Form Factor
-
+//网格一致性（Mesh Conformance）  
+  
+  
+  
+//光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
+  
+Form Factor  
+  
 Radiance  
 $\int_{S'} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$
 
