@@ -58,9 +58,19 @@ Mesh的各个特征对精确度的影响 //FEM中的Mesh含义与目前主流的
   
 //网格分级（Mesh Grading)  密度不同处平滑过渡    
 
-//网格一致性（Mesh Conformance）  
+//网格一致性（Mesh Conformance）  //边界连续性   //避免T-Vertices  //常量元往往无需考虑 //常量元往往用于求解Radiosity（即权重函数） 而高阶元往往用于渲染（即基函数） //查找之前的文献，权重函数并不一定是基函数    
+
+//不连续性（Discontinuities）  //由V(x,x')可见性引入    
   
+//值不连续性（Value Discontinuities)  //表面交界处 //不连续的值用同一个元表示  //Shadow Leak //Light Leak  //    
+
+//导数不连续性（Derivative Discontinuities） //半影 或 本影边界
+
+//Continuity at Geometric Boundaries  
+往往并不会出现在不同几何体的表面交界处，因为不同几何体是 “Mesh化” Separately      
+但用于表示曲面的Facet的边界可能会出现问题 应当作为一个整体网格化  
   
+
   
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
