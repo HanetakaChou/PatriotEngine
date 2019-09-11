@@ -1,3 +1,6 @@
+The Cornell Box  
+[https://www.graphics.cornell.edu/online/box/](https://www.graphics.cornell.edu/online/box/)  
+
 ### M(Radiant Existence, 辐射出射度)/B(Radiosity, 辐射度) 
 
 #### 颜色溢出（Color Bleeding）  
@@ -52,7 +55,7 @@ Mesh的各个特征对精确度的影响 //FEM中的Mesh含义与目前主流的
   
 //元的形状  
   
-//元的纵横比（Aspect Ratio） //内切和外切园的比 //最大为1  
+//元的纵横比（Aspect Ratio）//元的朝向 //内切和外切园的比 //最大为1  
   
 //糟糕的纵横比可能会违背一些 计算Form Factor时所依赖的假定（比如 元被近似成Disk）  
   
@@ -70,41 +73,87 @@ Mesh的各个特征对精确度的影响 //FEM中的Mesh含义与目前主流的
 往往并不会出现在不同几何体的表面交界处，因为不同几何体是 “Mesh化” Separately      
 但用于表示曲面的Facet的边界可能会出现问题 应当作为一个整体网格化  
   
+//自动网格化算法  //与FEM有关  //术语“网格”起源于FEM  
 
+分类([Cohen 1993] 6.3 Figure 6.21)
+
+根据 是否使用 被近似的函数（即微分方程的解，显然是未知的） 的特性 //分为2大类  不使用 和 使用  
+
+其中 使用（knowledge of Function）一类 再分为 先验（Prior）和后验（Posterior）  
+
+先验（Priori）在求解之前完成网格化  
+比较典型的有 Discontinuity Meshing []   
+
+后验（Posterior）  在（至少部分）求解后，对网格进行精炼（Refine）  
+在FEM中比较典型的有    
   
+R-Refinement //R(Reposition)    
+//Reposition节点  //Node <-> Vertex  
+  
+//多个Mesh Relaxation Pass  
+//每个Pass中，移动Mesh的每个节点以补偿（Equalize）共享该节点的元的误差（Error)  
+//Reposition后，重新计算（Reevaluate） 被近似的函数  
+  
+//Relaxation可以重复进行，直到误差均匀地分布在各个元上  //节点/元的个数不变  
+  
+//优点：网格拓扑不变  
+//缺点：不一定能够达到一个给定的Error Tolerance，当误差均匀分布（在各个元上）后，不能进一步降低  //缺点2：需要额外注意不能沿元的边界移动节点     
+  
+H-Refinement  //H指FEM中常用于表示 元大小 的字母  //又叫作自适应细分（Adaptive Subdivision）  
+//细分现有的元  //提升网格的密度以降低局部误差  
+//优点：可以移除 在误差低于 所要求值 的区域 的节点/元  //优点2：在某些H-Refinement算法中，不需要重新计算 被近似函数 在现有的节点处的值  
+//缺点：无法移动现有的节点 限制了 通过 调整元的形状/朝向 来减少误差 的能力  //缺点2：需要特殊处理 以 维持 不同细分程度（Level）的元之间的连续性  //Mesh Grading？  
+  
+P-Refinement  //P指用于表示多项式的阶的字母  
+//提升 现有的元 多项式（Polynomial）的阶  //新的节点会加入，但是元的个数不会变（与H-Refinement的区别）  
+  
+Remeshing //将 （整个）现有的网格 用新的网格代替  
+  
+///////////  
+Hybrid Methods  //以上各 基本过程 的组合    
+比如 For example, r-refinement works best when it begins with a mesh
+that is reasonably well refined, since relaxation cannot reduce the local error
+beyond the minimum achievable with the initial number of nodes. A potentially
+useful hybrid strategy might thus use h-refinement to achieve a reasonable initial
+sampling density and r-refinement to more evenly distribute the approximation
+error.
+  
+  
+  
+----------------------------------------------------------------------------------------------------  
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
 Form Factor  
   
 Radiance  
-$\int_{S'} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$
-
+$\int_{S'} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
+  
 Radiosity/Radiant Existance  
-$\int_{S'} B{\lparen x'\rparen} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$
-
+$\int_{S'} B{\lparen x'\rparen} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
+  
 Weighted Residual  
 $\int_S \, {\operatorname{N_i}\lparen x\rparen} \, {\lparen \int_{S'} {\lparen \sum_{j=1}^{n} B_j \operatorname{N_j}\lparen x'\rparen \rparen} \, \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA$  
 =$\sum_{j=1}^{n} B_j \, \lparen \int_S \, {\operatorname{N_i}\lparen x\rparen} \, {\lparen \int_{S'} {\operatorname{N_j}\lparen x'\rparen} \, \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA \rparen$  
 =$\sum_{j=1}^{n} B_j \, \lparen \int_{A_i} {\lparen \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA \rparen$  //常量基函数  
-
+  
 Projected Solid Angle  
 $d{\omega}^{\perp}=\cos\theta \, d{\omega}$  //[Cohen 1993] 2.4.3、[Pharr 2017] 5.5.1  
-
+  
 Integrals over Area  
-$d{\omega}={\frac{\cos\theta_o}{{\vert p'-p\vert}^2} \, dA}$  //[Cohen 1993] 2.4.2、[Pharr 2017] 5.5.3 
-
-
+$d{\omega}={\frac{\cos\theta_o}{{\vert p'-p\vert}^2} \, dA}$  //[Cohen 1993] 2.4.2、[Pharr 2017] 5.5.3  
+  
+  
 半球采样算法（Hemisphere Sampling Algorithm）  
 一次计算一行（即A_i相同）  
-
+  
 Nusselt Analog  //另一个半球则为0  
 ${\int_{A} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'}$  
 =${\frac {\int_{A} V{\lparen x'\rarr x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} \, dA'}{\pi}}$  
 =${\frac {\int_{A} V{\lparen x'\rarr x \rparen} \cos\theta_i \, d{\omega}}{\pi}}$ //Integrals over Area  
 =${\frac {\int_{A} V{\lparen x'\rarr x \rparen} \, d{{\omega}'}^{\perp}}{\pi}}$ //Projected Solid Angle    
-
-HemiCube（[Cohen 1985]、[Cohen 1993] 4.9.3）
-
+  
+HemiCube（[Cohen 1985]、[Cohen 1993] 4.9.3）  
+  
 //scan conversion //即光栅化  
 //Z-buffer //即深度测试  
 
