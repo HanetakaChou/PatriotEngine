@@ -118,8 +118,36 @@ useful hybrid strategy might thus use h-refinement to achieve a reasonable initi
 sampling density and r-refinement to more evenly distribute the approximation
 error.
   
-  
-  
+自适应细分（Adaptive Subdivision）  //层次性本质  
+   
+几乎所有 后验网格化算法 在一个叫作 自适应细分 的过程中 用到了H-Refinement  
+   
+后验方法概述 基于一个均匀的初始网格 求出 解（即被近似的函数）  细分超出误差容差的元 以精炼网格
+    
+自适应细分 伪代码  //为了清晰，伪代码中忽略了自适应算法（即H-Refinement)的层次性本质        
+```
+  由常量元构成初始网格
+  计算Form Factor    
+  求解线性方程组    
+
+  while(not (所有元在 误差容差 内 or 达到最小的元大小))
+  {
+       通过 比较相邻元的Radiosity（即微分方程的近似解B^(x)） 求得精确度
+       细分 超出 用户提供 的误差容差 的元
+
+       for 每个新的元  //注意，现有的元没有必要重新计算
+       {
+            计算 从 新的元 到 所有其它元 的Form Factor
+            基于旧的Radiosity值 计算 新的元的Radiosity
+       }
+  }  
+
+```     
+
+不同变种的主要区别在于 误差估计 和 细分 的方式
+
+
+      
 ----------------------------------------------------------------------------------------------------  
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
