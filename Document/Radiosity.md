@@ -1,7 +1,9 @@
 The Cornell Box  
 [https://www.graphics.cornell.edu/online/box/](https://www.graphics.cornell.edu/online/box/)  
 
-### M(Radiant Existence, 辐射出射度)/B(Radiosity, 辐射度) 
+### B(Radiosity, 辐射度)/M(Radiant Existence, 辐射出射度)
+辐射度（Radiosity，B）是一个已经被弃用的叫法，现代的叫法应当是辐射出射度（Radiant Existance，M）  
+但是，为了和大多数与Radiosity相关的文献中的叫法保持一致，本文统一使用 辐射度（Radiosity，B） 代替 辐射出射度（Radiant Existance，M）  
 
 #### 颜色溢出（Color Bleeding）  
 Diffuse Inter-reflection/Color Bleeding: Diffuse inter-reflection refers to indirect
@@ -188,10 +190,6 @@ error.
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
 Form Factor  
-
-辐射度（Radiosity，B）是一个已经被弃用的叫法，现代的叫法应当是辐射出射度（Radiant Existance，M）  
-但是，为了与大多数与Radiosity相关的文献中的叫法保持一致，本文统一使用 辐射度（Radiosity，B） 代替 辐射出射度（Radiant Existance，M）  
-
 $\omega_i$ 指入射光的相反方向  
 $x$ 指入射点的位置（即入射光的终点）  
 $x'$ 指入射光的起点
@@ -247,7 +245,7 @@ $= \sum_{j=1}^n {\lbrack \int_{All\,x}{ B_j N_j{\lparen x \rparen} N_i{\lparen x
 $= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{ {\lbrace \rho{\lparen x\rparen} \sum_{j=1}^n B_j {\lbrack \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} \rbrace} N_i{\lparen x \rparen}  }\, dA$ //$B_j$是常量  
 $= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \sum_{j=1}^n {\lbrace \int_{All\,x}{ {\lbrack \rho{\lparen x\rparen} B_j \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA \rbrace}$ //线性  
 $= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \sum_{j=1}^n B_j {\lbrace \int_{All\,x}{ {\lbrack \rho{\lparen x\rparen} \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA \rbrace}$ //$B_j$是常量  
-$= B_i A_i - \int_{A_i}{E{\lparen x \rparen}}\, dA - \sum_{j=1}^n B_j {\lbrace \int_{A_i}{ {\lbrack \rho{\lparen x\rparen} \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ //对区间的可见性 //根据FEM其余都为0    
+$= B_i A_i - \int_{A_i}{E{\lparen x \rparen}}\, dA - \sum_{j=1}^n B_j {\lbrace \int_{A_i}{ {\lbrack \rho{\lparen x\rparen} \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ //对区间的可加性 //根据FEM其余都为0    
 $= B_i A_i - E_i A_i - \sum_{j=1}^n B_j \rho_i {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ //$E_i$是$A_i$上的平均值 //假定$\rho{\lparen x\rparen}$在$A_i$上相同（即为常量）  
   
 Form Factor  
@@ -419,6 +417,7 @@ Albedo改变
   
 //几何改变//并行  
 
+### 层次性算法
   
 ## 参考文献  
 [Willcox 2014] Karen Willcox, Qiqi Wang. "Computational Methods in Aerospace Engineering." MITOpenCourseWare 2014.  
