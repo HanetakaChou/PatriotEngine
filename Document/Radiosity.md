@@ -188,25 +188,77 @@ error.
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
 Form Factor  
-  
-Radiance  
-$\int_{S'} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
-  
-Radiosity/Radiant Existance  
-$\int_{S'} B{\lparen x'\rparen} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
-  
-Weighted Residual  
-$\int_S \, {\operatorname{N_i}\lparen x\rparen} \, {\lparen \int_{S'} {\lparen \sum_{j=1}^{n} B_j \operatorname{N_j}\lparen x'\rparen \rparen} \, \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA$  
-=$\sum_{j=1}^{n} B_j \, \lparen \int_S \, {\operatorname{N_i}\lparen x\rparen} \, {\lparen \int_{S'} {\operatorname{N_j}\lparen x'\rparen} \, \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA \rparen$  
-=$\sum_{j=1}^{n} B_j \, \lparen \int_{A_i} {\lparen \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rparen} \, dA \rparen$  //常量基函数  
-  
+
+辐射度（Radiosity，B）是一个已经被弃用的叫法，现代的叫法应当是辐射出射度（Radiant Existance，M）  
+但是，为了与大多数与Radiosity相关的文献中的叫法保持一致，本文统一使用 辐射度（Radiosity，B） 代替 辐射出射度（Radiant Existance，M）  
+
+$\omega_i$ 指入射光的相反方向  
+$x$ 指入射点的位置（即入射光的终点）  
+$x'$ 指入射光的起点
+
+$L_i{\lparen x, \overrightarrow{\omega_i} \rparen} = L_r{\lparen x', -\overrightarrow{\omega_i} \rparen} V{\lparen x'\rarr x \rparen}$  //V代表可见性  //在可见时，x处的入射光即x'处的反射光  
+
+一些常用的等式  
 Projected Solid Angle  
 $d{\omega}^{\perp}=\cos\theta \, d{\omega}$  //[Cohen 1993] 2.4.3、[Pharr 2017] 5.5.1  
+
+积分为$\pi$  
+$\int_\Omega{\cos\theta}\,d\omega = \int_\Omega d\omega^{\perp} = \pi$ （等式Ⅰ） //用投影球面度证明  //[Pharr 2017] 5.5.1  
   
 Integrals over Area  
 $d{\omega}={\frac{\cos\theta_o}{{\vert p'-p\vert}^2} \, dA}$  //[Cohen 1993] 2.4.2、[Pharr 2017] 5.5.3  
+
+Radiance  
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = L_e{\lparen x,\overrightarrow{\omega_r} \rparen} + \int_{All\,x'} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  //Render Equal  
+
+Lambert Diffuse Reflection相关  
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = \int_\Omega {f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i} \rparen} L_i{\lparen x, \overrightarrow{\omega_i} \rparen} \cos\theta_i}\, d\omega_i = f_r\, \int_\Omega {L_i{\lparen x, \overrightarrow{\omega_i} \rparen} \cos\theta_i}\, d\omega_i = f_rE$  //$f_r$为常量，从而得出$L_r = f_r E$也为常量  
+
+//$\rho$ 即Albedo 即Reflectance  
+$\rho = \frac{B}{E} = \frac{ \int_\Omega{ L_r{\lparen x, \overrightarrow{\omega_r} \rparen} \cos\theta_r }\,d\omega_r }{E} = \frac{L_r\, \int_\Omega{ \cos\theta_r }\,d\omega_r}{E}$  
+$= \frac{L_r\pi}{E}$ //等式Ⅰ  
+$= \frac{f_r E \pi}{E} = f_r\pi$   
+即$f_r = \frac{\rho}{\pi}$ //等式2-1  
+
+//B 即Radiosity  
+$B = \int_\Omega{L_r{\lparen x, \overrightarrow{\omega_r} \rparen} \cos\theta_r}\, d\omega_r$  
+$= L_r\, \int_\Omega{\cos\theta_r}\, d\omega_r$ //$L_r$为常量  
+$= L_r \pi$ //等式Ⅰ   
+即$L_r = \frac{B}{\pi}$ //等式2-2      
+
+Radiosity/Radiant Existance  
+$\frac{B{\lparen x \rparen}}{\pi} = \frac{E{\lparen x \rparen}}{\pi} + \int_{All\,x'} \frac{\rho{\lparen x\rparen}}{\pi} \frac{B{\lparen x'\rparen}}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
+
+即$B{\lparen x \rparen} = E{\lparen x \rparen} + \rho{\lparen x\rparen}\, \int_{All\,x'} \frac{1}{\pi} B{\lparen x'\rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  //不再有方向性  
+
+FEM  
+$\hat{B}{\lparen x \rparen} = \sum_{i=1}^n {B_i N_i{\lparen x \rparen}}$  
+
+Residual  
+$r{\lparen x \rparen} = \hat{B}{\lparen x \rparen} - E{\lparen x \rparen} - \rho{\lparen x\rparen}\, \int_{All\,x'} \frac{1}{\pi} \hat{B}{\lparen x'\rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  
   
+Weighted Residual  
+取$W_i{\lparen x \rparen} = N_i{\lparen x \rparen}$  
+$\int_{All\,x}{r{\lparen x \rparen} W_i{\lparen x \rparen}}\, dA$ //投影到$W_i{\lparen x \rparen}$上  
+$= \int_{All\,x}{ {\lbrack \hat{B}{\lparen x \rparen} - E{\lparen x \rparen} - \rho{\lparen x\rparen}\, \int_{All\,x'} \frac{1}{\pi} \hat{B}{\lparen x'\rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA$  
+$= \int_{All\,x}{\hat{B}{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{ {\lbrack \rho{\lparen x\rparen}\, \int_{All\,x'} \frac{1}{\pi} \hat{B}{\lparen x'\rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA$  
+$= \int_{All\,x}{ {\lbrack \sum_{j=1}^n {B_j N_j{\lparen x \rparen}} \rbrack} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{ {\lbrace \rho{\lparen x\rparen}\, \int_{All\,x'} \frac{1}{\pi} {\lbrack \sum_{j=1}^n {B_j N_j{\lparen x \rparen}} \rbrack} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrace} N_i{\lparen x \rparen}  }\, dA$   
+$= \sum_{j=1}^n {\lbrack \int_{All\,x}{ B_j N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{ {\lbrace \rho{\lparen x\rparen} \sum_{j=1}^n {\lbrack \int_{All\,x'} \frac{1}{\pi} B_j N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} \rbrace} N_i{\lparen x \rparen}  }\, dA$ //线性  
+$= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \int_{All\,x}{ {\lbrace \rho{\lparen x\rparen} \sum_{j=1}^n B_j {\lbrack \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} \rbrace} N_i{\lparen x \rparen}  }\, dA$ //$B_j$是常量  
+$= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \sum_{j=1}^n {\lbrace \int_{All\,x}{ {\lbrack \rho{\lparen x\rparen} B_j \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA \rbrace}$ //线性  
+$= \sum_{j=1}^n B_j {\lbrack \int_{All\,x}{ N_j{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA \rbrack} - \int_{All\,x}{E{\lparen x \rparen} N_i{\lparen x \rparen}}\, dA - \sum_{j=1}^n B_j {\lbrace \int_{All\,x}{ {\lbrack \rho{\lparen x\rparen} \int_{All\,x'} \frac{1}{\pi} N_j{\lparen x \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} N_i{\lparen x \rparen}  }\, dA \rbrace}$ //$B_j$是常量  
+$= B_i A_i - \int_{A_i}{E{\lparen x \rparen}}\, dA - \sum_{j=1}^n B_j {\lbrace \int_{A_i}{ {\lbrack \rho{\lparen x\rparen} \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ //对区间的可见性 //根据FEM其余都为0    
+$= B_i A_i - E_i A_i - \sum_{j=1}^n B_j \rho_i {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ //$E_i$是$A_i$上的平均值 //假定$\rho{\lparen x\rparen}$在$A_i$上相同（即为常量）  
   
+Form Factor  
+由于$\int_{All\,x}{r{\lparen x \rparen} W_i{\lparen x \rparen}}\, dA = 0$  
+即$B_i A_i - E_i A_i - \sum_{j=1}^n B_j \rho_i {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace} = 0$  
+即$B_i A_i - \sum_{j=1}^n B_j \rho_i {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace} = E_i A_i$  
+即$B_i - \sum_{j=1}^n B_j \rho_i \frac{1}{A_i} {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace} = E_i$  
+
+令Form Factor $F_{ij} = \frac{1}{A_i} {\lbrace \int_{A_i}{ {\lbrack \int_{A_j} \frac{1}{\pi} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA' \rbrack} }\, dA \rbrace}$ 从而有$B_i - \sum_{j=1}^n B_j \rho_i F_{ij} = E_i$  
+
+
 半球采样算法（Hemisphere Sampling Algorithm）  
 一次计算一行（即A_i相同）  
   
