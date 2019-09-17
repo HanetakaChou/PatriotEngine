@@ -417,8 +417,15 @@ Albedo改变
   
 //几何改变//并行  
 
-### 层次性算法
-  
+### 层次性算法  
+$F_{ij}$指j->i  //i是receiver //j是shooter  
+       
+在二级层级性算法([Cohen 1986])中       
+同一行（即i相同）的 Form Factor 被认为是密切相关的       
+       
+       
+       
+        
 ## 参考文献  
 [Willcox 2014] Karen Willcox, Qiqi Wang. "Computational Methods in Aerospace Engineering." MITOpenCourseWare 2014.  
 [https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-90-computational-methods-in-aerospace-engineering-spring-2014/](https://ocw.mit.edu/courses/aeronautics-and-astronautics/16-90-computational-methods-in-aerospace-engineering-spring-2014/)  
