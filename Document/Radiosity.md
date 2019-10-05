@@ -1,3 +1,5 @@
+## 暂时没空更新，等到12月份再来看吧
+
 The Cornell Box  
 [https://www.graphics.cornell.edu/online/box/](https://www.graphics.cornell.edu/online/box/)  
 
