@@ -18,6 +18,11 @@ You should have received a copy of the GNU Lesser General Public License along w
 ## Ambient Cube  
 
 &nbsp;  
+## LTC（Linearly Transformed Cosine）  
+Area Light $L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = \int_{H} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} L_i{\lparen x',\overrightarrow{\omega_i} \rparen} \cos\theta_i \, d{\omega_i}$  
+
+Punctual Light $L_i{\lparen x',\overrightarrow{\omega_i} \rparen}$为Dirac Delta Function
+&nbsp;  
 ## 参考文献  
 [Schroder 1995] Peter Schroder, Wim Sweldens. "Spherical Wavelets: Efficiently Representing Functions on the Sphere." SIGGRAPH 1995.  
 [https://dl.acm.org/citation.cfm?id=218439](https://dl.acm.org/citation.cfm?id=218439)  
@@ -27,3 +32,6 @@ You should have received a copy of the GNU Lesser General Public License along w
 [https://dl.acm.org/citation.cfm?id=2383916](https://dl.acm.org/citation.cfm?id=2383916)  
 [McTaggart 2004] Gary McTaggart. "Half-Life 2/Valve Source Shading." GDC 2004.  
 [https://steamcdn-a.akamaihd.net/apps/valve/2004/GDC2004_Half-Life2_Shading.pdf](https://steamcdn-a.akamaihd.net/apps/valve/2004/GDC2004_Half-Life2_Shading.pdf)  
+
+[Heitz 2016] Eric Heitz, Jonathan Dupuy, Stephen Hill, David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016.  
+[https://eheitzresearch.wordpress.com/415-2/](https://eheitzresearch.wordpress.com/415-2/)    
