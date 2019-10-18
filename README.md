@@ -1,9 +1,9 @@
-﻿本项目作为图书《图形引擎开发》[Document/图形渲染.docx]的配套源代码发布  
+﻿本项目作为图书《图形引擎开发》[Document/目录.md]的配套源代码发布  
   
-相对于传统的图形引擎而言，PatriotEngine具有以下优势：  
-1.基于结构化并行编程  
-2.基于Vulkan/Direct3D12 后续可能考虑支持Metal    
-3.基于COM设计接口——这意味着，任何第三方厂商基于PatriotEngine的接口开发的上层软件（包括但不限于编辑器）都可以在不需要重新编译的情况下和任意版本的PatriotEngine兼容——同时PatriotEngine的LGPL授权模式对第三方厂商为PatriotEngine开发闭源的上层软件（包括但不限于编辑器）并从中获益是非常友好的    
+目前并没有关于图形渲染（Graphics Rendering）引擎的标准定义，但是，与软件工程在其它领域的情况一样（比如LLVM框架已经成为了编译器领域事实上的标准），随着图形渲染技术在几十年间的发展，图形渲染引擎已经形成了事实上的标准  
+我们知道“程序=数据结构+算法”，从最高抽象层的角度，可以认为图形渲染引擎由场景（Scene）和渲染流程（Rendering Pipeline)两部分组成  
+场景即程序中的数据结构部分，描述了我们输入到渲染流程的数据  
+而渲染流程即程序中的算法部分，对输入的场景进行处理，最终输出图像（Image）的过程，因此，在一些文献中，图形渲染（Graphics Rendering）又被叫做图像合成（Image Synthesis）
 
 已解决：  
 1.并行编程框架——PatriotTBB  
@@ -11,7 +11,7 @@
 待解决：  
 1.场景管理：对NVIDIA的场景管理引擎SceniX和NvPro-Pipeline的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块  
 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12  
-2.函数式编程：由于C++支持Lambda表达式，拟深入研究Haskell，并基于函数式编程的方式设计对并行编程友好的接口（该需求暂停）  
+2.其它图形相关的需求在[Document/目录.md]中列出
   
 正在解决：  
 1.开发适用于Direct3D12/Vulkan的内存分配器  
@@ -24,8 +24,6 @@ https://www.threadingbuildingblocks.org/
 https://gpuopen.com/vulkan-memory-allocator-2-2/  
 3.[Gelado 2019] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.  
 https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory  
-
-2.其它图形相关的需求在[Document/图形渲染.docx]中列出
 
 
 
