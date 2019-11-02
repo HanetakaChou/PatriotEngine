@@ -7,6 +7,12 @@
 
 #include <assert.h>
 
+// @see Device::InitMemoryHeapProperties PAL(https://github.com/GPUOpen-Drivers/pal)
+// heapProperties with cpuWriteCombined must be cpuUncached
+
+// 
+
+
 struct IPTVDHeapManager_NUMA
 {
 	//Memory Management Strategies

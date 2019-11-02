@@ -6,6 +6,36 @@
 #include "../../../Public/System/PTSMemoryAllocator.h"
 #include "../../../Public/System/PTSThread.h"
 
+//Abstract GPU //Two Categories
+//1.RadeonGPU //Sort Last Fragment //TiledMemory Avaliable
+//AMD_Radeon NVIDIA_GTX Intel_UHD
+//2.MaliGPU   //Sort-Middle Tiled  //TiledMemory Unavaliable
+//ARM_Mali Qualcomm_Adreno ImgTec_PowerVR NVIDIA_Tegra
+
+//Intel_UHD/APU(AMD_Radeon)不支持TiledMemory，应当归入第一类 
+//AMD的SpecialPool统一处理 //即NonTiledGPU也可能支持SharedMemory Between CPU And GPU
+//FrameBufferFetch(NonCoherent) is available on Intel GPU
+
+// RadeonGPU
+
+// @see Device::InitMemoryHeapProperties in PAL(https://github.com/GPUOpen-Drivers/pal)
+// heapProperties with cpuWriteCombined must be cpuUncached
+
+// @see PalGpuHeapToVkMemoryHeapFlags in XGL(https://github.com/GPUOpen-Drivers/xgl)
+// @see PhysicalDevice::Initialize in XGL(https://github.com/GPUOpen-Drivers/xgl)
+// MemoryHeap
+// GpuHeapInvisible                        // The GPU Memory (Typically 8GB)         // DEVICE_LOCAL_BIT //May Be Unavaliable On The Integrated GPU
+// GpuHeapLocal                            // The AMD Special Pool (Typically 256MB) // DEVICE_LOCAL_BIT
+// GpuHeapGartUswc | GpuHeapGartCacheable  // The System Memory (Typically 32GB)     // NONE
+// MemoryType
+// DEVICE_LOCAL_BIT                                    //The "GpuHeapInvisible" 
+// DEVICE_LOCAL_BIT|HOST_VISIBLE_BIT|HOST_COHERENT_BIT //The "GpuHeapLocal"
+// HOST_VISIBLE_BIT|HOST_COHERENT_BIT                  //The "GpuHeapGartUswc"      // cpuWriteCombined
+// HOST_VISIBLE_BIT|HOST_COHERENT_BIT|HOST_CACHED_BIT  //The "GpuHeapGartCacheable" // HOST_CACHED_BIT is for "readback"
+
+// MaliGPU
+
+
 static uint32_t const s_Block_Size = 1024U * 1024U * 256U; //256MB
 
 static inline VkDeviceSize PTVD_Size_AlignDownToPowerOfTwo(VkDeviceSize Value);
@@ -1443,7 +1473,7 @@ bool PTVD_DeviceMemoryManager::Alloc(VkDeviceWrapper &rDeviceWrapper, VkDeviceMe
 {
 	VkDeviceSize AllocationSize;
 	{
-		//ABA�������޺���???
+		//ABA�������޺���???
 		VkDeviceSize MemoryHeapSizeRemainOld;
 		VkDeviceSize MemoryHeapSizeRemainNew;
 		do
@@ -1469,7 +1499,7 @@ bool PTVD_DeviceMemoryManager::Alloc(VkDeviceWrapper &rDeviceWrapper, VkDeviceMe
 	//assert(eResult == VK_SUCCESS);
 	if (eResult != VK_SUCCESS)
 	{
-		//����
+		//����
 		VkDeviceSize MemoryHeapSizeRemainOld;
 		VkDeviceSize MemoryHeapSizeRemainNew;
 		do{
@@ -1545,7 +1575,7 @@ static inline VkDeviceSize PTVD_Size_AlignDownToPowerOfTwo(VkDeviceSize Value)
 	return ValueAligned;
 }
 #else
-#error δ֪��ƽ̨
+#error δ֪��ƽ̨
 #endif
 
 
