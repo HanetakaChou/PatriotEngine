@@ -435,7 +435,7 @@ $F_{ij}$指j->i  //i是receiver //j是shooter
 [https://dl.acm.org/citation.cfm?id=154731](https://dl.acm.org/citation.cfm?id=154731)  
 [Ramamoorthi 2009] Ravi Ramamoorthi, James O'Brien. "Advanced Computer Graphics." University Of California at Berkeley, CS 294-13, Fall 2009.  
 [http://inst.eecs.berkeley.edu/~cs294-13/fa09/](http://inst.eecs.berkeley.edu/~cs294-13/fa09/)   
-[Pharr 2017] Matt Pharr, Wenzel Jakob, and Greg Humphreys. "Physically Based Rendering:From Theory To Implementation Third Edition." Morgan Kaufmann Publishers 2017.  
+[Pharr 2017] Matt Pharr, Wenzel Jakob, and Greg Humphreys. "Physically Based Rendering: From Theory To Implementation Third Edition." Morgan Kaufmann Publishers 2017.  
 [http://www.pbr-book.org](http://www.pbr-book.org)  
 [Cohen 1985] Michael F. Cohen, Donald P. Greenberg. "The hemi-cube: a radiosity solution for complex environments." SIGGRAPH 1998.  
 [https://dl.acm.org/citation.cfm?id=325171](https://dl.acm.org/citation.cfm?id=325171)  
