@@ -114,8 +114,8 @@ int main(int argc, char *argv[])
 	l_WindowImpl_Singleton.m_Argv_Cache = argv;
 
 	PTSThread hThreadInvoke;
-	PTBOOL tbResult = ::PTSThread_Create(&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton), &hThreadInvoke);
-	assert(tbResult != PTFALSE);
+	bool tbResult = ::PTSThread_Create(&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton), &hThreadInvoke);
+	assert(tbResult != false);
 
 	xcb_generic_event_t *pGenericEvent = ::xcb_wait_for_event(hDisplay);
 	while ((pGenericEvent = ::xcb_wait_for_event(hDisplay)) != NULL)
@@ -288,7 +288,7 @@ int main(int argc, char *argv[])
 
 	//确保栈中的内存 PTInvokeParam ParamInvoke 在PTInvokeMain的整个生命期内是有效的
 	tbResult = ::PTSThread_Join(&hThreadInvoke);
-	assert(tbResult != PTFALSE);
+	assert(tbResult != false);
 
 	::xcb_key_symbols_free(pKeySymbolTable);
 
@@ -357,8 +357,12 @@ void * PTInvokeMain(void *pVoid)
 {
 	PTWWindowImpl *pWindow = static_cast<PTWWindowImpl *>(pVoid);
 
-	int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
-	assert(iResult == 0);
+	//int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
+	//assert(iResult == 0);
+	for(int i=0; i<6666; ++i)
+	{
+		sched_yield();
+	}
 
 	pWindow->TermminateMessagePump();
 

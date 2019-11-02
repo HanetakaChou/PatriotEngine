@@ -38,7 +38,7 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *pActivity, v
 
 		PTSThread hThreadInvoke;
 		PTBOOL tbResult = ::PTSThread_Create(&PTInvokeMain, &s_pWindowImpl_Singleton, &hThreadInvoke);
-		assert(tbResult != PTFALSE);
+		assert(tbResult != false);
 
 		//SpinLock
 		while (::PTSAtomic_Get(reinterpret_cast<uintptr_t *>(&s_pWindowImpl_Singleton)) == static_cast<uintptr_t>(NULL))

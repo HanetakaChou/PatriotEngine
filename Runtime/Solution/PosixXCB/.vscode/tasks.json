@@ -1,0 +1,80 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "options": {
+        // Conventions
+        // GNU make: Implicit Variables
+        // https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
+        // ndk-build | Android NDK
+        // https://developer.android.com/ndk/guides/ndk-build
+        // Android.mk | Android NDK
+        // https://developer.android.com/ndk/guides/android_mk
+        "env": {
+            "PT_ARCH_CXXFLAGS": "-m64", //You can change
+            "PT_DEBUG_CXXFLAGS": "-g -O0", //You can change
+            "PT_ARCH_LDFLAGS": "-m64", //You can change
+            "PT_DEBUG_LDFLAGS": "-O0", //You can change
+            "PT_ARCH_NAME": "x86_64", //You can change
+            "PT_DEBUG_NAME": "Debug", //You can change
+            "PT_VERBOSE":"", //-v //You can change
+            "PTLauncher_CXX": "g++",
+            "PTLauncher_CXXFLAGS": "-fpie -fvisibility=hidden",
+            "PTLauncher_LDFLAGS": "-pthread -pie -Wl,--enable-new-dtags -Wl,-rpath,$ORIGIN -lxcb -lxcb-keysyms"
+        }
+    },
+    "presentation": {
+        "showReuseMessage": false,
+    },
+    "tasks": [
+        {
+            "label": "PTLauncher.bundle",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "-c",
+                "${PTLauncher_CXX} ${workspaceFolder}/../../../Intermediate/PTLauncher/${PT_ARCH_NAME}/${PT_DEBUG_NAME}/PTWindowImpl.o ${PT_ARCH_LDFLAGS} ${PT_DEBUG_LDFLAGS} ${PT_VERBOSE} ${PTLauncher_LDFLAGS} -o ${workspaceFolder}/../../../Binary/PTLauncher/${PT_ARCH_NAME}/${PT_DEBUG_NAME}/PTLauncher.bundle"
+            ],
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "PTLauncher_Binary_Directory",
+                "PTWindowImpl.o"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "PTLauncher_Binary_Directory",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "-c",
+                "mkdir -p ${workspaceFolder}/../../../Binary/PTLauncher/${PT_ARCH_NAME}/${PT_DEBUG_NAME}"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "PTWindowImpl.o",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "-c",
+                "${PTLauncher_CXX} -c ${workspaceFolder}/../../Private/Window/PosixXCB/PTWindowImpl.cpp ${PT_ARCH_CXXFLAGS} ${PT_DEBUG_CXXFLAGS} ${PT_VERBOSE} ${PTLauncher_CXXFLAGS} -o ${workspaceFolder}/../../../Intermediate/PTLauncher/${PT_ARCH_NAME}/${PT_DEBUG_NAME}/PTWindowImpl.o"
+            ],
+            "dependsOrder": "parallel",
+            "dependsOn": [
+                "PTLauncher_Intermediate_Directory"
+            ],
+            "problemMatcher": []
+        },
+        {
+            "label": "PTLauncher_Intermediate_Directory",
+            "type": "process",
+            "command": "bash",
+            "args": [
+                "-c",
+                "mkdir -p ${workspaceFolder}/../../../Intermediate/PTLauncher/${PT_ARCH_NAME}/${PT_DEBUG_NAME}"
+            ],
+            "problemMatcher": []
+        }
+    ]
+}
