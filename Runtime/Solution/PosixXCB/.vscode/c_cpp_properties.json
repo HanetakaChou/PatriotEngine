@@ -1,0 +1,13 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/ThirdParty/llvm/include/c++/v1"
+            ],
+            "defines": [],
+            "compilerPath": "${workspaceFolder}/ThirdParty/llvm/bin/clang++"
+        }
+    ],
+    "version": 4
+}
