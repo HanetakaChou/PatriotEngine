@@ -18,7 +18,7 @@
             "stopAtEntry": true,
             "MIMode": "gdb",
             "miDebuggerPath": "/opt/rh/devtoolset-8/root/usr/bin/gdb",
-            "targetArchitecture": "x86_64",
+            "targetArchitecture": "x64",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

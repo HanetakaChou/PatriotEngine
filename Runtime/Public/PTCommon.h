@@ -65,10 +65,10 @@
 #endif
 
 //Architecture //Mach-O Support Universal Binary, We Must Depend On The Compiler Predefined Macros To Infer The Architecture.
-#if defined(__i386__)
+#if defined(__x86_64__)
+#define PTX64 1 //Compiler May Define Both __x86_64__ and __i386__ Because Of Bugs.
+#elif defined(__i386__)
 #define PTX86 1
-#elif defined(__x86_64__)
-#define PTX64 1
 #elif defined(__arm__)
 #define PTARM 1
 #elif defined(__aarch64__)
