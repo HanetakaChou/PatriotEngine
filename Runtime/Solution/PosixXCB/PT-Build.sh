@@ -1,5 +1,5 @@
 #!/bin/bash
-cd "`dirname "$0"`"
+cd "$(dirname "$0")"
 
 # Conventions
 # GNU make: Implicit Variables
@@ -19,6 +19,9 @@ cd "`dirname "$0"`"
 # 0 Release
 # 1 Debug
 
-# ../../ThirdParty/llvm/bin/clang++ -E -C PTLauncher.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=1 -o PTLauncher_x64_Debug.mk
+mkdir -p .mk
 
-make -f PTLauncher_x64_Debug.mk
+../../ThirdParty/llvm/bin/clang++ -E -C PTRuntime.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=0 -o .mk/PTRuntime.mk
+../../ThirdParty/llvm/bin/clang++ -E -C PTLauncher.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=0 -o .mk/PTLauncher.mk
+
+make -f .mk/PTRuntime.mk

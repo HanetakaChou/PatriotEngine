@@ -1,1 +1,0 @@
-﻿//To Force IDE —— "Visual C++ For Linux Development" —— To Create The Directory "ThirdParty" On The Remote Machine
