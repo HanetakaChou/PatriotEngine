@@ -5,7 +5,10 @@
             "includePath": [
                 "${workspaceFolder}/ThirdParty/llvm/include/c++/v1"
             ],
-            "defines": [],
+            "defines": [
+                "PT_TARGET_ARCH=3",
+                "PT_DEBUG=1"
+            ],
             "compilerPath": "${workspaceFolder}/ThirdParty/llvm/bin/clang++"
         }
     ],
