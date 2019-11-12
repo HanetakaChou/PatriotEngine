@@ -7,7 +7,7 @@
 1.并行编程框架——PatriotTBB  
 
 待解决：  
-1.场景管理：对NVIDIA的场景管理引擎SceniX和NvPro-Pipeline的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
+1.场景管理：对NVIDIA SceniX、NvPro-Pipeline和Pixar Hydra的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
 2.其它图形相关的需求在[Document/目录.md]中列出  
   
 正在解决：  
@@ -19,7 +19,9 @@
 https://www.threadingbuildingblocks.org/  
 2.Vulkan Memory Allocator  
 https://gpuopen.com/vulkan-memory-allocator-2-2/  
-3.[Gelado 2019] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.  
+3.D3D12 Memory Allocator  
+https://gpuopen.com/d3d12-memory-allocator-1-0-0/  
+4.[Gelado 2019] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.  
 https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory  
 
 
