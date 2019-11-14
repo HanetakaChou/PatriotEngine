@@ -154,10 +154,12 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTAPPAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -165,11 +167,12 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTAPPAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
-      <DebugInformationFormat>FullDebug</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
@@ -177,10 +180,11 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTAPPAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
@@ -189,10 +193,11 @@
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
@@ -204,7 +209,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
@@ -213,10 +218,11 @@
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
@@ -224,10 +230,11 @@
       <PreprocessorDefinitions>PTPOSIX;PTPOSIXANDROID;PTAPPAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
@@ -236,10 +243,11 @@
       <CppLanguageStandard>c++11</CppLanguageStandard>
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
       <DebugInformationFormat>FullDebug</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(VS_NdkRoot)\sources\android\support\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <LibraryDependencies>PTSystem;PTAudioTA;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTSystem;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

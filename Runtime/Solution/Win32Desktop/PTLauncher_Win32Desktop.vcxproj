@@ -19,22 +19,22 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTDInput.h" />
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTResource.h" />
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTWindowImpl.h" />
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTDInput.h" />
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTResource.h" />
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
-    <ClInclude Include="..\..\Public\Window\PTWCommon.h" />
-    <ClInclude Include="..\..\Public\Window\PTWWindow.h" />
+    <ClInclude Include="..\..\Public\Launcher\PTWCommon.h" />
+    <ClInclude Include="..\..\Public\Launcher\PTWWindow.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\Window\Win32Desktop\PTDInput.cpp" />
-    <ClCompile Include="..\..\Private\Window\Win32Desktop\PTWindowImpl.cpp" />
+    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTDInput.cpp" />
+    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\Private\Window\Win32Desktop\PTResource.rc" />
+    <ResourceCompile Include="..\..\Private\Launcher\Win32Desktop\PTResource.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\Private\Window\Win32Desktop\PTDesktop.ico" />
+    <Image Include="..\..\Private\Launcher\Win32Desktop\PTDesktop.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PTApp_Win32Desktop.vcxproj">
@@ -132,9 +132,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)..\..\ThirdParty\steamworks_sdk\redistributable_bin\steam_api.dll" "$(ProjectDir)$(OutDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -165,9 +163,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)..\..\ThirdParty\steamworks_sdk\redistributable_bin\steam_api.dll" "$(ProjectDir)$(OutDir)"</Command>
-    </PostBuildEvent>
+    <PostBuildEvent />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

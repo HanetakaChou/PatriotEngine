@@ -1,7 +1,7 @@
 #ifndef PT_VIDEO_COMMON_SCENETREEIMPL_H
 #define PT_VIDEO_COMMON_SCENETREEIMPL_H
 
-#include "../../../Public/Video/PTVDSceneTree.h"
+#include "../../../Public/GFX/PTVDSceneTree.h"
 #include "../../../Public/System/PTSMemoryAllocator.h"
 #include "../../../Public/Math/PTMath.h"
 

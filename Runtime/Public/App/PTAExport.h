@@ -4,7 +4,7 @@
 #include "../PTCommon.h"
 #include "PTACommon.h"
 
-#include "../Window/PTWWindow.h"
+#include "../Launcher/PTWWindow.h"
 #include "../System/PTSFile.h"
 
 extern "C" PTAPPAPI int PTCALL PTAMain(IPTWWindow *pWindow, int argc, char *argv[]);

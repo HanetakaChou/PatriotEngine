@@ -13,46 +13,43 @@
     <Filter Include="Public\Window">
       <UniqueIdentifier>{d724b681-1887-4df1-969f-2cfb5e164bff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\Window\Win32Desktop">
-      <UniqueIdentifier>{0a2ec23b-3cc7-447c-aada-da8bb19d7ebb}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\PTCommon.h">
       <Filter>Public</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTWindowImpl.h">
-      <Filter>Private\Window\Win32Desktop</Filter>
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTDInput.h">
+      <Filter>Private\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTResource.h">
-      <Filter>Private\Window\Win32Desktop</Filter>
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTResource.h">
+      <Filter>Private\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\Window\PTWCommon.h">
+    <ClInclude Include="..\..\Public\Launcher\PTWCommon.h">
       <Filter>Public\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\Window\PTWWindow.h">
+    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.h">
+      <Filter>Private\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Launcher\PTWWindow.h">
       <Filter>Public\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\Window\Win32Desktop\PTDInput.h">
-      <Filter>Private\Window\Win32Desktop</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\Window\Win32Desktop\PTWindowImpl.cpp">
-      <Filter>Private\Window\Win32Desktop</Filter>
+    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTDInput.cpp">
+      <Filter>Private\Window</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Private\Window\Win32Desktop\PTDInput.cpp">
-      <Filter>Private\Window\Win32Desktop</Filter>
+    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.cpp">
+      <Filter>Private\Window</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\..\Private\Window\Win32Desktop\PTResource.rc">
-      <Filter>Private\Window\Win32Desktop</Filter>
-    </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\Private\Window\Win32Desktop\PTDesktop.ico">
-      <Filter>Private\Window\Win32Desktop</Filter>
+    <Image Include="..\..\Private\Launcher\Win32Desktop\PTDesktop.ico">
+      <Filter>Private\Window</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\Private\Launcher\Win32Desktop\PTResource.rc">
+      <Filter>Private\Window</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

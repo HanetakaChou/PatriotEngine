@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{c9951e9e-6146-487f-bf70-9896ee0856a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{46e28385-6705-44c3-8d77-cd1bd111d76d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{4168b892-6d1c-4684-8792-6f53d48c741a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{a0bbb667-fd4f-443f-87b9-20da6f0ee938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Video">
+      <UniqueIdentifier>{52ad3c63-03b5-4aca-88dd-9ceb840bbddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Video">
+      <UniqueIdentifier>{66c6ff07-f80f-4825-b8ec-da0aa23de0f1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTVDInstance.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTVDCommon.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTVDSceneTree.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\PTVDMemoryAllocator.h">
+      <Filter>Private\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\PTVDBufferAllocator.h">
+      <Filter>Private\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.h" />
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDInstanceImpl.h" />
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.h" />
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\GFX\PTVDMemoryAllocator.cpp">
+      <Filter>Private\Video</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\Common\PTVDDllMain.cpp" />
+    <ClCompile Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.cpp" />
+    <ClCompile Include="..\..\Private\GFX\VK\PTVDInstanceImpl.cpp" />
+    <ClCompile Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+  </ItemGroup>
+</Project>

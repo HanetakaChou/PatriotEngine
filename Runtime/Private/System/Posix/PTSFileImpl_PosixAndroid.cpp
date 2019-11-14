@@ -28,7 +28,7 @@ extern "C" PTSYSTEMAPI int PTS_iFDDir_DataExternal = -1;
 extern "C" PTSYSTEMAPI char PTS_StrPath_DataExternal[0X10000] = { "" };
 
 static int32_t s_FileSystem_Initialize_RefCount = 0;
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
+extern "C" PTSYSTEMAPI bool PTCALL PTSFileSystem_Initialize()
 {
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
@@ -37,11 +37,11 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 		assert(PTS_StrPath_DataExternal[0] != '\0');
 		s_FileSystem_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSFileSystemImpl), alignof(PTSFileSystemImpl)))PTSFileSystemImpl(PTS_iFDDir_DataExternal, PTS_StrPath_DataExternal);
 		assert(s_FileSystem_Singleton_Pointer != NULL);
-		return PTTRUE;
+		return true;
 	}
 	else
 	{
-		return PTTRUE;
+		return true;
 	}
 }
 
