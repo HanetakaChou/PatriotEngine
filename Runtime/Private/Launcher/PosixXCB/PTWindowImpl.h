@@ -1,4 +1,4 @@
-#include "../../../Public/Window/PTWWindow.h"
+#include "../../../Public/Launcher/PTWWindow.h"
 #include "../../../Public/System/PTSThread.h"
 
 class PTWWindowImpl :public IPTWWindow
@@ -24,10 +24,10 @@ class PTWWindowImpl :public IPTWWindow
 	friend void * PTInvokeMain(void *pVoid);
 
 public:
-	//main线程调用
+	//main锟竭程碉拷锟斤拷
 	inline PTWWindowImpl();
 	inline ~PTWWindowImpl();
 
-	//PTInvokeMain线程调用
+	//PTInvokeMain锟竭程碉拷锟斤拷
 	inline void TermminateMessagePump();
 };

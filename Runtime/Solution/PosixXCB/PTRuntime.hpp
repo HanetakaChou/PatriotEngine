@@ -160,12 +160,12 @@ PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../.
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
 ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o: \
-    ../../Private/Window/PosixXCB/PTWindowImpl.cpp \
-    ../../Private/Window/PosixXCB/PTWindowImpl.h \
+    ../../Private/Launcher/PosixXCB/PTWindowImpl.cpp \
+    ../../Private/Launcher/PosixXCB/PTWindowImpl.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/Window/PosixXCB/PTWindowImpl.cpp \
+        ../../Private/Launcher/PosixXCB/PTWindowImpl.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o
 
