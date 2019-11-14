@@ -21,7 +21,6 @@ cd "$(dirname "$0")"
 
 mkdir -p .mk
 
-../../ThirdParty/llvm/bin/clang++ -E -C PTRuntime.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=0 -o .mk/PTRuntime.mk
-../../ThirdParty/llvm/bin/clang++ -E -C PTLauncher.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=0 -o .mk/PTLauncher.mk
+../../ThirdParty/llvm/bin/clang++ -E -C PTRuntime.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=1 -o .PTRuntime.mk
 
-make -f .mk/PTRuntime.mk
+make -f .PTRuntime.mk
