@@ -19,11 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\PTVDBufferAllocator.h" />
-    <ClInclude Include="..\..\Private\GFX\PTVDMemoryAllocator.h" />
-    <ClInclude Include="..\..\Private\GFX\VK\PTVDInstanceImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.h" />
+    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h" />
     <ClInclude Include="..\..\Public\Math\PTMath.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
@@ -32,11 +28,8 @@
     <ClInclude Include="..\..\Public\GFX\PTVDSceneTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDDllMain.cpp" />
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\PTVDMemoryAllocator.cpp" />
-    <ClCompile Include="..\..\Private\GFX\VK\PTVDInstanceImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\GFX\PTGFXDllMain.cpp" />
+    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl" />

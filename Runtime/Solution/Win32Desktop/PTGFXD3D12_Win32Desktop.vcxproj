@@ -23,6 +23,7 @@
     <ClInclude Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.h" />
     <ClInclude Include="..\..\Private\GFX\D3D12\PTVDDevice3DImpl.h" />
     <ClInclude Include="..\..\Private\GFX\D3D12\PTVDInstanceImpl.h" />
+    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h" />
     <ClInclude Include="..\..\Public\Math\PTMath.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\GFX\PTVDAsset.h" />
@@ -35,6 +36,7 @@
     <ClCompile Include="..\..\Private\GFX\Common\PTVDDllMain.cpp" />
     <ClCompile Include="..\..\Private\GFX\D3D12\PTVDDevice3DImpl.cpp" />
     <ClCompile Include="..\..\Private\GFX\D3D12\PTVDInstanceImpl.cpp" />
+    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Private\GFX\D3D12\Shader\PTPostProcess_FXAA.hlsli" />

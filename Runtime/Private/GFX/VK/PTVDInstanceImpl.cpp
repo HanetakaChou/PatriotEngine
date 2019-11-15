@@ -33,9 +33,9 @@
 
 #include "PTVDVKMemoryAllocator.h"
 
-IPTVDInstance * PTCALL PTVDInstance_ForProcess()
+IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 {
-	static PTVDInstanceImpl *s_InstanceImpl_Singleton_Pointer = reinterpret_cast<PTVDInstanceImpl *>(uintptr_t(0X1U));//不可能为有效值，因为不满足Alignment
+	static PTVDInstanceImpl *s_InstanceImpl_Singleton_Pointer = reinterpret_cast<PTVDInstanceImpl *>(uintptr_t(0X1U)); //不可能为有效值，因为不满足Alignment
 	static int32_t s_InstanceImpl_Initialize_RefCount = 0;
 
 	PTVDInstanceImpl *pInstanceImpl;
@@ -66,16 +66,21 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 #if defined(PTWIN32)
 #if defined(PTWIN32DESKTOP)
 #ifndef NDEBUG
-			const char *EnabledLayerNames[1] = {
-				"VK_LAYER_LUNARG_standard_validation"
-			};
-			CreateInfo.enabledLayerCount = 1U;
+			//const char *EnabledLayerNames[1] = {
+			//	"VK_LAYER_LUNARG_standard_validation"
+			//};
+			//CreateInfo.enabledLayerCount = 1U;
+			char const *EnabledLayerNames[5] = {
+				"VK_LAYER_GOOGLE_threading",
+				"VK_LAYER_LUNARG_parameter_validation",
+				"VK_LAYER_LUNARG_object_tracker",
+				"VK_LAYER_LUNARG_core_validation",
+				"VK_LAYER_GOOGLE_unique_objects"};
 			CreateInfo.ppEnabledLayerNames = EnabledLayerNames;
-			const char *EnabledExtensionNames[3] = {
+			char const *EnabledExtensionNames[3] = {
 				"VK_KHR_surface",
 				"VK_KHR_win32_surface",
-				"VK_EXT_debug_report"
-			};
+				"VK_EXT_debug_report"};
 			CreateInfo.enabledExtensionCount = 3U;
 			CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 #else
@@ -83,8 +88,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 			CreateInfo.ppEnabledLayerNames = NULL;
 			const char *EnabledExtensionNames[2] = {
 				"VK_KHR_surface",
-				"VK_KHR_win32_surface"
-			};
+				"VK_KHR_win32_surface"};
 			CreateInfo.enabledExtensionCount = 2U;
 			CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 #endif
@@ -103,15 +107,13 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				"VK_LAYER_LUNARG_parameter_validation",
 				"VK_LAYER_LUNARG_object_tracker",
 				"VK_LAYER_LUNARG_core_validation",
-				"VK_LAYER_GOOGLE_unique_objects"
-			};
+				"VK_LAYER_GOOGLE_unique_objects"};
 			CreateInfo.enabledLayerCount = 5U;
-			CreateInfo.ppEnabledLayerNames = EnabledLayerNames;// EnabledLayerNames;
+			CreateInfo.ppEnabledLayerNames = EnabledLayerNames; // EnabledLayerNames;
 			const char *EnabledExtensionNames[3] = {
 				"VK_KHR_surface",
 				"VK_KHR_android_surface",
-				"VK_EXT_debug_report"
-			};
+				"VK_EXT_debug_report"};
 			CreateInfo.enabledExtensionCount = 3U;
 			CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 #else
@@ -119,8 +121,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 			CreateInfo.ppEnabledLayerNames = NULL;
 			const char *EnabledExtensionNames[2] = {
 				"VK_KHR_surface",
-				"VK_KHR_android_surface"
-			};
+				"VK_KHR_android_surface"};
 			CreateInfo.enabledExtensionCount = 2U;
 			CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 #endif
@@ -133,24 +134,22 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 
 			struct LambdaVKAPI
 			{
-				static VKAPI_ATTR void * VKAPI_CALL Allocation(void *, size_t size, size_t alignment, VkSystemAllocationScope)
+				static VKAPI_ATTR void *VKAPI_CALL Allocation(void *, size_t size, size_t alignment, VkSystemAllocationScope)
 				{
 					return ::PTSMemoryAllocator_Alloc_Aligned(static_cast<uint32_t>(size), static_cast<uint32_t>(alignment));
 				}
-				static VKAPI_ATTR void * VKAPI_CALL Reallocation(void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope)
+				static VKAPI_ATTR void *VKAPI_CALL Reallocation(void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope)
 				{
 					return ::PTSMemoryAllocator_Realloc_Aligned(pOriginal, static_cast<uint32_t>(size), static_cast<uint32_t>(alignment));
 				}
-				static VKAPI_ATTR void VKAPI_CALL Free(void *, void* pMemory)
+				static VKAPI_ATTR void VKAPI_CALL Free(void *, void *pMemory)
 				{
 					return ::PTSMemoryAllocator_Free_Aligned(pMemory);
 				}
-				static VKAPI_ATTR void VKAPI_CALL InternalAllocation(void *, size_t, VkInternalAllocationType, VkSystemAllocationScope)
-				{
+				static VKAPI_ATTR void VKAPI_CALL InternalAllocation(void *, size_t, VkInternalAllocationType, VkSystemAllocationScope){
 
 				};
-				static VKAPI_ATTR void VKAPI_CALL InternalFree(void *, size_t, VkInternalAllocationType, VkSystemAllocationScope)
-				{
+				static VKAPI_ATTR void VKAPI_CALL InternalFree(void *, size_t, VkInternalAllocationType, VkSystemAllocationScope){
 
 				};
 			};
@@ -182,16 +181,14 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 			CreateInfo.pNext = NULL;
 			CreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT; //| VK_DEBUG_REPORT_DEBUG_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT
 			CreateInfo.pfnCallback = [](
-				VkDebugReportFlagsEXT flags,
-				VkDebugReportObjectTypeEXT,
-				uint64_t,
-				size_t,
-				int32_t,
-				const char *pLayerPrefix,
-				const char *pMessage,
-				void *
-				)->VkBool32
-			{
+										 VkDebugReportFlagsEXT flags,
+										 VkDebugReportObjectTypeEXT,
+										 uint64_t,
+										 size_t,
+										 int32_t,
+										 const char *pLayerPrefix,
+										 const char *pMessage,
+										 void *) -> VkBool32 {
 				wchar_t wStringOutput[0X10000];
 				uint32_t Length = 0U;
 				::PTS_MemoryCopy(wStringOutput + Length, L"Vulkan Debug Report: ", sizeof(wchar_t) * 21U);
@@ -228,7 +225,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				{
 					::PTS_MemoryCopy(wStringOutput + Length, L"LayerPrefix: ", sizeof(wchar_t) * 13U);
 					Length += 13U;
-					uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pLayerPrefix)));//不包括'\0'
+					uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pLayerPrefix))); //不包括'\0'
 					uint32_t OutCharsLeft = 0X10000U - 2U - Length;
 					bool bResult = ::PTSConv_UTF8ToUTF16(pLayerPrefix, &InCharsLeft, reinterpret_cast<char16_t *>(wStringOutput + Length), &OutCharsLeft);
 					assert(bResult);
@@ -239,7 +236,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				{
 					::PTS_MemoryCopy(wStringOutput + Length, L" Message: ", sizeof(wchar_t) * 10U);
 					Length += 10U;
-					uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pMessage)));//不包括'\0'
+					uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pMessage))); //不包括'\0'
 					uint32_t OutCharsLeft = 0X10000U - 2U - Length;
 					bool bResult = ::PTSConv_UTF8ToUTF16(pMessage, &InCharsLeft, reinterpret_cast<char16_t *>(wStringOutput + Length), &OutCharsLeft);
 					assert(bResult);
@@ -278,8 +275,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 					int32_t,
 					const char *pLayerPrefix,
 					const char *pMessage,
-					void *
-				)
+					void *)
 				{
 					char StringOutput[0X10000];
 					uint32_t Length = 0U;
@@ -321,7 +317,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 					{
 						::PTS_MemoryCopy(StringOutput + Length, "LayerPrefix: ", sizeof(char) * 13U);
 						Length += 13U;
-						uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pLayerPrefix)));//不包括'\0'
+						uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pLayerPrefix))); //不包括'\0'
 						uint32_t OutCharsLeft = 0X10000U - 2U - Length;
 						uint32_t NumCopy = (InCharsLeft < OutCharsLeft) ? InCharsLeft : OutCharsLeft;
 						::PTS_MemoryCopy(StringOutput + Length, pLayerPrefix, NumCopy);
@@ -332,7 +328,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 					{
 						::PTS_MemoryCopy(StringOutput + Length, " Message: ", sizeof(char) * 10U);
 						Length += 10U;
-						uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pMessage)));//不包括'\0'
+						uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pMessage))); //不包括'\0'
 						uint32_t OutCharsLeft = 0X10000U - 2U - Length;
 						uint32_t NumCopy = (InCharsLeft < OutCharsLeft) ? InCharsLeft : OutCharsLeft;
 						::PTS_MemoryCopy(StringOutput + Length, pMessage, NumCopy);
@@ -373,7 +369,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 
 		VkPhysicalDevice *pPhysicalDevices;
 		{
-			pPhysicalDevices = static_cast<VkPhysicalDevice *>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(VkPhysicalDevice)*PhysicalDeviceCount, alignof(VkPhysicalDevice)));
+			pPhysicalDevices = static_cast<VkPhysicalDevice *>(::PTSMemoryAllocator_Alloc_Aligned(sizeof(VkPhysicalDevice) * PhysicalDeviceCount, alignof(VkPhysicalDevice)));
 			VkResult eResult = hInstanceWrapper.EnumeratePhysicalDevices(&PhysicalDeviceCount, pPhysicalDevices);
 			assert(eResult == VK_SUCCESS);
 		}
@@ -392,7 +388,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				CreateInfo.ppEnabledLayerNames = NULL;
 				CreateInfo.enabledExtensionCount = 1U;
 
-				const char *EnabledExtensionNames[1] = { "VK_KHR_swapchain" };
+				const char *EnabledExtensionNames[1] = {"VK_KHR_swapchain"};
 				CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 
 				VkPhysicalDeviceFeatures SupportedFeatures;
@@ -412,7 +408,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//EnabledFeatures.textureCompressionETC2 = VK_FALSE; //For Android
 				//EnabledFeatures.textureCompressionASTC_LDR = VK_FALSE; //For OSX/IOS
 				EnabledFeatures.textureCompressionBC = VK_TRUE;
-				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR) 
+				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR)
 				//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
 				//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
 				//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
@@ -424,7 +420,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//EnabledFeatures.textureCompressionETC2 = VK_FALSE; //For Android
 				//EnabledFeatures.textureCompressionASTC_LDR = VK_FALSE; //For OSX/IOS
 				EnabledFeatures.textureCompressionBC = VK_TRUE;
-				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR) 
+				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR)
 				//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
 				//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
 				//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
@@ -440,17 +436,17 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//EnabledFeatures.textureCompressionETC2 = VK_FALSE; //For Android
 				//EnabledFeatures.textureCompressionASTC_LDR = VK_FALSE; //For OSX/IOS
 				EnabledFeatures.textureCompressionBC = VK_TRUE;
-				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR) 
+				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR)
 				//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
 				//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
 				//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
 #elif defined(PTPOSIXANDROID)
 				EnabledFeatures.textureCompressionASTC_LDR = VK_TRUE; //Mobile Standard //IOS Provides
-				//EnabledFeatures.textureCompressionBC = VK_FALSE; //For PC
-				//BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR) 
-				//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
-				//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
-				//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
+																	  //EnabledFeatures.textureCompressionBC = VK_FALSE; //For PC
+																	  //BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR)
+																	  //BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
+																	  //DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
+																	  //DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
 #else
 #error 未知的平台
 #endif
@@ -462,11 +458,11 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				uint32_t uiQueueFamilyIndex_3D = 0;
 				uint32_t uiQueueFamilyIndex_Copy = 1;
 
-				float QueuePriorities_3D[1] = { 0.0f };
-				float QueuePriorities_Copy[1] = { 0.0f };
+				float QueuePriorities_3D[1] = {0.0f};
+				float QueuePriorities_Copy[1] = {0.0f};
 
-				VkDeviceQueueCreateInfo QueueCreateInfos[2] = { { VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0U, uiQueueFamilyIndex_3D, 1U, QueuePriorities_3D },
-				{ VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0U, uiQueueFamilyIndex_Copy, 1U, QueuePriorities_Copy } };
+				VkDeviceQueueCreateInfo QueueCreateInfos[2] = {{VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0U, uiQueueFamilyIndex_3D, 1U, QueuePriorities_3D},
+															   {VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, NULL, 0U, uiQueueFamilyIndex_Copy, 1U, QueuePriorities_Copy}};
 				CreateInfo.queueCreateInfoCount = 1U;
 				CreateInfo.pQueueCreateInfos = QueueCreateInfos;
 
@@ -485,7 +481,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 
 				HWND
 
-				PTVD_MemoryAllocator *pAllocator_PTVD = ::PTVD_MemoryAllocator_Create(hInstanceWrapper, hDeviceWrapper);
+					PTVD_MemoryAllocator *pAllocator_PTVD = ::PTVD_MemoryAllocator_Create(hInstanceWrapper, hDeviceWrapper);
 				::PTVD_MemoryAllocator_Alloc(pAllocator_PTVD, PTVD_MEMORYTYPE_TEXTURE_SHADERRESOURCE, 1024U * 8192U);
 
 				PTVD_DeviceMemoryManager m_DeviceMemoryManager;
@@ -1535,7 +1531,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 
 				//FrameBuffer(Input/Color/Depth/Stencil Attachment) //Delicated Allocation //Optimized For Tiled-Architect
 
-#if 1			//Qualcomm Adreno //UMA-CacheCoherent
+#if 1 //Qualcomm Adreno //UMA-CacheCoherent
 
 				//Qualcomm Adreno API 1.0.3
 				//Integrated
@@ -1579,10 +1575,10 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//Heap
 				//1 DEVICE_LOCAL //POOL_L0
 				//Type
-				//5 DEVICE_LOCAL											//CPU_PAGE_PROPERTY_NOT_AVAILABLE 
+				//5 DEVICE_LOCAL											//CPU_PAGE_PROPERTY_NOT_AVAILABLE
 #endif
 
-#if 1			//ARM Mali //UMA-NonCacheCoherent
+#if 1 //ARM Mali //UMA-NonCacheCoherent
 
 				//ARM Mali API 1.0.2/1.0.11/1.0.14/1.0.26/1.0.36/1.0.47/1.0.52/1.0.53/1.0.58/1.0.61/1.0.65/1.0.66/1.0.82
 				//Integrated
@@ -1594,7 +1590,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//2 DEVICE_LOCAL+LAZILY_ALLOCATED							//CPU_PAGE_PROPERTY_NOT_AVAILABLE	//???
 #endif
 
-#if 1			//ImgTec PowerVR //UMA-NonCacheCoherent
+#if 1 //ImgTec PowerVR //UMA-NonCacheCoherent
 
 				//ImgTec PowerVR API 1.0.3
 				//Discrete //???
@@ -1624,7 +1620,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//2 DEVICE_LOCAL+HOST_VISIBLE+HOST_CACHED		//CPU_PAGE_PROPERTY_WRITE_BACK //NCC(HOST_CACHED+HOST_COHERENT) //UMA(DEVICE_LOCAL)
 #endif
 
-#if 1			//Intel
+#if 1 //Intel
 				
 				//Intel Bay Trail //UMA-NonCacheCoherent //API 1.0.57/API 1.1.0/API 1.1.80/API 1.1.90/API 1.1.96
 				//Integrated 
@@ -1653,7 +1649,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//0 DEVICE_LOCAL+HOST_VISIBLE+HOST_COHERENT+HOST_CACHED		//CPU_PAGE_PROPERTY_WRITE_BACK		//UMA(DEVICE_LOCAL)-CC(HOST_CACHED+HOST_COHERENT)	//VertexBuffer+IndexBuffer+StartingBuffer
 #endif
 
-#if 1			//NVIDIA Tegra //UMA-NonCacheCoherent
+#if 1 //NVIDIA Tegra //UMA-NonCacheCoherent
 
 				//NVIDIA Tegra API 1.0.2/1.0.3
 				//Integrated
@@ -1684,10 +1680,10 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 				//2 DEVICE_LOCAL+HOST_VISIBLE+HOST_COHERENT		//CPU_PAGE_PROPERTY_WRITE_COMBINE	//UMA(DEVICE_LOCAL)						//VertexBuffer+IndexBuffer+StartingBuffer
 				//3 DEVICE_LOCAL+HOST_VISIBLE+HOST_CACHED		//CPU_PAGE_PROPERTY_WRITE_BACK		//UMA(DEVICE_LOCAL)-NCC(HOST_CACHED)
 				//4 DEVICE_LOCAL								//CPU_PAGE_PROPERTY_NOT_AVAILABLE 
-				//5 DEVICE_LOCAL								//CPU_PAGE_PROPERTY_NOT_AVAILABLE 
+				//5 DEVICE_LOCAL								//CPU_PAGE_PROPERTY_NOT_AVAILABLE
 #endif
 
-#if 1			//AMD RADV
+#if 1 //AMD RADV
 
 				//AMD RADV API
 				//Discrete

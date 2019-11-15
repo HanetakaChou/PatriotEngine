@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{b11e4cb7-b6aa-4cd4-b508-e75104e24b8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{11a76574-9454-43ca-bc47-5ca61c16f700}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{38693cf5-c163-4ea7-93a7-d0f737bc0805}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\NEON">
+      <UniqueIdentifier>{a3c027f5-810c-4aca-a28b-6d7ab37de68d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{c5f6cb01-b429-48c2-889e-0686ae07aaa8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Video">
+      <UniqueIdentifier>{62ed2f46-bff8-4753-8e18-4c070d50b31a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX">
+      <UniqueIdentifier>{65a2c0f5-2d9a-4322-9f97-1d258de1d87c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX\VK">
+      <UniqueIdentifier>{7b2de35b-e4ed-491d-b0dc-8a17c4cd9da1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTVDCommon.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTVDInstance.h">
+      <Filter>Public\Video</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDInstanceImpl.h">
+      <Filter>Private\GFX\VK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.h">
+      <Filter>Private\GFX\VK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h">
+      <Filter>Private\GFX\VK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h">
+      <Filter>Private\GFX</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\Math\NEON\PTMathSIMD.inl">
+      <Filter>Public\Math\NEON</Filter>
+    </None>
+    <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\GFX\VK\PTVDInstanceImpl.cpp">
+      <Filter>Private\GFX\VK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.cpp">
+      <Filter>Private\GFX\VK</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

@@ -13,11 +13,14 @@
     <Filter Include="Public\Math\SSE">
       <UniqueIdentifier>{a0bbb667-fd4f-443f-87b9-20da6f0ee938}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\Video">
-      <UniqueIdentifier>{52ad3c63-03b5-4aca-88dd-9ceb840bbddf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Public\Video">
       <UniqueIdentifier>{66c6ff07-f80f-4825-b8ec-da0aa23de0f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX">
+      <UniqueIdentifier>{52ad3c63-03b5-4aca-88dd-9ceb840bbddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX\VK">
+      <UniqueIdentifier>{41ede4c3-90e7-4bea-86fa-c2bc75c8e35e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -36,25 +39,20 @@
     <ClInclude Include="..\..\Public\GFX\PTVDSceneTree.h">
       <Filter>Public\Video</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\GFX\PTVDMemoryAllocator.h">
-      <Filter>Private\Video</Filter>
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h">
+      <Filter>Private\GFX\VK</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\GFX\PTVDBufferAllocator.h">
-      <Filter>Private\Video</Filter>
+    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h">
+      <Filter>Private\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\VK\PTVDInstanceImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.h" />
-    <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\GFX\PTVDMemoryAllocator.cpp">
-      <Filter>Private\Video</Filter>
+    <ClCompile Include="..\..\Private\GFX\PTGFXDllMain.cpp">
+      <Filter>Private\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDDllMain.cpp" />
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\VK\PTVDInstanceImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">

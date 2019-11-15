@@ -195,14 +195,7 @@
     <ProjectReference Include="PTLauncher_PosixAndroid.vcxproj" />
     <ProjectReference Include="PTSystem_PosixAndroid.vcxproj" />
     <ProjectReference Include="PTVideoVK_PosixAndroid.vcxproj" />
-    <ProjectReference Include="SPIRV_Tools_PosixAndroid.vcxproj" />
     <ProjectReference Include="tinyalsa_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_core_validation_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_object_tracker_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_parameter_validation_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_threading_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_unique_objects_PosixAndroid.vcxproj" />
-    <ProjectReference Include="VkLayer_utils_PosixAndroid.vcxproj" />
   </ItemGroup>
   <Import Project="$(AndroidTargetsPath)\Android.targets" />
   <ImportGroup Label="ExtensionTargets" />

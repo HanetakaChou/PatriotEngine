@@ -9,6 +9,7 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *
 static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *, AInputQueue *);
 static void ANativeActivity_onNativeWindowCreated(ANativeActivity *, ANativeWindow *);
 static void ANativeActivity_onNativeWindowResized(ANativeActivity *, ANativeWindow *);
+static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *, ANativeWindow *);
 static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *, ANativeWindow *);
 static void *PTInvokeMain(void *pVoid);
 
@@ -63,7 +64,7 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *pActivity, v
 	pActivity->callbacks->onWindowFocusChanged = NULL;
 	pActivity->callbacks->onNativeWindowCreated = ANativeActivity_onNativeWindowCreated;
 	pActivity->callbacks->onNativeWindowResized = ANativeActivity_onNativeWindowResized;
-	pActivity->callbacks->onNativeWindowRedrawNeeded = NULL;
+	pActivity->callbacks->onNativeWindowRedrawNeeded = ANativeActivity_onNativeWindowRedrawNeeded;
 	pActivity->callbacks->onNativeWindowDestroyed = ANativeActivity_onNativeWindowDestroyed;
 	pActivity->callbacks->onInputQueueCreated = ANativeActivity_onInputQueueCreated;
 	pActivity->callbacks->onInputQueueDestroyed = ANativeActivity_onInputQueueDestroyed;
@@ -169,6 +170,18 @@ static void ANativeActivity_onNativeWindowResized(ANativeActivity *, ANativeWind
 	EventData.m_Height = static_cast<uint32_t>(::ANativeWindow_getHeight(pWindow));
 
 	pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventData);
+}
+
+static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *, ANativeWindow *)
+{
+	//Frame Throttling
+	//To Minimize The Latency
+
+	//[Harris 2014] Peter Harris "The Mali GPU: An Abstract Machine, Part 1 - Frame Pipelining." ARM Graphics and Gaming blog 2014.
+	//https://community.arm.com/developer/tools-software/graphics/b/blog/posts/the-mali-gpu-an-abstract-machine-part-1---frame-pipelining
+
+	//Structure Pallerl //Pipeline Pattern //Map Pattern
+
 }
 
 static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *, ANativeWindow *)
