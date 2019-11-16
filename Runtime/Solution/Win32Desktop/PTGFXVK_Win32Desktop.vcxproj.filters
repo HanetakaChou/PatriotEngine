@@ -22,6 +22,9 @@
     <Filter Include="Private\GFX\VK">
       <UniqueIdentifier>{41ede4c3-90e7-4bea-86fa-c2bc75c8e35e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Private\GFX\Win32">
+      <UniqueIdentifier>{a7bb022e-5ff4-405d-958e-f13919926ae5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Public\PTCommon.h">
@@ -47,11 +50,11 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\GFX\PTGFXDllMain.cpp">
-      <Filter>Private\GFX</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp">
       <Filter>Private\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\Win32\PTGFXDllMain.cpp">
+      <Filter>Private\GFX\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

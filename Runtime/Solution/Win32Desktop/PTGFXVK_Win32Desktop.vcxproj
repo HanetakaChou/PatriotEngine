@@ -28,8 +28,8 @@
     <ClInclude Include="..\..\Public\GFX\PTVDSceneTree.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\GFX\PTGFXDllMain.cpp" />
     <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\GFX\Win32\PTGFXDllMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl" />

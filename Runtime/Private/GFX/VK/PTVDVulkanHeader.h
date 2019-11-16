@@ -34,7 +34,7 @@
 #elif defined(PTPOSIXANDROID)
 #include <android/native_window.h>
 #define VK_USE_PLATFORM_ANDROID_KHR 1
-#include "../../../ThirdParty/VulkanSDK/Include/vulkan/vulkan.h"
+#include <vulkan/vulkan.h>
 #else
 #error 未知的平台
 #endif
