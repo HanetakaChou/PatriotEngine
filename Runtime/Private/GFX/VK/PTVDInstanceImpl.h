@@ -1,7 +1,7 @@
 ﻿#ifndef PT_VIDEO_VULKAN_INSTANCEIMPL_H
 #define PT_VIDEO_VULKAN_INSTANCEIMPL_H
 
-#include "../../../Public/Video/PTVDInstance.h"
+#include "../../../Public/GFX/PTVDInstance.h"
 
 #include "PTVDVulkanHeader.h"
 
