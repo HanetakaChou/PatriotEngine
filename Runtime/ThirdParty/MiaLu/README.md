@@ -1,7 +1,7 @@
 ## Acknowledge the avatar provided by Mia Lu.
 
 ## Avatar
-![](avatar.jpg)
+![](Avatar.jpg)
 
 ## Licence
 ![](Licence.jpg)
