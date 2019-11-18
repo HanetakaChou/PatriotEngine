@@ -3,5 +3,5 @@
 ## Avatar
 ![](Avatar.jpg)
 
-## Licence
-![](Licence.jpg)
+## License
+![](License.jpg)
