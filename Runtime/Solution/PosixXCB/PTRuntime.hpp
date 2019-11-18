@@ -39,7 +39,7 @@
 			-ffunction-sections -fdata-sections /*Code Generation */ 
 		#define PT_DEBUG_LDFLAGS 
 	#else
-		#define PT_DEBUG_NAME Debug
+	    #define PT_DEBUG_NAME Debug
 		#define PT_DEBUG_CPPFLAGS \
 				-g2 -gdwarf-2 /*General*/ \
 				-O0 -fno-omit-frame-pointer /*Optimization*/
@@ -78,7 +78,7 @@
 #//PTLauncher---------------------------------------------------------------------------------------------------------------------
 
 #ifdef PT_CPP
-	#error PT_CPP Has Been Defined
+    #error PT_CPP Has Been Defined
 #endif
 
 #ifdef PT_STRIP
@@ -140,6 +140,7 @@ PT_RECIPEPREFIX \
 
 ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTLauncher.bundle: \
     ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
@@ -170,6 +171,104 @@ PT_RECIPEPREFIX \
 #undef PT_CPPFLAGS
 
 #undef PT_LDFLAGS
+
+#if 1 //PTApp
+
+    #ifdef PT_CPP
+	    #error PT_CPP Has Been Defined
+    #endif
+
+    #ifdef PT_STRIP
+	    #error PT_STRIP Has Been Defined
+    #endif
+
+    #ifdef PT_CPPFLAGS
+	    #error PT_CPPFLAGS Has Been Defined
+    #endif
+
+    #ifdef PT_LDFLAGS
+	    #error PT_LDFLAGS Has Been Defined
+    #endif
+
+    #define PT_CPP ../../ThirdParty/llvm/bin/clang++
+
+    #define PT_STRIP ../../ThirdParty/llvm/bin/llvm-strip
+
+    #define PT_CPPFLAGS \
+        -fdiagnostics-format=msvc \
+        -stdlib=libc++ \
+        -Wall /*General*/ \
+        -fno-strict-aliasing /*Optimization*/ \
+        -fno-exceptions -fstack-protector -fpic -fno-short-enums /*Code Generation*/\
+        -fno-rtti -std=c++11 /*Language*/ \
+        -x c++ /*Advanced*/ \
+        -finput-charset=UTF-8 -fexec-charset=UTF-8 \
+        -pthread \
+        -fvisibility=hidden \
+        PT_TARGET_ARCH_CPPFLAGS \
+        PT_DEBUG_CPPFLAGS
+
+    #define PT_LDFLAGS \
+        -fdiagnostics-format=msvc \
+        -stdlib=libc++ -lc++ \
+        -Wl,--no-undefined /*General*/ \
+        -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack /*Advanced*/ \
+        -shared -Wl,-soname="libPTApp.so" \
+        -pthread  \
+        -finput-charset=UTF-8 -fexec-charset=UTF-8 \
+        /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
+        -L../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem\
+        PT_TARGET_ARCH_LDFLAGS \
+        PT_DEBUG_LDFLAGS 
+
+    #//STRIP---------------------------------------------------------------------------------------------------------------------
+
+../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so: \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_STRIP \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so \
+        --strip-unneeded \
+        -o ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so 
+       
+
+#//LD---------------------------------------------------------------------------------------------------------------------
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so: \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o \
+        PT_LDFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so
+
+#//CPP--------------------------------------------------------------------------------------------------------------------
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o: \
+    ../../Private/App/PTAExport.cpp \
+    ../../Public/App/PTAExport.h \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP -c \
+        ../../Private/App/PTAExport.cpp \
+        PT_CPPFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o
+
+#undef PT_CPP
+
+#undef PT_STRIP
+
+#undef PT_CPPFLAGS
+
+#undef PT_LDFLAGS
+
+#endif //PTApp
 
 #//PTSystem---------------------------------------------------------------------------------------------------------------------
 
@@ -204,6 +303,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
+    -DPTSYSTEMAPI=PTEXPORT \
     PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
@@ -215,7 +315,6 @@ PT_RECIPEPREFIX \
     -shared -Wl,-soname="libPTSystem.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
-    -lxcb -lxcb-keysyms \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
@@ -229,7 +328,7 @@ PT_RECIPEPREFIX \
     PT_STRIP \
         ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
         --strip-unneeded \
-        -o ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PlibPTSystem.so 
+        -o ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so 
        
 
 #//LD---------------------------------------------------------------------------------------------------------------------

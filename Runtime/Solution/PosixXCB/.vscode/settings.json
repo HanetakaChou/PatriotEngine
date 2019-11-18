@@ -8,6 +8,7 @@
     "C_Cpp.clang_format_style": "Visual Studio",
     "files.associations": {
         "iostream": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "filesystem": "cpp"
     }
 }

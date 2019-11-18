@@ -357,8 +357,8 @@ void * PTInvokeMain(void *pVoid)
 {
 	PTWWindowImpl *pWindow = static_cast<PTWWindowImpl *>(pVoid);
 
-	//int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
-	//assert(iResult == 0);
+	int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
+	assert(iResult == 0);
 	for(int i=0; i<6666; ++i)
 	{
 		sched_yield();

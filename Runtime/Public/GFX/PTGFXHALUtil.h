@@ -82,7 +82,7 @@ inline PT_GFX_HAL_ITexture *PT_GFX_HAL_Texture_Asset_LoadDDS(PT_GFX_HAL_IDevice 
 		assert(0 == SEEK_SET);
 		assert(1 == SEEK_CUR);
 		assert(2 == SEEK_END);
-		return (::lseek64(*static_cast<int *>(fd_pUserData), offset, static_cast<int>(whence));
+		return ::lseek64(*static_cast<int *>(fd_pUserData), offset, static_cast<int>(whence));
 	},
 		[](void *fd_pUserData, int64_t *st_size)->int32_t
 	{
