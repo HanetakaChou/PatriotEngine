@@ -36,13 +36,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h" />
+    <ClInclude Include="..\..\Private\GFX\VK\PTGFXHALDevice.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTVDInstanceImpl.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h" />
+    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h" />
+    <ClInclude Include="..\..\Public\GFX\PTGFXHAL.h" />
+    <ClInclude Include="..\..\Public\GFX\PTGFXHALUtil.h" />
+    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h" />
     <ClInclude Include="..\..\Public\Math\PTMath.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
-    <ClInclude Include="..\..\Public\GFX\PTVDCommon.h" />
-    <ClInclude Include="..\..\Public\GFX\PTVDInstance.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\NEON\PTMathSIMD.inl" />
@@ -50,6 +53,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\Private\GFX\VK\PTGFXHALDevice.cpp" />
     <ClCompile Include="..\..\Private\GFX\VK\PTVDInstanceImpl.cpp" />
     <ClCompile Include="..\..\Private\GFX\VK\PTVDVKMemoryAllocator.cpp" />
   </ItemGroup>

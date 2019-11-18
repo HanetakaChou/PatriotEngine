@@ -23,6 +23,28 @@ extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc(void *pVoid, uin
 
 extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoid, uint32_t Size, uint32_t Alignment);
 
+//McRT(multi-core runtime)
+
+inline void *PT_McRT_Malloc(uint32_t Size)
+{
+	return PTSMemoryAllocator_Alloc(Size);
+}
+
+inline void PT_McRT_Free(void *pVoid)
+{
+	return PTSMemoryAllocator_Free(pVoid);
+}
+
+inline void *PT_McRT_Aligned_Malloc(uint32_t Size, uint32_t Alignment)
+{
+	return PTSMemoryAllocator_Alloc_Aligned(Size, Alignment);
+}
+
+inline void PT_McRT_Aligned_Free(void *pVoid)
+{
+	return PTSMemoryAllocator_Free_Aligned(pVoid);
+}
+
 #include <memory>
 #include <new>
 

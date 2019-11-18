@@ -1,8 +1,8 @@
-#ifndef PT_VIDEO_COMMON_H
-#define PT_VIDEO_COMMON_H
+﻿#ifndef PT_GFX_COMMON_H
+#define PT_GFX_COMMON_H 1
 
-#ifndef PTVDAPI
-#define PTVDAPI PTIMPORT
+#ifndef PTGFXAPI
+#define PTGFXAPI PTIMPORT
 #endif
 
 #endif

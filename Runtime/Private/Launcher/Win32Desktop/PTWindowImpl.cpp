@@ -218,6 +218,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 	//GameControl Support
 	HANDLE hEventDInput = ::CreateEventExW(NULL, NULL, 0U, DELETE | SYNCHRONIZE | EVENT_MODIFY_STATE);
+	
+#if 0
 	IDirectInputDevice8W *pDInputDevice = NULL;
 	DICONTROLLERTYPE eDIControllerType = DICT_UNKNOWN;
 	//DInput_Init
@@ -366,6 +368,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 		HRESULT hHuhu7 = pDInputDevice->Acquire();
 	}
+#endif
 
 	// Main message loop:
 	bool bMessageLoop = true;
@@ -376,6 +379,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 		DWORD iResult = MsgWaitForMultipleObjectsEx(nCount, handles, INFINITE, QS_ALLINPUT, 0U);
 		switch (iResult)
 		{
+#if 0
 		case WAIT_OBJECT_0:
 		{
 			//assert((sizeof(DWORD) * 1 + sizeof(BYTE) * 8 + sizeof(DWORD) * 6) == sizeof(DIPLAYSTATIONCONTROLLERSTATE));
@@ -419,6 +423,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 			}
 		}
 		break;
+#endif
 		case (WAIT_OBJECT_0 + 1):
 		{
 			bMessageLoop = false;
@@ -450,13 +455,13 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	//DInput_Free
 	{
 
-		HRESULT hHuhu7 = pDInputDevice->Unacquire();
+		//HRESULT hHuhu7 = pDInputDevice->Unacquire();
 
-		HRESULT hHuhu71 = pDInputDevice->SetEventNotification(NULL);
+		//HRESULT hHuhu71 = pDInputDevice->SetEventNotification(NULL);
 
 		bool bCloseHandle = (::CloseHandle(hEventDInput) != FALSE);
 
-		pDInputDevice->Release();
+		//pDInputDevice->Release();
 	}
 
 	return 0;

@@ -24,6 +24,9 @@
     <ClInclude Include="..\..\Public\PTCommon.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="PTGFXVK_Win32Desktop.vcxproj">
+      <Project>{91f1d8a3-c9bd-42a4-90b0-5617a80e6ee7}</Project>
+    </ProjectReference>
     <ProjectReference Include="PTSystem_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>

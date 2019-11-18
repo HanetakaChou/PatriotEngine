@@ -13,14 +13,11 @@
     <Filter Include="Public\Math\SSE">
       <UniqueIdentifier>{835f4b46-01d1-4cdf-a5c1-eb892f289cee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public\Video">
-      <UniqueIdentifier>{a4e9f3ef-b8e8-412b-8964-06e3efa2644f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Private\Video">
+    <Filter Include="Private\GFX">
       <UniqueIdentifier>{db0b4d2f-3b22-4c7a-be0f-8cafc8fa551d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\GFX\D3D12\Shader\Geometry\Mesh\Skin">
-      <UniqueIdentifier>{85529903-2e4e-4af9-a1d7-074914f0bd4f}</UniqueIdentifier>
+    <Filter Include="Public\GFX">
+      <UniqueIdentifier>{a4e9f3ef-b8e8-412b-8964-06e3efa2644f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -30,61 +27,30 @@
     <ClInclude Include="..\..\Public\Math\PTMath.h">
       <Filter>Public\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTVDCommon.h">
-      <Filter>Public\Video</Filter>
+    <ClInclude Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.h">
+      <Filter>Private\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTVDInstance.h">
-      <Filter>Public\Video</Filter>
+    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h">
+      <Filter>Public\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTVDSceneTree.h">
-      <Filter>Public\Video</Filter>
+    <ClInclude Include="..\..\Public\GFX\PTGFXSceneUtil.h">
+      <Filter>Public\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTVDAsset.h">
-      <Filter>Public\Video</Filter>
+    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h">
+      <Filter>Public\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\GFX\Common\PTVDAssetImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\D3D12\PTVDDevice3DImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\D3D12\PTVDInstanceImpl.h" />
-    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDSceneTreeImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\Common\PTVDDllMain.cpp" />
-    <ClCompile Include="..\..\Private\GFX\D3D12\PTVDDevice3DImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\D3D12\PTVDInstanceImpl.cpp" />
-    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp" />
+    <ClCompile Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
       <Filter>Public\Math\SSE</Filter>
     </None>
-    <None Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh_Skin.hlsli">
-      <Filter>Private\GFX\D3D12\Shader\Geometry\Mesh\Skin</Filter>
+    <None Include="..\..\Private\GFX\ResourceBinding.md">
+      <Filter>Private\GFX</Filter>
     </None>
-    <None Include="..\..\Private\GFX\D3D12\Shader\PTPostProcess_FXAA.hlsli" />
-    <None Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh.hlsli" />
-    <None Include="..\..\Private\GFX\D3D12\Shader\PTGPGPU_Scan.hlsli" />
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh_Skin.fx">
-      <Filter>Private\GFX\D3D12\Shader\Geometry\Mesh\Skin</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh_Skin.csh">
-      <Filter>Private\GFX\D3D12\Shader\Geometry\Mesh\Skin</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh.fx" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh_PBR.psh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh.vsh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGeometry_Mesh_SSS.psh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGPGPU_Scan_DownSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGPGPU_Scan_UpSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTGPGPU_Scan.fx" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PostProcessDOF_SAT_Column_DownSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PostProcessDOF_SAT_Column_UpSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PostProcessDOF_SAT_Row_Scan_DownSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PostProcessDOF_SAT_Row_Scan_UpSweep.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTPostProcess_FXAA.csh" />
-    <FxCompile Include="..\..\Private\GFX\D3D12\Shader\PTPostProcess_FXAA.fx" />
   </ItemGroup>
 </Project>
