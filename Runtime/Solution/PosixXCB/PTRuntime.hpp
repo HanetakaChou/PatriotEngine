@@ -16,12 +16,12 @@
 	#elif PT_TARGET_ARCH == 2
 		#define PT_TARGET_ARCH_NAME x86
 		#define PT_LLVM_LIB_NAME lib
-		#define PT_TARGET_ARCH_CPPFLAGS -m32
+		#define PT_TARGET_ARCH_CPPFLAGS -m32 -msse3
 		#define PT_TARGET_ARCH_LDFLAGS -m32
 	#elif PT_TARGET_ARCH == 3
 		#define PT_TARGET_ARCH_NAME x64
 		#define PT_LLVM_LIB_NAME lib64
-		#define PT_TARGET_ARCH_CPPFLAGS 
+		#define PT_TARGET_ARCH_CPPFLAGS -mssse3
 		#define PT_TARGET_ARCH_LDFLAGS 
 	#else
 		#error PT_TARGET_ARCH Unknown
@@ -108,6 +108,7 @@
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
+    PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
 #define PT_LDFLAGS \
@@ -120,6 +121,7 @@
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -lxcb -lxcb-keysyms \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
+    PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
 #//STRIP---------------------------------------------------------------------------------------------------------------------
@@ -138,6 +140,7 @@ PT_RECIPEPREFIX \
 
 ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTLauncher.bundle: \
     ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -147,15 +150,6 @@ PT_RECIPEPREFIX \
         ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o \
         PT_LDFLAGS \
         -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTLauncher.bundle 
-
-../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
-
-../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
-
-../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
 
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
@@ -210,6 +204,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
+    PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
 #define PT_LDFLAGS \
@@ -222,6 +217,88 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -lxcb -lxcb-keysyms \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
+    PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
 #//STRIP---------------------------------------------------------------------------------------------------------------------
+
+../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_STRIP \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+        --strip-unneeded \
+        -o ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PlibPTSystem.so 
+       
+
+#//LD---------------------------------------------------------------------------------------------------------------------
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
+    ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
+    ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
+        ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
+        PT_LDFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so
+
+#//CPP--------------------------------------------------------------------------------------------------------------------
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o: \
+    ../../Private/System/PTSMemory.cpp \
+    ../../Public/System/PTSMemory.h \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP -c \
+        ../../Private/System/PTSMemory.cpp \
+        PT_CPPFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o: \
+    ../../Private/System/PTSMemoryAllocator.cpp \
+    ../../Private/System/Posix/PTSMemoryAllocator.inl \
+    ../../Public/System/PTSMemoryAllocator.h \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP -c \
+        ../../Private/System/PTSMemoryAllocator.cpp \
+        PT_CPPFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o
+
+../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o: \
+    ../../Private/System/PTSTaskSchedulerImpl.cpp \
+    ../../Private/System/Posix/PTSTaskSchedulerImpl.inl \
+    ../../Private/System/PTSTaskSchedulerImpl.h \
+    ../../Public/System/PTSTaskScheduler.h \
+    PT_MAKEFILE
+PT_RECIPEPREFIX \
+    PT_CPP -c \
+        ../../Private/System/PTSTaskSchedulerImpl.cpp \
+        PT_CPPFLAGS \
+        -o ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o
+
+#undef PT_CPP
+
+#undef PT_STRIP
+
+#undef PT_CPPFLAGS
+
+#undef PT_LDFLAGS
+
+#//ThirdParty--------------------------------------------------------------------------------------------------------------------- 
+../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
+
+../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
+
+../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1

@@ -19,8 +19,6 @@ cd "$(dirname "$0")"
 # 0 Release
 # 1 Debug
 
-mkdir -p .mk
-
 ../../ThirdParty/llvm/bin/clang++ -E -C PTRuntime.hpp -DPT_TARGET_ARCH=3 -DPT_DEBUG=1 -o .PTRuntime.mk
 
 make -f .PTRuntime.mk
