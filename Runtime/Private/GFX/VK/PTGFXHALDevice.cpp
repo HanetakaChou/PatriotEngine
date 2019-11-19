@@ -63,7 +63,34 @@ extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 #endif
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXXCB)
-
+#ifndef NDEBUG
+		//const char *EnabledLayerNames[1] = {
+		//	"VK_LAYER_LUNARG_standard_validation"
+		//};
+		//CreateInfo.enabledLayerCount = 1U;
+		char const *EnabledLayerNames[5] = {
+			"VK_LAYER_GOOGLE_threading",
+			"VK_LAYER_LUNARG_parameter_validation",
+			"VK_LAYER_LUNARG_object_tracker",
+			"VK_LAYER_LUNARG_core_validation",
+			"VK_LAYER_GOOGLE_unique_objects" };
+		CreateInfo.enabledLayerCount = 1U;
+		CreateInfo.ppEnabledLayerNames = EnabledLayerNames;
+		char const *EnabledExtensionNames[3] = {
+			"VK_KHR_surface",
+			"VK_KHR_xcb_surface",
+			"VK_EXT_debug_report" };
+		CreateInfo.enabledExtensionCount = 3U;
+		CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
+#else
+		CreateInfo.enabledLayerCount = 0U;
+		CreateInfo.ppEnabledLayerNames = NULL;
+		const char *EnabledExtensionNames[2] = {
+			"VK_KHR_surface",
+			"VK_KHR_xcb_surface" };
+		CreateInfo.enabledExtensionCount = 2U;
+		CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
+#endif
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG
 		char const *EnabledLayerNames[5] = {
@@ -140,10 +167,10 @@ extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 
 extern "C" PTGFXAPI PT_GFX_HAL_ITexture * PTCALL PT_GFX_HAL_Texture_Asset_LoadDDS(
 	PT_GFX_HAL_IDevice *pDevice,
-	void *fd_pUserData, intptr_t(PTPTR *fd_read)(void *fd_pUserData, void *buf, uintptr_t count), int64_t(PTPTR *fd_lseek64)(void *fd_pUserData, int64_t offset, int32_t whence)
+	void *fd_pUserData, intptr_t(PTPTR *fd_read)(void *fd_pUserData, void *buf, uintptr_t count), int64_t(PTPTR *fd_lseek64)(void *fd_pUserData, int64_t offset, int32_t whence), int32_t(PTPTR *fd_stat64)(void *fd_pUserData, int64_t *st_size)
 )
 {
-	PT_GFX_Asset_LoadDDS
+	//PT_GFX_Asset_LoadDDS
 
 	return NULL;
 }

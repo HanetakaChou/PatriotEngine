@@ -9,18 +9,14 @@
 #ifdef PT_TARGET_ARCH
 	#if PT_TARGET_ARCH == 0
 		#define PT_TARGET_ARCH_NAME ARM
-		#define PT_LLVM_LIB_NAME libunknown
 	#elif PT_TARGET_ARCH == 1
 		#define PT_TARGET_ARCH_NAME ARM64
-		#define PT_LLVM_LIB_NAME libunknown
 	#elif PT_TARGET_ARCH == 2
 		#define PT_TARGET_ARCH_NAME x86
-		#define PT_LLVM_LIB_NAME lib
 		#define PT_TARGET_ARCH_CPPFLAGS -m32 -msse3
 		#define PT_TARGET_ARCH_LDFLAGS -m32
 	#elif PT_TARGET_ARCH == 3
 		#define PT_TARGET_ARCH_NAME x64
-		#define PT_LLVM_LIB_NAME lib64
 		#define PT_TARGET_ARCH_CPPFLAGS -mssse3
 		#define PT_TARGET_ARCH_LDFLAGS 
 	#else
@@ -36,7 +32,8 @@
 		#define PT_DEBUG_CPPFLAGS \
 			-g0 /*General*/ \
 			-O3 -fomit-frame-pointer /*Optimization*/ \
-			-ffunction-sections -fdata-sections /*Code Generation */ 
+			-ffunction-sections -fdata-sections /*Code Generation */ \
+            -DNDEBUG 
 		#define PT_DEBUG_LDFLAGS 
 	#else
 	    #define PT_DEBUG_NAME Debug
@@ -51,10 +48,6 @@
 
 #ifndef PT_TARGET_ARCH_NAME
 	#error PT_TARGET_ARCH_NAME Not Defined
-#endif
-
-#ifndef PT_LLVM_LIB_NAME
-	#error PT_LLVM_LIB_NAME Not Defined
 #endif
 
 #ifndef PT_DEBUG_NAME
@@ -125,6 +118,7 @@
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -lxcb -lxcb-keysyms \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTApp \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -226,7 +220,7 @@ PT_RECIPEPREFIX \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem\
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem -lvulkan \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -250,15 +244,18 @@ PT_RECIPEPREFIX \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXHALDevice.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXAssetDDS.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so   \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXHALDevice.o \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXAssetDDS.o \
         PT_LDFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so
+        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTGFXVK.so
 
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
@@ -467,7 +464,7 @@ PT_RECIPEPREFIX \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lGFXVK -lPTSystem \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTSystem \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -524,6 +521,34 @@ PT_RECIPEPREFIX \
 #undef PT_MODULE
 
 #//ThirdParty--------------------------------------------------------------------------------------------------------------------- 
+#ifdef PT_TARGET_ARCH
+	#if PT_TARGET_ARCH == 0
+		#define PT_LLVM_LIB_NAME libunknown
+        #define PT_VULKANSDK_LIB_NAME libunknown
+	#elif PT_TARGET_ARCH == 1
+		#define PT_LLVM_LIB_NAME libunknown
+        #define PT_VULKANSDK_LIB_NAME libunknown
+	#elif PT_TARGET_ARCH == 2
+		#define PT_LLVM_LIB_NAME lib
+        #define PT_VULKANSDK_LIB_NAME libunknown
+	#elif PT_TARGET_ARCH == 3
+		#define PT_LLVM_LIB_NAME lib64
+        #define PT_VULKANSDK_LIB_NAME lib64
+	#else
+		#error PT_TARGET_ARCH Unknown
+	#endif
+#else
+	#error PT_TARGET_ARCH Not Defined
+#endif
+
+#ifndef PT_LLVM_LIB_NAME
+	#error PT_LLVM_LIB_NAME Not Defined
+#endif
+
+#ifndef PT_VULKANSDK_LIB_NAME
+	#error PT_LLVM_LIB_NAME Not Defined
+#endif
+
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1
 PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
 
@@ -532,6 +557,12 @@ PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1 ../.
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1
 PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
+
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so: ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1
+PT_RECIPEPREFIX ln -s libvulkan.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so
+
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1: ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1
 
 #//
 .PHONY: \

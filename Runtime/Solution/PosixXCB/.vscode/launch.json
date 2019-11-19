@@ -8,16 +8,16 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/../../../Binary/PTLauncher/x86_64/Debug/PTLauncher.bundle",
+            "program": "${workspaceFolder}/../Binary/x64/Debug/PTLauncher.bundle",
             //"args": [],                                //No effect when using gdbserver
-            "cwd": "/${workspaceFolder}/../../../Binary/PTLauncher/x86_64/Debug",
+            "cwd": "${workspaceFolder}/../Binary/x64/Debug",
             //"environment": [],                         //No effect when using gdbserver
             //"externalConsole": false,                  //No effect when using gdbserver
             "miDebuggerServerAddress": "*:27017",  //Use gdbserver
-            "additionalSOLibSearchPath": "${workspaceFolder}/../../../Binary/PTLauncher/x86_64/Debug:",
+            "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/x64/Debug:${workspaceFolder}/ThirdParty/vulkansdk_linux/bin64",
             "stopAtEntry": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "/opt/rh/devtoolset-8/root/usr/bin/gdb",
+            "miDebuggerPath": "${workspaceFolder}/ThirdParty/gnutoolchain/bin/gdb",
             "targetArchitecture": "x64",
             "setupCommands": [
                 {

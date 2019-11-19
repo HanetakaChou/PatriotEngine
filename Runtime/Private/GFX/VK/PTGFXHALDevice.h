@@ -8,7 +8,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #define VK_USE_PLATFORM_WIN32_KHR 1
-#include "../../../ThirdParty/VulkanSDK/Include/vulkan/vulkan.h"
+#include "../../../ThirdParty/vulkansdk_windows/include/vulkan/vulkan.h"
 #elif defined(PTWIN32RUNTIME)
 #error Win32 Runtime Not Support Vulkan
 #elif defined(PTPOSIXANDROID)
@@ -18,7 +18,7 @@
 #elif defined(PTPOSIXXCB)
 #include <xcb/xcb.h>
 #define VK_USE_PLATFORM_XCB_KHR 1
-#error Use The Same LunarG SDK (Version 1.0.68) To Avoid Potential Errors
+#include "../../../ThirdParty/vulkansdk_linux/include/vulkan/vulkan.h"
 #else
 #error 未知的平台
 #endif
