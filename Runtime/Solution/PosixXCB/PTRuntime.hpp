@@ -13,7 +13,7 @@
 		#define PT_TARGET_ARCH_NAME ARM64
 	#elif PT_TARGET_ARCH == 2
 		#define PT_TARGET_ARCH_NAME x86
-		#define PT_TARGET_ARCH_CPPFLAGS -m32 -msse3
+		#define PT_TARGET_ARCH_CPPFLAGS -m32 -mssse3
 		#define PT_TARGET_ARCH_LDFLAGS -m32
 	#elif PT_TARGET_ARCH == 3
 		#define PT_TARGET_ARCH_NAME x64
@@ -529,7 +529,7 @@ PT_RECIPEPREFIX \
         #define PT_VULKANSDK_LIB_NAME libunknown
 	#elif PT_TARGET_ARCH == 2
 		#define PT_LLVM_LIB_NAME lib
-        #define PT_VULKANSDK_LIB_NAME libunknown
+        #define PT_VULKANSDK_LIB_NAME lib
 	#elif PT_TARGET_ARCH == 3
 		#define PT_LLVM_LIB_NAME lib64
         #define PT_VULKANSDK_LIB_NAME lib64
