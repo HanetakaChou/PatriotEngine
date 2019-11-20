@@ -74,7 +74,7 @@ extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 			"VK_LAYER_LUNARG_object_tracker",
 			"VK_LAYER_LUNARG_core_validation",
 			"VK_LAYER_GOOGLE_unique_objects" };
-		CreateInfo.enabledLayerCount = 1U;
+		CreateInfo.enabledLayerCount = 5U;
 		CreateInfo.ppEnabledLayerNames = EnabledLayerNames;
 		char const *EnabledExtensionNames[3] = {
 			"VK_KHR_surface",

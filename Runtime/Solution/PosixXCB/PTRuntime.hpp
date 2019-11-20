@@ -245,7 +245,6 @@ PT_RECIPEPREFIX \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXAssetDDS.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so   \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -558,11 +557,8 @@ PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1 ../.
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1
 PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so: ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1
-PT_RECIPEPREFIX ln -s libvulkan.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so
-
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1: ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so.1
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so: ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so
+PT_RECIPEPREFIX cp -f ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so
 
 #//
 .PHONY: \
