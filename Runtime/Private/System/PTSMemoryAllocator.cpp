@@ -399,15 +399,15 @@ private:
 //and trivially provides for a full 64 bits of versioning which is sufficient.
 
 //应用程序只可能访问地址空间中的用户空间
-//x86或ARM架构下，用户空间一定不超过4GB（32位），块地址只需要18（32-14=18）位，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
-//x86_64架构下
-//在Windows（https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces）中，用户空间只有8TB（43位），块地址只需要29（43-14=29）位，可以使用64位CAS指令，其余35位用作版本号，环绕需要2天（基于论文中46位需要2年计算）
-//在Linux（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）中，用户空间只有128TB（47位），块地址只需要33（47-14=33）位，可以使用64位CAS指令，其余31位用作版本号，环绕需要12小时（基于论文中46位需要2年计算）
-//在ARM64架构下
-//在Windows中，目前不存在支持ARM64架构的Windows发行版
-//在Linux（https://www.kernel.org/doc/Documentation/arm64/memory.txt）中，用户空间只有512GB（39位）/256TB（48位）/4TB（42位）/*目前全部按照48位处理*/，块地址只需要34（48-14=34）位，可以使用64位CAS指令，其余30位用作版本号，环绕需要6小时（基于论文中46位需要2年计算）
-
-#if defined(PTX86) || defined(PTARM)
+#if defined(PTWIN32)
+//在Windows（https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces）中
+//x86架构下，用户空间只有2GB(31位）或3GB（32位） /*目前全部按照32位处理*/，块地址只需要18（32-14=18）位，可以使用64位CAS指令，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
+//x64架构下，用户空间只有8TB（43位），块地址只需要29（43-14=29）位，可以使用64位CAS指令，其余35位用作版本号，环绕需要2天（基于论文中46位需要2年计算）
+//-----------------------------
+//在ARM架构下，虽然没有文档说明，但是用户空间显然不会超过4GB（32位），块地址只需要18（32-14=18）位，可以使用64位CAS指令，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
+//-----------------------------
+//目前不存在ARM64架构的Windows发行版
+#if defined(PTARM) || defined(PTX86)
 static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
 {
 	assert(s_Block_Size == (1U << 14U));
@@ -416,20 +416,21 @@ static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBl
 	//Version //Address
 
 	(*pVersionNumber) = ((Value) >> 18U);
-	(*pBlockAddress) = reinterpret_cast<PTS_BucketBlockHeader *>((Value & 0X1FFFFU) << 14U);
+	(*pBlockAddress) = reinterpret_cast<PTS_BucketBlockHeader *>((Value & 0X3FFFFU) << 14U);
 }
 static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBlockHeader *BlockAddress)
 {
 	assert(s_Block_Size == (1U << 14U));
 	assert((reinterpret_cast<uintptr_t>(BlockAddress) & 0X00003FFFU) == 0U);
 
-	//47位    //17位（前1后14）
+	//46位    //18位（后14）
 	//Version //Address
 
-	return (VersionNumber << 17U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
+	return (VersionNumber << 18U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
 }
+#elif defined(PTARM64)
+#error 目前不存在ARM64架构的Windows发行版
 #elif defined(PTX64)
-#if defined(PTWIN32)
 static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
 {
 	//35位    //29位
@@ -449,7 +450,56 @@ static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBl
 
 	return (VersionNumber << 29U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
 }
+#else
+#error 未知的架构
+#endif
 #elif defined(PTPOSIX)
+//在Linux中
+//在ARM(https://www.kernel.org/doc/Documentation/arm/memory.txt)或x86架构下，用户空间一定不会超过4GB（32位）/*具体的值取决于宏定义TASK_SIZE*/，块地址只需要18（32-14=18）位，可以使用64位CAS指令，其余46位可用作版本号，环绕需要2年（基于论文中46位需要2年计算）
+//在ARM64（https://www.kernel.org/doc/Documentation/arm64/memory.txt）架构下，用户空间只有512GB（39位）/256TB（48位）/4TB（42位）/*目前全部按照48位处理*/，块地址只需要34（48-14=34）位，可以使用64位CAS指令，其余30位用作版本号，环绕需要6小时（基于论文中46位需要2年计算）
+//在x64（https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt）架构下，用户空间只有128TB（47位），块地址只需要33（47-14=33）位，可以使用64位CAS指令，其余31位用作版本号，环绕需要12小时（基于论文中46位需要2年计算）
+#if defined(PTARM) || defined(PTX86)
+static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
+{
+	assert(s_Block_Size == (1U << 14U));
+
+	//46位    //18位
+	//Version //Address
+
+	(*pVersionNumber) = ((Value) >> 18U);
+	(*pBlockAddress) = reinterpret_cast<PTS_BucketBlockHeader *>((Value & 0X3FFFFU) << 14U);
+}
+static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBlockHeader *BlockAddress)
+{
+	assert(s_Block_Size == (1U << 14U));
+	assert((reinterpret_cast<uintptr_t>(BlockAddress) & 0X00003FFFU) == 0U);
+
+	//46位    //18位（后14）
+	//Version //Address
+
+	return (VersionNumber << 18U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
+}
+#elif defined(PTARM64)
+static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
+{
+	//30位    //34位
+	//Version //Address
+
+	(*pVersionNumber) = ((Value) >> 34U);
+	(*pBlockAddress) = reinterpret_cast<PTS_BucketBlockHeader *>((Value & 0X3FFFFFFFFU) << 14U);
+}
+
+static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBlockHeader *BlockAddress)
+{
+	assert(s_Block_Size == (1U << 14U));
+	assert((reinterpret_cast<uintptr_t>(BlockAddress) & 0XFFFF000000003FFFU) == 0U);
+
+	//30位    //34位（前16后14）
+	//Version //Address
+
+	return (VersionNumber << 34U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
+}
+#elif defined(PTX64)
 static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
 {
 	//31位    //33位
@@ -470,36 +520,10 @@ static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBl
 	return (VersionNumber << 33U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
 }
 #else
-#error 未知的平台
-#endif
-#elif defined(PTARM64)
-#if defined(PTWIN32)
-#error 尚未实现
-#elif defined(PTPOSIX)
-static inline void PTS_AtomicQueue_Unpack(uint64_t *pVersionNumber, PTS_BucketBlockHeader **pBlockAddress, uint64_t Value)
-{
-	//30位    //34位
-	//Version //Address
-
-	(*pVersionNumber) = ((Value) >> 34U);
-	(*pBlockAddress) = reinterpret_cast<PTS_BucketBlockHeader *>((Value & 0X3FFFFFFFFU) << 14U);
-}
-
-static inline uint64_t PTS_AtomicQueue_Pack(uint64_t VersionNumber, PTS_BucketBlockHeader *BlockAddress)
-{
-	assert(s_Block_Size == (1U << 14U));
-	assert((reinterpret_cast<uintptr_t>(BlockAddress) & 0XFFFF000000003FFFU) == 0U);
-
-	//30位    //34位（前16后14）
-	//Version //Address
-
-	return (VersionNumber << 34U) | (reinterpret_cast<uintptr_t>(BlockAddress) >> 14U);
-}
-#else
-#error 未知的平台
+#error 未知的架构 
 #endif
 #else
-#error 未知的架构
+#error 未知的平台
 #endif
 
 //Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 1 Non-blocking queues / lifoQueuePush
