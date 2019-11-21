@@ -90,9 +90,9 @@
 	#error PT_MODULE Has Been Defined
 #endif
 
-#define PT_CPP ../../ThirdParty/llvm/bin/clang++
+#define PT_CPP ../../ThirdParty/PosixXCB/bin64/clang++
 
-#define PT_STRIP ../../ThirdParty/llvm/bin/llvm-strip
+#define PT_STRIP ../../ThirdParty/PosixXCB/bin64/llvm-strip
 
 #define PT_CPPFLAGS \
     -fdiagnostics-format=msvc \
@@ -192,9 +192,9 @@ PT_RECIPEPREFIX \
 	#error PT_LDFLAGS Has Been Defined
 #endif
 
-#define PT_CPP ../../ThirdParty/llvm/bin/clang++
+#define PT_CPP ../../ThirdParty/PosixXCB/bin64/clang++
 
-#define PT_STRIP ../../ThirdParty/llvm/bin/llvm-strip
+#define PT_STRIP ../../ThirdParty/PosixXCB/bin64/llvm-strip
 
 #define PT_CPPFLAGS \
     -fdiagnostics-format=msvc \
@@ -309,9 +309,9 @@ PT_RECIPEPREFIX \
 	#error PT_LDFLAGS Has Been Defined
 #endif
 
-#define PT_CPP ../../ThirdParty/llvm/bin/clang++
+#define PT_CPP ../../ThirdParty/PosixXCB/bin64/clang++
 
-#define PT_STRIP ../../ThirdParty/llvm/bin/llvm-strip
+#define PT_STRIP ../../ThirdParty/PosixXCB/bin64/llvm-strip
 
 #define PT_CPPFLAGS \
     -fdiagnostics-format=msvc \
@@ -435,9 +435,9 @@ PT_RECIPEPREFIX \
 	#error PT_LDFLAGS Has Been Defined
 #endif
 
-#define PT_CPP ../../ThirdParty/llvm/bin/clang++
+#define PT_CPP ../../ThirdParty/PosixXCB/bin64/clang++
 
-#define PT_STRIP ../../ThirdParty/llvm/bin/llvm-strip
+#define PT_STRIP ../../ThirdParty/PosixXCB/bin64/llvm-strip
 
 #define PT_CPPFLAGS \
     -fdiagnostics-format=msvc \
@@ -548,17 +548,17 @@ PT_RECIPEPREFIX \
 	#error PT_LLVM_LIB_NAME Not Defined
 #endif
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libunwind.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1: ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libc++abi.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1
-PT_RECIPEPREFIX cp -f ../../ThirdParty/llvm/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libc++.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixXCB/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so: ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so
-PT_RECIPEPREFIX cp -f ../../ThirdParty/vulkansdk_linux/PT_VULKANSDK_LIB_NAME/libvulkan.so ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so: ../../ThirdParty/PosixXCB/PT_VULKANSDK_LIB_NAME/libvulkan.so
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixXCB/PT_VULKANSDK_LIB_NAME/libvulkan.so ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so
 
 #//
 .PHONY: \

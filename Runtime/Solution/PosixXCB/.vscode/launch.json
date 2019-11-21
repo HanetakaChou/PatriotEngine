@@ -14,10 +14,10 @@
             //"environment": [],                         //No effect when using gdbserver
             //"externalConsole": false,                  //No effect when using gdbserver
             "miDebuggerServerAddress": "*:27017",  //Use gdbserver
-            "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/x86/Debug:${workspaceFolder}/ThirdParty/vulkansdk_linux/bin",
+            "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/x86/Debug:${workspaceFolder}/ThirdParty/PosixXCB/lib",
             "stopAtEntry": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "${workspaceFolder}/ThirdParty/gnutoolchain/bin/gdb",
+            "miDebuggerPath": "${workspaceFolder}/ThirdParty/PosixXCB/bin64/gdb",
             "targetArchitecture": "x86",
             "setupCommands": [
                 {

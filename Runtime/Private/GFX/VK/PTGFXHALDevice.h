@@ -18,7 +18,7 @@
 #elif defined(PTPOSIXXCB)
 #include <xcb/xcb.h>
 #define VK_USE_PLATFORM_XCB_KHR 1
-#include "../../../ThirdParty/vulkansdk_linux/include/vulkan/vulkan.h"
+#include "../../../ThirdParty/PosixXCB/include/vulkan/vulkan.h"
 #else
 #error 未知的平台
 #endif
