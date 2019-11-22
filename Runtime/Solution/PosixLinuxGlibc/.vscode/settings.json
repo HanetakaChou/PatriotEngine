@@ -4,7 +4,7 @@
     "C_Cpp.default.cppStandard": "c++11",
     "C_Cpp.errorSquiggles": "Disabled",
     "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
-    "C_Cpp.clang_format_path": "${workspaceFolder}/ThirdParty/llvm/bin/clang-format",
+    "C_Cpp.clang_format_path": "${workspaceFolder}/ThirdParty/PosixLinuxGlibc/bin64/clang-format",
     "C_Cpp.clang_format_style": "Visual Studio",
     "files.associations": {
         "iostream": "cpp",

@@ -3,13 +3,13 @@
         {
             "name": "Linux",
             "includePath": [
-                "${workspaceFolder}/ThirdParty/llvm/include/c++/v1"
+                "${workspaceFolder}/ThirdParty/PosixLinuxGlibc/include/c++/v1"
             ],
             "defines": [
                 "PT_TARGET_ARCH=3",
                 "PT_DEBUG=1"
             ],
-            "compilerPath": "${workspaceFolder}/ThirdParty/llvm/bin/clang++"
+            "compilerPath": "${workspaceFolder}/ThirdParty/PosixLinuxGlibc/bin64/clang++"
         }
     ],
     "version": 4
