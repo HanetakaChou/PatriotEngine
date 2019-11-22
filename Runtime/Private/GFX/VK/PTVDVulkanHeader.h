@@ -28,7 +28,7 @@
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 #include <xcb/xcb.h>
 #define VK_USE_PLATFORM_XCB_KHR 1
 #elif defined(PTPOSIXANDROID)
@@ -70,7 +70,7 @@ private:
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG
@@ -121,7 +121,7 @@ public:
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG
@@ -213,7 +213,7 @@ public:
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG

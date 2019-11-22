@@ -15,10 +15,10 @@
 #include <android/native_window.h>
 #define VK_USE_PLATFORM_ANDROID_KHR 1
 #include <vulkan/vulkan.h>
-#elif defined(PTPOSIXXCB)
+#elif defined(PTPOSIXLINUXGLIBC)
 #include <xcb/xcb.h>
 #define VK_USE_PLATFORM_XCB_KHR 1
-#include "../../../ThirdParty/PosixXCB/include/vulkan/vulkan.h"
+#include "../../../ThirdParty/PosixLinuxGlibc/include/vulkan/vulkan.h"
 #else
 #error 未知的平台
 #endif

@@ -13,7 +13,7 @@
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #include <dlfcn.h>
@@ -98,7 +98,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG
@@ -261,7 +261,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #ifndef NDEBUG
@@ -428,7 +428,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 				if (SupportedFeatures.textureCompressionBC != VK_TRUE)
 				{
 					continue;
@@ -580,7 +580,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 							//Vulkan规范
@@ -689,7 +689,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 					if (SupportedFeatures.textureCompressionBC != VK_TRUE)
 					{
 						continue;
@@ -1209,7 +1209,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 						CreateInfo.format = VK_FORMAT_BC7_SRGB_BLOCK;
 
 #elif defined(PTPOSIXANDROID)
@@ -2651,7 +2651,7 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);

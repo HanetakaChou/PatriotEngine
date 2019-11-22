@@ -8,7 +8,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 #define VK_USE_PLATFORM_XCB_KHR
 #elif defined(PTPOSIXANDROID)
 #define VK_USE_PLATFORM_ANDROID_KHR

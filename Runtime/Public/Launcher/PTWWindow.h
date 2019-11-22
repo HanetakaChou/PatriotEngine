@@ -19,7 +19,7 @@ typedef IUnknown *PTWHWindow;
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 #include <xcb/xcb.h>
 typedef xcb_connection_t *PTWHDisplay;
 typedef xcb_window_t PTWHWindow;

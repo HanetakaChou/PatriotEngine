@@ -55,7 +55,6 @@
 #define PTPOSIXANDROID 1 //Obsolete
 #else
 #define PTPOSIXLINUXGLIBC 1
-#define PTPOSIXXCB 1 //Obsolete
 #endif
 #elif defined(__MACH__) 
 //https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html

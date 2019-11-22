@@ -62,7 +62,7 @@ extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 #ifndef NDEBUG
 		//const char *EnabledLayerNames[1] = {
 		//	"VK_LAYER_LUNARG_standard_validation"

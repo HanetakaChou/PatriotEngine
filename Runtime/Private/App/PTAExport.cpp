@@ -19,7 +19,7 @@
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 #include <dlfcn.h>
@@ -180,7 +180,7 @@ extern "C" PTAPPAPI int PTCALL PTAMain(IPTWWindow *pWindow, int argc, char *argv
 #error 未知的平台
 #endif
 #elif defined(PTPOSIX)
-#if defined(PTPOSIXXCB)
+#if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXANDROID)
 	//void *hLibVideoVK = ::dlopen("libPTVideoVK.so", RTLD_NOW | RTLD_LOCAL);
