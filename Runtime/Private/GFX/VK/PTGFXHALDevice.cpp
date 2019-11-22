@@ -91,7 +91,7 @@ extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 		CreateInfo.enabledExtensionCount = 2U;
 		CreateInfo.ppEnabledExtensionNames = EnabledExtensionNames;
 #endif
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 		char const *EnabledLayerNames[5] = {
 			"VK_LAYER_GOOGLE_threading",

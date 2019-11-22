@@ -10,7 +10,7 @@
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 #define VK_USE_PLATFORM_XCB_KHR
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #define VK_USE_PLATFORM_ANDROID_KHR
 #else
 #error 未知的架构

@@ -15,7 +15,7 @@
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #include <dlfcn.h>
 #include <android/log.h>
 #else
@@ -100,7 +100,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 			const char *EnabledLayerNames[5] = {
 				"VK_LAYER_GOOGLE_threading",
@@ -263,7 +263,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 			struct LambdaVKAPI
 			{
@@ -440,7 +440,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 				//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
 				//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
 				//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 				EnabledFeatures.textureCompressionASTC_LDR = VK_TRUE; //Mobile Standard //IOS Provides
 																	  //EnabledFeatures.textureCompressionBC = VK_FALSE; //For PC
 																	  //BC6H_UFLOAT : R16 G16 B16 UFLOAT (HDR)
@@ -582,7 +582,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 							//Vulkan规范
 							//VK_KHR_android_surface
 							//Issues
@@ -701,7 +701,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 					//BC6H_SFLOAT : R16 G16 B16 SFLOAT (HDR)
 					//DXGI_FORMAT_BC7_UNORM : B4-7 G4-7 R4-7 A0-8 UNORM
 					//DXGI_FORMAT_BC7_UNORM_SRGB : B4-7 G4-7 R4-7 A0-8 UNORM
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 					EnabledFeatures.textureCompressionETC2 = VK_TRUE;
 					//EnabledFeatures.textureCompressionASTC_LDR = VK_FALSE; //For OSX/IOS
 					//EnabledFeatures.textureCompressionBC = VK_FALSE; //For PC
@@ -1212,7 +1212,7 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 #if defined(PTPOSIXLINUXGLIBC)
 						CreateInfo.format = VK_FORMAT_BC7_SRGB_BLOCK;
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 						CreateInfo.format = VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
 #else
 #error 未知的平台
@@ -2653,7 +2653,7 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);
 
 	switch (pEventDataGeneric->m_Type)

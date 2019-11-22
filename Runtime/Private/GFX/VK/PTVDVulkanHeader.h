@@ -31,7 +31,7 @@
 #if defined(PTPOSIXLINUXGLIBC)
 #include <xcb/xcb.h>
 #define VK_USE_PLATFORM_XCB_KHR 1
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #include <android/native_window.h>
 #define VK_USE_PLATFORM_ANDROID_KHR 1
 #include <vulkan/vulkan.h>
@@ -72,7 +72,7 @@ private:
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 	decltype(::vkCreateDebugReportCallbackEXT) *m_pFn_CreateDebugReportCallbackEXT;
 	decltype(::vkDestroyDebugReportCallbackEXT) *m_pFn_DestroyDebugReportCallbackEXT;
@@ -123,7 +123,7 @@ public:
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 		m_pFn_CreateDebugReportCallbackEXT = reinterpret_cast<decltype(::vkCreateDebugReportCallbackEXT) *>(pFn_vkGetInstanceProcAddr(m_hInstance, "vkCreateDebugReportCallbackEXT"));
 		m_pFn_DestroyDebugReportCallbackEXT = reinterpret_cast<decltype(::vkDestroyDebugReportCallbackEXT) *>(pFn_vkGetInstanceProcAddr(m_hInstance, "vkDestroyDebugReportCallbackEXT"));
@@ -215,7 +215,7 @@ public:
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #ifndef NDEBUG
 	inline VkResult CreateDebugReportCallbackEXT(const VkDebugReportCallbackCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugReportCallbackEXT *pCallback)
 	{

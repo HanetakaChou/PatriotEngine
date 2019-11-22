@@ -23,7 +23,7 @@ typedef IUnknown *PTWHWindow;
 #include <xcb/xcb.h>
 typedef xcb_connection_t *PTWHDisplay;
 typedef xcb_window_t PTWHWindow;
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #include <android/native_window.h>
 typedef void *PTWHDisplay;
 typedef ANativeWindow *PTWHWindow;

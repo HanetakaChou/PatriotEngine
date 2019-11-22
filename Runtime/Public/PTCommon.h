@@ -52,7 +52,6 @@
 #define PTPOSIXLINUX 1
 #if defined(__ANDROID__)
 #define PTPOSIXLINUXBIONIC 1
-#define PTPOSIXANDROID 1 //Obsolete
 #else
 #define PTPOSIXLINUXGLIBC 1
 #endif

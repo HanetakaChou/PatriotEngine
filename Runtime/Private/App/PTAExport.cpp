@@ -21,7 +21,7 @@
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #include <dlfcn.h>
 #else
 #error 未知的平台
@@ -182,7 +182,7 @@ extern "C" PTAPPAPI int PTCALL PTAMain(IPTWWindow *pWindow, int argc, char *argv
 #elif defined(PTPOSIX)
 #if defined(PTPOSIXLINUXGLIBC)
 
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 	//void *hLibVideoVK = ::dlopen("libPTVideoVK.so", RTLD_NOW | RTLD_LOCAL);
 	//if (hLibVideoVK != NULL)
 	//{

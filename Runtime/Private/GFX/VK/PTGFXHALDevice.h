@@ -11,7 +11,7 @@
 #include "../../../ThirdParty/vulkansdk_windows/include/vulkan/vulkan.h"
 #elif defined(PTWIN32RUNTIME)
 #error Win32 Runtime Not Support Vulkan
-#elif defined(PTPOSIXANDROID)
+#elif defined(PTPOSIXLINUXBIONIC)
 #include <android/native_window.h>
 #define VK_USE_PLATFORM_ANDROID_KHR 1
 #include <vulkan/vulkan.h>
