@@ -24,12 +24,12 @@
     <ClInclude Include="..\..\Public\PTCommon.h">
       <Filter>Public</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Private\Launcher\PosixAndroid\PTWindowImpl.h">
+    <ClInclude Include="..\..\Private\Launcher\PosixLinuxBionic\PTWindowImpl.h">
       <Filter>Private\Launcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\Launcher\PosixAndroid\PTWindowImpl.cpp">
+    <ClCompile Include="..\..\Private\Launcher\PosixLinuxBionic\PTWindowImpl.cpp">
       <Filter>Private\Launcher</Filter>
     </ClCompile>
   </ItemGroup>
