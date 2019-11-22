@@ -1,6 +1,9 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
+# yum install glibc-devel libxcb-devel xcb-util-keysyms-devel 
+# yum install glibc-devel.i686 libxcb-devel.i686 xcb-util-keysyms-devel.i686
+
 # Conventions
 # GNU make: Implicit Variables
 # https://www.gnu.org/software/make/manual/html_node/Implicit-Variables.html
