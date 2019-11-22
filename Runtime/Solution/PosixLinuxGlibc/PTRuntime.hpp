@@ -117,6 +117,7 @@
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -lxcb -lxcb-keysyms \
+    -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
     -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTApp \
     PT_TARGET_ARCH_LDFLAGS \
@@ -219,6 +220,7 @@ PT_RECIPEPREFIX \
     -shared -Wl,-soname="libPTGFXVK.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
+    -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
     -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem -lvulkan \
     PT_TARGET_ARCH_LDFLAGS \
@@ -336,6 +338,7 @@ PT_RECIPEPREFIX \
     -shared -Wl,-soname="libPTSystem.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
+    -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
@@ -462,6 +465,7 @@ PT_RECIPEPREFIX \
     -shared -Wl,-soname="libPTApp.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
+    -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
     -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTSystem \
     PT_TARGET_ARCH_LDFLAGS \
