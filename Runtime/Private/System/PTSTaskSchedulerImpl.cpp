@@ -17,8 +17,8 @@ static inline uint32_t PTS_Size_BitPopCount(uint32_t Value);
 
 static inline IPTSTask *PTS_Internal_Task_Alloc(size_t SizeTask, size_t AlignmentTask);
 static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskToSpawnPrefix);
-static inline void PTS_Internal_ExecuteAndWait(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, void *pVoidForPredicate, bool(*pFnPredicate)(void *));
-static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, void *pVoidForPredicate, bool(*pFnPredicate)(void *));
+static inline void PTS_Internal_ExecuteAndWait(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, void *pVoidForPredicate, bool (*pFnPredicate)(void *));
+static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, void *pVoidForPredicate, bool (*pFnPredicate)(void *));
 static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t Slot_Index);
 
 static PTSMarket *s_Market_Singleton_Pointer = NULL;
@@ -34,9 +34,8 @@ class PTS_Random_LCG
 	uint32_t x;
 
 public:
-	inline PTS_Random_LCG(uint32_t Seed) :x(Seed)
+	inline PTS_Random_LCG(uint32_t Seed) : x(Seed)
 	{
-
 	}
 
 	inline uint32_t Generate()
@@ -49,13 +48,12 @@ public:
 //-----------------------------------------------------------------------------------------------------------
 //PTSMarket
 //------------------------------------------
-inline PTSMarket::PTSMarket(uint32_t ThreadNumber) :
-	m_ArenaPointerArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena) * 64U, alignof(PTSArena)))PTSArena *[64]{}),
-	m_ArenaPointerArraySize(0U),
-	m_HasExited(0U),
-	m_ThreadArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSThread)*ThreadNumber, alignof(PTSThread)))PTSThread[ThreadNumber]{}),
-	m_ThreadNumber(ThreadNumber),
-	m_ArenaPointerArrayCapacity(64U)
+inline PTSMarket::PTSMarket(uint32_t ThreadNumber) : m_ArenaPointerArrayMemory(new (::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena) * 64U, alignof(PTSArena))) PTSArena *[64] {}),
+													 m_ArenaPointerArraySize(0U),
+													 m_HasExited(0U),
+													 m_ThreadArrayMemory(new (::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSThread) * ThreadNumber, alignof(PTSThread))) PTSThread[ThreadNumber]{}),
+													 m_ThreadNumber(ThreadNumber),
+													 m_ArenaPointerArrayCapacity(64U)
 {
 	bool tbResult = ::PTSSemaphore_Create(0U, &m_Semaphore);
 	assert(tbResult != false);
@@ -131,7 +129,7 @@ inline PTSArena *PTSMarket::Arena_Allocate_Master(float fThreadNumberRatio)
 	{
 		//MasterThread调用本函数时，Arena尚未在到Market中被标记为可用，不存在与WorkerThread并发访问的可能性
 		//MasterThread的SlotIndex一定为0
-		PTSArena *pArenaNew = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena), alignof(PTSArena)))PTSArena(ArenaCapacity);
+		PTSArena *pArenaNew = new (::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArena), alignof(PTSArena))) PTSArena(ArenaCapacity);
 		assert(pArenaNew != NULL);
 
 		//只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
@@ -162,7 +160,7 @@ inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 			{
 				PTSArena *pArena = m_ArenaPointerArrayMemory[i];
 
-				if (pArena != NULL)  //数组中指针初始化为NULL
+				if (pArena != NULL) //数组中指针初始化为NULL
 				{
 					if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotIndexMask的操作并不是原子的 可能会导致无法充分调度
 					{
@@ -174,7 +172,7 @@ inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 					}
 				}
 			}
-		}	
+		}
 
 		if (pArenaAttached == NULL)
 		{
@@ -182,7 +180,7 @@ inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 			{
 				PTSArena *pArena = m_ArenaPointerArrayMemory[i];
 
-				if (pArena != NULL)  //数组中指针初始化为NULL
+				if (pArena != NULL) //数组中指针初始化为NULL
 				{
 					if (pArena->Size_Load_Acquire() < pArena->Capacity()) //Slot_Release中对SlotArrayMemory::HasBeenAcquired和SlotIndexMask的操作并不是原子的 可能会导致无法充分调度
 					{
@@ -203,7 +201,7 @@ inline PTSArena *PTSMarket::Arena_Attach_Worker(uint32_t *pSlot_Index)
 inline void PTSMarket::Worker_Wake(uint32_t ThreadNumber)
 {
 	bool tbResult;
-	
+
 	for (uint32_t i = 0; i < ThreadNumber; ++i)
 	{
 		tbResult = ::PTSSemaphore_Vrijgeven(&m_Semaphore);
@@ -226,10 +224,9 @@ inline void PTSMarket::Worker_Sleep(uint32_t ThreadNumber)
 //-----------------------------------------------------------------------------------------------------------
 //PTSArena
 //-----------------------------------------------------------------------------------------------------------
-inline PTSArena::PTSArena(uint32_t Capacity) :
-	m_SlotIndexAffinityMask(0U),
-	m_SlotArrayMemory(new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArenaSlot)*Capacity, alignof(PTSArenaSlot)))PTSArenaSlot[Capacity]{}),
-	m_SlotArrayCapacity(Capacity)
+inline PTSArena::PTSArena(uint32_t Capacity) : m_SlotIndexAffinityMask(0U),
+											   m_SlotArrayMemory(new (::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSArenaSlot) * Capacity, alignof(PTSArenaSlot))) PTSArenaSlot[Capacity]{}),
+											   m_SlotArrayCapacity(Capacity)
 {
 	//由于SlotIndexMask的约束，SlotArrayCapacity不得大于32
 	assert(Capacity <= 32U);
@@ -257,12 +254,12 @@ inline bool PTSArena::Slot_Acquire_Master()
 			//新MasterThread可能会执行前MasterThread遗留的Task（通过Steal WorkerThread的Slot）
 			//但是WorkerThread的Slot可能已经不存在Task，正处于Steal的等待循环中
 			//一旦新MasterThread Spawn Task，会立即被WorkerThread Steal，相对于WorkerThread Release后再次Acquire更加高效
-			assert((SlotIndexAffinityMaskOld&SlotIndexMask) == 0U);
+			assert((SlotIndexAffinityMaskOld & SlotIndexMask) == 0U);
 		} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld | SlotIndexMask)) != SlotIndexAffinityMaskOld);
 
 		HasAcquired = true;
 	}
-	
+
 	return HasAcquired;
 }
 
@@ -319,7 +316,7 @@ inline bool PTSArena::Slot_Acquire_Worker(uint32_t *pSlot_Index)
 		do
 		{
 			SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
-			assert((SlotIndexAffinityMaskOld&SlotIndexMask) == 0U);
+			assert((SlotIndexAffinityMaskOld & SlotIndexMask) == 0U);
 		} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld | SlotIndexMask)) != SlotIndexAffinityMaskOld);
 
 		(*pSlot_Index) = Slot_Index;
@@ -330,15 +327,14 @@ inline bool PTSArena::Slot_Acquire_Worker(uint32_t *pSlot_Index)
 
 inline void PTSArena::Slot_Release(uint32_t Slot_Index)
 {
-	union
-	{
+	union {
 		struct
 		{
 			uint32_t m_Head;
 			uint32_t m_Tail;
-		}m_OneWord;
+		} m_OneWord;
 		uint64_t m_TwoWord;
-	}HeadAndTailOld;
+	} HeadAndTailOld;
 	HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_SlotArrayMemory[Slot_Index].m_HeadAndTail.m_TwoWord);
 	//Local Task Deque Should Be Empty !!!
 	assert(HeadAndTailOld.m_OneWord.m_Head == HeadAndTailOld.m_OneWord.m_Tail);
@@ -349,7 +345,7 @@ inline void PTSArena::Slot_Release(uint32_t Slot_Index)
 	do
 	{
 		SlotIndexAffinityMaskOld = ::PTSAtomic_Get(&m_SlotIndexAffinityMask);
-		assert((SlotIndexAffinityMaskOld&SlotIndexMask) != 0U);
+		assert((SlotIndexAffinityMaskOld & SlotIndexMask) != 0U);
 	} while (::PTSAtomic_CompareAndSet(&m_SlotIndexAffinityMask, SlotIndexAffinityMaskOld, (SlotIndexAffinityMaskOld & SlotIndexMaskInverse)) != SlotIndexAffinityMaskOld);
 
 	//关于ABA
@@ -384,26 +380,23 @@ inline uint32_t PTSArena::Capacity()
 //------------------------------------------------------------------------------------------------------------
 //PTSArenaSlot
 //------------------------------------------------------------------------------------------------------------
-inline PTSArenaSlot::PTSArenaSlot() :
-	m_HeadAndTail{{0U,0U}},
-	m_HasBeenAcquired(0U),
-	m_TaskDequeMemoryS{ NULL,NULL,NULL,NULL },
-	m_TaskDequeCapacity(0U)
+inline PTSArenaSlot::PTSArenaSlot() : m_HeadAndTail{{0U, 0U}},
+									  m_HasBeenAcquired(0U),
+									  m_TaskDequeMemoryS{NULL, NULL, NULL, NULL},
+									  m_TaskDequeCapacity(0U)
 {
-
 }
 
 inline void PTSArenaSlot::TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush)
 {
-	union
-	{
+	union {
 		struct
 		{
 			uint32_t m_Head;
 			uint32_t m_Tail;
-		}m_OneWord;
+		} m_OneWord;
 		uint64_t m_TwoWord;
-	}HeadAndTailOld;
+	} HeadAndTailOld;
 
 	HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_HeadAndTail.m_TwoWord);
 
@@ -501,35 +494,33 @@ inline void PTSArenaSlot::TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush)
 	m_TaskDequeMemoryS[Index / 64U][Index % 64U] = pTaskToPush;
 
 	//Tail只可能被Owner线程写入
-	assert((HeadAndTailOld.m_OneWord.m_Tail + 1U) > 0U);//防止环绕
+	assert((HeadAndTailOld.m_OneWord.m_Tail + 1U) > 0U); //防止环绕
 	::PTSAtomic_Set(&m_HeadAndTail.m_OneWord.m_Tail, HeadAndTailOld.m_OneWord.m_Tail + 1U);
 }
 
-inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Private()
+inline PTSTaskPrefixImpl *PTSArenaSlot::TaskDeque_Pop_Private()
 {
 	while (true)
 	{
-		union
-		{
+		union {
 			struct
 			{
 				uint32_t m_Head;
 				uint32_t m_Tail;
-			}m_OneWord;
+			} m_OneWord;
 			uint64_t m_TwoWord;
-		}HeadAndTailOld;
+		} HeadAndTailOld;
 
 		HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_HeadAndTail.m_TwoWord);
 
-		union
-		{
+		union {
 			struct
 			{
 				uint32_t m_Head;
 				uint32_t m_Tail;
-			}m_OneWord;
+			} m_OneWord;
 			uint64_t m_TwoWord;
-		}HeadAndTailNew;
+		} HeadAndTailNew;
 
 		if (HeadAndTailOld.m_OneWord.m_Head >= HeadAndTailOld.m_OneWord.m_Tail)
 		{
@@ -556,7 +547,7 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Private()
 
 			if (::PTSAtomic_CompareAndSet(&m_HeadAndTail.m_TwoWord, HeadAndTailOld.m_TwoWord, HeadAndTailNew.m_TwoWord) == HeadAndTailOld.m_TwoWord)
 			{
-				PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
+				PTSTaskPrefixImpl *pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
 				return pTaskToPop;
 			}
 			//else
@@ -567,19 +558,18 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Private()
 	}
 }
 
-inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
+inline PTSTaskPrefixImpl *PTSArenaSlot::TaskDeque_Pop_Public()
 {
 	while (true)
 	{
-		union
-		{
+		union {
 			struct
 			{
 				uint32_t m_Head;
 				uint32_t m_Tail;
-			}m_OneWord;
+			} m_OneWord;
 			uint64_t m_TwoWord;
-		}HeadAndTailOld;
+		} HeadAndTailOld;
 
 		HeadAndTailOld.m_TwoWord = ::PTSAtomic_Get(&m_HeadAndTail.m_TwoWord);
 
@@ -589,15 +579,14 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
 		}
 		else
 		{
-			union
-			{
+			union {
 				struct
 				{
 					uint32_t m_Head;
 					uint32_t m_Tail;
-				}m_OneWord;
+				} m_OneWord;
 				uint64_t m_TwoWord;
-			}HeadAndTailNew;
+			} HeadAndTailNew;
 
 			HeadAndTailNew.m_OneWord.m_Head = HeadAndTailOld.m_OneWord.m_Head + 1U;
 			HeadAndTailNew.m_OneWord.m_Tail = HeadAndTailOld.m_OneWord.m_Tail;
@@ -606,7 +595,7 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
 
 			if (::PTSAtomic_CompareAndSet(&m_HeadAndTail.m_TwoWord, HeadAndTailOld.m_TwoWord, HeadAndTailNew.m_TwoWord) == HeadAndTailOld.m_TwoWord)
 			{
-				PTSTaskPrefixImpl * pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
+				PTSTaskPrefixImpl *pTaskToPop = m_TaskDequeMemoryS[Index / 64U][Index % 64U];
 
 				return pTaskToPop;
 			}
@@ -615,31 +604,105 @@ inline PTSTaskPrefixImpl * PTSArenaSlot::TaskDeque_Pop_Public()
 			//	continue;
 			//}
 		}
-
 	}
 }
 
 //------------------------------------------------------------------------------------------------------------
-//PTSTaskPrefixImpl
+//PT_McRT_Task_Impl
 //------------------------------------------------------------------------------------------------------------
-static uint32_t const  s_TaskPrefix_Reservation_Size = ::PTS_Size_AlignUpFrom(static_cast<uint32_t>(sizeof(PTSTaskPrefixImpl)), s_TaskPrefix_Alignment);
 
-static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask)
+inline PT_McRT_Task_Impl::PT_McRT_Task_Impl(): 
+#ifndef NDEBUG
+	m_pTaskInner(PT_McRT_Task_Impl_m_pTaskInner_Undefined)
+#endif
+{
+
+}
+inline void PT_McRT_Task_Impl::Initialize(PT_McRT_ITask_Inner *pTaskInner)
+{
+#ifndef NDEBUG
+	assert(m_pTaskInner == PT_McRT_Task_Impl_m_pTaskInner_Undefined);
+#endif
+	assert(pTaskInner != NULL);
+	m_pTaskInner = pTaskInner;
+}
+
+extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_Alloc_Task(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
+{
+	PT_McRT_Task_Impl *pTaskOuter = new(PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Impl), alignof(PT_McRT_Task_Impl)))PT_McRT_Task_Impl();
+	PT_McRT_ITask_Inner *pTaskInner = pFn_CreateTaskInnerInstance(pTaskOuter);
+	assert(pTaskInner != NULL);
+	pTaskOuter->Initialize(pTaskInner);
+	return pTaskOuter;
+}
+
+inline PT_McRT_Task_Impl::~PT_McRT_Task_Impl()
+{
+	m_pTaskInner->Dispose();
+}
+
+inline void PT_McRT_Task_Impl::Free()
+{
+	this->~PT_McRT_Task_Impl();
+	::PT_McRT_Aligned_Free(this);
+}
+
+void PT_McRT_Task_Impl::Recycle_AsChildOf(PT_McRT_ITask *pParent)
+{
+	assert(m_State == Executing || m_State == Allocated);				 //execute not running, or already recycled
+	assert(m_RefCount == 0U);											 //no child tasks allowed when recycled as a child
+	assert(m_Parent == NULL);											 //parent must be null //使用allocate_continuation
+	assert(static_cast<PT_McRT_Task_Impl *>(pParent)->m_State != Freed); //parent already freed
+
+	m_State = Allocated;
+	m_Parent = static_cast<PT_McRT_Task_Impl *>(pParent);
+}
+
+void PT_McRT_Task_Impl::RefCount_Set(uint32_t RefCount)
+{
+	assert((m_State & Debug_RefCount_InUse) == 0); //应当在SpawnTask之前SetRefCount
+	m_RefCount = RefCount;
+}
+
+PT_McRT_ITask *PT_McRT_Task_Impl::Parent()
+{
+	return m_Parent;
+}
+
+void PT_McRT_Task_Impl::ParentSet(PT_McRT_ITask *pParent)
+{
+	m_Parent = static_cast<PT_McRT_Task_Impl *>(pParent);
+}
+
+inline uint32_t PT_McRT_Task_Impl::RemoveReference()
+{
+
+}
+
+inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
+{
+	PT_McRT_Task_Impl *pTaskByPass = static_cast<PT_McRT_Task_Impl *>(m_pTaskInner->Execute());
+	return pTaskByPass;
+}
+
+
+
+static uint32_t const s_TaskPrefix_Reservation_Size = ::PTS_Size_AlignUpFrom(static_cast<uint32_t>(sizeof(PTSTaskPrefixImpl)), s_TaskPrefix_Alignment);
+
+static inline PTSTaskPrefixImpl *PTS_Internal_Task_Prefix(IPTSTask *pTask)
 {
 	return reinterpret_cast<PTSTaskPrefixImpl *>(reinterpret_cast<uintptr_t>(pTask) - s_TaskPrefix_Reservation_Size);
 }
 
-static inline IPTSTask * PTS_Internal_TaskPrefix_Task(PTSTaskPrefixImpl *pTaskPrefix)
+static inline IPTSTask *PTS_Internal_TaskPrefix_Task(PTSTaskPrefixImpl *pTaskPrefix)
 {
 	return reinterpret_cast<IPTSTask *>(reinterpret_cast<uintptr_t>(pTaskPrefix) + s_TaskPrefix_Reservation_Size);
 }
 
-inline PTSTaskPrefixImpl::PTSTaskPrefixImpl() :
-	m_Parent(NULL),
-	m_RefCount(0U), 
-	m_State(Allocated)
+inline PTSTaskPrefixImpl::PTSTaskPrefixImpl() : m_Parent(NULL),
+												m_RefCount(0U),
+												m_State(Allocated)
 {
-
 }
 
 IPTSTaskPrefix *PTSTaskPrefixImpl::Parent()
@@ -654,9 +717,9 @@ void PTSTaskPrefixImpl::ParentSet(IPTSTaskPrefix *pParent)
 
 void PTSTaskPrefixImpl::Recycle_AsChildOf(IPTSTaskPrefix *pParent)
 {
-	assert(m_State == Executing || m_State == Allocated); //execute not running, or already recycled
-	assert(m_RefCount == 0U); //no child tasks allowed when recycled as a child
-	assert(m_Parent == NULL); //parent must be null //使用allocate_continuation
+	assert(m_State == Executing || m_State == Allocated);				 //execute not running, or already recycled
+	assert(m_RefCount == 0U);											 //no child tasks allowed when recycled as a child
+	assert(m_Parent == NULL);											 //parent must be null //使用allocate_continuation
 	assert(static_cast<PTSTaskPrefixImpl *>(pParent)->m_State != Freed); //parent already freed
 
 	m_State = Allocated;
@@ -665,7 +728,7 @@ void PTSTaskPrefixImpl::Recycle_AsChildOf(IPTSTaskPrefix *pParent)
 
 void PTSTaskPrefixImpl::RefCount_Set(uint32_t RefCount)
 {
-	assert((m_State&Debug_RefCount_InUse) == 0); //应当在SpawnTask之前SetRefCount
+	assert((m_State & Debug_RefCount_InUse) == 0); //应当在SpawnTask之前SetRefCount
 	m_RefCount = RefCount;
 }
 
@@ -680,11 +743,9 @@ inline PTSTaskPrefixImpl *PTSTaskPrefixImpl::Execute()
 //PTSTaskSchedulerMasterImpl
 //------------------------------------------------------------------------------------------------------------
 inline PTSTaskSchedulerMasterImpl::PTSTaskSchedulerMasterImpl(PTSArena *pArena)
-	:
-	m_pArena(pArena),
-	m_HasWaked(0U)
+	: m_pArena(pArena),
+	  m_HasWaked(0U)
 {
-
 }
 
 inline PTSTaskSchedulerMasterImpl::~PTSTaskSchedulerMasterImpl()
@@ -707,7 +768,7 @@ uint32_t PTSTaskSchedulerMasterImpl::Warp_ThreadID()
 }
 
 IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
-{	
+{
 	return ::PTS_Internal_Task_Alloc(SizeTask, AlignmentTask);
 }
 
@@ -716,7 +777,7 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 	::PTS_Internal_Task_Spawn(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTask));
 }
 
-void PTSTaskSchedulerMasterImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+void PTSTaskSchedulerMasterImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
 	::PTS_Internal_ExecuteAndWait(m_pArena, 0U, ::PTS_Internal_Task_Prefix(pTask), pVoidForPredicate, pFnPredicate);
 }
@@ -740,7 +801,6 @@ void PTSTaskSchedulerMasterImpl::Worker_Sleep()
 //------------------------------------------------------------------------------------------------------------
 inline PTSTaskSchedulerWorkerImpl::PTSTaskSchedulerWorkerImpl()
 {
-
 }
 
 uint32_t PTSTaskSchedulerWorkerImpl::Warp_Size()
@@ -763,7 +823,6 @@ void PTSTaskSchedulerWorkerImpl::Worker_Sleep()
 	assert(0);
 }
 
-
 IPTSTask *PTSTaskSchedulerWorkerImpl::Task_Allocate(size_t SizeTask, size_t AlignmentTask)
 {
 	return ::PTS_Internal_Task_Alloc(SizeTask, AlignmentTask);
@@ -774,7 +833,7 @@ void PTSTaskSchedulerWorkerImpl::Task_Spawn(IPTSTask *pTask)
 	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTask));
 }
 
-void PTSTaskSchedulerWorkerImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+void PTSTaskSchedulerWorkerImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
 	::PTS_Internal_ExecuteAndWait(m_pArena, m_Slot_Index, ::PTS_Internal_Task_Prefix(pTask), pVoidForPredicate, pFnPredicate);
 }
@@ -808,11 +867,10 @@ static inline IPTSTask *PTS_Internal_Task_Alloc(size_t SizeTask, size_t Alignmen
 	assert(::PTS_Size_IsPowerOfTwo(static_cast<uint32_t>(AlignmentTask)));
 	assert(::PTS_Size_IsAligned(s_TaskPrefix_Alignment, AlignmentTask));
 
-	pTaskPrefix = ::new(::PTSMemoryAllocator_Alloc_Aligned(s_TaskPrefix_Reservation_Size + static_cast<uint32_t>(SizeTask), s_TaskPrefix_Alignment))PTSTaskPrefixImpl{};
+	pTaskPrefix = ::new (::PTSMemoryAllocator_Alloc_Aligned(s_TaskPrefix_Reservation_Size + static_cast<uint32_t>(SizeTask), s_TaskPrefix_Alignment)) PTSTaskPrefixImpl{};
 	assert(pTaskPrefix != NULL);
 
 	pTask = reinterpret_cast<IPTSTask *>(reinterpret_cast<uintptr_t>(pTaskPrefix) + s_TaskPrefix_Reservation_Size);
-
 
 	assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pTaskPrefix), s_TaskPrefix_Alignment));
 	assert(::PTS_Size_IsAligned(reinterpret_cast<uintptr_t>(pTask), AlignmentTask));
@@ -832,7 +890,7 @@ static inline void PTS_Internal_Task_Spawn(PTSArena *pArena, uint32_t Slot_Index
 	pArenaSlot->TaskDeque_Push(pTaskToSpawnPrefix);
 }
 
-static inline void PTS_Internal_ExecuteAndWait(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+static inline void PTS_Internal_ExecuteAndWait(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
 	assert(pTaskRootPrefix->m_State == PTSTaskPrefixImpl::Allocated); //attempt to spawn task that is not in 'allocated' state
 	pTaskRootPrefix->m_State = PTSTaskPrefixImpl::Ready;
@@ -840,7 +898,7 @@ static inline void PTS_Internal_ExecuteAndWait(PTSArena *pArena, uint32_t Slot_I
 	PTS_Internal_ExecuteAndWait_Main(pArena, Slot_Index, pTaskRootPrefix, pVoidForPredicate, pFnPredicate);
 }
 
-static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl * pTaskRootPrefix, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t Slot_Index, PTSTaskPrefixImpl *pTaskRootPrefix, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
 	assert(pTaskRootPrefix != NULL);
 
@@ -865,7 +923,7 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 				//Recycle
 				switch (pTaskExecuting->m_State)
 				{
-				case PTSTaskPrefixImpl::Executing://Not Recycle
+				case PTSTaskPrefixImpl::Executing: //Not Recycle
 				{
 					assert(pTaskExecuting->m_RefCount == 0U); //Task still has children after it has been executed
 
@@ -878,7 +936,7 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 					//Parent
 					if (pTaskParent != NULL)
 					{
-						uintptr_t RefCountOld = ::PTSAtomic_GetAndAdd(&pTaskParent->m_RefCount, uint32_t(-1));
+						uint32_t RefCountOld = ::PTSAtomic_GetAndAdd(&pTaskParent->m_RefCount, uint32_t(-1));
 						if (RefCountOld == 1)
 						{
 							//pTaskParent->m_State &= ~Debug_RefCount_InUse;
@@ -900,13 +958,13 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 					}
 				}
 				break;
-				case PTSTaskPrefixImpl::Allocated://Recycle As Child Or Continuation
+				case PTSTaskPrefixImpl::Allocated: //Recycle As Child Or Continuation
 				{
 					pTaskExecuting->m_State = PTSTaskPrefixImpl::Ready;
 				}
 				break;
 				default:
-					assert(0); //illegal state 
+					assert(0); //illegal state
 				}
 
 				pTaskExecuting = pTaskByPass;
@@ -995,7 +1053,7 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t Slot_Index)
 {
 	PTSTaskPrefixImpl *pTaskExecuting = NULL;
-	
+
 	PTS_Random_LCG RandomTemp(static_cast<uint32_t>(reinterpret_cast<uintptr_t>(&pTaskExecuting)));
 
 	//Steal Task / Victim Task Deque
@@ -1074,7 +1132,6 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 		}
 	}
 
-
 	//Victim Task Deque
 	while (pTaskExecuting)
 	{
@@ -1093,7 +1150,7 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 				//Recycle
 				switch (pTaskExecuting->m_State)
 				{
-				case PTSTaskPrefixImpl::Executing://Not Recycle
+				case PTSTaskPrefixImpl::Executing: //Not Recycle
 				{
 					assert(pTaskExecuting->m_RefCount == 0U); //Task still has children after it has been executed
 
@@ -1128,13 +1185,13 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 					}
 				}
 				break;
-				case PTSTaskPrefixImpl::Allocated://Recycle As Child Or Continuation
+				case PTSTaskPrefixImpl::Allocated: //Recycle As Child Or Continuation
 				{
 					pTaskExecuting->m_State = PTSTaskPrefixImpl::Ready;
 				}
 				break;
 				default:
-					assert(0); //illegal state 
+					assert(0); //illegal state
 				}
 
 				pTaskExecuting = pTaskByPass;
@@ -1223,14 +1280,13 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 #ifdef PTWIN32
 inline unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 #elif defined(PTPOSIX)
-inline void * PTSMarket::Worker_Thread_Main(void *pMarketVoid)
+inline void *PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 #else
 #error 未知的平台
 #endif
 {
-	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new(
-		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl))
-		)PTSTaskSchedulerWorkerImpl{};
+	PTSTaskSchedulerWorkerImpl *pTaskScheduler = new (
+		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerWorkerImpl), alignof(PTSTaskSchedulerWorkerImpl))) PTSTaskSchedulerWorkerImpl{};
 	assert(pTaskScheduler != NULL);
 
 	bool tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
@@ -1284,25 +1340,24 @@ bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)
 		bool tbResult;
 		tbResult = ::PTSTSD_Create(
 			&s_TaskScheduler_Index,
-			[](void *pVoid)->void {
-			//Destructtor
-			//WorkThread在退出前已将TSD设置为NULL
-			//一定是MasterThread
-			PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(pVoid);
-			pTaskScheduler->~PTSTaskSchedulerMasterImpl();
-			::PTSMemoryAllocator_Free_Aligned(pVoid);
-		}
-		);
+			[](void *pVoid) -> void {
+				//Destructtor
+				//WorkThread在退出前已将TSD设置为NULL
+				//一定是MasterThread
+				PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(pVoid);
+				pTaskScheduler->~PTSTaskSchedulerMasterImpl();
+				::PTSMemoryAllocator_Free_Aligned(pVoid);
+			});
 		assert(tbResult != false);
-		
+
 		assert(s_Market_Singleton_Pointer == NULL);
 		if (ThreadNumber == 0U)
 		{
 			ThreadNumber = ::PTS_Info_HardwareThreadNumber() - 1U; //默认值
 		}
-		s_Market_Singleton_Pointer = new(::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSMarket), alignof(PTSMarket)))PTSMarket(ThreadNumber);
+		s_Market_Singleton_Pointer = new (::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSMarket), alignof(PTSMarket))) PTSMarket(ThreadNumber);
 		assert(s_Market_Singleton_Pointer != NULL);
-		
+
 		return tbResult;
 	}
 	else
@@ -1319,9 +1374,8 @@ bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio)
 	PTSArena *pArena = s_Market_Singleton_Pointer->Arena_Allocate_Master(fThreadNumberRatio);
 	assert(pArena != NULL);
 
-	PTSTaskSchedulerMasterImpl *pTaskScheduler = new(
-		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl))
-		)PTSTaskSchedulerMasterImpl(pArena); //MasterThread的SlotIndex一定为0
+	PTSTaskSchedulerMasterImpl *pTaskScheduler = new (
+		::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTSTaskSchedulerMasterImpl), alignof(PTSTaskSchedulerMasterImpl))) PTSTaskSchedulerMasterImpl(pArena); //MasterThread的SlotIndex一定为0
 	assert(pTaskScheduler != NULL);
 
 	bool tbResult = ::PTSTSD_SetValue(s_TaskScheduler_Index, pTaskScheduler);
@@ -1330,7 +1384,7 @@ bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio)
 	return tbResult;
 }
 
-IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread()
+IPTSTaskScheduler *PTCALL PTSTaskScheduler_ForThread()
 {
 	PTSTaskSchedulerMasterImpl *pTaskScheduler = static_cast<PTSTaskSchedulerMasterImpl *>(::PTSTSD_GetValue(s_TaskScheduler_Index));
 	assert(pTaskScheduler != NULL);
@@ -1338,7 +1392,7 @@ IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread()
 	return pTaskScheduler;
 }
 
-IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask)
+IPTSTaskPrefix *PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask)
 {
 	return ::PTS_Internal_Task_Prefix(pTask);
 }

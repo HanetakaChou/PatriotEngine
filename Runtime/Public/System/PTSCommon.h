@@ -5,4 +5,6 @@
 #define PTSYSTEMAPI PTIMPORT
 #endif
 
+#define PTMCRTAPI PTSYSTEMAPI
+
 #endif

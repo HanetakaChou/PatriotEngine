@@ -6,6 +6,78 @@
 #include "PTSThread.h"
 #include <assert.h>
 
+//COM Aggregation
+//https://docs.microsoft.com/en-us/windows/win32/com/aggregation
+
+//Task_Inner provides two implementations of the "Dispose" method: delegating and non-delegating.
+//The delegating implementation delegates the "Dispose" method to Task_Outer.
+//The non-delegating implementation is the "normal" implementation which can be used to destory Task_Inner.
+
+//The non-delegating implementation can only be obtained when Task_Inner is created.
+//Task_Outer is the only holder of the non-delegating implementation and is responsible for releasing Task_Inner.
+
+struct PT_McRT_ITask; //IPT_McRT_Task_Outer
+struct PT_McRT_ITask_Inner;
+
+struct PT_McRT_ITask
+{ 
+	//virtual void Dispose() = 0; //只可能在TaskScheduler内部用到
+	//virtual PT_McRT_ITask_Inner *QueryInterface() = 0; //只可能在TaskScheduler内部用到
+
+	static inline PT_McRT_ITask *Allocate_Root(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter));
+	inline PT_McRT_ITask *Allocate_Child(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter));
+	inline PT_McRT_ITask *Allocate_Continuation(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter));
+	virtual void Recycle_AsChildOf(PT_McRT_ITask *pParent) = 0;
+
+	//应当在SpawnTask之前SetRefCount
+	//ToDo: 建议取消该方法，而是移动到 Allocate_Child / Allocate_Continuation / Recycle_AsChildOf 内
+	virtual void RefCount_Set(uint32_t RefCount) = 0;
+
+private:
+	virtual PT_McRT_ITask *Parent() = 0;
+	virtual void ParentSet(PT_McRT_ITask *pParent) = 0;
+};
+
+struct PT_McRT_ITask_Inner
+{
+	virtual void Dispose() = 0;
+	//virtual PT_McRT_ITask *QueryInterface() = 0; //只可能在Execute的实现中被用到，直接通过m_pTaskOuter访问
+
+	virtual PT_McRT_ITask *Execute() = 0;
+};
+
+extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_Alloc_Task(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter));
+
+inline PT_McRT_ITask *PT_McRT_ITask::Allocate_Root(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
+{
+	PT_McRT_ITask *pTaskNew = PT_McRT_Alloc_Task(pFn_CreateTaskInnerInstance);
+	pTaskNew->ParentSet(NULL);
+	return pTaskNew;
+}
+
+inline PT_McRT_ITask *PT_McRT_ITask::Allocate_Child(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
+{
+
+	PT_McRT_ITask *pTaskNew = PT_McRT_Alloc_Task(pFn_CreateTaskInnerInstance);
+	pTaskNew->ParentSet(this);
+
+	//++RefCount
+
+	return pTaskNew;
+}
+
+inline PT_McRT_ITask *PT_McRT_ITask::Allocate_Continuation(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
+{
+
+	PT_McRT_ITask *pTaskParent = this->Parent();
+	this->ParentSet(NULL);
+
+	PT_McRT_ITask *pTaskNew = PT_McRT_Alloc_Task(pFn_CreateTaskInnerInstance);
+	pTaskNew->ParentSet(pTaskParent);
+
+	return pTaskNew;
+}
+
 struct IPTSTaskScheduler;
 
 struct IPTSTask;
