@@ -143,7 +143,7 @@ public:
 };
 static_assert(PTSArena::StaticAssert(), "PTSArena: Padding Not Correct");
 
-class PTSTaskPrefixImpl;
+class PT_McRT_Task_Impl;
 
 //Arena Slot（舞台槽）
 //The Local Task Deque
@@ -168,7 +168,7 @@ public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(int64_t)];
 private:
 
-	PTSTaskPrefixImpl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
+	PT_McRT_Task_Impl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
 
 	uint32_t m_TaskDequeCapacity;
 
@@ -184,11 +184,11 @@ private:
 public:
 	inline PTSArenaSlot();
 
-	inline void TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush);
+	inline void TaskDeque_Push(PT_McRT_Task_Impl *pTaskToPush);
 
-	inline PTSTaskPrefixImpl * TaskDeque_Pop_Private();
+	inline PT_McRT_Task_Impl * TaskDeque_Pop_Private();
 
-	inline PTSTaskPrefixImpl * TaskDeque_Pop_Public();
+	inline PT_McRT_Task_Impl * TaskDeque_Pop_Public();
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -200,37 +200,6 @@ static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct")
 
 //Task
 //即"Task"-Based Work-Stealing Scheduler中的"Task"
-class PTSTaskPrefixImpl final :public IPTSTaskPrefix
-{
-	IPTSTaskPrefix * Parent() override;
-	void ParentSet(IPTSTaskPrefix *pParent) override;
-
-	void Recycle_AsChildOf(IPTSTaskPrefix *pParent) override;
-
-	void RefCount_Set(uint32_t RefCount) override;
-
-public:
-	PTSTaskPrefixImpl * m_Parent;
-
-	uint32_t m_RefCount; //Count Of Child
-
-	enum :uint8_t
-	{
-		Allocated = 0U,
-		Ready = 1U,
-		Executing = 2U,
-		Freed = 4U,
-		Debug_RefCount_InUse = 8U
-	};
-
-	uint8_t m_State;
-
-	inline PTSTaskPrefixImpl();
-
-	inline PTSTaskPrefixImpl *Execute();
-};
-static uint32_t const s_TaskPrefix_Alignment = 32U;
-static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
 
 #ifndef NDEBUG
 static PT_McRT_ITask_Inner * const PT_McRT_Task_Impl_m_pTaskInner_Undefined = reinterpret_cast<PT_McRT_ITask_Inner *>(0X6FE3E59F4FCEAC07U);
@@ -240,12 +209,12 @@ class PT_McRT_Task_Impl :public PT_McRT_ITask
 {
 	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
 	void RefCount_Set(uint32_t RefCount) override;
-	PT_McRT_ITask *Parent() override;
+	
 	void ParentSet(PT_McRT_ITask *pParent) override;
 
 	PT_McRT_Task_Impl *m_Parent;
 	PT_McRT_ITask_Inner *m_pTaskInner;
-	uint32_t m_RefCount; //Count Of Child
+	uint32_t m_RefCount; //Count Of Child //建议改名m_ChildCount
 	enum :uint32_t
 	{
 		Allocated = 0U,
@@ -255,13 +224,28 @@ class PT_McRT_Task_Impl :public PT_McRT_ITask
 		Debug_RefCount_InUse = 8U
 	} m_State;
 
+	bool m_IsRecycled;
+
+#ifndef NDEBUG
+	bool m_IsChildCountLocked;
+#endif
+
 public:
 	inline PT_McRT_Task_Impl();
 	inline void Initialize(PT_McRT_ITask_Inner *pTaskInner);
 	inline void Free();
-	//inline uint32_t AddReference();
-	inline uint32_t RemoveReference();
+	
+	inline void StateCheck_PreSpawn();
+	inline void StateCheck_PreExecute();
 	inline PT_McRT_Task_Impl *Execute();
+	inline bool IsRecycled();
+	PT_McRT_ITask *Parent() override;
+	inline uint32_t RemoveReference();
+
+#ifndef NDEBUG
+	inline void LockChildCount();
+	inline void UnlockChildCount();
+#endif
 
 private:
 	inline ~PT_McRT_Task_Impl();
@@ -285,7 +269,9 @@ class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn(PT_McRT_ITask *pTask) override;
 	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
 
 public:
 	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
@@ -308,7 +294,9 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 
 	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
 	void Task_Spawn(IPTSTask *pTask) override;
+	void Task_Spawn(PT_McRT_ITask *pTask) override;
 	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);

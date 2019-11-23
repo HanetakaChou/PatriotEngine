@@ -137,8 +137,10 @@ struct IPTSTaskScheduler
 
 	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
 	virtual void Task_Spawn(IPTSTask *pTask) = 0;
+	virtual void Task_Spawn(PT_McRT_ITask *pTask) = 0;
 	virtual void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
-	
+	virtual void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
+
 	inline void Task_WaitRoot(IPTSTask *pTaskRoot)
 	{
 		assert(pTaskRoot != NULL);
