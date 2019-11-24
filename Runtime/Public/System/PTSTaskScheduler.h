@@ -31,10 +31,6 @@ struct PT_McRT_ITask
 
 	//应当在SpawnTask之前SetRefCount
 	virtual void Set_Ref_Count(uint32_t RefCount) = 0; //Predecessor Count
-
-private:
-	virtual PT_McRT_ITask *Parent() = 0;
-	virtual void ParentSet(PT_McRT_ITask *pParent) = 0;
 };
 
 struct PT_McRT_ITask_Inner

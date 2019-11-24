@@ -29,12 +29,16 @@ task //DAG简化得到的树中的节点
 //在Task执行完毕（且未recyle）后，会以原子操作的方式递减parent(即唯一的后继）的ref_count  
 //当parent的ref_count递减至0时（即parent不再有前驱），parent会被Spawn  
 
-//为了减少原子操作的次数，以提升性能  
-//在创建Task时，TBB在set_ref_count中以非原子操作的方式设置引用计数  
+//根据TBB的设计，Task在被创建时，处于DAG中不可能被执行的部分，因此，在set_ref_count中以非原子操作的方式设置引用计数  
+//可能同时 也具有 减少原子操作的次数，提升性能 的目的  
 //
 //在Debug版本中，TBB提供了es_ref_count_active标志位进行错误检查 //该标志位表示是否该Task的ref_count有可能正在被某个线程以原子操作的方式递减 //实际上即等价于是否有前驱  
 //在Spawn Task前（prepare_for_spawning），Task的parent的es_ref_count_active会被设置  
 //当parent的ref_count递减至0时，parent的es_ref_count_active会被清空  
+
+//注：set_ref_count是多余的，可以基于allocate_child recycle_as_child_of ... 等确定  
+//在prepare_for_spawning中，ref_count被同步到0
+
 
 //state
 //None -Allocate-> allocate -Spawn-> ready -BypassLoop-> executing -Recycle-> recycled -BypassLoop-> allocate
@@ -46,6 +50,12 @@ task //DAG简化得到的树中的节点
 
 //个人认为TBB递减引用计数的时机存在问题 //不应当在BypassLoop之外 //my_innermost_running_task  
 //可以在state中区分 recycle_as_child / recycle_as_safe_continuation    
+
+//何时停止
+work steal的缺陷
+//worker thread正在执行剩余的最后1个task
+//master thread判断task并没有全部完成 转去执行其它线程的task（即master thread steal 其它线程的thread)
+//worker thread执行完毕 //master thread理应可以返回 但是却在执行其它线程的task (显然，task的excute方法内部不可中断)
 
 custom_scheduler.h  
 local_wait_for_all  
@@ -69,7 +79,6 @@ local_wait_for_all
 ```
 
 (2.\[Intel® Software 2019\]/Developer Reference/Task Scheduler/Scheduling Algorithm)
-
 
 
 #### Continuation Passing

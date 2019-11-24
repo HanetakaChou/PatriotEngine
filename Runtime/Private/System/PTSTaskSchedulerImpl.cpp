@@ -624,17 +624,18 @@ inline void PT_McRT_Task_Impl::Initialize(PT_McRT_ITask_Inner *pTaskInner)
 #endif
 	assert(pTaskInner != NULL);
 	m_pTaskInner = pTaskInner;
+
 	m_PredecessorCount = 0U;
+
+#ifndef NDEBUG
+	m_PredecessorCount_Verification = 0U;
+#endif
+
 	m_State = Allocated;
 
 #ifndef NDEBUG
 	m_PredecessorCountMayAtomicAdd = false;
 #endif
-}
-
-void PT_McRT_Task_Impl::ParentSet(PT_McRT_ITask *pParent)
-{
-	m_Parent = static_cast<PT_McRT_Task_Impl *>(pParent);
 }
 
 inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::PT_McRT_Internal_Alloc_Task(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
@@ -656,6 +657,10 @@ extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_ITask_Allocate_Root(void *pU
 PT_McRT_ITask *PT_McRT_Task_Impl::Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
 {
 	assert(m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对"this"Task调用Set_Ref_Count修改引用计数
+
+#ifndef NDEBUG
+	++m_PredecessorCount_Verification;
+#endif
 
 	PT_McRT_Task_Impl *pTaskNew = PT_McRT_Internal_Alloc_Task(pUserData, pFn_CreateTaskInnerInstance);
 	pTaskNew->m_Parent = this;
@@ -680,6 +685,8 @@ void PT_McRT_Task_Impl::Set_Ref_Count(uint32_t RefCount)
 {
 	assert(m_PredecessorCountMayAtomicAdd == false); //应当在SpawnTask之前SetRefCount
 	assert(m_PredecessorCount == 0U);
+	assert(m_PredecessorCount_Verification == RefCount);
+
 	m_PredecessorCount = RefCount;
 }
 
@@ -688,7 +695,10 @@ inline void PT_McRT_Task_Impl::Spawn_PreProcess()
 	assert(m_PredecessorCount == 0U);	//只有叶节点才可能被Spawn
 	assert(m_State == Allocated);       //attempt to spawn task that is not in 'allocated' state
 	m_State = Ready;
+
 #ifndef NDEBUG
+	m_PredecessorCount_Verification = 0U;  //以原子操作减至0的同步点
+
 	if (m_Parent != NULL)
 	{
 		m_Parent->m_PredecessorCountMayAtomicAdd = true;
@@ -713,16 +723,22 @@ inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
 
 void PT_McRT_Task_Impl::Recycle_AsChildOf(PT_McRT_ITask *pParent)
 {
+
 	assert(m_State == Executing);
 	assert(m_IsRecycled == false);
 	//assert(m_State == Executing || m_State == Allocated);				 //execute not running, or already recycled
 	assert(m_PredecessorCount == 0U);									 //no child tasks allowed when recycled as a child
 	assert(m_Parent == NULL);											 //parent must be null //使用allocate_continuation
-	assert(static_cast<PT_McRT_Task_Impl *>(pParent)->m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对Parent调用Set_Ref_Count修改引用计数
+	
+	PT_McRT_Task_Impl *pTaskParent = static_cast<PT_McRT_Task_Impl *>(pParent);
+	assert(pTaskParent->m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对Parent调用Set_Ref_Count修改引用计数
+#ifndef NDEBUG
+	++pTaskParent->m_PredecessorCount_Verification;
+#endif
 
 	m_State = Allocated;
 	m_IsRecycled = true;
-	m_Parent = static_cast<PT_McRT_Task_Impl *>(pParent);
+	m_Parent = pTaskParent;
 }
 
 inline bool PT_McRT_Task_Impl::IsRecycled()
@@ -767,12 +783,6 @@ inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::FreeAndTestSuccessor()
 
 	return pTaskToSpawn;
 }
-
-PT_McRT_ITask *PT_McRT_Task_Impl::Parent()
-{
-	return m_Parent;
-}
-
 
 //------------------------------------------------------------------------------------------------------------
 //PTSTaskSchedulerMasterImpl
