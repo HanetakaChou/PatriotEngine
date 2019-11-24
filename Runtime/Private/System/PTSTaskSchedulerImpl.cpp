@@ -610,12 +610,12 @@ inline PT_McRT_Task_Impl *PTSArenaSlot::TaskDeque_Pop_Public()
 //PT_McRT_Task_Impl
 //------------------------------------------------------------------------------------------------------------
 
-inline PT_McRT_Task_Impl::PT_McRT_Task_Impl(): 
+inline PT_McRT_Task_Impl::PT_McRT_Task_Impl()
+	:
 #ifndef NDEBUG
-	m_pTaskInner(PT_McRT_Task_Impl_m_pTaskInner_Undefined)
+	  m_pTaskInner(PT_McRT_Task_Impl_m_pTaskInner_Undefined)
 #endif
 {
-
 }
 inline void PT_McRT_Task_Impl::Initialize(PT_McRT_ITask_Inner *pTaskInner)
 {
@@ -632,9 +632,9 @@ inline void PT_McRT_Task_Impl::Initialize(PT_McRT_ITask_Inner *pTaskInner)
 #endif
 }
 
-extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_Alloc_Task(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
+extern "C" PTMCRTAPI PT_McRT_ITask *PTCALL PT_McRT_Alloc_Task(PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(PT_McRT_ITask *pTaskOuter))
 {
-	PT_McRT_Task_Impl *pTaskOuter = new(PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Impl), alignof(PT_McRT_Task_Impl)))PT_McRT_Task_Impl();
+	PT_McRT_Task_Impl *pTaskOuter = new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Impl), alignof(PT_McRT_Task_Impl))) PT_McRT_Task_Impl();
 	PT_McRT_ITask_Inner *pTaskInner = pFn_CreateTaskInnerInstance(pTaskOuter);
 	assert(pTaskInner != NULL);
 	pTaskOuter->Initialize(pTaskInner);
@@ -681,6 +681,7 @@ void PT_McRT_Task_Impl::ParentSet(PT_McRT_ITask *pParent)
 
 inline void PT_McRT_Task_Impl::StateCheck_PreSpawn()
 {
+	assert(m_RefCount == 0U);						 //deque上的一定是叶节点
 	assert(m_State == PT_McRT_Task_Impl::Allocated); //attempt to spawn task that is not in 'allocated' state
 	m_State = Ready;
 }
@@ -694,9 +695,9 @@ inline void PT_McRT_Task_Impl::StateCheck_PreExecute()
 inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
 {
 	m_IsRecycled = false;
-	assert(m_RefCount == 0U); //Task has children before executed
+
 	PT_McRT_Task_Impl *pTaskByPass = static_cast<PT_McRT_Task_Impl *>(m_pTaskInner->Execute());
-	assert(m_RefCount == 0U); //Task still has children after it has been executed
+
 	return pTaskByPass;
 }
 
@@ -713,6 +714,11 @@ PT_McRT_ITask *PT_McRT_Task_Impl::Parent()
 inline uint32_t PT_McRT_Task_Impl::RemoveReference()
 {
 	return ::PTSAtomic_GetAndAdd(&m_RefCount, uint32_t(-1));
+}
+
+inline bool PT_McRT_Task_Impl::IsLeaf()
+{
+	return m_RefCount == 0U;
 }
 
 #ifndef NDEBUG
@@ -764,7 +770,6 @@ IPTSTask *PTSTaskSchedulerMasterImpl::Task_Allocate(size_t SizeTask, size_t Alig
 
 void PTSTaskSchedulerMasterImpl::Task_Spawn(IPTSTask *pTask)
 {
-
 }
 
 void PTSTaskSchedulerMasterImpl::Task_Spawn(PT_McRT_ITask *pTask)
@@ -774,14 +779,12 @@ void PTSTaskSchedulerMasterImpl::Task_Spawn(PT_McRT_ITask *pTask)
 
 void PTSTaskSchedulerMasterImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
-
 }
 
-void PTSTaskSchedulerMasterImpl::Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+void PTSTaskSchedulerMasterImpl::Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
 	::PTS_Internal_ExecuteAndWait(m_pArena, 0U, static_cast<PT_McRT_Task_Impl *>(pTask), pVoidForPredicate, pFnPredicate);
 }
-
 
 void PTSTaskSchedulerMasterImpl::Worker_Wake()
 {
@@ -831,22 +834,20 @@ IPTSTask *PTSTaskSchedulerWorkerImpl::Task_Allocate(size_t SizeTask, size_t Alig
 
 void PTSTaskSchedulerWorkerImpl::Task_Spawn(IPTSTask *pTask)
 {
-
 }
 
 void PTSTaskSchedulerWorkerImpl::Task_Spawn(PT_McRT_ITask *pTask)
 {
-	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, static_cast<PT_McRT_Task_Impl*>(pTask));
+	::PTS_Internal_Task_Spawn(m_pArena, m_Slot_Index, static_cast<PT_McRT_Task_Impl *>(pTask));
 }
 
 void PTSTaskSchedulerWorkerImpl::Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
-
 }
 
-void PTSTaskSchedulerWorkerImpl::Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *))
+void PTSTaskSchedulerWorkerImpl::Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *))
 {
-	::PTS_Internal_ExecuteAndWait(m_pArena, m_Slot_Index, static_cast<PT_McRT_Task_Impl*>(pTask), pVoidForPredicate, pFnPredicate);
+	::PTS_Internal_ExecuteAndWait(m_pArena, m_Slot_Index, static_cast<PT_McRT_Task_Impl *>(pTask), pVoidForPredicate, pFnPredicate);
 }
 
 //------------------------------------------------------------------------------------------------------------
@@ -906,81 +907,76 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 			while (pTaskExecuting)
 			{
 				pTaskExecuting->StateCheck_PreExecute();
-				
 
 				//ByPass
 				PT_McRT_Task_Impl *pTaskByPass = pTaskExecuting->Execute();
+				//Bypass的语义：在功能上与Spawn相同
+				//assert(pTaskByPass->IsLeaf());
 
 				//Spawn: Push Queue
 				//Steal循环: Pop Queue
 				//ByPass省去Push和Pop的过程，直接执行Task
 
+				//优化：ByPass Parent / ByPass Recyle
+
 				//Recycle
 				if (!pTaskExecuting->IsRecycled())
 				{
 					//Not Recycle
+
+					//Task still has children after it has been executed
+					//往往是错误的Allocate_Child导致
+					assert(pTaskExecuting->IsLeaf());
+
 					PT_McRT_Task_Impl *pTaskParent = static_cast<PT_McRT_Task_Impl *>(pTaskExecuting->Parent());
 
 					//Free
 					pTaskExecuting->Free();
 
 					//Parent
-					if (pTaskParent != NULL)
+					if ((pTaskParent != NULL) && (pTaskParent->RemoveReference() == 1U))
 					{
-						uint32_t RefCountOld = pTaskParent->RemoveReference();
-						if (RefCountOld == 1)
+						//Spawn Parent
+
+						//pTaskParent->m_State &= ~Debug_RefCount_InUse;
+
+						if (pTaskByPass == NULL)
 						{
-							//Spawn Parent
-
-							//pTaskParent->m_State &= ~Debug_RefCount_InUse;
-
-							if (pTaskByPass == NULL)
-							{
-								//ByPass Parent
-								
-								//简化 //Push //Pop
-								
-								pTaskParent->StateCheck_PreSpawn(); 
-
-								pTaskByPass = pTaskParent;
-							}
-							else
-							{
-								//在Spawn Parent的情况下，ByPass反而会变慢
-
-								PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskParent);
-							}
+							pTaskByPass = pTaskParent;
 						}
-						else
+						else if (pTaskByPass != pTaskParent)
 						{
-							//ByPass在不Spawn Parent的情况下，起到加速效果
-							//否则会进入TaskDeque_Pop_Private
+							//在Spawn Parent的情况下，ByPass反而会变慢
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskParent);
 						}
 					}
-
 				}
 				else
 				{
-					//assert(pTaskByPass == pTaskExecuting); //在Recycle的情况下，ByPass必定与Recycle相同
-					//pTaskExecuting->StateCheck_PreSpawn();
+					//Recycle要求Parent为NULL //必定先进行Allocate_Continuation
+					//而Allocate_Continuation保持Parent的ChildCount不变 //一定不可能发生Spawn_Parent的情况
 
-					//Bypass的语义：在功能上与Spawn相同
+					if (pTaskByPass->IsLeaf())
+					{
+						//Spawn Recycle
 
-					if (pTaskByPass == NULL)
-					{
-						pTaskExecuting->StateCheck_PreSpawn();
-						pTaskByPass = pTaskExecuting;
-					}
-					else if (pTaskByPass == pTaskExecuting)
-					{
-						pTaskExecuting->StateCheck_PreSpawn();
-					}
-					else
-					{
-						PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskExecuting);
+						if (pTaskByPass == pTaskExecuting)
+						{
+							//在Recycle_AsChild中，将同一个Task用于Bypass最为常见，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
+							//Do Nothing
+						}
+						else if (pTaskByPass == NULL)
+						{
+							pTaskByPass = pTaskExecuting;
+						}
+						else
+						{
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskExecuting);
+						}
 					}
 				}
 
+				pTaskByPass->StateCheck_PreSpawn(); //Bypass的语义：在功能上与Spawn相同
 				pTaskExecuting = pTaskByPass;
 			}
 
@@ -1159,60 +1155,73 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 
 				//ByPass
 				PT_McRT_Task_Impl *pTaskByPass = pTaskExecuting->Execute();
+				//Bypass的语义：在功能上与Spawn相同
+				//assert(pTaskByPass->IsLeaf());
+
+				//Spawn: Push Queue
+				//Steal循环: Pop Queue
+				//ByPass省去Push和Pop的过程，直接执行Task
+
+				//优化：ByPass Parent / ByPass Recyle
 
 				//Recycle
 				if (!pTaskExecuting->IsRecycled())
 				{
+					//Not Recycle
+
+					//Task still has children after it has been executed
+					//往往是错误的Allocate_Child导致
+					assert(pTaskExecuting->IsLeaf());
+
 					PT_McRT_Task_Impl *pTaskParent = static_cast<PT_McRT_Task_Impl *>(pTaskExecuting->Parent());
 
 					//Free
 					pTaskExecuting->Free();
 
 					//Parent
-					if (pTaskParent != NULL)
+					if ((pTaskParent != NULL) && (pTaskParent->RemoveReference() == 1U))
 					{
-						uint32_t RefCountOld = pTaskParent->RemoveReference();
-						if (RefCountOld == 1)
+						//Spawn Parent
+
+						//pTaskParent->m_State &= ~Debug_RefCount_InUse;
+
+						if (pTaskByPass == NULL)
 						{
-							//pTaskParent->m_State &= ~Debug_RefCount_InUse;
-
-							if (pTaskByPass == NULL)
-							{
-								//ByPass
-
-								pTaskParent->StateCheck_PreSpawn();
-
-								pTaskByPass = pTaskParent;
-							}
-							else
-							{
-								PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskParent);
-							}
+							pTaskByPass = pTaskParent;
+						}
+						else if (pTaskByPass != pTaskParent)
+						{
+							//在Spawn Parent的情况下，ByPass反而会变慢
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskParent);
 						}
 					}
 				}
 				else
 				{
-					//assert(pTaskByPass == pTaskExecuting); //在Recycle的情况下，ByPass必定与Recycle相同
-					//pTaskExecuting->StateCheck_PreSpawn();
+					//Recycle要求Parent为NULL //必定先进行Allocate_Continuation
+					//而Allocate_Continuation保持Parent的ChildCount不变 //一定不可能发生Spawn_Parent的情况
 
-					//Bypass的语义：在功能上与Spawn相同
+					if (pTaskByPass->IsLeaf())
+					{
+						//Spawn Recycle
 
-					if (pTaskByPass == NULL)
-					{
-						pTaskExecuting->StateCheck_PreSpawn();
-						pTaskByPass = pTaskExecuting;
-					}
-					else if (pTaskByPass == pTaskExecuting)
-					{
-						pTaskExecuting->StateCheck_PreSpawn();
-					}
-					else
-					{
-						PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskExecuting);
+						if (pTaskByPass == pTaskExecuting)
+						{
+							//在Recycle_AsChild中，将同一个Task用于Bypass最为常见，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
+							//Do Nothing
+						}
+						else if (pTaskByPass == NULL)
+						{
+							pTaskByPass = pTaskExecuting;
+						}
+						else
+						{
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskExecuting);
+						}
 					}
 				}
 
+				pTaskByPass->StateCheck_PreSpawn(); //Bypass的语义：在功能上与Spawn相同
 				pTaskExecuting = pTaskByPass;
 			}
 

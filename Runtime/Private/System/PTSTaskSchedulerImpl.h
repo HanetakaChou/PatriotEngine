@@ -240,7 +240,8 @@ public:
 	inline PT_McRT_Task_Impl *Execute();
 	inline bool IsRecycled();
 	PT_McRT_ITask *Parent() override;
-	inline uint32_t RemoveReference();
+	inline uint32_t RemoveReference(); //RemoveChild
+	inline bool IsLeaf();
 
 #ifndef NDEBUG
 	inline void LockChildCount();
