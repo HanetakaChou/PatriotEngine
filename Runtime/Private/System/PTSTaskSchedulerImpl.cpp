@@ -655,7 +655,7 @@ extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_ITask_Allocate_Root(void *pU
 
 PT_McRT_ITask *PT_McRT_Task_Impl::Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
 {
-	assert(m_PredecessorCountMayAtomicAdd = false); //显然，接下来会对"this"Task调用Set_Ref_Count修改引用计数
+	assert(m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对"this"Task调用Set_Ref_Count修改引用计数
 
 	PT_McRT_Task_Impl *pTaskNew = PT_McRT_Internal_Alloc_Task(pUserData, pFn_CreateTaskInnerInstance);
 	pTaskNew->m_Parent = this;
@@ -700,26 +700,25 @@ inline void PT_McRT_Task_Impl::Execute_PreProcess()
 {
 	assert(m_State == Ready);
 	m_State = Executing;
+	m_IsRecycled = false;
 }
 
 inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
 {
-	m_IsRecycled = false;
+	assert(m_State == Executing);
 
 	PT_McRT_Task_Impl *pTaskByPass = static_cast<PT_McRT_Task_Impl *>(m_pTaskInner->Execute());
-
 	return pTaskByPass;
 }
 
 void PT_McRT_Task_Impl::Recycle_AsChildOf(PT_McRT_ITask *pParent)
 {
 	assert(m_State == Executing);
-	assert(m_IsRecycled = false);
+	assert(m_IsRecycled == false);
 	//assert(m_State == Executing || m_State == Allocated);				 //execute not running, or already recycled
 	assert(m_PredecessorCount == 0U);									 //no child tasks allowed when recycled as a child
 	assert(m_Parent == NULL);											 //parent must be null //使用allocate_continuation
-
-	assert(m_Parent->m_PredecessorCountMayAtomicAdd = false); //显然，接下来会对Parent调用Set_Ref_Count修改引用计数
+	assert(static_cast<PT_McRT_Task_Impl *>(pParent)->m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对Parent调用Set_Ref_Count修改引用计数
 
 	m_State = Allocated;
 	m_IsRecycled = true;
@@ -961,7 +960,10 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 					//在Recycle_AsChild中，将同一个Task用于Bypass最为常见，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
 				}
 
-				pTaskByPass->Spawn_PreProcess(); //Bypass的语义：在功能上与Spawn相同
+				if (pTaskByPass != NULL)
+				{
+					pTaskByPass->Spawn_PreProcess(); //Bypass的语义：在功能上与Spawn相同
+				}
 				pTaskExecuting = pTaskByPass;
 			}
 
@@ -1181,7 +1183,10 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 					//在Recycle_AsChild中，将同一个Task用于Bypass最为常见，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
 				}
 
-				pTaskByPass->Spawn_PreProcess(); //Bypass的语义：在功能上与Spawn相同
+				if (pTaskByPass != NULL)
+				{
+					pTaskByPass->Spawn_PreProcess(); //Bypass的语义：在功能上与Spawn相同
+				}
 				pTaskExecuting = pTaskByPass;
 			}
 
