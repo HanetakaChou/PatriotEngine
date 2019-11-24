@@ -6,48 +6,49 @@
 #include "PTSThread.h"
 #include <assert.h>
 
-struct IPTSTaskScheduler;
+//COM Aggregation
+//https://docs.microsoft.com/en-us/windows/win32/com/aggregation
 
-struct IPTSTask;
+//Task_Inner provides two implementations of the "Dispose" method: delegating and non-delegating.
+//The delegating implementation delegates the "Dispose" method to Task_Outer.
+//The non-delegating implementation is the "normal" implementation which can be used to destory Task_Inner.
 
-struct IPTSTaskPrefix
-{
-	virtual IPTSTaskPrefix *Parent() = 0;
-	virtual void ParentSet(IPTSTaskPrefix *pParent) = 0;
+//The non-delegating implementation can only be obtained when Task_Inner is created.
+//Task_Outer is the only holder of the non-delegating implementation and is responsible for releasing Task_Inner.
 
-	virtual void Recycle_AsChildOf(IPTSTaskPrefix *pParent) = 0;
-	//virtual void Recycle_AsContinuation() = 0;
+struct PT_McRT_ITask; //IPT_McRT_Task_Outer
+struct PT_McRT_ITask_Inner;
+
+struct PT_McRT_ITask
+{ 
+	//virtual void Dispose() = 0; //只可能在TaskScheduler内部用到
+	//virtual PT_McRT_ITask_Inner *QueryInterface() = 0; //只可能在TaskScheduler内部用到
+	static inline PT_McRT_ITask *Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+	virtual PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
+	virtual PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
+	
+	virtual void Recycle_AsChildOf(PT_McRT_ITask *pParent) = 0;
 
 	//应当在SpawnTask之前SetRefCount
-	virtual void RefCount_Set(uint32_t RefCount) = 0;
+	virtual void Set_Ref_Count(uint32_t RefCount) = 0; //Predecessor Count
 };
 
-//利用编译时强类型，减少错误发生
-struct IPTSTask
+struct PT_McRT_ITask_Inner
 {
-	virtual IPTSTask *Execute() = 0;
+	virtual void Dispose() = 0;
+	//virtual PT_McRT_ITask *QueryInterface() = 0; //只可能在Execute的实现中被用到，直接通过m_pTaskOuter访问
 
-	//Helper Function
-private:
-	IPTSTaskPrefix *m_pPrefix;
-public:
-	inline IPTSTask();
-
-	inline void ParentSet(IPTSTask *pParent);
-
-	inline void Recycle_AsChildOf(IPTSTask *pParent);
-
-	inline void RefCount_Set(uint32_t RefCount);
-
-	template<typename TaskImpl>
-	static inline void * Allocate_Root(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler = NULL);
-
-	template<typename TaskImpl>
-	inline void * Allocate_Child(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler = NULL);
-
-	template<typename TaskImpl>
-	inline void * Allocate_Continuation(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler = NULL);
+	virtual PT_McRT_ITask *Execute() = 0;
 };
+
+extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+
+inline PT_McRT_ITask *PT_McRT_ITask::Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
+{
+	return PT_McRT_ITask_Allocate_Root(pUserData, pFn_CreateTaskInnerInstance);
+}
+
+struct IPTSTaskScheduler;
 
 struct IPTSTaskScheduler
 {
@@ -63,10 +64,10 @@ struct IPTSTaskScheduler
 	virtual void Worker_Wake() = 0;
 	virtual void Worker_Sleep() = 0;
 
-	virtual IPTSTask *Task_Allocate(size_t Size, size_t Alignment) = 0;
-	virtual void Task_Spawn(IPTSTask *pTask) = 0;
-	virtual void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
-	
+	virtual void Task_Spawn(PT_McRT_ITask *pTask) = 0;
+	virtual void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
+
+#if 0
 	inline void Task_WaitRoot(IPTSTask *pTaskRoot)
 	{
 		assert(pTaskRoot != NULL);
@@ -102,94 +103,19 @@ struct IPTSTaskScheduler
 
 		this->Task_ExecuteAndWait(pTaskRoot, &HasBeenFinished, [](void *pVoidForPredicate)->bool {return ::PTSAtomic_Get(static_cast<uint32_t *>(pVoidForPredicate)); });
 	}
+#endif
+
 };
 
 extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
 extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
 extern "C" PTSYSTEMAPI IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread();
-extern "C" PTSYSTEMAPI IPTSTaskPrefix * PTCALL PTSTaskScheduler_Task_Prefix(IPTSTask *pTask);
-
-//Helper Function
-
-inline IPTSTask::IPTSTask()
-{
-	assert(m_pPrefix != NULL); //You Should Use IPTSTask::Allocate_Root/Child/Continuation Instead Of IPTSTaskScheduler::Task_Allocate
-}
-
-inline void IPTSTask::ParentSet(IPTSTask *pParent)
-{
-	m_pPrefix->ParentSet(pParent->m_pPrefix);
-}
-
-inline void IPTSTask::Recycle_AsChildOf(IPTSTask *pParent)
-{
-	m_pPrefix->Recycle_AsChildOf(pParent->m_pPrefix);
-}
-
-inline void IPTSTask::RefCount_Set(uint32_t RefCount)
-{
-	m_pPrefix->RefCount_Set(RefCount);
-}
-
-template<typename TaskImpl>
-inline void * IPTSTask::Allocate_Root(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler)
-{
-	assert(pTaskNull == NULL);
-
-	if (pTaskScheduler == NULL)
-	{
-		pTaskScheduler = ::PTSTaskScheduler_ForThread();
-	}
-
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
-	pTaskNew->m_pPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
-	return pTaskNew;
-}
-
-template<typename TaskImpl>
-inline void * IPTSTask::Allocate_Child(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler)
-{
-	assert(pTaskNull == NULL);
-
-	if (pTaskScheduler == NULL)
-	{
-		pTaskScheduler = ::PTSTaskScheduler_ForThread();
-	}
-
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
-	pTaskNew->m_pPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
-	pTaskNew->m_pPrefix->ParentSet(m_pPrefix);
-
-	//++RefCount
-
-	return pTaskNew;
-}
-
-template<typename TaskImpl>
-inline void * IPTSTask::Allocate_Continuation(TaskImpl *pTaskNull, IPTSTaskScheduler *pTaskScheduler)
-{
-	assert(pTaskNull == NULL);
-
-	if (pTaskScheduler == NULL)
-	{
-		pTaskScheduler = ::PTSTaskScheduler_ForThread();
-	}
-
-	IPTSTaskPrefix *pTaskParentPrefix = m_pPrefix->Parent();
-	m_pPrefix->ParentSet(NULL);
-
-	IPTSTask *pTaskNew = pTaskScheduler->Task_Allocate(sizeof(TaskImpl), alignof(TaskImpl));
-	pTaskNew->m_pPrefix = ::PTSTaskScheduler_Task_Prefix(pTaskNew);
-	pTaskNew->m_pPrefix->ParentSet(pTaskParentPrefix);
-
-	return pTaskNew;
-}
-
 
 //Parallel Programming Pattern
 
 #include <new>
 
+#if 0
 //James Reinders,Arch Robison,Michael McCool. "Recursive Implementation Of Map". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.3, 2012.
 namespace __PTSInternal_Parallel_Map
 {
@@ -294,8 +220,9 @@ inline void PTSParallel_Map(
 
 	pTaskScheduler->Task_WaitRoot(pTaskMap);
 }
+#endif
 
-
+#if 0
 //James Reinders,Arch Robison,Michael McCool. "Reductions And HypeObjects". Structured Parallel Programming: Patterns for Efficient Computation, Chapter 8.10, 2012.
 namespace __PTSInternal_Parallel_Reduce
 {
@@ -433,5 +360,6 @@ inline void PTSParallel_Reduce(
 
 	pTaskScheduler->Task_WaitRoot(pTaskReduce);
 }
+#endif
 
 #endif

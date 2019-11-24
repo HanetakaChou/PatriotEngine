@@ -1,11 +1,11 @@
-//Robert D. Blumofe, Charles E. Leiserson. "Scheduling Multithreaded Computations by Work Stealing". Journal of the ACM 1999. //Ïß³ÌµÄ¸ÅÄîÔÚµ±Ê±ÉĞÎ´ÆÕ¼° ÂÛÎÄÖĞµÄ"Thread"ÔÚµ±½ñ¼´Ö¸"Task" ÂÛÎÄÖĞµÄ"Processor"ÔÚµ±½ñ¼´Ö¸"Thread"
+ï»¿//Robert D. Blumofe, Charles E. Leiserson. "Scheduling Multithreaded Computations by Work Stealing". Journal of the ACM 1999. //çº¿ç¨‹çš„æ¦‚å¿µåœ¨å½“æ—¶å°šæœªæ™®åŠ è®ºæ–‡ä¸­çš„"Thread"åœ¨å½“ä»Šå³æŒ‡"Task" è®ºæ–‡ä¸­çš„"Processor"åœ¨å½“ä»Šå³æŒ‡"Thread"
 //Jeffrey Richter. ".NET Column: The CLR's Thread Pool". MSDN Magazine June 2003.(https://msdn.microsoft.com/en-us/magazine/msdn-magazine-issues.aspx)
 //Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks". Intel Technology Journal, Volume 11, Issue 4 2007.
 
-//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part II ¨C Basic use cases". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/05/29/exception-handling-and-cancellation-in-tbb-part-ii-basic-use-cases)
-//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part III ¨C Use cases with nested parallelism". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/06/04/exception-handling-and-cancellation-in-tbb-part-iii-use-cases-with-nested-parallelism)
-//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part IV ¨C Using context objects". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/06/11/exception-handling-and-cancellation-in-tbb-part-iv-using-context-objects)
-//Andrey Marochko. "Exception handling in TBB 2.2 - Getting ready for C++0x". Intel Developer Zone 2009.£¨https://software.intel.com/en-us/blogs/2009/08/18/exception-handling-in-tbb-22-getting-ready-for-c0x£©
+//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part II â€“ Basic use cases". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/05/29/exception-handling-and-cancellation-in-tbb-part-ii-basic-use-cases)
+//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part III â€“ Use cases with nested parallelism". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/06/04/exception-handling-and-cancellation-in-tbb-part-iii-use-cases-with-nested-parallelism)
+//Andrey Marochko. "Exception Handling and Cancellation in TBB - Part IV â€“ Using context objects". Intel Developer Zone 2008. (https://software.intel.com/en-us/blogs/2008/06/11/exception-handling-and-cancellation-in-tbb-part-iv-using-context-objects)
+//Andrey Marochko. "Exception handling in TBB 2.2 - Getting ready for C++0x". Intel Developer Zone 2009.ï¼ˆhttps://software.intel.com/en-us/blogs/2009/08/18/exception-handling-in-tbb-22-getting-ready-for-c0xï¼‰
 
 //Andrey Marochko. "TBB 3.0 task scheduler improves composability of TBB based solutions. Part 1". Intel Developer Zone 2010. (https://software.intel.com/en-us/blogs/2010/05/13/tbb-30-task-scheduler-improves-composability-of-tbb-based-solutions-part-1)
 //Andrey Marochko. "TBB 3.0 task scheduler improves composability of TBB based solutions. Part 2". Intel Developer Zone 2010. (https://software.intel.com/en-us/blogs/2010/05/21/tbb-30-task-scheduler-improves-composability-of-tbb-based-solutions-part-2)
@@ -24,33 +24,33 @@
 #if defined(PTARM) || defined(PTARM64) || defined(PTX86) || defined(PTX64)
 static uint32_t const s_CacheLine_Size = 64U;
 #else
-#error Î´ÖªµÄ¼Ü¹¹
+#error æœªçŸ¥çš„æ¶æ„
 #endif
 
 class PTSArena;
 
-//Market£¨ÊĞ³¡£©
-//µ¥Àı
-//¸ú×Ù½ø³ÌÖĞËùÓĞµÄArena
-//ArenaÓëMasterThreadÎ¬³ÖÒ»Ò»¶ÔÓ¦¹ØÏµ
+//Marketï¼ˆå¸‚åœºï¼‰
+//å•ä¾‹
+//è·Ÿè¸ªè¿›ç¨‹ä¸­æ‰€æœ‰çš„Arena
+//Arenaä¸MasterThreadç»´æŒä¸€ä¸€å¯¹åº”å…³ç³»
 
-//RML£¨Resource Management Layer£©
+//RMLï¼ˆResource Management Layerï¼‰
 //The Thread Pool For Worker Thread
-//²»¶ÏAttachµ½MarketÖĞµÄArenaÖ´ĞĞÆäÖĞµÄTask
+//ä¸æ–­Attachåˆ°Marketä¸­çš„Arenaæ‰§è¡Œå…¶ä¸­çš„Task
 
-//ÔÚPatriotTBBÖĞ 
-//MarketºÍRMLºÏ²¢ÎªÍ¬Ò»¸öÀàPTSMarket
+//åœ¨PatriotTBBä¸­ 
+//Marketå’ŒRMLåˆå¹¶ä¸ºåŒä¸€ä¸ªç±»PTSMarket
 class PTSMarket
 {
 	//Capacity: 64
 	PTSArena **m_ArenaPointerArrayMemory; 
 	
-	uint32_t m_ArenaPointerArraySize; //Ö»»áPush ²»»áPush ²»´æÔÚABA //µ±SizeÎª0Ê± ¿ÕÏĞ ¿É»ØÊÕ
+	uint32_t m_ArenaPointerArraySize; //åªä¼šPush ä¸ä¼šPush ä¸å­˜åœ¨ABA //å½“Sizeä¸º0æ—¶ ç©ºé—² å¯å›æ”¶
 
-	//To Do: ÔÊĞíUnInitialize
+	//To Do: å…è®¸UnInitialize
 	uint32_t m_HasExited;
 
-	//¼õÇáÎ±¹²Ïí
+	//å‡è½»ä¼ªå…±äº«
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(void *)];
 private:
@@ -64,7 +64,7 @@ private:
 	//64
 	uint32_t const m_ArenaPointerArrayCapacity; 
 
-	//¶ÔÆëµ½CacheLine
+	//å¯¹é½åˆ°CacheLine
 public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore) - sizeof(void *)];
 private:
@@ -85,7 +85,7 @@ public:
 #elif defined(PTPOSIX)
 	static inline void * Worker_Thread_Main(void *pMarketVoid);
 #else
-#error Î´ÖªµÄÆ½Ì¨
+#error æœªçŸ¥çš„å¹³å°
 #endif
 
 	static inline bool constexpr StaticAssert()
@@ -97,13 +97,13 @@ static_assert(PTSMarket::StaticAssert(), "PTSMarket: Padding Not Correct");
 
 class PTSArenaSlot;
 
-//Arena£¨ÎèÌ¨£©
-//ArenaÓëMasterThreadÎ¬³ÖÒ»Ò»¶ÔÓ¦¹ØÏµ
+//Arenaï¼ˆèˆå°ï¼‰
+//Arenaä¸MasterThreadç»´æŒä¸€ä¸€å¯¹åº”å…³ç³»
 class PTSArena
 {
 	uint32_t m_SlotIndexAffinityMask;
 
-	//¼õÇáÎ±¹²Ïí
+	//å‡è½»ä¼ªå…±äº«
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t)];
 private:
@@ -112,16 +112,16 @@ private:
 	
 	uint32_t const m_SlotArrayCapacity; 
 
-	//¶ÔÆëµ½CacheLine
+	//å¯¹é½åˆ°CacheLine
 public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
 private:
 
 public:
-	//ÓÉÓÚSlotIndexMaskµÄÔ¼Êø£¬SlotArrayCapacity²»µÃ´óÓÚ32
+	//ç”±äºSlotIndexMaskçš„çº¦æŸï¼ŒSlotArrayCapacityä¸å¾—å¤§äº32
 	inline PTSArena(uint32_t Capacity);
 
-	//MasterThreadµÄSlotIndexÒ»¶¨Îª0
+	//MasterThreadçš„SlotIndexä¸€å®šä¸º0
 	inline bool Slot_Acquire_Master();
 
 	inline bool Slot_Acquire_Worker(uint32_t *pSlot_Index);
@@ -143,12 +143,12 @@ public:
 };
 static_assert(PTSArena::StaticAssert(), "PTSArena: Padding Not Correct");
 
-class PTSTaskPrefixImpl;
+class PT_McRT_Task_Impl;
 
-//Arena Slot£¨ÎèÌ¨²Û£©
+//Arena Slotï¼ˆèˆå°æ§½ï¼‰
 //The Local Task Deque
-//MasterThreadÔÚArena¶ÔÓ¦µÄSlotµÄIndexÒ»¶¨Îª0
-//WorkerThreadÔÚAttachµ½Arenaºó»áµÃµ½×Ô¼ºµÄSlot£¬WorkerThreadÔÚÖ´ĞĞTaskÊ±£¬Spawn²úÉúµÄTask»á±»Ìí¼Óµ½WorkerThread×Ô¼ºµÄSlotÖĞ
+//MasterThreadåœ¨Arenaå¯¹åº”çš„Slotçš„Indexä¸€å®šä¸º0
+//WorkerThreadåœ¨Attachåˆ°Arenaåä¼šå¾—åˆ°è‡ªå·±çš„Slotï¼ŒWorkerThreadåœ¨æ‰§è¡ŒTaskæ—¶ï¼ŒSpawnäº§ç”Ÿçš„Taskä¼šè¢«æ·»åŠ åˆ°WorkerThreadè‡ªå·±çš„Slotä¸­
 class PTSArenaSlot
 {
 	union
@@ -163,16 +163,16 @@ class PTSArenaSlot
 
 	uint32_t m_HasBeenAcquired;
 
-	//¼õÇáÎ±¹²Ïí
+	//å‡è½»ä¼ªå…±äº«
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(int64_t)];
 private:
 
-	PTSTaskPrefixImpl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
+	PT_McRT_Task_Impl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
 
 	uint32_t m_TaskDequeCapacity;
 
-	//¶ÔÆëµ½CacheLine
+	//å¯¹é½åˆ°CacheLine
 public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size*3U - sizeof(uint32_t) - sizeof(void*) * 16U];
 private:
@@ -184,11 +184,11 @@ private:
 public:
 	inline PTSArenaSlot();
 
-	inline void TaskDeque_Push(PTSTaskPrefixImpl *pTaskToPush);
+	inline void TaskDeque_Push(PT_McRT_Task_Impl *pTaskToPush);
 
-	inline PTSTaskPrefixImpl * TaskDeque_Pop_Private();
+	inline PT_McRT_Task_Impl * TaskDeque_Pop_Private();
 
-	inline PTSTaskPrefixImpl * TaskDeque_Pop_Public();
+	inline PT_McRT_Task_Impl * TaskDeque_Pop_Public();
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -199,59 +199,78 @@ static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct")
 
 
 //Task
-//¼´"Task"-Based Work-Stealing SchedulerÖĞµÄ"Task"
-class PTSTaskPrefixImpl final :public IPTSTaskPrefix
-{
-	IPTSTaskPrefix * Parent() override;
-	void ParentSet(IPTSTaskPrefix *pParent) override;
+//å³"Task"-Based Work-Stealing Schedulerä¸­çš„"Task"
 
-	void Recycle_AsChildOf(IPTSTaskPrefix *pParent) override;
+#ifndef NDEBUG
+static PT_McRT_ITask_Inner * const PT_McRT_Task_Impl_m_pTaskInner_Undefined = reinterpret_cast<PT_McRT_ITask_Inner *>(0X6FE3E59F4FCEAC07U);
+#endif
 
-	void RefCount_Set(uint32_t RefCount) override;
+class PT_McRT_Task_Impl :public PT_McRT_ITask
+{	
+	PT_McRT_Task_Impl *m_Parent;
+	
+	PT_McRT_ITask_Inner *m_pTaskInner;
+	
+	uint32_t m_PredecessorCount; 
 
-public:
-	PTSTaskPrefixImpl * m_Parent;
+#ifndef NDEBUG
+	uint32_t m_PredecessorCount_Verification; //ç”¨äºæ ¡éªŒ
+#endif
 
-	uint32_t m_RefCount; //Count Of Child
-
-	enum :uint8_t
+	enum :uint32_t
 	{
 		Allocated = 0U,
 		Ready = 1U,
 		Executing = 2U,
-		Freed = 4U,
-		Debug_RefCount_InUse = 8U
-	};
+	} m_State;
 
-	uint8_t m_State;
+	bool m_IsRecycled;
 
-	inline PTSTaskPrefixImpl();
+#ifndef NDEBUG
+	bool m_PredecessorCountMayAtomicAdd; //ç¡®ä¿SetRefCountåº”å½“åœ¨SpawnTaskä¹‹å‰è¿›è¡Œ
+#endif
 
-	inline PTSTaskPrefixImpl *Execute();
+private:
+	static inline PT_McRT_Task_Impl *PT_McRT_Internal_Alloc_Task(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+private:
+	friend PT_McRT_ITask * PTCALL ::PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+	PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
+	PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
+	void Set_Ref_Count(uint32_t RefCount) override;
+public:
+	inline void Spawn_PreProcess();
+	inline void Execute_PreProcess();
+	inline PT_McRT_Task_Impl *Execute();
+private:
+	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
+public:
+	inline bool IsRecycled();
+	inline PT_McRT_Task_Impl *FreeAndTestSuccessor();
+
+private:
+	inline PT_McRT_Task_Impl();
+	inline void Initialize(PT_McRT_ITask_Inner *pTaskInner);
+	inline ~PT_McRT_Task_Impl();
 };
-static uint32_t const s_TaskPrefix_Alignment = 32U;
-static inline PTSTaskPrefixImpl * PTS_Internal_Task_Prefix(IPTSTask *pTask);
-
 
 //TaskScheduler
-//Íâ¹Û£¨Facade£©Ä£Ê½
+//å¤–è§‚ï¼ˆFacadeï¼‰æ¨¡å¼
 class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
-	//MasterThreadµÄSlotIndexÒ»¶¨Îª0
+	//MasterThreadçš„SlotIndexä¸€å®šä¸º0
 	uint32_t Warp_Size() override;
 	uint32_t Warp_ThreadID() override;
 
 	uint32_t m_HasWaked;
-	//TBB²»ÔÊĞíÓ¦ÓÃ³ÌĞòÏÔÊ½¿ØÖÆ²¢ĞĞ
+	//TBBä¸å…è®¸åº”ç”¨ç¨‹åºæ˜¾å¼æ§åˆ¶å¹¶è¡Œ
 	//Worker_Wake: arena::advertise_new_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
 	//Worker_Sleep: arena::is_out_of_work->market::adjust_demand->private_server/rml_server::adjust_job_count_estimate
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
+	void Task_Spawn(PT_McRT_ITask *pTask) override;
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
 
 public:
 	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
@@ -259,8 +278,8 @@ public:
 };
 
 //TaskScheduler
-//WorkerThreadÔÚÖ´ĞĞTaskÊ±£¬»áÍ¨¹ıTLS·ÃÎÊTaskScheduler
-//Õı³£Çé¿öÏÂ£¬WorkerThreadÖ»¿ÉÄÜ·ÃÎÊTaskSchedulerµÄTask_Allocate¡¢Task_SpawnºÍTask_WaitRoot·½·¨
+//WorkerThreadåœ¨æ‰§è¡ŒTaskæ—¶ï¼Œä¼šé€šè¿‡TLSè®¿é—®TaskScheduler
+//æ­£å¸¸æƒ…å†µä¸‹ï¼ŒWorkerThreadåªå¯èƒ½è®¿é—®TaskSchedulerçš„Task_Allocateã€Task_Spawnå’ŒTask_WaitRootæ–¹æ³•
 class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 {
 	PTSArena *m_pArena;
@@ -268,20 +287,19 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	uint32_t Warp_Size() override;
 	uint32_t Warp_ThreadID() override;
 
-	//WorkerThread²»Ó¦µ±µ÷ÓÃ´Ë·½·¨
+	//WorkerThreadä¸åº”å½“è°ƒç”¨æ­¤æ–¹æ³•
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-	void Task_Spawn(IPTSTask *pTask) override;
-	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
+	void Task_Spawn(PT_McRT_ITask *pTask) override;
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);
 #elif defined(PTPOSIX)
 	friend void * PTSMarket::Worker_Thread_Main(void *pMarketVoid);
 #else
-#error Î´ÖªµÄÆ½Ì¨
+#error æœªçŸ¥çš„å¹³å°
 #endif
 
 public:

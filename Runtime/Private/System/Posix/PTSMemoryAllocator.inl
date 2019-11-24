@@ -1,11 +1,15 @@
-﻿#ifdef PTPOSIXLINUXGLIBC
-#include <sys/mman.h>
-#include <dirent.h>
-#elif defined (PTPOSIXLINUXBIONIC)
+﻿#ifdef PTPOSIXLINUXGLIBC || defined(PTPOSIXLINUXBIONIC)
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
-#elif defined (PTPOSIXMACH)
+
+#if 0
+//proc/self/map_files
+//kernel 3.3
+#include <dirent.h>
+#endif
+
+#elif defined(PTPOSIXMACH)
 #include <stdint.h>
 #include <assert.h>
 #include <mach/mach.h>
@@ -19,7 +23,7 @@ static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 	return static_cast<uint32_t>(Index);
 }
 
-#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
+#if defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
 
 static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
 {
@@ -41,9 +45,9 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	assert(s_Page_Size == (1U << s_Page_Size_Order));
 
 	uint32_t PageNumber = ((Size - 1U) >> s_Page_Size_Order) + 1U;
-	
-	void *pMMapVoid = ::mmap(NULL, s_Page_Size*(PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U);
-	
+
+	void *pMMapVoid = ::mmap(NULL, s_Page_Size * (PageNumber + 3U), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0U);
+
 	if (pMMapVoid != MAP_FAILED)
 	{
 		assert(pMMapVoid != NULL);
@@ -58,23 +62,23 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 		int iResult;
 		if (PageToFreeBeginNumber != 0U)
 		{
-			iResult = ::munmap(reinterpret_cast<void*>(AddressWholeBegin), s_Page_Size*PageToFreeBeginNumber);
+			iResult = ::munmap(reinterpret_cast<void *>(AddressWholeBegin), s_Page_Size * PageToFreeBeginNumber);
 			assert(iResult == 0);
 		}
 		if (PageToFreeBeginNumber != 3U)
 		{
-			iResult = ::munmap(reinterpret_cast<void*>(s_Page_Size*(PageNeededBegin + PageNumber)), s_Page_Size*(3U - PageToFreeBeginNumber));
+			iResult = ::munmap(reinterpret_cast<void *>(s_Page_Size * (PageNeededBegin + PageNumber)), s_Page_Size * (3U - PageToFreeBeginNumber));
 			assert(iResult == 0);
 		}
 
-		pMemoryAllocated = reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
+		pMemoryAllocated = reinterpret_cast<void *>(s_Page_Size * PageNeededBegin);
 	}
 	else
 	{
 		assert(errno == ENOMEM);
 		pMemoryAllocated = NULL;
 	}
-	
+
 	return pMemoryAllocated;
 }
 
@@ -129,43 +133,6 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 #error 未知的架构
 #endif
 
-#ifdef PTPOSIXLINUXGLIBC
-	//proc/self/map_files
-
-	//mmap MAP_SHARED|MAP_ANONYMOUS
-	//在proc/self/map_files 链接到 /dev/zero
-	//不同的mmap之间 即使连续照样不会合并
-	dirent DirEnt_mmap;
-	DIR *pDir_mmap = ::opendir("/proc/self/map_files");
-	assert(pDir_mmap != NULL);
-	dirent *pDirEnt_mmap;
-	bool bIsFound = false;
-	while ((::readdir_r(pDir_mmap, &DirEnt_mmap, &pDirEnt_mmap) == 0) && (pDirEnt_mmap != NULL))
-	{
-		bool bIsEqual = true;
-		for (int i = 0; i < Str_AddressStart_Length; ++i)
-		{
-			if (pDirEnt_mmap->d_name[i] == '\0' || pDirEnt_mmap->d_name[i] != pStr_AddressStart[i])
-			{
-				bIsEqual = false;
-				break;
-			}
-		}
-
-		if (bIsEqual)
-		{
-			bIsFound = true;
-			break;
-		}
-	}
-	assert(bIsFound);
-
-	int iResult = ::closedir(pDir_mmap);
-	assert(iResult == 0);
-
-	assert(pDirEnt_mmap->d_name[Str_AddressStart_Length] == '-');
-	char *pStr_AddressEnd = pDirEnt_mmap->d_name + (Str_AddressStart_Length + 1);
-#elif defined (PTPOSIXLINUXBIONIC)
 	//proc/self/maps
 
 	int FD_maps = ::open("/proc/self/maps", O_RDONLY);
@@ -226,8 +193,43 @@ static inline size_t PTS_MemoryMap_Internal_Size(void *pVoid)
 	int iResult = ::close(FD_maps);
 	assert(iResult == 0);
 
-#else
-#error 未知的平台
+#if 0
+	//proc/self/map_files
+	//kernel 3.3
+
+	//mmap MAP_SHARED|MAP_ANONYMOUS
+	//在proc/self/map_files 链接到 /dev/zero
+	//不同的mmap之间 即使连续照样不会合并
+	dirent DirEnt_mmap;
+	DIR *pDir_mmap = ::opendir("/proc/self/map_files");
+	assert(pDir_mmap != NULL);
+	dirent *pDirEnt_mmap;
+	bool bIsFound = false;
+	while ((::readdir_r(pDir_mmap, &DirEnt_mmap, &pDirEnt_mmap) == 0) && (pDirEnt_mmap != NULL))
+	{
+		bool bIsEqual = true;
+		for (int i = 0; i < Str_AddressStart_Length; ++i)
+		{
+			if (pDirEnt_mmap->d_name[i] == '\0' || pDirEnt_mmap->d_name[i] != pStr_AddressStart[i])
+			{
+				bIsEqual = false;
+				break;
+			}
+		}
+
+		if (bIsEqual)
+		{
+			bIsFound = true;
+			break;
+		}
+	}
+	assert(bIsFound);
+
+	int iResult = ::closedir(pDir_mmap);
+	assert(iResult == 0);
+
+	assert(pDirEnt_mmap->d_name[Str_AddressStart_Length] == '-');
+	char *pStr_AddressEnd = pDirEnt_mmap->d_name + (Str_AddressStart_Length + 1);
 #endif
 
 	uintptr_t AddressEnd = 0U;
@@ -260,27 +262,60 @@ static inline bool PTS_Number_CharToInt_HEX(char C, uint32_t *pI)
 {
 	switch (C)
 	{
-	case '0': (*pI) = 0U; return true;
-	case '1': (*pI) = 1U; return true;
-	case '2': (*pI) = 2U; return true;
-	case '3': (*pI) = 3U; return true;
-	case '4': (*pI) = 4U; return true;
-	case '5': (*pI) = 5U; return true;
-	case '6': (*pI) = 6U; return true;
-	case '7': (*pI) = 7U; return true;
-	case '8': (*pI) = 8U; return true;
-	case '9': (*pI) = 9U; return true;
-	case 'a': (*pI) = 10U; return true;
-	case 'b': (*pI) = 11U; return true;
-	case 'c': (*pI) = 12U; return true;
-	case 'd': (*pI) = 13U; return true;
-	case 'e': (*pI) = 14U; return true;
-	case 'f': (*pI) = 15U; return true;
-	default: return false;
+	case '0':
+		(*pI) = 0U;
+		return true;
+	case '1':
+		(*pI) = 1U;
+		return true;
+	case '2':
+		(*pI) = 2U;
+		return true;
+	case '3':
+		(*pI) = 3U;
+		return true;
+	case '4':
+		(*pI) = 4U;
+		return true;
+	case '5':
+		(*pI) = 5U;
+		return true;
+	case '6':
+		(*pI) = 6U;
+		return true;
+	case '7':
+		(*pI) = 7U;
+		return true;
+	case '8':
+		(*pI) = 8U;
+		return true;
+	case '9':
+		(*pI) = 9U;
+		return true;
+	case 'a':
+		(*pI) = 10U;
+		return true;
+	case 'b':
+		(*pI) = 11U;
+		return true;
+	case 'c':
+		(*pI) = 12U;
+		return true;
+	case 'd':
+		(*pI) = 13U;
+		return true;
+	case 'e':
+		(*pI) = 14U;
+		return true;
+	case 'f':
+		(*pI) = 15U;
+		return true;
+	default:
+		return false;
 	}
 }
 
-#elif defined (PTPOSIXMACH)
+#elif defined(PTPOSIXMACH)
 
 static inline uintptr_t PTS_Size_AlignUpFrom(uintptr_t Value, uintptr_t Alignment)
 {
@@ -315,7 +350,7 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 	uint32_t PageNumber = ((Size - 1U) >> s_Page_Size_Order) + 1U;
 
 	vm_address_t kAddress = NULL;
-	kern_return_t kResult = ::vm_allocate(mach_task_self(), &kAddress, s_Page_Size*(PageNumber + 3U), TRUE);
+	kern_return_t kResult = ::vm_allocate(mach_task_self(), &kAddress, s_Page_Size * (PageNumber + 3U), TRUE);
 	if (kResult == KERN_SUCCESS)
 	{
 		uintptr_t AddressWholeBegin = static_cast<uintptr_t>(kAddress);
@@ -329,23 +364,23 @@ static inline void *PTS_MemoryMap_Alloc(uint32_t Size)
 
 		if (PageToFreeBeginNumber != 0U)
 		{
-			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(AddressWholeBegin), s_Page_Size*PageToFreeBeginNumber);
+			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(AddressWholeBegin), s_Page_Size * PageToFreeBeginNumber);
 			assert(kResult == KERN_SUCCESS);
 		}
 
 		if (PageToFreeBeginNumber != 3U)
 		{
-			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size*(PageNeededBegin + PageNumber)), s_Page_Size*(3U - PageToFreeBeginNumber));
+			kResult = ::vm_deallocate(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size * (PageNeededBegin + PageNumber)), s_Page_Size * (3U - PageToFreeBeginNumber));
 			assert(kResult == KERN_SUCCESS);
 		}
 
 		//设置继承属性后，即使分配的内存连续，内核也不会合并，vm_region_64得到单次分配的结果
 		//ToDO: 设置成VM_INHERIT_SHARE是否更可靠？
-		kResult = vm_inherit(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size*PageNeededBegin), s_Page_Size*PageNumber, VM_INHERIT_NONE);
+		kResult = vm_inherit(::mach_task_self(), static_cast<vm_address_t>(s_Page_Size * PageNeededBegin), s_Page_Size * PageNumber, VM_INHERIT_NONE);
 		assert(VM_INHERIT_NONE != VM_INHERIT_DEFAULT);
 		assert(kResult == KERN_SUCCESS);
 
-		pMemoryAllocated = reinterpret_cast<void*>(s_Page_Size*PageNeededBegin);
+		pMemoryAllocated = reinterpret_cast<void *>(s_Page_Size * PageNeededBegin);
 	}
 	else
 	{
@@ -386,4 +421,3 @@ static inline uint32_t PTS_MemoryMap_Size(void *pVoid)
 #else
 #error 未知的平台
 #endif
-

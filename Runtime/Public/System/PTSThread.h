@@ -168,14 +168,14 @@ inline uintptr_t PTSAtomic_Get_Helper(uintptr_t const volatile *pTarget)
 {
 	switch (SizeOfPointerUnsigned)
 	{
-	case 4U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint32_t volatile *>(pTarget)));
-	case 8U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint64_t volatile *>(pTarget)));
+	case 4U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint32_t const volatile *>(pTarget)));
+	case 8U: return static_cast<uintptr_t>(PTSAtomic_Get(reinterpret_cast<uint64_t const volatile *>(pTarget)));
 	default: assert(0); return ~0U;
 	}
 }
 inline uintptr_t PTSAtomic_Get(uintptr_t const volatile *pTarget)
 {
-	PTSAtomic_Get_Helper<sizeof(uintptr_t)>(pTarget);
+	return PTSAtomic_Get_Helper<sizeof(uintptr_t)>(pTarget);
 }
 #else
 #error 未知的平台

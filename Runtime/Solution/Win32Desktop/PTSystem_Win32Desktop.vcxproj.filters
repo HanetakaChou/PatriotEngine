@@ -39,7 +39,16 @@
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
       <Filter>Private\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSConvUTF.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Public\System\PTSMemory.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSImportTableHook.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PT_McRT_Parallel_Map.h">
       <Filter>Public\System</Filter>
     </ClInclude>
   </ItemGroup>
@@ -53,8 +62,14 @@
     <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
       <Filter>Private\System</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSConvUTF.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\Private\System\PTSMemory.cpp">
       <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\Win32\PTSImportTableHook.cpp">
+      <Filter>Private\System\Win32</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
