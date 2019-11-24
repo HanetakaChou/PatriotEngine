@@ -4,7 +4,7 @@
 #include "PTSTaskScheduler.h"
 #include "PTSMemoryAllocator.h"
 
-namespace PT_McRT_Internal_Parallel_Map
+namespace __PT_McRT_Internal_Parallel_Map
 {
 	class PT_McRT_Task_Map_Continuation :public PT_McRT_ITask_Inner
 	{
@@ -49,6 +49,7 @@ namespace PT_McRT_Internal_Parallel_Map
 		uint32_t m_Begin;
 		uint32_t m_End;
 
+	public:
 		struct VA_List
 		{
 			PTSTYPE_Lambda_Serial_Map const &m_rSerialMap;
@@ -57,26 +58,12 @@ namespace PT_McRT_Internal_Parallel_Map
 			uint32_t m_End;
 		};
 
-	public:
-		inline PT_McRT_Task_Map(
-			PT_McRT_ITask *pTaskOuter,
-			VA_List *pA
-		)
-			:
-			m_pTaskOuter(pTaskOuter),
-			m_rSerialMap(pA->m_rSerialMap),
-			m_Threshold(pA->m_Threshold),
-			m_Begin(pA->m_Begin),
-			m_End(pA->m_End)
-		{
-
-		}
-
 		static PT_McRT_ITask_Inner *CreateInstance(void *pUserData, PT_McRT_ITask *pTaskOuter)
 		{
-			return new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>), alignof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>))) PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>(static_cast<VA_List*>(pUserData), pTaskOuter);
+			return new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>), alignof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>))) PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>(pTaskOuter, static_cast<VA_List*>(pUserData));
 		}
 
+	private:
 		PT_McRT_ITask *Execute() override
 		{
 			IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread(); //Master And Worker Divergence
@@ -110,8 +97,104 @@ namespace PT_McRT_Internal_Parallel_Map
 				return NULL;
 			}
 		}
+
+		void Dispose() override
+		{
+			this->~PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>();
+			PT_McRT_Aligned_Free(this);
+		}
+
+		inline PT_McRT_Task_Map(
+			PT_McRT_ITask *pTaskOuter,
+			VA_List *pA
+		)
+			:
+			m_pTaskOuter(pTaskOuter),
+			m_rSerialMap(pA->m_rSerialMap),
+			m_Threshold(pA->m_Threshold),
+			m_Begin(pA->m_Begin),
+			m_End(pA->m_End)
+		{
+
+		}
+
+		inline ~PT_McRT_Task_Map()
+		{
+
+		}
 	};
 
+
+	class PT_McRT_TaskWait :public PT_McRT_ITask_Inner
+	{
+		uint32_t *const m_pHasBeenFinished;
+
+	public:
+		struct VA_List
+		{
+			uint32_t *const m_pHasBeenFinished;
+		};
+
+		static PT_McRT_ITask_Inner *CreateInstance(void *pUserData, PT_McRT_ITask *pTaskOuter)
+		{
+			return new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_TaskWait), alignof(PT_McRT_TaskWait))) PT_McRT_TaskWait(pTaskOuter, static_cast<VA_List*>(pUserData));
+		}
+
+	private:
+		PT_McRT_ITask *Execute() override
+		{
+			::PTSAtomic_Set(m_pHasBeenFinished, 1U);
+			return NULL;
+		}
+
+		void Dispose() override
+		{
+			this->~PT_McRT_TaskWait();
+			PT_McRT_Aligned_Free(this);
+		}
+
+		inline PT_McRT_TaskWait(
+			PT_McRT_ITask *pTaskOuter,
+			VA_List *pA
+		)
+			:
+			m_pHasBeenFinished(pA->m_pHasBeenFinished)
+		{
+
+		}
+
+		inline ~PT_McRT_TaskWait()
+		{
+
+		}
+	};
+}
+
+template<typename PTSTYPE_Lambda_Serial_Map>
+inline void PT_McRT_Parallel_Map(
+	uint32_t Threshold,
+	uint32_t Begin,
+	uint32_t End,
+	PTSTYPE_Lambda_Serial_Map const &rSerialMap
+)
+{
+	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
+	
+	uint32_t HasBeenFinished = 0U;
+	
+	PT_McRT_ITask *pTaskWait;
+	{
+		__PT_McRT_Internal_Parallel_Map::PT_McRT_TaskWait::VA_List a = { &HasBeenFinished };
+		pTaskWait = PT_McRT_ITask::Allocate_Root(&a, __PT_McRT_Internal_Parallel_Map::PT_McRT_TaskWait::CreateInstance);
+	}
+
+	{
+		__PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>::VA_List a = { this->m_rSerialMap, this->m_Threshold, Middle, this->m_End };
+		PT_McRT_ITask *pTaskRoot = pTaskWait->Allocate_Child(&a, __PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>::CreateInstance);
+		pTaskWait->Set_Ref_Count(1U);
+	}
+	
+	pTaskScheduler->Task_ExecuteAndWait(pTaskWait, &HasBeenFinished, [](void *pVoidForPredicate)->bool {return ::PTSAtomic_Get(static_cast<uint32_t *>(pVoidForPredicate)); });
 }
 
 #endif

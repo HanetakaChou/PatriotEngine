@@ -212,6 +212,9 @@ class PT_McRT_Task_Impl :public PT_McRT_ITask
 	PT_McRT_Task_Impl *m_Parent;
 	PT_McRT_ITask_Inner *m_pTaskInner;
 	uint32_t m_PredecessorCount; //Count Of Child //建议改名m_ChildCount
+
+	uint32_t m_PredecessorCount_Debug; //用于校验
+
 	enum :uint32_t
 	{
 		Allocated = 0U,
