@@ -21,6 +21,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
+    <ClInclude Include="..\..\Public\System\PT_McRT_Parallel_Map.h" />
     <ClInclude Include="..\..\Public\System\PTSCommon.h" />
     <ClInclude Include="..\..\Public\System\PTSConvUTF.h" />
     <ClInclude Include="..\..\Public\System\PTSImportTableHook.h" />

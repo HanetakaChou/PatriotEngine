@@ -1,9 +1,8 @@
-﻿
-## Image Synthesis
+﻿## 图像合成（Image Synthesis）  
 
 
 
-## Parallel Programming  
+## 并行编程（Parallel Programming）  
 
 ![](https://www.threadingbuildingblocks.org/sites/tbb/images/tbb-categories.png)  
 

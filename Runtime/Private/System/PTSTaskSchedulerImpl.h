@@ -206,49 +206,47 @@ static PT_McRT_ITask_Inner * const PT_McRT_Task_Impl_m_pTaskInner_Undefined = re
 #endif
 
 class PT_McRT_Task_Impl :public PT_McRT_ITask
-{
-	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
-	void RefCount_Set(uint32_t RefCount) override;
-	
+{	
 	void ParentSet(PT_McRT_ITask *pParent) override;
 
 	PT_McRT_Task_Impl *m_Parent;
 	PT_McRT_ITask_Inner *m_pTaskInner;
-	uint32_t m_RefCount; //Count Of Child //建议改名m_ChildCount
+	uint32_t m_PredecessorCount; //Count Of Child //建议改名m_ChildCount
 	enum :uint32_t
 	{
 		Allocated = 0U,
 		Ready = 1U,
 		Executing = 2U,
-		Freed = 4U,
-		Debug_RefCount_InUse = 8U
 	} m_State;
 
 	bool m_IsRecycled;
 
 #ifndef NDEBUG
-	bool m_IsChildCountLocked;
-#endif
-
-public:
-	inline PT_McRT_Task_Impl();
-	inline void Initialize(PT_McRT_ITask_Inner *pTaskInner);
-	inline void Free();
-	
-	inline void StateCheck_PreSpawn();
-	inline void StateCheck_PreExecute();
-	inline PT_McRT_Task_Impl *Execute();
-	inline bool IsRecycled();
-	PT_McRT_ITask *Parent() override;
-	inline uint32_t RemoveReference(); //RemoveChild
-	inline bool IsLeaf();
-
-#ifndef NDEBUG
-	inline void LockChildCount();
-	inline void UnlockChildCount();
+	bool m_PredecessorCountMayAtomicAdd; //确保SetRefCount应当在SpawnTask之前进行
 #endif
 
 private:
+	static inline PT_McRT_Task_Impl *PT_McRT_Internal_Alloc_Task(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+private:
+	friend PT_McRT_ITask * PTCALL ::PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+	PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
+	PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
+	void Set_Ref_Count(uint32_t RefCount) override;
+public:
+	inline void Spawn_PreProcess();
+	inline void Execute_PreProcess();
+	inline PT_McRT_Task_Impl *Execute();
+private:
+	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
+public:
+	inline bool IsRecycled();
+	inline PT_McRT_Task_Impl *FreeAndTestSuccessor();
+
+	PT_McRT_ITask *Parent() override;
+
+private:
+	inline PT_McRT_Task_Impl();
+	inline void Initialize(PT_McRT_ITask_Inner *pTaskInner);
 	inline ~PT_McRT_Task_Impl();
 };
 
@@ -268,10 +266,7 @@ class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-	void Task_Spawn(IPTSTask *pTask) override;
 	void Task_Spawn(PT_McRT_ITask *pTask) override;
-	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
 	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
 
 public:
@@ -293,10 +288,7 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	void Worker_Wake() override;
 	void Worker_Sleep() override;
 
-	IPTSTask *Task_Allocate(size_t Size, size_t Alignment) override;
-	void Task_Spawn(IPTSTask *pTask) override;
 	void Task_Spawn(PT_McRT_ITask *pTask) override;
-	void Task_ExecuteAndWait(IPTSTask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
 	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
 
 #ifdef PTWIN32

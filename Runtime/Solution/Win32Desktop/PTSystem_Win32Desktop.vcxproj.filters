@@ -48,6 +48,9 @@
     <ClInclude Include="..\..\Public\System\PTSImportTableHook.h">
       <Filter>Public\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Public\System\PT_McRT_Parallel_Map.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">
