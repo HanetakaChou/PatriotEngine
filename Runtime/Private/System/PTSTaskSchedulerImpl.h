@@ -207,27 +207,30 @@ static PT_McRT_ITask_Inner * const PT_McRT_Task_Impl_m_pTaskInner_Undefined = re
 
 class PT_McRT_Task_Impl :public PT_McRT_ITask
 {	
-	PT_McRT_Task_Impl *m_Parent;
-	
 	PT_McRT_ITask_Inner *m_pTaskInner;
-	
+
+	PT_McRT_Task_Impl *m_pTaskSuccessor;
+		
 	uint32_t m_PredecessorCount; 
 
-#ifndef NDEBUG
-	uint32_t m_PredecessorCount_Verification; //用于校验
-#endif
+public:
+	enum Recycle_State_Type
+	{
+		Not_Recycle = 0U,
+		Recycle_As_Child_Of = 1U,
+		Recycle_As_Safe_Continuation = 2U
+	}m_RecycleState;
 
-	enum :uint32_t
+private:
+#ifndef NDEBUG
+	bool m_PredecessorCountMayAtomicAdd; //确保SetRefCount应当在SpawnTask之前进行
+	uint32_t m_PredecessorCount_Verification; //用于校验
+	enum
 	{
 		Allocated = 0U,
 		Ready = 1U,
 		Executing = 2U,
-	} m_State;
-
-	bool m_IsRecycled;
-
-#ifndef NDEBUG
-	bool m_PredecessorCountMayAtomicAdd; //确保SetRefCount应当在SpawnTask之前进行
+	} m_TrackState; //确保Spawn的正确性
 #endif
 
 private:
@@ -244,12 +247,13 @@ public:
 private:
 	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
 public:
-	inline bool IsRecycled();
 	inline PT_McRT_Task_Impl *FreeAndTestSuccessor();
 
 private:
 	inline PT_McRT_Task_Impl();
-	inline void Initialize(PT_McRT_ITask_Inner *pTaskInner);
+	inline void SetInner(PT_McRT_ITask_Inner *pTaskInner);
+	inline void SetSuccessor(PT_McRT_Task_Impl *pTaskSuccessor);
+	inline void EscapeSuccessor(PT_McRT_Task_Impl *pTaskNewChild);
 	inline ~PT_McRT_Task_Impl();
 };
 

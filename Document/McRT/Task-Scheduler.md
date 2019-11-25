@@ -39,6 +39,10 @@ task //DAG简化得到的树中的节点
 //注：set_ref_count是多余的，可以基于allocate_child recycle_as_child_of ... 等确定  
 //在prepare_for_spawning中，ref_count被同步到0
 
+//recycle（或者说set_parent）必定维持successor的ref_count不变 //因为，set_parent要求successor为NULL
+//task::execute内的所有方法都符合es_ref_count_active语义，即不改变ref_count
+
+//TBB基本语义 将ref_count减少至0的 操作者  有义务Spawn //但spawn并不是随时都可以进行
 
 //state
 //None -Allocate-> allocate -Spawn-> ready -BypassLoop-> executing -Recycle-> recycled -BypassLoop-> allocate  
