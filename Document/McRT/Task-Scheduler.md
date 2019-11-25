@@ -41,15 +41,14 @@ task //DAG简化得到的树中的节点
 
 
 //state
-//None -Allocate-> allocate -Spawn-> ready -BypassLoop-> executing -Recycle-> recycled -BypassLoop-> allocate
-//                                                          |->freed //TBB特有 //对内存分配进行了缓存
+//None -Allocate-> allocate -Spawn-> ready -BypassLoop-> executing -Recycle-> recycled -BypassLoop-> allocate  
+//                                                          |->freed //TBB特有 //对内存分配进行了缓存  
 
-//recycle_as_safe_continuation
-//set_ref_count比实际值大1
-//为避免 其它线程 在原Task的execute返回前 steal并execute了该Task的child 且将该Recycle的Task的ref_count递减至0 从而并发执行Recycle为continuation的Task的execute
-
-//个人认为TBB递减引用计数的时机存在问题 //不应当在BypassLoop之外 //my_innermost_running_task  
-//可以在state中区分 recycle_as_child / recycle_as_safe_continuation    
+//recycle_as_safe_continuation  
+//set_ref_count比实际值大1  
+//为避免 其它线程 在原Task的execute返回前 steal并execute了该Task的child 且将该Recycle的Task的ref_count递减至0 从而并发执行Recycle为continuation的Task的execute  
+//当state从recycled转换为allocat时，该额外的引用计数会被递减 （注意：代码在case recycled:中并没有break，执行到case to_enqueue:下的tally_completion_of_predecessor时，递减引用计数）  
+  
 
 //何时停止
 work steal的缺陷
@@ -72,6 +71,30 @@ local_wait_for_all
             case executing:
             assert(t->ref_count == 0) //t会被释放 //显然不应当再有前驱
                 tally_completion_of_predecessor
+                    //由于原子操作较慢，进行了优化
+                    bool completion_of_predecessor;
+                    if(==1)
+                    {
+                        ref_count = 0
+                        completion_of_predecessor = true;
+                    }
+                    else
+                    {
+                        if(Atomic_Add(ref_count,-1)>1)
+                        {
+                            completion_of_predecessor = false;
+                        }
+                        else
+                        {
+                            assert(ref_count==0);
+                            completion_of_predecessor = true;
+                        }
+                    }
+
+                    if(completion_of_predecessor)
+                    {
+                        spawn parent(//Successor)
+                    }
 
                     //Bypass Parent 的优化
 
