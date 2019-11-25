@@ -40,11 +40,11 @@ namespace __PT_McRT_Internal_Parallel_Map
 		}
 	};
 
-	template<typename PTSTYPE_Lambda_Serial_Map>
+	template<typename PT_McRT_Lambda_Serial_Map_T>
 	class PT_McRT_Task_Map :public PT_McRT_ITask_Inner
 	{
 		PT_McRT_ITask *m_pTaskOuter;
-		PTSTYPE_Lambda_Serial_Map const &m_rSerialMap;
+		PT_McRT_Lambda_Serial_Map_T const &m_rSerialMap;
 		uint32_t const m_Threshold;
 		uint32_t m_Begin;
 		uint32_t m_End;
@@ -52,7 +52,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 	public:
 		struct VA_List
 		{
-			PTSTYPE_Lambda_Serial_Map const &m_rSerialMap;
+			PT_McRT_Lambda_Serial_Map_T const &m_rSerialMap;
 			uint32_t const m_Threshold;
 			uint32_t m_Begin;
 			uint32_t m_End;
@@ -60,7 +60,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 
 		static PT_McRT_ITask_Inner *CreateInstance(void *pUserData, PT_McRT_ITask *pTaskOuter)
 		{
-			return new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>), alignof(PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>))) PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>(pTaskOuter, static_cast<VA_List*>(pUserData));
+			return new (PT_McRT_Aligned_Malloc(sizeof(PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>), alignof(PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>))) PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>(pTaskOuter, static_cast<VA_List*>(pUserData));
 		}
 
 	private:
@@ -81,7 +81,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 				PT_McRT_ITask *pTaskChildRight = pTaskContinuation->Allocate_Child(&a, CreateInstance);
 
 				//Recycle
-				this->m_pTaskOuter->Recycle_AsChildOf(pTaskContinuation);
+				this->m_pTaskOuter->Recycle_As_Child_Of(pTaskContinuation);
 				this->m_End = Middle;
 
 				pTaskContinuation->Set_Ref_Count(2);
@@ -89,7 +89,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 				pTaskScheduler->Task_Spawn(pTaskChildRight);
 
 				//Scheduler ByPass
-				return m_pTaskOuter;
+				return this->m_pTaskOuter;
 			}
 			else //Base Case
 			{
@@ -100,7 +100,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 
 		void Dispose() override
 		{
-			this->~PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>();
+			this->~PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>();
 			PT_McRT_Aligned_Free(this);
 		}
 

@@ -724,12 +724,12 @@ inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
 	return pTaskByPass;
 }
 
-void PT_McRT_Task_Impl::Recycle_AsChildOf(PT_McRT_ITask *pParent)
+void PT_McRT_Task_Impl::Recycle_As_Child_Of(PT_McRT_ITask *pParent)
 {
 	assert(m_PredecessorCount == 0U); //no child tasks allowed when recycled as a child //Otherwise //Race Condition
 
 	assert(m_RecycleState == Not_Recycle);
-	m_RecycleState = Recycle_As_Child_Of;
+	m_RecycleState = Recycle_As_Child_Of_T;
 
 	assert(m_TrackState == Executing); //Being Executing
 #ifndef NDEBUG
@@ -960,9 +960,9 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 					}
 				}
 				break;
-				case PT_McRT_Task_Impl::Recycle_As_Child_Of:
+				case PT_McRT_Task_Impl::Recycle_As_Child_Of_T:
 				{
-					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Child_Of);
+					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Child_Of_T);
 
 					//Recycle要求Parent为NULL //必定先进行Allocate_Continuation
 					//而Allocate_Continuation保持Parent的ChildCount不变 //一定不可能发生Spawn_Parent的情况
@@ -972,9 +972,9 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 					//Recycle_As_Child_Of比Recycle_As_Safe_Continuation更常见，因为可以将同一个Task用于Bypass，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
 				}
 				break;
-				case PT_McRT_Task_Impl::Recycle_As_Safe_Continuation:
+				case PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T:
 				{
-					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Safe_Continuation);
+					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T);
 					
 					//Recycle_As_Safe_Continuation //Parent的Predecessor个数不变，不可能Spawn_Parent
 
@@ -1199,9 +1199,9 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 					}
 				}
 				break;
-				case PT_McRT_Task_Impl::Recycle_As_Child_Of:
+				case PT_McRT_Task_Impl::Recycle_As_Child_Of_T:
 				{
-					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Child_Of);
+					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Child_Of_T);
 
 					//Recycle要求Parent为NULL //必定先进行Allocate_Continuation
 					//而Allocate_Continuation保持Parent的ChildCount不变 //一定不可能发生Spawn_Parent的情况
@@ -1211,9 +1211,9 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 					//Recycle_As_Child_Of比Recycle_As_Safe_Continuation更常见，因为可以将同一个Task用于Bypass，有利于提高缓存的命中率 //同一个Task有利于提高程序局部性
 				}
 				break;
-				case PT_McRT_Task_Impl::Recycle_As_Safe_Continuation:
+				case PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T:
 				{
-					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Safe_Continuation);
+					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T);
 
 					//Recycle_As_Safe_Continuation //Parent的Predecessor个数不变，不可能Spawn_Parent
 

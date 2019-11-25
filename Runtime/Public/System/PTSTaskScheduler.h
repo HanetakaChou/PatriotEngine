@@ -27,7 +27,7 @@ struct PT_McRT_ITask
 	virtual PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
 	virtual PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
 	
-	virtual void Recycle_AsChildOf(PT_McRT_ITask *pParent) = 0;
+	virtual void Recycle_As_Child_Of(PT_McRT_ITask *pParent) = 0;
 
 	//应当在SpawnTask之前SetRefCount
 	virtual void Set_Ref_Count(uint32_t RefCount) = 0; //Predecessor Count

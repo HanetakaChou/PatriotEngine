@@ -217,8 +217,8 @@ public:
 	enum Recycle_State_Type
 	{
 		Not_Recycle = 0U,
-		Recycle_As_Child_Of = 1U,
-		Recycle_As_Safe_Continuation = 2U
+		Recycle_As_Child_Of_T = 1U,
+		Recycle_As_Safe_Continuation_T = 2U
 	}m_RecycleState;
 
 private:
@@ -245,7 +245,7 @@ public:
 	inline void Execute_PreProcess();
 	inline PT_McRT_Task_Impl *Execute();
 private:
-	void Recycle_AsChildOf(PT_McRT_ITask *pParent) override;
+	void Recycle_As_Child_Of(PT_McRT_ITask *pParent) override;
 public:
 	inline PT_McRT_Task_Impl *FreeAndTestSuccessor();
 
