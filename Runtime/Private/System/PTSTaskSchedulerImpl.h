@@ -16,7 +16,6 @@
 
 //Andrey Marochko. "TBB initialization, termination, and resource management details, juicy and gory." Intel Developer Zone 2011. (https://software.intel.com/en-us/blogs/2011/04/09/tbb-initialization-termination-and-resource-management-details-juicy-and-gory)
 
-
 #include "../../Public/System/PTSTaskScheduler.h"
 #include <stddef.h>
 #include <stdlib.h>
@@ -38,13 +37,13 @@ class PTSArena;
 //The Thread Pool For Worker Thread
 //不断Attach到Market中的Arena执行其中的Task
 
-//在PatriotTBB中 
+//在PatriotTBB中
 //Market和RML合并为同一个类PTSMarket
 class PTSMarket
 {
 	//Capacity: 64
-	PTSArena **m_ArenaPointerArrayMemory; 
-	
+	PTSArena **m_ArenaPointerArrayMemory;
+
 	uint32_t m_ArenaPointerArraySize; //只会Push 不会Push 不存在ABA //当Size为0时 空闲 可回收
 
 	//To Do: 允许UnInitialize
@@ -53,8 +52,8 @@ class PTSMarket
 	//减轻伪共享
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(void *)];
-private:
 
+private:
 	PTSThread *m_ThreadArrayMemory;
 
 	PTSSemaphore m_Semaphore;
@@ -62,16 +61,16 @@ private:
 	uint32_t const m_ThreadNumber;
 
 	//64
-	uint32_t const m_ArenaPointerArrayCapacity; 
+	uint32_t const m_ArenaPointerArrayCapacity;
 
 	//对齐到CacheLine
 public:
 	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) * 2U - sizeof(PTSSemaphore) - sizeof(void *)];
-private:
 
+private:
 public:
 	inline PTSMarket(uint32_t ThreadNumber);
-	
+
 	inline PTSArena *Arena_Allocate_Master(float fThreadNumberRatio);
 
 	inline PTSArena *Arena_Attach_Worker(uint32_t *pSlot_Index);
@@ -83,7 +82,7 @@ public:
 #ifdef PTWIN32
 	static inline unsigned __stdcall Worker_Thread_Main(void *pMarketVoid);
 #elif defined(PTPOSIX)
-	static inline void * Worker_Thread_Main(void *pMarketVoid);
+	static inline void *Worker_Thread_Main(void *pMarketVoid);
 #else
 #error 未知的平台
 #endif
@@ -106,17 +105,17 @@ class PTSArena
 	//减轻伪共享
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t)];
-private:
 
-	PTSArenaSlot * const m_SlotArrayMemory;
-	
-	uint32_t const m_SlotArrayCapacity; 
+private:
+	PTSArenaSlot *const m_SlotArrayMemory;
+
+	uint32_t const m_SlotArrayCapacity;
 
 	//对齐到CacheLine
 public:
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void*)];
-private:
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(void *)];
 
+private:
 public:
 	//由于SlotIndexMask的约束，SlotArrayCapacity不得大于32
 	inline PTSArena(uint32_t Capacity);
@@ -151,44 +150,44 @@ class PT_McRT_Task_Impl;
 //WorkerThread在Attach到Arena后会得到自己的Slot，WorkerThread在执行Task时，Spawn产生的Task会被添加到WorkerThread自己的Slot中
 class PTSArenaSlot
 {
-	union
-	{
+	union {
 		struct
 		{
 			uint32_t m_Head;
 			uint32_t m_Tail;
-		}m_OneWord;
+		} m_OneWord;
 		uint64_t m_TwoWord;
-	}m_HeadAndTail;
+	} m_HeadAndTail;
 
 	uint32_t m_HasBeenAcquired;
 
 	//减轻伪共享
 public:
 	uint8_t __PaddingForPublicFields[s_CacheLine_Size - sizeof(uint32_t) - sizeof(int64_t)];
-private:
 
+private:
 	PT_McRT_Task_Impl **m_TaskDequeMemoryS[16]; //64(1)+64(1)+128(2)+256(4)+512(8)
 
 	uint32_t m_TaskDequeCapacity;
 
 	//对齐到CacheLine
 public:
-	uint8_t __PaddingForPrivateFields[s_CacheLine_Size*3U - sizeof(uint32_t) - sizeof(void*) * 16U];
-private:
+	uint8_t __PaddingForPrivateFields[s_CacheLine_Size * 3U - sizeof(uint32_t) - sizeof(void *) * 16U];
 
+private:
 	friend PTSArena::PTSArena(uint32_t Capacity);
 	friend bool PTSArena::Slot_Acquire_Master();
 	friend bool PTSArena::Slot_Acquire_Worker(uint32_t *pSlot_Index);
 	friend void PTSArena::Slot_Release(uint32_t Slot_Index);
+
 public:
 	inline PTSArenaSlot();
 
 	inline void TaskDeque_Push(PT_McRT_Task_Impl *pTaskToPush);
 
-	inline PT_McRT_Task_Impl * TaskDeque_Pop_Private();
+	inline PT_McRT_Task_Impl *TaskDeque_Pop_Private();
 
-	inline PT_McRT_Task_Impl * TaskDeque_Pop_Public();
+	inline PT_McRT_Task_Impl *TaskDeque_Pop_Public();
 
 	static inline bool constexpr StaticAssert()
 	{
@@ -197,36 +196,34 @@ public:
 };
 static_assert(PTSArenaSlot::StaticAssert(), "PTSArenaSlot: Padding Not Correct");
 
-
 //Task
 //即"Task"-Based Work-Stealing Scheduler中的"Task"
 
 #ifndef NDEBUG
-static PT_McRT_ITask_Inner * const PT_McRT_Task_Impl_m_pTaskInner_Undefined = reinterpret_cast<PT_McRT_ITask_Inner *>(0X6FE3E59F4FCEAC07U);
+static PT_McRT_ITask_Inner *const PT_McRT_Task_Impl_m_pTaskInner_Undefined = reinterpret_cast<PT_McRT_ITask_Inner *>(0X6FE3E59F4FCEAC07U);
 #endif
 
-class PT_McRT_Task_Impl :public PT_McRT_ITask
-{	
+class PT_McRT_Task_Impl : public PT_McRT_ITask
+{
 	PT_McRT_ITask_Inner *m_pTaskInner;
 
 	PT_McRT_Task_Impl *m_pTaskSuccessor;
-		
-	uint32_t m_PredecessorCount; 
+
+	uint32_t m_PredecessorCount;
 
 public:
 	enum Recycle_State_Type
 	{
-		Not_Recycle = 0U,
+		Not_Recycle_T = 0U,
 		Recycle_As_Child_Of_T = 1U,
 		Recycle_As_Safe_Continuation_T = 2U
-	}m_RecycleState;
+	} m_RecycleState;
 
 private:
 #ifndef NDEBUG
-	bool m_PredecessorCountMayAtomicAdd; //确保SetRefCount应当在SpawnTask之前进行
+	bool m_PredecessorCountMayAtomicAdd;	  //确保SetRefCount应当在SpawnTask之前进行
 	uint32_t m_PredecessorCount_Verification; //用于校验
-	enum
-	{
+	enum {
 		Allocated = 0U,
 		Ready = 1U,
 		Executing = 2U,
@@ -235,19 +232,27 @@ private:
 
 private:
 	static inline PT_McRT_Task_Impl *PT_McRT_Internal_Alloc_Task(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+
 private:
-	friend PT_McRT_ITask * PTCALL ::PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+	friend PT_McRT_ITask *PTCALL ::PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
 	PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
 	PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) override;
 	void Set_Ref_Count(uint32_t RefCount) override;
+
 public:
 	inline void Spawn_PreProcess();
 	inline void Execute_PreProcess();
 	inline PT_McRT_Task_Impl *Execute();
+
 private:
 	void Recycle_As_Child_Of(PT_McRT_ITask *pParent) override;
+	void Recycle_As_Safe_Continuation() override;
+
+private:
+	static inline bool TestPredecessorCompletion(PT_McRT_Task_Impl *pTaskToTest);
 public:
 	inline PT_McRT_Task_Impl *FreeAndTestSuccessor();
+	inline PT_McRT_Task_Impl *TestSelf();
 
 private:
 	inline PT_McRT_Task_Impl();
@@ -274,7 +279,7 @@ class PTSTaskSchedulerMasterImpl final : public IPTSTaskScheduler
 	void Worker_Sleep() override;
 
 	void Task_Spawn(PT_McRT_ITask *pTask) override;
-	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *)) override;
 
 public:
 	inline PTSTaskSchedulerMasterImpl(PTSArena *pArena);
@@ -296,12 +301,12 @@ class PTSTaskSchedulerWorkerImpl : public IPTSTaskScheduler
 	void Worker_Sleep() override;
 
 	void Task_Spawn(PT_McRT_ITask *pTask) override;
-	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) override;//For Nested Parallel
+	void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *)) override; //For Nested Parallel
 
 #ifdef PTWIN32
 	friend unsigned __stdcall PTSMarket::Worker_Thread_Main(void *pMarketVoid);
 #elif defined(PTPOSIX)
-	friend void * PTSMarket::Worker_Thread_Main(void *pMarketVoid);
+	friend void *PTSMarket::Worker_Thread_Main(void *pMarketVoid);
 #else
 #error 未知的平台
 #endif

@@ -20,14 +20,15 @@ struct PT_McRT_ITask; //IPT_McRT_Task_Outer
 struct PT_McRT_ITask_Inner;
 
 struct PT_McRT_ITask
-{ 
+{
 	//virtual void Dispose() = 0; //只可能在TaskScheduler内部用到
 	//virtual PT_McRT_ITask_Inner *QueryInterface() = 0; //只可能在TaskScheduler内部用到
 	static inline PT_McRT_ITask *Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
 	virtual PT_McRT_ITask *Allocate_Child(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
 	virtual PT_McRT_ITask *Allocate_Continuation(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter)) = 0;
-	
+
 	virtual void Recycle_As_Child_Of(PT_McRT_ITask *pParent) = 0;
+	virtual void Recycle_As_Safe_Continuation() = 0;
 
 	//应当在SpawnTask之前SetRefCount
 	virtual void Set_Ref_Count(uint32_t RefCount) = 0; //Predecessor Count
@@ -41,7 +42,7 @@ struct PT_McRT_ITask_Inner
 	virtual PT_McRT_ITask *Execute() = 0;
 };
 
-extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
+extern "C" PTMCRTAPI PT_McRT_ITask *PTCALL PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter));
 
 inline PT_McRT_ITask *PT_McRT_ITask::Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
 {
@@ -65,7 +66,7 @@ struct IPTSTaskScheduler
 	virtual void Worker_Sleep() = 0;
 
 	virtual void Task_Spawn(PT_McRT_ITask *pTask) = 0;
-	virtual void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool(*pFnPredicate)(void *)) = 0;
+	virtual void Task_ExecuteAndWait(PT_McRT_ITask *pTask, void *pVoidForPredicate, bool (*pFnPredicate)(void *)) = 0;
 
 #if 0
 	inline void Task_WaitRoot(IPTSTask *pTaskRoot)
@@ -104,12 +105,11 @@ struct IPTSTaskScheduler
 		this->Task_ExecuteAndWait(pTaskRoot, &HasBeenFinished, [](void *pVoidForPredicate)->bool {return ::PTSAtomic_Get(static_cast<uint32_t *>(pVoidForPredicate)); });
 	}
 #endif
-
 };
 
 extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
 extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
-extern "C" PTSYSTEMAPI IPTSTaskScheduler * PTCALL PTSTaskScheduler_ForThread();
+extern "C" PTSYSTEMAPI IPTSTaskScheduler *PTCALL PTSTaskScheduler_ForThread();
 
 //Parallel Programming Pattern
 

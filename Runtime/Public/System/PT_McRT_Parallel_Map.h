@@ -41,7 +41,7 @@ namespace __PT_McRT_Internal_Parallel_Map
 	};
 
 	template<typename PT_McRT_Lambda_Serial_Map_T>
-	class PT_McRT_Task_Map :public PT_McRT_ITask_Inner
+	class PT_McRT_Task_Map final :public PT_McRT_ITask_Inner
 	{
 		PT_McRT_ITask *m_pTaskOuter;
 		PT_McRT_Lambda_Serial_Map_T const &m_rSerialMap;
@@ -170,12 +170,12 @@ namespace __PT_McRT_Internal_Parallel_Map
 	};
 }
 
-template<typename PTSTYPE_Lambda_Serial_Map>
+template<typename PT_McRT_Lambda_Serial_Map_T>
 inline void PT_McRT_Parallel_Map(
 	uint32_t Threshold,
 	uint32_t Begin,
 	uint32_t End,
-	PTSTYPE_Lambda_Serial_Map const &rSerialMap
+	PT_McRT_Lambda_Serial_Map_T const &rSerialMap
 )
 {
 	IPTSTaskScheduler *pTaskScheduler = ::PTSTaskScheduler_ForThread();
@@ -187,8 +187,8 @@ inline void PT_McRT_Parallel_Map(
 		__PT_McRT_Internal_Parallel_Map::PT_McRT_TaskWait::VA_List _w_a = { &HasBeenFinished };
 		PT_McRT_ITask *pTaskWait = PT_McRT_ITask::Allocate_Root(&_w_a, __PT_McRT_Internal_Parallel_Map::PT_McRT_TaskWait::CreateInstance);
 
-		typename __PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>::VA_List _m_a = { rSerialMap, Threshold, Begin, End };
-		pTaskRoot = pTaskWait->Allocate_Child(&_m_a, __PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PTSTYPE_Lambda_Serial_Map>::CreateInstance);
+		typename __PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>::VA_List _m_a = { rSerialMap, Threshold, Begin, End };
+		pTaskRoot = pTaskWait->Allocate_Child(&_m_a, __PT_McRT_Internal_Parallel_Map::PT_McRT_Task_Map<PT_McRT_Lambda_Serial_Map_T>::CreateInstance);
 		pTaskWait->Set_Ref_Count(1U);
 	}
 	
