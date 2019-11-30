@@ -4,8 +4,6 @@
 
 基于Tag: 2019_U9  
 
-#### Fork-Join
-
 #### Scheduling Algorithm
 
 //在TBB中
@@ -127,24 +125,33 @@ https://software.intel.com/en-us/node/506107
 
 ## Generic Parallel Algorithms
 
+#### Fork-Join
+
+即TaskScheduler天生支持的Spawn  
+
 ### Map
 
 Latency
 
-(1.\[McCool 2012\]/8.3 Recursive Implementation Of Map)
+(1.\[McCool 2012\]/8.3 Recursive Implementation Of Map)  
 
 ### Pipeline
 
-Throughout
+Throughout  
+
+(1.\[McCool 2012\]/9.4.2 Pipeline in Cilk Plus)  
+
 
 ## Flow Graph
 
 ### Wavefront
 
-(2.\[Intel® Software 2019\]/Design Patterns/Wavefront) 
+(2.\[Intel® Software 2019\]/Design Patterns/Wavefront)  
+
+
 
 ## 参考文献
+[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann Publishers 2012.](http://parallelbook.com/)   
 
-[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann Publishers 2012.](http://parallelbook.com/)  
-
-[2.\[Intel® Software 2019\] Intel® Software. "Intel® Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)  
+[2.\[Intel 2019\] Intel. "Intel Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)   
+ 
