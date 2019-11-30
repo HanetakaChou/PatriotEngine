@@ -4,7 +4,7 @@ DescriptorTable + StaticSampler <-> DescriptorSetLayout
 DescriptorRange <-> DescriptorSetLayoutBinding/binding+descriptorType+descriptorCount
 StaticSampler	<-> DescriptorSetLayoutBinding/pImmutableSamplers
 RootConstants <-> PushConstants
-RootLevelCBV/SRV/UAV <-> 
+RootLevelCBV/SRV/UAV <-> ??? DynamicUniformBuffer/DynamicStorageBuffer
 
 DescriptorHeap <-> DescriptorPool //Multi-Thread
                <-> DescriptorSet

@@ -209,6 +209,16 @@ Integrals over Area
 $d{\omega}={\frac{\cos\theta_o}{{\vert p'-p\vert}^2} \, dA}$  //[Cohen 1993] 2.4.2、[Pharr 2017] 5.5.3  
 
 Radiance  
+
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = L_e{\lparen x,\overrightarrow{\omega_r} \rparen} + \int_{All\,x'} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} \, L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} V{\lparen x'\rarr x \rparen} \, \cos\theta_i \frac{\cos\theta_o}{{\vert x'-x\vert}^2}  \, dA'$  
+
+James T. Kajiya. "The rendering equation." SIGGRAPH 1986.    
+
+//不区分光源和表面（OSL），真实世界中不存在没有表面的光源，BRDF为0的表面即光源  
+
+//Render Equal  
+
+Radiance  
 $L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = L_e{\lparen x,\overrightarrow{\omega_r} \rparen} + \int_{All\,x'} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  //Render Equal  
 
 Lambert Diffuse Reflection相关  
