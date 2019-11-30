@@ -1,0 +1,110 @@
+﻿修改RenderDoc
+
+1.支持CallStack
+DIA2::GetModule
+复制Visual Studio 2017/DIA SDK中msdia140.dll并用NoRegCoCreate
+
+修改renderdoc.vcxproj
+修改AfterBuild中的各Copy项
+
+
+2.调试（DLL注入）
+调试renderdoc.dll时，应当被Capture的进程（Implemented By DLL Inject），而非GUI（比如qrenderdoc.exe）
+
+3.允许DbgHelp.dll存在 //DbgHelp Not Thread-Safe //MayBe Accessed Concurrently
+InitDbgHelp
+直接链接到DbgHelp.dll 
+//dynSymInitializeW = ::SymInitializeW;
+//dynSymEnumerateModules64W = SymEnumerateModulesW64;
+//dynSymRefreshModuleList = SymRefreshModuleList;
+//dynSymGetModuleInfo64W = SymGetModuleInfoW64;
+//dynSymFindFileInPathW = SymFindFileInPathW;
+
+4.兼容SymSrv.dll（可能版本过新）
+从Visual Studio 2017中复制SymSrv.dll，用dumpbin /headers确定架构 //machine(x86) 或 machine(x64)
+
+//可以事先用LoadLibraryExW加载symsrv.dll
+
+//SymInitialize只能进行一次
+
+//dynSymInitializeW(GetCurrentProcess(), L".", TRUE); //将dynSymInitializeW(GetCurrentProcess(), L".", TRUE)移动到后面的DIA2::Init()之后
+
+HMODULE hModule = NULL;
+...
+
+if (RenderDoc::Inst().IsReplayApp())
+{
+	 DIA2::Init();
+	 //其中SymInitialize中SearchPath传入NULL //在SymFindFileInPath中才传入SearchPath
+}
+else
+{
+	dynSymInitializeW(::GetCurrentProcess(), NULL, TRUE); //移动到此
+}
+
+//DIA2::Init中CoInitialize没有必要 //后面用到CoMemFree
+
+//Example Search Path
+//.;cache*myCache;srv*\\symbols\symbols
+//https://msdn.microsoft.com/en-us/library/windows/desktop/ms680689(v=vs.85).aspx
+DIA2::GetSymSearchPath
+wstring sympath = L".;cache*";
+sympath += appdata;
+sympath += L"\\renderdoc\\symbols\\cache;srv*";
+sympath += appdata;
+sympath += L"\\renderdoc\\symbols\\srv*http://msdl.microsoft.com/download/symbols";
+
+调试子进程
+在代码中添加while (!IsDebuggerPresent())
+ {
+ ::SwitchToThread();
+ } 在IDE中附加到进程即可
+子进程的入口点在win32_libentry.cpp中
+
+
+当前版本的RenderDoc对Windows上的OpenGLES的支持存在问题
+应该关闭RENDERDOC_HOOK_EGL相关的选项
+
+
+#Bug
+需要将capture_options.cpp中的captureCallstacks的默认值设置为true
+否则，在某些情况下不会收集CallStack
+
+//↓OpenGL-----------------------------------------
+
+支持glSpecializeShader (Core 4.6)
+
+在GLHookSet中添加
+PFNGLSPECIALIZESHADERPROC glSpecializeShader;
+
+在WrappedOpenGL的声明中添加
+IMPLEMENT_FUNCTION_SERIALISED(void, glSpecializeShader(GLuint shader, const GLchar *pEntryPoint,
+                                                         GLuint numSpecializationConstants,
+                                                         const GLuint *pConstantIndex,
+	                                                     const GLuint *pConstantValue));
+在WrappedOpenGL的定义中添加
+WrappedOpenGL::glSpecializeShader
+
+修改WrappedOpenGL中的定义
+WrappedOpenGL::glShaderBinary和WrappedOpenGL::glSpecializeShader的
+允许转发
+
+在HookCheckGLExtensions中添加
+HookExtension(PFNGLSPECIALIZESHADERPROC, glSpecializeShader); \
+HookExtensionAlias(PFNGLSPECIALIZESHADERPROC, glSpecializeShader, glSpecializeShaderARB); \
+
+在DefineGLExtensionHooks中添加
+HookWrapper5(void, glSpecializeShader, GLuint, shader, GLchar,pEntryPoint, GLuint, numSpecializationConstants, const GLuint *, pConstantIndex, const GLuint *, pConstantValue); \
+
+实际测试仍不支持 兼容性极差
+
+
+提示错误wglMakeContextCurrentARB
+
+在OpenGLHook::wglGetProcAddress_hooked中
+删除
+//assume wgl functions are safe to just pass straight through
+    
+if(!strncmp(func, "wgl", 3))
+      
+	return realFunc;

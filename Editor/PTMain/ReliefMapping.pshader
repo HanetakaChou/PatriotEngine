@@ -1,0 +1,18 @@
+struct Pixel_PS_IN
+{
+	float4 gl_Position:SV_Position;
+};
+
+struct Pixel_PS_OUT
+{
+	float4 gl_Color:SV_Target0;
+};
+
+Pixel_PS_OUT main(Pixel_PS_IN pixel)
+{
+	Pixel_PS_OUT gl_Frag;
+
+	gl_Frag.gl_Color = float4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	return gl_Frag;
+}

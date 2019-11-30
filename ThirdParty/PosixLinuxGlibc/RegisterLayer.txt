@@ -1,0 +1,3 @@
+#!/bin/bash
+
+export VK_LAYER_PATH="$(dirname "$0")/lib"

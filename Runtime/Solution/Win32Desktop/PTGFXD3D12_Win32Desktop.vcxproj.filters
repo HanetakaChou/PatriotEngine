@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{6a54ea66-d536-45bd-85a2-a73ca93a73fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{7cdacdfa-6a66-41e6-bce8-fb7ac836c956}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{87d9b6d7-9e97-4c30-b6b9-d1831cb74d8d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{835f4b46-01d1-4cdf-a5c1-eb892f289cee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX">
+      <UniqueIdentifier>{db0b4d2f-3b22-4c7a-be0f-8cafc8fa551d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\GFX">
+      <UniqueIdentifier>{a4e9f3ef-b8e8-412b-8964-06e3efa2644f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.h">
+      <Filter>Private\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXSceneUtil.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+    <None Include="..\..\Private\GFX\ResourceBinding.md">
+      <Filter>Private\GFX</Filter>
+    </None>
+  </ItemGroup>
+</Project>

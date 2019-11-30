@@ -1,0 +1,13 @@
+﻿编辑器进程和运行时进程分离
+类似于Visual Studio的3D场景(.fbx)编辑器
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\devenv.exe"
+"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\Extensions\Microsoft\VsGraphics\vsgraphics.exe"
+
+原理 CreateWindowExW 中的父窗口可以是其它任何一个进程创建的
+
+在X11下，不同XClient在同一XServer中创建的窗口可以存在父子关系
+
+在此我们仅给出一个编辑器的示例
+你可以基于此示例进行编辑器开发
+由于PatrotEngine的接口是基于COM思想精心设计的，你开发的编辑器一定可以在不需要重新编译的情况下和任意版本的PatriotEngine兼容
+		

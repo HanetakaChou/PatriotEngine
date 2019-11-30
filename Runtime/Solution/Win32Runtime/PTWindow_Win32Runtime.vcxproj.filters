@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{771ba215-203f-4bcc-9b51-a0fba3ae7af0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Window">
+      <UniqueIdentifier>{588d858d-049a-4588-bb1c-079b9a05aace}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{2a82ea18-6312-4688-af62-349d9f372ffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Window">
+      <UniqueIdentifier>{d8c15a76-6fe1-4440-9683-44337a738b2a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Window\Win32Runtime">
+      <UniqueIdentifier>{422efd9d-a558-4594-b9a6-4cf74de806dc}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Window\PTWCommon.h">
+      <Filter>Public\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Window\PTWWindow.h">
+      <Filter>Public\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\Window\Win32Runtime\PTWWindowImpl.h">
+      <Filter>Private\Window\Win32Runtime</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\Window\Win32Runtime\PTWWindowImpl.cpp">
+      <Filter>Private\Window\Win32Runtime</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <AppxManifest Include="PTWPackage.appxmanifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="PTWSplashScreen.scale-100.png" />
+    <Image Include="PTWSquare44x44Logo.targetsize-256.png" />
+    <Image Include="PTWSquare150x150Logo.scale-150.png" />
+    <Image Include="PTWStoreLogo.scale-400.png" />
+  </ItemGroup>
+</Project>
