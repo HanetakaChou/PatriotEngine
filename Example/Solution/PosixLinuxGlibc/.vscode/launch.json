@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/../Binary/x86/Debug/PTLauncher.bundle",
+            //"args": [],                                //No effect when using gdbserver
+            "cwd": "${workspaceFolder}/../Binary/x86/Debug",
+            //"environment": [],                         //No effect when using gdbserver
+            //"externalConsole": false,                  //No effect when using gdbserver
+            "miDebuggerServerAddress": "*:27017",  //Use gdbserver
+            "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/x86/Debug:${workspaceFolder}/ThirdParty/PosixLinuxGlibc/lib",
+            "stopAtEntry": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "${workspaceFolder}/ThirdParty/PosixLinuxGlibc/bin64/gdb",
+            "targetArchitecture": "x86",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                },
+                //{
+                //    "description": "Additional libs for gdb",
+                //    "text": "set solib-search-path ${workspaceFolder}/../../../Binary/PTLauncher/x86_64/Debug",
+                //    "ignoreFailures": false
+                //}
+            ]
+        }
+    ]
+}

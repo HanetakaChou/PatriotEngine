@@ -66,9 +66,9 @@
 
 #define PT_RECIPEPREFIX &
 
-#define PT_MAKEFILE PTRuntime.hpp
+#define PT_MAKEFILE PTExample.hpp
 
-#//PTSystem---------------------------------------------------------------------------------------------------------------------
+#//Test-ParallelMap---------------------------------------------------------------------------------------------------------------------
 
 #ifdef PT_CPP
 	#error PT_CPP Has Been Defined
@@ -95,7 +95,7 @@
     -stdlib=libc++ \
     -Wall /*General*/ \
     -fno-strict-aliasing /*Optimization*/ \
-    -fno-exceptions -fstack-protector -fpic -fno-short-enums /*Code Generation*/\
+    -fno-exceptions -fstack-protector -fpie -fno-short-enums /*Code Generation*/\
     -fno-rtti -std=c++11 /*Language*/ \
     -x c++ /*Advanced*/ \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
@@ -107,84 +107,58 @@
 
 #define PT_LDFLAGS \
     -fdiagnostics-format=msvc \
-    -fuse-ld=lld \
+	-fuse-ld=lld \
     -stdlib=libc++ -lc++ \
     -Wl,--no-undefined /*General*/ \
     -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack /*Advanced*/ \
-    -shared -Wl,-soname="libPTSystem.so" \
+    -pie \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
-#define PT_MODULE PTSystem
+#define PT_MODULE Test-ParallelMap
 
 #//STRIP---------------------------------------------------------------------------------------------------------------------
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle: \
+    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_STRIP \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle \
         --strip-unneeded \
-        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so 
+        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle 
        
 
 #//LD---------------------------------------------------------------------------------------------------------------------
 
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
+../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle: \
+    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o \
         PT_LDFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so
+        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle
 
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o: \
-    ../../Private/System/PTSMemory.cpp \
-    ../../Public/System/PTSMemory.h \
+../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o: \
+    ../../Test/ParallelMap/main.cpp \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSMemory.cpp \
+        ../../Test/ParallelMap/main.cpp \
         PT_CPPFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o
-
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o: \
-    ../../Private/System/PTSMemoryAllocator.cpp \
-    ../../Private/System/Posix/PTSMemoryAllocator.inl \
-    ../../Public/System/PTSMemoryAllocator.h \
-    PT_MAKEFILE
-PT_RECIPEPREFIX \
-    PT_CPP -c \
-        ../../Private/System/PTSMemoryAllocator.cpp \
-        PT_CPPFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o
-
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o: \
-    ../../Private/System/PTSTaskSchedulerImpl.cpp \
-    ../../Private/System/Posix/PTSTaskSchedulerImpl.inl \
-    ../../Private/System/PTSTaskSchedulerImpl.h \
-    ../../Public/System/PTSTaskScheduler.h \
-    PT_MAKEFILE
-PT_RECIPEPREFIX \
-    PT_CPP -c \
-        ../../Private/System/PTSTaskSchedulerImpl.cpp \
-        PT_CPPFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o
+        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o
 
 #undef PT_CPP
 
@@ -226,22 +200,22 @@ PT_RECIPEPREFIX \
 #endif
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1: ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libunwind.so.1
-PT_RECIPEPREFIX cp -f ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libunwind.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1: ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++abi.so.1
-PT_RECIPEPREFIX cp -f ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++abi.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1: ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++.so.1
-PT_RECIPEPREFIX cp -f ../../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
+PT_RECIPEPREFIX cp -f ../../ThirdParty/PosixLinuxGlibc/PT_LLVM_LIB_NAME/libc++.so.1 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1
 
 #//
 .PHONY: \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
-    ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME 
+    ../../../Intermediate/Test-ParallelMap/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME 
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
 PT_RECIPEPREFIX mkdir -p ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
-../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
-PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
+../../../Intermediate/Test-ParallelMap/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
+PT_RECIPEPREFIX mkdir -p ../../../Intermediate/Test-ParallelMap/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 

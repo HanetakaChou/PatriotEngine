@@ -22,10 +22,10 @@ cd "$(dirname "$0")"
 # 0 Release
 # 1 Debug
 
-rm -rf .PTRuntime.mk
-../../../ThirdParty/PosixLinuxGlibc/bin64/clang++ -E -C PTRuntime.hpp -DPT_TARGET_ARCH=2 -DPT_DEBUG=1 -o .PTRuntime.mk
+rm -rf .PTExample.mk
+../../../ThirdParty/PosixLinuxGlibc/bin64/clang++ -E -C PTExample.hpp -DPT_TARGET_ARCH=2 -DPT_DEBUG=1 -o .PTExample.mk
 
-make -f .PTRuntime.mk .PHONY
-make -f .PTRuntime.mk
+make -f .PTExample.mk .PHONY
+make -f .PTExample.mk
 
 # ../../ThirdParty/PosixLinuxGlibc/bin64/clang++ -E PT-Launch-Json.hpp -DPT_TARGET_ARCH=2 -DPT_DEBUG=1 -o .launch.json
