@@ -613,17 +613,15 @@ inline PT_McRT_Task_Impl *PTSArenaSlot::TaskDeque_Pop_Public()
 inline PT_McRT_Task_Impl::PT_McRT_Task_Impl()
 	:
 #ifndef NDEBUG
-	m_pTaskInner(PT_McRT_Task_Impl_m_pTaskInner_Undefined),
+	  m_pTaskInner(PT_McRT_Task_Impl_m_pTaskInner_Undefined),
 #endif
-	m_pTaskSuccessor(NULL),
-	m_PredecessorCount(0U)
+	  m_pTaskSuccessor(NULL),
+	  m_PredecessorCount(0U)
 #ifndef NDEBUG
-	, m_PredecessorCountMayAtomicAdd(false)
-	, m_PredecessorCount_Verification(0U)
-	, m_TrackState(Allocated)
+	  ,
+	  m_PredecessorCountMayAtomicAdd(false), m_PredecessorCount_Verification(0U), m_TrackState(Allocated)
 #endif
 {
-
 }
 
 inline void PT_McRT_Task_Impl::SetInner(PT_McRT_ITask_Inner *pTaskInner)
@@ -654,7 +652,7 @@ inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::PT_McRT_Internal_Alloc_Task(void *p
 	return pTaskOuter;
 }
 
-extern "C" PTMCRTAPI PT_McRT_ITask * PTCALL PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
+extern "C" PTMCRTAPI PT_McRT_ITask *PTCALL PT_McRT_ITask_Allocate_Root(void *pUserData, PT_McRT_ITask_Inner *(*pFn_CreateTaskInnerInstance)(void *pUserData, PT_McRT_ITask *pTaskOuter))
 {
 	PT_McRT_Task_Impl *pTaskNew = PT_McRT_Task_Impl::PT_McRT_Internal_Alloc_Task(pUserData, pFn_CreateTaskInnerInstance);
 	pTaskNew->SetSuccessor(NULL);
@@ -697,17 +695,21 @@ void PT_McRT_Task_Impl::Set_Ref_Count(uint32_t RefCount)
 inline void PT_McRT_Task_Impl::Spawn_PreProcess()
 {
 #ifndef NDEBUG
-	assert(m_PredecessorCount == 0U);	//只有叶节点才可能被Spawn
-	m_PredecessorCount_Verification = 0U;  //以原子操作减至0的同步点
-	if (m_pTaskSuccessor != NULL) { m_pTaskSuccessor->m_PredecessorCountMayAtomicAdd = true; } //在DAG中被执行的部分，且不是叶节点
-	assert(m_TrackState == Allocated);      //attempt to spawn task that is not in 'allocated' state
+	assert(m_PredecessorCount == 0U);	 //只有叶节点才可能被Spawn
+	m_PredecessorCount_Verification = 0U; //以原子操作减至0的同步点
+	if (m_pTaskSuccessor != NULL)
+	{
+		m_pTaskSuccessor->m_PredecessorCountMayAtomicAdd = true;
+		assert(m_pTaskSuccessor->m_PredecessorCount > 0U); //防止忘记调用Set_Ref_Count
+	}								   //在DAG中被执行的部分，且不是叶节点
+	assert(m_TrackState == Allocated); //attempt to spawn task that is not in 'allocated' state
 	m_TrackState = Ready;
 #endif
 }
 
 inline void PT_McRT_Task_Impl::Execute_PreProcess()
 {
-	m_RecycleState = Not_Recycle;
+	m_RecycleState = Not_Recycle_T;
 
 #ifndef NDEBUG
 	assert(m_TrackState == Ready);
@@ -717,7 +719,7 @@ inline void PT_McRT_Task_Impl::Execute_PreProcess()
 
 inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::Execute()
 {
-	assert(m_RecycleState == Not_Recycle);
+	assert(m_RecycleState == Not_Recycle_T);
 	assert(m_TrackState == Executing);
 
 	PT_McRT_Task_Impl *pTaskByPass = static_cast<PT_McRT_Task_Impl *>(m_pTaskInner->Execute());
@@ -728,7 +730,7 @@ void PT_McRT_Task_Impl::Recycle_As_Child_Of(PT_McRT_ITask *pParent)
 {
 	assert(m_PredecessorCount == 0U); //no child tasks allowed when recycled as a child //Otherwise //Race Condition
 
-	assert(m_RecycleState == Not_Recycle);
+	assert(m_RecycleState == Not_Recycle_T);
 	m_RecycleState = Recycle_As_Child_Of_T;
 
 	assert(m_TrackState == Executing); //Being Executing
@@ -744,18 +746,55 @@ void PT_McRT_Task_Impl::Recycle_As_Child_Of(PT_McRT_ITask *pParent)
 	this->SetSuccessor(pTaskParent);
 }
 
+void PT_McRT_Task_Impl::Recycle_As_Safe_Continuation()
+{
+	assert(m_RecycleState == Not_Recycle_T);
+	m_RecycleState = Recycle_As_Safe_Continuation_T;
+
+	assert(m_TrackState == Executing); //Being Executing
+#ifndef NDEBUG
+	m_TrackState = Allocated;
+#endif
+
+	assert(m_PredecessorCountMayAtomicAdd == false); //显然，接下来会对自身调用Set_Ref_Count修改引用计数
+#ifndef NDEBUG
+	++m_PredecessorCount_Verification;
+#endif
+}
+
 inline PT_McRT_Task_Impl::~PT_McRT_Task_Impl()
 {
 	m_pTaskInner->Dispose();
 }
 
+inline bool PT_McRT_Task_Impl::TestPredecessorCompletion(PT_McRT_Task_Impl *pTaskToTest)
+{
+	assert(pTaskToTest->m_PredecessorCountMayAtomicAdd == true);
+
+	bool bCompletion;
+
+	if (::PTSAtomic_GetAndAdd(&pTaskToTest->m_PredecessorCount, uint32_t(-1)) == 1U)
+	{
+#ifndef NDEBUG
+		pTaskToTest->m_PredecessorCountMayAtomicAdd = false;
+#endif
+		bCompletion = true;
+	}
+	else
+	{
+		bCompletion = false;
+	}
+
+	return bCompletion;
+}
+
 inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::FreeAndTestSuccessor()
 {
-	//Task (Which Not Recycled) still has children after it has been executed 
+	//Task (Which Not Recycled) still has children after it has been executed
 	//往往是错误的Allocate_Child导致
 	assert(m_PredecessorCount == 0U);
 
-	assert(m_RecycleState == Not_Recycle);
+	assert(m_RecycleState == Not_Recycle_T);
 
 	PT_McRT_Task_Impl *pTaskSuccessor = m_pTaskSuccessor;
 
@@ -767,15 +806,24 @@ inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::FreeAndTestSuccessor()
 
 	if (pTaskSuccessor != NULL)
 	{
-		assert(pTaskSuccessor->m_PredecessorCountMayAtomicAdd == true);
-
-		if (::PTSAtomic_GetAndAdd(&pTaskSuccessor->m_PredecessorCount, uint32_t(-1)) == 1U)
+		if (TestPredecessorCompletion(pTaskSuccessor))
 		{
-#ifndef NDEBUG
-			m_pTaskSuccessor->m_PredecessorCountMayAtomicAdd = false;
-#endif
 			pTaskToSpawn = pTaskSuccessor;
 		}
+	}
+
+	return pTaskToSpawn;
+}
+
+inline PT_McRT_Task_Impl *PT_McRT_Task_Impl::TestSelf()
+{
+	assert(m_RecycleState == Recycle_As_Safe_Continuation_T);
+
+	PT_McRT_Task_Impl *pTaskToSpawn = NULL;
+
+	if (TestPredecessorCompletion(this))
+	{
+		pTaskToSpawn = this;
 	}
 
 	return pTaskToSpawn;
@@ -924,12 +972,12 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 			while (pTaskExecuting)
 			{
 
-				pTaskExecuting->m_RecycleState = PT_McRT_Task_Impl::Not_Recycle;
+				pTaskExecuting->m_RecycleState = PT_McRT_Task_Impl::Not_Recycle_T;
 				pTaskExecuting->Execute_PreProcess();
 
 				//ByPass
 				PT_McRT_Task_Impl *pTaskByPass = pTaskExecuting->Execute();
-				
+
 				//Bypass的语义：在功能上与Spawn相同
 				//assert(pTaskByPass->IsLeaf());
 
@@ -941,21 +989,21 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 
 				switch (pTaskExecuting->m_RecycleState)
 				{
-				case PT_McRT_Task_Impl::Not_Recycle:
+				case PT_McRT_Task_Impl::Not_Recycle_T:
 				{
-					PT_McRT_Task_Impl *pTaskSuccessorToSpawn = pTaskExecuting->FreeAndTestSuccessor();
+					PT_McRT_Task_Impl *pTaskToSpawn = pTaskExecuting->FreeAndTestSuccessor();
 
-					if (pTaskSuccessorToSpawn != NULL)
+					if (pTaskToSpawn != NULL)
 					{
 						//Spawn Successor
 						if (pTaskByPass == NULL)
 						{
-							pTaskByPass = pTaskSuccessorToSpawn;
+							pTaskByPass = pTaskToSpawn;
 						}
-						else if (pTaskByPass != pTaskSuccessorToSpawn)
+						else if (pTaskByPass != pTaskToSpawn)
 						{
 							//在Spawn Parent的情况下，ByPass反而会变慢
-							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskSuccessorToSpawn);
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskToSpawn);
 						}
 					}
 				}
@@ -975,16 +1023,29 @@ static inline void PTS_Internal_ExecuteAndWait_Main(PTSArena *pArena, uint32_t S
 				case PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T:
 				{
 					assert(pTaskExecuting->m_RecycleState == PT_McRT_Task_Impl::Recycle_As_Safe_Continuation_T);
-					
+
 					//Recycle_As_Safe_Continuation //Parent的Predecessor个数不变，不可能Spawn_Parent
 
-					assert(0);
+					PT_McRT_Task_Impl *pTaskToSpawn = pTaskExecuting->TestSelf();
+
+					if (pTaskToSpawn != NULL)
+					{
+						//Spawn Self
+						if (pTaskByPass == NULL)
+						{
+							pTaskByPass = pTaskToSpawn;
+						}
+						else if (pTaskByPass != pTaskToSpawn)
+						{
+							//在Spawn Self的情况下，ByPass反而会变慢
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskToSpawn);
+						}
+					}
 				}
 				break;
 				default:
 					assert(0);
 				}
-
 
 				if (pTaskByPass != NULL)
 				{
@@ -1168,7 +1229,7 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 
 				//ByPass
 				PT_McRT_Task_Impl *pTaskByPass = pTaskExecuting->Execute();
-				
+
 				//Bypass的语义：在功能上与Spawn相同
 				//assert(pTaskByPass->IsLeaf());
 
@@ -1180,21 +1241,21 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 
 				switch (pTaskExecuting->m_RecycleState)
 				{
-				case PT_McRT_Task_Impl::Not_Recycle:
+				case PT_McRT_Task_Impl::Not_Recycle_T:
 				{
-					PT_McRT_Task_Impl *pTaskSuccessorToSpawn = pTaskExecuting->FreeAndTestSuccessor();
+					PT_McRT_Task_Impl *pTaskToSpawn = pTaskExecuting->FreeAndTestSuccessor();
 
-					if (pTaskSuccessorToSpawn != NULL)
+					if (pTaskToSpawn != NULL)
 					{
 						//Spawn Successor
 						if (pTaskByPass == NULL)
 						{
-							pTaskByPass = pTaskSuccessorToSpawn;
+							pTaskByPass = pTaskToSpawn;
 						}
-						else if (pTaskByPass != pTaskSuccessorToSpawn)
+						else if (pTaskByPass != pTaskToSpawn)
 						{
 							//在Spawn Parent的情况下，ByPass反而会变慢
-							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskSuccessorToSpawn);
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskToSpawn);
 						}
 					}
 				}
@@ -1217,7 +1278,21 @@ static inline void PTS_Internal_StealAndExecute_Main(PTSArena *pArena, uint32_t 
 
 					//Recycle_As_Safe_Continuation //Parent的Predecessor个数不变，不可能Spawn_Parent
 
-					assert(0);
+					PT_McRT_Task_Impl *pTaskToSpawn = pTaskExecuting->TestSelf();
+
+					if (pTaskToSpawn != NULL)
+					{
+						//Spawn Self
+						if (pTaskByPass == NULL)
+						{
+							pTaskByPass = pTaskToSpawn;
+						}
+						else if (pTaskByPass != pTaskToSpawn)
+						{
+							//在Spawn Self的情况下，ByPass反而会变慢
+							PTS_Internal_Task_Spawn(pArena, Slot_Index, pTaskToSpawn);
+						}
+					}
 				}
 				break;
 				default:
