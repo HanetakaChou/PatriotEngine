@@ -137,14 +137,51 @@ Latency
 
 ### Pipeline
 
+memory_order  
+volatile  
+https://en.cppreference.com/w/cpp/atomic/memory_order  
+
+
 Throughout  
 
 (1.\[McCool 2012\]/9.4.2 Pipeline in Cilk Plus)  
 
+pipeline.cpp
+stage_task::execute
+```
+concrete_filter<T,U,Body> //U=Body(T)
+    //部分专用化 //concrete_filter<void,U,Body> //construct //filter_may_emit_null //object_may_be_null 
 
-## Flow Graph
+stage_task : task, task_info
+--task_info------
+    my_object //token_helper::cast_to_void_ptr //
+--stage_task-----
+    my_pipeline //
+        token_counter //atomic //
+        end_of_input //return NULL 或 control.is_pipeline_stopped -> filter::set_end_of_input
+    my_filter //
 
-### Wavefront
+
+if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
+{
+    my_object = (*my_filter)(my_object) //concrete_filter::operator()
+        //部分专用化 //concrete_filter<void,U,Body> //flow_control //end_of_input
+
+    if( (my_object != NULL) //T非void的filter，返回NULL即表示结束
+        || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) ) 
+    {
+
+    }
+
+
+}
+
+```
+
+
+## Flow Graph  
+
+### Wavefront  
 
 (2.\[Intel® Software 2019\]/Design Patterns/Wavefront)  
 
