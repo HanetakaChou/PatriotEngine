@@ -147,6 +147,17 @@ Throughout
 (1.\[McCool 2012\]/9.4.2 Pipeline in Cilk Plus)  
 
 pipeline.cpp
+
+--filter_list------------------------
+
+pipeline
+    filter_list
+
+filter
+    next_filter_in_pipeline
+
+-------------------------------------
+
 stage_task::execute
 ```
 concrete_filter<T,U,Body> //U=Body(T)
@@ -154,27 +165,81 @@ concrete_filter<T,U,Body> //U=Body(T)
 
 stage_task : task, task_info
 --task_info------
-    my_object //token_helper::cast_to_void_ptr //
+    my_object //token_helper::cast_to_void_ptr //serial_in_order
+    my_token //从token_counter取得
 --stage_task-----
     my_pipeline //
-        token_counter //atomic //
+        token_counter //atomic //只在my_at_start时候进行atomic操作
         end_of_input //return NULL 或 control.is_pipeline_stopped -> filter::set_end_of_input
-    my_filter //
+    my_filter //current filter //my_filter = my_filter->next_filter_in_pipeline //不断向后迭代
+        my_input_buffer //serial
+            low_token //prior Token have already been seen //Does "seen" mean spawn ???
+
+    my_at_start //bind to item (1.[McCool 2012]) //first stage(即filter) of pipeline
 
 
-if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
+//process first stage //第一阶段特殊处理
+if(my_at_start) //first stage(即filter) of pipeline
 {
-    my_object = (*my_filter)(my_object) //concrete_filter::operator()
-        //部分专用化 //concrete_filter<void,U,Body> //flow_control //end_of_input
-
-    if( (my_object != NULL) //T非void的filter，返回NULL即表示结束
-        || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) ) 
+    if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
     {
+        //Execute Filter
+        my_object = (*my_filter)(my_object) //concrete_filter::operator()
+            //部分专用化 //concrete_filter<void,U,Body> //flow_control //end_of_input
+
+        if( (my_object != NULL) //T非void的filter，返回NULL即表示结束
+            || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) ) 
+        {
+            if my_filter->is_ordered() //serial_in_order
+            {
+                my_token = atomic_fetch_add(my_pipeline.token_counter, 1) //only need release semantic???
+                my_token_ready = true; 
+            }
+
+            if( !my_filter->next_filter_in_pipeline ) // we're only filter in pipeline //unlikely
+            { 
+                process another stage
+            }
+            else
+            {
+                spawn stage_task //first stage
+            }
+
+        }
+        else
+        {
+            end_of_input
+        }
+    }
+    else //parallel
+    {
+        //first stage parallel //与serial区别 先spawn再执行filter
 
     }
 
+    //mark not first stage ----------------------------------
+    my_at_start = false;
+}
+else //not first stage
+{
+    Execute Filter
+
+    if my_filter is serial //
+        my_filter->my_input_buffer->note_done 
+                                        // if !is_ordered/*serial_out_of_order*/ 
 
 }
+
+//Execute Filter End //接下来不会再ExecuteFilter
+
+//bind to item //不断向下一个stage迭代
+my_filter = my_filter->next_filter_in_pipeline;
+
+if my_filter != NULL
+{
+    
+}
+
 
 ```
 
@@ -192,3 +257,6 @@ if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
 
 [2.\[Intel 2019\] Intel. "Intel Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)   
  
+[Herlihy 2010] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann Publishers 2012.
+
+Structured Parallel Programming with Deterministic Patterns
