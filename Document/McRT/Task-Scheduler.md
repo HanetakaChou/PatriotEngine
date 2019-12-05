@@ -321,10 +321,18 @@ if my_filter != NULL
             item_token = high_token++;
         }
 
-        if(item_token == low_token) //leftmost //以此来保证串行
+        if(item_token == low_token) //leftmost //以此来保证串行 //put_token需要互斥
         {
-
+            --process_another_stage---------
+            
+            recycle_to_reexecute //recycle_as_safe_continuation() //set_ref_count(1)
+            return NULL;
         }
+        else
+        {
+            //push_to_inputbuffer
+        }
+
 
 
 
@@ -333,10 +341,9 @@ if my_filter != NULL
     {
         //Next Stage Is Parallel
 
-        //process_another_stage
-
-        //recycle_to_reexecute
-        recycle_as_safe_continuation()
+        --process_another_stage-------------
+        
+        recycle_to_reexecute //recycle_as_safe_continuation() //set_ref_count(1)
         return NULL;
     }
 }
