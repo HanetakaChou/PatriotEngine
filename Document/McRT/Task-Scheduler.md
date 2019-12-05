@@ -164,56 +164,97 @@ concrete_filter<T,U,Body> //U=Body(T)
     //部分专用化 //concrete_filter<void,U,Body> //construct //filter_may_emit_null //object_may_be_null 
 
 stage_task : task, task_info
---task_info------
+--task_info------ //item_info???
     my_object //token_helper::cast_to_void_ptr //serial_in_order
-    my_token //从token_counter取得
+    my_token //从my_pipeline的token_counter取得 //pipeline内唯一
+    my_token_ready //只在first_stage且serial时，才会设置my_token_ready //first stage parallel 或 not first stage（serial or parallel）不会设置 //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）
 --stage_task-----
     my_pipeline //
-        token_counter //atomic //只在my_at_start时候进行atomic操作
+        --worker控制--
+        input_tokens //parallel_pipeline传入 //在spawn task时 会--（atomic）
+        --item控制--
+        token_counter //在my_at_start时 不断++（atomic） 为pipeline中每一个item分配一个唯一的my_token
         end_of_input //return NULL 或 control.is_pipeline_stopped -> filter::set_end_of_input
+
     my_filter //current filter //my_filter = my_filter->next_filter_in_pipeline //不断向后迭代
         my_input_buffer //serial
+            task_info *array //
             low_token //prior Token have already been seen //Does "seen" mean spawn ???
 
     my_at_start //bind to item (1.[McCool 2012]) //first stage(即filter) of pipeline
 
+--Process Current Stage---
 
 //process first stage //第一阶段特殊处理
+1.当第一阶段serial时，确保串行化
+2.确定pipeline中item的个数
 if(my_at_start) //first stage(即filter) of pipeline
 {
     if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
     {
-        //Execute Filter
+        //first stage serial 
+
+        --Execute Filter--
         my_object = (*my_filter)(my_object) //concrete_filter::operator()
             //部分专用化 //concrete_filter<void,U,Body> //flow_control //end_of_input
-
-        if( (my_object != NULL) //T非void的filter，返回NULL即表示结束
-            || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) ) 
+   
+        --End of Input-- //Unlikely
+        if !(
+                (my_object != NULL) //T非void的filter，返回NULL即表示结束
+                || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) 
+            ) 
         {
-            if my_filter->is_ordered() //serial_in_order
-            {
-                my_token = atomic_fetch_add(my_pipeline.token_counter, 1) //only need release semantic???
-                my_token_ready = true; 
-            }
+            my_pipeline.end_of_input = true;
 
-            if( !my_filter->next_filter_in_pipeline ) // we're only filter in pipeline //unlikely
-            { 
-                process another stage
-            }
-            else
-            {
-                spawn stage_task //first stage
-            }
-
+            //Worker Terminate
+            return NULL; //Execute End //超过第一个stage产生的item个数 的Worker是没有意义的
         }
-        else
+
+        --item控制--
+        if my_filter->is_ordered() //serial_in_order
         {
-            end_of_input
+            my_token = atomic_fetch_add(my_pipeline.token_counter, 1) //only need release semantic???
+            my_token_ready = true; 
         }
+
+        --worker控制--
+        if atomic_fetch_add(input_tokens,-1) > 1
+            spawn stage_task //first stage 
+
+        //if( !my_filter->next_filter_in_pipeline ) // we're only filter in pipeline //unlikely
+        //{ 
+        //    process another stage
+        //}
     }
     else //parallel
     {
-        //first stage parallel //与serial区别 先spawn再执行filter
+        //first stage parallel 
+
+        --End of Input--
+        if my_pipeline.end_of_input //May Race Condition
+        {
+
+            //Worker Terminate
+            return NULL
+        }
+        
+        --worker控制--  //与serial区别 先spawn再执行filter           
+        if atomic_fetch_add(input_tokens,-1) > 1
+            spawn stage_task //first stage 
+        
+        //注：没有item控制！ //体现在my_token_ready
+
+        --Execute Filter--
+        my_object = (*my_filter)(my_object)
+
+        --End of Input--
+        if ...
+        {
+            my_pipeline.end_of_input = true;
+
+            //Worker Terminate
+            return NULL;
+        }
 
     }
 
@@ -224,20 +265,80 @@ else //not first stage
 {
     Execute Filter
 
-    if my_filter is serial //
-        my_filter->my_input_buffer->note_done 
-                                        // if !is_ordered/*serial_out_of_order*/ 
+    //没有my_token_ready
+
+---确保非first stage的serial filter串行化----
+
+    if my_filter is serial //Current Stage Serial
+    {
+        /*my_filter->my_input_buffer->note_done*/ //Spawn Task
+        
+        if !is_ordered /*serial_out_of_order*/ ||  my_token == my_input_buffer /*serial_in_order*/
+        {
+            my_filter->my_input_buffer->
+
+        }
+                             
+    }   
 
 }
 
 //Execute Filter End //接下来不会再ExecuteFilter
+//token_counter++ end //接下来不会再 token_counter++
 
 //bind to item //不断向下一个stage迭代
 my_filter = my_filter->next_filter_in_pipeline;
 
-if my_filter != NULL
+--Process Next Stage---
+
+if my_filter != NULL 
 {
-    
+    if the-next-filter is serial 
+    {
+        /* my_filter->my_input_buffer->put_token(当前task的item_info) */ //当前task的task_info //即item_info //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）  
+
+---确保非first stage的serial filter串行化-----
+//1.[McCool 2012] 9.4.2 Pipeline in Cilk Plus
+    So reducer_consumer joins views using the following rules:
+• If the left view is leftmost, its list is empty. Process the list of the right view.
+• Otherwise, concatenate the lists.
+
+        /---需要互斥
+
+        Token item_token; //item_info.my_token只在部分条件下才有效  //The terminology ""
+        if the-next-filter is orderd //serial_in_order
+        {
+            if(!item_info.my_token_ready) //first stage parallel 或 not first stage（serial or parallel）不会设置my_token_ready
+            {
+                item_info.my_token = high_token++;
+                item_info.my_token_ready = true;
+            }
+
+            item_token = item_info.my_token;
+        }
+        else //serial_out_of_order
+        {
+            item_token = high_token++;
+        }
+
+        if(item_token == low_token) //leftmost //以此来保证串行
+        {
+
+        }
+
+
+
+    }
+    else
+    {
+        //Next Stage Is Parallel
+
+        //process_another_stage
+
+        //recycle_to_reexecute
+        recycle_as_safe_continuation()
+        return NULL;
+    }
 }
 
 
