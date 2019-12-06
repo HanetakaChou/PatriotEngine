@@ -164,7 +164,7 @@ concrete_filter<T,U,Body> //U=Body(T)
     //部分专用化 //concrete_filter<void,U,Body> //construct //filter_may_emit_null //object_may_be_null 
 
 stage_task : task, task_info
---task_info------ //item_info???
+--task_info------ //严格意义上应当叫item_info //因为task会终止（执行到serial阶段，不等于low_token时，put_token) 再次spawn（等于low_token的task，note_down）
     my_object //token_helper::cast_to_void_ptr //serial_in_order
     my_token //从my_pipeline的token_counter取得 //pipeline内唯一
     my_token_ready //只在first_stage且serial时，才会设置my_token_ready //first stage parallel 或 not first stage（serial or parallel）不会设置 //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）
@@ -206,7 +206,7 @@ if(my_at_start) //first stage(即filter) of pipeline
         {
             my_pipeline.end_of_input = true;
 
-            //Worker Terminate
+            --Worker_Terminate--
             return NULL; //Execute End //超过第一个stage产生的item个数 的Worker是没有意义的
         }
 
@@ -234,7 +234,7 @@ if(my_at_start) //first stage(即filter) of pipeline
         if my_pipeline.end_of_input //May Race Condition
         {
 
-            //Worker Terminate
+            --Worker_Terminate--
             return NULL
         }
         
@@ -252,7 +252,7 @@ if(my_at_start) //first stage(即filter) of pipeline
         {
             my_pipeline.end_of_input = true;
 
-            //Worker Terminate
+            --Worker_Terminate--
             return NULL;
         }
 
@@ -261,15 +261,20 @@ if(my_at_start) //first stage(即filter) of pipeline
     //mark not first stage ----------------------------------
     my_at_start = false;
 }
-else //not first stage
+else //not first stage //能否将 not-first-stage 和 my_filter = my_filter->next_filter_in_pipeline 合并到迭代中
 {
+    //--process_another_stage--之后 进入此处
+
     Execute Filter
 
     //没有my_token_ready
 
 ---确保非first stage的serial filter串行化----
 
-    if my_filter is serial //Current Stage Serial
+    if my_filter is serial //Current Stage Serial //item_info.my_token == low_token才可能执行 //不断spwan Task 与 Worker Terminate 保持平衡 //token的个数在第1阶段确定 //token_index（bind to item）在第一个serial_in_order阶段确定
+
+    //serial阶段可以认为是一个同步点，只有item_info.my_token == low_token的task才会执行
+
     {
         /*my_filter->my_input_buffer->note_done*/ //Spawn Task
         
@@ -277,19 +282,17 @@ else //not first stage
         {
             my_filter->my_input_buffer->
 
-        }
-                             
+        }                        
     }   
-
 }
 
 //Execute Filter End //接下来不会再ExecuteFilter
-//token_counter++ end //接下来不会再 token_counter++
+//token_counter++ End //接下来不会再 token_counter++
 
-//bind to item //不断向下一个stage迭代
+//bind to item //不断向下一个stage迭代 //process_another_stage之后 进入!my_at_start
 my_filter = my_filter->next_filter_in_pipeline;
 
---Process Next Stage---
+--Analyze Next Stage---
 
 if my_filter != NULL 
 {
@@ -308,7 +311,7 @@ if my_filter != NULL
         Token item_token; //item_info.my_token只在部分条件下才有效  //The terminology ""
         if the-next-filter is orderd //serial_in_order
         {
-            if(!item_info.my_token_ready) //first stage parallel 或 not first stage（serial or parallel）不会设置my_token_ready
+            if(!item_info.my_token_ready) //first stage parallel不会设置my_token_ready //not first stage（serial or parallel）
             {
                 item_info.my_token = high_token++;
                 item_info.my_token_ready = true;
@@ -330,12 +333,17 @@ if my_filter != NULL
         }
         else
         {
-            //push_to_inputbuffer
+            //push to inputbuffer
+
+            //grow array
+
+            //push
+
+            //if was_empty then sema_V
+
+            --Worker_Terminate--
+            return NULL;
         }
-
-
-
-
     }
     else
     {
@@ -346,6 +354,12 @@ if my_filter != NULL
         recycle_to_reexecute //recycle_as_safe_continuation() //set_ref_count(1)
         return NULL;
     }
+}
+else
+{
+    // the-next-filter is NULL
+
+
 }
 
 
