@@ -165,9 +165,11 @@ concrete_filter<T,U,Body> //U=Body(T)
 
 stage_task : task, task_info
 --task_info------ //严格意义上应当叫item_info //因为task会终止（执行到serial阶段，不等于low_token时，put_token) 再次spawn（等于low_token的task，note_down）
+    //虽然在逻辑上，
     my_object //token_helper::cast_to_void_ptr //serial_in_order
     my_token //从my_pipeline的token_counter取得 //pipeline内唯一
     my_token_ready //只在first_stage且serial时，才会设置my_token_ready //first stage parallel 或 not first stage（serial or parallel）不会设置 //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）
+    is_valid //在input_buffer中，前一阶段的item到达的速度并非一致
 --stage_task-----
     my_pipeline //
         --worker控制--
@@ -278,11 +280,73 @@ else //not first stage //能否将 not-first-stage 和 my_filter = my_filter->ne
     {
         /*my_filter->my_input_buffer->note_done*/ //Spawn Task
         
-        if !is_ordered /*serial_out_of_order*/ ||  my_token == my_input_buffer /*serial_in_order*/
+        if current-filter not is ordered /*serial_out_of_order*/ 
+            ||  item_info.my_token == my_input_buffer.low_token //为何不是必定相等？？？ //与
         {
-            my_filter->my_input_buffer->
+           --pop-from-input-buffer--
 
-        }                        
+           //array_size maintain a ringbuffer
+
+        }
+
+        if item-poped is_valid //比如 当前item(1) //input_buffer中 item(2) not is_valid | item(3) is_valid
+        {
+            spawn_task //从当前filter开始 //而非at_start
+        } 
+        else
+        {
+            //不spawn_task //由于put_token是互斥的 //如果此处没有spawn（item(2) not is_valid | item(3) is_valid）,那么bind to item(2)的task在执行完上一个stage后 执行put_token时，会process_another_stage
+        }
+
+        //bind-to-item //继续向下执行               
+        //my_filter = my_filter->next_filter_in_pipeline;
+
+--note_done---------------
+        
+        my_object = (*my_filter)(my_object) //Execute Filter
+
+        --lock--------------------
+
+        if(token == low_token) //一定成立？？？ //实际测试 !is_order || token == low_token 一定成立 //可能与thread_bound_filter有关（bind-to-stage？）
+        {
+            ++low_token
+            item_info = input_buffer[low_token]
+        }
+
+        --unlock------------------
+
+        if(item_info.is_valid)
+        {
+            spawn_task //current_fitler //next_token
+        }
+
+--put_token--------------------
+
+        bool put_token
+
+        --lock-----------------------------
+
+        if(token == low_token)
+        {
+            put_token = false
+        }
+        else
+        {
+            input_buffer[token]= item_info 
+
+            put_token = true
+        }
+
+        --unlock---------------------------
+
+        if(!put_token)
+        {
+            process_another_stage
+        }
+        else
+        {
+            worker_terminate //bind-to-item 
+        }
     }   
 }
 
@@ -337,7 +401,7 @@ if my_filter != NULL
 
             //grow array
 
-            //push
+            //push //根据token_index设置is_valid
 
             //if was_empty then sema_V
 
@@ -379,6 +443,6 @@ else
 
 [2.\[Intel 2019\] Intel. "Intel Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)   
  
-[Herlihy 2010] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann Publishers 2012.
+[Herlihy 2012] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann Publishers 2012.  
 
-Structured Parallel Programming with Deterministic Patterns
+Structured Parallel Programming with Deterministic Patterns  
