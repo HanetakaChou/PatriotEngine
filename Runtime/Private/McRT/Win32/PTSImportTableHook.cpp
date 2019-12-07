@@ -1,4 +1,4 @@
-#include "../../../Public/System/PTSImportTableHook.h"
+#include "../../../Public/McRT/PTSImportTableHook.h"
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -50,7 +50,7 @@ void PTCALL PTS_ImportTableHook(
 				//FirstThunk Is The RelativeVirtualAddress From LibraryBaseAddress
 				IMAGE_THUNK_DATA *ImportAddressTable = reinterpret_cast<IMAGE_THUNK_DATA *>(reinterpret_cast<ULONG_PTR>(pLibraryImportBaseAddress) + pImportDescriptor->FirstThunk);
 
-				for (size_t iImportTable = 0U; ImportNameTable[iImportTable].u1.AddressOfData != 0U; ++iImportTable) //¡°RVA = 0¡± Means End Of Table
+				for (size_t iImportTable = 0U; ImportNameTable[iImportTable].u1.AddressOfData != 0U; ++iImportTable) //ï¿½ï¿½RVA = 0ï¿½ï¿½ Means End Of Table
 				{
 					//Name Is The RelativeVirtualAddress From LibraryBaseAddress
 					char *FunctionName = reinterpret_cast<char *>(reinterpret_cast<IMAGE_IMPORT_BY_NAME *>(reinterpret_cast<ULONG_PTR>(pLibraryImportBaseAddress) + ImportNameTable[iImportTable].u1.AddressOfData)->Name);

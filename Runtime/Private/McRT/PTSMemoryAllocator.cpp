@@ -1,6 +1,6 @@
-﻿#include "../../Public/System/PTSThread.h"
-#include "../../Public/System/PTSMemoryAllocator.h"
-#include "../../Public/System/PTSMemory.h"
+﻿#include "../../Public/McRT/PTSThread.h"
+#include "../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../Public/McRT/PTSMemory.h"
 #include <stddef.h> 
 #include <assert.h>
 #include <string.h>

@@ -154,35 +154,35 @@ PT_RECIPEPREFIX \
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o: \
-    ../../Private/System/PTSMemory.cpp \
-    ../../Public/System/PTSMemory.h \
+    ../../Private/McRT/PTSMemory.cpp \
+    ../../Public/McRT/PTSMemory.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSMemory.cpp \
+        ../../Private/McRT/PTSMemory.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o: \
-    ../../Private/System/PTSMemoryAllocator.cpp \
-    ../../Private/System/Posix/PTSMemoryAllocator.inl \
-    ../../Public/System/PTSMemoryAllocator.h \
+    ../../Private/McRT/PTSMemoryAllocator.cpp \
+    ../../Private/McRT/Posix/PTSMemoryAllocator.inl \
+    ../../Public/McRT/PTSMemoryAllocator.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSMemoryAllocator.cpp \
+        ../../Private/McRT/PTSMemoryAllocator.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o: \
-    ../../Private/System/PTSTaskSchedulerImpl.cpp \
-    ../../Private/System/Posix/PTSTaskSchedulerImpl.inl \
-    ../../Private/System/PTSTaskSchedulerImpl.h \
-    ../../Public/System/PTSTaskScheduler.h \
+    ../../Private/McRT/PTSTaskSchedulerImpl.cpp \
+    ../../Private/McRT/Posix/PTSTaskSchedulerImpl.inl \
+    ../../Private/McRT/PTSTaskSchedulerImpl.h \
+    ../../Public/McRT/PTSTaskScheduler.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSTaskSchedulerImpl.cpp \
+        ../../Private/McRT/PTSTaskSchedulerImpl.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o
 

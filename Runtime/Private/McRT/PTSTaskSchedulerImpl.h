@@ -16,7 +16,7 @@
 
 //Andrey Marochko. "TBB initialization, termination, and resource management details, juicy and gory." Intel Developer Zone 2011. (https://software.intel.com/en-us/blogs/2011/04/09/tbb-initialization-termination-and-resource-management-details-juicy-and-gory)
 
-#include "../../Public/System/PTSTaskScheduler.h"
+#include "../../Public/McRT/PTSTaskScheduler.h"
 #include <stddef.h>
 #include <stdlib.h>
 
