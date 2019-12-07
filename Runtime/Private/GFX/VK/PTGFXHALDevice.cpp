@@ -2,7 +2,7 @@
 
 #include <assert.h>
 
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 
 extern "C" PTGFXAPI PT_GFX_HAL_IDevice  * PTCALL PT_GFX_HAL_Device_Init()
 {

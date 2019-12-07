@@ -1,11 +1,11 @@
 ﻿#include "PTVDInstanceImpl.h"
 
-#include "../../../Public/System/PTSThread.h"
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 
 #if defined(PTWIN32)
 #if defined(PTWIN32DESKTOP)
-#include "../../../Public/System/PTSConvUTF.h"
+#include "../../../Public/McRT/PTSConvUTF.h"
 #include <string.h>
 #elif defined(PTWIN32RUNTIME)
 
@@ -29,7 +29,7 @@
 
 #include <new>
 
-#include "../../../Public/System/PTSMemory.h"
+#include "../../../Public/McRT/PTSMemory.h"
 
 #include "PTVDVKMemoryAllocator.h"
 

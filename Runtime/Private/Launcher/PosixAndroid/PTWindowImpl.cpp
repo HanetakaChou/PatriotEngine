@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <cstdlib>
 #include <android/native_activity.h>
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 static void ANativeActivity_onDestroy(ANativeActivity *);
 static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *);

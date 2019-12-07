@@ -23,8 +23,8 @@
 		47CE1B7C21FE53E2003A3B9F /* CMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMetal.h; sourceTree = "<group>"; };
 		47CE1B7D21FE53E2003A3B9F /* CMetalImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMetalImpl.h; sourceTree = "<group>"; };
 		47CE1B8521FE5421003A3B9F /* CMetalImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CMetalImpl.mm; sourceTree = "<group>"; };
-		47CE1B8C21FE59C7003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		47CE1B8E21FE59D2003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/System/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+		47CE1B8C21FE59C7003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = McRT/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		47CE1B8E21FE59D2003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/McRT/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

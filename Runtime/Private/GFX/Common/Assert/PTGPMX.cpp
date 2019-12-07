@@ -5,10 +5,10 @@
 //http://gist.github.com/felixjones
 
 #include "../../../../Public/PTCommon.h"
-#include "../../../../Public/System/PTSThread.h"
-#include "../../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../../Public/McRT/PTSThread.h"
+#include "../../../../Public/McRT/PTSMemoryAllocator.h"
 #include <string.h>
-#include "../../../../Public/System/PTSFile.h"
+#include "../../../../Public/McRT/PTSFile.h"
 #include "../../../../Public/Math/PTMath.h"
 #include <float.h>
 #include <assert.h>
@@ -17,7 +17,7 @@
 #include <vector>
 #include <stdint.h>
 #include <string>
-#include "../../../../Public/System/PTSConvUTF.h"
+#include "../../../../Public/McRT/PTSConvUTF.h"
 
 inline int16_t PTG_Assert_LEToH(int16_t Value);
 inline uint16_t PTG_Assert_LEToH(uint16_t Value);

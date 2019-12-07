@@ -7,7 +7,7 @@
 
 #include "PTVDDevice.h"
 
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 
 class PTVDInstanceImpl : public IPTVDInstance
 {

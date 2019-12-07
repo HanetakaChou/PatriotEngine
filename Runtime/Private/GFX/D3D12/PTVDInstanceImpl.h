@@ -12,7 +12,7 @@
 #include <dxgi1_4.h>
 #include <d3d12.h>
 
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 
 class PTVDInstanceImpl : public IPTVDInstance
 {

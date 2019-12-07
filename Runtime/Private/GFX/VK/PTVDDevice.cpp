@@ -1,7 +1,7 @@
 ﻿#include "PTVDDevice.h"
 
-#include "../../../Public/System/PTSThread.h"
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 
 #include "PTVDQueue.h"
 

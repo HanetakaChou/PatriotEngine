@@ -3,8 +3,8 @@
 #include <set>
 #include <map>
 #include <functional>
-#include "../../../Public/System/PTSMemoryAllocator.h"
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 //Abstract GPU //Two Categories
 //1.RadeonGPU //Sort Last Fragment //TiledMemory Avaliable

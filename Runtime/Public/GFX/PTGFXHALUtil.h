@@ -8,7 +8,7 @@
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include "../../Public/System/PTSConvUTF.h"
+#include "../../Public/McRT/PTSConvUTF.h"
 #include <assert.h>
 
 inline PT_GFX_HAL_ITexture *PT_GFX_HAL_Texture_Asset_LoadDDS(PT_GFX_HAL_IDevice *pDevice, char const *pFileName)
