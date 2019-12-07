@@ -193,7 +193,7 @@
     <ProjectReference Include="PTApp_PosixAndroid.vcxproj" />
     <ProjectReference Include="PTAudioTA_PosixAndroid.vcxproj" />
     <ProjectReference Include="PTLauncher_PosixAndroid.vcxproj" />
-    <ProjectReference Include="PTSystem_PosixAndroid.vcxproj" />
+    <ProjectReference Include="PTMcRT_PosixAndroid.vcxproj" />
     <ProjectReference Include="PTVideoVK_PosixAndroid.vcxproj" />
     <ProjectReference Include="tinyalsa_PosixAndroid.vcxproj" />
   </ItemGroup>

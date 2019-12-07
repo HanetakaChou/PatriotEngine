@@ -32,7 +32,7 @@
     <ClInclude Include="..\..\Public\PTCommon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="PTSystem_Win32Runtime.vcxproj">
+    <ProjectReference Include="PTMcRT_Win32Runtime.vcxproj">
       <Project>{c0c3c751-fa2c-402d-a750-2670cea5f587}</Project>
     </ProjectReference>
   </ItemGroup>

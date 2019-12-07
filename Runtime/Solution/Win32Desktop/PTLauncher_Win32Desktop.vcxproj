@@ -40,7 +40,7 @@
     <ProjectReference Include="PTApp_Win32Desktop.vcxproj">
       <Project>{7686e349-aab6-4328-b96e-17a08a3df168}</Project>
     </ProjectReference>
-    <ProjectReference Include="PTSystem_Win32Desktop.vcxproj">
+    <ProjectReference Include="PTMcRT_Win32Desktop.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>
   </ItemGroup>

@@ -175,7 +175,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;log;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;log;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -186,7 +186,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -197,7 +197,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;log;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;log;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -208,7 +208,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -219,7 +219,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;log;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;log;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -230,7 +230,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -241,7 +241,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;log;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;log;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
@@ -252,7 +252,7 @@
       <AdditionalOptions>-fvisibility=hidden %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
-      <LibraryDependencies>PTSystem;vulkan;$(StlLibraryName)</LibraryDependencies>
+      <LibraryDependencies>PTMcRT;vulkan;$(StlLibraryName)</LibraryDependencies>
       <AdditionalLibraryDirectories>$(OutDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>

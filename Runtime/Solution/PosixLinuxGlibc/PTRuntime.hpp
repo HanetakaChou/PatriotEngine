@@ -143,7 +143,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTLauncher.bundle: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -224,7 +224,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem -lvulkan \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTMcRT -lvulkan \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -247,7 +247,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTGFXVK.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXHALDevice.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXAssetDDS.o \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so   \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
@@ -295,7 +295,7 @@ PT_RECIPEPREFIX \
 
 #undef PT_MODULE
 
-#//PTSystem---------------------------------------------------------------------------------------------------------------------
+#//PTMcRT---------------------------------------------------------------------------------------------------------------------
 
 #ifdef PT_CPP
 	#error PT_CPP Has Been Defined
@@ -471,7 +471,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTSystem \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTMcRT \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -494,7 +494,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTGFXVK.so \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -573,7 +573,7 @@ PT_RECIPEPREFIX cp -f ../../../ThirdParty/PosixLinuxGlibc/PT_VULKANSDK_LIB_NAME/
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
-    ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
+    ../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
@@ -585,8 +585,8 @@ PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT
 ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
 PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
-../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
-PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
+../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
+PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
 ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
 PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME

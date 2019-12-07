@@ -4,7 +4,7 @@ VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTGFXVK_PosixAndroid", "PTGFXVK_PosixAndroid.vcxproj", "{84646759-1D88-4C3F-9470-3CB5512F6A77}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTSystem_PosixAndroid", "PTSystem_PosixAndroid.vcxproj", "{157DDACE-E8FC-4971-AD32-2D041336BE6E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTMcRT_PosixAndroid", "PTMcRT_PosixAndroid.vcxproj", "{157DDACE-E8FC-4971-AD32-2D041336BE6E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTLauncher_PosixAndroid", "PTLauncher_PosixAndroid.vcxproj", "{219E5D8B-2804-433B-AF70-281EFBD86B84}"
 	ProjectSection(ProjectDependencies) = postProject

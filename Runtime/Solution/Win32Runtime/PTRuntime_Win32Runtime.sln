@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTSystem_Win32Runtime", "PTSystem_Win32Runtime.vcxproj", "{C0C3C751-FA2C-402D-A750-2670CEA5F587}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTMcRT_Win32Runtime", "PTMcRT_Win32Runtime.vcxproj", "{C0C3C751-FA2C-402D-A750-2670CEA5F587}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTGraphicsD3D12_Win32Runtime", "PTGraphicsD3D12_Win32Runtime.vcxproj", "{1AFEE221-0819-4557-B6DF-97673022016F}"
 EndProject

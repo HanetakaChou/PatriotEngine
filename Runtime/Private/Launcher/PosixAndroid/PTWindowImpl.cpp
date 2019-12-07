@@ -13,10 +13,10 @@ static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *, ANativ
 static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *, ANativeWindow *);
 static void *PTInvokeMain(void *pVoid);
 
-//PTSystem
+//PTMcRT
 #include <fcntl.h>
-extern "C" PTSYSTEMAPI int PTS_iFDDir_DataExternal; 
-extern "C" PTSYSTEMAPI char PTS_StrPath_DataExternal[0X10000];
+extern "C" PTMCRTAPI int PTS_iFDDir_DataExternal; 
+extern "C" PTMCRTAPI char PTS_StrPath_DataExternal[0X10000];
 
 #include "PTWindowImpl.h"
 static PTWWindowImpl *s_pWindowImpl_Singleton = NULL; //PTInvokeMain线程写入 UI线程读取
@@ -28,7 +28,7 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *pActivity, v
 	static bool bIsProcessCreate = true;
 	if (bIsProcessCreate)
 	{
-		//PTSystem
+		//PTMcRT
 		PTS_iFDDir_DataExternal = ::open64(pActivity->externalDataPath, O_RDONLY);
 		assert(PTS_iFDDir_DataExternal != -1);
 		size_t sResult = ::strlcpy(PTS_StrPath_DataExternal, pActivity->externalDataPath, 0X10000U);
