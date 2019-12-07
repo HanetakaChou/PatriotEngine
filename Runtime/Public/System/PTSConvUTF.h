@@ -6,8 +6,8 @@
 
 #include <stdint.h>
 
-extern "C" PTSYSTEMAPI bool PTCALL PTSConv_UTF8ToUTF16(char const *pInBuf, uint32_t *pInCharsLeft, char16_t *pOutbuf, uint32_t *pOutCharsLeft);
-extern "C" PTSYSTEMAPI bool PTCALL PTSConv_UTF16ToUTF8(char16_t const *pInBuf, uint32_t *pInCharsLeft, char *pOutbuf, uint32_t *pOutCharsLeft);
+extern "C" PTMCRTAPI bool PTCALL PTSConv_UTF8ToUTF16(char const *pInBuf, uint32_t *pInCharsLeft, char16_t *pOutbuf, uint32_t *pOutCharsLeft);
+extern "C" PTMCRTAPI bool PTCALL PTSConv_UTF16ToUTF8(char16_t const *pInBuf, uint32_t *pInCharsLeft, char *pOutbuf, uint32_t *pOutCharsLeft);
 
 #endif
 

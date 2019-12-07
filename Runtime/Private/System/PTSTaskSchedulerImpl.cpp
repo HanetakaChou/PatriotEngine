@@ -1439,7 +1439,7 @@ inline void *PTSMarket::Worker_Thread_Main(void *pMarketVoid)
 }
 
 //------------------------------------------------------------------------------------------------------------
-//PTSYSTEMAPI
+//PTMCRTAPI
 //------------------------------------------------------------------------------------------------------------
 static int32_t s_TaskScheduler_Initialize_RefCount = 0;
 bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber)

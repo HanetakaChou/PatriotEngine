@@ -36,7 +36,7 @@ struct IPTSFile
 	virtual int64_t PTCALL Seek(uint32_t Whence, int64_t Offset) = 0;
 };
 
-extern "C" PTSYSTEMAPI bool PTCALL PTSFileSystem_Initialize();
-extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess();
+extern "C" PTMCRTAPI bool PTCALL PTSFileSystem_Initialize();
+extern "C" PTMCRTAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess();
 
 #endif

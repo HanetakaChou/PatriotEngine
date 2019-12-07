@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern "C" PTSYSTEMAPI void PTCALL PTS_MemoryZero(void *pBuf, size_t Count);
+extern "C" PTMCRTAPI void PTCALL PTS_MemoryZero(void *pBuf, size_t Count);
 
-extern "C" PTSYSTEMAPI void PTCALL PTS_MemoryCopy(void *pOutBuf, void const *pInBuf, size_t Count);
+extern "C" PTMCRTAPI void PTCALL PTS_MemoryCopy(void *pOutBuf, void const *pInBuf, size_t Count);
 
 #endif

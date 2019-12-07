@@ -7,21 +7,21 @@
 #include <stddef.h>
 #include <stdint.h>
 
-extern "C" PTSYSTEMAPI bool PTCALL PTSMemoryAllocator_Initialize();
+extern "C" PTMCRTAPI bool PTCALL PTSMemoryAllocator_Initialize();
 
-extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size);
+extern "C" PTMCRTAPI void * PTCALL PTSMemoryAllocator_Alloc(uint32_t Size);
 
-extern "C" PTSYSTEMAPI void PTCALL PTSMemoryAllocator_Free(void *pVoid);
+extern "C" PTMCRTAPI void PTCALL PTSMemoryAllocator_Free(void *pVoid);
 
-extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment);
+extern "C" PTMCRTAPI void * PTCALL PTSMemoryAllocator_Alloc_Aligned(uint32_t Size, uint32_t Alignment);
 
-extern "C" PTSYSTEMAPI void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid);
+extern "C" PTMCRTAPI void PTCALL PTSMemoryAllocator_Free_Aligned(void *pVoid);
 
-extern "C" PTSYSTEMAPI uint32_t PTCALL PTSMemoryAllocator_Size(void *pVoid);
+extern "C" PTMCRTAPI uint32_t PTCALL PTSMemoryAllocator_Size(void *pVoid);
 
-extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc(void *pVoid, uint32_t Size);
+extern "C" PTMCRTAPI void * PTCALL PTSMemoryAllocator_Realloc(void *pVoid, uint32_t Size);
 
-extern "C" PTSYSTEMAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoid, uint32_t Size, uint32_t Alignment);
+extern "C" PTMCRTAPI void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoid, uint32_t Size, uint32_t Alignment);
 
 //McRT(multi-core runtime)
 

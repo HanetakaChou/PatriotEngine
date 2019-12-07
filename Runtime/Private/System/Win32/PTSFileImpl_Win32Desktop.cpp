@@ -11,7 +11,7 @@ inline PTSFileSystemImpl::PTSFileSystemImpl()
 	wchar_t wPathName[0X10000];
 	DWORD uiResult = ::GetCurrentDirectoryW(0X10000, wPathName);
 	assert(uiResult != 0U);
-	uint32_t InCharsLeft = static_cast<uint32_t>(uiResult) + 1U;//°üÀ¨'\0'
+	uint32_t InCharsLeft = static_cast<uint32_t>(uiResult) + 1U;//ï¿½ï¿½ï¿½ï¿½'\0'
 	uint32_t OutCharsLeft = 0X10000U;
 	bool bResult = ::PTSConv_UTF16ToUTF8(reinterpret_cast<char16_t *>(wPathName), &InCharsLeft, m_RootPath, &OutCharsLeft);
 	assert(bResult);
@@ -31,7 +31,7 @@ void PTCALL PTSFileSystemImpl::Internal_Release()
 static PTSFileSystemImpl *s_FileSystem_Singleton_Pointer = NULL;
 
 static int32_t s_FileSystem_Initialize_RefCount = 0;
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
+extern "C" PTMCRTAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 {
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
@@ -46,7 +46,7 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 	}
 }
 
-extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
+extern "C" PTMCRTAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 {
 	return s_FileSystem_Singleton_Pointer;
 }
@@ -59,7 +59,7 @@ char const * PTCALL PTSFileSystemImpl::RootPath()
 IPTSFile * PTCALL PTSFileSystemImpl::File_Create(uint32_t OpenMode, char const *pFileName)
 {
 	wchar_t wFileName[0X10000];
-	uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pFileName))) + 1U;//°üÀ¨'\0'
+	uint32_t InCharsLeft = static_cast<uint32_t>(::strlen(reinterpret_cast<const char *>(pFileName))) + 1U;//ï¿½ï¿½ï¿½ï¿½'\0'
 	uint32_t OutCharsLeft = 0X10000U;
 	bool bResult = ::PTSConv_UTF8ToUTF16(pFileName, &InCharsLeft, reinterpret_cast<char16_t *>(wFileName), &OutCharsLeft);
 	assert(bResult);
