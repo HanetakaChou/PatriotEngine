@@ -45,7 +45,7 @@ void PTSFileSystemImpl::Internal_Release()
 static PTSTSD_KEY s_FileSystem_Index;
 
 static int32_t s_FileSystem_Initialize_RefCount = 0;
-extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
+extern "C" PTMCRTAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 {
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
@@ -71,7 +71,7 @@ extern "C" PTSYSTEMAPI PTBOOL PTCALL PTSFileSystem_Initialize()
 	}
 }
 
-extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
+extern "C" PTMCRTAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 {
 	PTSFileSystemImpl *pFileSystem = static_cast<PTSFileSystemImpl *>(::PTSTSD_GetValue(s_FileSystem_Index));
 

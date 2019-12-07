@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test_ParallelMap_Win32Deskt
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Test_TreeSum_Win32Desktop", "Test_TreeSum_Win32Desktop.vcxproj", "{E9D0906C-9BA3-4E38-80A1-5C07BF4DDF66}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTSystem_Win32Desktop", "..\..\..\Runtime\Solution\Win32Desktop\PTSystem_Win32Desktop.vcxproj", "{FED171CE-F280-46F3-B633-0E1C345DCA4F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PTMcRT_Win32Desktop", "..\..\..\Runtime\Solution\Win32Desktop\PTMcRT_Win32Desktop.vcxproj", "{FED171CE-F280-46F3-B633-0E1C345DCA4F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

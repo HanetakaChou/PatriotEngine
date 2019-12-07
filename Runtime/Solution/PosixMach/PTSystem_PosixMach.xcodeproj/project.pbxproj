@@ -38,8 +38,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		47511AAA222F5BBA0014C632 /* libPTSystem.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTSystem.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		47511ABF222F5F9A0014C632 /* libPTSystem.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTSystem.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTMcRT.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTMcRT.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		47511AC9222F78810014C632 /* PTCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTCommon.h; path = ../../Public/PTCommon.h; sourceTree = "<group>"; };
 		47511ACE222F78C40014C632 /* PTSThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSThread.h; path = ../../Public/System/PTSThread.h; sourceTree = "<group>"; };
 		47511AD1222F78D50014C632 /* PTSTaskScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSTaskScheduler.h; path = ../../Public/System/PTSTaskScheduler.h; sourceTree = "<group>"; };
@@ -88,8 +88,8 @@
 		47511AAB222F5BBA0014C632 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				47511AAA222F5BBA0014C632 /* libPTSystem.dylib */,
-				47511ABF222F5F9A0014C632 /* libPTSystem.dylib */,
+				47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */,
+				47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -194,9 +194,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		47511AA9222F5BBA0014C632 /* PTSystem_macOS */ = {
+		47511AA9222F5BBA0014C632 /* PTMcRT_macOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTSystem_macOS" */;
+			buildConfigurationList = 47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_macOS" */;
 			buildPhases = (
 				47511AA6222F5BBA0014C632 /* Headers */,
 				47511AA7222F5BBA0014C632 /* Sources */,
@@ -206,14 +206,14 @@
 			);
 			dependencies = (
 			);
-			name = PTSystem_macOS;
-			productName = PTSystem_PosixMach;
-			productReference = 47511AAA222F5BBA0014C632 /* libPTSystem.dylib */;
+			name = PTMcRT_macOS;
+			productName = PTMcRT_PosixMach;
+			productReference = 47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		47511AB8222F5F9A0014C632 /* PTSystem_iOS */ = {
+		47511AB8222F5F9A0014C632 /* PTMcRT_iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTSystem_iOS" */;
+			buildConfigurationList = 47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_iOS" */;
 			buildPhases = (
 				47511AB9222F5F9A0014C632 /* Headers */,
 				47511ABA222F5F9A0014C632 /* Sources */,
@@ -223,9 +223,9 @@
 			);
 			dependencies = (
 			);
-			name = PTSystem_iOS;
-			productName = PTSystem_PosixMach;
-			productReference = 47511ABF222F5F9A0014C632 /* libPTSystem.dylib */;
+			name = PTMcRT_iOS;
+			productName = PTMcRT_PosixMach;
+			productReference = 47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
@@ -242,7 +242,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTSystem_PosixMach" */;
+			buildConfigurationList = 47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTMcRT_PosixMach" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -254,8 +254,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				47511AA9222F5BBA0014C632 /* PTSystem_macOS */,
-				47511AB8222F5F9A0014C632 /* PTSystem_iOS */,
+				47511AA9222F5BBA0014C632 /* PTMcRT_macOS */,
+				47511AB8222F5F9A0014C632 /* PTMcRT_iOS */,
 			);
 		};
 /* End PBXProject section */
@@ -334,7 +334,7 @@
 					"DEBUG=1",
 					"PTPOSIX=1",
 					"PTPOSIXMACH=1",
-					"PTSYSTEMAPI=PTEXPORT",
+					"PTMCRTAPI=PTEXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -351,7 +351,7 @@
 					"$(inherited)",
 					"-fvisibility=hidden",
 				);
-				PRODUCT_NAME = PTSystem;
+				PRODUCT_NAME = PTMcRT;
 				SDKROOT = "";
 			};
 			name = Debug;
@@ -400,7 +400,7 @@
 					"NDEBUG=1",
 					"PTPOSIX=1",
 					"PTPOSIXMACH=1",
-					"PTSYSTEMAPI=PTEXPORT",
+					"PTMCRTAPI=PTEXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -416,7 +416,7 @@
 					"$(inherited)",
 					"-fvisibility=hidden",
 				);
-				PRODUCT_NAME = PTSystem;
+				PRODUCT_NAME = PTMcRT;
 				SDKROOT = "";
 			};
 			name = Release;
@@ -516,7 +516,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTSystem_PosixMach" */ = {
+		47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTMcRT_PosixMach" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				47511AB3222F5BBA0014C632 /* Debug */,
@@ -525,7 +525,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTSystem_macOS" */ = {
+		47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_macOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				47511AB6222F5BBA0014C632 /* Debug */,
@@ -534,7 +534,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTSystem_iOS" */ = {
+		47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_iOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				47511ABD222F5F9A0014C632 /* Debug */,

@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 //Import Table Hook (Also Called "Function Redirection")
-extern "C" PTSYSTEMAPI void PTCALL PTS_ImportTableHook(
+extern "C" PTMCRTAPI void PTCALL PTS_ImportTableHook(
 	void const * const pLibraryImportBaseAddress
 	, void const * const pLibraryImportSlideAddress //Only Used By Mach To Support Shared Cache
 	, char const * const pLibraryExportName //Only Used By Win32 To Distinguish Different (Export)Library

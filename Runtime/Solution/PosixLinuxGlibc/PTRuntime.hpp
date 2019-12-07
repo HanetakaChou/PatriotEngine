@@ -328,7 +328,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
-    -DPTSYSTEMAPI=PTEXPORT \
+    -DPTMCRTAPI=PTEXPORT \
     PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
@@ -338,7 +338,7 @@ PT_RECIPEPREFIX \
     -stdlib=libc++ -lc++ \
     -Wl,--no-undefined /*General*/ \
     -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack /*Advanced*/ \
-    -shared -Wl,-soname="libPTSystem.so" \
+    -shared -Wl,-soname="libPTMcRT.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
@@ -346,23 +346,23 @@ PT_RECIPEPREFIX \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
-#define PT_MODULE PTSystem
+#define PT_MODULE PTMcRT
 
 #//STRIP---------------------------------------------------------------------------------------------------------------------
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so: \
+    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_STRIP \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
         --strip-unneeded \
-        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so 
+        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so 
        
 
 #//LD---------------------------------------------------------------------------------------------------------------------
 
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
+../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
@@ -376,7 +376,7 @@ PT_RECIPEPREFIX \
         ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
         ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
         PT_LDFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so
+        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so
 
 #//CPP--------------------------------------------------------------------------------------------------------------------
 

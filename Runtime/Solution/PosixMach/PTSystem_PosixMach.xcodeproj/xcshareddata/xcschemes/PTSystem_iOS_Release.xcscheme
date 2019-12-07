@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-               BuildableName = "libPTSystem.dylib"
-               BlueprintName = "PTSystem_iOS"
-               ReferencedContainer = "container:PTSystem_PosixMach.xcodeproj">
+               BuildableName = "libPTMcRT.dylib"
+               BlueprintName = "PTMcRT_iOS"
+               ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -46,9 +46,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-            BuildableName = "libPTSystem.dylib"
-            BlueprintName = "PTSystem_iOS"
-            ReferencedContainer = "container:PTSystem_PosixMach.xcodeproj">
+            BuildableName = "libPTMcRT.dylib"
+            BlueprintName = "PTMcRT_iOS"
+            ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
       <AdditionalOptions>
@@ -64,9 +64,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-            BuildableName = "libPTSystem.dylib"
-            BlueprintName = "PTSystem_iOS"
-            ReferencedContainer = "container:PTSystem_PosixMach.xcodeproj">
+            BuildableName = "libPTMcRT.dylib"
+            BlueprintName = "PTMcRT_iOS"
+            ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
    </ProfileAction>

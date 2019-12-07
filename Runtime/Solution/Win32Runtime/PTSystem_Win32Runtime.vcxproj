@@ -50,14 +50,14 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{c0c3c751-fa2c-402d-a750-2670cea5f587}</ProjectGuid>
     <Keyword>DynamicLibrary</Keyword>
-    <RootNamespace>PTSystem_Win32Runtime</RootNamespace>
+    <RootNamespace>PTMcRT_Win32Runtime</RootNamespace>
     <DefaultLanguage>zh-CN</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <AppContainerApplication>true</AppContainerApplication>
     <ApplicationType>Windows Store</ApplicationType>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ApplicationTypeRevision>10.0</ApplicationTypeRevision>
-    <ProjectName>PTSystem_Win32Runtime</ProjectName>
+    <ProjectName>PTMcRT_Win32Runtime</ProjectName>
     <WindowsTargetPlatformMinVersion>10.0.10240.0</WindowsTargetPlatformMinVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -124,39 +124,39 @@
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <GenerateManifest>false</GenerateManifest>
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IgnoreImportLibrary>false</IgnoreImportLibrary>
     <OutDir>..\..\..\Binary\Win32Runtime\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTSystem</TargetName>
+    <TargetName>PTMcRT</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -165,7 +165,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -179,7 +179,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -193,7 +193,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -207,7 +207,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTARM;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -221,7 +221,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
@@ -235,7 +235,7 @@
       <PrecompiledHeaderFile />
       <PrecompiledHeaderOutputFile />
       <CompileAsManaged>false</CompileAsManaged>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTSYSTEMAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWIN32;PTWIN32RUNTIME;PTMCRTAPI=PTEXPORT;PTX64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>

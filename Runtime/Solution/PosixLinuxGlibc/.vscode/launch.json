@@ -17,7 +17,7 @@
             "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/x86/Debug:${workspaceFolder}/ThirdParty/PosixLinuxGlibc/lib",
             "stopAtEntry": true,
             "MIMode": "gdb",
-            "miDebuggerPath": "${workspaceFolder}/ThirdParty/PosixLinuxGlibc/bin64/gdb",
+            //"miDebuggerPath": "/opt/rh/devtoolset-8/root/usr/bin/gdb",
             "targetArchitecture": "x86",
             "setupCommands": [
                 {

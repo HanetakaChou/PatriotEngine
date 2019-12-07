@@ -24,11 +24,11 @@ void PTCALL PTSFileSystemImpl::Internal_Release()
 }
 
 static PTSFileSystemImpl *s_FileSystem_Singleton_Pointer = NULL;
-extern "C" PTSYSTEMAPI int PTS_iFDDir_DataExternal = -1;
-extern "C" PTSYSTEMAPI char PTS_StrPath_DataExternal[0X10000] = { "" };
+extern "C" PTMCRTAPI int PTS_iFDDir_DataExternal = -1;
+extern "C" PTMCRTAPI char PTS_StrPath_DataExternal[0X10000] = { "" };
 
 static int32_t s_FileSystem_Initialize_RefCount = 0;
-extern "C" PTSYSTEMAPI bool PTCALL PTSFileSystem_Initialize()
+extern "C" PTMCRTAPI bool PTCALL PTSFileSystem_Initialize()
 {
 	if (::PTSAtomic_GetAndAdd(&s_FileSystem_Initialize_RefCount, 1) == 0)
 	{
@@ -45,7 +45,7 @@ extern "C" PTSYSTEMAPI bool PTCALL PTSFileSystem_Initialize()
 	}
 }
 
-extern "C" PTSYSTEMAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
+extern "C" PTMCRTAPI IPTSFileSystem * PTCALL PTSFileSystem_ForProcess()
 {
 	return s_FileSystem_Singleton_Pointer;
 }

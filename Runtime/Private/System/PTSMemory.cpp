@@ -1427,7 +1427,7 @@ static inline void rte_memcpy(void *dst, const void *src, size_t n)
 
 #include <string.h>
 
-extern "C" PTSYSTEMAPI void PTCALL PTS_MemoryZero(void *pBuf, size_t Count)
+extern "C" PTMCRTAPI void PTCALL PTS_MemoryZero(void *pBuf, size_t Count)
 {
 	::memset(pBuf, 0, Count);
 }

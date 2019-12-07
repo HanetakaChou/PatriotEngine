@@ -107,9 +107,9 @@ struct IPTSTaskScheduler
 #endif
 };
 
-extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
-extern "C" PTSYSTEMAPI bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
-extern "C" PTSYSTEMAPI IPTSTaskScheduler *PTCALL PTSTaskScheduler_ForThread();
+extern "C" PTMCRTAPI bool PTCALL PTSTaskScheduler_Initialize(uint32_t ThreadNumber = 0U);
+extern "C" PTMCRTAPI bool PTCALL PTSTaskScheduler_Initialize_ForThread(float fThreadNumberRatio = 1.0f);
+extern "C" PTMCRTAPI IPTSTaskScheduler *PTCALL PTSTaskScheduler_ForThread();
 
 //Parallel Programming Pattern
 
