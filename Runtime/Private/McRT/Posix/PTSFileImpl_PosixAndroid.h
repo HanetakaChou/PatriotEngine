@@ -1,12 +1,9 @@
-#include "../../../Public/System/PTSFile.h"
-
-#include <sdkddkver.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "../../../Public/McRT/PTSFile.h"
 
 class PTSFileSystemImpl :public IPTSFileSystem
 {
-	char m_RootPath[0X10000];
+	int const m_iFDDir_DataExternal;
+	char const * const m_StrPath_DataExternal;
 
 	char const * PTCALL RootPath() override;
 	IPTSFile * PTCALL File_Create(uint32_t OpenMode, char const *pFileName) override;
@@ -14,12 +11,12 @@ class PTSFileSystemImpl :public IPTSFileSystem
 	inline ~PTSFileSystemImpl();
 	inline void PTCALL Internal_Release();
 public:
-	inline PTSFileSystemImpl();
+	inline PTSFileSystemImpl(int iFDDir_DataExternal, char const * StrPath_DataExternal);
 };
 
 class PTSFileImpl :public IPTSFile
 {
-	HANDLE const m_hFile;
+	int const m_iFD;
 
 	int64_t PTCALL Size() override;
 	intptr_t PTCALL Read(void *pBuffer, uintptr_t Count) override;
@@ -29,5 +26,5 @@ class PTSFileImpl :public IPTSFile
 	inline ~PTSFileImpl();
 	void PTCALL Release() override;
 public:
-	inline PTSFileImpl(HANDLE hFile);
+	inline PTSFileImpl(int iFD);
 };

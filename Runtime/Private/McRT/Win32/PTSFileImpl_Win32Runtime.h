@@ -1,4 +1,4 @@
-#include "../../../Public/System/PTSFile.h"
+#include "../../../Public/McRT/PTSFile.h"
 
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN

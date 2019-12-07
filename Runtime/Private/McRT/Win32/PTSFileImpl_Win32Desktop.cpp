@@ -2,9 +2,9 @@
 #include <new>
 #include <string.h>
 #include <assert.h>
-#include "../../../Public/System/PTSMemoryAllocator.h"
-#include "../../../Public/System/PTSThread.h"
-#include "../../../Public/System/PTSConvUTF.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
+#include "../../../Public/McRT/PTSConvUTF.h"
 
 inline PTSFileSystemImpl::PTSFileSystemImpl()
 {

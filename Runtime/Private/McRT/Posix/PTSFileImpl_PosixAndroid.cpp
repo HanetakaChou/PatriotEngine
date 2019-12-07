@@ -4,8 +4,8 @@
 #include <errno.h>
 #include <new>
 #include <assert.h>
-#include "../../../Public/System/PTSMemoryAllocator.h"
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 inline PTSFileSystemImpl::PTSFileSystemImpl(int iFDDir_DataExternal, char const * StrPath_DataExternal) :m_iFDDir_DataExternal(iFDDir_DataExternal), m_StrPath_DataExternal(StrPath_DataExternal)
 {

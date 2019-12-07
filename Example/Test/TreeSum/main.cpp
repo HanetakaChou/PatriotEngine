@@ -1,6 +1,6 @@
-﻿#include "../../Runtime/Public/System/PTSMemoryAllocator.h"
-#include "../../Runtime/Public/System/PTSTaskScheduler.h"
-#include "../../Runtime/Public/System/PTSThread.h"
+﻿#include "../../Runtime/Public/McRT/PTSMemoryAllocator.h"
+#include "../../Runtime/Public/McRT/PTSTaskScheduler.h"
+#include "../../Runtime/Public/McRT/PTSThread.h"
 #include <new>
 #include <assert.h>
 #include <iostream>

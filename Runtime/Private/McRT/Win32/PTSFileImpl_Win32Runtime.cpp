@@ -3,9 +3,9 @@
 #include <assert.h>
 #include <roapi.h>
 #include <robuffer.h>
-#include "../../../Public/System/Win32/PTSConvUTF.h"
-#include "../../../Public/System/PTSMemoryAllocator.h"
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/Win32/PTSConvUTF.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 inline PTSFileSystemImpl::PTSFileSystemImpl(ABI::Windows::Storage::IStorageFolder *pStorageFolder)
 	:

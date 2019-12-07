@@ -152,8 +152,8 @@ PT_RECIPEPREFIX \
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o: \
     ../../Test/ParallelMap/main.cpp \
-	../../../Runtime/Public/System/PTSTaskScheduler.h \
-	../../../Runtime/Public/System/PT_McRT_Parallel_Map.h \
+	../../../Runtime/Public/McRT/PTSTaskScheduler.h \
+	../../../Runtime/Public/McRT/PT_McRT_Parallel_Map.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
