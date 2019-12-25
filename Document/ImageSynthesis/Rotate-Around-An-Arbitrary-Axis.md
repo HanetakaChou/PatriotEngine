@@ -16,8 +16,8 @@ $Q^{-1} = \lbrack \, \cos{\frac{\theta}{2}} \; \text{-}\sin{\frac{\theta}{2}} \;
 以下是垂直于NormalAxis的俯视图 //NormalAxis即$\overrightarrow{N}$  
 ![](./Rotate-Around-An-Arbitrary-Axis.png)  
   
-设$\overrightarrow{ON}$是$\overrightarrow{OP}$在$\overrightarrow{N}$上的投影  
-由于P绕NormalAxia旋转得到P‘ 显然$\overrightarrow{ON}$也是$\overrightarrow{OP'}$在NormalAxis上的投影  
+设$\overrightarrow{ON}$是$\overrightarrow{OP}$在NormalAxis上的投影 //$\overrightarrow{OP}$即$\overrightarrow{P}$  
+由于P绕NormalAxis旋转得到P‘ 显然$\overrightarrow{ON}$也是$\overrightarrow{OP'}$在NormalAxis上的投影  
   
 显然有  
 $\overrightarrow{OP} = \overrightarrow{ON} + \overrightarrow{NP}$  
@@ -25,10 +25,10 @@ $\overrightarrow{OP'} = \overrightarrow{ON} + \overrightarrow{NP'}$
   
 根据向量投影  
 $\overrightarrow{ON} = \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen$  
-$\overrightarrow{NP} = \overrightarrow{OP} - \overrightarrow{ON} =  \overrightarrow{P} -  \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen$ //$\overrightarrow{OP}$即$\overrightarrow{P}$  
+$\overrightarrow{NP} = \overrightarrow{OP} - \overrightarrow{ON} =  \overrightarrow{P} -  \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen$  
   
 根据叉乘的定义  
-//大小 由于 $|\overrightarrow{N}|=1$且$\overrightarrow{N} \perp NP$ 因此 $| \operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen |$ = △ONP的面积的2倍 = $|\overrightarrow{N}| \cdot |\overrightarrow{NP}|$ = $| \overrightarrow{NP} |$ = $| \overrightarrow{NT} |$  
+//大小 由于 $\lvert \overrightarrow{N} \rvert=1$且$\overrightarrow{N} \perp NP$ 因此 $\lvert \operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \rvert$ = △ONP的面积的2倍 = $\lvert \overrightarrow{N} \rvert \cdot \lvert \overrightarrow{NP} \rvert$ = $\lvert \overrightarrow{NP} \rvert$ = $\lvert \overrightarrow{NT} \rvert$  
 //方向 由于 NT$\perp$NP且NT$\perp$$\overrightarrow{N}$ => NT$\perp$平面ONP 因此 $\operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen$的方向与NT相同  
 NT = $\operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen$ //右手系  
   
