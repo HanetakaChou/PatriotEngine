@@ -1,5 +1,6 @@
+## 变换  
 
-## 绕任意轴旋转  
+### 绕任意轴旋转  
 
 设  
 单位模四元数 $Q = \lbrack \, \cos{\frac{\theta}{2}} \; \sin{\frac{\theta}{2}} \; \overrightarrow{N} \, \rbrack$ //$\overrightarrow{N}$是单位向量    
@@ -8,7 +9,7 @@ $Q^{-1} = \lbrack \, \cos{\frac{\theta}{2}} \; \text{-}\sin{\frac{\theta}{2}} \;
 
 几何意义  
 
-//参考文献 (1.\[Vince 2011\]/6.6.2 Vectors| 2.[Pharr 2016]/2.7.6 Rotation around an Arbitrary Axis)  
+//参考文献 (1.[Pharr 2016]/2.7.6 Rotation around an Arbitrary Axis| 2.\[Vince 2011\]/6.6.2 Vectors)  
 
 //DirectXMath.h -> DirectX::XMMatrixRotationAxis  
 //NormalAxis = Vector3Normalize(Axis) 
@@ -39,9 +40,14 @@ $\overrightarrow{HP'} = \overrightarrow{NT} \cdot \sin\theta$
 = $\operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \cdot \sin\theta$ //上式代入  
   
 $\overrightarrow{OP'} = \overrightarrow{ON} + \overrightarrow{NP'} = \overrightarrow{ON} + \overrightarrow{NH} + \overrightarrow{HP'}$  
-= $\overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen + \lparen \overrightarrow{P} -  \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \rparen \cdot \cos\theta + \operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \cdot \sin\theta$      
-    
+= $\overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen + \lparen \overrightarrow{P} -  \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \rparen \cdot \cos\theta + \operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \cdot \sin\theta$  
+  
+### 对手性的影响  
+
+//参考文献 (1.[Pharr 2016]/2.8.7 Transformations and Coordinate System Handedness)  
+  
 ## 参考文献  
-[1.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
-[2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[1.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[2.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
+
 
