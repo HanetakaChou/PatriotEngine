@@ -1,21 +1,73 @@
-## 变换  
+## 变换（Transform）  
+  
+### 矩阵（Matrix)  
+  
+#### 顶点变换 \ 切线变换 \ 法线变换  
 
-### 绕任意轴旋转  
+引入矩阵的目的 充分利用 现代处理器 支持的 向量指令 进行加速 //SIMT   
 
+仅从数学的角度 计算机图形学涉及到所有的计算都可以在不借助矩阵的情况下完成   
+  
+#### 对手性的影响  
+
+//参考文献 (2.\[Pharr 2016\]/2.8.7 Transformations and Coordinate System Handedness)  
+
+#### 平移（Translation) \ 旋转（Rotation） \ 缩放(Scaling) \ 分解（Decomposition）  
+
+##### 平移
+  
+//根据运算规则，平移对 切线变换\法线变换 是没有意义的
+  
+##### 分解
+//本节较难，可以暂时跳过
+//需要先学习后文中的"任意旋转变换能用一个单位四元数表示"  
+  
+//DirectXMath -> DirectX::XMMatrixDecompose  
+  
+TRS是目前场景图（Scene Graph）中常用的顺序（1.\[Moller 2018\]/4.1.5 Concatenation of Transforms）  
+  
+  
+//参考文献 (2.\[Pharr 2016\]/2.9.3 AnimatedTransform Implementation| 1.\[Moller 2018\]/4.2.3 Matrix Decomposition)  
+  
+//Polar Decomposition
+
+#### 基变换  
+  
+##### 视野空间（View Space）  
+  
+//视野变换（View Transform）考虑平移，但平移对 切线变换\法线变换 是没有意义的  
+//因此，视野变换针对坐标变换  
+  
+##### 切线空间（Tangent Space）  
+  
+//一般针对法线变换  
+  
+#### 投影（Projection）变换  
+  
+##### 正交投影（Orthographic Projection）   
+  
+##### 透视投影（Perspective Projection）        
+  
+##### 双抛物面投影（Dual Paraboloid Projection）   
+  
+### 四元数（Quaternion）  
+  
+#### 任意单位四元数都对应于一个旋转变换  
+  
 设  
 单位模四元数 $Q = \lbrack \, \cos{\frac{\theta}{2}} \; \sin{\frac{\theta}{2}} \; \overrightarrow{N} \, \rbrack$ //$\overrightarrow{N}$是单位向量    
 $Q^{-1} = \lbrack \, \cos{\frac{\theta}{2}} \; \text{-}\sin{\frac{\theta}{2}} \; \overrightarrow{N} \, \rbrack$  
 纯四元数 $P = \lbrack \, 0 \: \overrightarrow{P} \, \rbrack$ //三维空间内点  
 
-几何意义  
+##### 几何意义  
 
-//参考文献 (1.[Pharr 2016]/2.7.6 Rotation around an Arbitrary Axis| 2.\[Vince 2011\]/6.6.2 Vectors)  
+//参考文献 (2.\[Pharr 2016\]/2.7.6 Rotation around an Arbitrary Axis| 3.\[Vince 2011\]/6.6.2 Vectors| 4.\[Vince 2012\]/6.10.2 Vectors)  
 
-//DirectXMath.h -> DirectX::XMMatrixRotationAxis  
+//DirectXMath -> DirectX::XMMatrixRotationAxis  
 //NormalAxis = Vector3Normalize(Axis) 
 
 以下是垂直于NormalAxis的俯视图 //NormalAxis即$\overrightarrow{N}$  
-![](./Rotate-Around-An-Arbitrary-Axis.png)  
+![](./Scene-1.png)  
   
 设$\overrightarrow{ON}$是$\overrightarrow{OP}$在NormalAxis上的投影 //$\overrightarrow{OP}$即$\overrightarrow{P}$  
 由于P绕NormalAxis旋转得到P‘ 显然$\overrightarrow{ON}$也是$\overrightarrow{OP'}$在NormalAxis上的投影  
@@ -42,12 +94,16 @@ $\overrightarrow{HP'} = \overrightarrow{NT} \cdot \sin\theta$
 $\overrightarrow{OP'} = \overrightarrow{ON} + \overrightarrow{NP'} = \overrightarrow{ON} + \overrightarrow{NH} + \overrightarrow{HP'}$  
 = $\overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen + \lparen \overrightarrow{P} -  \overrightarrow{N} \cdot \operatorname{dot} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \rparen \cdot \cos\theta + \operatorname{cross} \lparen \overrightarrow{N} , \overrightarrow{P} \rparen \cdot \sin\theta$  
   
-### 对手性的影响  
-
-//参考文献 (1.[Pharr 2016]/2.8.7 Transformations and Coordinate System Handedness)  
+#### 任意旋转变换都能用一个单位四元数表示  
   
-## 参考文献  
-[1.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
-[2.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
+  
+### 对偶四元数（Dual Quaternion）  
+  
+  
+### 参考文献  
+[1.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real Time Rendering." CRC Press 2018.](http://www.realtimerendering.com)  
+[2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[3.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
+[4.\[Vince 2012\] John Vince. "Matrix Transforms for Computer Games and Animation." Springer 2012.](http://www.johnvince.co.uk)  
 
 
