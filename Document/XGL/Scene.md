@@ -8,9 +8,18 @@
 
 仅从数学的角度 计算机图形学涉及到所有的计算都可以在不借助矩阵的情况下完成   
   
-#### 对手性的影响  
+##### 法线变换  
+//（1.\[Moller 2018\]/4.1.7 Normal Transform）  
+//（2.\[Pharr 2016\]/2.8.3 Normals）  
+  
+###### 手性（Handedness）  
 
-//参考文献 (2.\[Pharr 2016\]/2.8.7 Transformations and Coordinate System Handedness)  
+//根据（2.\[Pharr 2016\]/2.8.3 Normals）中的证明，$n'={\lparen M^{\text{-}1} \rparen}^T n$并不是唯一解，$n'= \lparen \text{-} {\lparen M^{\text{-}1} \rparen}^T \rparen n$也满足$n' \cdot t' = 0$，法线变换的矩阵是${\lparen M^{\text{-}1} \rparen}^T$还是$\text{-} {\lparen M^{\text{-}1} \rparen}^T$取决于M是否改变手性  
+  
+//（2.\[Pharr 2016\]/2.8.7 Transformations and Coordinate System Handedness）  
+  
+//（2.\[Pharr 2016\]/2.10.1 Surface Interaction）    
+  
 
 #### 平移（Translation) \ 旋转（Rotation） \ 缩放(Scaling) \ 分解（Decomposition）  
 
