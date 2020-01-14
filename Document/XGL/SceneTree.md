@@ -1,3 +1,5 @@
+# 场景树（SceneTree）  
+  
 ## 变换（Transform）  
   
 ### 矩阵（Matrix)  
@@ -76,7 +78,7 @@ $Q^{-1} = \lbrack \, \cos{\frac{\theta}{2}} \; \text{-}\sin{\frac{\theta}{2}} \;
 //NormalAxis = Vector3Normalize(Axis) 
 
 以下是垂直于NormalAxis的俯视图 //NormalAxis即$\overrightarrow{N}$  
-![](./Scene-1.png)  
+![](./SceneTree-1.png)  
   
 设$\overrightarrow{ON}$是$\overrightarrow{OP}$在NormalAxis上的投影 //$\overrightarrow{OP}$即$\overrightarrow{P}$  
 由于P绕NormalAxis旋转得到P‘ 显然$\overrightarrow{ON}$也是$\overrightarrow{OP'}$在NormalAxis上的投影  
@@ -109,10 +111,11 @@ $\overrightarrow{OP'} = \overrightarrow{ON} + \overrightarrow{NP'} = \overrighta
 ### 对偶四元数（Dual Quaternion）  
   
   
-### 参考文献  
+## 参考文献  
 [1.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real Time Rendering." CRC Press 2018.](http://www.realtimerendering.com)  
 [2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
 [3.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
 [4.\[Vince 2012\] John Vince. "Matrix Transforms for Computer Games and Animation." Springer 2012.](http://www.johnvince.co.uk)  
 
+\[Arvo 1990\] James Arvo. "Transforming Axis-Aligned Bounding Boxes." Graphics Gems X.8 1990.
 
