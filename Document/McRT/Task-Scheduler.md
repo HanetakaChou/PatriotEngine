@@ -439,10 +439,10 @@ else
 
 
 ## 参考文献
-[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann Publishers 2012.](http://parallelbook.com/)   
+[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
 
 [2.\[Intel 2019\] Intel. "Intel Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)   
  
-[Herlihy 2012] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann Publishers 2012.  
+[Herlihy 2012] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann 2012.  
 
 Structured Parallel Programming with Deterministic Patterns  

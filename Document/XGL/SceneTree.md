@@ -110,10 +110,14 @@ $\overrightarrow{OP'} = \overrightarrow{ON} + \overrightarrow{NP'} = \overrighta
   
 ### 对偶四元数（Dual Quaternion）  
   
-  
+
+### 
+Object Instancing //2.\[Pharr 2016\]/4.1.2 TransformedPrimitive: Object Instancing and Animated Primitives  
+
+
 ## 参考文献  
-[1.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real Time Rendering." CRC Press 2018.](http://www.realtimerendering.com)  
-[2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[1.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com)  
+[2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation, Third Edition." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
 [3.\[Vince 2011\] John Vince. "Quaternions for Computer Graphics." Springer 2011.](http://www.johnvince.co.uk)  
 [4.\[Vince 2012\] John Vince. "Matrix Transforms for Computer Games and Animation." Springer 2012.](http://www.johnvince.co.uk)  
 
