@@ -11,7 +11,7 @@
 2.其它图形相关的需求在[Document/目录.md]中列出  
   
 正在解决：  
-1.设计一套比较完整的全局光照解决方案  
+1.设计一套比较完整的实时全局光照解决方案  
 参考文献：  
 * 实时渲染  
 [\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 10 Local Illumination  
