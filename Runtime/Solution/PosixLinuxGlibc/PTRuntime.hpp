@@ -143,7 +143,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTLauncher.bundle: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTWindowImpl.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -224,7 +224,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem -lvulkan \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTMcRT -lvulkan \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -247,7 +247,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTGFXVK.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXHALDevice.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTGFXAssetDDS.o \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libvulkan.so   \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
@@ -295,7 +295,7 @@ PT_RECIPEPREFIX \
 
 #undef PT_MODULE
 
-#//PTSystem---------------------------------------------------------------------------------------------------------------------
+#//PTMcRT---------------------------------------------------------------------------------------------------------------------
 
 #ifdef PT_CPP
 	#error PT_CPP Has Been Defined
@@ -328,7 +328,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
-    -DPTSYSTEMAPI=PTEXPORT \
+    -DPTMCRTAPI=PTEXPORT \
     PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
@@ -338,7 +338,7 @@ PT_RECIPEPREFIX \
     -stdlib=libc++ -lc++ \
     -Wl,--no-undefined /*General*/ \
     -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack /*Advanced*/ \
-    -shared -Wl,-soname="libPTSystem.so" \
+    -shared -Wl,-soname="libPTMcRT.so" \
     -pthread  \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
@@ -346,23 +346,23 @@ PT_RECIPEPREFIX \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
-#define PT_MODULE PTSystem
+#define PT_MODULE PTMcRT
 
 #//STRIP---------------------------------------------------------------------------------------------------------------------
 
-../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
-    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so: \
+    ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_STRIP \
-        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+        ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
         --strip-unneeded \
-        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so 
+        -o ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so 
        
 
 #//LD---------------------------------------------------------------------------------------------------------------------
 
-../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so: \
+../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
@@ -376,40 +376,40 @@ PT_RECIPEPREFIX \
         ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o \
         ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o \
         PT_LDFLAGS \
-        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so
+        -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so
 
 #//CPP--------------------------------------------------------------------------------------------------------------------
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o: \
-    ../../Private/System/PTSMemory.cpp \
-    ../../Public/System/PTSMemory.h \
+    ../../Private/McRT/PTSMemory.cpp \
+    ../../Public/McRT/PTSMemory.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSMemory.cpp \
+        ../../Private/McRT/PTSMemory.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemory.o
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o: \
-    ../../Private/System/PTSMemoryAllocator.cpp \
-    ../../Private/System/Posix/PTSMemoryAllocator.inl \
-    ../../Public/System/PTSMemoryAllocator.h \
+    ../../Private/McRT/PTSMemoryAllocator.cpp \
+    ../../Private/McRT/Posix/PTSMemoryAllocator.inl \
+    ../../Public/McRT/PTSMemoryAllocator.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSMemoryAllocator.cpp \
+        ../../Private/McRT/PTSMemoryAllocator.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSMemoryAllocator.o
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o: \
-    ../../Private/System/PTSTaskSchedulerImpl.cpp \
-    ../../Private/System/Posix/PTSTaskSchedulerImpl.inl \
-    ../../Private/System/PTSTaskSchedulerImpl.h \
-    ../../Public/System/PTSTaskScheduler.h \
+    ../../Private/McRT/PTSTaskSchedulerImpl.cpp \
+    ../../Private/McRT/Posix/PTSTaskSchedulerImpl.inl \
+    ../../Private/McRT/PTSTaskSchedulerImpl.h \
+    ../../Public/McRT/PTSTaskScheduler.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \
-        ../../Private/System/PTSTaskSchedulerImpl.cpp \
+        ../../Private/McRT/PTSTaskSchedulerImpl.cpp \
         PT_CPPFLAGS \
         -o ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTSTaskSchedulerImpl.o
 
@@ -471,7 +471,7 @@ PT_RECIPEPREFIX \
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTSystem \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTGFXVK -lPTMcRT \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -494,7 +494,7 @@ PT_RECIPEPREFIX \
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTApp.so: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/PTAExport.o \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTGFXVK.so \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -573,7 +573,7 @@ PT_RECIPEPREFIX cp -f ../../../ThirdParty/PosixLinuxGlibc/PT_VULKANSDK_LIB_NAME/
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
-    ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
+    ../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME \
     ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
 ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
@@ -585,8 +585,8 @@ PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTLauncher/PT_TARGET_ARCH_NAME/PT
 ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
 PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTGFXVK/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
-../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
-PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTSystem/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
+../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
+PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTMcRT/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME
 
 ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME:
 PT_RECIPEPREFIX mkdir -p ../../../Intermediate/PTApp/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME

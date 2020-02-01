@@ -10,7 +10,7 @@
 
 #include <assert.h>
 
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 #include "PTWindowImpl.h"
 #include <limits.h>

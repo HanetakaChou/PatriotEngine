@@ -7,8 +7,8 @@
 #include "../../Math/PTMath.h"
 #include "../Render/PTGRender.h"
 
-#include "../../System/PTFileSystem.h"
-#include "../../System/PTMemorySystem.h"
+#include "../../McRT/PTFileSystem.h"
+#include "../../McRT/PTMemorySystem.h"
 #include "../../Window/PTWWindow.h"
 
 struct IPTGDevice;

@@ -1,7 +1,7 @@
 ﻿#include "../../Public/App/PTAExport.h"
-#include "../../Public/System/PTSThread.h"
-#include "../../Public/System/PTSMemoryAllocator.h"
-#include "../../Public/System/PTSTaskScheduler.h"
+#include "../../Public/McRT/PTSThread.h"
+#include "../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../Public/McRT/PTSTaskScheduler.h"
 //#include "../../Public/Video/PTVDInstance.h"
 //#include "../../Public/Audio/PTADInstance.h"
 #include <new>
@@ -33,7 +33,7 @@
 
 extern "C" PTIMPORT void PTCALL PTI_FBXSDK_FBXToPTTF(IPTSFile *pFileFBX, IPTSFile *pPTTF);
 
-#include "../../Public/System/PTSMemory.h"
+#include "../../Public/McRT/PTSMemory.h"
 
 #include "../../Public/GFX/PTGFXHAL.h"
 #include "../../Public/GFX/PTGFXHALUtil.h"

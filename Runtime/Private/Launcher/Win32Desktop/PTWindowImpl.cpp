@@ -1,5 +1,5 @@
 ﻿#include "PTWindowImpl.h"
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -553,7 +553,7 @@ void PTWWindowImpl::TermminateMessagePump()
 
 
 #include "../../../Public/App/PTAExport.h"
-#include "../../../Public/System/PTSConvUTF.h"
+#include "../../../Public/McRT/PTSConvUTF.h"
 
 static unsigned __stdcall PTInvokeMain(void *pVoid)
 {

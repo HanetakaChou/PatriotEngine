@@ -1,5 +1,5 @@
 #include "../../../Public/Window/PTWWindow.h"
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 #include <Windows.ApplicationModel.core.h>
 
@@ -60,7 +60,7 @@ class PTWWindowImpl :
 	void Position_Set(uint32_t TopLeftX, uint32_t TopLeftY) override;
 	void Size_Set(uint32_t Width, uint32_t Height) override;
 
-	//ASTA线程调用
+	//ASTA锟竭程碉拷锟斤拷
 	//PTWWindowImpl
 	void * volatile m_pEventOutputCallback_UserData;
 	void (PTPTR * volatile m_pEventOutputCallback)(void *pUserData, void *pEventData);
@@ -72,14 +72,14 @@ class PTWWindowImpl :
 	ABI::Windows::UI::Core::ICoreWindow * volatile m_hWindow_Cache;
 
 public:
-	//wWinMain线程调用
+	//wWinMain锟竭程碉拷锟斤拷
 	inline PTWWindowImpl();
 	inline ~PTWWindowImpl();
 
 	//Cache CmdLine
 	wchar_t *m_pCmdLine;
 
-	//PTInvokeMain线程调用
+	//PTInvokeMain锟竭程碉拷锟斤拷
 	void TermminateMessagePump();
 
 private:
@@ -94,7 +94,7 @@ private:
 	//IFrameworkViewSource
 	HRESULT STDMETHODCALLTYPE CreateView(ABI::Windows::ApplicationModel::Core::IFrameworkView **viewProvider) override;
 
-	//PTInvokeMain线程
+	//PTInvokeMain锟竭筹拷
 	PTSThread m_hThreadInvoke;
 
 	//IFrameworkView

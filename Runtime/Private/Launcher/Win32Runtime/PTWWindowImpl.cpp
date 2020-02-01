@@ -35,7 +35,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int nCmd
 }
 
 #include "../../../Public/App/PTAExport.h"
-#include "../../../Public/System/Win32/PTSConvUTF.h"
+#include "../../../Public/McRT/Win32/PTSConvUTF.h"
 
 static unsigned __stdcall PTInvokeMain(void *pVoid)
 {

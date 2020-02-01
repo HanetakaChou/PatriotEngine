@@ -1,12 +1,12 @@
 #include "PTVDInstanceImpl.h"
 
-#include "../../../Public/System/PTSThread.h"
-#include "../../../Public/System/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSThread.h"
+#include "../../../Public/McRT/PTSMemoryAllocator.h"
 #include <new>
 
 IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 {
-	static PTVDInstanceImpl *s_InstanceImpl_Singleton_Pointer = reinterpret_cast<PTVDInstanceImpl *>(uintptr_t(0X1U));//²»¿ÉÄÜÎªÓÐÐ§Öµ£¬ÒòÎª²»Âú×ãAlignment
+	static PTVDInstanceImpl *s_InstanceImpl_Singleton_Pointer = reinterpret_cast<PTVDInstanceImpl *>(uintptr_t(0X1U));//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ð§Öµï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Alignment
 	static int32_t s_InstanceImpl_Initialize_RefCount = 0;
 
 	PTVDInstanceImpl *pInstanceImpl;
@@ -35,7 +35,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 		assert(SUCCEEDED(hResult));
 		assert(pDXGIFactory != NULL);
 
-		//¡ýDeviceNUMA And DeviceUMA -------------------------------------
+		//ï¿½ï¿½DeviceNUMA And DeviceUMA -------------------------------------
 		::PTS_CPP_Vector<ID3D12Device *> DeviceNUMAPointerS;
 		::PTS_CPP_Vector<ID3D12Device *> DeviceUMAPointerS;
 
@@ -67,20 +67,20 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 			}
 		}
 
-		//°´ÕÕÒÔÏÂ²ßÂÔ
-		//1:Í¬Ê±´æÔÚ¶ÀÏÔºÍ¼¯ÏÔ£¨Ò»°ãÎªDesktopÓÎÏ·±Ê¼Ç±¾»òDesktopÌ¨Ê½»ú£¨ÐèÒªÔÚBIOSÖÐÆôÓÃºËÐÄÏÔ¿¨£©£©
-		//Device3DÎª¶ÀÏÔ
-		//DeviceComputeÎª¼¯ÏÔ
-		//2:Ö»´æÔÚ¶ÀÏÔ£¨Ò»°ãÎªDesktopÌ¨Ê½»ú£©
-		//Device3DÎª¶ÀÏÔ
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Â²ï¿½ï¿½ï¿½
+		//1:Í¬Ê±ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ÔºÍ¼ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopï¿½ï¿½Ï·ï¿½Ê¼Ç±ï¿½ï¿½ï¿½DesktopÌ¨Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½BIOSï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ï¿½ï¿½
+		//Device3DÎªï¿½ï¿½ï¿½ï¿½
+		//DeviceComputeÎªï¿½ï¿½ï¿½ï¿½
+		//2:Ö»ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopÌ¨Ê½ï¿½ï¿½ï¿½ï¿½
+		//Device3DÎªï¿½ï¿½ï¿½ï¿½
 		//DeviceComputeÎªNULL
-		//3:Ö»´æÔÚ¼¯ÏÔ£¨Ò»°ãÎªDesktopÇá±¡±Ê¼Ç±¾»òMobile£©
-		//Device3DÎª¼¯ÏÔ
+		//3:Ö»ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopï¿½á±¡ï¿½Ê¼Ç±ï¿½ï¿½ï¿½Mobileï¿½ï¿½
+		//Device3DÎªï¿½ï¿½ï¿½ï¿½
 		//DeviceComputeÎªNULL
 
 		if (DeviceNUMAPointerS.size() > 0U && DeviceUMAPointerS.size() > 0U)
 		{
-			//Í¬Ê±´æÔÚ¶ÀÏÔºÍ¼¯ÏÔ£¨Ò»°ãÎªDesktopÓÎÏ·±Ê¼Ç±¾»òDesktopÌ¨Ê½»ú£¨ÐèÒªÔÚBIOSÖÐÆôÓÃºËÐÄÏÔ¿¨£©£©
+			//Í¬Ê±ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½ÔºÍ¼ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopï¿½ï¿½Ï·ï¿½Ê¼Ç±ï¿½ï¿½ï¿½DesktopÌ¨Ê½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½BIOSï¿½ï¿½ï¿½ï¿½ï¿½Ãºï¿½ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½ï¿½ï¿½ï¿½
 
 			void *pDevice3DImplVoid = ::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTVDDevice3DImpl), alignof(PTVDDevice3DImpl));
 			assert(pDevice3DImplVoid != NULL);
@@ -115,7 +115,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 		}
 		else if (DeviceNUMAPointerS.size() > 0U && DeviceUMAPointerS.size() == 0U)
 		{
-			//Ö»´æÔÚ¶ÀÏÔ£¨Ò»°ãÎªDesktopÌ¨Ê½»ú£©
+			//Ö»ï¿½ï¿½ï¿½Ú¶ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopÌ¨Ê½ï¿½ï¿½ï¿½ï¿½
 
 			void *pDevice3DImplVoid = ::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTVDDevice3DImpl), alignof(PTVDDevice3DImpl));
 			assert(pDevice3DImplVoid != NULL);
@@ -142,7 +142,7 @@ IPTVDInstance * PTCALL PTVDInstance_ForProcess()
 		}
 		else if (DeviceNUMAPointerS.size() == 0U && DeviceUMAPointerS.size() > 0U)
 		{
-			//Ö»´æÔÚ¼¯ÏÔ£¨Ò»°ãÎªDesktopÇá±¡±Ê¼Ç±¾»òMobile£©
+			//Ö»ï¿½ï¿½ï¿½Ú¼ï¿½ï¿½Ô£ï¿½Ò»ï¿½ï¿½ÎªDesktopï¿½á±¡ï¿½Ê¼Ç±ï¿½ï¿½ï¿½Mobileï¿½ï¿½
 
 			void *pDevice3DImplVoid = ::PTSMemoryAllocator_Alloc_Aligned(sizeof(PTVDDevice3DImpl), alignof(PTVDDevice3DImpl));
 			assert(pDevice3DImplVoid != NULL);
@@ -285,13 +285,13 @@ void PT3DInstanceImpl::Render(
 		//
 	}
 
-	//¸ù¾ÝMaterialÇø·Ö
+	//ï¿½ï¿½ï¿½ï¿½Materialï¿½ï¿½ï¿½ï¿½
 	//uint32_t MeshNumber, IPTGMesh *MeshArray[],
 	//uint32_t MeshSkinNumber, IPTGMeshSkin *MeshSkinArray[],
 	//uint32_t TerrainNumber, IPTGTerrain *TerrainArray[],
 	//uint32_t OceanNumber, IPTGOcean *OceanArray[],
 
-	//DeviceComputeÎªNULL»ò¼¯ÏÔ
+	//DeviceComputeÎªNULLï¿½ï¿½ï¿½ï¿½
 
 	HRESULT hResult;
 
@@ -299,7 +299,7 @@ void PT3DInstanceImpl::Render(
 	{
 		D3D12_HEAP_DESC Desc;
 		Desc.SizeInBytes = 1024U * 1024U * 16U;
-		Desc.Properties.Type = D3D12_HEAP_TYPE_CUSTOM; //UploadºÍReadback»áÏÞÖÆInitialState£¬´Ó¶øÏÞÖÆ¶ÔMap/UnmapµÄÓÅ»¯ //¼´Ê¹ÔÚÓïÒåÉÏÎªUploadºÍReadbackµÄ¶Ñ£¬Ò²Ó¦µ±ÎªCustom
+		Desc.Properties.Type = D3D12_HEAP_TYPE_CUSTOM; //Uploadï¿½ï¿½Readbackï¿½ï¿½ï¿½ï¿½ï¿½ï¿½InitialStateï¿½ï¿½ï¿½Ó¶ï¿½ï¿½ï¿½ï¿½Æ¶ï¿½Map/Unmapï¿½ï¿½ï¿½Å»ï¿½ //ï¿½ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎªUploadï¿½ï¿½Readbackï¿½Ä¶Ñ£ï¿½Ò²Ó¦ï¿½ï¿½ÎªCustom
 		Desc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
 		Desc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
 		Desc.Properties.CreationNodeMask = 0X1U;
@@ -682,7 +682,7 @@ void PT3DInstanceImpl::Render(
 
 		float *Test = static_cast<float *>(pBufferOutputPartialReduceData);
 
-		//»áµ¼ÖÂÍ¼ÐÎµ÷ÊÔÆ÷³öÏÖBug
+		//ï¿½áµ¼ï¿½ï¿½Í¼ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Bug
 		//(*Test) = 0.0f;
 
 		IDXGISwapChain3 *pSwapChain;
@@ -729,5 +729,5 @@ void PT3DInstanceImpl::Render(
 	int huhu = 0;
 }
 
-static PT3DInstanceImpl *s_3DInstanceD3D12_Singleton_Pointer = reinterpret_cast<PT3DInstanceImpl *>(uintptr_t(0X1U));//²»¿ÉÄÜÎªÓÐÐ§Öµ£¬ÒòÎª²»Âú×ãAlignment
+static PT3DInstanceImpl *s_3DInstanceD3D12_Singleton_Pointer = reinterpret_cast<PT3DInstanceImpl *>(uintptr_t(0X1U));//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Ð§Öµï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Alignment
 

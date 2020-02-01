@@ -1,4 +1,4 @@
-#include "../../../../Public/System/PTMemorySystem.h"
+#include "../../../../Public/McRT/PTMemorySystem.h"
 
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN
@@ -30,14 +30,14 @@ struct IPTDeviceMemory
 	//http://msdn.microsoft.com/en-us/library/windows/desktop/dn899217
 
 
-	//¸´ÖÆÀàÐÍÀà
-	//COMMONÌáÉýµ½COPY_DEST
-	//COPY_DESTË¥ÍËµ½COMMON
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//COMMONï¿½ï¿½ï¿½ï¿½ï¿½ï¿½COPY_DEST
+	//COPY_DESTË¥ï¿½Ëµï¿½COMMON
 
-	//¼ÆËã/3DÀàÐÍÀà
-	//COMMONË¥ÍËµ½NON_PIXEL_SHADER_RESOURCE|PIXEL_SHADER_RESOURCE
+	//ï¿½ï¿½ï¿½ï¿½/3Dï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//COMMONË¥ï¿½Ëµï¿½NON_PIXEL_SHADER_RESOURCE|PIXEL_SHADER_RESOURCE
 
-	//ÐèÒªÍ¬²½£¬µÈ´ýExecuteCommandListsÍê±Ï
+	//ï¿½ï¿½ÒªÍ¬ï¿½ï¿½ï¿½ï¿½ï¿½È´ï¿½ExecuteCommandListsï¿½ï¿½ï¿½
 
 	virtual void EnqueueWait(ID3D12CommandQueue *pRenderMainCommandQueueCopy) = 0;
 };

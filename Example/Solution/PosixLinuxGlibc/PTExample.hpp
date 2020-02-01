@@ -101,7 +101,6 @@
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -pthread \
     -fvisibility=hidden \
-    -DPTSYSTEMAPI=PTEXPORT \
     PT_TARGET_ARCH_CPPFLAGS \
     PT_DEBUG_CPPFLAGS
 
@@ -116,7 +115,7 @@
     -finput-charset=UTF-8 -fexec-charset=UTF-8 \
     -Wl,-Bsymbolic \
     /*-Wl,--enable-new-dtags*/ -Wl,-rpath,'$$ORIGIN' \
-    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTSystem \
+    -L../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME -lPTMcRT \
     PT_TARGET_ARCH_LDFLAGS \
     PT_DEBUG_LDFLAGS 
 
@@ -138,7 +137,7 @@ PT_RECIPEPREFIX \
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/Test-ParallelMap.bundle: \
     ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o \
-    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTSystem.so \
+    ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libPTMcRT.so \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libunwind.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++abi.so.1 \
     ../../../Binary/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/libc++.so.1 \
@@ -153,8 +152,8 @@ PT_RECIPEPREFIX \
 
 ../../../Intermediate/PT_MODULE/PT_TARGET_ARCH_NAME/PT_DEBUG_NAME/main.o: \
     ../../Test/ParallelMap/main.cpp \
-	../../../Runtime/Public/System/PTSTaskScheduler.h \
-	../../../Runtime/Public/System/PT_McRT_Parallel_Map.h \
+	../../../Runtime/Public/McRT/PTSTaskScheduler.h \
+	../../../Runtime/Public/McRT/PT_McRT_Parallel_Map.h \
     PT_MAKEFILE
 PT_RECIPEPREFIX \
     PT_CPP -c \

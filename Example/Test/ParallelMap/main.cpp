@@ -1,7 +1,7 @@
-﻿#include "../../../Runtime/Public/System/PTSMemoryAllocator.h"
-#include "../../../Runtime/Public/System/PTSTaskScheduler.h"
-#include "../../../Runtime/Public/System/PTSThread.h"
-#include "../../../Runtime/Public/System/PT_McRT_Parallel_Map.h"
+﻿#include "../../../Runtime/Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Runtime/Public/McRT/PTSTaskScheduler.h"
+#include "../../../Runtime/Public/McRT/PTSThread.h"
+#include "../../../Runtime/Public/McRT/PT_McRT_Parallel_Map.h"
 #include <iostream>
 
 int main()

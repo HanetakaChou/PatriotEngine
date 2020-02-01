@@ -1,9 +1,9 @@
 ﻿#include <fbxsdk.h>
 
 #include "../../Public/PTCommon.h"
-#include "../../Public/System/PTSFile.h"
-#include "../../Public/System/PTSThread.h"
-#include "../../Public/System/PTSMemoryAllocator.h"
+#include "../../Public/McRT/PTSFile.h"
+#include "../../Public/McRT/PTSThread.h"
+#include "../../Public/McRT/PTSMemoryAllocator.h"
 #include "../../Public/3D/PT3DSceneGraph.h"
 #include "../../Public/Math/PTMath.h"
 #include <assert.h>

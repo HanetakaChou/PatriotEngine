@@ -1,6 +1,6 @@
 #include "PTVDDevice3DImpl.h"
 
-#include "../../../Public/System/PTSThread.h"
+#include "../../../Public/McRT/PTSThread.h"
 
 bool PTVDDevice3DImpl::Initilize()
 {

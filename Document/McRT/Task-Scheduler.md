@@ -4,8 +4,6 @@
 
 基于Tag: 2019_U9  
 
-#### Fork-Join
-
 #### Scheduling Algorithm
 
 //在TBB中
@@ -127,24 +125,324 @@ https://software.intel.com/en-us/node/506107
 
 ## Generic Parallel Algorithms
 
+#### Fork-Join
+
+即TaskScheduler天生支持的Spawn  
+
 ### Map
 
 Latency
 
-(1.\[McCool 2012\]/8.3 Recursive Implementation Of Map)
+(1.\[McCool 2012\]/8.3 Recursive Implementation Of Map)  
 
 ### Pipeline
 
-Throughout
+memory_order  
+volatile  
+https://en.cppreference.com/w/cpp/atomic/memory_order  
 
-## Flow Graph
 
-### Wavefront
+Throughout  
 
-(2.\[Intel® Software 2019\]/Design Patterns/Wavefront) 
+(1.\[McCool 2012\]/9.4.2 Pipeline in Cilk Plus)  
+
+pipeline.cpp
+
+--filter_list------------------------
+
+pipeline
+    filter_list
+
+filter
+    next_filter_in_pipeline
+
+-------------------------------------
+
+stage_task::execute
+```
+concrete_filter<T,U,Body> //U=Body(T)
+    //部分专用化 //concrete_filter<void,U,Body> //construct //filter_may_emit_null //object_may_be_null 
+
+stage_task : task, task_info
+--task_info------ //严格意义上应当叫item_info //因为task会终止（执行到serial阶段，不等于low_token时，put_token) 再次spawn（等于low_token的task，note_down）
+    //虽然在逻辑上，
+    my_object //token_helper::cast_to_void_ptr //serial_in_order
+    my_token //从my_pipeline的token_counter取得 //pipeline内唯一
+    my_token_ready //只在first_stage且serial时，才会设置my_token_ready //first stage parallel 或 not first stage（serial or parallel）不会设置 //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）
+    is_valid //在input_buffer中，前一阶段的item到达的速度并非一致
+--stage_task-----
+    my_pipeline //
+        --worker控制--
+        input_tokens //parallel_pipeline传入 //在spawn task时 会--（atomic）
+        --item控制--
+        token_counter //在my_at_start时 不断++（atomic） 为pipeline中每一个item分配一个唯一的my_token
+        end_of_input //return NULL 或 control.is_pipeline_stopped -> filter::set_end_of_input
+
+    my_filter //current filter //my_filter = my_filter->next_filter_in_pipeline //不断向后迭代
+        my_input_buffer //serial
+            task_info *array //
+            low_token //prior Token have already been seen //Does "seen" mean spawn ???
+
+    my_at_start //bind to item (1.[McCool 2012]) //first stage(即filter) of pipeline
+
+--Process Current Stage---
+
+//process first stage //第一阶段特殊处理
+1.当第一阶段serial时，确保串行化
+2.确定pipeline中item的个数
+if(my_at_start) //first stage(即filter) of pipeline
+{
+    if(my_filter->is_serial()) //serial_in_order或serial_out_of_order
+    {
+        //first stage serial 
+
+        --Execute Filter--
+        my_object = (*my_filter)(my_object) //concrete_filter::operator()
+            //部分专用化 //concrete_filter<void,U,Body> //flow_control //end_of_input
+   
+        --End of Input-- //Unlikely
+        if !(
+                (my_object != NULL) //T非void的filter，返回NULL即表示结束
+                || (my_filter->object_may_be_null() && !my_pipeline.end_of_input) 
+            ) 
+        {
+            my_pipeline.end_of_input = true;
+
+            --Worker_Terminate--
+            return NULL; //Execute End //超过第一个stage产生的item个数 的Worker是没有意义的
+        }
+
+        --item控制--
+        if my_filter->is_ordered() //serial_in_order
+        {
+            my_token = atomic_fetch_add(my_pipeline.token_counter, 1) //only need release semantic???
+            my_token_ready = true; 
+        }
+
+        --worker控制--
+        if atomic_fetch_add(input_tokens,-1) > 1
+            spawn stage_task //first stage 
+
+        //if( !my_filter->next_filter_in_pipeline ) // we're only filter in pipeline //unlikely
+        //{ 
+        //    process another stage
+        //}
+    }
+    else //parallel
+    {
+        //first stage parallel 
+
+        --End of Input--
+        if my_pipeline.end_of_input //May Race Condition
+        {
+
+            --Worker_Terminate--
+            return NULL
+        }
+        
+        --worker控制--  //与serial区别 先spawn再执行filter           
+        if atomic_fetch_add(input_tokens,-1) > 1
+            spawn stage_task //first stage 
+        
+        //注：没有item控制！ //体现在my_token_ready
+
+        --Execute Filter--
+        my_object = (*my_filter)(my_object)
+
+        --End of Input--
+        if ...
+        {
+            my_pipeline.end_of_input = true;
+
+            --Worker_Terminate--
+            return NULL;
+        }
+
+    }
+
+    //mark not first stage ----------------------------------
+    my_at_start = false;
+}
+else //not first stage //能否将 not-first-stage 和 my_filter = my_filter->next_filter_in_pipeline 合并到迭代中
+{
+    //--process_another_stage--之后 进入此处
+
+    Execute Filter
+
+    //没有my_token_ready
+
+---确保非first stage的serial filter串行化----
+
+    if my_filter is serial //Current Stage Serial //item_info.my_token == low_token才可能执行 //不断spwan Task 与 Worker Terminate 保持平衡 //token的个数在第1阶段确定 //token_index（bind to item）在第一个serial_in_order阶段确定
+
+    //serial阶段可以认为是一个同步点，只有item_info.my_token == low_token的task才会执行
+
+    {
+        /*my_filter->my_input_buffer->note_done*/ //Spawn Task
+        
+        if current-filter not is ordered /*serial_out_of_order*/ 
+            ||  item_info.my_token == my_input_buffer.low_token //为何不是必定相等？？？ //与
+        {
+           --pop-from-input-buffer--
+
+           //array_size maintain a ringbuffer
+
+        }
+
+        if item-poped is_valid //比如 当前item(1) //input_buffer中 item(2) not is_valid | item(3) is_valid
+        {
+            spawn_task //从当前filter开始 //而非at_start
+        } 
+        else
+        {
+            //不spawn_task //由于put_token是互斥的 //如果此处没有spawn（item(2) not is_valid | item(3) is_valid）,那么bind to item(2)的task在执行完上一个stage后 执行put_token时，会process_another_stage
+        }
+
+        //bind-to-item //继续向下执行               
+        //my_filter = my_filter->next_filter_in_pipeline;
+
+--note_done---------------
+        
+        my_object = (*my_filter)(my_object) //Execute Filter
+
+        --lock--------------------
+
+        if(token == low_token) //一定成立？？？ //实际测试 !is_order || token == low_token 一定成立 //可能与thread_bound_filter有关（bind-to-stage？）
+        {
+            ++low_token
+            item_info = input_buffer[low_token]
+        }
+
+        --unlock------------------
+
+        if(item_info.is_valid)
+        {
+            spawn_task //current_fitler //next_token
+        }
+
+--put_token--------------------
+
+        bool put_token
+
+        --lock-----------------------------
+
+        if(token == low_token)
+        {
+            put_token = false
+        }
+        else
+        {
+            input_buffer[token]= item_info 
+
+            put_token = true
+        }
+
+        --unlock---------------------------
+
+        if(!put_token)
+        {
+            process_another_stage
+        }
+        else
+        {
+            worker_terminate //bind-to-item 
+        }
+    }   
+}
+
+//Execute Filter End //接下来不会再ExecuteFilter
+//token_counter++ End //接下来不会再 token_counter++
+
+//bind to item //不断向下一个stage迭代 //process_another_stage之后 进入!my_at_start
+my_filter = my_filter->next_filter_in_pipeline;
+
+--Analyze Next Stage---
+
+if my_filter != NULL 
+{
+    if the-next-filter is serial 
+    {
+        /* my_filter->my_input_buffer->put_token(当前task的item_info) */ //当前task的task_info //即item_info //由于bind-to-item，task_info可以保存到下一个stage（直到遇到serial stage）  
+
+---确保非first stage的serial filter串行化-----
+//1.[McCool 2012] 9.4.2 Pipeline in Cilk Plus
+    So reducer_consumer joins views using the following rules:
+• If the left view is leftmost, its list is empty. Process the list of the right view.
+• Otherwise, concatenate the lists.
+
+        /---需要互斥
+
+        Token item_token; //item_info.my_token只在部分条件下才有效  //The terminology ""
+        if the-next-filter is orderd //serial_in_order
+        {
+            if(!item_info.my_token_ready) //first stage parallel不会设置my_token_ready //not first stage（serial or parallel）
+            {
+                item_info.my_token = high_token++;
+                item_info.my_token_ready = true;
+            }
+
+            item_token = item_info.my_token;
+        }
+        else //serial_out_of_order
+        {
+            item_token = high_token++;
+        }
+
+        if(item_token == low_token) //leftmost //以此来保证串行 //put_token需要互斥
+        {
+            --process_another_stage---------
+            
+            recycle_to_reexecute //recycle_as_safe_continuation() //set_ref_count(1)
+            return NULL;
+        }
+        else
+        {
+            //push to inputbuffer
+
+            //grow array
+
+            //push //根据token_index设置is_valid
+
+            //if was_empty then sema_V
+
+            --Worker_Terminate--
+            return NULL;
+        }
+    }
+    else
+    {
+        //Next Stage Is Parallel
+
+        --process_another_stage-------------
+        
+        recycle_to_reexecute //recycle_as_safe_continuation() //set_ref_count(1)
+        return NULL;
+    }
+}
+else
+{
+    // the-next-filter is NULL
+
+
+}
+
+
+```
+
+
+## Flow Graph  
+
+### Wavefront  
+
+(2.\[Intel® Software 2019\]/Design Patterns/Wavefront)  
+
+
 
 ## 参考文献
+[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
 
-[1.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann Publishers 2012.](http://parallelbook.com/)  
+[2.\[Intel 2019\] Intel. "Intel Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)   
+ 
+[Herlihy 2012] Maurice Herlihy, Nir Shavit. "The Art of Multiprocessor Programming, Revised First Edition" Morgan Kaufmann 2012.  
 
-[2.\[Intel® Software 2019\] Intel® Software. "Intel® Threading Building Blocks Documentation." Intel Developer Zone 2019.](https://www.threadingbuildingblocks.org/docs/help/index.htm)  
+Structured Parallel Programming with Deterministic Patterns  

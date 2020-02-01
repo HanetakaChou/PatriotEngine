@@ -49,7 +49,7 @@
     <ProjectReference Include="PTApp_Win32Runtime.vcxproj">
       <Project>{483e5d6a-3b9d-4a3a-844d-6d21022c2bd3}</Project>
     </ProjectReference>
-    <ProjectReference Include="PTSystem_Win32Runtime.vcxproj">
+    <ProjectReference Include="PTMcRT_Win32Runtime.vcxproj">
       <Project>{c0c3c751-fa2c-402d-a750-2670cea5f587}</Project>
     </ProjectReference>
   </ItemGroup>

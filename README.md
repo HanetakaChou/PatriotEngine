@@ -11,18 +11,35 @@
 2.其它图形相关的需求在[Document/目录.md]中列出  
   
 正在解决：  
-1.开发适用于Direct3D12/Vulkan的内存分配器  
+1.设计一套比较完整的全局光照解决方案  
 参考文献：  
-1.Intel TBB  
+* 实时渲染  
+[\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 10 Local Illumination  
+[\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 11 Local Illumination  
+* 光线追踪  
+[\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation, Third Edition." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[\[Haines 2019\] Eric Haines, Tomas Akenine Moller. "Ray Tracing Gems." Apress 2019.](https://research.nvidia.com/publication/2019-03_Ray-Tracing-Gems)  
+[Intel Embree](https://www.embree.org/)  
+[AMD Radeon Rays](https://gpuopen.com/gaming-product/radeon-rays/)  
+* 辐射度  
+\[Cohen 1993\] Michael Cohen, John Wallace. "Radiosity and Realistic Image Synthesis." Morgan Kaufmann 1993.   
+[\[Coombe 2005\] Greg Coombe, Mark Harris. "Global Illumination Using Progressive Refinement Radiosity." Chapter 39, GPU Gems 2, 2005.](https://developer.nvidia.com/gpugems/GPUGems2/gpugems2_chapter39.html)   
+* 体素  
+[\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 13.10 Voxels  
+[NVIDIA GVDB Voxels](https://developer.nvidia.com/gvdb-samples)  
+[OpenVDB](https://www.openvdb.org/)  
+* VXGI  
+[\[Crassin 2011\] Cyril Crassin, Fabrice Neyret, Miguel Sainz, Simon Green, Elmar Eisemann. "Interactive Indirect Illumination Using Voxel Cone Tracing." SIGGRAPH 2011](https://research.nvidia.com/publication/interactive-indirect-illumination-using-voxel-cone-tracing)  
+[NVIDIA VXGI](https://developer.nvidia.com/vxgi)  
+* 材质  
+[SONY OSL](https://github.com/imageworks/OpenShadingLanguage/)  
+[NVIDIA MDL](https://developer.nvidia.com/mdl-sdk)  
+  
+2.开发适用于Direct3D12/Vulkan的内存分配器  
+参考文献：  
+* [Intel TBB](https://www.threadingbuildingblocks.org/)  
 [Hudson 2006] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.  
 [Kukanov 2007] Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.  
-https://www.threadingbuildingblocks.org/  
-2.Vulkan Memory Allocator  
-https://gpuopen.com/vulkan-memory-allocator-2-2/  
-3.D3D12 Memory Allocator  
-https://gpuopen.com/d3d12-memory-allocator-1-0-0/  
-4.[Gelado 2019] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.  
-https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory  
-
-
-
+* [Vulkan Memory Allocator](https://gpuopen.com/vulkan-memory-allocator-2-2/)  
+* [D3D12 Memory Allocator](https://gpuopen.com/d3d12-memory-allocator-1-0-0/)  
+* [\[Gelado 2019\] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.](https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory)  
