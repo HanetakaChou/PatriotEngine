@@ -24,8 +24,8 @@ Copyright (C) Microsoft Corporation. All rights reserved.
   <!-- If (_Redirect) flag is set, redirect to older versions of VS -->
   <Import Condition="'$(_Redirect)' == 'true' and '$(MinSupportedVCTargetsVersion)' != 'v150'" Project="Microsoft.Cpp.Redirect.targets" />
   
-  <!-- If no platforms file was found then use the InvalidPlatform.Targets -->
-  <Import Condition="'$(PlatformTargetsFound)' != 'true'" Project="$(VCTargetsPath)\Microsoft.Cpp.InvalidPlatform.Targets"/>
+  <!-- If no platforms file was found then use the InvalidPlatform.targets -->
+  <Import Condition="'$(PlatformTargetsFound)' != 'true'" Project="$(VCTargetsPath)\Microsoft.Cpp.InvalidPlatform.targets"/>
   <!-- *******************************************************************************************
         DesignTime targets, used by IDE only (not real build). 
         They are VS version specific, not toolset specific.

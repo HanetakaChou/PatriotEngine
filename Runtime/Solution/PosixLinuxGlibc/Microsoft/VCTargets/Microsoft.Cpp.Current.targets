@@ -107,7 +107,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
        ******************************************************************************************* -->
   <Import Condition="'$(ConfigurationType)' != 'Makefile'" Project="$(_PlatformFolder)\Platform.targets"/>
 
-  <Import Condition="'$(ConfigurationType)' == 'Makefile'" Project="$(VCTargetsPath)\Microsoft.MakeFile.Targets"/>
+  <Import Condition="'$(ConfigurationType)' == 'Makefile'" Project="$(VCTargetsPath)\Microsoft.MakeFile.targets"/>
     
     <!-- *******************************************************************************************
         Cleaning targets
