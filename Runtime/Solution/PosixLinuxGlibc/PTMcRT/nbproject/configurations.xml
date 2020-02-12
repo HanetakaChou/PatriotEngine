@@ -34,7 +34,7 @@
       <toolsSet>
         <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
+        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
@@ -79,7 +79,7 @@
       <toolsSet>
         <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>true</dependencyChecking>
-        <rebuildPropChanged>false</rebuildPropChanged>
+        <rebuildPropChanged>true</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
