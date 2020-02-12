@@ -4,14 +4,76 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "PT-Build.sh",
+            "label": "PTMcRT Debug build",
             "type": "shell",
-            "command": "${workspaceFolder}/Solution/PosixLinuxGlibc/PT-Build.sh",
-            "args": [],
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile",
+                "CONF=Debug"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Solution/PosixLinuxGlibc/nb_PTMcRT",
+                "env": {
+                    "PATH": "${workspaceFolder}/../ThirdParty/PosixLinuxGlibc/bin64:/usr/local/bin:/usr/bin:/bin"
+                }
+            },
+            "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "PTMcRT Debug clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile",
+                "CONF=Debug",
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Solution/PosixLinuxGlibc/nb_PTMcRT"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "PTMcRT Release build",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile",
+                "CONF=Release"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Solution/PosixLinuxGlibc/nb_PTMcRT",
+                "env": {
+                    "PATH": "${workspaceFolder}/../ThirdParty/PosixLinuxGlibc/bin64:/usr/local/bin:/usr/bin:/bin"
+                }
+            },
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "PTMcRT Release clean",
+            "type": "shell",
+            "command": "make",
+            "args": [
+                "-f",
+                "Makefile",
+                "CONF=Release",
+                "clean"
+            ],
+            "options": {
+                "cwd": "${workspaceFolder}/Solution/PosixLinuxGlibc/nb_PTMcRT"
+            },
+            "problemMatcher": []
         }
     ]
 }

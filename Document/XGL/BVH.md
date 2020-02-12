@@ -4,17 +4,37 @@
 但是，如果计算Bounding Box的开销不大，可以先变换物体到World Space，再计算Bounding Box
   
 在Ray Tracing中  
-图元分割->BVH；空间分割->kdTree //2.\[Pharr 2016\]/4.2 Aggregates  
-图元分割：每个图元只在层次性结构（Hierachy）中出现一次；空间分割：同一个图元可能与多个空间区域重叠 //2.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies       
+图元分割->BVH；空间分割->kdTree //2\.\[Pharr 2016\]/4.2 Aggregates  
+图元分割：每个图元只在层次性结构（Hierachy）中出现一次；空间分割：同一个图元可能与多个空间区域重叠 //2\.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies       
 
 图元分割   
-BVH //二叉树    
-//Construct BVH //可以基于Fork-Join模式并行化（3.\[McCool 2012\]/8.9 QuickSort）  
-//Flatten BVH Tree //2.\[Pharr 2016\]/4.3.4 Compact BVH For Traversal  
+BVH //二叉树  
 
-在Construct BVH中，分割（Split)的目标是使产生的两个子树的重叠（Overlap）尽可能地小 //从而降低在遍历时需要同时遍历两个子树的可能性 //The general goal in partitioning here is to select a partition of primitives that doesn’t have too much overlap of the bounding boxes of the two resulting primitive sets—if there is substantial overlap then it will more frequently be necessary to traverse both children subtrees when traversing the tree, requiring more computation than if it had been possible to more effectively prune away collections of primitives. //2.\[Pharr 2016\]/4.3.1 BVH Construction  
+//Construct BVH 
 
-SAH(Surface Area Heuristic) //2.\[Pharr 2016\]/4.3.2 The Surface Area Heuristic    
+1\.SAH(Surface Area Heuristic) 
+
+基于递归的方式不断分割（Split）/\*可以基于Fork-Join模式并行化（3\.\[McCool 2012\]/8.9 QuickSort）\*/ 分割的目标是使产生的两个子树的重叠（Overlap）尽可能地小 //从而降低在遍历时需要同时遍历两个子树的可能性 //2\.\[Pharr 2016\]/4.3.1 BVH Construction  
+
+基于表面积评估概率计算开销 /\*Middle和EqualCount的SpiltMethod可以认为是SAH的简化版，仅用于教学演示目的\*/ //2\.\[Pharr 2016\]/4.3.2 The Surface Area Heuristic    
+
+//CPU原生支持Fork-Join模式，而GPU原生支持Map模式  
+//越接近原生支持的模式，效率越高  
+//SAH不适合GPU并行化，但是对CPU并行化非常友好  
+
+//---------------------------------------  
+2\.HLBVH  
+
+LBVH（Linear BVH）    
+使用莫顿码（Morton Codes）将高维数据降到一维 将BVH构造转换为排序问题 //2\.\[Pharr 2016\]/4.3.3 Linear Bounding Volume Hierarchies       
+在设计GPU的纹理缓存时，会用到莫顿序列（Morton Sequence）以提高相干性 //有着异曲同工之妙 1\.\[Moller 2018\]/23.8 Texturing  
+  
+HLBVH（Hierarchical Linear BVH）  
+~~先基于SAH递归分治 当问题规模小于一定阈值时，再基于LBVH  //从效率角度来讲，先进行递归分治是有利的 //3\.\[McCool 2012\]/8.8 Cache Locality and Cache-Oblivious Algorithm~~  
+1\.基于LBVH构造若干个小树（Treelet） 2\.将小树视为Primitive，基于SAH构造BVH  
+
+
+//Flatten BVH Tree //2\.\[Pharr 2016\]/4.3.4 Compact BVH For Traversal  
   
 ## 视锥体剔除（Frustum Culling）   
   
@@ -25,10 +45,10 @@ SAH(Surface Area Heuristic) //2.\[Pharr 2016\]/4.3.2 The Surface Area Heuristic
 在光线追踪（Ray Tracing）应用中 用于粗粒度检测  
   
 ### Ray AABB Intersection  
-//（2.\[Pharr 2016\]/3.1.2 Ray–Bounds Intersections| 2.\[Pharr 2016\]/3.9.2 Conservative Ray–Bounds Intersections）  
+//（2\.\[Pharr 2016\]/3.1.2 Ray–Bounds Intersections| 2\.\[Pharr 2016\]/3.9.2 Conservative Ray–Bounds Intersections）  
   
 ## 参考文献  
-[1.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com)  
-[2.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation, Third Edition." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
-[3.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
+[1\.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com)  
+[2\.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation, Third Edition." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
+[3\.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
 \[Arvo 1990\] James Arvo. "Transforming Axis-Aligned Bounding Boxes." Graphics Gems X.8 1990.  

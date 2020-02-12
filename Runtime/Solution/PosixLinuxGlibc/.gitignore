@@ -1,2 +1,4 @@
 .*.mk
 
+.vs
+*.vcxproj.user
