@@ -1,0 +1,55 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Cpp.Platform.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->  
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- determine which dev11 toolsets to ignore -->
+  <PropertyGroup>
+     <_CheckDev11ToolsInstalled Condition="'$(_CheckDev11ToolsInstalled)' == ''">true</_CheckDev11ToolsInstalled>
+     <WinPhone80Project Condition="'$(PlatformToolset)' == 'v110_wp80'">true</WinPhone80Project>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(_CheckDev11ToolsInstalled)' == 'true'">
+    <_Dev11Installed Condition="'$(_Dev11Installed)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DevDiv\vs\Servicing\11.0\professional@Version)</_Dev11Installed>
+    <_Dev11Installed Condition="'$(_Dev11Installed)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\DevDiv\vs\Servicing\11.0\professional@Version)</_Dev11Installed>
+    <_Dev11DesktopToolsInstalled  Condition="'$(_Dev11Installed)' != ''">true</_Dev11DesktopToolsInstalled>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(_CheckDev11ToolsInstalled)' == 'true' and '$(_Dev11DesktopToolsInstalled)' == ''">
+    <!-- check if WDExpress is installed -->
+    <_Dev11WDExpressInstalled Condition="'$(_Dev11WDExpressInstalled)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\DevDiv\wdexpress\Servicing\11.0\coremsi@Version)</_Dev11WDExpressInstalled>
+    <_Dev11WDExpressInstalled Condition="'$(_Dev11WDExpressInstalled)' == ''">$(Registry:HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\DevDiv\wdexpress\Servicing\11.0\coremsi@Version)</_Dev11WDExpressInstalled>
+    <_Dev11DesktopToolsInstalled Condition="'$(_Dev11WDExpressInstalled)' != ''">true</_Dev11DesktopToolsInstalled>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(AppContainerApplication)' == 'true' or '$(WinPhone80Project)' == 'true' or '$(_Dev11DesktopToolsInstalled)' != 'true'">
+    <_IgnoreInstalledPlatformToolset_v110>true</_IgnoreInstalledPlatformToolset_v110>
+    <_IgnoreInstalledPlatformToolset_v110_xp>true</_IgnoreInstalledPlatformToolset_v110_xp>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(WinPhone80Project)' != 'true'">
+    <_IgnoreInstalledPlatformToolset_v110_wp80>true</_IgnoreInstalledPlatformToolset_v110_wp80>
+  </PropertyGroup>
+  <PropertyGroup>
+    <MinSupportedVCTargetsVersion Condition="'$(PlatformToolset)' == 'v110' and '$(_IgnoreInstalledPlatformToolset_v110)' == 'true'">v120</MinSupportedVCTargetsVersion>
+    <MinSupportedVCTargetsVersion Condition="'$(PlatformToolset)' == 'v110_xp' and '$(_IgnoreInstalledPlatformToolset_v110_xp)' == 'true'">v120</MinSupportedVCTargetsVersion>
+  </PropertyGroup>
+  
+  <!-- Import Before -->
+  <Import Condition="Exists('$(_PlatformFolder)ImportBefore')" Project="$(_PlatformFolder)ImportBefore\*.props" />
+  <!-- Import Toolset specific properties -->
+  <Import Condition="'$(_ToolsetFound)' == 'true'" Project="$(_ToolsetPropsPath)" />
+
+  <!-- If _ToolsetFound still not found, then fallback to default platform folder and default Toolset so the project can still load. -->
+  <Import Condition="'$(_ToolsetFound)' != 'true' and '$(DefaultPlatformToolset)' != '' and Exists('$(_DefaultPlatformFolder)PlatformToolsets\$(DefaultPlatformToolset)\Toolset.props')" Project="$(_DefaultPlatformFolder)PlatformToolsets\$(DefaultPlatformToolset)\Toolset.props" />
+
+  <!-- Import After -->
+  <Import Condition="Exists('$(_PlatformFolder)ImportAfter')" Project="$(_PlatformFolder)ImportAfter\*.props" />
+</Project>
