@@ -296,6 +296,6 @@
       <LibraryDependencies>m;$(StlLibraryName)</LibraryDependencies>
     </Link>
   </ItemDefinitionGroup>
-  <Import Project="./Microsoft.Cpp.targets" />
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>
