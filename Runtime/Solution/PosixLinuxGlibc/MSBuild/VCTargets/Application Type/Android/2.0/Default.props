@@ -21,7 +21,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
     <PlatformToolset Condition="'$(PlatformToolset)' == ''">Clang_3_8</PlatformToolset>
     <!-- Fallback platformtoolset when wrong toolset is provided. -->
     <DefaultPlatformToolset>Clang_3_8</DefaultPlatformToolset>
-    <AndroidNDKProps Condition="'$(AndroidNDKProps)' == ''">$(AndroidCommonTargetsPath)\Android.NDK.Props</AndroidNDKProps>
+    <AndroidNDKProps Condition="'$(AndroidNDKProps)' == ''">$(AndroidCommonTargetsPath)\Android.NDK.props</AndroidNDKProps>
     <AndroidAPILevel Condition="'$(AndroidAPILevel)' == '' and ('$(Platform)' == 'x64' or '$(Platform)' == 'arm64')">android-21</AndroidAPILevel>
     <AndroidAPILevel Condition="'$(AndroidAPILevel)' == ''">android-19</AndroidAPILevel>
     <DefaultAndroidAPILevelNumber>19</DefaultAndroidAPILevelNumber>
