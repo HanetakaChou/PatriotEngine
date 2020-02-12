@@ -12,6 +12,9 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>../../../Private/McRT/PTSMemory.cpp</itemPath>
+      <itemPath>../../../Private/McRT/PTSMemoryAllocator.cpp</itemPath>
+      <itemPath>../../../Private/McRT/PTSTaskSchedulerImpl.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"
@@ -35,28 +38,69 @@
       </toolsSet>
       <compileType>
         <cTool>
+          <standard>3</standard>
           <commandlineTool>clang</commandlineTool>
-        </cTool>
-        <ccTool>
-          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -std=c++11 -x c++ -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden</commandLine>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
           <preprocessorList>
             <Elem>PTMCRTAPI=PTEXPORT</Elem>
           </preprocessorList>
+          <useLinkerLibraries>false</useLinkerLibraries>
+        </cTool>
+        <ccTool>
+          <standard>8</standard>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
+          <preprocessorList>
+            <Elem>PTMCRTAPI=PTEXPORT</Elem>
+          </preprocessorList>
+          <useLinkerLibraries>false</useLinkerLibraries>
         </ccTool>
+        <linkerTool>
+          <linkerKpic>false</linkerKpic>
+          <commandLine>-fdiagnostics-format=msvc -fuse-ld=lld -stdlib=libc++ -lc++ -Wl,--no-undefined -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -pthread -finput-charset=UTF-8 -fexec-charset=UTF-8 -Wl,-Bsymbolic -Wl,-rpath,'$$ORIGIN'</commandLine>
+        </linkerTool>
       </compileType>
+      <item path="../../../Private/McRT/PTSMemory.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../Private/McRT/PTSMemoryAllocator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../Private/McRT/PTSTaskSchedulerImpl.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
     </conf>
     <conf name="Release" type="2">
       <toolsSet>
-        <compilerSet>default</compilerSet>
+        <compilerSet>CLang|CLang</compilerSet>
         <dependencyChecking>true</dependencyChecking>
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
+          <standard>3</standard>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
+          <preprocessorList>
+            <Elem>NDEBUG=1</Elem>
+            <Elem>PTMCRTAPI=PTEXPORT</Elem>
+          </preprocessorList>
+          <useLinkerLibraries>false</useLinkerLibraries>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <standard>8</standard>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
+          <preprocessorList>
+            <Elem>NDEBUG=1</Elem>
+            <Elem>PTMCRTAPI=PTEXPORT</Elem>
+          </preprocessorList>
+          <useLinkerLibraries>false</useLinkerLibraries>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -64,7 +108,26 @@
         <asmTool>
           <developmentMode>5</developmentMode>
         </asmTool>
+        <linkerTool>
+          <linkerKpic>false</linkerKpic>
+          <commandLine>-fdiagnostics-format=msvc -fuse-ld=lld -stdlib=libc++ -lc++ -Wl,--no-undefined -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -pthread -finput-charset=UTF-8 -fexec-charset=UTF-8 -Wl,-Bsymbolic -Wl,-rpath,'$$ORIGIN'</commandLine>
+        </linkerTool>
       </compileType>
+      <item path="../../../Private/McRT/PTSMemory.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../Private/McRT/PTSMemoryAllocator.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
+      <item path="../../../Private/McRT/PTSTaskSchedulerImpl.cpp"
+            ex="false"
+            tool="1"
+            flavor2="0">
+      </item>
     </conf>
   </confs>
 </configurationDescriptor>

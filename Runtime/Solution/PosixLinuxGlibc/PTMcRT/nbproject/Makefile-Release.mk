@@ -34,15 +34,18 @@ include Makefile
 OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
-OBJECTFILES=
+OBJECTFILES= \
+	${OBJECTDIR}/_ext/a77151f3/PTSMemory.o \
+	${OBJECTDIR}/_ext/a77151f3/PTSMemoryAllocator.o \
+	${OBJECTDIR}/_ext/a77151f3/PTSTaskSchedulerImpl.o
 
 
 # C Compiler Flags
-CFLAGS=
+CFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
 
 # CC Compiler Flags
-CCFLAGS=
-CXXFLAGS=
+CCFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
+CXXFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -59,7 +62,22 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libPTMcRT.${CND_DLIB_EXT}: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libPTMcRT.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -shared -fPIC
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libPTMcRT.${CND_DLIB_EXT} ${OBJECTFILES} ${LDLIBSOPTIONS} -fdiagnostics-format=msvc -fuse-ld=lld -stdlib=libc++ -lc++ -Wl,--no-undefined -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -pthread -finput-charset=UTF-8 -fexec-charset=UTF-8 -Wl,-Bsymbolic -Wl,-rpath,'$$ORIGIN' -shared
+
+${OBJECTDIR}/_ext/a77151f3/PTSMemory.o: ../../../Private/McRT/PTSMemory.cpp
+	${MKDIR} -p ${OBJECTDIR}/_ext/a77151f3
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DPTMCRTAPI=PTEXPORT -DNDEBUG=1 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/a77151f3/PTSMemory.o ../../../Private/McRT/PTSMemory.cpp
+
+${OBJECTDIR}/_ext/a77151f3/PTSMemoryAllocator.o: ../../../Private/McRT/PTSMemoryAllocator.cpp
+	${MKDIR} -p ${OBJECTDIR}/_ext/a77151f3
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DPTMCRTAPI=PTEXPORT -DNDEBUG=1 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/a77151f3/PTSMemoryAllocator.o ../../../Private/McRT/PTSMemoryAllocator.cpp
+
+${OBJECTDIR}/_ext/a77151f3/PTSTaskSchedulerImpl.o: ../../../Private/McRT/PTSTaskSchedulerImpl.cpp
+	${MKDIR} -p ${OBJECTDIR}/_ext/a77151f3
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -DPTMCRTAPI=PTEXPORT -DNDEBUG=1 -std=c++11 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/_ext/a77151f3/PTSTaskSchedulerImpl.o ../../../Private/McRT/PTSTaskSchedulerImpl.cpp
 
 # Subprojects
 .build-subprojects:
