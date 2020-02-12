@@ -1,2 +1,5 @@
 build
 dist
+nbproject/private
+nbproject/*.mk
+nbproject/*.bash
