@@ -40,7 +40,7 @@
         <cTool>
           <standard>3</standard>
           <commandlineTool>clang</commandlineTool>
-          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
           <preprocessorList>
             <Elem>PTMCRTAPI=PTEXPORT</Elem>
           </preprocessorList>
@@ -48,7 +48,7 @@
         </cTool>
         <ccTool>
           <standard>8</standard>
-          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer</commandLine>
           <preprocessorList>
             <Elem>PTMCRTAPI=PTEXPORT</Elem>
           </preprocessorList>
@@ -85,7 +85,7 @@
         <cTool>
           <developmentMode>5</developmentMode>
           <standard>3</standard>
-          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
           <preprocessorList>
             <Elem>NDEBUG=1</Elem>
             <Elem>PTMCRTAPI=PTEXPORT</Elem>
@@ -95,7 +95,7 @@
         <ccTool>
           <developmentMode>5</developmentMode>
           <standard>8</standard>
-          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
+          <commandLine>-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections</commandLine>
           <preprocessorList>
             <Elem>NDEBUG=1</Elem>
             <Elem>PTMCRTAPI=PTEXPORT</Elem>

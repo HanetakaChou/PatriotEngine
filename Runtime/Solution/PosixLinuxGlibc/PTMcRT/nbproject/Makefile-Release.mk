@@ -41,11 +41,11 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
+CFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
 
 # CC Compiler Flags
-CCFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
-CXXFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
+CCFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
+CXXFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g0 -O3 -fomit-frame-pointer -ffunction-sections -fdata-sections
 
 # Fortran Compiler Flags
 FFLAGS=

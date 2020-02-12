@@ -41,11 +41,11 @@ OBJECTFILES= \
 
 
 # C Compiler Flags
-CFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
+CFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
 
 # CC Compiler Flags
-CCFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
-CXXFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
+CCFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
+CXXFLAGS=-fdiagnostics-format=msvc -stdlib=libc++ -Wall -fno-strict-aliasing -fno-exceptions -fstack-protector -fpic -fno-short-enums -fno-rtti -finput-charset=UTF-8 -fexec-charset=UTF-8 -pthread -fvisibility=hidden -mssse3 -g2 -gdwarf-2 -O0 -fno-omit-frame-pointer
 
 # Fortran Compiler Flags
 FFLAGS=
