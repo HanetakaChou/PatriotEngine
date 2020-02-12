@@ -1,0 +1,65 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Cpp.Default.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" TreatAsLocalProperty="Platform">
+
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+
+  <Import Condition="Exists('$(MSBuildThisFileDirectory)\ImportBefore\Default')" Project="$(MSBuildThisFileDirectory)\ImportBefore\Default\*.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <Platform Condition="'$(Platform)' == ''">x86</Platform>
+    <DefaultProjectVersion Condition="'$(DefaultProjectVersion)' == ''">1.0</DefaultProjectVersion>
+    <ProjectVersion Condition="'$(ProjectVersion)' == ''">$(DefaultProjectVersion)</ProjectVersion>
+    <ConfigurationType Condition="'$(ConfigurationType)' == ''">Application</ConfigurationType>
+  </PropertyGroup>
+
+  <!-- temp -->
+  <PropertyGroup>
+    <AndroidCommonTargetsPath>$(MSBuildThisFileDirectory)</AndroidCommonTargetsPath>
+  </PropertyGroup>
+
+  <!-- Adding support for platforms being defined by multiple versions of Visual Studio -->
+  <!-- This property group checks if the specified platform exists in Dev12 and reverts to Dev11 if it doesn't -->
+  <PropertyGroup>
+    <_VersionFolder>$(MSBuildThisFileDirectory)Version\$(ProjectVersion)</_VersionFolder>
+    <_VersionFolderFound Condition="Exists('$(_VersionFolder)\Version.default.props') and Exists('$(_VersionFolder)\Version.props') and Exists('$(_VersionFolder)\Version.targets')">true</_VersionFolderFound>
+    <!-- fallback to the version we install -->
+    <_VersionFolder Condition="'$(_VersionFolderFound)' != 'true'">$(MSBuildThisFileDirectory)Version\$(DefaultProjectVersion)</_VersionFolder>
+  </PropertyGroup>
+
+  <Import Project="$(_VersionFolder)\Version.default.props"/>
+
+  <PropertyGroup>
+    <ProjectName Condition=" '$(ProjectName)' == '' ">$(MSBuildProjectName)</ProjectName>
+    <TargetExt>.apk</TargetExt>
+    <TargetName>$(RootNamespace)</TargetName>
+    <ProjectFileName Condition=" '$(ProjectFileName)' == '' ">$(MSBuildProjectFile)</ProjectFileName>
+    <ProjectExt Condition=" '$(ProjectExt)' == '' ">$(MSBuildProjectExtension)</ProjectExt>
+
+    <ProjectDir Condition=" '$(ProjectDir)' == '' ">$(MSBuildProjectDirectory)\</ProjectDir>
+    <ProjectPath Condition=" '$(ProjectPath)' == '' ">$(ProjectDir)$(ProjectFileName)</ProjectPath>
+    <PlatformName Condition=" '$(PlatformName)' == '' ">$(Platform)</PlatformName>
+
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildProjectFullPath);$(MSBuildToolsPath)\Microsoft.Common.targets</MSBuildAllProjects>
+    <MSBuildAllProjects Condition="Exists('$(MSBuildProjectFullPath).user')">$(MSBuildAllProjects);$(MSBuildProjectFullPath).user</MSBuildAllProjects>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <BuildLog>
+      <Path>$(IntDir)$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+
+  <Import Condition="Exists('$(MSBuildThisFileDirectory)\ImportAfter\Default')" Project="$(MSBuildThisFileDirectory)\ImportAfter\Default\*.props" />  
+</Project>

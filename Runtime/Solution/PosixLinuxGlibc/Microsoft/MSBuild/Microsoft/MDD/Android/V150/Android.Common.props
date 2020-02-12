@@ -1,0 +1,138 @@
+<!--
+***********************************************************************************************
+Android.Common.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildThisFileDirectory)ImportBefore\*.props" Condition="Exists('$(MSBuildThisFileDirectory)ImportBefore')" />
+
+  <PropertyGroup>
+    <!-- By default we use the same bitness as the hosting platform -->
+    <PreferredToolArchitecture Condition="'$(PreferredToolArchitecture)' == ''">x64</PreferredToolArchitecture>
+
+    <!-- If OS is not x64, we cannot use x64 tools even if preferred -->
+    <PreferredToolArchitecture Condition="'$(PreferredToolArchitecture)' == 'x64' and '$(PROCESSOR_ARCHITECTURE)' != 'AMD64' and '$(PROCESSOR_ARCHITEW6432)' != 'AMD64'">x86</PreferredToolArchitecture>
+  </PropertyGroup>
+
+   <!-- Android tools root folders -->
+  <Import Project="$(AndroidCommonTargetsPath)\Android.Tools.props" />
+  
+  <PropertyGroup>
+    <!-- Required for enabling Team Build projects -->
+    <OutDirWasSpecified Condition=" '$(OutDir)'!='' AND '$(OutDirWasSpecified)'=='' ">true</OutDirWasSpecified>
+    <OutDirWasSpecified Condition=" '$(OutDir)'=='' AND '$(OutDirWasSpecified)'=='' ">false</OutDirWasSpecified>
+
+    <IntDir Condition="'$(IntDir)'=='' AND '$(IntermediateOutputPath)'!=''">$(IntermediateOutputPath)</IntDir>
+    <IntDir Condition="'$(IntDir)'=='' AND '$(IntermediateOutputPath)'==''">$(Platform)\$(Configuration)\</IntDir>
+    <OutDir Condition="'$(OutDir)'==''">$(ProjectDir)$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+
+  <!-- Default values -->
+  <PropertyGroup>
+    <!--<ExtensionsToDeleteOnClean Condition="'$(ExtensionsToDeleteOnClean)' == ''">*.d;*.tlog;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>-->
+    <PreBuildEventUseInBuild Condition="'$(PreBuildEventUseInBuild)' == ''">true</PreBuildEventUseInBuild>
+    <PreLinkEventUseInBuild Condition="'$(PreLinkEventUseInBuild)' == ''">true</PreLinkEventUseInBuild>
+    <PostBuildEventUseInBuild Condition="'$(PostBuildEventUseInBuild)' == ''">true</PostBuildEventUseInBuild>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ExecutablePath>$(MSBuild_ExecutablePath);$(PATH);</ExecutablePath>
+    
+    <!-- Files to the project with unknown extensions will default to Content itemgroup, instead of None. -->
+    <DefaultContentType>Default</DefaultContentType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <AndroidBuildType Condition="'$(AndroidBuildType)' == ''">Ant</AndroidBuildType>
+  </PropertyGroup>
+  
+  <!-- ConfigurationType Specific values -->
+  <PropertyGroup Condition="'$(ConfigurationType)' == 'Application'">
+    <TargetExt>.apk</TargetExt>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(ConfigurationType)' == 'Library'">
+    <TargetExt>.aar</TargetExt>
+    <TargetExt Condition="'$(AndroidBuildType)' == 'Ant'">.jar</TargetExt>
+  </PropertyGroup>
+
+  <ItemDefinitionGroup>
+    <AntPackage>
+      <ToolPath>$(VS_AntHome)\bin\ant.bat</ToolPath>
+      <AndroidAppLibName>Undefined</AndroidAppLibName>
+      <ApplicationName>$(TargetName)</ApplicationName>
+      <!-- AntOutDir require trailing slash -->
+      <WorkingDirectory Condition="'%(AntPackage.WorkingDirectory)' == ''">$(OutDir)Package\</WorkingDirectory>
+      
+      <!-- AntTarget is passed to Ant which is case sensitive -->
+      <AntTarget Condition="'%(AntPackage.AntTarget)' == '' and '$(UseDebugLibraries)' == 'true'">debug</AntTarget>
+      
+      <!-- Still run debug target for release so it would be still test signed. -->
+      <AntTarget Condition="'%(AntPackage.AntTarget)' == ''">debug</AntTarget>
+    </AntPackage>
+    <AntProjectPropertiesFile>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+    </AntProjectPropertiesFile>
+    <AntBuildXml>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+    </AntBuildXml>
+    <AndroidManifest>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+    </AndroidManifest>
+  </ItemDefinitionGroup>
+
+  <ItemDefinitionGroup>
+    <GradlePackage>
+      <ToolName>gradlew.bat</ToolName>
+      <GradlePlugin>gradle-experimental:0.4.0</GradlePlugin>
+      <GradleVersion>2.8</GradleVersion>
+      <AndroidAppLibName>$(RootNamespace)</AndroidAppLibName>
+      <ApplicationName>com.$(TargetName)</ApplicationName>
+      <ProjectDirectory>$(ProjectDir)app\</ProjectDirectory>
+      <BuildLibrary>false</BuildLibrary>
+    </GradlePackage>
+
+    <GradleTemplate>
+      <ExcludedFromBuild>false</ExcludedFromBuild>
+    </GradleTemplate>
+  </ItemDefinitionGroup>
+
+  <PropertyGroup>
+    <!--  Initial Debugger page and debugger -->
+    <DebuggerFlavor>AndroidDebugger</DebuggerFlavor>
+    <DebuggerType>NativeOnly</DebuggerType>
+    <PackagePath Condition="'$(PackagePath)' == '' and '$(ConfigurationType)' == 'Application'">$(TargetPath)</PackagePath>
+    <PackageName Condition="'$(PackageName)' == '' and '$(ConfigurationType)' == 'Application'">com.$(TargetName)</PackageName>
+    <DefaultLaunchActivity>android.app.NativeActivity</DefaultLaunchActivity>
+  </PropertyGroup>
+  
+  <!-- Define some NDK related props that are needed by Packaging project without a native component -->
+  <!-- This is a temporary hack, so that "gdbserver" is copied to libs during build -->
+  <PropertyGroup Condition="'$(_PackagingProjectWithoutNativeComponent)' == 'true'">
+    <GdbPrebuiltTag Condition="'$(GdbPrebuiltTag)' =='' and '$(Platform)' == 'ARM'">android-arm</GdbPrebuiltTag>
+    <GdbPrebuiltTag Condition="'$(GdbPrebuiltTag)' =='' and '$(Platform)' == 'ARM64'">android-arm64</GdbPrebuiltTag>
+    <GdbPrebuiltTag Condition="'$(GdbPrebuiltTag)' =='' and '$(Platform)' == 'x86'">android-x86</GdbPrebuiltTag>
+    <GdbPrebuiltTag Condition="'$(GdbPrebuiltTag)' =='' and '$(Platform)' == 'x64'">android-x86_64</GdbPrebuiltTag>
+    <GdbServerName Condition="'$(GdbServerName)' == ''">gdbserver</GdbServerName>
+    <GdbServerPath Condition="'$(GdbServerPath)' == ''">$(VS_NdkRoot)\prebuilt\$(GdbPrebuiltTag)\gdbserver\$(GdbServerName)</GdbServerPath>
+    
+    <TargetAndroidABI Condition="'$(Platform)' == 'ARM'">armeabi-v7a</TargetAndroidABI>
+    <TargetAndroidABI Condition="'$(Platform)' == 'ARM64'">arm64-v8a</TargetAndroidABI>
+    <TargetAndroidABI Condition="'$(Platform)' == 'x86'">x86</TargetAndroidABI>
+    <TargetAndroidABI Condition="'$(Platform)' == 'x64'">x86_64</TargetAndroidABI>
+  </PropertyGroup>
+  
+  <!-- paths defined in "_mergedSoLibPath" are copied to output lib path - So add 'gdbserver' path -->
+  <ItemGroup Condition="'$(_PackagingProjectWithoutNativeComponent)' == 'true' and '$(ConfigurationType)' == 'Application'">
+    <_mergedSoLibPath Include="$(GdbServerPath)" />
+  </ItemGroup>
+  
+  <Import Project="$(MSBuildThisFileDirectory)ImportAfter\*.props" Condition="Exists('$(MSBuildThisFileDirectory)ImportAfter')" />
+</Project>

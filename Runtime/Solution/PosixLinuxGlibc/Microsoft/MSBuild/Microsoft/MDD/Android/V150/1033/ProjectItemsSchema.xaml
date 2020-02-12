@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+<ProjectSchemaDefinitions xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <ContentType
+    Name="Default"
+    DisplayName="Default file type"
+    ItemType="Content" />
+
+  <ItemType Name="None" DisplayName="None"/>
+  <ItemType Name="Content" DisplayName="Content" />
+  
+  <ContentType
+    Name="AntProjectPropertiesFile"
+    DisplayName="Ant Project Properties File"
+    ItemType="AntProjectPropertiesFile">
+  </ContentType>
+  <ItemType Name="AntProjectPropertiesFile" DisplayName="Ant Project Properties File" />
+  <FileExtension Name=".properties" ContentType="AntProjectPropertiesFile"/>
+
+  <ContentType
+    Name="AntBuildXml"
+    DisplayName="Ant Build Script File"
+    ItemType="AntBuildXml">
+  </ContentType>
+  <ItemType Name="AntBuildXml" DisplayName="Ant Build Script File" />
+
+  <ContentType
+    Name="GradleTemplate"
+    DisplayName="Gradle Template File"
+    ItemType="GradleTemplate">
+  </ContentType>
+  <ItemType Name="GradleTemplate" DisplayName="Gradle Template File" />
+  <FileExtension Name=".template" ContentType="GradleTemplate" />
+
+  <ContentType
+    Name="AndroidManifest"
+    DisplayName="Android Manifest Xml"
+    ItemType="AndroidManifest">
+  </ContentType>
+  <ItemType Name="AndroidManifest" DisplayName="Android Manifest Xml" />
+
+  <ContentType
+    Name="JavaCode"
+    DisplayName="Java Code"
+    ItemType="JavaCompile">
+  </ContentType>
+  <ItemType Name="JavaCompile" DisplayName="Java Code" />
+  <FileExtension Name=".java" ContentType="JavaCode" />
+
+</ProjectSchemaDefinitions>
+

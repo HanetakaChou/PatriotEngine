@@ -1,0 +1,667 @@
+﻿<!--
+***********************************************************************************************
+Android.Common.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Import Condition=" '$(ForceImportBeforeAndroidTargets)' != '' and exists('$(ForceImportBeforeAndroidTargets)')" Project="$(ForceImportBeforeAndroidTargets)"/>
+
+  <UsingTask
+    TaskName="FindBuildTools"
+    TaskFactory="CodeTaskFactory"
+    AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" >
+    <ParameterGroup>
+      <AndroidSDKHome ParameterType="System.String" />
+      <BuildToolsVersion ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System"/>
+      <Using Namespace="System.IO"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[   
+ BuildToolsVersion = "";
+
+ string buildToolsHome = System.IO.Path.Combine(AndroidSDKHome, "build-tools");
+ if (System.IO.Directory.Exists(buildToolsHome))
+ {
+   string[] dirs = System.IO.Directory.GetDirectories(buildToolsHome);
+   
+   if (dirs.Length > 0)
+   {
+      string path = dirs.OrderByDescending(str => str).FirstOrDefault();
+      BuildToolsVersion = System.IO.Path.GetFileName(path);
+   }
+ }
+]]>
+      </Code>
+    </Task>
+  </UsingTask>
+
+  <PropertyGroup>
+    <!-- By default we do not want to build project to project references if they are disabled in the solution configuration -->
+    <OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration Condition="'$(OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration)' == ''">true</OnlyReferenceAndBuildProjectsEnabledInSolutionConfiguration>
+    <_BuildActionType Condition="'$(_BuildActionType)' == ''">Build</_BuildActionType>
+    <!-- Correct OutputPath as it may be out of sync with OutDir -->
+    <OutputPath>$(OutDir)</OutputPath>
+    <IntermediateOutputPath>$(IntDir)</IntermediateOutputPath>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.Targets" />
+
+  <PropertyGroup>
+    <AndroidTaskPath>$(VCTargetsPath)Application Type\Android\1.0\</AndroidTaskPath>
+
+    <!-- Comma seperated list for the supported Platforms. This must be after Microsoft.Common.Targets import. -->
+    <AvailablePlatforms>x86,x64,ARM64,ARM</AvailablePlatforms>
+
+    <_ApkRecipeFile>$(OutDir)$(TargetName)$(TargetExt).recipe</_ApkRecipeFile>
+    <_ApkMergedRecipeFile>$(OutDir)$(TargetName)$(TargetExt).recipe.merged</_ApkMergedRecipeFile>
+</PropertyGroup>
+
+
+
+  <!-- ***************************************************************** -->
+  <!-- build order -->
+  <!-- ***************************************************************** -->
+
+  <PropertyGroup>
+    <!-- do nothing for 'generate sources' and 'compile' passes -->
+    <BuildGenerateSourcesAction>_BuildGenerateSourcesAction</BuildGenerateSourcesAction>
+    <BuildCompileAction>_BuildCompileAction</BuildCompileAction>
+    <!-- defined in Ms.Common.targets -->
+    <!-- <BuildLinkAction>Build</BuildLinkAction>-->
+    <BuildLinkAction>_BuildLinkAction</BuildLinkAction>
+    <LangID Condition="'$(LangID)' == ''">1033</LangID>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <CommonBuildOnlyTargets>
+      SetBuildDefaultEnvironmentVariables;
+      PrepareForBuild;
+      ResolveReferences;
+    </CommonBuildOnlyTargets>
+
+    <BuildLinkTargets>
+      $(BuildLinkTargets);
+      _CreateApkRecipeFile;
+    </BuildLinkTargets>
+    <BuildLinkTargets Condition="'$(AndroidBuildType)'=='Ant'">
+      $(BuildLinkTargets);
+      AntPackage;
+    </BuildLinkTargets>
+    <BuildLinkTargets Condition="'$(AndroidBuildType)'=='Gradle'">
+      $(BuildLinkTargets);
+      GradlePackage;
+    </BuildLinkTargets>
+
+    <AfterBuildLinkTargets>
+      $(AfterBuildLinkTargets);
+      PostBuildEvent;
+    </AfterBuildLinkTargets>
+
+    <IncrementalCleanStep>
+      IncrementalClean;
+      ClearLastBuildUnsuccessful;
+    </IncrementalCleanStep>
+
+    <IncrementalCleanStep Condition="'$(AndroidIncrementalClean)' == 'true'">
+      AndroidIncrementalClean;
+      ClearLastBuildUnsuccessful;
+    </IncrementalCleanStep>
+
+    <BuildSteps Condition="'$(BuildSteps)' == ''">
+      BuildGenerateSources;
+      BuildCompile;
+      BuildLink;
+      $(IncrementalCleanStep);
+    </BuildSteps>
+
+    <BuildDependsOn>
+      $(BuildSteps);
+    </BuildDependsOn>
+
+
+    <!--<BuildDependsOn>
+      _PrepareForBuild;
+      $(BuildSteps);
+    </BuildDependsOn>-->
+
+    <!--<RebuildDependsOn>
+      _PrepareForRebuild;
+      $(RebuildDependsOn);
+    </RebuildDependsOn> -->
+
+    <CleanDependsOn Condition="'$(AndroidBuildType)'=='Gradle'">
+      $(CleanDependsOn);
+      GradlePackageClean;
+    </CleanDependsOn>
+
+
+    <CoreCleanDependsOn>
+      $(CoreCleanDependsOn);
+      AntPackageClean
+    </CoreCleanDependsOn>
+  </PropertyGroup>
+
+
+  <Target Name="_BuildGenerateSourcesAction" />
+  <Target Name="_BuildCompileAction" />
+
+  <Target Name="_BuildLinkAction"
+        DependsOnTargets="$(CommonBuildOnlyTargets);$(BeforeBuildLinkTargets);$(BuildLinkTargets);$(AfterBuildLinkTargets)" />
+
+
+  <!-- *******************************************************************************************
+        Set Build Default Environment Variables
+       ******************************************************************************************* -->
+
+
+  <UsingTask TaskName="SetEnv" AssemblyFile="$(VCTargetsPath)Microsoft.Build.CppTasks.Common.dll"/>
+
+  <Target Name="SetBuildDefaultEnvironmentVariables">
+
+    <SetEnv Name   ="PATH"
+            Value  ="$(ExecutablePath)"
+            Prefix ="false">
+    </SetEnv>
+
+    <SetEnv Name   ="ANDROID_HOME"
+            Value  ="$(VS_AndroidHome)"
+            Prefix ="false"
+            Verbosity="$(ShowAndroidPathsVerbosity)">
+    </SetEnv>
+
+    <SetEnv Name   ="ANT_HOME"
+            Value  ="$(VS_AntHome)"
+            Prefix ="false"
+            Verbosity="$(ShowAndroidPathsVerbosity)">
+    </SetEnv>
+
+    <SetEnv Name   ="JAVA_HOME"
+            Value  ="$(VS_JavaHome)"
+            Prefix ="false"
+            Verbosity="$(ShowAndroidPathsVerbosity)">
+    </SetEnv>
+
+    <SetEnv Name   ="NDK_ROOT"
+            Value  ="$(VS_NdkRoot)"
+            Prefix ="false"
+            Verbosity="$(ShowAndroidPathsVerbosity)">
+    </SetEnv>
+
+    <!-- Gradle requires environment variable ANDROID_NDK_HOME instead of NDK_ROOT. -->
+    <SetEnv Name   ="ANDROID_NDK_HOME"
+            Value  ="$(VS_NdkRoot)"
+            Prefix ="false"
+            Verbosity="$(ShowAndroidPathsVerbosity)">
+    </SetEnv>
+
+    <!-- Since we have our SDK home here, locate the path to the highest build-tools directory there -->
+    <FindBuildTools AndroidSDKHome="$(VS_AndroidHome)">
+      <Output PropertyName="AndroidBuildToolsVersion" TaskParameter="BuildToolsVersion" />
+    </FindBuildTools>
+  </Target>
+
+
+  <UsingTask TaskName="GenerateApkRecipe" AssemblyFile="$(AndroidTaskPath)Microsoft.Build.CPPTasks.Android.dll"/>
+
+  <Target Name="_CreateApkRecipeFile" DependsOnTargets="$(CommonBuildOnlyTargets);_AssignProjectReferencesPlatformType">
+    <MSBuild Projects="@(_MSBuildProjectReferenceExistent->WithMetadataValue('ProjectApplicationType', 'Android'))"
+             Targets="GetRecipeFile"
+             BuildInParallel="$(BuildInParallel)"
+             Properties="%(_MSBuildProjectReferenceExistent.SetConfiguration); %(_MSBuildProjectReferenceExistent.SetPlatform)"
+             Condition="('%(_MSBuildProjectReferenceExistent.Extension)' == '.vcxproj' or '%(_MSBuildProjectReferenceExistent.Extension)' == '.androidproj') and '@(ProjectReferenceWithConfiguration)' != '' and '@(_MSBuildProjectReferenceExistent)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="DirectDependenciesRecipelistFile"/>
+    </MSBuild>
+
+    <PropertyGroup>
+      <AndroidLibPath Condition="'$(TargetExt)' == '.aar'">$(OutDir)$(TargetName)$(TargetExt);%(GradlePackage.ProjectDirectory)</AndroidLibPath>
+      <!-- Here we include both the .jar and the path to build, consume the .jar in gradle and the path in Ant. -->
+      <AndroidLibPath Condition="'$(TargetExt)' == '.jar'">$(OutDir)$(TargetName)$(TargetExt);%(AntPackage.WorkingDirectory)</AndroidLibPath>
+    </PropertyGroup>
+
+    <GenerateApkRecipe SoPaths="@(NativeTargetPath)"
+                       LibPaths="$(AndroidLibPath)"
+                       IntermediateDirs="@(ObjDirectories)"
+                       Configuration=""
+                       Platform=""
+                       Abi="$(TargetAndroidABI)"
+                       RecipeFiles="@(DirectDependenciesRecipelistFile)"
+                       OutputFile="$(_ApkRecipeFile)" />
+
+    <!-- Output for cleaning -->
+    <ItemGroup>
+      <FileWrites Include="$(_ApkRecipeFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetRecipeFile" Returns="$(RecipeFile)">
+    <PropertyGroup>
+      <RecipeFile>$(_ApkRecipeFile)</RecipeFile>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Legacy, use GetRecipeFile instead. -->
+  <Target Name="GetApkRecipeFile" Returns="$(ApkRecipeFile)">
+    <PropertyGroup>
+      <ApkRecipeFile>$(_ApkRecipeFile)</ApkRecipeFile>
+    </PropertyGroup>
+  </Target>
+
+  <UsingTask TaskName="MergeApkRecipelists" AssemblyFile="$(AndroidTaskPath)Microsoft.Build.CPPTasks.Android.dll"/>
+
+  <Target Name="MergeApkRecipeFiles">
+    <MergeApkRecipelists RecipeFiles="$(_ApkRecipeFile)" OutputFile="$(_ApkRecipeFile).merged" >
+      <Output TaskParameter="SOLibPaths" ItemName="_mergedSoLibPath" />
+      <Output TaskParameter="AndroidLibPaths" ItemName="_mergedAndroidLibFullPath" />
+      <Output TaskParameter="AndroidArchitecture" PropertyName="TargetAndroidABI" />
+    </MergeApkRecipelists>
+    <ItemGroup>
+      <_mergedAndroidLibPath Include="@(_mergedAndroidLibFullPath)" Exclude="$(AndroidLibPath)"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_AssignProjectReferencesPlatformType">
+    <ItemGroup>
+      <_MSBuildProjectReferenceExistent Include="@(_MSBuildProjectReferenceExistent)">
+        <ProjectApplicationType>Android</ProjectApplicationType>
+      </_MSBuildProjectReferenceExistent>
+    </ItemGroup>
+  </Target>
+
+  <PropertyGroup>
+    <AndroidPackageDependsOn>MergeApkRecipeFiles;GenerateDependencies;GenerateReplacementTable;MakePackageDirectory;MarkLastBuildUnsuccessful</AndroidPackageDependsOn>
+    <AntPackageDependsOn>$(AntPackageDependsOn);$(AndroidPackageDependsOn);CopyAntPackageContentToOutput</AntPackageDependsOn>
+    <GradlePackageDependsOn>$(GradlePackageDependsOn);$(AndroidPackageDependsOn);SetupGradlePaths;CopyGradlePackageContentToOutput;CopyGradleTemplates</GradlePackageDependsOn>
+  </PropertyGroup>
+
+  <!-- Targets common to Ant and Gradle projects. -->
+
+  <Target Name="MakePackageDirectory" >
+    <PropertyGroup>
+      <!-- If the Working Directory is the same as project directory, then disable incremental build and content copy. -->
+      <PackageOutputPath Condition="'$(AndroidBuildType)' == 'Ant' and '$(PackageOutputPath)' == '' and !HasTrailingSlash('%(AntPackage.WorkingDirectory)')">%(AntPackage.WorkingDirectory)\</PackageOutputPath>
+      <PackageOutputPath Condition="'$(AndroidBuildType)' == 'Ant' and '$(PackageOutputPath)' == ''">%(AntPackage.WorkingDirectory)</PackageOutputPath>
+      <PackageOutputPath Condition="'$(AndroidBuildType)' == 'Gradle' and '$(PackageOutputPath)' == '' and !HasTrailingSlash('%(GradlePackage.WorkingDirectory)')">%(GradlePackage.WorkingDirectory)\</PackageOutputPath>
+      <PackageOutputPath Condition="'$(AndroidBuildType)' == 'Gradle' and '$(PackageOutputPath)' == ''">%(GradlePackage.WorkingDirectory)</PackageOutputPath>
+
+      <IsLocalDirectory Condition="$([System.IO.Path]::GetFullPath('$(PackageOutputPath)')) == $([System.IO.Path]::GetFullPath('$(ProjectDir)'))">true</IsLocalDirectory>
+      <GenerateAndroidBuildScriptsIncremental Condition="'$(GenerateAndroidBuildScriptsIncremental)' == ''">true</GenerateAndroidBuildScriptsIncremental>
+    </PropertyGroup>
+
+    <!-- AssignTargetPath uses the metadata "link" to override assigning TargetPath -->
+    <AssignTargetPath RootFolder="%(DefiningProjectDirectory)" Files="@(Content);@(JavaCompile)" Condition="'%(DefiningProjectDirectory)' != ''">
+      <Output TaskParameter="AssignedFiles" ItemName="_AndroidContent" />
+    </AssignTargetPath>
+
+    <AssignTargetPath RootFolder="$(ProjectDir)" Files="@(Content)" Condition="'%(Content.DefiningProjectDirectory)' == ''">
+      <Output TaskParameter="AssignedFiles" ItemName="_AndroidContent" />
+    </AssignTargetPath>
+
+    <MakeDir Directories="$(PackageOutputPath)" />
+  </Target>
+
+  <Target Name="MarkLastBuildUnsuccessful" >
+    <!-- true if last build failed -->
+    <PropertyGroup>
+      <IsLastBuildUnsuccessful Condition="Exists('$(LastBuildUnsuccessful)')">true</IsLastBuildUnsuccessful>
+    </PropertyGroup>
+
+    <!-- Touch and create this file to indicate that the build has start.
+    In case of an error, this will remain on disk as quick indication to the IDE that the project still needs building. -->
+    <Touch AlwaysCreate="true" Files="$(LastBuildUnsuccessful)" Condition="'$(UseLastBuildUnsuccessful)' != 'false'"/>
+  </Target>
+
+  <Target Name="ClearLastBuildUnsuccessful">
+    <Delete Files="$(LastBuildUnsuccessful)" Condition="Exists($(LastBuildUnsuccessful))"/>
+  </Target>
+
+  <UsingTask TaskName="GenerateDependencies" AssemblyFile="$(AndroidTaskPath)Microsoft.Build.CPPTasks.Android.dll"/>
+
+  <Target Name="GenerateDependencies">
+    <PropertyGroup>
+      <GenerateDependenciesProjectPath>$(ProjectDir)</GenerateDependenciesProjectPath>
+      <GenerateDependenciesProjectPath Condition="'$(AndroidBuildType)' == 'Ant'">%(AntPackage.WorkingDirectory)</GenerateDependenciesProjectPath>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(AndroidBuildType)' == 'Gradle'">
+      <GradlePlugin>%(GradlePackage.GradlePlugin)</GradlePlugin>
+      <GradlePlugin Condition="'$(GradlePlugin)' == 'GradleExperimental'">gradle-experimental:0.4.0</GradlePlugin>
+      <GradlePlugin Condition="'$(GradlePlugin)' == 'Gradle'">gradle:1.3.1</GradlePlugin>
+      <GradleExperimental Condition="'$(GradlePlugin.Contains(&quot;experimental&quot;))'">true</GradleExperimental>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(GradleExperimental)' == 'true'">
+      <_androidLibPath  Include="@(_mergedAndroidLibPath)" Condition="'%(Extension)' != ''" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(GradleExperimental)' != 'true'">
+      <_androidLibPath  Include="@(_mergedAndroidLibPath)" Condition="'%(Extension)' == ''" />
+    </ItemGroup>
+    <GenerateDependencies ProjectPath="$(GenerateDependenciesProjectPath)" LibPaths="@(_androidLibPath)">
+      <Output Condition="'$(AndroidBuildType)' == 'Gradle'" TaskParameter="AarDependencies" ItemName="_aarDependenciesGenerated" />
+      <Output Condition="'$(AndroidBuildType)' == 'Gradle'" TaskParameter="AarDependenciesSettings" ItemName="_aarDependenciesSettingsGenerated" />
+      <Output Condition="'$(AndroidBuildType)' == 'Ant'" TaskParameter="AntDependencies" ItemName="_antDependencies" />
+    </GenerateDependencies>
+    <ItemGroup>
+      <AarLibPaths Include="@(_androidLibPath)" Condition="'$(GradleExperimental)' == 'true' and '%(Extension)' == '.aar'" />
+      <_aarDependencies Include="@(_aarDependenciesGenerated)" Condition="'$(GradleExperimental)' != 'true'" />
+      <_aarDependencies Include="@(AarLibPaths->'compile(name:&quot;%(Filename)&quot;, ext:&quot;aar&quot;)', '&#xD;&#xA;    ')" Condition="'$(GradleExperimental)' == 'true'">
+      </_aarDependencies>
+      <_aarDependenciesSettings Include="@(_aarDependenciesSettingsGenerated)" Condition="'$(GradleExperimental)' != 'true'" />
+      <_copiedDependencies Include="@(_androidLibPath)" Condition="'%(Extension)' != ''" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateReplacementTable">
+    <PropertyGroup>
+      <!-- If we didn't find the folder earlier, default to 25.0.3 as that should be our sandbox value -->
+      <AndroidBuildToolsVersion Condition="'$(AndroidBuildToolsVersion)' == ''">25.0.3</AndroidBuildToolsVersion>
+    </PropertyGroup>
+    <PropertyGroup>
+      <ReplacementTable Condition="'$(ProjectName)' != ''">projectname=$(ProjectName);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(AndroidAPILevel)' != ''">androidapilevel=$(AndroidAPILevel);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(AndroidAPILevelNumber)' != ''">AndroidAPILevelNumber=$(AndroidAPILevelNumber);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(AndroidBuildToolsVersion)' != ''">AndroidBuildToolsVersion=$(AndroidBuildToolsVersion);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'%(AntPackage.AndroidAppLibName)' != ''">AndroidAppLibName=%(AntPackage.AndroidAppLibName);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'%(GradlePackage.AndroidAppLibName)' != ''">AndroidAppLibName=%(GradlePackage.AndroidAppLibName);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'%(AntPackage.ApplicationName)' != ''">ApplicationName=%(AntPackage.ApplicationName);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'%(GradlePackage.ApplicationName)' != ''">ApplicationName=%(GradlePackage.ApplicationName);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable>AarDependenciesSettings=@(_aarDependenciesSettings);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable>AarDependencies=@(_aarDependencies);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(ConfigurationType)' != ''">ConfigurationType=$(ConfigurationType.ToLower());$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(ConfigurationType)' == 'Application'">ApplicationId=applicationId = "%(GradlePackage.ApplicationName)";$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(ConfigurationType)' != 'Application'">ApplicationId=;$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable>AntDependencies=@(_antDependencies);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'$(GradlePlugin)' != ''">GradlePlugin=$(GradlePlugin);$(ReplacementTable)</ReplacementTable>
+      <ReplacementTable Condition="'%(GradlePackage.GradleVersion)' != ''">GradleVersion=%(GradlePackage.GradleVersion);$(ReplacementTable)</ReplacementTable>
+    </PropertyGroup>
+  </Target>
+
+  <UsingTask TaskName="FileStringReplace" AssemblyFile="$(AndroidTaskPath)Microsoft.Build.CPPTasks.Android.dll"/>
+
+  <!-- Ant Targets. -->
+
+  <Target Name="CopyAntPackageContentToOutput" Inputs="@(_mergedSoLibPath);@(_AndroidContent)" Outputs="@(_mergedSoLibPath->'$(PackageOutputPath)libs\$(TargetAndroidABI)\%(Filename)%(Extension)');@(_AndroidContent->'$(PackageOutputPath)%(TargetPath)')">
+    <!-- Copy files to staging area from 'MergeApkRecipeFiles' -->
+    <Copy SourceFiles="@(_mergedSoLibPath)" DestinationFolder="$(PackageOutputPath)libs\$(TargetAndroidABI)\" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+
+    <!-- Copy files to staging area from 'Content' -->
+    <Copy SourceFiles="@(_AndroidContent)" DestinationFiles="$(PackageOutputPath)%(TargetPath)"
+          Condition="'$(IsLocalDirectory)' != 'true' and '@(_AndroidContent)' != '' and '%(_AndroidContent.ExcludedFromBuild)' != 'true'" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+  </Target>
+
+  <Target Name="AntPackage" DependsOnTargets="$(AntPackageDependsOn)">
+    <!-- Copy build.xml, project.properties, androidmanifest.xml to staging area -->
+    <FileStringReplace
+      Condition="'$(SkipGenerateAndroidAntScripts)' != 'true' and '%(ExcludedFromBuild)' != 'true'"
+
+      Sources="@(AndroidManifest);@(AntProjectPropertiesFile);@(AntBuildXml)"
+      ReplacementTable="$(ReplacementTable)"
+      IntDir="$(IntDir)"
+      OutDir="$(PackageOutputPath)"
+      Incremental="$(GenerateAndroidBuildScriptsIncremental)"
+    >
+      <Output TaskParameter="CreatedFiles" ItemName="_copiedFiles" />
+      <Output TaskParameter="IncrementalFilePath" ItemName="_incrementalFilePath" />
+    </FileStringReplace>
+
+    <ItemGroup>
+      <AntPackage>
+        <!-- Append a space in front if the options are present. -->
+        <_AdditionalOptions Condition="'%(AntPackage.AdditionalOptions)' != ''">%(AntPackage.AdditionalOptions) </_AdditionalOptions>
+      </AntPackage>
+    </ItemGroup>
+
+    <!-- Output for cleaning -->
+    <ItemGroup>
+      <FileWrites Include="$(_ApkRecipeFile).merged;@(_copiedFiles);@(_incrementalFilePath);$(PackagePath);$(LastSuccessfulDeploy)" />
+    </ItemGroup>
+
+    <!-- If not using the dedicated working directory, then we can't know what has changed.  Always run ant. -->
+    <Exec Condition="'@(_copiedFiles)' != '' or '$(IsLocalDirectory)' == 'true' or '$(IsLastBuildUnsuccessful)' == 'true'" Command="&quot;%(AntPackage.ToolPath)&quot; %(AntPackage._AdditionalOptions)%(AntPackage.AntTarget) -Dout.final.file=&quot;$(PackagePath)&quot;" WorkingDirectory="$(PackageOutputPath)" ContinueOnError="ErrorAndContinue"/>
+
+    <!-- If building a library copy the resulting jar to the root directory -->
+    <Copy Condition="'$(TargetExt)' == '.jar'" SourceFiles="$(PackageOutputPath)bin\classes.jar" DestinationFiles="$(OutDir)$(TargetName)$(TargetExt)" SkipUnchangedFiles="True">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+  </Target>
+
+  <Target Name="AntPackageClean"
+           DependsOnTargets="SetBuildDefaultEnvironmentVariables;MakePackageDirectory;$(AntPackageCleanDependsOn)">
+    <PropertyGroup>
+      <AntCleanTarget>clean</AntCleanTarget>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AntPackage>
+        <!-- Append a space in front if the options are present. -->
+        <_AdditionalOptions Condition="'%(AntPackage.AdditionalOptions)' != ''">%(AntPackage.AdditionalOptions) </_AdditionalOptions>
+        <AntCleanTarget Condition="'%(AntPackage.AntCleanTarget)' == ''">clean</AntCleanTarget>
+      </AntPackage>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <BuildDotXml Condition="'$(BuildDotXml)' == ''">$(PackageOutputPath)build.xml</BuildDotXml>
+    </PropertyGroup>
+
+    <!-- Call ant with clean target -->
+    <Exec Condition="Exists($(BuildDotXml))" Command="&quot;%(AntPackage.ToolPath)&quot; %(AntPackage._AdditionalOptions)%(AntCleanTarget)" WorkingDirectory="$(PackageOutputPath)"/>
+  </Target>
+
+  <!-- Gradle Targets -->
+
+  <Target Name="SetupGradlePaths">
+    <PropertyGroup>
+      <GradleProjectDirectory>%(GradlePackage.ProjectDirectory)</GradleProjectDirectory>
+      <GradleProjectDirectory>$(GradleProjectDirectory.TrimEnd('\'))</GradleProjectDirectory>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="CopyGradlePackageContentToOutput" Inputs="@(_mergedSoLibPath);@(_copiedDependencies)" Outputs="@(_mergedSoLibPath->'$(GradleProjectDirectory)\src\main\jniLibs\$(TargetAndroidABI)\%(Filename)%(Extension)');@(_copiedDependencies->'$(GradleProjectDirectory)\libs\%(Filename)%(Extension)')">
+    <!-- Copy files to staging area from 'MergeApkRecipeFiles' -->
+    <Copy SourceFiles="@(_mergedSoLibPath)" DestinationFolder="$(GradleProjectDirectory)\src\main\jniLibs\$(TargetAndroidABI)\" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+
+    <Copy SourceFiles="@(_copiedDependencies)" DestinationFolder="$(GradleProjectDirectory)\libs\" SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+  </Target>
+
+  <Target Name="CopyGradleTemplates">
+    <Copy SourceFiles="@(GradleTemplate)" DestinationFiles="@(GradleTemplate->'%(RelativeDir)%(Filename)')">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedTemplateFiles" />
+    </Copy>
+
+    <FileStringReplace
+      Condition="'%(ExcludedFromBuild)' != 'true'"
+      Sources="@(_copiedTemplateFiles)"
+      ReplacementTable="$(ReplacementTable)"
+      IntDir="$(IntDir)"
+      Incremental="false"
+    >
+      <Output TaskParameter="CreatedFiles" ItemName="_copiedFiles" />
+      <Output TaskParameter="IncrementalFilePath" ItemName="_incrementalFilePath" />
+    </FileStringReplace>
+  </Target>
+
+  <Target Name="GradlePackage" DependsOnTargets="$(GradlePackageDependsOn)">
+    <!-- Compute the parameters to Gradle. -->
+    <PropertyGroup>
+      <GradlePlatform>$(Platform)</GradlePlatform>
+      <GradlePlatform Condition="'$(Platform)' == 'ARM'">ARM7</GradlePlatform>
+      <GradlePlatform Condition="'$(Platform)' == 'ARM64'">ARM8</GradlePlatform>
+      <GradlePlatform Condition="'$(Platform)' == 'x64'">x86-64</GradlePlatform>
+      <!-- The non-experimental plugin doesn't use the platform to build -->
+      <GradlePlatform Condition="'$(GradleExperimental)' != 'true'"></GradlePlatform>
+      <AssembleParameter>assemble$(GradlePlatform)$(Configuration)</AssembleParameter>
+      <!-- If it is experimental, the outputs need to include '-platform' as part of thier name -->
+      <GradlePlatform Condition="'$(GradlePlatform)' != ''">-$(GradlePlatform)</GradlePlatform>
+      <ProjectParameter>-p "$(GradleProjectDirectory)"</ProjectParameter>
+
+      <GradleParameters>$(ProjectParameter) %(GradlePackage.AdditionalOptions) $(AssembleParameter)</GradleParameters>
+
+      <WorkingDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(ProjectDir), settings.gradle))</WorkingDirectory>
+    </PropertyGroup>
+
+    <Exec Command="%(GradlePackage.ToolName) $(GradleParameters)" WorkingDirectory="$(WorkingDirectory)"/>
+
+    <!-- Copy the output .apk to the expected directory. -->
+    <PropertyGroup>
+      <GradleOutputDir Condition="'$(GradleOutputDir)' == '' and '$(TargetExt)' == '.apk'">$(GradleProjectDirectory)\build\outputs\apk\</GradleOutputDir>
+      <GradleOutputDir Condition="'$(GradleOutputDir)' == '' and '$(TargetExt)' == '.aar'">$(GradleProjectDirectory)\build\outputs\aar\</GradleOutputDir>
+      <GradleProjectName>$([System.IO.Path]::GetFileName($(GradleProjectDirectory)))</GradleProjectName>
+      <GradleApkFileName Condition="'$(Configuration)' == 'Debug'">$(GradleProjectName)$(GradlePlatform)-debug$(TargetExt)</GradleApkFileName>
+      <GradleApkFileName Condition="'$(Configuration)' != 'Debug'">$(GradleProjectName)$(GradlePlatform)-release-unsigned$(TargetExt)</GradleApkFileName>
+      <GradleApkFileName Condition="'$(Configuration)' != 'Debug' and !Exists('$(GradleOutputDir)$(GradleApkFileName)')">$(GradleProjectName)$(GradlePlatform)-release$(TargetExt)</GradleApkFileName>
+      <GradleApkFileName Condition="'%(GradlePackage.ApkFileName)' != ''">%(GradlePackage.ApkFileName)</GradleApkFileName>
+    </PropertyGroup>
+
+    <Copy SourceFiles="$(GradleOutputDir)$(GradleApkFileName)" DestinationFiles="$(OutDir)$(TargetName)$(TargetExt)" SkipUnchangedFiles="True">
+      <Output TaskParameter="CopiedFiles" ItemName="_copiedFiles" />
+    </Copy>
+  </Target>
+
+  <Target Name="GradlePackageClean" DependsOnTargets="SetBuildDefaultEnvironmentVariables">
+    <PropertyGroup>
+      <WorkingDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(ProjectDir), settings.gradle))</WorkingDirectory>
+    </PropertyGroup>
+    <Exec Command="&quot;%(GradlePackage.ToolName)&quot; %(GradlePackage.AdditionalOptions) clean" WorkingDirectory="$(WorkingDirectory)"/>
+  </Target>
+
+  <!-- Override from Microsoft.Common.targets-->
+  <Target
+       Name="AndroidIncrementalClean"
+       DependsOnTargets="_CleanGetCurrentAndPriorFileWrites">
+
+    <!-- Remove duplicates from files produced in this build. -->
+    <RemoveDuplicates Inputs="@(_CleanPriorFileWrites);@(_CleanCurrentFileWrites)" >
+      <Output TaskParameter="Filtered" ItemName="_CleanFileWrites"/>
+    </RemoveDuplicates>
+
+    <!-- Write new list of current files back to disk, replacing the existing list.-->
+    <WriteLinesToFile
+        File="$(IntermediateOutputPath)$(CleanFile)"
+        Lines="@(_CleanFileWrites)"
+        Overwrite="true"/>
+  </Target>
+
+  <!-- ***************************************************************** -->
+  <!-- design time (IDE) related properties and items -->
+  <!-- ***************************************************************** -->
+
+  <PropertyGroup>
+    <XamlDirectory>$(AndroidTargetsPath)$(LangID)</XamlDirectory>
+    <TargetRuntime>Native</TargetRuntime>
+  </PropertyGroup>
+
+  <!-- project capabilities -->
+  <ItemGroup>
+    <ProjectCapability Include="
+                          ProjectReferences;
+                          Android;
+                          AndroidNative;
+                          AndroidPackaging;
+                          ReferencesFolder;
+                          ProjectConfigurationsDeclaredAsItems
+                           " />
+  </ItemGroup>
+
+  <!-- property pages -->
+  <ItemGroup Condition="'$(UseDefaultPropertyPageSchemas)' != 'false'">
+    <!-- Property pages that always apply -->
+    <PropertyPageSchema Include="$(XamlDirectory)\ProjectItemsSchema.xaml"/>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\General.xaml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\FileGeneral.xaml">
+      <Context>File</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\folder.xaml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\Ant.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\AntProjectPropertiesFile.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\AntBuildXml.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\AndroidManifest.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\AndroidManifestTemplate.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\Content.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\Gradle.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\GradleTemplate.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\JavaCode.xaml" />
+    <PropertyPageSchema Include="$(XamlDirectory)\None.xaml" />
+
+    <!-- Debuggers -->
+    <DebuggerPages Include="$(XamlDirectory)\AndroidDebugger.xaml" />
+
+    <!-- We always need debuggers general page as soon as we have at least one debugger -->
+    <PropertyPageSchema Condition="'@(DebuggerPages)' != ''" Include="$(XamlDirectory)\DebuggerGeneral.xaml" />
+
+    <PropertyPageSchema Include="@(DebuggerPages)">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\BrowseObject.xaml;">
+      <Context>BrowseObject</Context>
+    </PropertyPageSchema>
+
+    <PropertyPageSchema Include="$(XamlDirectory)\SCC.xaml">
+      <Context>Invisible</Context>
+    </PropertyPageSchema>
+
+
+    <PropertyPageSchema Include="$(XamlDirectory)\ProjectReference.xaml">
+      <Context>;BrowseObject</Context>
+    </PropertyPageSchema>
+    <PropertyPageSchema Include="$(XamlDirectory)\ResolvedProjectReference.xaml">
+      <Context>ProjectSubscriptionService;BrowseObject</Context>
+    </PropertyPageSchema>
+
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(_DebugMessages)' == 'true'">
+    <BuildDependsOn>
+      _DebugPrint;
+      $(BuildDependsOn);
+    </BuildDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_DebugPrint">
+    <Message Text="*************************" Importance="high" />
+    <Message Text="*** PropertyPageSchema='@(PropertyPageSchema)'" Importance="high" />
+    <Message Text="*************************" Importance="high" />
+  </Target>
+
+
+  <ItemGroup>
+    <AntPackage Condition="'$(AndroidBuildType)'=='Ant'" Include="$(ProjectName)" />
+    <GradlePackage Condition="'$(AndroidBuildType)'=='Gradle'" Include="$(ProjectName)" />
+    <ProjectTools Condition="'$(AndroidBuildType)'=='Ant'" Include="AntPackage" />
+    <ProjectTools Condition="'$(AndroidBuildType)'=='Gradle'" Include="GradlePackage" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PackagePath Condition="'$(PackagePath)' == '' and '$(ConfigurationType)' == 'Application'">$(TargetPath)</PackagePath>
+    <PackageName Condition="'$(PackageName)' == '' and '$(ConfigurationType)' == 'Application'">com.$(TargetName)</PackageName>
+    <DefaultLaunchActivity>android.app.NativeActivity</DefaultLaunchActivity>
+    <LastSuccessfulDeploy>$([System.IO.Path]::ChangeExtension('$(PackagePath)', 'lastsuccessfuldeploy'))</LastSuccessfulDeploy>
+    <LastBuildUnsuccessful>$(IntermediateOutputPath).unsuccessfulbuild</LastBuildUnsuccessful>
+  </PropertyGroup>
+
+  <Import Condition=" '$(ForceImportAfterAndroidTargets)' != '' and exists('$(ForceImportAfterAndroidTargets)')" Project="$(ForceImportAfterAndroidTargets)"/>
+
+</Project>

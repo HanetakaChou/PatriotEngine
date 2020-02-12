@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+
+<Rule
+      Name="GradlePackageTool"
+      DisplayName="Gradle"
+      Order="120"
+      PageTemplate="generic"
+      Description="Gradle Property Page"
+      xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.Categories>
+    <Category Name="General" DisplayName="General" Description="General" />
+  </Rule.Categories>
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" ItemType="GradlePackage" HasConfigurationCondition="false" />
+  </Rule.DataSource>
+  <StringProperty Name="ToolName" DisplayName="Gradle Tool Name"
+                      Description="Name of the Gradle tool."
+                      F1Keyword="VC.Project.GradlePackage.GradleToolName"
+                      Category="General">
+  </StringProperty>
+  <EnumProperty Name="GradlePlugin" DisplayName="Gradle Plugin"
+                      Description="Version of the Gradle plugin used to build."
+                      F1Keyword="VC.Project.GradlePackage.GradlePlugin"
+                      Category="General">
+    <EnumValue Name="GradleExperimental" DisplayName="gradle-experimental:0.4.0" Description="Gradle experimental plugin version 0.4.0" />
+    <EnumValue Name="Gradle" DisplayName="gradle:1.3.1" Description="Gradle plugin version 1.3.1" />
+  </EnumProperty>
+  <StringProperty
+    Name="GradleVersion"
+    DisplayName="Gradle Version"
+    Category="General"
+    F1Keyword="VC.Project.GradlePackage.GradleVersion"
+    Description="Specifies the version of Gradle to use, based on the Gradle plugin.">
+  </StringProperty>
+  <StringProperty Name="AndroidAppLibName" DisplayName="Android App Lib Name"
+                      Description="The name of the Android Library to first load from NativeActivity."
+                      F1Keyword="VC.Project.GradlePackage.AndroidAppLibName"
+                      Category="General">
+  </StringProperty>
+  <StringProperty Name="ApplicationName" DisplayName="Unique Application Name"
+                      Description="Unique Application Name used for the applicationId property in the build.gradle file and the package attribute in androidmanifest.xml."
+                      F1Keyword="VC.Project.GradlePackage.ApplicationName"
+                      Category="General">
+  </StringProperty>
+  <StringProperty Name="ProjectDirectory" DisplayName="Gradle Project Directory"
+                      Description="Directory containing build.gradle file for this project."
+                      F1Keyword="VC.Project.GradlePackage.ProjectDirectory"
+                      Category="General">
+  </StringProperty>
+  <StringProperty Name="ApkFileName" DisplayName="Apk File Name"
+                      Description="File name of .apk produced by this project configuration.">
+    <StringProperty.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="GradlePackage" HasConfigurationCondition="true" />
+    </StringProperty.DataSource>
+  </StringProperty>
+  <StringProperty Name="AdditionalOptions" DisplayName="Additional Options"
+                      Description="Additional Options passed to Gradle. (Gradle [Additional Options] [Target])"
+                      F1Keyword="VC.Project.GradlePackage.AdditionalOptions"
+                      Category="General">
+    <StringProperty.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="GradlePackage" HasConfigurationCondition="true" />
+    </StringProperty.DataSource>
+  </StringProperty>
+
+</Rule>
+

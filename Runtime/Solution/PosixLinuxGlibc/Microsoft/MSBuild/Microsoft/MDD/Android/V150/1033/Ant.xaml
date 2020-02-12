@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--Copyright, Microsoft Corporation, All rights reserved.-->
+
+<Rule
+      Name="AntPackageTool"
+      DisplayName="Ant"
+      Order="120"
+      PageTemplate="generic"
+      Description="Ant Package Property Page"
+      xmlns="http://schemas.microsoft.com/build/2009/properties">
+  <Rule.Categories>
+    <Category Name="General" DisplayName="General" Description="General" />
+    <!-- <Category Name="InputFiles" DisplayName="Input Files" Description="Input Files" /> -->
+  </Rule.Categories>
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" ItemType="AntPackage" />
+  </Rule.DataSource>
+  <StringProperty Name="ToolPath" DisplayName="Ant Tool Path"
+                      Description="Path to the Ant tool."
+                      F1Keyword="VC.Project.AntPackage.AntToolPath"
+                      Category="General" Subtype="file" Visible="false">
+  </StringProperty>
+  <StringProperty Name="AndroidAppLibName" DisplayName="Android App Lib Name"
+                      Description="The name of the Android Library to first load from NativeActivity."
+                      F1Keyword="VC.Project.AntPackage.AndroidAppLibName"
+                      Category="General">
+  </StringProperty>
+  <StringProperty Name="ApplicationName" DisplayName="Unique Application Name"
+                      Description="Unique Application Name used for the package attribute in androidmanifest.xml."
+                      F1Keyword="VC.Project.AntPackage.ApplicationName"
+                      Category="General">
+  </StringProperty>
+  <StringProperty Name="WorkingDirectory" DisplayName="Ant Build Root Path"
+                      Description="Working Directory for the Ant.  Files needed to build Ant will be copied to this location."
+                      F1Keyword="VC.Project.AntPackage.OutputPath"
+                      Category="General" Subtype="folder" >
+  </StringProperty>
+  <EnumProperty Name="AntTarget" DisplayName="Ant Build Target"
+                        Description="Target passed to Ant. (Ant [Target])"
+                        F1Keyword="VC.Project.AntPackage.AntTarget"
+                        Category="General">
+    <EnumValue Name="debug" DisplayName="Debug (Sign with Debug Key)"/>
+    <EnumValue Name="release" DisplayName="Release (Release Mode)" />
+  </EnumProperty>
+  <StringProperty Name="AdditionalOptions" DisplayName="Additional Options"
+                      Description="Additional Options passed to Ant. (Ant [Additional Options] [Target])"
+                      F1Keyword="VC.Project.AntPackage.AdditionalOptions"
+                      Category="General">
+  </StringProperty>
+
+</Rule>
+
