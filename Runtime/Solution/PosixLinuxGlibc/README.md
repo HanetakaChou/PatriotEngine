@@ -1,9 +1,13 @@
-* 1\. [Add the Mono repository to your system](https://www.mono-project.com/download/stable/#download-lin-centos)  
+* 1\. [install the .NET Core SDK](https://docs.microsoft.com/en-us/dotnet/core/install/linux-package-manager-centos7)  
 ```
-rpmkeys --import "http://pool.sks-keyservers.net/pks/lookup?op=get&search=0x3fa7e0328081bff6a14da29aa6a19b38d3d831ef"
-su -c 'curl https://download.mono-project.com/repo/centos7-stable.repo | tee /etc/yum.repos.d/mono-centos7-stable.repo'
+sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+sudo yum install dotnet-sdk-3.1
 ```
-* 2\. Install MSBuild
+* 2\. the MSBuild is redistributed with the .NET Core
 ```
-yum install msbuild
+dotnet /usr/share/dotnet/sdk/3.1.101/MSBuild.dll
+```
+or
+```
+dotnet build
 ```
