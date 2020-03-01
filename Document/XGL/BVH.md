@@ -1,14 +1,18 @@
-## BVH（包围体层次，Bounding Volume Hierarchy）   
+## 加速结构（Acceleration Structure）     
   
 直接Transform Bounding Box是可行的  
 但是，如果计算Bounding Box的开销不大，可以先变换物体到World Space，再计算Bounding Box
   
-在Ray Tracing中  
+在Ray-Tracing中  
 图元分割->BVH；空间分割->kdTree //2\.\[Pharr 2016\]/4.2 Aggregates  
 图元分割：每个图元只在层次性结构（Hierachy）中出现一次；空间分割：同一个图元可能与多个空间区域重叠 //2\.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies       
-
-图元分割   
-BVH //二叉树  
+  
+在Real-Time Rendering中  
+BVH指Ray-Tracing中的空间分割 //1\.\[Moller 2018\]/19.1.1 Bounding Volume Hierarchies   
+  
+   
+#### 图元分割   
+BVH（包围体层次，Bounding Volume Hierarchy） //二叉树  
 
 //Construct BVH 
 
@@ -48,6 +52,18 @@ LBVH缺点 构造过程只依赖于包围体的中心（/\*Compute Morton indice
 //个人认为游戏引擎非常值得借鉴 //将内存布局线性化    
    
 //Traversal BVH   
+  
+#### 空间分割  
+BSP / kd-tree / octree //
+
+**BSP**(Binary Space Partitioning)与**BVH**最本质的区别：BVH图元分割：每个图元只在层次性结构（Hierachy）中出现一次 / （即使分割后的子组的包围体存在重叠）每个图元只可能被绑定到分割后的子组中的一个；BSP空间分割：同一个图元可能与多个空间区域重叠 //2\.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies //2\.\[Pharr 2016\]/4.4 Kd-Tree Accelerator     
+  
+BSP：（分割平面并不要求垂直于某一个坐标轴）空间中的不同部分可以被分割到不同的程度，非常适合分布不均匀的几何体 //二叉树   
+kd-tree：BSP的变体，限制分割平面必须垂直于某一个坐标轴 //二叉树   
+octree：BSP的变体，在每次分割时，同时用三个相互垂直的平面，将空间分割成八部分 //八叉树  
+
+kd-tree  
+kd-tree不涉及flatten 为了提高缓存命中率，在设计时Node的大小应当尽可能小 //2\.\[Pharr 2016\]/4.4.1 Tree Representation     
   
   
 ## 视锥体剔除（Frustum Culling）   
