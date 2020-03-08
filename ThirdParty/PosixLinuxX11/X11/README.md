@@ -6,9 +6,7 @@ Linux Version: EL7
 
 Create x86_64 toolchain  
 ```  
-$NDK/build/tools/make-standalone-toolchain.sh--use-llvm --stl=libc++ --arch=x86_64 --platform=android-24 --install-dir="$HOME/bionic-toolchain-x86_64"
-rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"
-rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/libx32"
+$NDK/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch=x86_64 --platform=android-24 --install-dir="$HOME/bionic-toolchain-x86_64"
 ```  
   
 Create x86 toolchain  
@@ -20,6 +18,7 @@ $NDK/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch=x86
 [xproto](https://gitlab.freedesktop.org/xorg/proto/xproto)  
 [libXau](https://gitlab.freedesktop.org/xorg/lib/libxau)  
 [xcbproto](https://gitlab.freedesktop.org/xorg/proto/xcbproto)  
+[pthread-stubs](https://gitlab.freedesktop.org/xorg/lib/pthread-stubs)  
 [libxcb](https://gitlab.freedesktop.org/xorg/lib/libxcb)  
   
 Build x86_64 binaries  
@@ -52,20 +51,31 @@ autoreconf -v --install # From ./autogen.sh
 ./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --libdir="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" --host=$target_host --host=$target_host
 make install
 
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib/pkgconfig":$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64/pkgconfig":$PKG_CONFIG_PATH
 
 # Build & Install libXau
 autoreconf -v --install # From ./autogen.sh
-./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --host=$target_host
-
-
-# Build & Install xcbproto
-autoreconf -v --install # From ./autogen.sh
-./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --host=$target_host
+./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --libdir="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" --host=$target_host
 make install
 
 # We have exported the path above
-# export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib/pkgconfig":$PKG_CONFIG_PATH
+# export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64/pkgconfig":$PKG_CONFIG_PATH
+
+# Build & Install xcbproto
+autoreconf -v --install # From ./autogen.sh
+./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --libdir="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" --host=$target_host
+make install
+
+# We have exported the path above
+# export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64/pkgconfig":$PKG_CONFIG_PATH
+
+# Build & Install pthread-stubs
+autoreconf -v --install # From ./autogen.sh
+./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --libdir="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" --host=$target_host
+make install
+
+# We have exported the path above
+# export PKG_CONFIG_PATH="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64/pkgconfig":$PKG_CONFIG_PATH
 
 # Build & Install libxcb
 
@@ -73,10 +83,7 @@ make install
 # Comment out the "m4_ifndef([XORG_MACROS_..." in configure.ac
 
 autoreconf -v --install # From ./autogen.sh
-
-./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --host=$target_host
-
-# Projects using autoconf
-
+./configure --prefix="$HOME/bionic-toolchain-x86_64/sysroot/usr" --libdir="$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" --host=$target_host
+make install
 
 ```  
