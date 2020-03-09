@@ -7,6 +7,7 @@ Linux Version: EL7
 Create toolchain  
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
+
 my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch="$target_arch" --platform=android-24 --install-dir="$HOME/bionic-toolchain-$target_arch"
 
 ## Patch for x86_64 
@@ -25,14 +26,13 @@ yum install libtool ## Used by autoconf
 
 Build projects  
 ```  
-# To determine toolchain path
 target_arch=x86_64 ##x86 ##arm64 ##arm
+target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
 
 # Add the standalone toolchain to the search path.
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
 # Tell configure what tools to use.
-target_host=x86_64-linux-android  ##x86-linux-android ##aarch64-linux-android
 export AR=$target_host-ar
 export AS=$target_host-clang
 export CC=$target_host-clang
@@ -82,16 +82,18 @@ Patch for projects
 
 ## In src/Makefile.am
 ### libxcb_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
-
+### libxcb_xkb_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
+### libxcb_xinput_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
 ```  
 
 ## -----------------------------------------------------------------------------------
 
 chrpath  
 ```
-# To determine toolchain path
 target_arch=x86_64 ##x86 ##arm64 ##arm
 
 chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libXau.so"
 chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb.so"
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-xinput.so"
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-xkb.so"
 ```
