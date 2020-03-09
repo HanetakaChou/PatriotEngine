@@ -32,7 +32,7 @@ target_arch=x86_64 ##x86 ##arm64 ##arm
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
 # Tell configure what tools to use.
-target_host=$target_arch-linux-android
+target_host=x86_64-linux-android  ##x86-linux-android ##aarch64-linux-android
 export AR=$target_host-ar
 export AS=$target_host-clang
 export CC=$target_host-clang
