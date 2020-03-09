@@ -80,8 +80,8 @@ Patch for projects
 
 # Build & Install libxcb
 
-## Since we will use "--prefix=..." in the ./configure
-## Comment out the "m4_ifndef([XORG_MACROS_..." in configure.ac
+## In src/Makefile.am
+### libxcb_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
 
 ```  
 
