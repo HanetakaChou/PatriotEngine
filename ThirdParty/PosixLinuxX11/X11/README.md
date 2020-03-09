@@ -92,6 +92,6 @@ chrpath
 # To determine toolchain path
 target_arch=x86_64 ##x86 ##arm64 ##arm
 
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib64/libXau.so.6"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib64/libxcb.so.1"
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libXau.so"
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb.so"
 ```
