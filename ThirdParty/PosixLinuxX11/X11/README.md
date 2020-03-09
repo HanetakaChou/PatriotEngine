@@ -71,8 +71,8 @@ Patch for projects
 
 # Build & Install libXau
 
-## AM_LDFLAGS = -Wl,-rpath,/XXXXXX  
-## chrpath can only make path shorter
+## In Makefile.am
+### libXau_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
 
 # Build & Install xcbproto
 
