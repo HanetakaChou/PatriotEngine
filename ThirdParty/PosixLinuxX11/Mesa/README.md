@@ -56,6 +56,9 @@ gallium-drivers -> ['zink'] ## OpenGL on Vulkan
 ####  make llvm-tblgen -j10
 ### Specify in cmake option
 
+LLVM_BUILD_LLVM_DYLIB -> ON
+LLVM_LINK_LLVM_DYLIB:BOOL -> ON
+
 ```
 
 ## -----------------------------------------------------------------------------------
