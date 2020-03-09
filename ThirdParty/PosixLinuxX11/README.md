@@ -79,7 +79,7 @@ target_arch=x86_64 ##x86 ##arm64 ##arm
 chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
 ```
 
-## Build meson  
+## Build meson projects 
 
 Linux Version: EL7  
 ```
@@ -157,4 +157,47 @@ system = 'linux'
 cpu_family = 'aarch64'
 cpu = 'arm64'
 endian = 'little'
+```
+
+## Build cmake projects 
+
+
+```  
+target_arch=x86_64 ##x86 ##arm64 ##arm
+target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
+
+# Add the standalone toolchain to the search path.
+rm -rf "$HOME/cmake-$target_arch"
+mkdir -p "$HOME/cmake-$target_arch"
+
+echo "$target_host-ar \"\$@\"" > "$HOME/cmake-$target_arch"/ar
+echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/as
+echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/cc
+echo "$target_host-clang++ \"\$@\"" > "$HOME/cmake-$target_arch"/c++
+echo "$target_host-ld \"\$@\"" > "$HOME/cmake-$target_arch"/ld
+echo "$target_host-strip \"\$@\"" > "$HOME/cmake-$target_arch"/strip
+echo "$target_host-nm \"\$@\"" > "$HOME/cmake-$target_arch"/nm
+echo "$target_host-objcopy \"\$@\"" > "$HOME/cmake-$target_arch"/objcopy
+echo "$target_host-objdump \"\$@\"" > "$HOME/cmake-$target_arch"/objdump
+echo "$target_host-ranlib \"\$@\"" > "$HOME/cmake-$target_arch"/ranlib
+
+chmod +x "$HOME/cmake-$target_arch"/ar
+chmod +x "$HOME/cmake-$target_arch"/as
+chmod +x "$HOME/cmake-$target_arch"/cc
+chmod +x "$HOME/cmake-$target_arch"/c++
+chmod +x "$HOME/cmake-$target_arch"/ld
+chmod +x "$HOME/cmake-$target_arch"/strip
+chmod +x "$HOME/cmake-$target_arch"/nm
+chmod +x "$HOME/cmake-$target_arch"/objcopy
+chmod +x "$HOME/cmake-$target_arch"/objdump
+chmod +x "$HOME/cmake-$target_arch"/ranlib
+
+export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
+export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
+
+cmake-gui
+
+CMAKE_BUILD_TYPE
+CMAKE_INTALL_PREFIX
+
 ```
