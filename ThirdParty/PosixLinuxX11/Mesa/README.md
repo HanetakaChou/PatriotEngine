@@ -1,3 +1,4 @@
+## -----------------------------------------------------------------------------------
 
 [libpciaccess](https://gitlab.freedesktop.org/xorg/lib/libpciaccess/tree/master)   
 [drm](https://gitlab.freedesktop.org/mesa/drm)  
@@ -32,6 +33,15 @@ Patch for projects
 
 ## In radeon/Makefile.am
 ### libdrm_radeon_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
+
+# Build & Install mesa
+
+## In meson_options.txt
+platforms -> ['x11', 'drm', 'surfaceless']
+
+dri-drivers -> [''] ## OpenGL drivers
+gallium-drivers -> ['zink'] ## OpenGL on Vulkan
+
 
 ```
 
