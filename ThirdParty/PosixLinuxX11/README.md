@@ -77,13 +77,6 @@ autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/u
 make install
 ```  
 
-chrpath  
-```
-target_arch=x86_64 ##x86 ##arm64 ##arm
-
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
-```
-
 ## Build meson projects 
 
 Linux Version: EL7  
@@ -132,10 +125,18 @@ export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
 ## my-llvm-config-dir
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
+## 
+### delete EGL and GLES in toolchain sysroot ### may conflicts with mesa
+
 # meson
 ## mkdir build
 ## cd build
-meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt" 
+## rm -rf *
+meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt"  
+
+rm -rf "$HOME/meson-sanitycheck-$target_arch" ## the sanity check has finished 
+ninja
+
 ```  
 
 ### -----------------------------------------------------------------------------------  
@@ -225,4 +226,11 @@ cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolc
 
 cmake-gui
 
+```  
+  
+### chrpath  /XXXXXX -> \$ORIGIN
 ```
+target_arch=x86_64 ##x86 ##arm64 ##arm
+
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
+```  

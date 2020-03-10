@@ -8,6 +8,11 @@
 [inputproto](https://gitlab.freedesktop.org/xorg/proto/inputproto)    
 [libX11](https://gitlab.freedesktop.org/xorg/lib/libX11)  
 [libxshmfence](https://gitlab.freedesktop.org/xorg/lib/libxshmfence)  
+[libXext](https://gitlab.freedesktop.org/xorg/lib/libXext)  
+[renderproto](https://gitlab.freedesktop.org/xorg/proto/renderproto)  
+[libXrender](https://gitlab.freedesktop.org/xorg/lib/libXrender)  
+[randrproto](https://gitlab.freedesktop.org/xorg/proto/randrproto)  
+[libXrandr](https://gitlab.freedesktop.org/xorg/lib/libXrandr)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
 
 Patch for projects 
@@ -66,10 +71,30 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 platforms -> ['x11', 'drm', 'surfaceless'] ## no wayland
 
 dri-drivers -> [''] ## OpenGL drivers
-gallium-drivers -> [''] ## zink ## OpenGL on Vulkan
-glx -> ['']
+gallium-drivers -> ['zink'] ## OpenGL on Vulkan
+glx -> ['xlib'] ## use zlink no dri
+### egl -> ['auto'] ## current not support zlink
 
 vulkan-drivers -> ['amd', 'intel']
+
+## mkostemp not found
+### add mkostemp to stdlib.h in toolchain
+extern int mkostemp64(char*, int); //in bionic/libc/include/stdlib.h
+...
+
+## pthread_barrier_init not found
+### add pthread_barrier_init to pthread.h in toolchain
+int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in bionic/libc/include/stdlib.h
+
+## 'linux/kcmp.h' file not found
+### create linux/kcmp.h in toolchain
+
+## [_glapi_tls_Dispatch undefined](https://bugs.freedesktop.org/show_bug.cgi?id=73778)  
+
+### in meson.build
+> # if .....
+> # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
+> # endif
 
 ```
 
@@ -89,6 +114,7 @@ chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLV
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxshmfence.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libXext.so"
 ```
 
 ## -----------------------------------------------------------------------------------
@@ -187,4 +213,40 @@ sysexits.h
 #define EX__MAX 78
 
 #endif
+``` 
+
+## -----------------------------------------------------------------------------------
+linux/kcmp.h  
+
+```
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+#ifndef _UAPI_LINUX_KCMP_H
+#define _UAPI_LINUX_KCMP_H
+
+#include <linux/types.h>
+
+/* Comparison type */
+enum kcmp_type
+{
+    KCMP_FILE,
+    KCMP_VM,
+    KCMP_FILES,
+    KCMP_FS,
+    KCMP_SIGHAND,
+    KCMP_IO,
+    KCMP_SYSVSEM,
+    KCMP_EPOLL_TFD,
+
+    KCMP_TYPES,
+};
+
+/* Slot for KCMP_EPOLL_TFD */
+struct kcmp_epoll_slot
+{
+    __u32 efd;  /* epoll file descriptor */
+    __u32 tfd;  /* target file number */
+    __u32 toff; /* target offset within same numbered sequence */
+};
+
+#endif /* _UAPI_LINUX_KCMP_H */
 ```
