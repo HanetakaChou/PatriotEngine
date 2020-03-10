@@ -6,7 +6,7 @@ cd "$(dirname "$(readlink -f "${0}")")"
   
 rm -rf obj
 rm -rf libs
-ndk-build NDK_DEBUG=1 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application-x86_64.mk APP_BUILD_SCRIPT:=Android.mk 
+ndk-build NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application-x86_64.mk APP_BUILD_SCRIPT:=Android.mk 
 
 # before execute change the rpath to \$ORIGIN  
   
