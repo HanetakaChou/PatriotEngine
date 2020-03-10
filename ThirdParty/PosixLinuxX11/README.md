@@ -46,7 +46,7 @@ mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-tool
 
 Linux Version: EL7  
 ```
-yum install libtool ## Used by autoconf
+install autoconf automake libtool el8 version ### there are bugs in el7 version ### use rpmrebuild to remove gcc dependency in libtool
 rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
@@ -78,9 +78,13 @@ export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
 export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
+# python path
+pythonvers=2.7
+export PYTHONPATH=${target_sysroot}/usr/lib/python$pythonvers/site-packages
+
 # Autoconf
 make clean
-autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/aclocal" # From ./autogen.sh
+autoreconf -v --install --force -I"${target_sysroot}/usr/share/aclocal" -I"${target_sysroot}/usr/lib/python$pythonvers/site-packages" # From ./autogen.sh
 ./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host --disable-static
 make install
 ```  
