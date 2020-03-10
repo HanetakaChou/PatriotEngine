@@ -11,28 +11,10 @@ Patch for projects
 ## #include <sys/io.h> file not found
 ### Create sys/io.h in toolchain  
 
-## In src/Makefile.am
-### libpciaccess_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
-
 # Build & Install drm
 
 ## In configure.ac
 ### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
-
-## In Makefile.am
-### libdrm_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
-
-## In libkms/Makefile.am
-### libkms_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In amdgpu/Makefile.am
-### libdrm_amdgpu_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In intel/Makefile.am
-### libdrm_intel_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In radeon/Makefile.am
-### libdrm_radeon_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
 
 # Build & Install mesa
 
