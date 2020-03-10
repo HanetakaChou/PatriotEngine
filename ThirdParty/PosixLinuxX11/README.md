@@ -31,7 +31,7 @@ mv "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" "$HOME/bionic-toolchain-x86
 Linux Version: EL7  
 ```
 yum install libtool ## Used by autoconf
-
+rpm -e --nodeps gcc glibc-headers glibc-devel ### 避免对sysroot造成干扰
 ```
 
 Build projects  
@@ -54,7 +54,7 @@ export STRIP=$target_host-strip
 # Tell configure what flags Android requires.
 export CFLAGS="-fPIE -fPIC"
 export CXXFLAGS="-fPIE -fPIC"
-export LDFLAGS="-pie"
+export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX"
 
 # pkg-config
 export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
@@ -65,12 +65,6 @@ autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/u
 ./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host
 make install
 ```  
-
-Patch for projects  
-```
-## in Makefile.am
-### lib***_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
-```
 
 chrpath  
 ```

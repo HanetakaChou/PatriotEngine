@@ -10,7 +10,7 @@ LOCAL_SRC_FILES:= main.cpp
 
 LOCAL_LDFLAGS += -Wl,-dynamic-linker,linker ### put the linker at cwd
 
-LOCAL_LDFLAGS += -Wl,--enable-new-dtags ### linker can't process old dtags
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags ### the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
 
 include $(BUILD_EXECUTABLE)
