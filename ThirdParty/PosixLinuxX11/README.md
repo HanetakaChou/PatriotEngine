@@ -81,7 +81,7 @@ export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 # Autoconf
 make clean
 autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/aclocal" # From ./autogen.sh
-./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host
+./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host --disable-static
 make install
 ```  
 
