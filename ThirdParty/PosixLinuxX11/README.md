@@ -17,6 +17,17 @@
   
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
+target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
+
+## Path for ndk ## default to c++shared
+mv my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a.bak
+ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a
+mv my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a.bak
+ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a
+
+## Alternative
+rm -rf "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
+ln -s libc++_shared.so "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
 
 my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch="$target_arch" --platform=android-24 --install-dir="$HOME/bionic-toolchain-$target_arch"
 
@@ -24,6 +35,11 @@ my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --ar
 rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"
 rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/libx32"
 mv "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"
+
+rm -rf "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib"
+rm -rf "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/libx32"
+mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib"
+
 ```  
 
 ## Build autoconf projects
@@ -31,7 +47,7 @@ mv "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" "$HOME/bionic-toolchain-x86
 Linux Version: EL7  
 ```
 yum install libtool ## Used by autoconf
-
+rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
 Build projects  
@@ -54,30 +70,20 @@ export STRIP=$target_host-strip
 # Tell configure what flags Android requires.
 export CFLAGS="-fPIE -fPIC"
 export CXXFLAGS="-fPIE -fPIC"
-export LDFLAGS="-pie"
+export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX"
 
-# pkg-config
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+# pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html
+target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Autoconf
+make clean
 autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/aclocal" # From ./autogen.sh
 ./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host
 make install
 ```  
-
-Patch for projects  
-```
-## in Makefile.am
-### lib***_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
-```
-
-chrpath  
-```
-target_arch=x86_64 ##x86 ##arm64 ##arm
-
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
-```
 
 ## Build meson projects 
 
@@ -87,8 +93,14 @@ yum install meson
 
 delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ### meson use python3
 
-yum install gcc gcc-c++
-delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin" ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin"
+
+rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+
+### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+
+we must copy the bionic to the /system path to pass the meson sanitycheck #### we can retrieve the program interpreter path /system/bin/linker(64) by "readelf -l"
+
 
 ```
 
@@ -100,14 +112,39 @@ target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android #
 # Add the standalone toolchain to the search path.
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
-# pkg-config
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+# pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html  
+target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
+
+# Add the standalone toolchain to the search path 
+### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+rm -rf "$HOME/meson-sanitycheck-$target_arch"
+mkdir -p "$HOME/meson-sanitycheck-$target_arch"
+echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang ### add #!/bin.bash to avoid "Exec format error" from meson
+echo "$target_host-clang -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang
+echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang++ ### add #!/bin.bash to avoid "Exec format error" from meson
+echo "$target_host-clang++ -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang++
+chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang
+chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
+export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
+
+## my-llvm-config-dir
+export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
+
+## 
+### delete EGL and GLES in toolchain sysroot ### may conflicts with mesa
 
 # meson
 ## mkdir build
 ## cd build
-meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt" 
+## rm -rf *
+meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt"  
+
+rm -rf "$HOME/meson-sanitycheck-$target_arch" ## the sanity check has finished 
+ninja
+
 ```  
 
 ### -----------------------------------------------------------------------------------  
@@ -125,9 +162,9 @@ pkgconfig = 'pkg-config'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 cpp_args = ['-fPIE', '-fPIC']
-cpp_link_args = ['-pie']
+cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
 [host_machine]
 system = 'linux'
@@ -148,9 +185,9 @@ strip = 'aarch64-linux-android-strip'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 cpp_args = ['-fPIE', '-fPIC']
-cpp_link_args = ['-pie']
+cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
 [host_machine]
 system = 'linux'
@@ -169,7 +206,6 @@ target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android #
 # Add the standalone toolchain to the search path.
 rm -rf "$HOME/cmake-$target_arch"
 mkdir -p "$HOME/cmake-$target_arch"
-
 echo "$target_host-ar \"\$@\"" > "$HOME/cmake-$target_arch"/ar
 echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/as
 echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/cc
@@ -180,7 +216,6 @@ echo "$target_host-nm \"\$@\"" > "$HOME/cmake-$target_arch"/nm
 echo "$target_host-objcopy \"\$@\"" > "$HOME/cmake-$target_arch"/objcopy
 echo "$target_host-objdump \"\$@\"" > "$HOME/cmake-$target_arch"/objdump
 echo "$target_host-ranlib \"\$@\"" > "$HOME/cmake-$target_arch"/ranlib
-
 chmod +x "$HOME/cmake-$target_arch"/ar
 chmod +x "$HOME/cmake-$target_arch"/as
 chmod +x "$HOME/cmake-$target_arch"/cc
@@ -191,13 +226,19 @@ chmod +x "$HOME/cmake-$target_arch"/nm
 chmod +x "$HOME/cmake-$target_arch"/objcopy
 chmod +x "$HOME/cmake-$target_arch"/objdump
 chmod +x "$HOME/cmake-$target_arch"/ranlib
-
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
 
+cd build
+cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC" -DCMAKE_CXX_FLAGS="-fPIE -fPIC" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_SKIP_INSTALL_RPATH=ON
+
 cmake-gui
 
-CMAKE_BUILD_TYPE
-CMAKE_INTALL_PREFIX
-
+```  
+  
+### chrpath  /XXXXXX -> \$ORIGIN
 ```
+target_arch=x86_64 ##x86 ##arm64 ##arm
+
+chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
+```  

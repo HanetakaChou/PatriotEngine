@@ -2,45 +2,44 @@
 
 [libpciaccess](https://gitlab.freedesktop.org/xorg/lib/libpciaccess/tree/master)   
 [drm](https://gitlab.freedesktop.org/mesa/drm)  
+[libxtrans](https://gitlab.freedesktop.org/xorg/lib/libxtrans)  
+[xextproto](https://gitlab.freedesktop.org/xorg/proto/xextproto)  
+[kbproto](https://gitlab.freedesktop.org/xorg/proto/kbproto)  
+[inputproto](https://gitlab.freedesktop.org/xorg/proto/inputproto)    
+[libX11](https://gitlab.freedesktop.org/xorg/lib/libX11)  
+[libxshmfence](https://gitlab.freedesktop.org/xorg/lib/libxshmfence)  
+[libXext](https://gitlab.freedesktop.org/xorg/lib/libXext)  
+[renderproto](https://gitlab.freedesktop.org/xorg/proto/renderproto)  
+[libXrender](https://gitlab.freedesktop.org/xorg/lib/libXrender)  
+[randrproto](https://gitlab.freedesktop.org/xorg/proto/randrproto)  
+[libXrandr](https://gitlab.freedesktop.org/xorg/lib/libXrandr)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
 
 Patch for projects 
 ```
+# Build & Install xproto
+## in Xos_r.h
+### remove the following
+>#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
+>...
+>#else
+
 # Build & Install libpciaccess
 
 ## #include <sys/io.h> file not found
 ### Create sys/io.h in toolchain  
 
-## In src/Makefile.am
-### libpciaccess_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
+# Build & Install libxshmfence
 
-# Build & Install drm
+## In src/xshmfence_futex.h
+### #include <value.h> -> #include <limits.h>
+### sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
 
 ## In configure.ac
 ### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
 
-## In Makefile.am
-### libdrm_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX ### chrpath can only make path shorter
+# Build & Install drm
 
-## In libkms/Makefile.am
-### libkms_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In amdgpu/Makefile.am
-### libdrm_amdgpu_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In intel/Makefile.am
-### libdrm_intel_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-## In radeon/Makefile.am
-### libdrm_radeon_la_LDFLAGS = ... -Wl,-rpath,/XXXXXX
-
-# Build & Install mesa
-
-## In meson_options.txt
-platforms -> ['x11', 'drm', 'surfaceless']
-
-dri-drivers -> [''] ## OpenGL drivers
-gallium-drivers -> ['zink'] ## OpenGL on Vulkan
 
 # Build & Install llvm
 
@@ -51,13 +50,65 @@ gallium-drivers -> ['zink'] ## OpenGL on Vulkan
 ## #include <sysexits.h> file not found
 ### Create sysexits.h in toolchain  
 
-## LLVM_TABLEGEN
 ### Use build_machine host first to build a tablegen
 ####  make llvm-tblgen -j10
 ### Specify in cmake option
+LLVM_TABLEGEN -> .../llvm-tblgen
 
 LLVM_BUILD_LLVM_DYLIB -> ON
-LLVM_LINK_LLVM_DYLIB:BOOL -> ON
+LLVM_LINK_LLVM_DYLIB -> ON
+
+### llvm-config ### used by mesa
+#### chrpath -r '$ORIGIN' build/bin/llvm-config
+#### copy linker to /system/bin #### the program interpreter ### readelf -l build/bin/llvm-config
+
+# Build & Install mesa
+
+## my-llvm-config-dir
+export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
+
+## In meson_options.txt
+platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
+
+dri-drivers -> [''] ## OpenGL drivers
+gallium-drivers -> ['zink'] ## OpenGL on Vulkan
+glx -> ['xlib'] ## use zlink no dri
+### egl -> ['auto'] ## current not support zlink
+
+vulkan-drivers -> ['amd', 'intel']
+
+## _glapi_tls_Dispatch undefined  
+### in meson.build
+> # if .....
+> # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
+> # endif
+
+## HAVE_SYS_SHM_H
+### in scons/gallium.py
+> # if .. sys/shm.h
+> # ... HAVE_SYS_SHM_H
+
+## patch headers for libc
+
+### mkostemp not found
+#### add mkostemp to stdlib.h in toolchain
+extern int mkostemp64(char*, int); //in bionic/libc/include/stdlib.h
+...
+
+### pthread_barrier_init not found
+#### add pthread_barrier_init to pthread.h in toolchain
+int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in bionic/libc/include/stdlib.h
+
+### 'linux/kcmp.h' file not found
+#### create linux/kcmp.h in toolchain
+
+### open_memstream not found
+#### add open_memstream to stdio.h in toolchain
+FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
+
+### strchrnul not found
+#### add strchrnul to strings.h in toolchain
+char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
 
 ```
 
@@ -67,13 +118,17 @@ chrpath
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
 
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libpciaccess.so"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm.so"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libkms.so"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_amdgpu.so"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_intel.so"
-chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_radeon.so"
-
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libpciaccess.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libkms.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_amdgpu.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_intel.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_radeon.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLVM.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxshmfence.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libXext.so"
 ```
 
 ## -----------------------------------------------------------------------------------
@@ -172,4 +227,40 @@ sysexits.h
 #define EX__MAX 78
 
 #endif
+``` 
+
+## -----------------------------------------------------------------------------------
+linux/kcmp.h  
+
+```
+/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
+#ifndef _UAPI_LINUX_KCMP_H
+#define _UAPI_LINUX_KCMP_H
+
+#include <linux/types.h>
+
+/* Comparison type */
+enum kcmp_type
+{
+    KCMP_FILE,
+    KCMP_VM,
+    KCMP_FILES,
+    KCMP_FS,
+    KCMP_SIGHAND,
+    KCMP_IO,
+    KCMP_SYSVSEM,
+    KCMP_EPOLL_TFD,
+
+    KCMP_TYPES,
+};
+
+/* Slot for KCMP_EPOLL_TFD */
+struct kcmp_epoll_slot
+{
+    __u32 efd;  /* epoll file descriptor */
+    __u32 tfd;  /* target file number */
+    __u32 toff; /* target offset within same numbered sequence */
+};
+
+#endif /* _UAPI_LINUX_KCMP_H */
 ```
