@@ -22,7 +22,7 @@ cp -f ../Bionic/lib64/libm.so libs/x86_64
 cp -f ../Bionic/lib64/libstdc++.so libs/x86_64
 ```  
 
-### add the linker to cwd  
+### copy the linker to cwd  
 
 
 ```
