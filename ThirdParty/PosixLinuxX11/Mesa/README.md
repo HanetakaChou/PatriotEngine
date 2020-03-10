@@ -68,7 +68,7 @@ LLVM_LINK_LLVM_DYLIB -> ON
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
 ## In meson_options.txt
-platforms -> ['x11', 'drm', 'surfaceless'] ## no wayland
+platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
 
 dri-drivers -> [''] ## OpenGL drivers
 gallium-drivers -> ['zink'] ## OpenGL on Vulkan
@@ -77,24 +77,38 @@ glx -> ['xlib'] ## use zlink no dri
 
 vulkan-drivers -> ['amd', 'intel']
 
-## mkostemp not found
-### add mkostemp to stdlib.h in toolchain
-extern int mkostemp64(char*, int); //in bionic/libc/include/stdlib.h
-...
-
-## pthread_barrier_init not found
-### add pthread_barrier_init to pthread.h in toolchain
-int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in bionic/libc/include/stdlib.h
-
-## 'linux/kcmp.h' file not found
-### create linux/kcmp.h in toolchain
-
-## [_glapi_tls_Dispatch undefined](https://bugs.freedesktop.org/show_bug.cgi?id=73778)  
-
+## _glapi_tls_Dispatch undefined  
 ### in meson.build
 > # if .....
 > # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
 > # endif
+
+## HAVE_SYS_SHM_H
+### in scons/gallium.py
+> # if .. sys/shm.h
+> # ... HAVE_SYS_SHM_H
+
+## patch headers for libc
+
+### mkostemp not found
+#### add mkostemp to stdlib.h in toolchain
+extern int mkostemp64(char*, int); //in bionic/libc/include/stdlib.h
+...
+
+### pthread_barrier_init not found
+#### add pthread_barrier_init to pthread.h in toolchain
+int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in bionic/libc/include/stdlib.h
+
+### 'linux/kcmp.h' file not found
+#### create linux/kcmp.h in toolchain
+
+### open_memstream not found
+#### add open_memstream to stdio.h in toolchain
+FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
+
+### strchrnul not found
+#### add strchrnul to strings.h in toolchain
+char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
 
 ```
 
