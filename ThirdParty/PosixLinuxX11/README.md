@@ -64,9 +64,12 @@ export CFLAGS="-fPIE -fPIC"
 export CXXFLAGS="-fPIE -fPIC"
 export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX"
 
-# pkg-config
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+# pkg-config  
+# https://autotools.io/pkgconfig/cross-compiling.html
+target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Autoconf
 make clean
@@ -106,9 +109,12 @@ target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android #
 # Add the standalone toolchain to the search path.
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
-# pkg-config
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
-export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+# pkg-config  
+# https://autotools.io/pkgconfig/cross-compiling.html
+target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
+export PKG_CONFIG_PATH=
+export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
+export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # meson
 ## mkdir build
