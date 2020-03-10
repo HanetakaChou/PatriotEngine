@@ -61,6 +61,7 @@ export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/pk
 export PKG_CONFIG_PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
 # Autoconf
+make clean
 autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/aclocal" # From ./autogen.sh
 ./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host
 make install
