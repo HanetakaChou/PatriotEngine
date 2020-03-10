@@ -7,6 +7,7 @@
 [kbproto](https://gitlab.freedesktop.org/xorg/proto/kbproto)  
 [inputproto](https://gitlab.freedesktop.org/xorg/proto/inputproto)    
 [libX11](https://gitlab.freedesktop.org/xorg/lib/libX11)  
+[libxshmfence](https://gitlab.freedesktop.org/xorg/lib/libxshmfence)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
 
 Patch for projects 
@@ -23,10 +24,17 @@ Patch for projects
 ## #include <sys/io.h> file not found
 ### Create sys/io.h in toolchain  
 
-# Build & Install drm
+# Build & Install libxshmfence
+
+## In src/xshmfence_futex.h
+### #include <value.h> -> #include <limits.h>
+### sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
 
 ## In configure.ac
 ### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
+
+# Build & Install drm
+
 
 # Build & Install llvm
 
@@ -80,6 +88,7 @@ chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLVM.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxshmfence.so"
 ```
 
 ## -----------------------------------------------------------------------------------
