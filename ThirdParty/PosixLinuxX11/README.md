@@ -44,9 +44,9 @@ mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-tool
 
 ## Build autoconf projects
 
-Linux Version: EL7  
+Linux Version: EL8  
 ```
-install autoconf automake libtool el8 version ### there are bugs in el7 version ### use rpmrebuild to remove gcc dependency in libtool
+install autoconf automake libtool make el8 version ### there are bugs in el7 version ### use rpmrebuild to remove gcc dependency in libtool
 rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
@@ -87,7 +87,7 @@ make install
 
 ## Build meson projects 
 
-Linux Version: EL7  
+Linux Version: EL8  
 ```
 yum install meson
 
