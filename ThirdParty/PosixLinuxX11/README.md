@@ -47,7 +47,7 @@ mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-tool
 Linux Version: EL7  
 ```
 yum install libtool ## Used by autoconf
-rpm -e --nodeps gcc glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
 Build projects  
@@ -95,7 +95,7 @@ delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ###
 
 delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin"
 
-rpm -e --nodeps gcc glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 
 ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
 
