@@ -2,10 +2,22 @@
 
 [libpciaccess](https://gitlab.freedesktop.org/xorg/lib/libpciaccess/tree/master)   
 [drm](https://gitlab.freedesktop.org/mesa/drm)  
+[libxtrans](https://gitlab.freedesktop.org/xorg/lib/libxtrans)  
+[xextproto](https://gitlab.freedesktop.org/xorg/proto/xextproto)  
+[kbproto](https://gitlab.freedesktop.org/xorg/proto/kbproto)  
+[inputproto](https://gitlab.freedesktop.org/xorg/proto/inputproto)    
+[libX11](https://gitlab.freedesktop.org/xorg/lib/libX11)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
 
 Patch for projects 
 ```
+# Build & Install xproto
+## in Xos_r.h
+### remove the following
+>#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
+>...
+>#else
+
 # Build & Install libpciaccess
 
 ## #include <sys/io.h> file not found
@@ -15,14 +27,6 @@ Patch for projects
 
 ## In configure.ac
 ### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
-
-# Build & Install mesa
-
-## In meson_options.txt
-platforms -> ['x11', 'drm', 'surfaceless']
-
-dri-drivers -> [''] ## OpenGL drivers
-gallium-drivers -> ['zink'] ## OpenGL on Vulkan
 
 # Build & Install llvm
 
@@ -41,9 +45,24 @@ LLVM_TABLEGEN -> .../llvm-tblgen
 LLVM_BUILD_LLVM_DYLIB -> ON
 LLVM_LINK_LLVM_DYLIB -> ON
 
-### llvm-config ### used by meson
+### llvm-config ### used by mesa
 #### chrpath -r '$ORIGIN' build/bin/llvm-config
 #### copy linker to /system/bin #### the program interpreter ### readelf -l build/bin/llvm-config
+
+# Build & Install mesa
+
+## my-llvm-config-dir
+export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
+
+## In meson_options.txt
+platforms -> ['x11', 'drm', 'surfaceless'] ## no wayland
+
+dri-drivers -> [''] ## OpenGL drivers
+gallium-drivers -> [''] ## zink ## OpenGL on Vulkan
+glx -> ['']
+
+vulkan-drivers -> ['amd', 'intel']
+
 ```
 
 ## -----------------------------------------------------------------------------------
@@ -59,6 +78,8 @@ chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_intel.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_radeon.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLVM.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
 ```
 
 ## -----------------------------------------------------------------------------------

@@ -64,8 +64,7 @@ export CFLAGS="-fPIE -fPIC"
 export CXXFLAGS="-fPIE -fPIC"
 export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX"
 
-# pkg-config  
-# https://autotools.io/pkgconfig/cross-compiling.html
+# pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html
 target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
 export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
@@ -109,8 +108,7 @@ target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android #
 # Add the standalone toolchain to the search path.
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
-# pkg-config  
-# https://autotools.io/pkgconfig/cross-compiling.html
+# pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html  
 target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
 export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
