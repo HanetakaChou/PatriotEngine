@@ -8,7 +8,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/libs/x86_64/a.out",
+            "program": "${workspaceFolder}/obj/local/x86_64/a.out", //should set a.out in obj here instead of in libs
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
@@ -16,11 +16,13 @@
             "externalConsole": false,
             "miDebuggerServerAddress": ":27077",
             "MIMode": "gdb",
+            //"miDebuggerPath": "my-ndk-dir/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            "miDebuggerArgs": "--init-command=${workspaceFolder}/libs/x86_64/gdb.setup",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
                     "text": "-enable-pretty-printing",
-                    "ignoreFailures": true
+                    "ignoreFailures": false
                 }
             ]
         }
