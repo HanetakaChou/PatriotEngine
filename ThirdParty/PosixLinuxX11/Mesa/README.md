@@ -33,13 +33,13 @@ gallium-drivers -> ['zink'] ## OpenGL on Vulkan
 ## #include <sysexits.h> file not found
 ### Create sysexits.h in toolchain  
 
-## LLVM_TABLEGEN
 ### Use build_machine host first to build a tablegen
 ####  make llvm-tblgen -j10
 ### Specify in cmake option
+LLVM_TABLEGEN -> .../llvm-tblgen
 
 LLVM_BUILD_LLVM_DYLIB -> ON
-LLVM_LINK_LLVM_DYLIB:BOOL -> ON
+LLVM_LINK_LLVM_DYLIB -> ON
 
 ```
 

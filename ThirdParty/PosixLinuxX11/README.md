@@ -120,9 +120,9 @@ pkgconfig = 'pkg-config'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 cpp_args = ['-fPIE', '-fPIC']
-cpp_link_args = ['-pie']
+cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
 [host_machine]
 system = 'linux'
@@ -143,9 +143,9 @@ strip = 'aarch64-linux-android-strip'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 cpp_args = ['-fPIE', '-fPIC']
-cpp_link_args = ['-pie']
+cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
 [host_machine]
 system = 'linux'
@@ -190,9 +190,9 @@ chmod +x "$HOME/cmake-$target_arch"/ranlib
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
 
-cmake-gui
+cd build
+cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC" -DCMAKE_CXX_FLAGS="-fPIE -fPIC" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" -DCMAKE_STATIC_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX"
 
-CMAKE_BUILD_TYPE
-CMAKE_INTALL_PREFIX
+cmake-gui
 
 ```
