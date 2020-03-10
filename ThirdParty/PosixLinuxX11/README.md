@@ -17,12 +17,17 @@
   
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
+target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
 
 ## Path for ndk ## default to c++shared
 mv my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a.bak
 ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++_static.a
 mv my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a.bak
 ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a
+
+## Alternative
+rm -rf "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
+ln -s libc++_shared.so "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
 
 my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch="$target_arch" --platform=android-24 --install-dir="$HOME/bionic-toolchain-$target_arch"
 
@@ -31,6 +36,9 @@ rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"
 rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/libx32"
 mv "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"
 
+rm -rf "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib"
+rm -rf "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/libx32"
+mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib"
 
 ```  
 
