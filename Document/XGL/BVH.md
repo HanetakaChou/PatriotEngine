@@ -58,12 +58,13 @@ BSP / kd-tree / octree //
 
 **BSP**(Binary Space Partitioning)与**BVH**最本质的区别：BVH图元分割：每个图元只在层次性结构（Hierachy）中出现一次 / （即使分割后的子组的包围体存在重叠）每个图元只可能被绑定到分割后的子组中的一个；BSP空间分割：同一个图元可能与多个空间区域重叠 //2\.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies //2\.\[Pharr 2016\]/4.4 Kd-Tree Accelerator     
   
-BSP：（分割平面并不要求垂直于某一个坐标轴）空间中的不同部分可以被分割到不同的程度，非常适合分布不均匀的几何体 //二叉树   
-kd-tree：BSP的变体，限制分割平面必须垂直于某一个坐标轴 //二叉树   
-octree：BSP的变体，在每次分割时，同时用三个相互垂直的平面，将空间分割成八部分 //八叉树  
+> BSP：（分割平面并不要求垂直于某一个坐标轴）空间中的不同部分可以被分割到不同的程度，非常适合分布不均匀的几何体 //二叉树   
+> kd-tree：BSP的变体，限制分割平面必须垂直于某一个坐标轴 //二叉树   
+> octree：BSP的变体，在每次分割时，同时用三个相互垂直的平面，将空间分割成八部分 //八叉树  
 
 kd-tree  
-kd-tree不涉及flatten 为了提高缓存命中率，在设计时Node的大小应当尽可能小 //2\.\[Pharr 2016\]/4.4.1 Tree Representation     
+为了提高缓存命中率，在设计时Node的大小应当尽可能小     
+接近**Flatten BVH Tree**中的结构 其中一个Child的一定与Parent相邻 只需要在Parent中存储另一个Child的位置，减小了Node的大小 同时由于一个Child与Parent相邻，程序整体的缓存命中率也会提升 //2\.\[Pharr 2016\]/4.4.1 Tree Representation   
   
   
 ## 视锥体剔除（Frustum Culling）   
