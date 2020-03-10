@@ -90,8 +90,11 @@ yum install meson
 
 delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ### meson use python3
 
+/*
 yum install gcc gcc-c++
 delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin" ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+*/
+an alternative solution is to copy the bionic to the /system path  #### program interpreter indicated by readelf -l
 
 ```
 

@@ -41,6 +41,9 @@ LLVM_TABLEGEN -> .../llvm-tblgen
 LLVM_BUILD_LLVM_DYLIB -> ON
 LLVM_LINK_LLVM_DYLIB -> ON
 
+### llvm-config ### used by meson
+#### chrpath -r '$ORIGIN' build/bin/llvm-config
+#### copy linker to /system/bin #### the program interpreter ### readelf -l build/bin/llvm-config
 ```
 
 ## -----------------------------------------------------------------------------------
