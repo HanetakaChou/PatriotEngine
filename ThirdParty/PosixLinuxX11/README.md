@@ -39,7 +39,7 @@ mv "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib64" "$HOME/bionic-toolchain-x86
 Linux Version: EL7  
 ```
 yum install libtool ## Used by autoconf
-rpm -e --nodeps gcc glibc-headers glibc-devel ### 避免对sysroot造成干扰
+rpm -e --nodeps gcc glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
 Build projects  
@@ -92,11 +92,14 @@ yum install meson
 
 delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ### meson use python3
 
-/*
-yum install gcc gcc-c++
-delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin" ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
-*/
-an alternative solution is to copy the bionic to the /system path  #### program interpreter indicated by readelf -l
+delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin"
+
+rpm -e --nodeps gcc glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+
+### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+
+we must copy the bionic to the /system path to pass the meson sanitycheck #### we can retrieve the program interpreter path /system/bin/linker(64) by "readelf -l"
+
 
 ```
 
@@ -113,6 +116,21 @@ target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"
 export PKG_CONFIG_PATH=
 export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/usr/share/pkgconfig
 export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
+
+# Add the standalone toolchain to the search path 
+### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+rm -rf "$HOME/meson-sanitycheck-$target_arch"
+mkdir -p "$HOME/meson-sanitycheck-$target_arch"
+echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang ### add #!/bin.bash to avoid "Exec format error" from meson
+echo "$target_host-clang -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang
+echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang++ ### add #!/bin.bash to avoid "Exec format error" from meson
+echo "$target_host-clang++ -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang++
+chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang
+chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
+export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
+
+## my-llvm-config-dir
+export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
 # meson
 ## mkdir build
@@ -179,7 +197,6 @@ target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android #
 # Add the standalone toolchain to the search path.
 rm -rf "$HOME/cmake-$target_arch"
 mkdir -p "$HOME/cmake-$target_arch"
-
 echo "$target_host-ar \"\$@\"" > "$HOME/cmake-$target_arch"/ar
 echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/as
 echo "$target_host-clang \"\$@\"" > "$HOME/cmake-$target_arch"/cc
@@ -190,7 +207,6 @@ echo "$target_host-nm \"\$@\"" > "$HOME/cmake-$target_arch"/nm
 echo "$target_host-objcopy \"\$@\"" > "$HOME/cmake-$target_arch"/objcopy
 echo "$target_host-objdump \"\$@\"" > "$HOME/cmake-$target_arch"/objdump
 echo "$target_host-ranlib \"\$@\"" > "$HOME/cmake-$target_arch"/ranlib
-
 chmod +x "$HOME/cmake-$target_arch"/ar
 chmod +x "$HOME/cmake-$target_arch"/as
 chmod +x "$HOME/cmake-$target_arch"/cc
@@ -201,7 +217,6 @@ chmod +x "$HOME/cmake-$target_arch"/nm
 chmod +x "$HOME/cmake-$target_arch"/objcopy
 chmod +x "$HOME/cmake-$target_arch"/objdump
 chmod +x "$HOME/cmake-$target_arch"/ranlib
-
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
 
