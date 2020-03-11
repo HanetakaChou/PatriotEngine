@@ -120,6 +120,8 @@ export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Add the standalone toolchain to the search path 
 ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
+
 rm -rf "$HOME/meson-sanitycheck-$target_arch"
 mkdir -p "$HOME/meson-sanitycheck-$target_arch"
 echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang ### add #!/bin.bash to avoid "Exec format error" from meson
@@ -128,7 +130,6 @@ echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang++ ### add #!/b
 echo "$target_host-clang++ -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang++
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
-export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
 
 ## my-llvm-config-dir
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 

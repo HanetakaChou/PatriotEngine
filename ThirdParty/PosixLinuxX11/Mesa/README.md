@@ -84,9 +84,7 @@ vulkan-drivers -> ['amd', 'intel']
 > # endif
 
 ## HAVE_SYS_SHM_H
-### in scons/gallium.py
-> # if .. sys/shm.h
-> # ... HAVE_SYS_SHM_H
+### remove sys/shm.h in toolchain
 
 ## patch headers for libc
 
