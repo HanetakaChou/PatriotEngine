@@ -70,7 +70,7 @@ export STRIP=$target_host-strip
 # Tell configure what flags Android requires.
 export CFLAGS="-fPIE -fPIC"
 export CXXFLAGS="-fPIE -fPIC"
-export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX" ### the linker can't recognize the old dtags ### chrpath can only make path shorter
+export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" ### the linker can't recognize the old dtags ### chrpath can only make path shorter ### some undefined symbol like mblen
 
 # pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html
 target_sysroot="$HOME/bionic-toolchain-$target_arch/sysroot"

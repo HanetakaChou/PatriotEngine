@@ -51,8 +51,9 @@ Patch for projects
 ## In configure.ac
 ### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
 
-# Build & Install drm
-
+# Build & Install X11
+### mblen not define
+copy code from my-ndk-dir/sources/android/support/src/musl-multibyte/mblen.c to libX11/modules/im/ximcp/imCallbk.c
 
 # Build & Install llvm
 
