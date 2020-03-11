@@ -70,8 +70,8 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 ## In meson_options.txt
 platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
 
-dri-drivers -> [''] ## OpenGL drivers
-gallium-drivers -> ['zink'] ## OpenGL on Vulkan
+dri-drivers -> [''] ## use OpenGL drivers
+gallium-drivers -> ['zink'] ## OpenGL on Vulkan instead
 glx -> ['xlib'] ## use zlink no dri
 ### egl -> ['auto'] ## current not support zlink
 
@@ -82,9 +82,6 @@ vulkan-drivers -> ['amd', 'intel']
 > # if .....
 > # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
 > # endif
-
-## HAVE_SYS_SHM_H
-### remove sys/shm.h in toolchain
 
 ## patch headers for libc
 
@@ -107,6 +104,33 @@ FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
 ### strchrnul not found
 #### add strchrnul to strings.h in toolchain
 char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
+
+### shmat not found
+#### in sys/shm.h 
+> #include <sys/syscall.h>
+> 
+> static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
+> {
+>    return syscall(SYS_shmat, __shm_id, __addr, __flags);
+> }
+> 
+> static __inline int shmdt(const void *__addr)
+> {
+>     return syscall(SYS_shmdt, __addr);
+> }
+> 
+> static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
+> {
+>     return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
+> }
+> 
+> static int __inline shmget(key_t __key, size_t __size, int __flags)
+> {
+>     return syscall(SYS_shmget, __key, __size, __flags);
+> }
+
+### Elf64_Section not found
+patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
 
 ```
 

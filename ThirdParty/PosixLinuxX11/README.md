@@ -141,7 +141,7 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 ## mkdir build
 ## cd build
 ## rm -rf *
-meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt"  
+meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt" ### --reconfigure 
 
 rm -rf "$HOME/meson-sanitycheck-$target_arch" ## the sanity check has finished 
 ninja
@@ -153,17 +153,17 @@ ninja
 #### x86_64 cross file
 ```
 [binaries]
-ar = 'x86_64-linux-android-gcc-ar'
-as = 'x86_64-linux-android-clang'
+ar = 'x86_64-linux-android-ar'
+as = 'x86_64-linux-android-clang' 
 c = 'x86_64-linux-android-clang'
-cpp = 'x86_64-linux-android-clang'
+cpp = 'x86_64-linux-android-clang++'
 ld = 'x86_64-linux-android-ld'
 strip = 'x86_64-linux-android-strip'
 pkgconfig = 'pkg-config'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX'] ### -shared conflicts -pie ### results errors when use gcc
 cpp_args = ['-fPIE', '-fPIC']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
@@ -177,10 +177,10 @@ endian = 'little'
 #### arm64 cross file
 ```
 [binaries]
-ar = 'aarch64-linux-android-gcc-ar'
+ar = 'aarch64-linux-android-ar'
 as = 'aarch64-linux-android-clang'
 c = 'aarch64-linux-android-clang'
-cpp = 'aarch64-linux-android-clang'
+cpp = 'aarch64-linux-android-clang++'
 ld = 'aarch64-linux-android-ld'
 strip = 'aarch64-linux-android-strip'
 
