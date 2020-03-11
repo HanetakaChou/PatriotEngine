@@ -85,10 +85,10 @@ LLVM_LINK_LLVM_DYLIB -> ON
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
 ## In meson_options.txt
-platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
+platforms -> ['x11','drm'] ## no wayland ## no drm(full screen) ## no surfaceless
 
 dri-drivers -> ['']  ### use zlink no dri
-gallium-drivers -> ['zink' ] ### OpenGL on Vulkan instead
+gallium-drivers -> ['zink', 'swr' ] ### OpenGL on Vulkan instead ## swrast-> softpipe ## swr->llvmpipe
 glx -> ['dri'] ### glvnd deps dri
 glvnd -> true ### the libGLX
 
@@ -192,6 +192,29 @@ patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
 > 	}
 > } // extern "C"
 > } // namespace __cxxabiv1
+
+### in src/vulkan/wsi/wsi_common_display.c
+#### use pthread_kill to replace pthread_cancel
+> pthread_setcanceltype(...
+> ->
+> // pthread_setcanceltype(... ### remove
+
+> pthread_cancel(wsi->wait_thread);
+> ->
+> pthread_kill(wsi->wait_thread, 0);
+
+### in src/gallium/drivers/swr/rasterizer/common/os.h
+#### undeclared identifier '_mm_undefined_si128'
+
+> #if !define(__clang__) ...
+> ...
+> #else //We add
+> #define _mm_undefined_si128 _mm_setzero_si128 //We add
+> #define _mm256_undefined_ps _mm256_setzero_ps //We add
+> #endif
+
+### in src/gallium/drivers/swr/rasterizer/core/threads.cpp
+#### remove pthread_setaffinity_np
 
 ```
 
