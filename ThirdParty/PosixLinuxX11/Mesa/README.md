@@ -13,7 +13,20 @@
 [libXrender](https://gitlab.freedesktop.org/xorg/lib/libXrender)  
 [randrproto](https://gitlab.freedesktop.org/xorg/proto/randrproto)  
 [libXrandr](https://gitlab.freedesktop.org/xorg/lib/libXrandr)  
+[glproto](https://gitlab.freedesktop.org/xorg/proto/glproto)
+[libglvnd](https://gitlab.freedesktop.org/glvnd/libglvnd)  
+[fixesproto](https://gitlab.freedesktop.org/xorg/proto/fixesproto)  
+[libXfixes](https://gitlab.freedesktop.org/xorg/lib/libXfixes)  
+[damageproto](https://gitlab.freedesktop.org/xorg/proto/damageproto)  
+[libXdamage](https://gitlab.freedesktop.org/xorg/lib/libXdamage)  
+[dri2proto](https://gitlab.freedesktop.org/xorg/proto/dri2proto)
+[libXxf86vm](https://gitlab.freedesktop.org/xorg/lib/libxxf86vm)  
+[xf86vidmodeproto](https://gitlab.freedesktop.org/xorg/proto/xf86vidmodeproto)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
+
+
+
+
 
 Patch for projects 
 ```
@@ -62,6 +75,10 @@ LLVM_LINK_LLVM_DYLIB -> ON
 #### chrpath -r '$ORIGIN' build/bin/llvm-config
 #### copy linker to /system/bin #### the program interpreter ### readelf -l build/bin/llvm-config
 
+# Build & Install libglvnd
+
+./configure ... --disable-tls ### from mesa disable USE_ELF_TLS
+
 # Build & Install mesa
 
 ## my-llvm-config-dir
@@ -70,10 +87,15 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 ## In meson_options.txt
 platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
 
-dri-drivers -> [''] ## use OpenGL drivers
-gallium-drivers -> ['zink'] ## OpenGL on Vulkan instead
-glx -> ['xlib'] ## use zlink no dri
-### egl -> ['auto'] ## current not support zlink
+dri-drivers -> ['']  ### use zlink no dri
+gallium-drivers -> ['zink' ] ### OpenGL on Vulkan instead
+glx -> ['dri'] ### glvnd deps dri
+glvnd -> true ### the libGLX
+
+egl -> ['false'] ### a lot of compile errors
+gles1 -> 'false'
+gles2 -> 'false'
+GBM -> 'false'
 
 vulkan-drivers -> ['amd', 'intel']
 
@@ -170,7 +192,6 @@ patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
 > 	}
 > } // extern "C"
 > } // namespace __cxxabiv1
-
 
 ```
 
