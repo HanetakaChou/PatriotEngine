@@ -70,8 +70,8 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 ## In meson_options.txt
 platforms -> ['x11'] ## no wayland ## no drm(full screen) ## no surfaceless
 
-dri-drivers -> [''] ## OpenGL drivers
-gallium-drivers -> ['zink'] ## OpenGL on Vulkan
+dri-drivers -> [''] ## use OpenGL drivers
+gallium-drivers -> ['zink'] ## OpenGL on Vulkan instead
 glx -> ['xlib'] ## use zlink no dri
 ### egl -> ['auto'] ## current not support zlink
 
@@ -82,11 +82,6 @@ vulkan-drivers -> ['amd', 'intel']
 > # if .....
 > # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
 > # endif
-
-## HAVE_SYS_SHM_H
-### in scons/gallium.py
-> # if .. sys/shm.h
-> # ... HAVE_SYS_SHM_H
 
 ## patch headers for libc
 
@@ -110,6 +105,73 @@ FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
 #### add strchrnul to strings.h in toolchain
 char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
 
+### shmat not found
+#### in sys/shm.h 
+> #include <sys/syscall.h>
+> 
+> static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
+> {
+>    return syscall(SYS_shmat, __shm_id, __addr, __flags);
+> }
+> 
+> static __inline int shmdt(const void *__addr)
+> {
+>     return syscall(SYS_shmdt, __addr);
+> }
+> 
+> static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
+> {
+>     return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
+> }
+> 
+> static int __inline shmget(key_t __key, size_t __size, int __flags)
+> {
+>     return syscall(SYS_shmget, __key, __size, __flags);
+> }
+
+## use the libc built from aosp to replace the fake in toolchain
+
+## Elf64_Section not found
+patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain  
+
+## linux/bpf.h not found
+### use source from kernel-headers rpm
+###  https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf.h
+### https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf_common.h
+
+## errors for clang  
+### in src/amd/compiler/aco_insert_waitcnt.cpp
+> //wait_ctx out_ctx[program->blocks.size()] //variable length array of non-POD element type
+> -> 
+> wait_ctx *out_ctx = new(alloca(sizeof(wait_ctx)*program->blocks.size()))wait_ctx[program->blocks.size()]
+
+### in src/amd/compiler/aco_insert_NOPs.cpp
+> NOP_ctx_gfx10 all_ctx[program->blocks.size()] //variable length array of non-POD element type
+> ->
+> NOP_ctx_gfx10 *all_ctx = new(alloca(sizeof(NOP_ctx_gfx10)*program->blocks.size()))NOP_ctx_gfx10[program->blocks.size()]
+
+### in src/amd/compiler/aco_spill.cpp
+#### no viable conversion from 'aco_ptr<aco::Pseudo_instruction>' to 'aco_ptr<aco::Instruction>'
+> aco_ptr<Pseudo_instruction> reload{create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1)};
+> ->
+> aco_ptr<Instruction> reload{static_cast<Instruction*>(create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1))};
+
+### in src/amd/vulkan/radv_llvm_helper.cpp
+#### undefined reference to '__cxa_thread_atexit'
+#### use the code from my-ndk-dir/sources/cxx-stl/llvm-libc++abi/libcxxabi/src/cxa_thread_atexit.cpp  
+> namespace __cxxabiv1
+> {
+> extern "C"
+> {
+> 	int __cxa_thread_atexit(void (*dtor)(void *), void *obj, void *dso_symbol) throw()
+> 	{
+> 		extern int __cxa_thread_atexit_impl(void (*)(void *), void *, void *);
+> 		return __cxa_thread_atexit_impl(dtor, obj, dso_symbol);
+> 	}
+> } // extern "C"
+> } // namespace __cxxabiv1
+
+
 ```
 
 ## -----------------------------------------------------------------------------------
@@ -125,10 +187,11 @@ chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_intel.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_radeon.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLVM.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-dri3.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-present.so"
+chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-sync.so"
 chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxshmfence.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libXext.so"
 ```
 
 ## -----------------------------------------------------------------------------------

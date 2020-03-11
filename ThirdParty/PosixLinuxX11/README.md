@@ -44,9 +44,9 @@ mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-tool
 
 ## Build autoconf projects
 
-Linux Version: EL7  
+Linux Version: EL8  
 ```
-yum install libtool ## Used by autoconf
+install autoconf automake libtool make el8 version ### there are bugs in el7 version ### use rpmrebuild to remove gcc dependency in libtool
 rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
 ```
 
@@ -80,14 +80,14 @@ export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Autoconf
 make clean
-autoreconf -v --install --force -I"$HOME/bionic-toolchain-$target_arch/sysroot/usr/share/aclocal" # From ./autogen.sh
+autoreconf -v --install --force -I"${target_sysroot}/usr/share/aclocal"  # From ./autogen.sh
 ./configure --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --host=$target_host --disable-static
 make install
 ```  
 
 ## Build meson projects 
 
-Linux Version: EL7  
+Linux Version: EL8  
 ```
 yum install meson
 
@@ -120,6 +120,8 @@ export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Add the standalone toolchain to the search path 
 ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
+
 rm -rf "$HOME/meson-sanitycheck-$target_arch"
 mkdir -p "$HOME/meson-sanitycheck-$target_arch"
 echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang ### add #!/bin.bash to avoid "Exec format error" from meson
@@ -128,7 +130,6 @@ echo '#!/bin/bash' > "$HOME/meson-sanitycheck-$target_arch"/clang++ ### add #!/b
 echo "$target_host-clang++ -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck-$target_arch"/clang++
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
-export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
 
 ## my-llvm-config-dir
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
@@ -140,7 +141,7 @@ export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH
 ## mkdir build
 ## cd build
 ## rm -rf *
-meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt"  
+meson .. --prefix="$HOME/bionic-toolchain-$target_arch/sysroot/usr" --buildtype=release  -Db_ndebug=true --cross-file="$HOME/bionic-toolchain-$target_arch/cross_file.txt" ### --reconfigure 
 
 rm -rf "$HOME/meson-sanitycheck-$target_arch" ## the sanity check has finished 
 ninja
@@ -152,17 +153,17 @@ ninja
 #### x86_64 cross file
 ```
 [binaries]
-ar = 'x86_64-linux-android-gcc-ar'
-as = 'x86_64-linux-android-clang'
+ar = 'x86_64-linux-android-ar'
+as = 'x86_64-linux-android-clang' 
 c = 'x86_64-linux-android-clang'
-cpp = 'x86_64-linux-android-clang'
+cpp = 'x86_64-linux-android-clang++'
 ld = 'x86_64-linux-android-ld'
 strip = 'x86_64-linux-android-strip'
 pkgconfig = 'pkg-config'
 
 [properties]
 c_args = ['-fPIE', '-fPIC']
-c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX'] ### -shared conflicts -pie ### results errors when use gcc
 cpp_args = ['-fPIE', '-fPIC']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX']
 
@@ -176,10 +177,10 @@ endian = 'little'
 #### arm64 cross file
 ```
 [binaries]
-ar = 'aarch64-linux-android-gcc-ar'
+ar = 'aarch64-linux-android-ar'
 as = 'aarch64-linux-android-clang'
 c = 'aarch64-linux-android-clang'
-cpp = 'aarch64-linux-android-clang'
+cpp = 'aarch64-linux-android-clang++'
 ld = 'aarch64-linux-android-ld'
 strip = 'aarch64-linux-android-strip'
 
