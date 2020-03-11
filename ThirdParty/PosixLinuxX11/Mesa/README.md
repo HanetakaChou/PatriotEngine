@@ -86,19 +86,21 @@ LLVM_LINK_LLVM_DYLIB -> ON
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
 ## In meson_options.txt
-platforms -> ['x11','drm'] ## no wayland ## no drm(full screen) ## no surfaceless
+platforms -> ['x11','drm', surfaceless] ## no wayland 
 
 dri-drivers -> ['']  ### use zlink no dri
-gallium-drivers -> ['zink', 'swr' ] ### OpenGL on Vulkan instead ## swrast-> softpipe ## swr->llvmpipe
-glx -> ['dri'] ### glvnd deps dri
-glvnd -> true ### the libGLX
+gallium-drivers -> [' '] ### 
 
-egl -> ['false'] ### a lot of compile errors
+glvnd -> false 
+
+glx -> ['disabled'] ### no OpenGL
+opengl -> 'false'
+
+egl -> ['false']  ### no OpenGLES
 gles1 -> 'false'
 gles2 -> 'false'
-GBM -> 'false'
 
-vulkan-drivers -> ['amd', 'intel']
+vulkan-drivers -> ['amd', 'intel'] ## vulkan drivers only
 
 ## _glapi_tls_Dispatch undefined  
 ### in meson.build
@@ -125,8 +127,8 @@ int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in b
 FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
 
 ### strchrnul not found
-#### add strchrnul to strings.h in toolchain
-char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
+#### add strchrnul to string.h in toolchain
+char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/string.h
 
 ### shmat not found
 #### in sys/shm.h 
@@ -243,6 +245,11 @@ chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxsh
 sys/io.h  
 
 ```
+#ifndef _SYS_IO_H
+#define _SYS_IO_H 1
+
+#include <sys/syscall.h>
+
 static __inline int iopl(int level)
 {
     return syscall(SYS_iopl, level);
@@ -303,6 +310,9 @@ static __inline void outl(unsigned int __value, unsigned short int __port)
                          :
                          : "a"(__value), "Nd"(__port));
 }
+
+#endif
+
 ```
 
 ## -----------------------------------------------------------------------------------

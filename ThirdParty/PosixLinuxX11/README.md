@@ -71,8 +71,8 @@ export LD=$target_host-ld
 export STRIP=$target_host-strip
 
 # Tell configure what flags Android requires.
-export CFLAGS="-fPIE -fPIC"
-export CXXFLAGS="-fPIE -fPIC"
+export CFLAGS="-fPIE -fPIC -U__ANDROID__"
+export CXXFLAGS="-fPIE -fPIC -U__ANDROID__"
 export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" ### the linker can't recognize the old dtags ### chrpath can only make path shorter ### some undefined symbol like mblen
 
 # pkg-config ### https://autotools.io/pkgconfig/cross-compiling.html
@@ -165,9 +165,9 @@ strip = 'x86_64-linux-android-strip'
 pkgconfig = 'pkg-config'
 
 [properties]
-c_args = ['-fPIE', '-fPIC']
+c_args = ['-fPIE', '-fPIC', '-U__ANDROID__']
 c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined'] ### -shared conflicts -pie ### results errors when use gcc
-cpp_args = ['-fPIE', '-fPIC']
+cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined']
 
 [host_machine]
@@ -188,9 +188,9 @@ ld = 'aarch64-linux-android-ld'
 strip = 'aarch64-linux-android-strip'
 
 [properties]
-c_args = ['-fPIE', '-fPIC']
+c_args = ['-fPIE', '-fPIC', '-U__ANDROID__']
 c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined']
-cpp_args = ['-fPIE', '-fPIC']
+cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined']
 
 [host_machine]
@@ -234,7 +234,7 @@ export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
 
 cd build
-cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC" -DCMAKE_CXX_FLAGS="-fPIE -fPIC" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_SKIP_INSTALL_RPATH=ON
+cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC -U__ANDROID__" -DCMAKE_CXX_FLAGS="-fPIE -fPIC -U__ANDROID__" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined" -DCMAKE_SKIP_INSTALL_RPATH=ON
 
 cmake-gui
 
