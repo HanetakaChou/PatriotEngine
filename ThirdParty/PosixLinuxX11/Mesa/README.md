@@ -129,8 +129,48 @@ char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/strings.h
 >     return syscall(SYS_shmget, __key, __size, __flags);
 > }
 
-### Elf64_Section not found
-patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
+## use the libc built from aosp to replace the fake in toolchain
+
+## Elf64_Section not found
+patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain  
+
+## linux/bpf.h not found
+### use source from kernel-headers rpm
+###  https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf.h
+### https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf_common.h
+
+## errors for clang  
+### in src/amd/compiler/aco_insert_waitcnt.cpp
+> //wait_ctx out_ctx[program->blocks.size()] //variable length array of non-POD element type
+> -> 
+> wait_ctx *out_ctx = new(alloca(sizeof(wait_ctx)*program->blocks.size()))wait_ctx[program->blocks.size()]
+
+### in src/amd/compiler/aco_insert_NOPs.cpp
+> NOP_ctx_gfx10 all_ctx[program->blocks.size()] //variable length array of non-POD element type
+> ->
+> NOP_ctx_gfx10 *all_ctx = new(alloca(sizeof(NOP_ctx_gfx10)*program->blocks.size()))NOP_ctx_gfx10[program->blocks.size()]
+
+### in src/amd/compiler/aco_spill.cpp
+#### no viable conversion from 'aco_ptr<aco::Pseudo_instruction>' to 'aco_ptr<aco::Instruction>'
+> aco_ptr<Pseudo_instruction> reload{create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1)};
+> ->
+> aco_ptr<Instruction> reload{static_cast<Instruction*>(create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1))};
+
+### in src/amd/vulkan/radv_llvm_helper.cpp
+#### undefined reference to '__cxa_thread_atexit'
+#### use the code from my-ndk-dir/sources/cxx-stl/llvm-libc++abi/libcxxabi/src/cxa_thread_atexit.cpp  
+> namespace __cxxabiv1
+> {
+> extern "C"
+> {
+> 	int __cxa_thread_atexit(void (*dtor)(void *), void *obj, void *dso_symbol) throw()
+> 	{
+> 		extern int __cxa_thread_atexit_impl(void (*)(void *), void *, void *);
+> 		return __cxa_thread_atexit_impl(dtor, obj, dso_symbol);
+> 	}
+> } // extern "C"
+> } // namespace __cxxabiv1
+
 
 ```
 
