@@ -4,28 +4,19 @@
 
 #include <iostream>
 
+#include <link.h>
+#include <dlfcn.h>
+
 int main()
 {
-  char *buf;
-  size_t buf_size;
-  struct passwd pwd, *result;
+  void *handle = ::dlopen("libc.so", RTLD_NOW | RTLD_LOCAL);
 
-  buf_size = sysconf(_SC_GETPW_R_SIZE_MAX);
-  if (buf_size == -1)
-    buf_size = 512;
+  void *addr = ::dlsym(handle, "read");
 
-  buf = static_cast<char *>(::malloc(buf_size));
+  Dl_info info;
+  int rc = dladdr(addr, &info);
 
-  ::getpwuid_r(::getuid(), &pwd, buf, buf_size, &result);
-
-  if (result)
-  {
-    std::cout << pwd.pw_dir << std::endl;
-  }
-
-  ::free(buf);
-
-  std::cout << ::getenv("HOME") << std::endl;
+  std::cout << info.dli_fname << std::endl;
 
   return 0;
 }
