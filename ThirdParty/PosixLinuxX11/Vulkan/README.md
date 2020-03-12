@@ -46,9 +46,6 @@ else
      strcpy(loc, override);
 }
 ```
-fixme: 
-I should delete the libvulkan.so in build/loader, otherwise the smoketest will load the libvulkan.so in that directory.
-  
 patch loader_platform_open_library in vk_loader_platform.h  
 ```
 dlopen(... RTLD_LAZY ...
@@ -67,4 +64,25 @@ patch CMakeLists.txt to remove version in name of shared lib
 set_target_properties(... PROPERTIES SOVERSION ...)
 ->
 # set_target_properties(... PROPERTIES SOVERSION ...)
+``` 
+
+patch CMakeLists.txt to make smoketest load vulkan correctly
+```
+... -DUNINSTALLED_LOADER ...
+->
+# ... -DUNINSTALLED_LOADER ...
+```
+
+in demos/smoke/ShellWayland.cpp
+```
+... filename ... libvulkan.so.1 ...
+->
+... filename ... libvulkan.so ...
+```
+
+in demos/smoke/ShellWayland.cpp
+```
+... filename ... libvulkan.so.1 ...
+->
+... filename ... libvulkan.so ...
 ```
