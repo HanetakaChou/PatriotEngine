@@ -188,6 +188,30 @@ cpu = 'x86_64'
 endian = 'little'
 ```
 
+#### x86 cross file
+```
+[binaries]
+ar = 'i686-linux-android-ar'
+as = 'i686-linux-android-clang' 
+c = 'i686-linux-android-clang'
+cpp = 'i686-linux-android-clang++'
+ld = 'i686-linux-android-ld'
+strip = 'i686-linux-android-strip'
+pkgconfig = 'pkg-config'
+
+[properties]
+c_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared'] ### -shared conflicts -pie ### results errors when use gcc
+cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared']
+
+[host_machine]
+system = 'linux'
+cpu_family = 'x86'
+cpu = 'i686'
+endian = 'little'
+```
+
 #### arm64 cross file
 ```
 [binaries]

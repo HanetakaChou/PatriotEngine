@@ -90,14 +90,14 @@ static __inline void outl(unsigned int __value, unsigned short int __port)
 #endif
 ```
 
-## libX11
+## drm
 
-in Xos_r.h from xproto, remove the following  
+add open_memstream to \<stdio.h\> in toolchain  
 ```
-#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
-...
-#else
+FILE* open_memstream(char**, size_t*); //from aosp/bionic/libc/include/stdio.h
 ```
+
+## libX11
 
 in modules/im/ximcp/imCallbk.c, define mblen 
 ```
@@ -107,17 +107,29 @@ int mblen(const char *s, size_t n) //from my-ndk-dir/sources/android/support/src
 }
 ```
 
+in src/GetDiflt.c, remove unreliable getpw***
+```
+if ((ptr = getenv("HOME"))) 
+{
+    ...
+}
+else 
+{
+    /*
+    if ...
+        use getpw***
+    else
+    */
+        *dest ='\0'}
+}
+```
+
 ## libxshmfence
 
 in src/xshmfence_futex.h
 ```
 #include <value.h> -> #include <limits.h>
 sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
-```  
-
-add open_memstream to \<stdio.h\> in toolchain  
-```
-FILE* open_memstream(char**, size_t*); //from aosp/bionic/libc/include/stdio.h
 ```
 
 ## llvm
@@ -219,45 +231,20 @@ in meson.build, disable USE_ELF_TLS
 ```
   
 ### 3\. patch headers for libc  
-  
-add mkostemp to \<stdlib.h\> in toolchain  
-```
-extern int mkostemp64(char*, int); //from bionic/libc/include/stdlib.h
-```
 
 add pthread_barrier support to \<pthread.h> in toolchian  
 ```
 int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //from bionic/libc/include/stdlib.h
 ```
 
+add mkostemp to \<stdlib.h\> in toolchain  
+```
+extern int mkostemp(char*, int); //from bionic/libc/include/stdlib.h
+```
+
 add strchrnul to \<string.h\> in toolchain  
 ```
 char* strchrnul(const char*, int) __purefunc; //from bionic/libc/include/string.h
-```
-
-add shm support to \<sys/shm.h\> in toolchain    
-```
-#include <sys/syscall.h>
- 
-static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
-{
-   return syscall(SYS_shmat, __shm_id, __addr, __flags);
-}
- 
-static __inline int shmdt(const void *__addr)
-{
-   return syscall(SYS_shmdt, __addr);
-}
-
-static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
-{
-    return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
-}
-
-static int __inline shmget(key_t __key, size_t __size, int __flags)
-{
-    return syscall(SYS_shmget, __key, __size, __flags);
-}
 ```
 
 use the bionic built from aosp to replace the fake in toolchain
@@ -294,20 +281,54 @@ Elf64_Section not found
   
 write the libelf.pc manually
 ```
+prefix=/home/aduzha01/bionic-toolchain-x86_64/sysroot/usr #you should chang to your own path
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
+Name: libelf
+Description: elfutils libelf library to read and write ELF files
+Version: 0.165
+URL: http://elfutils.org/
+
+Libs: -L${libdir} -lelf
+Cflags: -I${includedir}
+
+Requires.private: zlib
 ```
 
 #### 5\.2\. intall zlib-devel in toolchain
   
 write the zlib.pc manually
 ```
+prefix=/home/aduzha01/bionic-toolchain-x86_64/sysroot/usr #you should chang to your own path
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
+Name: zlib
+Description: zlib compression library
+Version: 1.2.8
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
 ```
 #### 5\.3\. install expat-devel in toolchain
   
 write the expat.pc manually
 ```
+prefix=/home/aduzha01/bionic-toolchain-x86_64/sysroot/usr #you should chang to your own path
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
 
+Name: expat
+Version: 2.1.1
+Description: expat XML parser
+URL: http://www.libexpat.org
+Libs: -L${libdir} -lexpat
+Cflags: -I${includedir}
 ```
 
 ### 6\. fix compile errors for clang
