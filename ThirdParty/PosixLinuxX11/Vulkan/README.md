@@ -1,9 +1,17 @@
+[glslang](git@github.com:KhronosGroup/glslang.git)  
 [SPIRV-Headers](https://github.com/KhronosGroup/SPIRV-Headers)  
 [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools)  
 [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader/tree/sdk-1.0.68.0) \#\#\# tree/sdk-1.0.68.0 download from the website directly  
 [Vulkan-Loader-modified](https://github.com/YuqiaoZhang/Vulkan-Loader)  
 
 # build rules for specific projects 
+
+## glslang
+
+patch libpthread.so  
+```  
+ln -s libc.so "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libpthread.so"  
+```  
 
 ## SPIRV-Tools
 
@@ -18,11 +26,6 @@ patch librt.so
 ```  
 ln -s libc.so "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/librt.so"  
 ``` 
-
-patch libpthread.so  
-```  
-ln -s libc.so "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libpthread.so"  
-```  
 
 fix **spirv_tools_commit_id.h** issue  
 ```

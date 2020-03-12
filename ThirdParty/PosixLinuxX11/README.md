@@ -242,7 +242,7 @@ endian = 'little'
 target_arch=x86_64 ##x86 ##arm64 ##arm
 target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
 
-# Add the standalone toolchain to the search path.
+# Add the standalone toolchain to the search path
 rm -rf "$HOME/cmake-$target_arch"
 mkdir -p "$HOME/cmake-$target_arch"
 echo "$target_host-ar \"\$@\"" > "$HOME/cmake-$target_arch"/ar
