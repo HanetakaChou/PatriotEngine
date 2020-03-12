@@ -13,6 +13,7 @@
 [randrproto](https://gitlab.freedesktop.org/xorg/proto/randrproto)  
 [libXrandr](https://gitlab.freedesktop.org/xorg/lib/libXrandr)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
+[mesa-modified](https://github.com/YuqiaoZhang/mesa)  
 
 # build rules for specific projects 
 
