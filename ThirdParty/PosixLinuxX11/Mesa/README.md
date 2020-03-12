@@ -170,7 +170,7 @@ create <sysexits.h> in toolchain
 #endif
 ```  
   
-use build_machine host first to build a tablegen  
+use build_machine host first to build a tablegen  # we can skip this if we intall bionic and libc++ from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms
 ```
 make llvm-tblgen -j10
 ```
