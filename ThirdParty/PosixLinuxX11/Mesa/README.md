@@ -392,3 +392,10 @@ in disk_cache.c radv_meta.c JitManager.cpp, replace getpw*** by getenv("HOME")
 ```
 
 ```
+
+### 9\. fix ninja install problems
+
+I don't know how to skip intall rpath in meson and I have to use the binaries under build/src  
+
+use relative path in icd json file
+
