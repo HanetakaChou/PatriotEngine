@@ -5,7 +5,7 @@
 
 因此，我们考虑到使用Android的bionic(-android-7.0.0_r36)，从而可以确保在一次编译后可以在任何的Linux发行版上稳定并且行为一致地运行  
 
-参考google提供的官方文档[Building Open Source Projects Using Standalone Toolchains](https://developer.android.com/ndk/guides/standalone_toolchain#building_open_source_projects_using_standalone_toolchains)，我们基于bionic(-ndk-r11c)重新编译了PatriotEngine所依赖的所有第三方库（[X11](./X11/README.md)等)  
+参考google提供的官方文档[Building Open Source Projects Using Standalone Toolchains](https://developer.android.com/ndk/guides/standalone_toolchain#building_open_source_projects_using_standalone_toolchains)，我们基于bionic(-ndk-r11c)重新编译了PatriotEngine所依赖的所有第三方库（[X11](/ThirdParty/PosixLinuxX11/X11/README.md)、[Mesa-Vulkan-Drivers](/ThirdParty/PosixLinuxX11/Mesa/README.md)、[Vulkan-Loader](/ThirdParty/PosixLinuxX11/Vulkan.README.md)等)  
 
 同时，使用Android的bionic还带来了一个潜在的好处：我们可以复用Android的工具链(ndk-build等)，理论上，Linux可以和Android共用同一套编译系统，大大减少了开发时间  
 
