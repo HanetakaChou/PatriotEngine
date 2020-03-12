@@ -202,9 +202,14 @@ patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
 > ->
 > // pthread_setcanceltype(... ### remove
 
-> pthread_cancel(wsi->wait_thread);
+> pthread_cancel(wsi->wait_thread ... 
+> pthread_join(wsi->wait_thread ...
 > ->
-> pthread_kill(wsi->wait_thread, 0);
+> pthread_kill(wsi->wait_thread ...
+> pthread_join(wsi->wait_thread ...
+or maybe detach is better?
+> ->
+> pthread_detach(wsi->wait_thread ...
 
 ### in src/gallium/drivers/swr/rasterizer/common/os.h
 #### undeclared identifier '_mm_undefined_si128'
