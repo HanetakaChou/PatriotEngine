@@ -169,8 +169,16 @@ create <sysexits.h> in toolchain
 
 #endif
 ```  
+
+intall bionic and libc++ from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms  
+to make the llvm-config (run by mesa) executable on build_machine  
+```
+ln -s lib my-toolchain-dir/sysroot/usr/bin
+chrpath -r '$ORIGIN' my-toolchain-dir/sysroot/usr/bin/llvm-config
+```
   
-use build_machine host first to build a tablegen  # we can skip this if we intall bionic and libc++ from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms
+use build_machine host first to build a tablegen  
+\# we can skip this if we intall zlib from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms  
 ```
 make llvm-tblgen -j10
 ```
@@ -183,14 +191,7 @@ enable dylib in cmake options
 ```
 LLVM_BUILD_LLVM_DYLIB -> ON
 LLVM_LINK_LLVM_DYLIB -> ON
-```  
-
-make the llvm-config (run by mesa) executable on build_machine
-```
-intall bionic and libc++ from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms
-ln -s lib my-toolchain-dir/sysroot/usr/bin
-chrpath -r '$ORIGIN' my-toolchain-dir/sysroot/usr/bin/llvm-config
-```
+``` 
 
 
 
