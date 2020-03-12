@@ -58,10 +58,10 @@ Build projects
 target_arch=x86_64 ##x86 ##arm64 ##arm
 target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
 
-# Add the standalone toolchain to the search path.
+# Add the standalone toolchain to the search path
 export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 
-# Tell configure what tools to use.
+# Tell configure what tools to use
 # https://www.gnu.org/software/autoconf/manual/autoconf-2.66/html_node/Environment-Variable-Index.html
 export AR=$target_host-ar
 export AS=$target_host-clang
@@ -70,7 +70,7 @@ export CXX=$target_host-clang++
 export LD=$target_host-ld
 export STRIP=$target_host-strip
 
-# Tell configure what flags Android requires.
+# Tell configure what flags Android requires
 export CFLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID"
 export CXXFLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID"
 export LDFLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" ### the linker can't recognize the old dtags ### chrpath can only make path shorter ### some undefined symbol like mblen
@@ -98,16 +98,18 @@ delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ###
 
 delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin"
 
-rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### avoid interfering the toolchain sysroot
 ```
   
   
 Install bionic and libc++ from [https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms](https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms)   
 
 ```
-meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+meson will compile build-machine binaries and run them when call **project** in **meson.build** even if we are cross-building
 
-we must copy the bionic to the /system path to pass the meson sanitycheck #### the program interpreter path "/system/bin/linker(64)" is indicated by "readelf -l"
+we must copy the bionic to the /system path in able to pass the meson sanity check 
+# the path "/system" is indicated by the program interpreter path "/system/bin/linker(64)" of the generated binaries  
+# we can use "readelf -l .../a.out" to check the program interpreter path
 ```
 
 Build projects  
@@ -255,4 +257,4 @@ chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib**
 ## Some portable problem
 
 
-> 1/. In bionic the "pw_dir" from "getpwnam(_r) or getpwuid(_r)" is unreliable, use "getenv("HOME")" instead.
+> 1\. In bionic the "pw_dir" from "getpwnam(_r) or getpwuid(_r)" is unreliable, use "getenv("HOME")" instead.
