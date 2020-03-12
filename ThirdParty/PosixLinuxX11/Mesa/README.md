@@ -23,6 +23,9 @@
 [libXxf86vm](https://gitlab.freedesktop.org/xorg/lib/libxxf86vm)  
 [xf86vidmodeproto](https://gitlab.freedesktop.org/xorg/proto/xf86vidmodeproto)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
+[SPIRV-Headers](https://github.com/KhronosGroup/SPIRV-Headers)  
+[SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools)  
+[Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader/tree/sdk-1.0.68.0) \#\#\# tree/sdk-1.0.68.0 download from the website directly  
 
 
 
