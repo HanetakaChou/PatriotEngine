@@ -12,15 +12,6 @@
 [libXrender](https://gitlab.freedesktop.org/xorg/lib/libXrender)  
 [randrproto](https://gitlab.freedesktop.org/xorg/proto/randrproto)  
 [libXrandr](https://gitlab.freedesktop.org/xorg/lib/libXrandr)  
-[glproto](https://gitlab.freedesktop.org/xorg/proto/glproto)
-[libglvnd](https://gitlab.freedesktop.org/glvnd/libglvnd)  
-[fixesproto](https://gitlab.freedesktop.org/xorg/proto/fixesproto)  
-[libXfixes](https://gitlab.freedesktop.org/xorg/lib/libXfixes)  
-[damageproto](https://gitlab.freedesktop.org/xorg/proto/damageproto)  
-[libXdamage](https://gitlab.freedesktop.org/xorg/lib/libXdamage)  
-[dri2proto](https://gitlab.freedesktop.org/xorg/proto/dri2proto)
-[libXxf86vm](https://gitlab.freedesktop.org/xorg/lib/libxxf86vm)  
-[xf86vidmodeproto](https://gitlab.freedesktop.org/xorg/proto/xf86vidmodeproto)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
 
 # build rules for specific projects 
@@ -378,9 +369,4 @@ pthread_detach(wsi->wait_thread ...
 in disk_cache.c radv_meta.c JitManager.cpp, replace getpw*** by getenv("HOME")
 ```
 
-```
-
-## libglvnd
-```
-./configure ... --disable-tls ### similar to mesa disable USE_ELF_TLS
 ```
