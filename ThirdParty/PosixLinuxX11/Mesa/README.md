@@ -27,10 +27,6 @@
 [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools)  
 [Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader/tree/sdk-1.0.68.0) \#\#\# tree/sdk-1.0.68.0 download from the website directly  
 
-
-
-
-
 Patch for projects 
 ```
 # Build & Install xproto
