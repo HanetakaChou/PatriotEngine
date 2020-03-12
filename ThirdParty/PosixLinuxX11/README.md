@@ -103,8 +103,6 @@ rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-d
 ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
 
 we must copy the bionic to the /system path to pass the meson sanitycheck #### we can retrieve the program interpreter path /system/bin/linker(64) by "readelf -l"
-
-
 ```
 
 Build projects  
@@ -122,8 +120,11 @@ export PKG_CONFIG_LIBDIR=${target_sysroot}/usr/lib/pkgconfig:${target_sysroot}/u
 export PKG_CONFIG_SYSROOT_DIR=${target_sysroot}
 
 # Add the standalone toolchain to the search path 
+
 ### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
 export PATH="$HOME/meson-sanitycheck-$target_arch"${PATH:+:${PATH}}
+
+### 
 
 rm -rf "$HOME/meson-sanitycheck-$target_arch"
 mkdir -p "$HOME/meson-sanitycheck-$target_arch"
@@ -138,7 +139,7 @@ chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 
 ## 
-### delete EGL and GLES in toolchain sysroot ### may conflicts with mesa
+### delete EGL  GLES and vulkan in toolchain sysroot ### may conflicts with mesa
 
 # meson
 ## mkdir build
