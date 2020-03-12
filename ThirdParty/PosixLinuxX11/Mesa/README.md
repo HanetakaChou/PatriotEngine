@@ -219,6 +219,10 @@ patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain
 ### in src/gallium/drivers/swr/rasterizer/core/threads.cpp
 #### remove pthread_setaffinity_np
 
+
+### in disk_cache.c radv_meta.c JitManager.cpp
+#### replace getpw*** by getenv("HOME")
+
 ```
 
 ## -----------------------------------------------------------------------------------
