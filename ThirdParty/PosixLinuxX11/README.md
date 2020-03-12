@@ -99,10 +99,15 @@ delete python python2 python2.7 in "$HOME/bionic-toolchain-$target_arch/bin" ###
 delete clang clang++ in "$HOME/bionic-toolchain-$target_arch/bin"
 
 rpm -e --nodeps gcc gcc-c++ kernel-headers glibc-headers glibc-devel libstdc++-devel ### 避免对sysroot造成干扰
+```
+  
+  
+Install bionic and libc++ from [https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms](https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms)   
 
-### meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
+```
+meson will compile build-machine binaries when call **project** in **meson.build** even if it is cross build
 
-we must copy the bionic to the /system path to pass the meson sanitycheck #### we can retrieve the program interpreter path /system/bin/linker(64) by "readelf -l"
+we must copy the bionic to the /system path to pass the meson sanitycheck #### the program interpreter path "/system/bin/linker(64)" is indicated by "readelf -l"
 ```
 
 Build projects  
