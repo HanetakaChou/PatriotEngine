@@ -1,5 +1,4 @@
-## -----------------------------------------------------------------------------------
-
+# mesa-vulkan-drivers 
 [libpciaccess](https://gitlab.freedesktop.org/xorg/lib/libpciaccess/tree/master)   
 [drm](https://gitlab.freedesktop.org/mesa/drm)  
 [libxtrans](https://gitlab.freedesktop.org/xorg/lib/libxtrans)  
@@ -23,235 +22,12 @@
 [libXxf86vm](https://gitlab.freedesktop.org/xorg/lib/libxxf86vm)  
 [xf86vidmodeproto](https://gitlab.freedesktop.org/xorg/proto/xf86vidmodeproto)  
 [mesa](https://gitlab.freedesktop.org/mesa/mesa)  
-[SPIRV-Headers](https://github.com/KhronosGroup/SPIRV-Headers)  
-[SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools)  
-[Vulkan-Loader](https://github.com/KhronosGroup/Vulkan-Loader/tree/sdk-1.0.68.0) \#\#\# tree/sdk-1.0.68.0 download from the website directly  
 
-Patch for projects 
-```
-# Build & Install xproto
-## in Xos_r.h
-### remove the following
->#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
->...
->#else
+# build rules for specific projects 
 
-# Build & Install libpciaccess
+## libpciaccess
 
-## #include <sys/io.h> file not found
-### Create sys/io.h in toolchain  
-
-# Build & Install libxshmfence
-
-## In src/xshmfence_futex.h
-### #include <value.h> -> #include <limits.h>
-### sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
-
-## In configure.ac
-### AC_CHECK_FUNCS([open_memstream] -> AC_DEFINE([HAVE_OPEN_MEMSTREAM], 0, [no open_memstream])
-
-# Build & Install X11
-### mblen not define
-copy code from my-ndk-dir/sources/android/support/src/musl-multibyte/mblen.c to libX11/modules/im/ximcp/imCallbk.c
-
-# Build & Install llvm
-
-## In llvm/llvm/lib/Support/Unix/Unix.h
-### After #include <unistd.h>
-### Add #include <sys/syscall.h>
-
-## #include <sysexits.h> file not found
-### Create sysexits.h in toolchain  
-
-### Use build_machine host first to build a tablegen
-####  make llvm-tblgen -j10
-### Specify in cmake option
-LLVM_TABLEGEN -> .../llvm-tblgen
-
-LLVM_BUILD_LLVM_DYLIB -> ON
-LLVM_LINK_LLVM_DYLIB -> ON
-
-### llvm-config ### used by mesa
-#### chrpath -r '$ORIGIN' build/bin/llvm-config
-#### copy linker to /system/bin #### the program interpreter ### readelf -l build/bin/llvm-config
-
-# Build & Install libglvnd
-
-./configure ... --disable-tls ### from mesa disable USE_ELF_TLS
-
-# Build & Install mesa
-
-## my-llvm-config-dir
-export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
-
-## In meson_options.txt
-platforms -> ['x11','drm', surfaceless] ## no wayland 
-
-dri-drivers -> ['']  ### use zlink no dri
-gallium-drivers -> [' '] ### 
-
-glvnd -> false 
-
-glx -> ['disabled'] ### no OpenGL
-opengl -> 'false'
-
-egl -> ['false']  ### no OpenGLES
-gles1 -> 'false'
-gles2 -> 'false'
-
-vulkan-drivers -> ['amd', 'intel'] ## vulkan drivers only
-
-## _glapi_tls_Dispatch undefined  
-### in meson.build
-> # if .....
-> # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
-> # endif
-
-## patch headers for libc
-
-### mkostemp not found
-#### add mkostemp to stdlib.h in toolchain
-extern int mkostemp64(char*, int); //in bionic/libc/include/stdlib.h
-...
-
-### pthread_barrier_init not found
-#### add pthread_barrier_init to pthread.h in toolchain
-int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //in bionic/libc/include/stdlib.h
-
-### 'linux/kcmp.h' file not found
-#### create linux/kcmp.h in toolchain
-
-### open_memstream not found
-#### add open_memstream to stdio.h in toolchain
-FILE* open_memstream(char**, size_t*); //in bionic/libc/include/stdio.h
-
-### strchrnul not found
-#### add strchrnul to string.h in toolchain
-char* strchrnul(const char*, int) __purefunc; //in bionic/libc/include/string.h
-
-### shmat not found
-#### in sys/shm.h 
-> #include <sys/syscall.h>
-> 
-> static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
-> {
->    return syscall(SYS_shmat, __shm_id, __addr, __flags);
-> }
-> 
-> static __inline int shmdt(const void *__addr)
-> {
->     return syscall(SYS_shmdt, __addr);
-> }
-> 
-> static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
-> {
->     return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
-> }
-> 
-> static int __inline shmget(key_t __key, size_t __size, int __flags)
-> {
->     return syscall(SYS_shmget, __key, __size, __flags);
-> }
-
-## use the libc built from aosp to replace the fake in toolchain
-
-## Elf64_Section not found
-patch code in external/elfutils/libelf/elf.h to the elf.h in toolchain  
-
-## linux/bpf.h not found
-### use source from kernel-headers rpm
-###  https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf.h
-### https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf_common.h
-
-## errors for clang  
-### in src/amd/compiler/aco_insert_waitcnt.cpp
-> //wait_ctx out_ctx[program->blocks.size()] //variable length array of non-POD element type
-> -> 
-> wait_ctx *out_ctx = new(alloca(sizeof(wait_ctx)*program->blocks.size()))wait_ctx[program->blocks.size()]
-
-### in src/amd/compiler/aco_insert_NOPs.cpp
-> NOP_ctx_gfx10 all_ctx[program->blocks.size()] //variable length array of non-POD element type
-> ->
-> NOP_ctx_gfx10 *all_ctx = new(alloca(sizeof(NOP_ctx_gfx10)*program->blocks.size()))NOP_ctx_gfx10[program->blocks.size()]
-
-### in src/amd/compiler/aco_spill.cpp
-#### no viable conversion from 'aco_ptr<aco::Pseudo_instruction>' to 'aco_ptr<aco::Instruction>'
-> aco_ptr<Pseudo_instruction> reload{create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1)};
-> ->
-> aco_ptr<Instruction> reload{static_cast<Instruction*>(create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1))};
-
-### in src/amd/vulkan/radv_llvm_helper.cpp
-#### undefined reference to '__cxa_thread_atexit'
-#### use the code from my-ndk-dir/sources/cxx-stl/llvm-libc++abi/libcxxabi/src/cxa_thread_atexit.cpp  
-> namespace __cxxabiv1
-> {
-> extern "C"
-> {
-> 	int __cxa_thread_atexit(void (*dtor)(void *), void *obj, void *dso_symbol) throw()
-> 	{
-> 		extern int __cxa_thread_atexit_impl(void (*)(void *), void *, void *);
-> 		return __cxa_thread_atexit_impl(dtor, obj, dso_symbol);
-> 	}
-> } // extern "C"
-> } // namespace __cxxabiv1
-
-### in src/vulkan/wsi/wsi_common_display.c
-#### use pthread_kill to replace pthread_cancel
-> pthread_setcanceltype(...
-> ->
-> // pthread_setcanceltype(... ### remove
-
-> pthread_cancel(wsi->wait_thread ... 
-> pthread_join(wsi->wait_thread ...
-> ->
-> pthread_kill(wsi->wait_thread ...
-> pthread_join(wsi->wait_thread ...
-or maybe detach is better?
-> ->
-> pthread_detach(wsi->wait_thread ...
-
-### in src/gallium/drivers/swr/rasterizer/common/os.h
-#### undeclared identifier '_mm_undefined_si128'
-
-> #if !define(__clang__) ...
-> ...
-> #else //We add
-> #define _mm_undefined_si128 _mm_setzero_si128 //We add
-> #define _mm256_undefined_ps _mm256_setzero_ps //We add
-> #endif
-
-### in src/gallium/drivers/swr/rasterizer/core/threads.cpp
-#### remove pthread_setaffinity_np
-
-
-### in disk_cache.c radv_meta.c JitManager.cpp
-#### replace getpw*** by getenv("HOME")
-
-```
-
-## -----------------------------------------------------------------------------------
-
-chrpath  
-```
-target_arch=x86_64 ##x86 ##arm64 ##arm
-
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libpciaccess.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libkms.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_amdgpu.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_intel.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libdrm_radeon.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libLLVM.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-dri3.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libX11-xcb.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-present.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxcb-sync.so"
-chrpath -r '$ORIGIN' "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/libxshmfence.so"
-```
-
-## -----------------------------------------------------------------------------------
-sys/io.h  
-
+create \<sys/io.h\> in toolchain 
 ```
 #ifndef _SYS_IO_H
 #define _SYS_IO_H 1
@@ -320,12 +96,47 @@ static __inline void outl(unsigned int __value, unsigned short int __port)
 }
 
 #endif
-
 ```
 
-## -----------------------------------------------------------------------------------
-sysexits.h   
+## libX11
 
+in Xos_r.h from xproto, remove the following  
+```
+#elif !defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(__APPLE__)
+...
+#else
+```
+
+in modules/im/ximcp/imCallbk.c, define mblen 
+```
+int mblen(const char *s, size_t n) //from my-ndk-dir/sources/android/support/src/musl-multibyte/mblen.c
+{
+	return mbtowc(0, s, n);
+}
+```
+
+## libxshmfence
+
+in src/xshmfence_futex.h
+```
+#include <value.h> -> #include <limits.h>
+sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
+```  
+
+add open_memstream to \<stdio.h\> in toolchain  
+```
+FILE* open_memstream(char**, size_t*); //from aosp/bionic/libc/include/stdio.h
+```
+
+## llvm
+
+in llvm/llvm/lib/Support/Unix/Unix.h, add the "#include \<sys/syscall.h\>" after "#include \<unistd.h\>"
+```
+...
+#include <unistd.h>
+#include <sys/syscall.h> //we add
+```
+create <sysexits.h> in toolchain
 ```
 #ifndef _SYSEXITS_H
 #define _SYSEXITS_H 1
@@ -353,40 +164,223 @@ sysexits.h
 #define EX__MAX 78
 
 #endif
-``` 
+```  
+  
+use build_machine host first to build a tablegen  
+```
+make llvm-tblgen -j10
+```
+and then specify the path of llvm-tblgen in cmake options  
+```
+LLVM_TABLEGEN -> .../llvm-tblgen
+```
 
-## -----------------------------------------------------------------------------------
-linux/kcmp.h  
+enable dylib in cmake options  
+```
+LLVM_BUILD_LLVM_DYLIB -> ON
+LLVM_LINK_LLVM_DYLIB -> ON
+```  
+
+make the llvm-config (run by mesa) executable on build_machine
+```
+intall bionic and libc++ from https://github.com/YuqiaoZhang/Bionic-based-Linux/tree/rpms
+ln -s lib my-toolchain-dir/sysroot/usr/bin
+chrpath -r '$ORIGIN' my-toolchain-dir/sysroot/usr/bin/llvm-config
+```
+
+
+
+## mesa
+
+### 1\. make the llvm-config executable on build_machine  
+
+add the llvm-config to \$PATH
+```
+export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
+```
+
+### 2\. configure the meson options, we only build the vulkan drivers
+in meson_options.txt
+```
+vulkan-drivers -> ['amd', 'intel'] ## we only build the vulkan drivers 
+
+platforms -> ['x11','drm', surfaceless] ## no wayland 
+
+dri-drivers -> ['']  ### use zlink no dri
+gallium-drivers -> [' ']  
+
+glx -> ['disabled'] ### no GL
+opengl -> 'false'
+
+egl -> ['false']  ### no GLES
+gles1 -> 'false'
+gles2 -> 'false'
+
+glvnd -> false ### no GL or GLES loader
+```
+
+in meson.build, disable USE_ELF_TLS
+```
+# if .....
+# pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
+# endif
+```
+  
+### 3\. patch headers for libc  
+  
+add mkostemp to \<stdlib.h\> in toolchain  
+```
+extern int mkostemp64(char*, int); //from bionic/libc/include/stdlib.h
+```
+
+add pthread_barrier support to \<pthread.h> in toolchian  
+```
+int pthread_barrierattr_init(pthread_barrierattr_t* attr) __nonnull((1)); //from bionic/libc/include/stdlib.h
+```
+
+add strchrnul to \<string.h\> in toolchain  
+```
+char* strchrnul(const char*, int) __purefunc; //from bionic/libc/include/string.h
+```
+
+add shm support to \<sys/shm.h\> in toolchain    
+```
+#include <sys/syscall.h>
+ 
+static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
+{
+   return syscall(SYS_shmat, __shm_id, __addr, __flags);
+}
+ 
+static __inline int shmdt(const void *__addr)
+{
+   return syscall(SYS_shmdt, __addr);
+}
+
+static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
+{
+    return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
+}
+
+static int __inline shmget(key_t __key, size_t __size, int __flags)
+{
+    return syscall(SYS_shmget, __key, __size, __flags);
+}
+```
+
+use the bionic built from aosp to replace the fake in toolchain
+```
+copy to the toolchain sysroot  
+```
+
+### 4\. patch headers for linux kernel   
+
+add \<linux/kcmp.h\> in toolchain  
 
 ```
-/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
-#ifndef _UAPI_LINUX_KCMP_H
-#define _UAPI_LINUX_KCMP_H
+from https://elixir.bootlin.com/linux/v3.19/source/include/uapi/linux/kcmp.h
+```
 
-#include <linux/types.h>
+add \<linux/bpf.h\> in toolchain  
+```
+from https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf.h
+```
 
-/* Comparison type */
-enum kcmp_type
+add \<linux/bpf_common.h\> in toolchain  
+```
+from https://elixir.bootlin.com/linux/v3.18/source/include/uapi/linux/bpf_common.h
+```
+
+### 5\. install dependency packages manually
+
+#### 5\.1\. intall libelf-devel in toolchain
+
+patch code in aosp/external/elfutils/libelf/elf.h to \<elf.h\> in toolchain  
+```
+Elf64_Section not found
+```
+  
+write the libelf.pc manually
+```
+
+```
+
+#### 5\.2\. intall zlib-devel in toolchain
+  
+write the zlib.pc manually
+```
+
+```
+#### 5\.3\. install expat-devel in toolchain
+  
+write the expat.pc manually
+```
+
+```
+
+### 6\. fix compile errors for clang
+
+in src/amd/compiler/aco_insert_waitcnt.cpp
+```
+wait_ctx out_ctx[program->blocks.size()] //variable length array of non-POD element type
+-> 
+wait_ctx *out_ctx = new(alloca(sizeof(wait_ctx)*program->blocks.size()))wait_ctx[program->blocks.size()]
+```
+
+in src/amd/compiler/aco_insert_NOPs.cpp
+```
+NOP_ctx_gfx10 all_ctx[program->blocks.size()] //variable length array of non-POD element type
+->
+NOP_ctx_gfx10 *all_ctx = new(alloca(sizeof(NOP_ctx_gfx10)*program->blocks.size()))NOP_ctx_gfx10[program->blocks.size()]
+```
+
+in src/amd/compiler/aco_spill.cpp
+```
+aco_ptr<Pseudo_instruction> reload{create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1)}; //no viable conversion from 'aco_ptr<aco::Pseudo_instruction>' to 'aco_ptr<aco::Instruction>'
+->
+aco_ptr<Instruction> reload{static_cast<Instruction*>(create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1))};
+```
+
+### 7\. fix link errors for clang  
+
+in src/amd/vulkan/radv_llvm_helper.cpp, add the following  
+```
+//undefined reference to '__cxa_thread_atexit'
+//from my-ndk-dir/sources/cxx-stl/llvm-libc++abi/libcxxabi/src/cxa_thread_atexit.cpp 
+
+namespace __cxxabiv1
 {
-    KCMP_FILE,
-    KCMP_VM,
-    KCMP_FILES,
-    KCMP_FS,
-    KCMP_SIGHAND,
-    KCMP_IO,
-    KCMP_SYSVSEM,
-    KCMP_EPOLL_TFD,
-
-    KCMP_TYPES,
-};
-
-/* Slot for KCMP_EPOLL_TFD */
-struct kcmp_epoll_slot
+extern "C"
 {
-    __u32 efd;  /* epoll file descriptor */
-    __u32 tfd;  /* target file number */
-    __u32 toff; /* target offset within same numbered sequence */
-};
+	int __cxa_thread_atexit(void (*dtor)(void *), void *obj, void *dso_symbol) throw() 
+    {
+		extern int __cxa_thread_atexit_impl(void (*)(void *), void *, void *);
+		return __cxa_thread_atexit_impl(dtor, obj, dso_symbol);
+	}
+} // extern "C"
+} // namespace __cxxabiv1
+```
 
-#endif /* _UAPI_LINUX_KCMP_H */
+### 8\. fix portable problems 
+
+in src/vulkan/wsi/wsi_common_display.c, use pthread_detach to replace pthread_cancel and pthread_join
+```
+pthread_setcanceltype(...
+->
+// pthread_setcanceltype(... ### remove
+
+pthread_cancel(wsi->wait_thread ... 
+pthread_join(wsi->wait_thread ...
+->
+pthread_detach(wsi->wait_thread ...
+```
+
+in disk_cache.c radv_meta.c JitManager.cpp, replace getpw*** by getenv("HOME")
+```
+
+```
+
+## libglvnd
+```
+./configure ... --disable-tls ### similar to mesa disable USE_ELF_TLS
 ```

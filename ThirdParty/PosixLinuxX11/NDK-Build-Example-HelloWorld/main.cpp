@@ -23,9 +23,9 @@ int main()
     std::cout << pwd.pw_dir << std::endl;
   }
 
-  std::cout << ::getenv("HOME") << std::endl;
-
   ::free(buf);
+
+  std::cout << ::getenv("HOME") << std::endl;
 
   return 0;
 }

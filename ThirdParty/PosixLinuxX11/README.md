@@ -1,4 +1,4 @@
-## Bionic-based Linux  
+# Bionic-based Linux  
 [bionic](https://android.googlesource.com/platform/bionic)  
 
 由于glibc和stdc++的版本在不同Linux发行版之间差异较大，在一个Linux发行版上编译的二进制文件很难在未经重新编译的情况下在另一个Linux发行版上稳定并且行为一致地运行（Linux上的软件都倾向于开源，开发者们普遍期望最终用户下载源代码后在本地编译安装(著名的make install命令)，而很少考虑提供预编译的二进制文件供最终用户使用）  
@@ -13,7 +13,7 @@
   
 [Building Open Source Projects Using Standalone Toolchains](https://developer.android.com/ndk/guides/standalone_toolchain#building_open_source_projects_using_standalone_toolchains)  
 
-## Create ndk toolchain  
+# create stand alone toolchain from ndk
   
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
@@ -41,11 +41,14 @@ rm -rf "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/libx32"
 mv "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib64" "$HOME/bionic-toolchain-x86_64/x86_64-linux-android/lib"
 
 ## Optional  
-we can use the bionic built from aosp to replace the fake in toolchain 
+1. we can use the bionic built from aosp to replace the fake in toolchain 
+2. we can delete the EGL GLES and vulkan in the toolchain sysroot which may conflict with mesa
 
 ```  
 
-## Build autoconf projects
+# general build rules
+
+## build autoconf projects
 
 Linux Version: EL8  
 ```
@@ -88,7 +91,7 @@ autoreconf -v --install --force -I"${target_sysroot}/usr/share/aclocal"  # From 
 make install
 ```  
 
-## Build meson projects 
+## build meson projects 
 
 Linux Version: EL8  
 ```
@@ -112,7 +115,7 @@ we must copy the bionic to the /system path in able to pass the meson sanity che
 # we can use "readelf -l .../a.out" to check the program interpreter path
 ```
 
-Build projects  
+build projects  
 ```  
 target_arch=x86_64 ##x86 ##arm64 ##arm
 target_host=x86_64-linux-android  ##i686-linux-android ##aarch64-linux-android ##arm-linux-androideabi
@@ -142,12 +145,6 @@ echo "$target_host-clang++ -fPIE -fPIC -pie \"\$@\"" >> "$HOME/meson-sanitycheck
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang
 chmod +x "$HOME/meson-sanitycheck-$target_arch"/clang++
 
-## my-llvm-config-dir
-export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
-
-## 
-### delete EGL  GLES and vulkan in toolchain sysroot ### may conflicts with mesa
-
 # meson
 ## mkdir build
 ## cd build
@@ -158,6 +155,12 @@ rm -rf "$HOME/meson-sanitycheck-$target_arch" ## the sanity check has finished
 ninja
 
 ```  
+  
+chrpath //fix me 
+
+```
+I don't know how to skip intall rpath in meson and I have to use the binaries under build/src
+```
 
 ### -----------------------------------------------------------------------------------  
 
@@ -208,7 +211,7 @@ cpu = 'arm64'
 endian = 'little'
 ```
 
-## Build cmake projects 
+## build cmake projects 
 
 
 ```  
@@ -242,7 +245,7 @@ export PATH="$HOME/bionic-toolchain-$target_arch/bin"${PATH:+:${PATH}}
 export PATH="$HOME/cmake-$target_arch"${PATH:+:${PATH}}
 
 cd build
-cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_CXX_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_SKIP_INSTALL_RPATH=ON ### -DBUILD_WSI_WAYLAND_SUPPORT=OFF -DGLSLANG_INSTALL_DIR="$HOME/bionic-toolchain-$target_arch/sysroot/usr"
+cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_CXX_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_SKIP_INSTALL_RPATH=ON 
 
 cmake-gui
 
@@ -254,7 +257,8 @@ target_arch=x86_64 ##x86 ##arm64 ##arm
 
 chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
 ```  
-## Some portable problem
+
+## some portable problems
 
 
 > 1\. In bionic the "pw_dir" from "getpwnam(_r) or getpwuid(_r)" is unreliable, use "getenv("HOME")" instead.
