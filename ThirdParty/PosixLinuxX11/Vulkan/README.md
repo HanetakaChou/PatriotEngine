@@ -46,6 +46,8 @@ else
      strcpy(loc, override);
 }
 ```
+fixme: 
+I should delete the libvulkan.so in build/loader, otherwise the smoketest will load the libvulkan.so in that directory.
   
 patch loader_platform_open_library in vk_loader_platform.h  
 ```
@@ -59,3 +61,4 @@ patch CMakeLists.txt to use shared SPIRV-Tools
 find_library(SPIRV_TOOLS_LIB NAMES SPIRV-Tools ... -> SPIRV-Tools-shared
 find_library(SPIRV_TOOLS_LIB NAMES SPIRV-Tools-opt ... -> SPIRV-Tools-shared
 ```  
+
