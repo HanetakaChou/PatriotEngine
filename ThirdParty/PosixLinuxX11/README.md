@@ -240,9 +240,13 @@ cmake-gui
 
 ```  
   
-### chrpath  /XXXXXX -> \$ORIGIN
+## chrpath  /XXXXXX -> \$ORIGIN
 ```
 target_arch=x86_64 ##x86 ##arm64 ##arm
 
 chrpath -r "\$ORIGIN" "$HOME/bionic-toolchain-$target_arch/sysroot/usr/lib/lib***.so"
 ```  
+## Some portable problem
+
+
+> 1/. In bionic the "pw_dir" from "getpwnam(_r) or getpwuid(_r)" is unreliable, use "getenv("HOME")" instead.
