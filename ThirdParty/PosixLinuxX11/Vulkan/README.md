@@ -62,3 +62,9 @@ find_library(SPIRV_TOOLS_LIB NAMES SPIRV-Tools ... -> SPIRV-Tools-shared
 find_library(SPIRV_TOOLS_LIB NAMES SPIRV-Tools-opt ... -> SPIRV-Tools-shared
 ```  
 
+patch CMakeLists.txt to remove version in name of shared lib
+```
+set_target_properties(... PROPERTIES SOVERSION ...)
+->
+# set_target_properties(... PROPERTIES SOVERSION ...)
+```
