@@ -1,0 +1,17 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/share/android-ndk-r11c/platforms/android-24/arch-x86_64/usr/include",
+                "/home/share/android-ndk-r11c/sources/cxx-stl/llvm-libc++/libcxx/include",
+                "/home/share/android-ndk-r11c/sources/cxx-stl/llvm-libc++/../llvm-libc++abi/libcxxabi/include",
+                "/home/share/android-ndk-r11c/sources/cxx-stl/llvm-libc++/../../android/support/include",
+                "/home/share/android-ndk-r11c/sources/android/support/include"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/cpp"
+        }
+    ],
+    "version": 4
+}
