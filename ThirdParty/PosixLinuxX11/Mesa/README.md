@@ -134,6 +134,18 @@ sys_futex(... MAXINT ...) -> sys_futex(... INT_MAX ...)
 
 ## llvm
 
+remove -Wl,--no-undefined in CMAKE_MODULE_LINKER_FLAGS
+```
+cmake .. -DCMAKE_BUILD_TYPE="Release" -DCMAKE_INSTALL_PREFIX="$HOME/bionic-toolchain-$target_arch/sysroot/usr" -DCMAKE_C_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_CXX_FLAGS="-fPIE -fPIC -U__ANDROID__ -UANDROID" -DCMAKE_EXE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_MODULE_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -lc++_shared" -DCMAKE_SHARED_LINKER_FLAGS="-pie -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined -lc++_shared" -DCMAKE_SKIP_INSTALL_RPATH=ON 
+
+```
+
+enable dylib in cmake options  
+```
+LLVM_BUILD_LLVM_DYLIB -> ON
+LLVM_LINK_LLVM_DYLIB -> ON
+``` 
+
 in llvm/llvm/lib/Support/Unix/Unix.h, add the "#include \<sys/syscall.h\>" after "#include \<unistd.h\>"
 ```
 ...
@@ -186,12 +198,6 @@ and then specify the path of llvm-tblgen in cmake options
 ```
 LLVM_TABLEGEN -> .../llvm-tblgen
 ```
-
-enable dylib in cmake options  
-```
-LLVM_BUILD_LLVM_DYLIB -> ON
-LLVM_LINK_LLVM_DYLIB -> ON
-``` 
 
 
 
