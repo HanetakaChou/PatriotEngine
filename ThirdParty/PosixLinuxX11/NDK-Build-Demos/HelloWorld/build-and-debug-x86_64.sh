@@ -22,7 +22,7 @@ cp -f ../../Bionic-Redistributable/lib64/libstdc++.so libs/x86_64
 
 # copy the linker to cwd  
 
-cp -f ../../Bionic-Redistributable/bin64/linker libs/x86_64
+cp -f ../../Bionic-Redistributable/lib64/linker libs/x86_64
 cd libs/x86_64
   
 # execute the generated a.out  
