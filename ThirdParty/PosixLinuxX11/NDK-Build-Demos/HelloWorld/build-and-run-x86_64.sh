@@ -15,14 +15,14 @@ chrpath -r '$ORIGIN' libs/x86_64/a.out
   
 # copy the dep libs to out dir  
   
-cp -f ../Bionic-Redistributable/lib64/libc.so libs/x86_64
-cp -f ../Bionic-Redistributable/lib64/libdl.so libs/x86_64
-cp -f ../Bionic-Redistributable/lib64/libm.so libs/x86_64
-cp -f ../Bionic-Redistributable/lib64/libstdc++.so libs/x86_64  
+cp -f ../../Bionic-Redistributable/lib64/libc.so libs/x86_64
+cp -f ../../Bionic-Redistributable/lib64/libdl.so libs/x86_64
+cp -f ../../Bionic-Redistributable/lib64/libm.so libs/x86_64
+cp -f ../../Bionic-Redistributable/lib64/libstdc++.so libs/x86_64  
 
 # copy the linker to cwd  
 
-cp -f ../Bionic-Redistributable/lib64/linker libs/x86_64
+cp -f ../../Bionic-Redistributable/lib64/linker libs/x86_64
 cd libs/x86_64
   
 # execute the generated a.out  
