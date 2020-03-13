@@ -4,9 +4,9 @@ cd "$(dirname "$(readlink -f "${0}")")"
  
 # build by ndk
   
-rm -rf obj
-rm -rf libs
-ndk-build APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Android.mk 
+rm -rf obj/local/x86_64
+rm -rf libs/x86_64
+ndk-build APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk 
 
 # before execute change the rpath to \$ORIGIN  
   
@@ -20,7 +20,7 @@ cp -f ../../Bionic-Redistributable/lib64/libdl.so libs/x86_64
 cp -f ../../Bionic-Redistributable/lib64/libm.so libs/x86_64
 cp -f ../../Bionic-Redistributable/lib64/libstdc++.so libs/x86_64  
 
-# copy the linker to cwd  
+# place the linker at cwd   
 
 cp -f ../../Bionic-Redistributable/lib64/linker libs/x86_64
 cd libs/x86_64

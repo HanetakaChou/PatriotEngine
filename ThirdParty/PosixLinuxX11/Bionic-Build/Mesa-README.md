@@ -210,7 +210,7 @@ add the llvm-config to \$PATH
 export PATH="$HOME/bionic-toolchain-$target_arch/sysroot/usr/bin"${PATH:+:${PATH}} 
 ```
 
-### 2\. configure the meson options, we only build the vulkan drivers
+### 2\. configure the meson options, we only build the vulkan drivers and the zlink-base GL drivers
 in meson_options.txt
 ```
 vulkan-drivers -> ['amd', 'intel'] ## we only build the vulkan drivers 
@@ -218,16 +218,16 @@ vulkan-drivers -> ['amd', 'intel'] ## we only build the vulkan drivers
 platforms -> ['x11','drm', surfaceless] ## no wayland 
 
 dri-drivers -> ['']  ### use zlink no dri
-gallium-drivers -> [' ']  
+gallium-drivers -> ['zlink']  ### gallium on vulkan
 
-glx -> ['disabled'] ### no GL
-opengl -> 'false'
+glx -> ['gallium-xlib'] ### GL on gallium
+opengl -> 'true'
 
-egl -> ['false']  ### no GLES
-gles1 -> 'false'
-gles2 -> 'false'
+egl -> ['false']  ### need dri-based glx
+gles1 -> 'true'
+gles2 -> 'true'
 
-glvnd -> false ### no GL or GLES loader
+glvnd -> false ### need dri-based glx
 ```
 
 in meson.build, disable USE_ELF_TLS
@@ -236,7 +236,64 @@ in meson.build, disable USE_ELF_TLS
 # pre_args += '-DUSE_ELF_TLS' ### use pthread_getspecific instead of  USE_ELF_TLS   
 # endif
 ```
+
+in meson.build, zlink-based gallium-xlib
+```
+elif not with_gallium_softpipe
+    error ... softpipe or llvmpipe
+->
+elif not (with_gallium_zink)
+    error ... zink
+```
   
+in src/gallium/targets/libgl-xlib/meson.build, zlink-based gallium-xlib and remove version suffix  
+```
+gallium_xlib_c_args = ... -DGALLIUM_SOFTPIPE ...
+->
+gallium_xlib_c_args = ... -DGALLIUM_ZINK ...
+
+libgl = shared_library
+    ...
+    # version ... //We remove the soname suffix
+    ...
+```
+
+in src/galliun/targets/libgl-xlib, export glX***
+```
+global:
+    gl*;
+    mgl*;
+    glX*; //We add
+...
+```  
+
+in src/mapi/shared-glapi, remove version suffix  
+```
+libglapi = shared_library
+    ...
+    # soversion ... //We remove the soname suffix
+    # version ... //We remove the soname suffix
+    ...
+```
+
+in src/mapi/es1api, , remove version suffix  
+```
+libglesv1_cm = shared_library
+    ...
+    # soversion ... //We remove the soname suffix
+    # version ... //We remove the soname suffix
+    ...
+```  
+
+in src/mapi/es2api, , remove version suffix  
+```
+libglesv2 = shared_library
+    ...
+    # soversion ... //We remove the soname suffix
+    # version ... //We remove the soname suffix
+    ...
+```  
+
 ### 3\. patch headers for libc  
 
 add pthread_barrier support to \<pthread.h> in toolchian  
@@ -253,6 +310,31 @@ add strchrnul to \<string.h\> in toolchain
 ```
 char* strchrnul(const char*, int) __purefunc; //from bionic/libc/include/string.h
 ```
+
+add shm support to \<sys/shm.h\> in toolchain    
+```
+#include <sys/syscall.h>
+
+static __inline void* shmat(int __shm_id, const void* __addr, int __flags)
+{
+   return (void*)syscall(SYS_shmat, __shm_id, __addr, __flags);
+}
+ 
+static __inline int shmdt(const void *__addr)
+{
+   return syscall(SYS_shmdt, __addr);
+}
+
+static __inline int shmctl(int __shm_id, int __cmd, struct shmid_ds *__buf)
+{
+    return syscall(SYS_shmctl, __shm_id, __cmd, __buf);
+}
+
+static int __inline shmget(key_t __key, size_t __size, int __flags)
+{
+    return syscall(SYS_shmget, __key, __size, __flags);
+}
+```  
 
 use the bionic built from aosp to replace the fake in toolchain
 ```
@@ -359,6 +441,13 @@ in src/amd/compiler/aco_spill.cpp
 aco_ptr<Pseudo_instruction> reload{create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1)}; //no viable conversion from 'aco_ptr<aco::Pseudo_instruction>' to 'aco_ptr<aco::Instruction>'
 ->
 aco_ptr<Instruction> reload{static_cast<Instruction*>(create_instruction<Pseudo_instruction>(aco_opcode::p_reload, Format::PSEUDO, 1, 1))};
+```
+  
+in src/gallium/auxliary/target-helpers/inline_sw_helper.h, add zlink headers  
+```
+#if defined(GALLIUM_ZLINK)
+#include "zlink/zlink_public.h
+#endif
 ```
 
 ### 7\. fix link errors for clang  
