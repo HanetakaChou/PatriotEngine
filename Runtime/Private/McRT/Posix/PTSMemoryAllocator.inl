@@ -1,4 +1,4 @@
-﻿#ifdef PTPOSIXLINUXGLIBC || defined(PTPOSIXLINUXBIONIC)
+﻿#if defined(PTPOSIXLINUX) 
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
