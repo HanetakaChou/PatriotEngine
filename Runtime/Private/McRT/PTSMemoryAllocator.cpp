@@ -2060,9 +2060,9 @@ void * PTCALL PTSMemoryAllocator_Realloc_Aligned(void *pVoidOld, uint32_t SizeNe
 	return ::PTS_Internal_Realloc_Aligned(pVoidOld, SizeNew, AlignmentNew);
 }
 
-#if defined PTWIN32
+#if defined(PTWIN32)
 #include "Win32/PTSMemoryAllocator.inl"
-#elif defined PTPOSIX
+#elif defined(PTPOSIX)
 #include "Posix/PTSMemoryAllocator.inl"
 #else
 #error 未知的平台
