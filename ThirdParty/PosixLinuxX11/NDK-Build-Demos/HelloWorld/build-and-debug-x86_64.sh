@@ -27,6 +27,6 @@ cd libs/x86_64
   
 # execute the generated a.out  
 
-gdbserver :27077 ./a.out
-# ./gdbserver ./a.out ### //either gdbserver from ndk or your linux distribution is OK
+# gdbserver :27077 ./a.out
+./gdbserver :27077 ./a.out ### //either gdbserver from ndk or your linux distribution is OK
 
