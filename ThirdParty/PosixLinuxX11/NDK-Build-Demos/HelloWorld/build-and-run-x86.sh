@@ -20,7 +20,7 @@ cp -f ../../Bionic-Redistributable/lib/libdl.so libs/x86
 cp -f ../../Bionic-Redistributable/lib/libm.so libs/x86
 cp -f ../../Bionic-Redistributable/lib/libstdc++.so libs/x86
 
-# place the linker at cwd    
+# place the linker at cwd  
 
 cp -f ../../Bionic-Redistributable/lib/linker libs/x86
 cd libs/x86
