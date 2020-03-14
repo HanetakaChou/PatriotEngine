@@ -107,6 +107,11 @@ in libdrm_macros.h, fix static assert
 #endif
 ```
 
+in amdgpu/amdgpu_asic_id.c, fix lookup amdgpu.ids
+```
+use dladdr(amdgpu_parse_asic_ids, ... //related to current so
+```
+
 add open_memstream to \<stdio.h\> in toolchain  
 ```
 FILE* open_memstream(char**, size_t*); //from aosp/bionic/libc/include/stdio.h
