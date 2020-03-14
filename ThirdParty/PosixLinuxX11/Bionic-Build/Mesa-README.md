@@ -92,6 +92,21 @@ static __inline void outl(unsigned int __value, unsigned short int __port)
 
 ## drm
 
+in libdrm_macros.h, fix static assert  
+```
+#if defined(ANDROID) && !defined(__LP64__)
+...
+#else
+... //do static_assert
+#endif
+->
+#ifndef __LP64__
+...
+#else
+...
+#endif
+```
+
 add open_memstream to \<stdio.h\> in toolchain  
 ```
 FILE* open_memstream(char**, size_t*); //from aosp/bionic/libc/include/stdio.h
