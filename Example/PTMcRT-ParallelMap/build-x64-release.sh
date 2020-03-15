@@ -11,7 +11,7 @@ ndk-build APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj N
 chrpath -r '$ORIGIN' libs/x86_64/PTMcRT-ParallelMap.bundle
 
 # mkdir the out dir if necessary
-mkdir -p ../../../Binary/PosixLinuxX11/x64/Release/
+mkdir -p ../../Binary/PosixLinuxX11/x64/Release/
 
 # copy the unstriped pie to out dir
 rm -rf ../../Binary/PosixLinuxX11/x64/Release/PTMcRT-ParallelMap.bundle
