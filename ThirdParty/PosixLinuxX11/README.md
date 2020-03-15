@@ -12,7 +12,7 @@ Using Andoird's bionic also provides another benefit: we can reuse the Android t
   
 ---    
 
-由于**glibc**和**stdc++**的版本在不同Linux发行版之间差异较大，在一个Linux发行版上编译的二进制文件很难在未经重新编译的情况下在另一个Linux发行版上稳定并且行为一致地运行  
+由于**glibc**和**stdc++**\的版本在不同Linux发行版之间差异较大，在一个Linux发行版上编译的二进制文件很难在未经重新编译的情况下在另一个Linux发行版上稳定并且行为一致地运行  
 
 Linux上的软件都倾向于开源，开发者们普遍期望最终用户下载源代码后在本地编译安装(著名的make install命令)，而很少考虑提供预编译的二进制文件供最终用户使用  
 
