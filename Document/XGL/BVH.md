@@ -16,9 +16,9 @@ BVH（包围体层次，Bounding Volume Hierarchy） //二叉树
 
 ##### Construct BVH 
 
-1\.递归构造 
+1\.递归构造 //4\.\[Wald 2007\]
 
-基于递归的方式不断分割（Split）/\*可以基于Fork-Join模式并行化（3\.\[McCool 2012\]/8.9 QuickSort）\*/   
+基于递归的方式不断分割（Split）/\*可以基于Fork-Join模式并行化（3\.\[McCool 2012\]/8.9 QuickSort）\*/ //5\.\[Wald 2012\]    
 
 //CPU原生支持Fork-Join模式，而GPU原生支持Map模式  
 //越接近原生支持的模式，效率越高  
@@ -80,6 +80,12 @@ kd-tree
 区别在于：  
 构造BVH->图元分割  图元只可能被绑定到分割后的子树中的某一个 //当图元包围体跨过(Straddle)分割平面时 //根据图元包围体的中心，将图元归属到某一个子树 //根据子树中的图元计算子树的包围体，子树的包围体可能重叠       
 构造kdTree->空间分割  图元可以同时绑定到分割后的两个子树  //当图元包围体跨过(Straddle)分割平面时 //图元同时归属到两个子树 //子树的包围体直接由分割平面确定，不可能重叠 //\[Pharr 2016\]/4.4.2 Tree Construction/#\<\<Compute cost of all splits for axis to find best\>\>  
+
+##### Traversal BVH   
+
+与BVH类似 Depth-first Front-to-back  
+
+
   
 ## 视锥体剔除（Frustum Culling）   
   
@@ -96,4 +102,11 @@ kd-tree
 [1\.\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com)  
 [2\.\[Pharr 2016\] Matt Pharr, Wenzel Jakob, Greg Humphreys. "Physically based rendering: From theory to implementation, Third Edition." Morgan Kaufmann 2016.](http://www.pbr-book.org)  
 [3\.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
+[4\.\[Wald 2007\] Ingo Wald. "On fast Construction of SAH-based Bounding Volume Hierarchies." IEEE Symposium on Interactive Ray Tracing 2007.](http://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf)  
+[5\.\[Wald 2012\] Ingo Wald. "Fast Construction of SAH BVHs on the Intel Many Integrated Core (MIC) Architecture." IEEE Symposium on Interactive Ray Tracing 2012.](https://www.embree.org/related.html)  
+
+
+
+
 \[Arvo 1990\] James Arvo. "Transforming Axis-Aligned Bounding Boxes." Graphics Gems X.8 1990.  
+
