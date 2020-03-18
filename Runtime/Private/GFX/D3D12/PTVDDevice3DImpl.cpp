@@ -84,13 +84,13 @@ bool PTVDDevice3DImpl::Initilize()
 
 void PTVDDevice3DImpl::WindowEventOutputCallback(void *pEventDataVoid)
 {
-	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);
+	PT_WSI_IWindow::EventOutput *pEventDataGeneric = static_cast<PT_WSI_IWindow::EventOutput *>(pEventDataVoid);
 
 	switch (pEventDataGeneric->m_Type)
 	{
-	case IPTWWindow::EventOutput::Type_WindowCreated:
+	case PT_WSI_IWindow::EventOutput::Type_WindowCreated:
 	{
-		IPTWWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
 
 		HRESULT hResult;
 
@@ -141,9 +141,9 @@ void PTVDDevice3DImpl::WindowEventOutputCallback(void *pEventDataVoid)
 		::PTSAtomic_Set(&m_bSwapChain_Locked, 0U);
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowResized:
+	case PT_WSI_IWindow::EventOutput::Type_WindowResized:
 	{
-		IPTWWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowResized *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowResized *>(pEventDataGeneric);
 
 		HRESULT hResult;
 
@@ -183,7 +183,7 @@ void PTVDDevice3DImpl::WindowEventOutputCallback(void *pEventDataVoid)
 		::PTSAtomic_Set(&m_bSwapChain_Locked, 0U);
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowDestroyed:
+	case PT_WSI_IWindow::EventOutput::Type_WindowDestroyed:
 	{
 
 	}

@@ -102,8 +102,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback_UserData))
 					);
 
-				IPTWWindow::EventOutput_WindowCreated EventData;
-				EventData.m_Type = IPTWWindow::EventOutput::Type_WindowCreated;
+				PT_WSI_IWindow::EventOutput_WindowCreated EventData;
+				EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowCreated;
 				EventData.m_hDisplay = reinterpret_cast<HINSTANCE>(::GetClassLongPtrW(hWnd, GCLP_HMODULE));
 				EventData.m_hWindow = hWnd;
 
@@ -154,8 +154,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback_UserData))
 					);
 
-				IPTWWindow::EventOutput_WindowResized EventData;
-				EventData.m_Type = IPTWWindow::EventOutput::Type_WindowResized;
+				PT_WSI_IWindow::EventOutput_WindowResized EventData;
+				EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowResized;
 				EventData.m_hDisplay = reinterpret_cast<HINSTANCE>(::GetClassLongPtrW(hWnd, GCLP_HMODULE));
 				EventData.m_hWindow = hWnd;
 				EventData.m_Width = static_cast<uint32_t>(LOWORD(lParam));
@@ -501,7 +501,7 @@ void PTWWindowImpl::EventInputCallback_Hook(void *pUserData, void(PTPTR *pEventI
 	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventInputCallback), reinterpret_cast<uintptr_t>(pEventInputCallback));
 }
 
-void PTWWindowImpl::Parent_Set(PTWHWindow hWindowParent)
+void PTWWindowImpl::Parent_Set(struct PT_WSI_Window_T * hWindowParent)
 {
 	if (hWindowParent == NULL)
 	{
@@ -609,7 +609,7 @@ static unsigned __stdcall PTInvokeMain(void *pVoid)
 
 	argv[argc] = NULL;
 
-	int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), argc, argv);
+	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow), argc, argv);
 	assert(iResult == 0);
 
 	//pWindow->TermminateMessagePump();

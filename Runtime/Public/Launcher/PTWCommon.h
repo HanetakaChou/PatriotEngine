@@ -1,8 +1,0 @@
-#ifndef PT_WINDOW_COMMON_H
-#define PT_WINDOW_COMMON_H
-
-#ifndef PTWINDOWAPI
-#define PTWINDOWAPI PTIMPORT
-#endif
-
-#endif

@@ -1,4 +1,4 @@
-﻿#if defined(PTPOSIXLINUXGLIBC)||defined(PTPOSIXLINUXBIONIC)
+﻿#if defined(PTPOSIXLINUX)
 #include <unistd.h>
 static inline uint32_t PTS_Info_HardwareThreadNumber()
 {
@@ -40,8 +40,3 @@ static inline uint32_t PTS_Size_BitPopCount(uint32_t Value)
 	int Index = ::__builtin_popcount(Value);
 	return static_cast<uint32_t>(Index);
 }
-
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-//-----------------------------------------------------------------------------------------------------------
-//#include "../../../Public/McRT/Posix/PTSLocateSourceCode.inl"

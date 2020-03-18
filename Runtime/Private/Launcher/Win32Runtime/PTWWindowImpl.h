@@ -42,7 +42,7 @@ struct PTNativeInvoke_Window_SizeChanged :public ABI::Windows::Foundation::IType
 #endif
 
 class PTWWindowImpl :
-	public IPTWWindow,
+	public PT_WSI_IWindow,
 	public ABI::Windows::ApplicationModel::Core::IFrameworkViewSource,
 	public ABI::Windows::ApplicationModel::Core::IFrameworkView,
 	public PTNativeInvoke_ApplicationView_Activated,
@@ -56,7 +56,7 @@ class PTWWindowImpl :
 	//IPTWindow
 	void EventOutputCallback_Hook(void *pUserData, void(PTPTR *pOutputEventCallback)(void *pUserData, void *pEventData)) override;
 	void EventInputCallback_Hook(void *pUserData, void(PTPTR *pInputCallback)(void *pUserData, void *pEventData)) override;
-	void Parent_Set(PTWHWindow hWindowParent) override;
+	void Parent_Set(struct PT_WSI_Window_T * hWindowParent) override;
 	void Position_Set(uint32_t TopLeftX, uint32_t TopLeftY) override;
 	void Size_Set(uint32_t Width, uint32_t Height) override;
 

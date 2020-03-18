@@ -88,7 +88,7 @@ inline int64_t PTSAtomic_CompareAndSet(int64_t volatile *pTarget, int64_t expect
 inline uint32_t PTSAtomic_CompareAndSet(uint32_t volatile *pTarget, uint32_t expect, uint32_t update);
 inline uint64_t PTSAtomic_CompareAndSet(uint64_t volatile *pTarget, uint64_t expect, uint64_t update);
 
-#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUX)
 //Nothing
 #elif defined(PTPOSIXMACH)
 #include <assert.h>
@@ -121,7 +121,7 @@ inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue);
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue);
 inline uint64_t PTSAtomic_GetAndSet(uint64_t volatile *pTarget, uint64_t newValue);
 
-#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUX)
 //Nothing
 #elif defined(PTPOSIXMACH)
 #include <assert.h>
@@ -159,7 +159,7 @@ inline int64_t PTSAtomic_Get(int64_t const volatile *pTarget);
 inline uint32_t PTSAtomic_Get(uint32_t const volatile *pTarget);
 inline uint64_t PTSAtomic_Get(uint64_t const volatile *pTarget);
 
-#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUX)
 //Nothing
 #elif defined(PTPOSIXMACH)
 #include <assert.h>
@@ -192,7 +192,7 @@ inline void PTSAtomic_Set(int64_t volatile *pTarget, int64_t newValue);
 inline void PTSAtomic_Set(uint32_t volatile *pTarget, uint32_t newValue);
 inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue);
 
-#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+#if defined(PTWIN32DESKTOP) ||defined(PTWIN32RUNTIME) || defined(PTPOSIXLINUX)
 //Nothing
 #elif defined(PTPOSIXMACH)
 #include <assert.h>

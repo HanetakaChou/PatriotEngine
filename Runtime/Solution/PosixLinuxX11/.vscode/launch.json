@@ -1,0 +1,31 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/Solution/PosixLinuxX11/obj/local/x86/PTLauncher.bundle", //should set PTLauncher.bundle in obj here instead of in libs
+            "args": [],
+            "stopAtEntry": true,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "miDebuggerServerAddress": ":27077",
+            "targetArchitecture": "x86",
+            "MIMode": "gdb",
+            "miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r11c/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            "miDebuggerArgs": "--init-command=${workspaceFolder}/Solution/PosixLinuxX11/libs/x86/gdb.setup",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        }
+    ]
+}
