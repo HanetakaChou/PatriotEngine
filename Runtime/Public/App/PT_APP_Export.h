@@ -1,8 +1,8 @@
-#ifndef PT_APPLICATION_EXPORT_H
-#define PT_APPLICATION_EXPORT_H
+#ifndef _PT_APP_EXPORT_H_
+#define _PT_APP_EXPORT_H_
 
 #include "../PTCommon.h"
-#include "PTACommon.h"
+#include "PT_APP_Common.h"
 
 #include "../WSI/PT_WSI_Window.h"
 #include "../McRT/PTSFile.h"

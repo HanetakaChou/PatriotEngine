@@ -382,7 +382,7 @@ void PTWWindowImpl::TermminateMessagePump()
 	m_bMessagePump = false;
 }
 
-#include "../../../Public/App/PTAExport.h"
+#include "../../../Public/App/PT_APP_Export.h"
 
 void *PTInvokeMain(void *pVoid)
 {

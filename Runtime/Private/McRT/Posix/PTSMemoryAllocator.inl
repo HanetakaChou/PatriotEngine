@@ -23,7 +23,7 @@ static inline uint32_t PTS_Size_BitScanReverse(uint32_t Value)
 	return static_cast<uint32_t>(Index);
 }
 
-#if defined(PTPOSIXLINUXGLIBC) || defined(PTPOSIXLINUXBIONIC)
+#if defined(PTPOSIXLINUX)
 
 static inline uint64_t PTS_Size_AlignUpFrom(uint64_t Value, uint64_t Alignment)
 {

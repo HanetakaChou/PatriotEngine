@@ -1,5 +1,5 @@
-#ifndef PT_WINDOW_COMMON_H
-#define PT_WINDOW_COMMON_H
+#ifndef _PT_WSI_COMMON_H_
+#define _PT_WSI_COMMON_H_ 1
 
 #ifndef PTWSIAPI
 #define PTWSIAPI PTIMPORT
