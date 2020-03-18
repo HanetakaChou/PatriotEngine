@@ -2,6 +2,8 @@
 
 LOCAL_PATH:= $(call my-dir)
 
+# libPTMcRT
+
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libPTMcRT
@@ -28,3 +30,27 @@ LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
 
 include $(BUILD_SHARED_LIBRARY)
 
+
+# PTLauncher.bundle
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := PTLauncher.bundle
+
+LOCAL_SRC_FILES:= \
+	$(LOCAL_PATH)/../../Private/Launcher/PosixLinuxX11/PTWindowImpl.cpp
+
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPTWSIAPI=PTEXPORT
+
+LOCAL_CPPFLAGS += -std=c++11
+
+LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/include/
+
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
+
+include $(BUILD_EXECUTABLE)
