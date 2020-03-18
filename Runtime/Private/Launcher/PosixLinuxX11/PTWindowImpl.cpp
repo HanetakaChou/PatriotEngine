@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 	while (l_WindowImpl_Singleton.m_bMessagePump &&
 		   ((pGenericEvent = ::xcb_wait_for_event(hDisplay)) != NULL))
 	{
-		switch (pGenericEvent->response_type)
+		switch (pGenericEvent->response_type & ~0x80)
 		{
 		case XCB_KEY_PRESS:
 		{
