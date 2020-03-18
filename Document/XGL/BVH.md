@@ -60,19 +60,24 @@ LBVH缺点 构造过程只依赖于包围体的中心（/\*Compute Morton indice
 
   
 #### 空间分割  
-BSP / kd-tree / octree //
 
+kd-tree是一种特殊的BSP  
+
+BSP / kd-tree / octree   
 **BSP**(Binary Space Partitioning)与**BVH**最本质的区别：BVH图元分割：每个图元只在层次性结构（Hierachy）中出现一次 / （即使分割后的子组的包围体存在重叠）每个图元只可能被绑定到分割后的子树中的某一个；BSP空间分割：同一个图元可能与多个空间区域重叠 //2\.\[Pharr 2016\]/4.3 Bounding Volume Hierarchies //2\.\[Pharr 2016\]/4.4 Kd-Tree Accelerator     
   
 > BSP：（分割平面并不要求垂直于某一个坐标轴）空间中的不同部分可以被分割到不同的程度，非常适合分布不均匀的几何体 //二叉树   
 > kd-tree：BSP的变体，限制分割平面必须垂直于某一个坐标轴 //二叉树   
 > octree：BSP的变体，在每次分割时，同时用三个相互垂直的平面，将空间分割成八部分 //八叉树  
   
-kd-tree  
+##### kd-tree //下面介绍kd-tree    
+  
+##### Tree Representation  
+  
 为了提高缓存命中率，在设计时Node的大小应当尽可能小     
 接近**Flatten BVH Tree**中的结构 其中一个Child的一定与Parent相邻 只需要在Parent中存储另一个Child的位置，减小了Node的大小 同时由于一个Child与Parent相邻，程序整体的缓存命中率也会提升 //2\.\[Pharr 2016\]/4.4.1 Tree Representation   
   
-##### Tree Construction  
+##### Tree Construction    
   
 递归构造  
   
@@ -80,14 +85,18 @@ kd-tree
 区别在于：  
 构造BVH->图元分割  图元只可能被绑定到分割后的子树中的某一个 //当图元包围体跨过(Straddle)分割平面时 //根据图元包围体的中心，将图元归属到某一个子树 //根据子树中的图元计算子树的包围体，子树的包围体可能重叠       
 构造kdTree->空间分割  图元可以同时绑定到分割后的两个子树  //当图元包围体跨过(Straddle)分割平面时 //图元同时归属到两个子树 //子树的包围体直接由分割平面确定，不可能重叠 //\[Pharr 2016\]/4.4.2 Tree Construction/#\<\<Compute cost of all splits for axis to find best\>\>  
-
-##### Traversal BVH   
-
-与BVH类似 Depth-first Front-to-back  
-
-
   
-## 视锥体剔除（Frustum Culling）   
+##### Traversal BVH       
+  
+与BVH类似 Depth-first Front-to-back  
+  
+### 动态场景  
+6\.\[Wald 2007\] 7\.\[Wald 2007\]
+
+## 视锥体剔除（View Frustum Culling）   
+避免重复访问
+每个物体用Frame Number标记（Tag） 1\.\[Moller 2018\]/19.5 Portal Culling  
+
   
 ## 光线投射（Ray Casting）  
   
@@ -104,9 +113,10 @@ kd-tree
 [3\.\[McCool 2012\] Michael McCool, James Reinders, Arch Robison. "Structured Parallel Programming: Patterns for Efficient Computation." Morgan Kaufmann 2012.](http://parallelbook.com/)   
 [4\.\[Wald 2007\] Ingo Wald. "On fast Construction of SAH-based Bounding Volume Hierarchies." IEEE Symposium on Interactive Ray Tracing 2007.](http://www.sci.utah.edu/~wald/Publications/2007/ParallelBVHBuild/fastbuild.pdf)  
 [5\.\[Wald 2012\] Ingo Wald. "Fast Construction of SAH BVHs on the Intel Many Integrated Core (MIC) Architecture." IEEE Symposium on Interactive Ray Tracing 2012.](https://www.embree.org/related.html)  
-
-
-
-
+[6\.\[Wald 2007\] Ingo Wald, Solomon Boulos, Peter Shirley. "Ray tracing deformable scenes using dynamic bounding volume hierarchies." ACM Transactions on Graphics 2007.](http://www.sci.utah.edu/~wald/Publications/2007/DynBVH/togbvh.pdf)   
+[7\.\[Wald 2007\] Ingo Wald, William R Mark, Johannes Günther, Solomon Boulos, Thiago Ize, Warren Hunt, Steven G Parker, Peter Shirley. "State of the Art in Ray Tracing Animated Scenes." EUROGRAPHICS 2007.](http://www.sci.utah.edu/~wald/Publications/2009/STAR09/star09.pdf)   
+   
+   
+    
 \[Arvo 1990\] James Arvo. "Transforming Axis-Aligned Bounding Boxes." Graphics Gems X.8 1990.  
 

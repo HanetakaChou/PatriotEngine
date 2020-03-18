@@ -138,8 +138,8 @@ static void ANativeActivity_onNativeWindowCreated(ANativeActivity *pActivity, AN
 		::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&s_pWindowImpl_Singleton->m_pEventOutputCallback_UserData))
 		);
 
-	IPTWWindow::EventOutput_WindowCreated EventData;
-	EventData.m_Type = IPTWWindow::EventOutput::Type_WindowCreated;
+	PT_WSI_IWindow::EventOutput_WindowCreated EventData;
+	EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowCreated;
 	EventData.m_hDisplay = NULL;
 	EventData.m_hWindow = pWindow;
 
@@ -162,8 +162,8 @@ static void ANativeActivity_onNativeWindowResized(ANativeActivity *, ANativeWind
 		::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&s_pWindowImpl_Singleton->m_pEventOutputCallback_UserData))
 		);
 
-	IPTWWindow::EventOutput_WindowResized EventData;
-	EventData.m_Type = IPTWWindow::EventOutput::Type_WindowResized;
+	PT_WSI_IWindow::EventOutput_WindowResized EventData;
+	EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowResized;
 	EventData.m_hDisplay = NULL;
 	EventData.m_hWindow = pWindow;
 	EventData.m_Width = static_cast<uint32_t>(::ANativeWindow_getWidth(pWindow));
@@ -206,7 +206,7 @@ static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *, ANativeWi
 		uint32_t m_Width;
 		uint32_t m_Height;
 	}EventOutput_WindowDestroyed;
-	EventOutput_WindowDestroyed.m_Type = IPTWWindow::EventOutput::Type_WindowDestroyed;
+	EventOutput_WindowDestroyed.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowDestroyed;
 
 	pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventOutput_WindowDestroyed);
 }
@@ -221,7 +221,7 @@ static void *PTInvokeMain(void *pVoid)
 	char CmdLine[] = { "PTLauncher" };
 	char *argv[1] = { CmdLine };
 
-	int iResult = ::PTAMain(static_cast<IPTWWindow *>(&l_WindowImpl_Singleton), 1, argv);
+	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(&l_WindowImpl_Singleton), 1, argv);
 
 	//PTApp中设置的CallBack可能会引起访问违规
 	l_WindowImpl_Singleton.EventOutputCallback_Hook(NULL, [](void *pUserData, void *pInputData)->void {});
@@ -279,7 +279,7 @@ void PTWWindowImpl::EventInputCallback_Hook(void *pUserData, void(PTPTR *pEventI
 	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventInputCallback), reinterpret_cast<uintptr_t>(pEventInputCallback));
 }
 
-void PTWWindowImpl::Parent_Set(PTWHWindow hWindowParent)
+void PTWWindowImpl::Parent_Set(struct PT_WSI_Window_T * hWindowParent)
 {
 	assert(0);
 }

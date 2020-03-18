@@ -1,12 +1,30 @@
 ﻿#include "../../Public/App/PTAExport.h"
-#include "../../Public/McRT/PTSThread.h"
+
+extern "C" PTAPPAPI int PTCALL PTAMain(PT_WSI_IWindow *pWindow, int argc,
+									   char *argv[])
+{
+	pWindow->EventOutputCallback_Hook(
+		(void *)1, [](void *pUserData, void *pOutputData) -> void {
+
+		});
+
+	pWindow->EventInputCallback_Hook(
+		(void *)1, [](void *pUserData, void *pInputData) -> void {
+
+		});
+
+	return 0;
+}
+
+#if 0
 #include "../../Public/McRT/PTSMemoryAllocator.h"
 #include "../../Public/McRT/PTSTaskScheduler.h"
+#include "../../Public/McRT/PTSThread.h"
 //#include "../../Public/Video/PTVDInstance.h"
 //#include "../../Public/Audio/PTADInstance.h"
-#include <new>
-#include <iostream>
 #include <assert.h>
+#include <iostream>
+#include <new>
 
 //#include "../../Public/Math/PTMath.h"
 
@@ -38,7 +56,7 @@ extern "C" PTIMPORT void PTCALL PTI_FBXSDK_FBXToPTTF(IPTSFile *pFileFBX, IPTSFil
 #include "../../Public/GFX/PTGFXHAL.h"
 #include "../../Public/GFX/PTGFXHALUtil.h"
 
-extern "C" PTAPPAPI int PTCALL PTAMain(IPTWWindow *pWindow, int argc, char *argv[])
+extern "C" PTAPPAPI int PTCALL PTAMain(PT_WSI_IWindow *pWindow, int argc, char *argv[])
 {
 
 	::PTSMemoryAllocator_Initialize();
@@ -145,3 +163,5 @@ extern "C" PTAPPAPI IPTSFileSystem * PTCALL PTAFileSystem_ForProcess_Hook()
 {
 	return NULL;
 }
+
+#endif

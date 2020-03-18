@@ -2598,13 +2598,13 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 {
 #if defined(PTWIN32)
 #if defined(PTWIN32DESKTOP)
-	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);
+	PT_WSI_IWindow::EventOutput *pEventDataGeneric = static_cast<PT_WSI_IWindow::EventOutput *>(pEventDataVoid);
 
 	switch (pEventDataGeneric->m_Type)
 	{
-	case IPTWWindow::EventOutput::Type_WindowCreated:
+	case PT_WSI_IWindow::EventOutput::Type_WindowCreated:
 	{
-		IPTWWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
 		
 		VkSurfaceKHR hSurface;
 		{
@@ -2627,14 +2627,14 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 #endif
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowResized:
+	case PT_WSI_IWindow::EventOutput::Type_WindowResized:
 	{
-		IPTWWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowResized *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowResized *>(pEventDataGeneric);
 
 		m_pDevice3D->SwapChain_Update(&m_Context3D, m_hInstanceWrapper, m_hSurface, pEventDataSpecific->m_Width, pEventDataSpecific->m_Height);
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowDestroyed:
+	case PT_WSI_IWindow::EventOutput::Type_WindowDestroyed:
 	{
 		m_pDevice3D->SwapChain_Destroy(&m_Context3D);
 		
@@ -2654,13 +2654,13 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 #if defined(PTPOSIXLINUXGLIBC)
 
 #elif defined(PTPOSIXLINUXBIONIC)
-	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);
+	PT_WSI_IWindow::EventOutput *pEventDataGeneric = static_cast<PT_WSI_IWindow::EventOutput *>(pEventDataVoid);
 
 	switch (pEventDataGeneric->m_Type)
 	{
-	case IPTWWindow::EventOutput::Type_WindowCreated:
+	case PT_WSI_IWindow::EventOutput::Type_WindowCreated:
 	{
-		IPTWWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowCreated *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowCreated *>(pEventDataGeneric);
 
 		VkSurfaceKHR hSurface;
 		{
@@ -2682,15 +2682,15 @@ void PTVDInstanceImpl::WindowEventOutputCallback(void *pEventDataVoid)
 #endif
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowResized:
+	case PT_WSI_IWindow::EventOutput::Type_WindowResized:
 	{
-		IPTWWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowResized *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowResized *>(pEventDataGeneric);
 
 		m_pDevice3D->SwapChain_Update(&m_Context3D, m_hInstanceWrapper, m_hSurface, pEventDataSpecific->m_Width, pEventDataSpecific->m_Height);
 
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowDestroyed:
+	case PT_WSI_IWindow::EventOutput::Type_WindowDestroyed:
 	{
 		m_pDevice3D->SwapChain_Destroy(&m_Context3D);
 

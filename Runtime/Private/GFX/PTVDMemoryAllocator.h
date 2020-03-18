@@ -5,6 +5,7 @@
 
 enum : uint32_t
 {
+
 	PTVD_MEMORYTYPE_BUFFER_STAGING,
 	PTVD_MEMORYTYPE_BUFFER_CONSTANT,
 	PTVD_MEMORYTYPE_BUFFER_UNORDEREDACCESS_SHADERRESOURCE,
@@ -28,7 +29,7 @@ class PTVD_MemoryAllocator;
 #elif defined(PTVDD3D12)
 
 #else
-#error Î´ÖªµÄÍ¼ÐÎAPI
+#error Î´Öªï¿½ï¿½Í¼ï¿½ï¿½API
 #endif
 
 #if defined(PTVDVK)
@@ -36,7 +37,7 @@ PTVD_MemoryAllocator *PTVD_MemoryAllocator_Create(VkInstanceWrapper &rInstanceWr
 #elif defined(PTVDD3D12)
 
 #else
-#error Î´ÖªµÄÍ¼ÐÎAPI
+#error Î´Öªï¿½ï¿½Í¼ï¿½ï¿½API
 #endif
 
 PTVD_MemoryObject *PTVD_MemoryAllocator_Alloc(PTVD_MemoryAllocator *pMemoryAllocator_PTVD, uint32_t MemoryType, uint32_t Size);
@@ -47,7 +48,7 @@ VkDeviceSize PTVD_MemoryObject_MemoryOffset(PTVD_MemoryObject *pMemoryObject);
 #elif defined(PTVDD3D12)
 
 #else
-#error Î´ÖªµÄÍ¼ÐÎAPI
+#error Î´Öªï¿½ï¿½Í¼ï¿½ï¿½API
 #endif
 
 

@@ -4,39 +4,9 @@
 #include "../PTCommon.h"
 #include "PT_WSI_Common.h"
 
-#if defined(PTWIN32)
-#include <sdkddkver.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#if defined(PTWIN32DESKTOP)
-typedef HINSTANCE PTWHDisplay;
-typedef HWND PTWHWindow;
-#elif defined(PTWIN32RUNTIME)
-#include <Unknwn.h>
-typedef void *PTWHDisplay;
-typedef IUnknown *PTWHWindow;
-#else
-#error 未知的平台
-#endif
-#elif defined(PTPOSIX)
-#if defined(PTPOSIXLINUXGLIBC)
-#include <xcb/xcb.h>
-typedef xcb_connection_t *PTWHDisplay;
-typedef xcb_window_t PTWHWindow;
-#elif defined(PTPOSIXLINUXBIONIC)
-#include <android/native_window.h>
-typedef void *PTWHDisplay;
-typedef ANativeWindow *PTWHWindow;
-#else
-#error 未知的平台
-#endif
-#else
-#error 未知的平台
-#endif
-
 #include <stdint.h>
 
-struct IPTWWindow
+struct PT_WSI_IWindow
 {
 	//Output
 	virtual void EventOutputCallback_Hook(void *pUserData, void(PTPTR *pEventOutputCallback)(void *pUserData, void *pOutputData)) = 0;
@@ -58,16 +28,16 @@ struct IPTWWindow
 
 	struct EventOutput_WindowCreated : EventOutput
 	{
-		PTWHDisplay m_hDisplay;
-		PTWHWindow m_hWindow;
+		struct PT_WSI_Display_T *m_hDisplay;
+		struct PT_WSI_Window_T *m_hWindow;
 		uint32_t m_Width;
 		uint32_t m_Height;
 	};
 	
 	struct EventOutput_WindowResized : EventOutput
 	{
-		PTWHDisplay m_hDisplay;
-		PTWHWindow m_hWindow;
+		struct PT_WSI_Display_T *m_hDisplay;
+		struct PT_WSI_Window_T *m_hWindow;
 		uint32_t m_Width;
 		uint32_t m_Height;
 	};
@@ -170,7 +140,7 @@ struct IPTWWindow
 	static const uint32_t InputType_GameController_ButtonUp = 6;
 
 	//Authority
-	virtual void Parent_Set(PTWHWindow hWindowParent) = 0;
+	virtual void Parent_Set(struct PT_WSI_Window_T *hWindowParent) = 0;
 	virtual void Position_Set(uint32_t TopLeftX, uint32_t TopLeftY) = 0;
 	virtual void Size_Set(uint32_t Width, uint32_t Height) = 0;
 };

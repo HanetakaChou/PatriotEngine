@@ -86,7 +86,7 @@ static unsigned __stdcall PTInvokeMain(void *pVoid)
 
 	argv[argc] = NULL;
 
-	int iResult = ::PTAMain(static_cast<IPTWWindow *>(pWindow), argc, argv);
+	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow), argc, argv);
 
 	pWindow->TermminateMessagePump();
 
@@ -167,8 +167,8 @@ void PTWWindowImpl::EventOutputCallback_Hook(void *pUserData, void(PTPTR *pEvent
 				struct
 				{
 					uint32_t m_Type;
-					PTWHDisplay m_hDisplay;
-					PTWHWindow m_hWindow;
+					struct PT_WSI_Display_T * m_hDisplay;
+					struct PT_WSI_Window_T * m_hWindow;
 				}EventOutput_WindowCreated;
 				EventOutput_WindowCreated.m_Type = PTWWindowImpl::PTEventOutputType_WindowCreated;
 				EventOutput_WindowCreated.m_hDisplay = NULL;
@@ -206,7 +206,7 @@ void PTWWindowImpl::EventInputCallback_Hook(void *pUserData, void(PTPTR *pEventI
 	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventInputCallback), reinterpret_cast<uintptr_t>(pEventInputCallback));
 }
 
-void PTWWindowImpl::Parent_Set(PTWHWindow)
+void PTWWindowImpl::Parent_Set(struct PT_WSI_Window_T *)
 {
 	assert(0);
 }
@@ -365,8 +365,8 @@ HRESULT STDMETHODCALLTYPE PTWWindowImpl::SetWindow(ABI::Windows::UI::Core::ICore
 		struct
 		{
 			uint32_t m_Type;
-			PTWHDisplay m_hDisplay;
-			PTWHWindow m_hWindow;
+			struct PT_WSI_Display_T * m_hDisplay;
+			struct PT_WSI_Window_T * m_hWindow;
 			uint32_t m_Width;
 			uint32_t m_Height;
 		}OutputEventData;

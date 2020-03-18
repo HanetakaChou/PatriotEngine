@@ -204,18 +204,18 @@ void PT3DInstanceImpl::WindowEventOutputCallback(
 	void *pEventDataVoid
 )
 {
-	IPTWWindow::EventOutput *pEventDataGeneric = static_cast<IPTWWindow::EventOutput *>(pEventDataVoid);
+	PT_WSI_IWindow::EventOutput *pEventDataGeneric = static_cast<PT_WSI_IWindow::EventOutput *>(pEventDataVoid);
 
 	switch (pEventDataGeneric->m_Type)
 	{
-	case IPTWWindow::EventOutput::Type_WindowCreated:
+	case PT_WSI_IWindow::EventOutput::Type_WindowCreated:
 	{
 
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowResized:
+	case PT_WSI_IWindow::EventOutput::Type_WindowResized:
 	{
-		IPTWWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<IPTWWindow::EventOutput_WindowResized *>(pEventDataGeneric);
+		PT_WSI_IWindow::EventOutput_WindowResized *pEventDataSpecific = static_cast<PT_WSI_IWindow::EventOutput_WindowResized *>(pEventDataGeneric);
 
 		HRESULT hResult;
 
@@ -250,7 +250,7 @@ void PT3DInstanceImpl::WindowEventOutputCallback(
 		}
 	}
 	break;
-	case IPTWWindow::EventOutput::Type_WindowDestroyed:
+	case PT_WSI_IWindow::EventOutput::Type_WindowDestroyed:
 	{
 
 	}

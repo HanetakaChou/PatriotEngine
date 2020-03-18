@@ -53,4 +53,44 @@ LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
 
+LOCAL_SHARED_LIBRARIES := libxcb libPTApp
+
 include $(BUILD_EXECUTABLE)
+
+# libxcb
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libxcb
+
+ifeq (x86_64,$(TARGET_ARCH))
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libxcb.so
+endif
+
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libxcb.so
+endif
+
+include $(PREBUILT_SHARED_LIBRARY) # ndk-build will strip the so
+
+# libPTApp
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libPTApp
+
+LOCAL_SRC_FILES:= \
+	$(LOCAL_PATH)/../../Private/App/PTAExport.cpp
+	
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPTAPPAPI=PTEXPORT
+	
+LOCAL_CPPFLAGS += -std=c++11
+
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
+
+include $(BUILD_SHARED_LIBRARY)
