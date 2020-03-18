@@ -1,4 +1,4 @@
-﻿#include "../../Public/App/PT_APP_Export.h"
+﻿#include "../../Public/APP/PT_APP_Export.h"
 
 extern "C" PTAPPAPI int PTCALL PTAMain(PT_WSI_IWindow *pWindow, int argc,
 									   char *argv[])
