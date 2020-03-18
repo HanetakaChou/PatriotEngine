@@ -1,8 +1,8 @@
-﻿#ifndef PT_WINDOW_WINDOW_H
-#define PT_WINDOW_WINDOW_H
+﻿#ifndef _PT_WSI_WINDOW_H_
+#define _PT_WSI_WINDOW_H_ 1
 
 #include "../PTCommon.h"
-#include "PTWCommon.h"
+#include "PT_WSI_Common.h"
 
 #if defined(PTWIN32)
 #include <sdkddkver.h>
