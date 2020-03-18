@@ -36,6 +36,7 @@ cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libc.so ${out
 cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libdl.so ${out_dir}/
 cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libm.so ${out_dir}/
 cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libstdc++.so ${out_dir}/
+cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libc++_shared.so ${out_dir}/
 
 # copy the gdb related
 cp -f libs/x86/gdbserver ${out_dir}/
