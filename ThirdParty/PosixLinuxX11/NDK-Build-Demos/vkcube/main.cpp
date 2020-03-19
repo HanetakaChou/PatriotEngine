@@ -2282,7 +2282,7 @@ static void demo_create_xcb_window(struct demo *demo)
 
   /* Magic code that will send notification when window is destroyed */
   xcb_intern_atom_cookie_t cookie =
-      xcb_intern_atom(demo->connection, 1, 12, "WM_PROTOCOLS");
+      xcb_intern_atom(demo->connection, 0, 12, "WM_PROTOCOLS");
   xcb_intern_atom_reply_t *reply =
       xcb_intern_atom_reply(demo->connection, cookie, 0);
   xcb_atom_t atom1 = reply->atom;
@@ -2295,9 +2295,19 @@ static void demo_create_xcb_window(struct demo *demo)
   demo->atom_wm_delete_window = reply2->atom;
   free(reply2);
 
-  xcb_change_property(demo->connection, XCB_PROP_MODE_REPLACE, demo->xcb_window,
-                      atom1, XCB_ATOM_ATOM, 32, 1,
-                      &demo->atom_wm_delete_window);
+  xcb_intern_atom_cookie_t cookie3 =
+      xcb_intern_atom(demo->connection, 0, 12, "_NET_WM_NAME");
+  xcb_intern_atom_reply_t *reply3 =
+      xcb_intern_atom_reply(demo->connection, cookie3, 0);
+  xcb_atom_t atom3 = reply3->atom;
+  free(reply3);
+
+  xcb_intern_atom_cookie_t cookie4 =
+      xcb_intern_atom(demo->connection, 0, 11, "UTF8_STRING");
+  xcb_intern_atom_reply_t *reply4 =
+      xcb_intern_atom_reply(demo->connection, cookie4, 0);
+  xcb_atom_t atom4 = reply4->atom;
+  free(reply4);
 
   xcb_map_window(demo->connection, demo->xcb_window);
 
