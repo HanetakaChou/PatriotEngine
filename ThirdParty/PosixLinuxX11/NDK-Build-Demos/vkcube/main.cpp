@@ -53,7 +53,7 @@
 
 uint32_t const desiredNumOfSwapchainImages = 3;
 // Allow a maximum of two outstanding presentation operations.
-#define FRAME_LAG  (desiredNumOfSwapchainImages + 1)
+#define FRAME_LAG (desiredNumOfSwapchainImages + 1)
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -2165,11 +2165,7 @@ static void demo_resize(struct demo *demo)
   demo_prepare(demo);
 }
 
-// On MS-Windows, make this a global, so it's available to WndProc()
-struct demo demo;
-
-static void demo_handle_xcb_event(struct demo *demo,
-                                  const xcb_generic_event_t *event)
+static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *event)
 {
   uint8_t event_code = event->response_type & 0x7f;
   switch (event_code)
