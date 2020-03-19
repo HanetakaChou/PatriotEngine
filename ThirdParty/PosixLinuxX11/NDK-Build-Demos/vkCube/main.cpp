@@ -2075,21 +2075,17 @@ static void demo_handle_xcb_event(struct demo *demo,
       break;
     }
   } break;
-  case XCB_CONFIGURE_NOTIFY: {
-    const xcb_configure_notify_event_t *cfg =
-        (const xcb_configure_notify_event_t *)event;
-    if ((demo->width != cfg->width) || (demo->height != cfg->height)) {
-      demo->width = cfg->width;
-      demo->height = cfg->height;
-      demo_resize(demo);
-    }
-  } break;
   case XCB_EXPOSE: {
-    // TODO: Resize window
-    demo_draw(demo);
-    demo->curFrame++;
-    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount)
-      demo->quit = true;
+    xcb_expose_event_t const *exp = reinterpret_cast<xcb_expose_event_t const *>(event);
+
+    if (exp->window == demo->xcb_window && exp->count == 0) {
+      if ((demo->width != exp->width) || (demo->height != exp->height)) {
+        demo->width = exp->width;
+        demo->height = exp->height;
+        demo_resize(demo);
+      }
+    }
+
   } break;
   default:
     break;
@@ -2099,10 +2095,21 @@ static void demo_handle_xcb_event(struct demo *demo,
 static void demo_run_xcb(struct demo *demo) {
   xcb_flush(demo->connection);
 
-  xcb_generic_event_t *event;
-  while ((!demo->quit) && (event = xcb_wait_for_event(demo->connection))) {
-    demo_handle_xcb_event(demo, event);
-    free(event);
+  while (1) {
+    xcb_generic_event_t *event;
+    while ((!demo->quit) && (event = xcb_poll_for_event(demo->connection))) {
+      demo_handle_xcb_event(demo, event);
+      free(event);
+    }
+
+    if (demo->quit) {
+      break;
+    }
+
+    demo_draw(demo);
+    demo->curFrame++;
+    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount)
+      demo->quit = true;
   }
 }
 
@@ -2113,8 +2120,7 @@ static void demo_create_xcb_window(struct demo *demo) {
 
   value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
   value_list[0] = demo->screen->black_pixel;
-  value_list[1] = XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_EXPOSURE |
-                  XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+  value_list[1] = XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_EXPOSURE;
 
   xcb_create_window(demo->connection, XCB_COPY_FROM_PARENT, demo->xcb_window,
                     demo->screen->root, 0, 0, demo->width, demo->height, 0,
