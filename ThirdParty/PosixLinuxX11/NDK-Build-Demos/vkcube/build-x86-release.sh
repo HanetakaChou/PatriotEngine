@@ -5,6 +5,12 @@ cd "$(dirname "$(readlink -f "${0}")")"
 target_name="vkcube"
 int_dir="libs/x86"
 
+#glslang
+rm -rf cube.vert.inc
+rm -rf cube.frag.inc
+../../glibc-glslang/bin/glslangValidator -V cube.vert -x -o cube.vert.inc
+../../glibc-glslang/bin/glslangValidator -V cube.frag -x -o cube.frag.inc
+
 # build by ndk
 rm -rf obj/local/x86
 rm -rf libs/x86
@@ -23,7 +29,6 @@ cp -f ../../Bionic-Redistributable/lib/libvulkan.so ${int_dir}
 mkdir -p ${int_dir}/vulkan/icd.d/
 cp -f ../../Bionic-Redistributable/lib/vulkan/icd.d/intel_icd.i686.json ${int_dir}/vulkan/icd.d/  
 cp -f ../../Bionic-Redistributable/lib/libvulkan_intel.so ${int_dir}  
-cp -f ../../Bionic-Redistributable/lib/libvulkan_radeon.so ${int_dir}  
 cp -f ../../Bionic-Redistributable/lib/libdrm.so ${int_dir}  
 cp -f ../../Bionic-Redistributable/lib/libxcb-dri3.so ${int_dir}  
 cp -f ../../Bionic-Redistributable/lib/libxcb-randr.so ${int_dir}  
@@ -36,10 +41,24 @@ cp -f ../../Bionic-Redistributable/lib/libxcb-sync.so ${int_dir}
 cp -f ../../Bionic-Redistributable/lib/libxshmfence.so ${int_dir}  
 cp -f ../../Bionic-Redistributable/lib/libc++_shared.so ${int_dir}  
 cp -f ../../Bionic-Redistributable/lib/libXau.so ${int_dir}  
+mkdir -p ${int_dir}/vulkan/explicit_layer.d/
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_core_validation.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_object_tracker.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_parameter_validation.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_threading.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_unique_objects.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/vulkan/explicit_layer.d/VkLayer_standard_validation.json ${int_dir}/vulkan/explicit_layer.d/  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_core_validation.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_object_tracker.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_parameter_validation.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_threading.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_unique_objects.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libVkLayer_utils.so ${int_dir}  
+cp -f ../../Bionic-Redistributable/lib/libSPIRV-Tools-shared.so ${int_dir}  
 
 # place the linker at cwd   
 cp -f ../../Bionic-Redistributable/lib/linker ${int_dir}
 cd ${int_dir}
   
 # execute the generated a.out  
-./${target_name}
+./${target_name} --validate
