@@ -5,6 +5,12 @@ cd "$(dirname "$(readlink -f "${0}")")"
 target_name="vkcube"
 int_dir="libs/x86_64"
 
+#glslang
+rm -rf cube.vert.inc
+rm -rf cube.frag.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o cube.vert.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
+
 # build by ndk
 rm -rf obj/local/x86_64
 rm -rf libs/x86_64
