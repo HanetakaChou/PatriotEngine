@@ -12,8 +12,7 @@
             "defines": [
                 "__ANDROID__",
                 "ANDROID"
-            ],
-            "compilerPath": "/usr/bin/cpp"
+            ]
         }
     ],
     "version": 4
