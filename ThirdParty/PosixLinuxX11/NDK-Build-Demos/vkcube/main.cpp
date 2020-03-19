@@ -2272,9 +2272,9 @@ static void demo_create_xcb_window(struct demo *demo)
   value_list[0] = demo->screen->black_pixel;
   value_list[1] = XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_STRUCTURE_NOTIFY;
 
-  xcb_create_window(demo->connection, XCB_COPY_FROM_PARENT, demo->xcb_window,
+  xcb_create_window(demo->connection, demo->screen->root_depth, demo->xcb_window,
                     demo->screen->root, 0, 0, demo->width, demo->height, 0,
-                    XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT,
+                    XCB_WINDOW_CLASS_INPUT_OUTPUT, demo->screen->root_visual,
                     value_mask, value_list);
 
   xcb_change_property(demo->connection, XCB_PROP_MODE_REPLACE, demo->xcb_window,
