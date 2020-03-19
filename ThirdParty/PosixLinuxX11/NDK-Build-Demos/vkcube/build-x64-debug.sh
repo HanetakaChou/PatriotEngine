@@ -60,6 +60,6 @@ cp -f ../../Bionic-Redistributable/lib64/linker ${int_dir}
 cd ${int_dir}
   
 # execute the generated a.out  
-# gdbserver :27077 ./a.out
-./gdbserver :27077 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
+# gdbserver :27177 ./a.out
+./gdbserver :27177 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
 

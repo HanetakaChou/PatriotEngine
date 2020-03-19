@@ -25,22 +25,26 @@
 #include "Game.h"
 
 Shell::Shell(Game &game)
-    : game_(game), settings_(game.settings()), ctx_(), game_tick_(1.0f / settings_.ticks_per_second), game_time_(game_tick_) {
+    : game_(game), settings_(game.settings()), ctx_(), game_tick_(1.0f / settings_.ticks_per_second), game_time_(game_tick_)
+{
     // require generic WSI extensions
     instance_extensions_.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     device_extensions_.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-    if (settings_.validate) {
+    if (settings_.validate)
+    {
         instance_extensions_.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
     }
 }
 
-void Shell::log(LogPriority priority, const char *msg) {
+void Shell::log(LogPriority priority, const char *msg)
+{
     std::ostream &st = (priority >= LOG_ERR) ? std::cerr : std::cout;
     st << msg << "\n";
 }
 
-void Shell::init_vk() {
+void Shell::init_vk()
+{
     vk::init_dispatch_table_top(load_vk());
 
     init_instance();
@@ -50,14 +54,17 @@ void Shell::init_vk() {
     init_physical_dev();
 }
 
-void Shell::cleanup_vk() {
-    if (settings_.validate) vk::DestroyDebugReportCallbackEXT(ctx_.instance, ctx_.debug_report, nullptr);
+void Shell::cleanup_vk()
+{
+    if (settings_.validate)
+        vk::DestroyDebugReportCallbackEXT(ctx_.instance, ctx_.debug_report, nullptr);
 
     vk::DestroyInstance(ctx_.instance, nullptr);
 }
 
 bool Shell::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT obj_type, uint64_t object,
-                                  size_t location, int32_t msg_code, const char *layer_prefix, const char *msg) {
+                                  size_t location, int32_t msg_code, const char *layer_prefix, const char *msg)
+{
     LogPriority prio = LOG_WARN;
     if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT)
         prio = LOG_ERR;
@@ -76,17 +83,21 @@ bool Shell::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObje
     return false;
 }
 
-void Shell::assert_all_instance_layers() const {
+void Shell::assert_all_instance_layers() const
+{
     // enumerate instance layer
     std::vector<VkLayerProperties> layers;
     vk::enumerate(layers);
 
     std::set<std::string> layer_names;
-    for (const auto &layer : layers) layer_names.insert(layer.layerName);
+    for (const auto &layer : layers)
+        layer_names.insert(layer.layerName);
 
     // all listed instance layers are required
-    for (const auto &name : instance_layers_) {
-        if (layer_names.find(name) == layer_names.end()) {
+    for (const auto &name : instance_layers_)
+    {
+        if (layer_names.find(name) == layer_names.end())
+        {
             std::stringstream ss;
             ss << "instance layer " << name << " is missing";
             throw std::runtime_error(ss.str());
@@ -94,17 +105,21 @@ void Shell::assert_all_instance_layers() const {
     }
 }
 
-void Shell::assert_all_instance_extensions() const {
+void Shell::assert_all_instance_extensions() const
+{
     // enumerate instance extensions
     std::vector<VkExtensionProperties> exts;
     vk::enumerate(nullptr, exts);
 
     std::set<std::string> ext_names;
-    for (const auto &ext : exts) ext_names.insert(ext.extensionName);
+    for (const auto &ext : exts)
+        ext_names.insert(ext.extensionName);
 
     // all listed instance extensions are required
-    for (const auto &name : instance_extensions_) {
-        if (ext_names.find(name) == ext_names.end()) {
+    for (const auto &name : instance_extensions_)
+    {
+        if (ext_names.find(name) == ext_names.end())
+        {
             std::stringstream ss;
             ss << "instance extension " << name << " is missing";
             throw std::runtime_error(ss.str());
@@ -112,23 +127,28 @@ void Shell::assert_all_instance_extensions() const {
     }
 }
 
-bool Shell::has_all_device_extensions(VkPhysicalDevice phy) const {
+bool Shell::has_all_device_extensions(VkPhysicalDevice phy) const
+{
     // enumerate device extensions
     std::vector<VkExtensionProperties> exts;
     vk::enumerate(phy, nullptr, exts);
 
     std::set<std::string> ext_names;
-    for (const auto &ext : exts) ext_names.insert(ext.extensionName);
+    for (const auto &ext : exts)
+        ext_names.insert(ext.extensionName);
 
     // all listed device extensions are required
-    for (const auto &name : device_extensions_) {
-        if (ext_names.find(name) == ext_names.end()) return false;
+    for (const auto &name : device_extensions_)
+    {
+        if (ext_names.find(name) == ext_names.end())
+            return false;
     }
 
     return true;
 }
 
-void Shell::init_instance() {
+void Shell::init_instance()
+{
     assert_all_instance_layers();
     assert_all_instance_extensions();
 
@@ -149,15 +169,18 @@ void Shell::init_instance() {
     vk::assert_success(vk::CreateInstance(&instance_info, nullptr, &ctx_.instance));
 }
 
-void Shell::init_debug_report() {
-    if (!settings_.validate) return;
+void Shell::init_debug_report()
+{
+    if (!settings_.validate)
+        return;
 
     VkDebugReportCallbackCreateInfoEXT debug_report_info = {};
     debug_report_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
 
     debug_report_info.flags =
         VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT;
-    if (settings_.validate_verbose) {
+    if (settings_.validate_verbose)
+    {
         debug_report_info.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
     }
 
@@ -167,34 +190,42 @@ void Shell::init_debug_report() {
     vk::assert_success(vk::CreateDebugReportCallbackEXT(ctx_.instance, &debug_report_info, nullptr, &ctx_.debug_report));
 }
 
-void Shell::init_physical_dev() {
+void Shell::init_physical_dev()
+{
     // enumerate physical devices
     std::vector<VkPhysicalDevice> phys;
     vk::assert_success(vk::enumerate(ctx_.instance, phys));
 
     ctx_.physical_dev = VK_NULL_HANDLE;
-    for (auto phy : phys) {
-        if (!has_all_device_extensions(phy)) continue;
+    for (auto phy : phys)
+    {
+        if (!has_all_device_extensions(phy))
+            continue;
 
         // get queue properties
         std::vector<VkQueueFamilyProperties> queues;
         vk::get(phy, queues);
 
         int game_queue_family = -1, present_queue_family = -1;
-        for (uint32_t i = 0; i < queues.size(); i++) {
+        for (uint32_t i = 0; i < queues.size(); i++)
+        {
             const VkQueueFamilyProperties &q = queues[i];
 
             // requires only GRAPHICS for game queues
             const VkFlags game_queue_flags = VK_QUEUE_GRAPHICS_BIT;
-            if (game_queue_family < 0 && (q.queueFlags & game_queue_flags) == game_queue_flags) game_queue_family = i;
+            if (game_queue_family < 0 && (q.queueFlags & game_queue_flags) == game_queue_flags)
+                game_queue_family = i;
 
             // present queue must support the surface
-            if (present_queue_family < 0 && can_present(phy, i)) present_queue_family = i;
+            if (present_queue_family < 0 && can_present(phy, i))
+                present_queue_family = i;
 
-            if (game_queue_family >= 0 && present_queue_family >= 0) break;
+            if (game_queue_family >= 0 && present_queue_family >= 0)
+                break;
         }
 
-        if (game_queue_family >= 0 && present_queue_family >= 0) {
+        if (game_queue_family >= 0 && present_queue_family >= 0)
+        {
             ctx_.physical_dev = phy;
             ctx_.game_queue_family = game_queue_family;
             ctx_.present_queue_family = present_queue_family;
@@ -202,10 +233,12 @@ void Shell::init_physical_dev() {
         }
     }
 
-    if (ctx_.physical_dev == VK_NULL_HANDLE) throw std::runtime_error("failed to find any capable Vulkan physical device");
+    if (ctx_.physical_dev == VK_NULL_HANDLE)
+        throw std::runtime_error("failed to find any capable Vulkan physical device");
 }
 
-void Shell::create_context() {
+void Shell::create_context()
+{
     create_dev();
     vk::init_dispatch_table_bottom(ctx_.instance, ctx_.dev);
 
@@ -220,8 +253,10 @@ void Shell::create_context() {
     game_.attach_shell(*this);
 }
 
-void Shell::destroy_context() {
-    if (ctx_.dev == VK_NULL_HANDLE) return;
+void Shell::destroy_context()
+{
+    if (ctx_.dev == VK_NULL_HANDLE)
+        return;
 
     vk::DeviceWaitIdle(ctx_.dev);
 
@@ -238,7 +273,8 @@ void Shell::destroy_context() {
     ctx_.dev = VK_NULL_HANDLE;
 }
 
-void Shell::create_dev() {
+void Shell::create_dev()
+{
     VkDeviceCreateInfo dev_info = {};
     dev_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
@@ -249,14 +285,17 @@ void Shell::create_dev() {
     queue_info[0].queueCount = settings_.queue_count;
     queue_info[0].pQueuePriorities = queue_priorities.data();
 
-    if (ctx_.game_queue_family != ctx_.present_queue_family) {
+    if (ctx_.game_queue_family != ctx_.present_queue_family)
+    {
         queue_info[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         queue_info[1].queueFamilyIndex = ctx_.present_queue_family;
         queue_info[1].queueCount = 1;
         queue_info[1].pQueuePriorities = queue_priorities.data();
 
         dev_info.queueCreateInfoCount = 2;
-    } else {
+    }
+    else
+    {
         dev_info.queueCreateInfoCount = 1;
     }
 
@@ -272,7 +311,8 @@ void Shell::create_dev() {
     vk::assert_success(vk::CreateDevice(ctx_.physical_dev, &dev_info, nullptr, &ctx_.dev));
 }
 
-void Shell::create_back_buffers() {
+void Shell::create_back_buffers()
+{
     VkSemaphoreCreateInfo sem_info = {};
     sem_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
@@ -285,7 +325,8 @@ void Shell::create_back_buffers() {
     // images may allows us to replace CPU wait on present_fence by GPU wait
     // on acquire_semaphore.
     const int count = settings_.back_buffer_count + 1;
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
         BackBuffer buf = {};
         vk::assert_success(vk::CreateSemaphore(ctx_.dev, &sem_info, nullptr, &buf.acquire_semaphore));
         vk::assert_success(vk::CreateSemaphore(ctx_.dev, &sem_info, nullptr, &buf.render_semaphore));
@@ -295,8 +336,10 @@ void Shell::create_back_buffers() {
     }
 }
 
-void Shell::destroy_back_buffers() {
-    while (!ctx_.back_buffers.empty()) {
+void Shell::destroy_back_buffers()
+{
+    while (!ctx_.back_buffers.empty())
+    {
         const auto &buf = ctx_.back_buffers.front();
 
         vk::DestroySemaphore(ctx_.dev, buf.acquire_semaphore, nullptr);
@@ -307,7 +350,8 @@ void Shell::destroy_back_buffers() {
     }
 }
 
-void Shell::create_swapchain() {
+void Shell::create_swapchain()
+{
     ctx_.surface = create_surface(ctx_.instance);
 
     VkBool32 supported;
@@ -326,8 +370,10 @@ void Shell::create_swapchain() {
     ctx_.extent.height = (uint32_t)-1;
 }
 
-void Shell::destroy_swapchain() {
-    if (ctx_.swapchain != VK_NULL_HANDLE) {
+void Shell::destroy_swapchain()
+{
+    if (ctx_.swapchain != VK_NULL_HANDLE)
+    {
         game_.detach_swapchain();
 
         vk::DestroySwapchainKHR(ctx_.dev, ctx_.swapchain, nullptr);
@@ -338,13 +384,15 @@ void Shell::destroy_swapchain() {
     ctx_.surface = VK_NULL_HANDLE;
 }
 
-void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
+void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint)
+{
     VkSurfaceCapabilitiesKHR caps;
     vk::assert_success(vk::GetPhysicalDeviceSurfaceCapabilitiesKHR(ctx_.physical_dev, ctx_.surface, &caps));
 
     VkExtent2D extent = caps.currentExtent;
     // use the hints
-    if (extent.width == (uint32_t)-1) {
+    if (extent.width == (uint32_t)-1)
+    {
         extent.width = width_hint;
         extent.height = height_hint;
     }
@@ -359,7 +407,8 @@ void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
     else if (extent.height > caps.maxImageExtent.height)
         extent.height = caps.maxImageExtent.height;
 
-    if (ctx_.extent.width == extent.width && ctx_.extent.height == extent.height) return;
+    if (ctx_.extent.width == extent.width && ctx_.extent.height == extent.height)
+        return;
 
     uint32_t image_count = settings_.back_buffer_count;
     if (image_count < caps.minImageCount)
@@ -379,8 +428,10 @@ void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
 
     // FIFO is the only mode universally supported
     VkPresentModeKHR mode = VK_PRESENT_MODE_FIFO_KHR;
-    for (auto m : modes) {
-        if ((settings_.vsync && m == VK_PRESENT_MODE_MAILBOX_KHR) || (!settings_.vsync && m == VK_PRESENT_MODE_IMMEDIATE_KHR)) {
+    for (auto m : modes)
+    {
+        if ((settings_.vsync && m == VK_PRESENT_MODE_MAILBOX_KHR) || (!settings_.vsync && m == VK_PRESENT_MODE_IMMEDIATE_KHR))
+        {
             mode = m;
             break;
         }
@@ -397,13 +448,16 @@ void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
     swapchain_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     std::vector<uint32_t> queue_families(1, ctx_.game_queue_family);
-    if (ctx_.game_queue_family != ctx_.present_queue_family) {
+    if (ctx_.game_queue_family != ctx_.present_queue_family)
+    {
         queue_families.push_back(ctx_.present_queue_family);
 
         swapchain_info.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
         swapchain_info.queueFamilyIndexCount = (uint32_t)queue_families.size();
         swapchain_info.pQueueFamilyIndices = queue_families.data();
-    } else {
+    }
+    else
+    {
         swapchain_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
     }
 
@@ -418,7 +472,8 @@ void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
     ctx_.extent = extent;
 
     // destroy the old swapchain
-    if (swapchain_info.oldSwapchain != VK_NULL_HANDLE) {
+    if (swapchain_info.oldSwapchain != VK_NULL_HANDLE)
+    {
         game_.detach_swapchain();
 
         vk::DeviceWaitIdle(ctx_.dev);
@@ -428,20 +483,25 @@ void Shell::resize_swapchain(uint32_t width_hint, uint32_t height_hint) {
     game_.attach_swapchain();
 }
 
-void Shell::add_game_time(float time) {
+void Shell::add_game_time(float time)
+{
     int max_ticks = 3;
 
-    if (!settings_.no_tick) game_time_ += time;
+    if (!settings_.no_tick)
+        game_time_ += time;
 
-    while (game_time_ >= game_tick_ && max_ticks--) {
+    while (game_time_ >= game_tick_ && max_ticks--)
+    {
         game_.on_tick();
         game_time_ -= game_tick_;
     }
 }
 
-void Shell::acquire_back_buffer() {
+void Shell::acquire_back_buffer()
+{
     // acquire just once when not presenting
-    if (settings_.no_present && ctx_.acquired_back_buffer.acquire_semaphore != VK_NULL_HANDLE) return;
+    if (settings_.no_present && ctx_.acquired_back_buffer.acquire_semaphore != VK_NULL_HANDLE)
+        return;
 
     auto &buf = ctx_.back_buffers.front();
 
@@ -457,12 +517,15 @@ void Shell::acquire_back_buffer() {
     ctx_.back_buffers.pop();
 }
 
-void Shell::present_back_buffer() {
+void Shell::present_back_buffer()
+{
     const auto &buf = ctx_.acquired_back_buffer;
 
-    if (!settings_.no_render) game_.on_frame(game_time_ / game_tick_);
+    if (!settings_.no_render)
+        game_.on_frame(game_time_ / game_tick_);
 
-    if (settings_.no_present) {
+    if (settings_.no_present)
+    {
         fake_present();
         return;
     }
@@ -475,19 +538,46 @@ void Shell::present_back_buffer() {
     present_info.pSwapchains = &ctx_.swapchain;
     present_info.pImageIndices = &buf.image_index;
 
-    vk::assert_success(vk::QueuePresentKHR(ctx_.present_queue, &present_info));
+    VkResult err = vk::QueuePresentKHR(ctx_.present_queue, &present_info);
+    if (err == VK_SUCCESS)
+    {
+        //Do Nothing
+        vk::assert_success(err);
 
-    vk::assert_success(vk::QueueSubmit(ctx_.present_queue, 0, nullptr, buf.present_fence));
-    ctx_.back_buffers.push(buf);
+        vk::assert_success(vk::QueueSubmit(ctx_.present_queue, 0, nullptr, buf.present_fence));
+        ctx_.back_buffers.push(buf);
+    }
+    else if (err == VK_SUBOPTIMAL_KHR)
+    {
+        //Need Optimal
+
+        vk::assert_success(vk::QueueSubmit(ctx_.present_queue, 0, nullptr, buf.present_fence));
+        ctx_.back_buffers.push(buf);
+    }
+    else if (err == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        //We can resize here //Decoupled from WSI
+
+        //https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap32.html#vkQueuePresentKHR
+        //However, if the presentation request is rejected by the presentation engine with an error VK_ERROR_OUT_OF_DATE_KHR or VK_ERROR_SURFACE_LOST_KHR, the set of queue operations are still considered to be enqueued and thus any semaphore wait operation specified in VkPresentInfoKHR will execute when the corresponding queue operation is complete.
+        vk::assert_success(vk::QueueSubmit(ctx_.present_queue, 0, nullptr, buf.present_fence));
+        ctx_.back_buffers.push(buf);
+    }
+    else
+    {
+        assert(0);
+    }
 }
 
-void Shell::fake_present() {
+void Shell::fake_present()
+{
     const auto &buf = ctx_.acquired_back_buffer;
 
     assert(settings_.no_present);
 
     // wait render semaphore and signal acquire semaphore
-    if (!settings_.no_render) {
+    if (!settings_.no_render)
+    {
         VkPipelineStageFlags stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
         VkSubmitInfo submit_info = {};
         submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -500,5 +590,6 @@ void Shell::fake_present() {
     }
 
     // push the buffer back just once for Shell::cleanup_vk
-    if (buf.acquire_semaphore != ctx_.back_buffers.back().acquire_semaphore) ctx_.back_buffers.push(buf);
+    if (buf.acquire_semaphore != ctx_.back_buffers.back().acquire_semaphore)
+        ctx_.back_buffers.push(buf);
 }

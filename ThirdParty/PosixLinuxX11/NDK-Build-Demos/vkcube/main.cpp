@@ -1616,7 +1616,7 @@ static void demo_prepare_render_pass(struct demo *demo)
               .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
               .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
               .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-              .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+              .finalLayout = VK_IMAGE_LAYOUT_UNDEFINED,
           },
   };
   const VkAttachmentReference color_reference = {
