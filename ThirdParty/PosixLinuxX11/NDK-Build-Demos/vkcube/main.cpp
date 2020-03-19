@@ -2303,9 +2303,9 @@ static void demo_create_xcb_window(struct demo *demo)
 
   // Force the x/y coordinates to 100,100 results are identical in consecutive
   // runs
-  const uint32_t coords[] = {100, 100};
-  xcb_configure_window(demo->connection, demo->xcb_window,
-                       XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, coords);
+  // const uint32_t coords[] = {100, 100};
+  // xcb_configure_window(demo->connection, demo->xcb_window,
+  //                     XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, coords);
 }
 
 /*
