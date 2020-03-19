@@ -8,7 +8,7 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := vkcube
 
-LOCAL_SRC_FILES := main.c
+LOCAL_SRC_FILES := main.cpp
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Bionic-Redistributable/include
 

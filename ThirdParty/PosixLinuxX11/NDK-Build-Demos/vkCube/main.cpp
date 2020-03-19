@@ -118,7 +118,8 @@ struct texture_object {
   VkMemoryAllocateInfo mem_alloc;
   VkDeviceMemory mem;
   VkImageView view;
-  int32_t tex_width, tex_height;
+  uint32_t tex_width;
+  uint32_t tex_height;
 };
 
 static char *tex_files[] = {"lunarg.ppm"};
@@ -302,7 +303,8 @@ struct demo {
   char *extension_names[64];
   char *enabled_layers[64];
 
-  int width, height;
+  uint32_t width;
+  uint32_t height;
   VkFormat format;
   VkColorSpaceKHR color_space;
 
@@ -524,20 +526,22 @@ static void demo_set_image_layout(struct demo *demo, VkImage image,
                                   VkImageAspectFlags aspectMask,
                                   VkImageLayout old_image_layout,
                                   VkImageLayout new_image_layout,
-                                  VkAccessFlagBits srcAccessMask,
+                                  VkAccessFlags srcAccessMask,
                                   VkPipelineStageFlags src_stages,
                                   VkPipelineStageFlags dest_stages) {
   assert(demo->cmd);
 
   VkImageMemoryBarrier image_memory_barrier = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-      .pNext = NULL,
-      .srcAccessMask = srcAccessMask,
-      .dstAccessMask = 0,
-      .oldLayout = old_image_layout,
-      .newLayout = new_image_layout,
-      .image = image,
-      .subresourceRange = {aspectMask, 0, 1, 0, 1}};
+      VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+      NULL,
+      srcAccessMask,
+      0,
+      old_image_layout,
+      new_image_layout,
+      VK_QUEUE_FAMILY_IGNORED,
+      VK_QUEUE_FAMILY_IGNORED,
+      image,
+      {aspectMask, 0, 1, 0, 1}};
 
   switch (new_image_layout) {
   case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
@@ -590,17 +594,13 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf) {
       [1] = {.depthStencil = {1.0f, 0}},
   };
   const VkRenderPassBeginInfo rp_begin = {
-      .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-      .pNext = NULL,
-      .renderPass = demo->render_pass,
-      .framebuffer =
-          demo->swapchain_image_resources[demo->current_buffer].framebuffer,
-      .renderArea.offset.x = 0,
-      .renderArea.offset.y = 0,
-      .renderArea.extent.width = demo->width,
-      .renderArea.extent.height = demo->height,
-      .clearValueCount = 2,
-      .pClearValues = clear_values,
+      VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+      NULL,
+      demo->render_pass,
+      demo->swapchain_image_resources[demo->current_buffer].framebuffer,
+      {{0, 0}, {demo->width, demo->height}},
+      2,
+      clear_values,
   };
   VkResult U_ASSERT_ONLY err;
 
@@ -639,16 +639,16 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf) {
     // the start of the next frame because we don't care about the image's
     // contents at that point.
     VkImageMemoryBarrier image_ownership_barrier = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-        .pNext = NULL,
-        .srcAccessMask = 0,
-        .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-        .oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        .newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-        .srcQueueFamilyIndex = demo->graphics_queue_family_index,
-        .dstQueueFamilyIndex = demo->present_queue_family_index,
-        .image = demo->swapchain_image_resources[demo->current_buffer].image,
-        .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+        VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+        NULL,
+        0,
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+        demo->graphics_queue_family_index,
+        demo->present_queue_family_index,
+        demo->swapchain_image_resources[demo->current_buffer].image,
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
 
     vkCmdPipelineBarrier(cmd_buf, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                          VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0,
@@ -702,10 +702,12 @@ void demo_update_data_buffer(struct demo *demo) {
 
   mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
 
-  // Rotate around the Y axis
-  mat4x4_dup(Model, demo->model_matrix);
-  mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f,
-                (float)degreesToRadians(demo->spin_angle));
+  if (!demo->pause) {
+    // Rotate around the Y axis
+    mat4x4_dup(Model, demo->model_matrix);
+    mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f,
+                  (float)degreesToRadians(demo->spin_angle));
+  }
   mat4x4_mul(MVP, VP, demo->model_matrix);
 
   err = vkMapMemory(
@@ -934,7 +936,7 @@ static void demo_prepare_buffers(struct demo *demo) {
     desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
   }
 
-  VkSurfaceTransformFlagsKHR preTransform;
+  VkSurfaceTransformFlagBitsKHR preTransform;
   if (surfCapabilities.supportedTransforms &
       VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR) {
     preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
@@ -960,28 +962,27 @@ static void demo_prepare_buffers(struct demo *demo) {
   }
 
   VkSwapchainCreateInfoKHR swapchain_ci = {
-      .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      .pNext = NULL,
-      .surface = demo->surface,
-      .minImageCount = desiredNumOfSwapchainImages,
-      .imageFormat = demo->format,
-      .imageColorSpace = demo->color_space,
-      .imageExtent =
-          {
-              .width = swapchainExtent.width,
-              .height = swapchainExtent.height,
-          },
-      .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      .preTransform = preTransform,
-      .compositeAlpha = compositeAlpha,
-      .imageArrayLayers = 1,
-      .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
-      .queueFamilyIndexCount = 0,
-      .pQueueFamilyIndices = NULL,
-      .presentMode = swapchainPresentMode,
-      .oldSwapchain = oldSwapchain,
-      .clipped = true,
-  };
+      VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      NULL,
+      0U,
+      demo->surface,
+      desiredNumOfSwapchainImages,
+      demo->format,
+      demo->color_space,
+      {
+          swapchainExtent.width,
+          swapchainExtent.height,
+      },
+      1,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL,
+      preTransform,
+      compositeAlpha,
+      swapchainPresentMode,
+      true,
+      oldSwapchain};
   uint32_t i;
   err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL,
                                    &demo->swapchain);
@@ -1048,32 +1049,32 @@ static void demo_prepare_buffers(struct demo *demo) {
 
 static void demo_prepare_depth(struct demo *demo) {
   const VkFormat depth_format = VK_FORMAT_D16_UNORM;
-  const VkImageCreateInfo image = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext = NULL,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = depth_format,
-      .extent = {demo->width, demo->height, 1},
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = VK_IMAGE_TILING_OPTIMAL,
-      .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
-      .flags = 0,
-  };
+  const VkImageCreateInfo image = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+                                   NULL,
+                                   0,
+                                   VK_IMAGE_TYPE_2D,
+                                   depth_format,
+                                   {demo->width, demo->height, 1},
+                                   1,
+                                   1,
+                                   VK_SAMPLE_COUNT_1_BIT,
+                                   VK_IMAGE_TILING_OPTIMAL,
+                                   VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT,
+                                   VK_SHARING_MODE_EXCLUSIVE,
+                                   0U,
+                                   NULL,
+                                   VK_IMAGE_LAYOUT_UNDEFINED};
 
   VkImageViewCreateInfo view = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .pNext = NULL,
-      .image = VK_NULL_HANDLE,
-      .format = depth_format,
-      .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
-                           .baseMipLevel = 0,
-                           .levelCount = 1,
-                           .baseArrayLayer = 0,
-                           .layerCount = 1},
-      .flags = 0,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      NULL,
+      0,
+      VK_NULL_HANDLE,
+      VK_IMAGE_VIEW_TYPE_2D,
+      depth_format,
+      {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+       VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
+      {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1},
   };
 
   VkMemoryRequirements mem_reqs;
@@ -1116,7 +1117,8 @@ static void demo_prepare_depth(struct demo *demo) {
 
 /* Load a ppm file into memory */
 bool loadTexture(const char *filename, uint8_t *rgba_data,
-                 VkSubresourceLayout *layout, int32_t *width, int32_t *height) {
+                 VkSubresourceLayout *layout, uint32_t *width,
+                 uint32_t *height) {
 #include <lunarg.ppm.h>
   char *cPtr;
   cPtr = (char *)lunarg_ppm;
@@ -1159,8 +1161,8 @@ static void demo_prepare_texture_image(struct demo *demo, const char *filename,
                                        VkImageUsageFlags usage,
                                        VkFlags required_props) {
   const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
-  int32_t tex_width;
-  int32_t tex_height;
+  uint32_t tex_width;
+  uint32_t tex_height;
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
 
@@ -1172,18 +1174,21 @@ static void demo_prepare_texture_image(struct demo *demo, const char *filename,
   tex_obj->tex_height = tex_height;
 
   const VkImageCreateInfo image_create_info = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      .pNext = NULL,
-      .imageType = VK_IMAGE_TYPE_2D,
-      .format = tex_format,
-      .extent = {tex_width, tex_height, 1},
-      .mipLevels = 1,
-      .arrayLayers = 1,
-      .samples = VK_SAMPLE_COUNT_1_BIT,
-      .tiling = tiling,
-      .usage = usage,
-      .flags = 0,
-      .initialLayout = VK_IMAGE_LAYOUT_PREINITIALIZED,
+      VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      NULL,
+      0,
+      VK_IMAGE_TYPE_2D,
+      tex_format,
+      {tex_width, tex_height, 1},
+      1,
+      1,
+      VK_SAMPLE_COUNT_1_BIT,
+      tiling,
+      usage,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0U,
+      NULL,
+      VK_IMAGE_LAYOUT_PREINITIALIZED,
   };
 
   VkMemoryRequirements mem_reqs;
@@ -1227,7 +1232,8 @@ static void demo_prepare_texture_image(struct demo *demo, const char *filename,
                       tex_obj->mem_alloc.allocationSize, 0, &data);
     assert(!err);
 
-    if (!loadTexture(filename, data, &layout, &tex_width, &tex_height)) {
+    uint8_t *rgba_data = static_cast<uint8_t *>(data);
+    if (!loadTexture(filename, rgba_data, &layout, &tex_width, &tex_height)) {
       fprintf(stderr, "Error loading texture: %s\n", filename);
     }
 
@@ -2045,9 +2051,6 @@ static void demo_handle_xcb_event(struct demo *demo,
                                   const xcb_generic_event_t *event) {
   uint8_t event_code = event->response_type & 0x7f;
   switch (event_code) {
-  case XCB_EXPOSE:
-    // TODO: Resize window
-    break;
   case XCB_CLIENT_MESSAGE:
     if ((*(xcb_client_message_event_t *)event).data.data32[0] ==
         (*demo->atom_wm_delete_window).atom) {
@@ -2081,6 +2084,13 @@ static void demo_handle_xcb_event(struct demo *demo,
       demo_resize(demo);
     }
   } break;
+  case XCB_EXPOSE: {
+    // TODO: Resize window
+    demo_draw(demo);
+    demo->curFrame++;
+    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount)
+      demo->quit = true;
+  } break;
   default:
     break;
   }
@@ -2089,24 +2099,10 @@ static void demo_handle_xcb_event(struct demo *demo,
 static void demo_run_xcb(struct demo *demo) {
   xcb_flush(demo->connection);
 
-  while (!demo->quit) {
-    xcb_generic_event_t *event;
-
-    if (demo->pause) {
-      event = xcb_wait_for_event(demo->connection);
-    } else {
-      event = xcb_poll_for_event(demo->connection);
-    }
-    while (event) {
-      demo_handle_xcb_event(demo, event);
-      free(event);
-      event = xcb_poll_for_event(demo->connection);
-    }
-
-    demo_draw(demo);
-    demo->curFrame++;
-    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount)
-      demo->quit = true;
+  xcb_generic_event_t *event;
+  while ((!demo->quit) && (event = xcb_wait_for_event(demo->connection))) {
+    demo_handle_xcb_event(demo, event);
+    free(event);
   }
 }
 
@@ -2199,8 +2195,9 @@ static void demo_init_vk(struct demo *demo) {
 
     instance_validation_layers = instance_validation_layers_alt1;
     if (instance_layer_count > 0) {
-      VkLayerProperties *instance_layers =
-          malloc(sizeof(VkLayerProperties) * instance_layer_count);
+      VkLayerProperties *instance_layers = static_cast<VkLayerProperties *>(
+          malloc(sizeof(VkLayerProperties) * instance_layer_count));
+
       err = vkEnumerateInstanceLayerProperties(&instance_layer_count,
                                                instance_layers);
       assert(!err);
@@ -2247,7 +2244,8 @@ static void demo_init_vk(struct demo *demo) {
 
   if (instance_extension_count > 0) {
     VkExtensionProperties *instance_extensions =
-        malloc(sizeof(VkExtensionProperties) * instance_extension_count);
+        static_cast<VkExtensionProperties *>(
+            malloc(sizeof(VkExtensionProperties) * instance_extension_count));
     err = vkEnumerateInstanceExtensionProperties(
         NULL, &instance_extension_count, instance_extensions);
     assert(!err);
@@ -2354,8 +2352,8 @@ static void demo_init_vk(struct demo *demo) {
   assert(!err && gpu_count > 0);
 
   if (gpu_count > 0) {
-    VkPhysicalDevice *physical_devices =
-        malloc(sizeof(VkPhysicalDevice) * gpu_count);
+    VkPhysicalDevice *physical_devices = static_cast<VkPhysicalDevice *>(
+        malloc(sizeof(VkPhysicalDevice) * gpu_count));
     err = vkEnumeratePhysicalDevices(demo->inst, &gpu_count, physical_devices);
     assert(!err);
     /* For cube demo we just grab the first physical device */
@@ -2381,7 +2379,8 @@ static void demo_init_vk(struct demo *demo) {
 
   if (device_extension_count > 0) {
     VkExtensionProperties *device_extensions =
-        malloc(sizeof(VkExtensionProperties) * device_extension_count);
+        static_cast<VkExtensionProperties *>(
+            malloc(sizeof(VkExtensionProperties) * device_extension_count));
     err = vkEnumerateDeviceExtensionProperties(
         demo->gpu, NULL, &device_extension_count, device_extensions);
     assert(!err);
@@ -2697,7 +2696,7 @@ static void demo_init(struct demo *demo, int argc, char **argv) {
       continue;
     }
     if ((strcmp(argv[i], "--present_mode") == 0) && (i < argc - 1)) {
-      demo->presentMode = atoi(argv[i + 1]);
+      demo->presentMode = static_cast<VkPresentModeKHR>(atoi(argv[i + 1]));
       i++;
       continue;
     }
