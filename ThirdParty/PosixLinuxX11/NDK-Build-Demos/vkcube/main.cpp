@@ -2147,19 +2147,20 @@ static void demo_prepare_assets(struct demo *demo)
 
   VkCommandBuffer tmp_cmd;
   const VkCommandBufferAllocateInfo cmd = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .pNext = NULL,
-      .commandPool = tmp_cmd_pool,
-      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-      .commandBufferCount = 1,
+      VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      NULL,
+      tmp_cmd_pool,
+      VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      1,
   };
   err = vkAllocateCommandBuffers(demo->device, &cmd, &tmp_cmd);
   assert(!err);
-  VkCommandBufferBeginInfo cmd_buf_info = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .pInheritanceInfo = NULL,
+
+  const VkCommandBufferBeginInfo cmd_buf_info = {
+      VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      NULL,
+      VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      NULL,
   };
   err = vkBeginCommandBuffer(tmp_cmd, &cmd_buf_info);
   assert(!err);
@@ -2173,6 +2174,8 @@ static void demo_prepare_assets(struct demo *demo)
   demo_flush_init_cmd(demo, tmp_cmd);
 
   vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
+
+  vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
 
   if (demo->staging_texture.image)
   {
