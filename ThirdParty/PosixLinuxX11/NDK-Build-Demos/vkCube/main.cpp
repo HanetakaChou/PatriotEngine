@@ -2208,7 +2208,7 @@ static void demo_handle_xcb_event(struct demo *demo,
       {
         demo->width = exp->width;
         demo->height = exp->height;
-        demo_resize(demo);
+        //demo_resize(demo);
       }
     }
   }
@@ -2221,7 +2221,7 @@ static void demo_handle_xcb_event(struct demo *demo,
     {
       demo->width = cfg->width;
       demo->height = cfg->height;
-      demo_resize(demo);
+      //demo_resize(demo);
     }
   }
   break;
