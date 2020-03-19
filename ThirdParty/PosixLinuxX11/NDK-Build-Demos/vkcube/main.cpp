@@ -53,7 +53,7 @@
 
 uint32_t const desiredNumOfSwapchainImages = 3;
 // Allow a maximum of two outstanding presentation operations.
-#define FRAME_LAG (desiredNumOfSwapchainImages + 1)
+#define FRAME_LAG 4 //(desiredNumOfSwapchainImages + 1)
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -267,7 +267,6 @@ BreakCallback(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType,
 typedef struct
 {
   VkImage image;
-  VkCommandBuffer cmd;
   VkCommandBuffer graphics_to_present_cmd;
   VkImageView view;
   VkBuffer uniform_buffer;
@@ -341,8 +340,10 @@ struct demo
   VkFence fences[FRAME_LAG];
   int frame_index;
 
-  VkCommandPool cmd_pool_draw;
   VkCommandPool present_cmd_pool;
+
+  VkCommandPool cmd_pool[FRAME_LAG];
+  VkCommandBuffer cmd[FRAME_LAG];
 
   struct
   {
@@ -613,7 +614,7 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   const VkCommandBufferBeginInfo cmd_buf_info = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .pNext = NULL,
-      .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
       .pInheritanceInfo = NULL,
   };
   const VkClearValue clear_values[2] = {
@@ -815,6 +816,9 @@ static void demo_draw(struct demo *demo)
   // okay to render to the image.
 
   // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
+  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
+  assert(!err);
+  demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
 
   VkSubmitInfo submit_info;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -825,7 +829,7 @@ static void demo_draw(struct demo *demo)
   submit_info.pWaitDstStageMask = _wait_stages;
   submit_info.pWaitSemaphores = _wait_semphores;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &demo->swapchain_image_resources[demo->current_buffer].cmd;
+  submit_info.pCommandBuffers = &demo->cmd[demo->frame_index];
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
   err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
@@ -994,8 +998,7 @@ static void demo_prepare_buffers(struct demo *demo)
   assert((surfCapabilities.maxImageCount == 0) || (desiredNumOfSwapchainImages <= surfCapabilities.maxImageCount));
 
   VkSurfaceTransformFlagBitsKHR preTransform;
-  if (surfCapabilities.supportedTransforms &
-      VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+  if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
   {
     preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
   }
@@ -1920,14 +1923,27 @@ static void demo_prepare(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
-  const VkCommandPoolCreateInfo cmd_pool_info = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      .pNext = NULL,
-      .queueFamilyIndex = demo->graphics_queue_family_index,
-      .flags = 0,
-  };
-  err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &demo->cmd_pool_draw);
-  assert(!err);
+  for (uint32_t i = 0; i < FRAME_LAG; i++)
+  {
+    const VkCommandPoolCreateInfo cmd_pool_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = NULL,
+        .queueFamilyIndex = demo->graphics_queue_family_index,
+        .flags = 0,
+    };
+    err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &demo->cmd_pool[i]);
+    assert(!err);
+
+    const VkCommandBufferAllocateInfo cmd_info = {
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = NULL,
+        .commandPool = demo->cmd_pool[i],
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1,
+    };
+    err = vkAllocateCommandBuffers(demo->device, &cmd_info, &demo->cmd[i]);
+    assert(!err);
+  }
 
   demo_prepare_buffers(demo);
   demo_prepare_depth(demo);
@@ -1936,20 +1952,6 @@ static void demo_prepare(struct demo *demo)
   demo_prepare_descriptor_layout(demo);
   demo_prepare_render_pass(demo);
   demo_prepare_pipeline(demo);
-
-  const VkCommandBufferAllocateInfo cmd = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .pNext = NULL,
-      .commandPool = demo->cmd_pool_draw,
-      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-      .commandBufferCount = 1,
-  };
-
-  for (uint32_t i = 0; i < demo->swapchainImageCount; i++)
-  {
-    err = vkAllocateCommandBuffers(demo->device, &cmd, &demo->swapchain_image_resources[i].cmd);
-    assert(!err);
-  }
 
   if (demo->separate_present_queue)
   {
@@ -1984,12 +1986,6 @@ static void demo_prepare(struct demo *demo)
 
   demo_prepare_framebuffers(demo);
 
-  for (uint32_t i = 0; i < demo->swapchainImageCount; i++)
-  {
-    demo->current_buffer = i;
-    demo_draw_build_cmd(demo, demo->swapchain_image_resources[i].cmd);
-  }
-
   demo->current_buffer = 0;
   demo->prepared = true;
 }
@@ -2013,6 +2009,10 @@ static void demo_cleanup(struct demo *demo)
       vkDestroySemaphore(demo->device, demo->image_ownership_semaphores[i],
                          NULL);
     }
+
+    vkFreeCommandBuffers(demo->device, demo->cmd_pool[i], 1, &demo->cmd[i]);
+
+    vkDestroyCommandPool(demo->device, demo->cmd_pool[i], NULL);
   }
 
   for (i = 0; i < demo->swapchainImageCount; i++)
@@ -2045,8 +2045,6 @@ static void demo_cleanup(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkFreeCommandBuffers(demo->device, demo->cmd_pool_draw, 1,
-                         &demo->swapchain_image_resources[i].cmd);
     vkDestroyBuffer(demo->device,
                     demo->swapchain_image_resources[i].uniform_buffer, NULL);
     vkFreeMemory(demo->device,
@@ -2054,7 +2052,6 @@ static void demo_cleanup(struct demo *demo)
   }
   free(demo->swapchain_image_resources);
   free(demo->queue_props);
-  vkDestroyCommandPool(demo->device, demo->cmd_pool_draw, NULL);
 
   if (demo->separate_present_queue)
   {
@@ -2111,14 +2108,11 @@ static void demo_resize(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkFreeCommandBuffers(demo->device, demo->cmd_pool_draw, 1,
-                         &demo->swapchain_image_resources[i].cmd);
     vkDestroyBuffer(demo->device,
                     demo->swapchain_image_resources[i].uniform_buffer, NULL);
     vkFreeMemory(demo->device,
                  demo->swapchain_image_resources[i].uniform_memory, NULL);
   }
-  vkDestroyCommandPool(demo->device, demo->cmd_pool_draw, NULL);
   if (demo->separate_present_queue)
   {
     vkDestroyCommandPool(demo->device, demo->present_cmd_pool, NULL);
@@ -2294,40 +2288,34 @@ static void demo_create_xcb_window(struct demo *demo)
 
   /* Magic code that will send notification when window is destroyed */
   xcb_intern_atom_cookie_t cookie =
-      xcb_intern_atom(demo->connection, 0, 12, "WM_PROTOCOLS");
+      xcb_intern_atom(demo->connection, 1, 12, "WM_PROTOCOLS");
   xcb_intern_atom_reply_t *reply =
       xcb_intern_atom_reply(demo->connection, cookie, 0);
   xcb_atom_t atom1 = reply->atom;
   free(reply);
 
   xcb_intern_atom_cookie_t cookie2 =
-      xcb_intern_atom(demo->connection, 0, 16, "WM_DELETE_WINDOW");
+      xcb_intern_atom(demo->connection, 1, 16, "WM_DELETE_WINDOW");
   xcb_intern_atom_reply_t *reply2 =
       xcb_intern_atom_reply(demo->connection, cookie2, 0);
   demo->atom_wm_delete_window = reply2->atom;
   free(reply2);
 
   xcb_intern_atom_cookie_t cookie3 =
-      xcb_intern_atom(demo->connection, 0, 12, "_NET_WM_NAME");
+      xcb_intern_atom(demo->connection, 1, 12, "_NET_WM_NAME");
   xcb_intern_atom_reply_t *reply3 =
       xcb_intern_atom_reply(demo->connection, cookie3, 0);
   xcb_atom_t atom3 = reply3->atom;
   free(reply3);
 
   xcb_intern_atom_cookie_t cookie4 =
-      xcb_intern_atom(demo->connection, 0, 11, "UTF8_STRING");
+      xcb_intern_atom(demo->connection, 1, 11, "UTF8_STRING");
   xcb_intern_atom_reply_t *reply4 =
       xcb_intern_atom_reply(demo->connection, cookie4, 0);
   xcb_atom_t atom4 = reply4->atom;
   free(reply4);
 
   xcb_map_window(demo->connection, demo->xcb_window);
-
-  // Force the x/y coordinates to 100,100 results are identical in consecutive
-  // runs
-  // const uint32_t coords[] = {100, 100};
-  // xcb_configure_window(demo->connection, demo->xcb_window,
-  //                     XCB_CONFIG_WINDOW_X | XCB_CONFIG_WINDOW_Y, coords);
 }
 
 /*
