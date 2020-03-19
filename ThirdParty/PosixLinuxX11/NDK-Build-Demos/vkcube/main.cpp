@@ -341,7 +341,7 @@ struct demo
   VkFence fences[FRAME_LAG];
   int frame_index;
 
-  VkCommandPool cmd_pool;
+  VkCommandPool cmd_pool_draw;
   VkCommandPool present_cmd_pool;
 
   struct
@@ -354,10 +354,10 @@ struct demo
     VkImageView view;
   } depth;
 
-  struct texture_object textures[DEMO_TEXTURE_COUNT];
+  struct texture_object texture_assets[DEMO_TEXTURE_COUNT];
   struct texture_object staging_texture;
 
-  VkCommandBuffer cmd; // Buffer for initialization commands
+  //VkCommandBuffer cmd; // Buffer for initialization commands
   VkPipelineLayout pipeline_layout;
   VkDescriptorSetLayout desc_layout;
   VkPipelineCache pipelineCache;
@@ -510,16 +510,13 @@ static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits,
   return false;
 }
 
-static void demo_flush_init_cmd(struct demo *demo)
+static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd)
 {
   VkResult U_ASSERT_ONLY err;
 
-  // This function could get called twice if the texture uses a staging buffer
-  // In that case the second call should be ignored
-  if (demo->cmd == VK_NULL_HANDLE)
-    return;
+  assert(tmp_cmd);
 
-  err = vkEndCommandBuffer(demo->cmd);
+  err = vkEndCommandBuffer(tmp_cmd);
   assert(!err);
 
   VkFence fence;
@@ -528,7 +525,7 @@ static void demo_flush_init_cmd(struct demo *demo)
   err = vkCreateFence(demo->device, &fence_ci, NULL, &fence);
   assert(!err);
 
-  const VkCommandBuffer cmd_bufs[] = {demo->cmd};
+  const VkCommandBuffer cmd_bufs[] = {tmp_cmd};
   VkSubmitInfo submit_info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                               .pNext = NULL,
                               .waitSemaphoreCount = 0,
@@ -545,12 +542,12 @@ static void demo_flush_init_cmd(struct demo *demo)
   err = vkWaitForFences(demo->device, 1, &fence, VK_TRUE, UINT64_MAX);
   assert(!err);
 
-  vkFreeCommandBuffers(demo->device, demo->cmd_pool, 1, cmd_bufs);
   vkDestroyFence(demo->device, fence, NULL);
-  demo->cmd = VK_NULL_HANDLE;
 }
 
-static void demo_set_image_layout(struct demo *demo, VkImage image,
+static void demo_set_image_layout(struct demo *demo,
+                                  VkCommandBuffer tmp_cmd,
+                                  VkImage image,
                                   VkImageAspectFlags aspectMask,
                                   VkImageLayout old_image_layout,
                                   VkImageLayout new_image_layout,
@@ -558,7 +555,7 @@ static void demo_set_image_layout(struct demo *demo, VkImage image,
                                   VkPipelineStageFlags src_stages,
                                   VkPipelineStageFlags dest_stages)
 {
-  assert(demo->cmd);
+  assert(tmp_cmd);
 
   VkImageMemoryBarrier image_memory_barrier = {
       VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -608,8 +605,7 @@ static void demo_set_image_layout(struct demo *demo, VkImage image,
 
   VkImageMemoryBarrier *pmemory_barrier = &image_memory_barrier;
 
-  vkCmdPipelineBarrier(demo->cmd, src_stages, dest_stages, 0, 0, NULL, 0, NULL,
-                       1, pmemory_barrier);
+  vkCmdPipelineBarrier(tmp_cmd, src_stages, dest_stages, 0, 0, NULL, 0, NULL, 1, pmemory_barrier);
 }
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
@@ -1331,7 +1327,7 @@ static void demo_destroy_texture_image(struct demo *demo,
   vkDestroyImage(demo->device, tex_objs->image, NULL);
 }
 
-static void demo_prepare_textures(struct demo *demo)
+static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
 {
   const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
   VkFormatProperties props;
@@ -1347,7 +1343,7 @@ static void demo_prepare_textures(struct demo *demo)
         !demo->use_staging_buffer)
     {
       /* Device can texture using linear textures */
-      demo_prepare_texture_image(demo, tex_files[i], &demo->textures[i],
+      demo_prepare_texture_image(demo, tex_files[i], &demo->texture_assets[i],
                                  VK_IMAGE_TILING_LINEAR,
                                  VK_IMAGE_USAGE_SAMPLED_BIT,
                                  VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
@@ -1355,8 +1351,8 @@ static void demo_prepare_textures(struct demo *demo)
       // Nothing in the pipeline needs to be complete to start, and don't allow
       // fragment shader to run until layout transition completes
       demo_set_image_layout(
-          demo, demo->textures[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
-          VK_IMAGE_LAYOUT_PREINITIALIZED, demo->textures[i].imageLayout, 0,
+          demo, tmp_cmd, demo->texture_assets[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
+          VK_IMAGE_LAYOUT_PREINITIALIZED, demo->texture_assets[i].imageLayout, 0,
           VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
           VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
       demo->staging_texture.image = 0;
@@ -1374,17 +1370,17 @@ static void demo_prepare_textures(struct demo *demo)
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
       demo_prepare_texture_image(
-          demo, tex_files[i], &demo->textures[i], VK_IMAGE_TILING_OPTIMAL,
+          demo, tex_files[i], &demo->texture_assets[i], VK_IMAGE_TILING_OPTIMAL,
           (VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT),
           VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
       demo_set_image_layout(
-          demo, demo->staging_texture.image, VK_IMAGE_ASPECT_COLOR_BIT,
+          demo, tmp_cmd, demo->staging_texture.image, VK_IMAGE_ASPECT_COLOR_BIT,
           VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
           0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
       demo_set_image_layout(
-          demo, demo->textures[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
+          demo, tmp_cmd, demo->texture_assets[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
           VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
           0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
 
@@ -1396,14 +1392,14 @@ static void demo_prepare_textures(struct demo *demo)
           .extent = {demo->staging_texture.tex_width,
                      demo->staging_texture.tex_height, 1},
       };
-      vkCmdCopyImage(demo->cmd, demo->staging_texture.image,
+      vkCmdCopyImage(tmp_cmd, demo->staging_texture.image,
                      VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                     demo->textures[i].image,
+                     demo->texture_assets[i].image,
                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
 
       demo_set_image_layout(
-          demo, demo->textures[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
-          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, demo->textures[i].imageLayout,
+          demo, tmp_cmd, demo->texture_assets[i].image, VK_IMAGE_ASPECT_COLOR_BIT,
+          VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, demo->texture_assets[i].imageLayout,
           VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
           VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     }
@@ -1451,12 +1447,12 @@ static void demo_prepare_textures(struct demo *demo)
 
     /* create sampler */
     err = vkCreateSampler(demo->device, &sampler, NULL,
-                          &demo->textures[i].sampler);
+                          &demo->texture_assets[i].sampler);
     assert(!err);
 
     /* create image view */
-    view.image = demo->textures[i].image;
-    err = vkCreateImageView(demo->device, &view, NULL, &demo->textures[i].view);
+    view.image = demo->texture_assets[i].image;
+    err = vkCreateImageView(demo->device, &view, NULL, &demo->texture_assets[i].view);
     assert(!err);
   }
 }
@@ -1862,8 +1858,8 @@ static void demo_prepare_descriptor_set(struct demo *demo)
   memset(&tex_descs, 0, sizeof(tex_descs));
   for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
   {
-    tex_descs[i].sampler = demo->textures[i].sampler;
-    tex_descs[i].imageView = demo->textures[i].view;
+    tex_descs[i].sampler = demo->texture_assets[i].sampler;
+    tex_descs[i].imageView = demo->texture_assets[i].view;
     tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
   }
 
@@ -1930,41 +1926,28 @@ static void demo_prepare(struct demo *demo)
       .queueFamilyIndex = demo->graphics_queue_family_index,
       .flags = 0,
   };
-  err =
-      vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &demo->cmd_pool);
-  assert(!err);
-
-  const VkCommandBufferAllocateInfo cmd = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      .pNext = NULL,
-      .commandPool = demo->cmd_pool,
-      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-      .commandBufferCount = 1,
-  };
-  err = vkAllocateCommandBuffers(demo->device, &cmd, &demo->cmd);
-  assert(!err);
-  VkCommandBufferBeginInfo cmd_buf_info = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      .pNext = NULL,
-      .flags = 0,
-      .pInheritanceInfo = NULL,
-  };
-  err = vkBeginCommandBuffer(demo->cmd, &cmd_buf_info);
+  err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &demo->cmd_pool_draw);
   assert(!err);
 
   demo_prepare_buffers(demo);
   demo_prepare_depth(demo);
-  demo_prepare_textures(demo);
   demo_prepare_cube_data_buffers(demo);
 
   demo_prepare_descriptor_layout(demo);
   demo_prepare_render_pass(demo);
   demo_prepare_pipeline(demo);
 
+  const VkCommandBufferAllocateInfo cmd = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .pNext = NULL,
+      .commandPool = demo->cmd_pool_draw,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1,
+  };
+
   for (uint32_t i = 0; i < demo->swapchainImageCount; i++)
   {
-    err = vkAllocateCommandBuffers(demo->device, &cmd,
-                                   &demo->swapchain_image_resources[i].cmd);
+    err = vkAllocateCommandBuffers(demo->device, &cmd, &demo->swapchain_image_resources[i].cmd);
     assert(!err);
   }
 
@@ -2007,16 +1990,6 @@ static void demo_prepare(struct demo *demo)
     demo_draw_build_cmd(demo, demo->swapchain_image_resources[i].cmd);
   }
 
-  /*
-   * Prepare functions above may generate pipeline commands
-   * that need to be flushed before beginning the render loop.
-   */
-  demo_flush_init_cmd(demo);
-  if (demo->staging_texture.image)
-  {
-    demo_destroy_texture_image(demo, &demo->staging_texture);
-  }
-
   demo->current_buffer = 0;
   demo->prepared = true;
 }
@@ -2057,10 +2030,10 @@ static void demo_cleanup(struct demo *demo)
 
   for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
   {
-    vkDestroyImageView(demo->device, demo->textures[i].view, NULL);
-    vkDestroyImage(demo->device, demo->textures[i].image, NULL);
-    vkFreeMemory(demo->device, demo->textures[i].mem, NULL);
-    vkDestroySampler(demo->device, demo->textures[i].sampler, NULL);
+    vkDestroyImageView(demo->device, demo->texture_assets[i].view, NULL);
+    vkDestroyImage(demo->device, demo->texture_assets[i].image, NULL);
+    vkFreeMemory(demo->device, demo->texture_assets[i].mem, NULL);
+    vkDestroySampler(demo->device, demo->texture_assets[i].sampler, NULL);
   }
   demo->fpDestroySwapchainKHR(demo->device, demo->swapchain, NULL);
 
@@ -2072,7 +2045,7 @@ static void demo_cleanup(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkFreeCommandBuffers(demo->device, demo->cmd_pool, 1,
+    vkFreeCommandBuffers(demo->device, demo->cmd_pool_draw, 1,
                          &demo->swapchain_image_resources[i].cmd);
     vkDestroyBuffer(demo->device,
                     demo->swapchain_image_resources[i].uniform_buffer, NULL);
@@ -2081,7 +2054,7 @@ static void demo_cleanup(struct demo *demo)
   }
   free(demo->swapchain_image_resources);
   free(demo->queue_props);
-  vkDestroyCommandPool(demo->device, demo->cmd_pool, NULL);
+  vkDestroyCommandPool(demo->device, demo->cmd_pool_draw, NULL);
 
   if (demo->separate_present_queue)
   {
@@ -2130,14 +2103,6 @@ static void demo_resize(struct demo *demo)
   vkDestroyPipelineLayout(demo->device, demo->pipeline_layout, NULL);
   vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout, NULL);
 
-  for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
-  {
-    vkDestroyImageView(demo->device, demo->textures[i].view, NULL);
-    vkDestroyImage(demo->device, demo->textures[i].image, NULL);
-    vkFreeMemory(demo->device, demo->textures[i].mem, NULL);
-    vkDestroySampler(demo->device, demo->textures[i].sampler, NULL);
-  }
-
   vkDestroyImageView(demo->device, demo->depth.view, NULL);
   vkDestroyImage(demo->device, demo->depth.image, NULL);
   vkFreeMemory(demo->device, demo->depth.mem, NULL);
@@ -2146,14 +2111,14 @@ static void demo_resize(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkFreeCommandBuffers(demo->device, demo->cmd_pool, 1,
+    vkFreeCommandBuffers(demo->device, demo->cmd_pool_draw, 1,
                          &demo->swapchain_image_resources[i].cmd);
     vkDestroyBuffer(demo->device,
                     demo->swapchain_image_resources[i].uniform_buffer, NULL);
     vkFreeMemory(demo->device,
                  demo->swapchain_image_resources[i].uniform_memory, NULL);
   }
-  vkDestroyCommandPool(demo->device, demo->cmd_pool, NULL);
+  vkDestroyCommandPool(demo->device, demo->cmd_pool_draw, NULL);
   if (demo->separate_present_queue)
   {
     vkDestroyCommandPool(demo->device, demo->present_cmd_pool, NULL);
@@ -2163,6 +2128,56 @@ static void demo_resize(struct demo *demo)
   // Second, re-perform the demo_prepare() function, which will re-create the
   // swapchain:
   demo_prepare(demo);
+}
+
+static void demo_prepare_assets(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  const VkCommandPoolCreateInfo cmd_pool_info = {
+      VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      NULL,
+      0,
+      demo->graphics_queue_family_index,
+  };
+
+  VkCommandPool tmp_cmd_pool;
+  err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &tmp_cmd_pool);
+  assert(!err);
+
+  VkCommandBuffer tmp_cmd;
+  const VkCommandBufferAllocateInfo cmd = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      .pNext = NULL,
+      .commandPool = tmp_cmd_pool,
+      .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      .commandBufferCount = 1,
+  };
+  err = vkAllocateCommandBuffers(demo->device, &cmd, &tmp_cmd);
+  assert(!err);
+  VkCommandBufferBeginInfo cmd_buf_info = {
+      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      .pNext = NULL,
+      .flags = 0,
+      .pInheritanceInfo = NULL,
+  };
+  err = vkBeginCommandBuffer(tmp_cmd, &cmd_buf_info);
+  assert(!err);
+
+  demo_prepare_textures(demo, tmp_cmd);
+
+  /*
+   * Prepare functions above may generate pipeline commands
+   * that need to be flushed before beginning the render loop.
+   */
+  demo_flush_init_cmd(demo, tmp_cmd);
+
+  vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
+
+  if (demo->staging_texture.image)
+  {
+    demo_destroy_texture_image(demo, &demo->staging_texture);
+  }
 }
 
 static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *event)
@@ -3005,6 +3020,8 @@ int main(int argc, char **argv)
   demo_create_xcb_window(&demo);
 
   demo_init_vk_swapchain(&demo);
+
+  demo_prepare_assets(&demo);
 
   demo_prepare(&demo);
 
