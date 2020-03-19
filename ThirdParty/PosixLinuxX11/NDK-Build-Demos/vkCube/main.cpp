@@ -2076,7 +2076,8 @@ static void demo_handle_xcb_event(struct demo *demo,
     }
   } break;
   case XCB_EXPOSE: {
-    xcb_expose_event_t const *exp = reinterpret_cast<xcb_expose_event_t const *>(event);
+    xcb_expose_event_t const *exp =
+        reinterpret_cast<xcb_expose_event_t const *>(event);
 
     if (exp->window == demo->xcb_window && exp->count == 0) {
       if ((demo->width != exp->width) || (demo->height != exp->height)) {
@@ -2095,21 +2096,20 @@ static void demo_handle_xcb_event(struct demo *demo,
 static void demo_run_xcb(struct demo *demo) {
   xcb_flush(demo->connection);
 
-  while (1) {
+  while (!demo->quit) {
     xcb_generic_event_t *event;
     while ((!demo->quit) && (event = xcb_poll_for_event(demo->connection))) {
       demo_handle_xcb_event(demo, event);
       free(event);
     }
 
-    if (demo->quit) {
-      break;
+    if (!demo->quit) {
+      demo_draw(demo);
+      demo->curFrame++;
+      if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount) {
+        demo->quit = true;
+      }
     }
-
-    demo_draw(demo);
-    demo->curFrame++;
-    if (demo->frameCount != INT32_MAX && demo->curFrame == demo->frameCount)
-      demo->quit = true;
   }
 }
 
