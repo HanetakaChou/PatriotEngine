@@ -50,17 +50,18 @@ int main(int argc, char *argv[])
 
 		// CreateWindowExW
 		xcb_window_t XID = ::xcb_generate_id(hDisplay);
-		uint32_t valuemaskCW = XCB_CW_EVENT_MASK;
-		uint32_t valuelistCW[1] = {
+		uint32_t valuemaskCW = XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
+		uint32_t valuelistCW[2] = {
+			XCB_BACKING_STORE_NOT_USEFUL,
 			XCB_EVENT_MASK_KEY_PRESS |
-			XCB_EVENT_MASK_KEY_RELEASE |
-			XCB_EVENT_MASK_BUTTON_PRESS |
-			XCB_EVENT_MASK_BUTTON_RELEASE |
-			XCB_EVENT_MASK_POINTER_MOTION |
-			XCB_EVENT_MASK_BUTTON_MOTION |
-			XCB_EVENT_MASK_EXPOSURE |
-			XCB_EVENT_MASK_STRUCTURE_NOTIFY |
-			XCB_EVENT_MASK_FOCUS_CHANGE};
+				XCB_EVENT_MASK_KEY_RELEASE |
+				XCB_EVENT_MASK_BUTTON_PRESS |
+				XCB_EVENT_MASK_BUTTON_RELEASE |
+				XCB_EVENT_MASK_POINTER_MOTION |
+				XCB_EVENT_MASK_BUTTON_MOTION |
+				XCB_EVENT_MASK_EXPOSURE |
+				XCB_EVENT_MASK_STRUCTURE_NOTIFY |
+				XCB_EVENT_MASK_FOCUS_CHANGE};
 		xcb_void_cookie_t cookieCW = ::xcb_create_window_checked(hDisplay, XCB_COPY_FROM_PARENT, XID, iScreen.data->root, 0, 0, iScreen.data->width_in_pixels, iScreen.data->height_in_pixels, 0, XCB_WINDOW_CLASS_INPUT_OUTPUT, XCB_COPY_FROM_PARENT, valuemaskCW, valuelistCW);
 		xcb_generic_error_t *pErrorCW = ::xcb_request_check(hDisplay, cookieCW); //隐式xcb_flush
 		assert(pErrorCW == NULL);
@@ -149,7 +150,7 @@ int main(int argc, char *argv[])
 	while (l_WindowImpl_Singleton.m_bMessagePump &&
 		   ((pGenericEvent = ::xcb_wait_for_event(hDisplay)) != NULL))
 	{
-		switch (pGenericEvent->response_type & ~0x80)
+		switch (pGenericEvent->response_type & (~uint8_t(0X80))) //The most significant bit in this code is set if the event was generated from a SendEvent request. //https://www.x.org/releases/current/doc/xproto/x11protocol.html#event_format
 		{
 		case XCB_KEY_PRESS:
 		{
