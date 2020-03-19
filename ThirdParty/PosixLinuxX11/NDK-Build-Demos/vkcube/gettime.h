@@ -27,6 +27,6 @@
 uint64_t getTimeInNanoseconds(void) {
   struct timespec currTime;
   clock_gettime(CLOCK_MONOTONIC, &currTime);
-  return (uint64_t)currTime.tv_sec * 1000000 +
-         ((uint64_t)currTime.tv_nsec / 1000);
+  return (uint64_t)currTime.tv_sec * 1000000000 +
+         ((uint64_t)currTime.tv_nsec);
 }

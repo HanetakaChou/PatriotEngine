@@ -51,8 +51,9 @@
 #define APP_SHORT_NAME "cube"
 #define APP_LONG_NAME "The Vulkan Cube Demo Program"
 
+uint32_t const desiredNumOfSwapchainImages = 3;
 // Allow a maximum of two outstanding presentation operations.
-#define FRAME_LAG 2
+#define FRAME_LAG  (desiredNumOfSwapchainImages + 1)
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -761,16 +762,13 @@ static void demo_draw(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
-  // Ensure no more than FRAME_LAG renderings are outstanding
-  vkWaitForFences(demo->device, 1, &demo->fences[demo->frame_index], VK_TRUE,
-                  UINT64_MAX);
-  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
-
   do
   {
     // Get the index of the next available swapchain image:
     err = demo->fpAcquireNextImageKHR(
-        demo->device, demo->swapchain, UINT64_MAX,
+        demo->device,
+        demo->swapchain,
+        UINT64_MAX,
         demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
         &demo->current_buffer);
 
@@ -792,29 +790,49 @@ static void demo_draw(struct demo *demo)
     }
   } while (err != VK_SUCCESS);
 
+  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
+  // make FRAME_LAG desiredNumOfSwapchainImages+1
+
+  // Ensure no more than FRAME_LAG renderings are outstanding
+
+  while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
+  {
+    if (err == VK_NOT_READY)
+    {
+      sched_yield();
+    }
+    else
+    {
+      assert(!err);
+    }
+  }
+
+  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
+
+  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
+  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
   demo_update_data_buffer(demo);
 
   // Wait for the image acquired semaphore to be signaled to ensure
   // that the image won't be rendered to until the presentation
   // engine has fully released ownership to the application, and it is
   // okay to render to the image.
-  VkPipelineStageFlags pipe_stage_flags;
+
+  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
+
   VkSubmitInfo submit_info;
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   submit_info.pNext = NULL;
-  submit_info.pWaitDstStageMask = &pipe_stage_flags;
-  pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  VkSemaphore _wait_semphores[1] = {demo->image_acquired_semaphores[demo->frame_index]};
   submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitSemaphores =
-      &demo->image_acquired_semaphores[demo->frame_index];
+  submit_info.pWaitDstStageMask = _wait_stages;
+  submit_info.pWaitSemaphores = _wait_semphores;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers =
-      &demo->swapchain_image_resources[demo->current_buffer].cmd;
+  submit_info.pCommandBuffers = &demo->swapchain_image_resources[demo->current_buffer].cmd;
   submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores =
-      &demo->draw_complete_semaphores[demo->frame_index];
-  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info,
-                      demo->fences[demo->frame_index]);
+  submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
+  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
   assert(!err);
 
   if (demo->separate_present_queue)
@@ -823,17 +841,14 @@ static void demo_draw(struct demo *demo)
     // present queue before presenting, waiting for the draw complete
     // semaphore and signalling the ownership released semaphore when finished
     VkFence nullFence = VK_NULL_HANDLE;
-    pipe_stage_flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitSemaphores =
-        &demo->draw_complete_semaphores[demo->frame_index];
+    submit_info.pWaitDstStageMask = _wait_stages;
+    submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers =
-        &demo->swapchain_image_resources[demo->current_buffer]
-             .graphics_to_present_cmd;
+    submit_info.pCommandBuffers = &demo->swapchain_image_resources[demo->current_buffer].graphics_to_present_cmd;
     submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores =
-        &demo->image_ownership_semaphores[demo->frame_index];
+    submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
     err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
     assert(!err);
   }
@@ -841,17 +856,14 @@ static void demo_draw(struct demo *demo)
   // If we are using separate queues we have to wait for image ownership,
   // otherwise wait for draw complete
   VkPresentInfoKHR present = {
-      .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      .pNext = NULL,
-      .waitSemaphoreCount = 1,
-      .pWaitSemaphores =
-          (demo->separate_present_queue)
-              ? &demo->image_ownership_semaphores[demo->frame_index]
-              : &demo->draw_complete_semaphores[demo->frame_index],
-      .swapchainCount = 1,
-      .pSwapchains = &demo->swapchain,
-      .pImageIndices = &demo->current_buffer,
-  };
+      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      NULL,
+      1,
+      (demo->separate_present_queue) ? &demo->image_ownership_semaphores[demo->frame_index] : &demo->draw_complete_semaphores[demo->frame_index],
+      1,
+      &demo->swapchain,
+      &demo->current_buffer,
+      NULL};
 
   err = demo->fpQueuePresentKHR(demo->present_queue, &present);
   demo->frame_index += 1;
@@ -982,22 +994,8 @@ static void demo_prepare_buffers(struct demo *demo)
              "Present mode unsupported");
   }
 
-  // Determine the number of VkImages to use in the swap chain.
-  // Application desires to acquire 3 images at a time for triple
-  // buffering
-  uint32_t desiredNumOfSwapchainImages = 3;
-  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
-  {
-    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
-  }
-  // If maxImageCount is 0, we can ask for as many images as we want;
-  // otherwise we're limited to maxImageCount
-  if ((surfCapabilities.maxImageCount > 0) &&
-      (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
-  {
-    // Application must settle for fewer images than desired:
-    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
-  }
+  assert(desiredNumOfSwapchainImages >= surfCapabilities.minImageCount);
+  assert((surfCapabilities.maxImageCount == 0) || (desiredNumOfSwapchainImages <= surfCapabilities.maxImageCount));
 
   VkSurfaceTransformFlagBitsKHR preTransform;
   if (surfCapabilities.supportedTransforms &
@@ -1616,7 +1614,7 @@ static void demo_prepare_render_pass(struct demo *demo)
               .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
               .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
               .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-              .finalLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+              .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
           },
   };
   const VkAttachmentReference color_reference = {
