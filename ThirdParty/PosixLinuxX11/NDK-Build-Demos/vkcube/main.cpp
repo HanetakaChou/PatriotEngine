@@ -51,7 +51,6 @@
 #define APP_SHORT_NAME "cube"
 #define APP_LONG_NAME "The Vulkan Cube Demo Program"
 
-uint32_t const desiredNumOfSwapchainImages = 3;
 // Allow a maximum of two outstanding presentation operations.
 uint32_t const FRAME_LAG = 2; //(desiredNumOfSwapchainImages + 1)
 
@@ -765,14 +764,8 @@ static void demo_draw(struct demo *demo)
 
   while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
   {
-    if (err == VK_NOT_READY)
-    {
-      sched_yield();
-    }
-    else
-    {
-      assert(!err);
-    }
+    assert(err == VK_NOT_READY);
+    sched_yield();
   }
 
   vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
@@ -1034,8 +1027,22 @@ static void demo_prepare_buffers(struct demo *demo)
              "Present mode unsupported");
   }
 
-  assert(desiredNumOfSwapchainImages >= surfCapabilities.minImageCount);
-  assert((surfCapabilities.maxImageCount == 0) || (desiredNumOfSwapchainImages <= surfCapabilities.maxImageCount));
+  // Determine the number of VkImages to use in the swap chain.
+  // Application desires to acquire 3 images at a time for triple
+  // buffering
+  uint32_t desiredNumOfSwapchainImages = 3;
+  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
+  {
+    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
+  }
+  // If maxImageCount is 0, we can ask for as many images as we want;
+  // otherwise we're limited to maxImageCount
+  if ((surfCapabilities.maxImageCount > 0) &&
+      (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
+  {
+    // Application must settle for fewer images than desired:
+    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
+  }
 
   VkSurfaceTransformFlagBitsKHR preTransform;
   if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
