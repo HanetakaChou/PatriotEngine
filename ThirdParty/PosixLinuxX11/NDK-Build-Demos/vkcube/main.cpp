@@ -3033,6 +3033,8 @@ static void demo_load_pipeline_cache(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
+  bool badCache = true;
+
   size_t startCacheSize = 0;
   void *startCacheData = NULL;
   {
@@ -3042,13 +3044,28 @@ static void demo_load_pipeline_cache(struct demo *demo)
       struct stat64 statbuf;
       if (fstat64(fd, &statbuf) == 0 && S_ISREG(statbuf.st_mode))
       {
-        startCacheSize = statbuf.st_size;
+        if (statbuf.st_size >= 32)
+        {
+          startCacheSize = statbuf.st_size;
 
-        startCacheData = malloc(startCacheSize);
-        assert(startCacheData != NULL);
+          startCacheData = malloc(startCacheSize);
+          assert(startCacheData != NULL);
 
-        int ret = read(fd, startCacheData, startCacheSize);
-        assert(ret == startCacheSize);
+          int ret = read(fd, startCacheData, startCacheSize);
+          assert(ret == startCacheSize);
+
+          uint32_t headerLength = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(startCacheData));
+          uint32_t cacheHeaderVersion = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(startCacheData) + 4);
+          uint32_t vendorID = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(startCacheData) + 8);
+          uint32_t deviceID = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(startCacheData) + 12);
+          uint8_t pipelineCacheUUID[VK_UUID_SIZE];
+          memcpy(pipelineCacheUUID, reinterpret_cast<uint8_t *>(startCacheData) + 16, VK_UUID_SIZE);
+
+          if (headerLength >= 32 && cacheHeaderVersion == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendorID == demo->gpu_props.vendorID && deviceID == demo->gpu_props.deviceID && (memcmp(pipelineCacheUUID, demo->gpu_props.pipelineCacheUUID, VK_UUID_SIZE) == 0))
+          {
+            badCache = false;
+          }
+        }
       }
     }
   }
@@ -3057,8 +3074,16 @@ static void demo_load_pipeline_cache(struct demo *demo)
   pipelineCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
   pipelineCache.pNext = NULL;
   pipelineCache.flags = 0;
-  pipelineCache.initialDataSize = startCacheSize;
-  pipelineCache.pInitialData = startCacheData;
+  if (!badCache)
+  {
+    pipelineCache.initialDataSize = startCacheSize;
+    pipelineCache.pInitialData = startCacheData;
+  }
+  else
+  {
+    pipelineCache.initialDataSize = 0;
+    pipelineCache.pInitialData = NULL;
+  }
 
   err = vkCreatePipelineCache(demo->device, &pipelineCache, NULL, &demo->pipelineCache_1);
   assert(!err);
