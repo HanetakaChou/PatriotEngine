@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/obj/local/x86_64/vkcube", //should set a.out in obj here instead of in libs
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,

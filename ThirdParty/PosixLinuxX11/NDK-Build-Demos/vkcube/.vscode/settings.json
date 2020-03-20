@@ -4,6 +4,18 @@
     "files.associations": {
         "iostream": "cpp",
         "ostream": "cpp",
-        "inttypes.h": "c"
+        "inttypes.h": "c",
+        "cstddef": "cpp",
+        "fstream": "cpp",
+        "locale": "cpp",
+        "atomic": "cpp",
+        "*.tcc": "cpp",
+        "sstream": "cpp",
+        "cstdio": "cpp",
+        "exception": "cpp",
+        "iosfwd": "cpp",
+        "new": "cpp",
+        "streambuf": "cpp",
+        "ios": "cpp"
     },
 }

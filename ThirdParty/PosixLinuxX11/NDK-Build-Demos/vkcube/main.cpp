@@ -36,6 +36,14 @@
 
 #include <xcb/xcb.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <errno.h>
+#include <string.h>
+
 #define VK_USE_PLATFORM_XCB_KHR 1
 #include <vulkan/vulkan.h>
 
@@ -391,6 +399,12 @@ struct demo
   uint32_t current_buffer;
   uint32_t queue_family_count;
 };
+
+static void demo_load_pipeline_cache(struct demo *demo);
+
+static void demo_store_pipeline_cache(struct demo *demo);
+
+static void demo_draw(struct demo *demo);
 
 VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags,
                                        VkDebugReportObjectTypeEXT objType,
@@ -751,172 +765,6 @@ void demo_update_data_buffer(struct demo *demo)
   vkUnmapMemory(
       demo->device,
       demo->uniform_memory[demo->frame_index]);
-}
-
-static void demo_draw(struct demo *demo)
-{
-  VkResult U_ASSERT_ONLY err;
-
-  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
-  // make FRAME_LAG desiredNumOfSwapchainImages+1
-
-  // Ensure no more than FRAME_LAG renderings are outstanding
-
-  while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
-  {
-    assert(err == VK_NOT_READY);
-    sched_yield();
-  }
-
-  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
-
-  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
-  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
-  demo_update_data_buffer(demo);
-
-  //update descriptor
-  {
-    VkDescriptorBufferInfo buffer_info;
-    buffer_info.offset = 0;
-    buffer_info.range = sizeof(struct vktexcube_vs_uniform);
-    buffer_info.buffer = demo->uniform_buffer[demo->frame_index];
-
-    VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
-    memset(&tex_descs, 0, sizeof(tex_descs));
-    for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
-    {
-      tex_descs[i].sampler = demo->texture_assets[i].sampler;
-      tex_descs[i].imageView = demo->texture_assets[i].view;
-      tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    }
-
-    VkWriteDescriptorSet writes[2];
-    memset(&writes, 0, sizeof(writes));
-    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[0].descriptorCount = 1;
-    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writes[0].pBufferInfo = &buffer_info;
-
-    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[1].dstBinding = 1;
-    writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
-    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    writes[1].pImageInfo = tex_descs;
-
-    writes[0].dstSet = demo->descriptor_set[demo->frame_index];
-    writes[1].dstSet = demo->descriptor_set[demo->frame_index];
-
-    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
-  }
-
-  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
-  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
-  assert(!err);
-
-  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
-  do
-  {
-    // Get the index of the next available swapchain image:
-    err = demo->fpAcquireNextImageKHR(
-        demo->device,
-        demo->swapchain,
-        UINT64_MAX,
-        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
-        &demo->current_buffer);
-
-    if (err == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-      // demo->swapchain is out of date (e.g. the window was resized) and
-      // must be recreated:
-      demo_resize(demo);
-    }
-    else if (err == VK_SUBOPTIMAL_KHR)
-    {
-      // demo->swapchain is not as optimal as it could be, but the platform's
-      // presentation engine will still present the image correctly.
-      break;
-    }
-    else
-    {
-      assert(!err);
-    }
-  } while (err != VK_SUCCESS);
-
-  // Wait for the image acquired semaphore to be signaled to ensure
-  // that the image won't be rendered to until the presentation
-  // engine has fully released ownership to the application, and it is
-  // okay to render to the image.
-
-  demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
-
-  VkSubmitInfo submit_info;
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submit_info.pNext = NULL;
-  VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-  VkSemaphore _wait_semphores[1] = {demo->image_acquired_semaphores[demo->frame_index]};
-  submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitDstStageMask = _wait_stages;
-  submit_info.pWaitSemaphores = _wait_semphores;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &demo->cmd[demo->frame_index];
-  submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
-  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
-  assert(!err);
-
-  if (demo->separate_present_queue)
-  {
-    err = vkResetCommandPool(demo->device, demo->present_cmd_pool[demo->frame_index], 0U);
-    assert(!err);
-    demo_build_image_ownership_cmd(demo, demo->frame_index);
-
-    // If we are using separate queues, change image ownership to the
-    // present queue before presenting, waiting for the draw complete
-    // semaphore and signalling the ownership released semaphore when finished
-    VkFence nullFence = VK_NULL_HANDLE;
-    VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitDstStageMask = _wait_stages;
-    submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &demo->graphics_to_present_cmd[demo->frame_index];
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
-    err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
-    assert(!err);
-  }
-
-  // If we are using separate queues we have to wait for image ownership,
-  // otherwise wait for draw complete
-  VkPresentInfoKHR present = {
-      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      NULL,
-      1,
-      (demo->separate_present_queue) ? &demo->image_ownership_semaphores[demo->frame_index] : &demo->draw_complete_semaphores[demo->frame_index],
-      1,
-      &demo->swapchain,
-      &demo->current_buffer,
-      NULL};
-
-  err = demo->fpQueuePresentKHR(demo->present_queue, &present);
-  demo->frame_index += 1;
-  demo->frame_index %= FRAME_LAG;
-
-  if (err == VK_ERROR_OUT_OF_DATE_KHR)
-  {
-    // demo->swapchain is out of date (e.g. the window was resized) and
-    // must be recreated:
-    demo_resize(demo);
-  }
-  else if (err == VK_SUBOPTIMAL_KHR)
-  {
-    // demo->swapchain is not as optimal as it could be, but the platform's
-    // presentation engine will still present the image correctly.
-  }
-  else
-  {
-    assert(!err);
-  }
 }
 
 static void demo_prepare_buffers(struct demo *demo)
@@ -1731,7 +1579,6 @@ static void demo_prepare_fs(struct demo *demo)
 static void demo_prepare_pipeline(struct demo *demo)
 {
   VkGraphicsPipelineCreateInfo pipeline;
-  VkPipelineCacheCreateInfo pipelineCache;
   VkPipelineVertexInputStateCreateInfo vi;
   VkPipelineInputAssemblyStateCreateInfo ia;
   VkPipelineRasterizationStateCreateInfo rs;
@@ -1821,11 +1668,8 @@ static void demo_prepare_pipeline(struct demo *demo)
   shaderStages[1].module = demo->frag_shader_module;
   shaderStages[1].pName = "main";
 
-  memset(&pipelineCache, 0, sizeof(pipelineCache));
-  pipelineCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-
-  err = vkCreatePipelineCache(demo->device, &pipelineCache, NULL, &demo->pipelineCache_1);
-  assert(!err);
+  // Check disk for existing cache data
+  demo_load_pipeline_cache(demo);
 
   pipeline.pVertexInputState = &vi;
   pipeline.pInputAssemblyState = &ia;
@@ -1844,6 +1688,11 @@ static void demo_prepare_pipeline(struct demo *demo)
 
   vkDestroyShaderModule(demo->device, demo->frag_shader_module, NULL);
   vkDestroyShaderModule(demo->device, demo->vert_shader_module, NULL);
+
+  // Store away the cache that we've populated.  This could conceivably happen
+  // earlier, depends on when the pipeline cache stops being populated
+  // internally.
+  demo_store_pipeline_cache(demo);
 }
 
 static void demo_prepare_descriptor_pool(struct demo *demo)
@@ -2103,7 +1952,7 @@ static void demo_resize(struct demo *demo)
   // Second, re-perform the demo_prepare() function, which will re-create the
   // swapchain:
   demo_prepare_swapchain(demo);
-  
+
   demo->prepared = true;
 }
 
@@ -3007,4 +2856,278 @@ int main(int argc, char **argv)
   demo_cleanup(&demo);
 
   return validation_error;
+}
+
+static void demo_draw(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
+  // make FRAME_LAG desiredNumOfSwapchainImages+1
+
+  // Ensure no more than FRAME_LAG renderings are outstanding
+
+  while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
+  {
+    assert(err == VK_NOT_READY);
+    sched_yield();
+  }
+
+  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
+
+  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
+  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
+  demo_update_data_buffer(demo);
+
+  //update descriptor
+  {
+    VkDescriptorBufferInfo buffer_info;
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(struct vktexcube_vs_uniform);
+    buffer_info.buffer = demo->uniform_buffer[demo->frame_index];
+
+    VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
+    memset(&tex_descs, 0, sizeof(tex_descs));
+    for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
+    {
+      tex_descs[i].sampler = demo->texture_assets[i].sampler;
+      tex_descs[i].imageView = demo->texture_assets[i].view;
+      tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    }
+
+    VkWriteDescriptorSet writes[2];
+    memset(&writes, 0, sizeof(writes));
+    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[0].descriptorCount = 1;
+    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writes[0].pBufferInfo = &buffer_info;
+
+    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[1].dstBinding = 1;
+    writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
+    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writes[1].pImageInfo = tex_descs;
+
+    writes[0].dstSet = demo->descriptor_set[demo->frame_index];
+    writes[1].dstSet = demo->descriptor_set[demo->frame_index];
+
+    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
+  }
+
+  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
+  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
+  assert(!err);
+
+  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
+  do
+  {
+    // Get the index of the next available swapchain image:
+    err = demo->fpAcquireNextImageKHR(
+        demo->device,
+        demo->swapchain,
+        UINT64_MAX,
+        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
+        &demo->current_buffer);
+
+    if (err == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+      // demo->swapchain is out of date (e.g. the window was resized) and
+      // must be recreated:
+      demo_resize(demo);
+    }
+    else if (err == VK_SUBOPTIMAL_KHR)
+    {
+      // demo->swapchain is not as optimal as it could be, but the platform's
+      // presentation engine will still present the image correctly.
+      break;
+    }
+    else
+    {
+      assert(!err);
+    }
+  } while (err != VK_SUCCESS);
+
+  // Wait for the image acquired semaphore to be signaled to ensure
+  // that the image won't be rendered to until the presentation
+  // engine has fully released ownership to the application, and it is
+  // okay to render to the image.
+
+  demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
+
+  VkSubmitInfo submit_info;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.pNext = NULL;
+  VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  VkSemaphore _wait_semphores[1] = {demo->image_acquired_semaphores[demo->frame_index]};
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitDstStageMask = _wait_stages;
+  submit_info.pWaitSemaphores = _wait_semphores;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &demo->cmd[demo->frame_index];
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
+  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
+  assert(!err);
+
+  if (demo->separate_present_queue)
+  {
+    err = vkResetCommandPool(demo->device, demo->present_cmd_pool[demo->frame_index], 0U);
+    assert(!err);
+    demo_build_image_ownership_cmd(demo, demo->frame_index);
+
+    // If we are using separate queues, change image ownership to the
+    // present queue before presenting, waiting for the draw complete
+    // semaphore and signalling the ownership released semaphore when finished
+    VkFence nullFence = VK_NULL_HANDLE;
+    VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitDstStageMask = _wait_stages;
+    submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &demo->graphics_to_present_cmd[demo->frame_index];
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
+    err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
+    assert(!err);
+  }
+
+  // If we are using separate queues we have to wait for image ownership,
+  // otherwise wait for draw complete
+  VkPresentInfoKHR present = {
+      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      NULL,
+      1,
+      (demo->separate_present_queue) ? &demo->image_ownership_semaphores[demo->frame_index] : &demo->draw_complete_semaphores[demo->frame_index],
+      1,
+      &demo->swapchain,
+      &demo->current_buffer,
+      NULL};
+
+  err = demo->fpQueuePresentKHR(demo->present_queue, &present);
+  demo->frame_index += 1;
+  demo->frame_index %= FRAME_LAG;
+
+  if (err == VK_ERROR_OUT_OF_DATE_KHR)
+  {
+    // demo->swapchain is out of date (e.g. the window was resized) and
+    // must be recreated:
+    demo_resize(demo);
+  }
+  else if (err == VK_SUBOPTIMAL_KHR)
+  {
+    // demo->swapchain is not as optimal as it could be, but the platform's
+    // presentation engine will still present the image correctly.
+  }
+  else
+  {
+    assert(!err);
+  }
+
+  // Store away the cache that we've populated.  This could conceivably happen
+  // earlier, depends on when the pipeline cache stops being populated
+  // internally.
+  //demo_store_pipeline_cache(demo);
+}
+
+static void demo_load_pipeline_cache(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  size_t startCacheSize = 0;
+  void *startCacheData = NULL;
+  {
+    int fd = openat64(AT_FDCWD, "vulkan_pipeline_cache/OpaquePass.vkcache", O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (fd != -1)
+    {
+      struct stat64 statbuf;
+      if (fstat64(fd, &statbuf) == 0 && S_ISREG(statbuf.st_mode))
+      {
+        startCacheSize = statbuf.st_size;
+
+        startCacheData = malloc(startCacheSize);
+        assert(startCacheData != NULL);
+
+        int ret = read(fd, startCacheData, startCacheSize);
+        assert(ret == startCacheSize);
+      }
+    }
+  }
+
+  VkPipelineCacheCreateInfo pipelineCache;
+  pipelineCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+  pipelineCache.pNext = NULL;
+  pipelineCache.flags = 0;
+  pipelineCache.initialDataSize = startCacheSize;
+  pipelineCache.pInitialData = startCacheData;
+
+  err = vkCreatePipelineCache(demo->device, &pipelineCache, NULL, &demo->pipelineCache_1);
+  assert(!err);
+
+  free(startCacheData);
+}
+
+static void demo_store_pipeline_cache(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  size_t endCacheSize = 0;
+  void *endCacheData = NULL;
+
+  err = vkGetPipelineCacheData(demo->device, demo->pipelineCache_1, &endCacheSize, NULL);
+  assert(err == VK_SUCCESS);
+
+  endCacheData = malloc(endCacheSize);
+  assert(endCacheData != NULL);
+
+  err = vkGetPipelineCacheData(demo->device, demo->pipelineCache_1, &endCacheSize, endCacheData);
+  assert(err == VK_SUCCESS);
+
+  {
+    bool mkdir_needed;
+
+    char const *path = "vulkan_pipeline_cache";
+
+    struct stat64 statbuf;
+    if (0 == fstatat64(AT_FDCWD, path, &statbuf, 0))
+    {
+      if (S_ISDIR(statbuf.st_mode))
+      {
+        mkdir_needed = false;
+      }
+      else
+      {
+        fprintf(stderr, "Cannot use %s for vulkan-pipeline-cache (not a directory) --- Remove it!\n", path);
+        int ret = unlinkat(AT_FDCWD, path, 0);
+        assert(0 == ret);
+        mkdir_needed = true;
+      }
+    }
+    else
+    {
+      assert(errno == ENOENT);
+      mkdir_needed = true;
+    }
+
+    if (mkdir_needed)
+    {
+      int ret = mkdirat(AT_FDCWD, path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+      assert(0 == ret);
+    }
+  }
+
+  {
+    int ret = unlinkat(AT_FDCWD, "vulkan_pipeline_cache/OpaquePass.vkcache", 0);
+    assert(0 == ret || errno == ENOENT);
+
+    int fd = openat64(AT_FDCWD, "vulkan_pipeline_cache/OpaquePass.vkcache", O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    assert(fd != -1);
+
+    ret = write(fd, endCacheData, endCacheSize);
+    assert(endCacheSize == ret);
+
+    ret = close(fd);
+    assert(0 == ret);
+  }
+
+  free(endCacheData);
 }
