@@ -2,6 +2,12 @@
     "configurations": [
         {
             "name": "Linux",
+            "compilerPath": "",
+            "compilerArgs": [
+                "-nostdinc",
+                "-nostdinc++"
+            ],
+            "intelliSenseMode": "clang-x64",
             "includePath": [
                 "${env:HOME}/.local/libexec/android-ndk-r11c/platforms/android-24/arch-x86_64/usr/include",
                 "${env:HOME}/.local/libexec/android-ndk-r11c/sources/cxx-stl/llvm-libc++/libcxx/include",
@@ -12,7 +18,9 @@
             "defines": [
                 "__ANDROID__",
                 "ANDROID"
-            ]
+            ],
+            "cStandard": "c99",
+            "cppStandard": "c++11"
         }
     ],
     "version": 4
