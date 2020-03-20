@@ -267,7 +267,6 @@ BreakCallback(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType,
 typedef struct
 {
   VkImage image;
-  VkCommandBuffer graphics_to_present_cmd;
   VkImageView view;
   VkBuffer uniform_buffer;
   VkDeviceMemory uniform_memory;
@@ -340,7 +339,8 @@ struct demo
   VkFence fences[FRAME_LAG];
   int frame_index;
 
-  VkCommandPool present_cmd_pool;
+  VkCommandPool present_cmd_pool[FRAME_LAG];
+  VkCommandBuffer graphics_to_present_cmd[FRAME_LAG];
 
   VkCommandPool cmd_pool[FRAME_LAG];
   VkCommandBuffer cmd[FRAME_LAG];
@@ -694,11 +694,11 @@ void demo_build_image_ownership_cmd(struct demo *demo, int i)
   const VkCommandBufferBeginInfo cmd_buf_info = {
       .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       .pNext = NULL,
-      .flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT,
+      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
       .pInheritanceInfo = NULL,
   };
   err = vkBeginCommandBuffer(
-      demo->swapchain_image_resources[i].graphics_to_present_cmd,
+      demo->graphics_to_present_cmd[i],
       &cmd_buf_info);
   assert(!err);
 
@@ -715,12 +715,11 @@ void demo_build_image_ownership_cmd(struct demo *demo, int i)
       .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
 
   vkCmdPipelineBarrier(
-      demo->swapchain_image_resources[i].graphics_to_present_cmd,
+      demo->graphics_to_present_cmd[i],
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
       VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, NULL, 0, NULL, 1,
       &image_ownership_barrier);
-  err = vkEndCommandBuffer(
-      demo->swapchain_image_resources[i].graphics_to_present_cmd);
+  err = vkEndCommandBuffer(demo->graphics_to_present_cmd[i]);
   assert(!err);
 }
 
@@ -837,6 +836,10 @@ static void demo_draw(struct demo *demo)
 
   if (demo->separate_present_queue)
   {
+    err = vkResetCommandPool(demo->device, demo->present_cmd_pool[demo->frame_index], 0U);
+    assert(!err);
+    demo_build_image_ownership_cmd(demo, demo->frame_index);
+
     // If we are using separate queues, change image ownership to the
     // present queue before presenting, waiting for the draw complete
     // semaphore and signalling the ownership released semaphore when finished
@@ -846,7 +849,7 @@ static void demo_draw(struct demo *demo)
     submit_info.pWaitDstStageMask = _wait_stages;
     submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
     submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &demo->swapchain_image_resources[demo->current_buffer].graphics_to_present_cmd;
+    submit_info.pCommandBuffers = &demo->graphics_to_present_cmd[demo->frame_index];
     submit_info.signalSemaphoreCount = 1;
     submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
     err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
@@ -1943,6 +1946,29 @@ static void demo_prepare(struct demo *demo)
     };
     err = vkAllocateCommandBuffers(demo->device, &cmd_info, &demo->cmd[i]);
     assert(!err);
+
+    if (demo->separate_present_queue)
+    {
+      const VkCommandPoolCreateInfo present_cmd_pool_info = {
+          .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+          .pNext = NULL,
+          .queueFamilyIndex = demo->present_queue_family_index,
+          .flags = 0,
+      };
+      err = vkCreateCommandPool(demo->device, &present_cmd_pool_info, NULL, &demo->present_cmd_pool[i]);
+      assert(!err);
+
+      const VkCommandBufferAllocateInfo present_cmd_info = {
+          .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+          .pNext = NULL,
+          .commandPool = demo->present_cmd_pool[i],
+          .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+          .commandBufferCount = 1,
+      };
+
+      err = vkAllocateCommandBuffers(demo->device, &present_cmd_info, &demo->graphics_to_present_cmd[i]);
+      assert(!err);
+    }
   }
 
   demo_prepare_buffers(demo);
@@ -1952,34 +1978,6 @@ static void demo_prepare(struct demo *demo)
   demo_prepare_descriptor_layout(demo);
   demo_prepare_render_pass(demo);
   demo_prepare_pipeline(demo);
-
-  if (demo->separate_present_queue)
-  {
-    const VkCommandPoolCreateInfo present_cmd_pool_info = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        .pNext = NULL,
-        .queueFamilyIndex = demo->present_queue_family_index,
-        .flags = 0,
-    };
-    err = vkCreateCommandPool(demo->device, &present_cmd_pool_info, NULL,
-                              &demo->present_cmd_pool);
-    assert(!err);
-    const VkCommandBufferAllocateInfo present_cmd_info = {
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .pNext = NULL,
-        .commandPool = demo->present_cmd_pool,
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = 1,
-    };
-    for (uint32_t i = 0; i < demo->swapchainImageCount; i++)
-    {
-      err = vkAllocateCommandBuffers(
-          demo->device, &present_cmd_info,
-          &demo->swapchain_image_resources[i].graphics_to_present_cmd);
-      assert(!err);
-      demo_build_image_ownership_cmd(demo, i);
-    }
-  }
 
   demo_prepare_descriptor_pool(demo);
   demo_prepare_descriptor_set(demo);
@@ -2013,6 +2011,13 @@ static void demo_cleanup(struct demo *demo)
     vkFreeCommandBuffers(demo->device, demo->cmd_pool[i], 1, &demo->cmd[i]);
 
     vkDestroyCommandPool(demo->device, demo->cmd_pool[i], NULL);
+
+    if (demo->separate_present_queue)
+    {
+      vkFreeCommandBuffers(demo->device, demo->present_cmd_pool[i], 1, &demo->graphics_to_present_cmd[i]);
+
+      vkDestroyCommandPool(demo->device, demo->present_cmd_pool[i], NULL);
+    }
   }
 
   for (i = 0; i < demo->swapchainImageCount; i++)
@@ -2053,10 +2058,6 @@ static void demo_cleanup(struct demo *demo)
   free(demo->swapchain_image_resources);
   free(demo->queue_props);
 
-  if (demo->separate_present_queue)
-  {
-    vkDestroyCommandPool(demo->device, demo->present_cmd_pool, NULL);
-  }
   vkDeviceWaitIdle(demo->device);
   vkDestroyDevice(demo->device, NULL);
   if (demo->validate)
@@ -2112,10 +2113,6 @@ static void demo_resize(struct demo *demo)
                     demo->swapchain_image_resources[i].uniform_buffer, NULL);
     vkFreeMemory(demo->device,
                  demo->swapchain_image_resources[i].uniform_memory, NULL);
-  }
-  if (demo->separate_present_queue)
-  {
-    vkDestroyCommandPool(demo->device, demo->present_cmd_pool, NULL);
   }
   free(demo->swapchain_image_resources);
 
@@ -2740,18 +2737,14 @@ static void demo_init_vk_swapchain(struct demo *demo)
   createInfo.connection = demo->connection;
   createInfo.window = demo->xcb_window;
 
-  err = ((PFN_vkCreateXcbSurfaceKHR)vkGetInstanceProcAddr(
-      demo->inst, "vkCreateXcbSurfaceKHR"))(demo->inst, &createInfo, NULL,
-                                            &demo->surface);
+  err = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(vkGetInstanceProcAddr(demo->inst, "vkCreateXcbSurfaceKHR"))(demo->inst, &createInfo, NULL, &demo->surface);
   assert(!err);
 
   // Iterate over each queue to learn whether it supports presenting:
-  VkBool32 *supportsPresent =
-      (VkBool32 *)malloc(demo->queue_family_count * sizeof(VkBool32));
+  VkBool32 *supportsPresent = (VkBool32 *)malloc(demo->queue_family_count * sizeof(VkBool32));
   for (uint32_t i = 0; i < demo->queue_family_count; i++)
   {
-    demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, i, demo->surface,
-                                               &supportsPresent[i]);
+    demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, i, demo->surface, &supportsPresent[i]);
   }
 
   // Search for a graphics and a present queue in the array of queue
@@ -2791,8 +2784,7 @@ static void demo_init_vk_swapchain(struct demo *demo)
   }
 
   // Generate error if could not find both a graphics and a present queue
-  if (graphicsQueueFamilyIndex == UINT32_MAX ||
-      presentQueueFamilyIndex == UINT32_MAX)
+  if (graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX)
   {
     ERR_EXIT("Could not find both graphics and present queues\n",
              "Swapchain Initialization Failure");
@@ -2800,8 +2792,7 @@ static void demo_init_vk_swapchain(struct demo *demo)
 
   demo->graphics_queue_family_index = graphicsQueueFamilyIndex;
   demo->present_queue_family_index = presentQueueFamilyIndex;
-  demo->separate_present_queue =
-      (demo->graphics_queue_family_index != demo->present_queue_family_index);
+  demo->separate_present_queue = (demo->graphics_queue_family_index != demo->present_queue_family_index);
   free(supportsPresent);
 
   demo_create_device(demo);
