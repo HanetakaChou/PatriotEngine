@@ -6,7 +6,7 @@ target_name="vksmoketest"
 int_dir="obj/local/x86_64"
 out_dir="../../../../Binary/x64/Debug"
 
-#glslang
+# glslang
 rm -rf Smoke.push_constant.vert.inc
 rm -rf Smoke.vert.inc
 rm -rf Smoke.frag.inc
