@@ -36,14 +36,6 @@
 
 #include <xcb/xcb.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <errno.h>
-#include <string.h>
-
 #define VK_USE_PLATFORM_XCB_KHR 1
 #include <vulkan/vulkan.h>
 
@@ -3028,6 +3020,14 @@ static void demo_draw(struct demo *demo)
   // internally.
   //demo_store_pipeline_cache(demo);
 }
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <errno.h>
+#include <string.h>
 
 static void demo_load_pipeline_cache(struct demo *demo)
 {
