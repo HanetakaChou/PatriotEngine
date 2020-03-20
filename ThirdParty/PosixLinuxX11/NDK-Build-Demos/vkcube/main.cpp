@@ -935,8 +935,7 @@ static void demo_prepare_buffers(struct demo *demo)
       true,
       oldSwapchain};
   uint32_t i;
-  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL,
-                                   &demo->swapchain);
+  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL, &demo->swapchain);
   assert(!err);
 
   // If we just re-created an existing swapchain, we should destroy the old
@@ -960,8 +959,7 @@ static void demo_prepare_buffers(struct demo *demo)
                                       swapchainImages);
   assert(!err);
 
-  demo->swapchain_image_resources = (SwapchainImageResources *)malloc(
-      sizeof(SwapchainImageResources) * demo->swapchainImageCount);
+  demo->swapchain_image_resources = (SwapchainImageResources *)malloc(sizeof(SwapchainImageResources) * demo->swapchainImageCount);
   assert(demo->swapchain_image_resources);
 
   for (i = 0; i < demo->swapchainImageCount; i++)
@@ -1752,8 +1750,7 @@ static void demo_prepare_framebuffers(struct demo *demo)
   for (i = 0; i < demo->swapchainImageCount; i++)
   {
     attachments[0] = demo->swapchain_image_resources[i].view;
-    err = vkCreateFramebuffer(demo->device, &fb_info, NULL,
-                              &demo->swapchain_image_resources[i].framebuffer);
+    err = vkCreateFramebuffer(demo->device, &fb_info, NULL, &demo->swapchain_image_resources[i].framebuffer);
     assert(!err);
   }
 }
@@ -1761,6 +1758,7 @@ static void demo_prepare_framebuffers(struct demo *demo)
 static void demo_prepare_swapchain(struct demo *demo)
 {
   demo_prepare_buffers(demo);
+
   demo_prepare_depth(demo);
 
   demo_prepare_framebuffers(demo);
@@ -1912,7 +1910,7 @@ static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *
       {
         demo->width = exp->width;
         demo->height = exp->height;
-        //demo_resize(demo);
+        demo_resize(demo);
       }
     }
   }
@@ -1925,7 +1923,7 @@ static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *
     {
       demo->width = cfg->width;
       demo->height = cfg->height;
-      //demo_resize(demo);
+      demo_resize(demo);
     }
   }
   break;
