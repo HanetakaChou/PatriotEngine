@@ -53,7 +53,7 @@
 
 uint32_t const desiredNumOfSwapchainImages = 3;
 // Allow a maximum of two outstanding presentation operations.
-#define FRAME_LAG 4 //(desiredNumOfSwapchainImages + 1)
+uint32_t const FRAME_LAG = 2; //(desiredNumOfSwapchainImages + 1)
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 
@@ -758,34 +758,6 @@ static void demo_draw(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
-  do
-  {
-    // Get the index of the next available swapchain image:
-    err = demo->fpAcquireNextImageKHR(
-        demo->device,
-        demo->swapchain,
-        UINT64_MAX,
-        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
-        &demo->current_buffer);
-
-    if (err == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-      // demo->swapchain is out of date (e.g. the window was resized) and
-      // must be recreated:
-      demo_resize(demo);
-    }
-    else if (err == VK_SUBOPTIMAL_KHR)
-    {
-      // demo->swapchain is not as optimal as it could be, but the platform's
-      // presentation engine will still present the image correctly.
-      break;
-    }
-    else
-    {
-      assert(!err);
-    }
-  } while (err != VK_SUCCESS);
-
   // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
   // make FRAME_LAG desiredNumOfSwapchainImages+1
 
@@ -844,14 +816,44 @@ static void demo_draw(struct demo *demo)
     vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
   }
 
+  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
+  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
+  assert(!err);
+
+  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
+  do
+  {
+    // Get the index of the next available swapchain image:
+    err = demo->fpAcquireNextImageKHR(
+        demo->device,
+        demo->swapchain,
+        UINT64_MAX,
+        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
+        &demo->current_buffer);
+
+    if (err == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+      // demo->swapchain is out of date (e.g. the window was resized) and
+      // must be recreated:
+      demo_resize(demo);
+    }
+    else if (err == VK_SUBOPTIMAL_KHR)
+    {
+      // demo->swapchain is not as optimal as it could be, but the platform's
+      // presentation engine will still present the image correctly.
+      break;
+    }
+    else
+    {
+      assert(!err);
+    }
+  } while (err != VK_SUCCESS);
+
   // Wait for the image acquired semaphore to be signaled to ensure
   // that the image won't be rendered to until the presentation
   // engine has fully released ownership to the application, and it is
   // okay to render to the image.
 
-  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
-  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
-  assert(!err);
   demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
 
   VkSubmitInfo submit_info;
