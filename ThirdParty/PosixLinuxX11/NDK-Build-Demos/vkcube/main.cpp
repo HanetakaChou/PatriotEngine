@@ -268,10 +268,7 @@ typedef struct
 {
   VkImage image;
   VkImageView view;
-  VkBuffer uniform_buffer;
-  VkDeviceMemory uniform_memory;
   VkFramebuffer framebuffer;
-  VkDescriptorSet descriptor_set;
 } SwapchainImageResources;
 
 struct demo
@@ -345,6 +342,10 @@ struct demo
   VkCommandPool cmd_pool[FRAME_LAG];
   VkCommandBuffer cmd[FRAME_LAG];
 
+  VkBuffer uniform_buffer[FRAME_LAG];
+  VkDeviceMemory uniform_memory[FRAME_LAG];
+  VkDescriptorSet descriptor_set[FRAME_LAG];
+
   struct
   {
     VkFormat format;
@@ -359,11 +360,12 @@ struct demo
   struct texture_object staging_texture;
 
   //VkCommandBuffer cmd; // Buffer for initialization commands
-  VkPipelineLayout pipeline_layout;
-  VkDescriptorSetLayout desc_layout;
-  VkPipelineCache pipelineCache;
-  VkRenderPass render_pass;
-  VkPipeline pipeline;
+  VkPipelineLayout pipeline_layout_1;
+  VkDescriptorSetLayout desc_layout_1;
+  VkPipelineCache pipelineCache_1;
+  VkRenderPass render_pass_1;
+  VkPipeline pipeline_1;
+  VkDescriptorPool desc_pool_1;
 
   mat4x4 projection_matrix;
   mat4x4 view_matrix;
@@ -375,8 +377,6 @@ struct demo
 
   VkShaderModule vert_shader_module;
   VkShaderModule frag_shader_module;
-
-  VkDescriptorPool desc_pool;
 
   bool quit;
   int32_t curFrame;
@@ -624,7 +624,7 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   const VkRenderPassBeginInfo rp_begin = {
       VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
       NULL,
-      demo->render_pass,
+      demo->render_pass_1,
       demo->swapchain_image_resources[demo->current_buffer].framebuffer,
       {{0, 0}, {demo->width, demo->height}},
       2,
@@ -635,10 +635,10 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   err = vkBeginCommandBuffer(cmd_buf, &cmd_buf_info);
   assert(!err);
   vkCmdBeginRenderPass(cmd_buf, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline);
+  vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_1);
   vkCmdBindDescriptorSets(
-      cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_layout, 0, 1,
-      &demo->swapchain_image_resources[demo->current_buffer].descriptor_set, 0,
+      cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_layout_1, 0, 1,
+      &demo->descriptor_set[demo->frame_index], 0,
       NULL);
   VkViewport viewport;
   memset(&viewport, 0, sizeof(viewport));
@@ -743,7 +743,7 @@ void demo_update_data_buffer(struct demo *demo)
 
   err = vkMapMemory(
       demo->device,
-      demo->swapchain_image_resources[demo->current_buffer].uniform_memory, 0,
+      demo->uniform_memory[demo->frame_index], 0,
       VK_WHOLE_SIZE, 0, (void **)&pData);
   assert(!err);
 
@@ -751,7 +751,7 @@ void demo_update_data_buffer(struct demo *demo)
 
   vkUnmapMemory(
       demo->device,
-      demo->swapchain_image_resources[demo->current_buffer].uniform_memory);
+      demo->uniform_memory[demo->frame_index]);
 }
 
 static void demo_draw(struct demo *demo)
@@ -808,6 +808,41 @@ static void demo_draw(struct demo *demo)
   //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
   //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
   demo_update_data_buffer(demo);
+
+  //update descriptor
+  {
+    VkDescriptorBufferInfo buffer_info;
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(struct vktexcube_vs_uniform);
+    buffer_info.buffer = demo->uniform_buffer[demo->frame_index];
+
+    VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
+    memset(&tex_descs, 0, sizeof(tex_descs));
+    for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
+    {
+      tex_descs[i].sampler = demo->texture_assets[i].sampler;
+      tex_descs[i].imageView = demo->texture_assets[i].view;
+      tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    }
+
+    VkWriteDescriptorSet writes[2];
+    memset(&writes, 0, sizeof(writes));
+    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[0].descriptorCount = 1;
+    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writes[0].pBufferInfo = &buffer_info;
+
+    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[1].dstBinding = 1;
+    writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
+    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writes[1].pImageInfo = tex_descs;
+
+    writes[0].dstSet = demo->descriptor_set[demo->frame_index];
+    writes[1].dstSet = demo->descriptor_set[demo->frame_index];
+
+    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
+  }
 
   // Wait for the image acquired semaphore to be signaled to ensure
   // that the image won't be rendered to until the presentation
@@ -1120,12 +1155,11 @@ static void demo_prepare_buffers(struct demo *demo)
 
 static void demo_prepare_depth(struct demo *demo)
 {
-  const VkFormat depth_format = VK_FORMAT_D16_UNORM;
   const VkImageCreateInfo image = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
                                    NULL,
                                    0,
                                    VK_IMAGE_TYPE_2D,
-                                   depth_format,
+                                   demo->depth.format,
                                    {demo->width, demo->height, 1},
                                    1,
                                    1,
@@ -1143,7 +1177,7 @@ static void demo_prepare_depth(struct demo *demo)
       0,
       VK_NULL_HANDLE,
       VK_IMAGE_VIEW_TYPE_2D,
-      depth_format,
+      demo->depth.format,
       {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
        VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY},
       {VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1},
@@ -1152,8 +1186,6 @@ static void demo_prepare_depth(struct demo *demo)
   VkMemoryRequirements mem_reqs;
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
-
-  demo->depth.format = depth_format;
 
   /* create image */
   err = vkCreateImage(demo->device, &image, NULL, &demo->depth.image);
@@ -1496,15 +1528,12 @@ void demo_prepare_cube_data_buffers(struct demo *demo)
   buf_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
   buf_info.size = sizeof(data);
 
-  for (unsigned int i = 0; i < demo->swapchainImageCount; i++)
+  for (unsigned int i = 0; i < FRAME_LAG; i++)
   {
-    err = vkCreateBuffer(demo->device, &buf_info, NULL,
-                         &demo->swapchain_image_resources[i].uniform_buffer);
+    err = vkCreateBuffer(demo->device, &buf_info, NULL, &demo->uniform_buffer[i]);
     assert(!err);
 
-    vkGetBufferMemoryRequirements(
-        demo->device, demo->swapchain_image_resources[i].uniform_buffer,
-        &mem_reqs);
+    vkGetBufferMemoryRequirements(demo->device, demo->uniform_buffer[i], &mem_reqs);
 
     mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     mem_alloc.pNext = NULL;
@@ -1517,23 +1546,19 @@ void demo_prepare_cube_data_buffers(struct demo *demo)
                                        &mem_alloc.memoryTypeIndex);
     assert(pass);
 
-    err = vkAllocateMemory(demo->device, &mem_alloc, NULL,
-                           &demo->swapchain_image_resources[i].uniform_memory);
+    err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->uniform_memory[i]);
     assert(!err);
 
-    err = vkMapMemory(demo->device,
-                      demo->swapchain_image_resources[i].uniform_memory, 0,
-                      VK_WHOLE_SIZE, 0, (void **)&pData);
+    err = vkMapMemory(demo->device, demo->uniform_memory[i], 0, VK_WHOLE_SIZE, 0, (void **)&pData);
     assert(!err);
 
     memcpy(pData, &data, sizeof data);
 
-    vkUnmapMemory(demo->device,
-                  demo->swapchain_image_resources[i].uniform_memory);
+    vkUnmapMemory(demo->device, demo->uniform_memory[i]);
 
     err = vkBindBufferMemory(
-        demo->device, demo->swapchain_image_resources[i].uniform_buffer,
-        demo->swapchain_image_resources[i].uniform_memory, 0);
+        demo->device, demo->uniform_buffer[i],
+        demo->uniform_memory[i], 0);
     assert(!err);
   }
 }
@@ -1566,24 +1591,24 @@ static void demo_prepare_descriptor_layout(struct demo *demo)
   };
   VkResult U_ASSERT_ONLY err;
 
-  err = vkCreateDescriptorSetLayout(demo->device, &descriptor_layout, NULL,
-                                    &demo->desc_layout);
+  err = vkCreateDescriptorSetLayout(demo->device, &descriptor_layout, NULL, &demo->desc_layout_1);
   assert(!err);
 
   const VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {
       .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
       .pNext = NULL,
       .setLayoutCount = 1,
-      .pSetLayouts = &demo->desc_layout,
+      .pSetLayouts = &demo->desc_layout_1,
   };
 
-  err = vkCreatePipelineLayout(demo->device, &pPipelineLayoutCreateInfo, NULL,
-                               &demo->pipeline_layout);
+  err = vkCreatePipelineLayout(demo->device, &pPipelineLayoutCreateInfo, NULL, &demo->pipeline_layout_1);
   assert(!err);
 }
 
 static void demo_prepare_render_pass(struct demo *demo)
 {
+  demo->depth.format = VK_FORMAT_D16_UNORM;
+
   // The initial layout for the color and depth attachments will be
   // LAYOUT_UNDEFINED because at the start of the renderpass, we don't care
   // about their contents. At the start of the subpass, the color attachment's
@@ -1652,7 +1677,7 @@ static void demo_prepare_render_pass(struct demo *demo)
   };
   VkResult U_ASSERT_ONLY err;
 
-  err = vkCreateRenderPass(demo->device, &rp_info, NULL, &demo->render_pass);
+  err = vkCreateRenderPass(demo->device, &rp_info, NULL, &demo->render_pass_1);
   assert(!err);
 }
 
@@ -1716,7 +1741,7 @@ static void demo_prepare_pipeline(struct demo *demo)
 
   memset(&pipeline, 0, sizeof(pipeline));
   pipeline.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipeline.layout = demo->pipeline_layout;
+  pipeline.layout = demo->pipeline_layout_1;
 
   memset(&vi, 0, sizeof(vi));
   vi.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -1790,8 +1815,7 @@ static void demo_prepare_pipeline(struct demo *demo)
   memset(&pipelineCache, 0, sizeof(pipelineCache));
   pipelineCache.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
 
-  err = vkCreatePipelineCache(demo->device, &pipelineCache, NULL,
-                              &demo->pipelineCache);
+  err = vkCreatePipelineCache(demo->device, &pipelineCache, NULL, &demo->pipelineCache_1);
   assert(!err);
 
   pipeline.pVertexInputState = &vi;
@@ -1803,13 +1827,10 @@ static void demo_prepare_pipeline(struct demo *demo)
   pipeline.pDepthStencilState = &ds;
   pipeline.stageCount = ARRAY_SIZE(shaderStages);
   pipeline.pStages = shaderStages;
-  pipeline.renderPass = demo->render_pass;
+  pipeline.renderPass = demo->render_pass_1;
   pipeline.pDynamicState = &dynamicState;
 
-  pipeline.renderPass = demo->render_pass;
-
-  err = vkCreateGraphicsPipelines(demo->device, demo->pipelineCache, 1,
-                                  &pipeline, NULL, &demo->pipeline);
+  err = vkCreateGraphicsPipelines(demo->device, demo->pipelineCache_1, 1, &pipeline, NULL, &demo->pipeline_1);
   assert(!err);
 
   vkDestroyShaderModule(demo->device, demo->frag_shader_module, NULL);
@@ -1822,76 +1843,42 @@ static void demo_prepare_descriptor_pool(struct demo *demo)
       [0] =
           {
               .type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-              .descriptorCount = demo->swapchainImageCount,
+              .descriptorCount = FRAME_LAG,
           },
       [1] =
           {
               .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
-              .descriptorCount = demo->swapchainImageCount * DEMO_TEXTURE_COUNT,
+              .descriptorCount = FRAME_LAG * DEMO_TEXTURE_COUNT,
           },
   };
   const VkDescriptorPoolCreateInfo descriptor_pool = {
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
       .pNext = NULL,
-      .maxSets = demo->swapchainImageCount,
+      .maxSets = FRAME_LAG,
       .poolSizeCount = 2,
       .pPoolSizes = type_counts,
   };
   VkResult U_ASSERT_ONLY err;
 
-  err = vkCreateDescriptorPool(demo->device, &descriptor_pool, NULL,
-                               &demo->desc_pool);
+  err = vkCreateDescriptorPool(demo->device, &descriptor_pool, NULL, &demo->desc_pool_1);
   assert(!err);
 }
 
 static void demo_prepare_descriptor_set(struct demo *demo)
 {
-  VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
-  VkWriteDescriptorSet writes[2];
   VkResult U_ASSERT_ONLY err;
 
   VkDescriptorSetAllocateInfo alloc_info = {
       .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
       .pNext = NULL,
-      .descriptorPool = demo->desc_pool,
+      .descriptorPool = demo->desc_pool_1,
       .descriptorSetCount = 1,
-      .pSetLayouts = &demo->desc_layout};
+      .pSetLayouts = &demo->desc_layout_1};
 
-  VkDescriptorBufferInfo buffer_info;
-  buffer_info.offset = 0;
-  buffer_info.range = sizeof(struct vktexcube_vs_uniform);
-
-  memset(&tex_descs, 0, sizeof(tex_descs));
-  for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
+  for (unsigned int i = 0; i < FRAME_LAG; i++)
   {
-    tex_descs[i].sampler = demo->texture_assets[i].sampler;
-    tex_descs[i].imageView = demo->texture_assets[i].view;
-    tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-  }
-
-  memset(&writes, 0, sizeof(writes));
-
-  writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  writes[0].descriptorCount = 1;
-  writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  writes[0].pBufferInfo = &buffer_info;
-
-  writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  writes[1].dstBinding = 1;
-  writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
-  writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-  writes[1].pImageInfo = tex_descs;
-
-  for (unsigned int i = 0; i < demo->swapchainImageCount; i++)
-  {
-    err = vkAllocateDescriptorSets(
-        demo->device, &alloc_info,
-        &demo->swapchain_image_resources[i].descriptor_set);
+    err = vkAllocateDescriptorSets(demo->device, &alloc_info, &demo->descriptor_set[i]);
     assert(!err);
-    buffer_info.buffer = demo->swapchain_image_resources[i].uniform_buffer;
-    writes[0].dstSet = demo->swapchain_image_resources[i].descriptor_set;
-    writes[1].dstSet = demo->swapchain_image_resources[i].descriptor_set;
-    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
   }
 }
 
@@ -1903,7 +1890,7 @@ static void demo_prepare_framebuffers(struct demo *demo)
   const VkFramebufferCreateInfo fb_info = {
       .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
       .pNext = NULL,
-      .renderPass = demo->render_pass,
+      .renderPass = demo->render_pass_1,
       .attachmentCount = 2,
       .pAttachments = attachments,
       .width = demo->width,
@@ -1959,11 +1946,11 @@ static void demo_prepare(struct demo *demo)
       assert(!err);
 
       const VkCommandBufferAllocateInfo present_cmd_info = {
-          .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-          .pNext = NULL,
-          .commandPool = demo->present_cmd_pool[i],
-          .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-          .commandBufferCount = 1,
+          VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+          NULL,
+          demo->present_cmd_pool[i],
+          VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+          1,
       };
 
       err = vkAllocateCommandBuffers(demo->device, &present_cmd_info, &demo->graphics_to_present_cmd[i]);
@@ -1973,14 +1960,6 @@ static void demo_prepare(struct demo *demo)
 
   demo_prepare_buffers(demo);
   demo_prepare_depth(demo);
-  demo_prepare_cube_data_buffers(demo);
-
-  demo_prepare_descriptor_layout(demo);
-  demo_prepare_render_pass(demo);
-  demo_prepare_pipeline(demo);
-
-  demo_prepare_descriptor_pool(demo);
-  demo_prepare_descriptor_set(demo);
 
   demo_prepare_framebuffers(demo);
 
@@ -2018,6 +1997,11 @@ static void demo_cleanup(struct demo *demo)
 
       vkDestroyCommandPool(demo->device, demo->present_cmd_pool[i], NULL);
     }
+
+    vkDestroyBuffer(demo->device,
+                    demo->uniform_buffer[i], NULL);
+    vkFreeMemory(demo->device,
+                 demo->uniform_memory[i], NULL);
   }
 
   for (i = 0; i < demo->swapchainImageCount; i++)
@@ -2025,13 +2009,13 @@ static void demo_cleanup(struct demo *demo)
     vkDestroyFramebuffer(demo->device,
                          demo->swapchain_image_resources[i].framebuffer, NULL);
   }
-  vkDestroyDescriptorPool(demo->device, demo->desc_pool, NULL);
+  vkDestroyDescriptorPool(demo->device, demo->desc_pool_1, NULL);
 
-  vkDestroyPipeline(demo->device, demo->pipeline, NULL);
-  vkDestroyPipelineCache(demo->device, demo->pipelineCache, NULL);
-  vkDestroyRenderPass(demo->device, demo->render_pass, NULL);
-  vkDestroyPipelineLayout(demo->device, demo->pipeline_layout, NULL);
-  vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout, NULL);
+  vkDestroyPipeline(demo->device, demo->pipeline_1, NULL);
+  vkDestroyPipelineCache(demo->device, demo->pipelineCache_1, NULL);
+  vkDestroyRenderPass(demo->device, demo->render_pass_1, NULL);
+  vkDestroyPipelineLayout(demo->device, demo->pipeline_layout_1, NULL);
+  vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout_1, NULL);
 
   for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
   {
@@ -2050,10 +2034,6 @@ static void demo_cleanup(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkDestroyBuffer(demo->device,
-                    demo->swapchain_image_resources[i].uniform_buffer, NULL);
-    vkFreeMemory(demo->device,
-                 demo->swapchain_image_resources[i].uniform_memory, NULL);
   }
   free(demo->swapchain_image_resources);
   free(demo->queue_props);
@@ -2093,13 +2073,6 @@ static void demo_resize(struct demo *demo)
     vkDestroyFramebuffer(demo->device,
                          demo->swapchain_image_resources[i].framebuffer, NULL);
   }
-  vkDestroyDescriptorPool(demo->device, demo->desc_pool, NULL);
-
-  vkDestroyPipeline(demo->device, demo->pipeline, NULL);
-  vkDestroyPipelineCache(demo->device, demo->pipelineCache, NULL);
-  vkDestroyRenderPass(demo->device, demo->render_pass, NULL);
-  vkDestroyPipelineLayout(demo->device, demo->pipeline_layout, NULL);
-  vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout, NULL);
 
   vkDestroyImageView(demo->device, demo->depth.view, NULL);
   vkDestroyImage(demo->device, demo->depth.image, NULL);
@@ -2109,10 +2082,6 @@ static void demo_resize(struct demo *demo)
   {
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
                        NULL);
-    vkDestroyBuffer(demo->device,
-                    demo->swapchain_image_resources[i].uniform_buffer, NULL);
-    vkFreeMemory(demo->device,
-                 demo->swapchain_image_resources[i].uniform_memory, NULL);
   }
   free(demo->swapchain_image_resources);
 
@@ -3004,6 +2973,15 @@ int main(int argc, char **argv)
   demo_init_vk_swapchain(&demo);
 
   demo_prepare_assets(&demo);
+
+  demo_prepare_cube_data_buffers(&demo);
+
+  demo_prepare_descriptor_layout(&demo);
+  demo_prepare_render_pass(&demo);
+  demo_prepare_pipeline(&demo);
+
+  demo_prepare_descriptor_pool(&demo);
+  demo_prepare_descriptor_set(&demo);
 
   demo_prepare(&demo);
 
