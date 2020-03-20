@@ -1918,6 +1918,17 @@ static void demo_prepare_framebuffers(struct demo *demo)
   }
 }
 
+static void demo_prepare_swapchain(struct demo *demo)
+{
+  demo_prepare_buffers(demo);
+  demo_prepare_depth(demo);
+
+  demo_prepare_framebuffers(demo);
+
+  demo->current_buffer = 0;
+  demo->prepared = true;
+}
+
 static void demo_prepare(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
@@ -1967,13 +1978,7 @@ static void demo_prepare(struct demo *demo)
     }
   }
 
-  demo_prepare_buffers(demo);
-  demo_prepare_depth(demo);
-
-  demo_prepare_framebuffers(demo);
-
-  demo->current_buffer = 0;
-  demo->prepared = true;
+  demo_prepare_swapchain(demo);
 }
 
 static void demo_cleanup(struct demo *demo)
@@ -2096,7 +2101,7 @@ static void demo_resize(struct demo *demo)
 
   // Second, re-perform the demo_prepare() function, which will re-create the
   // swapchain:
-  demo_prepare(demo);
+  demo_prepare_swapchain(demo);
 }
 
 static void demo_prepare_assets(struct demo *demo)
