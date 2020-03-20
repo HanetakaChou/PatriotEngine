@@ -328,19 +328,19 @@ struct demo
   PFN_vkQueuePresentKHR fpQueuePresentKHR;
   // PFN_vkGetRefreshCycleDurationGOOGLE fpGetRefreshCycleDurationGOOGLE;
   // PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
-  uint32_t swapchainImageCount;
-  VkSwapchainKHR swapchain;
-  SwapchainImageResources *swapchain_image_resources;
-  VkPresentModeKHR presentMode;
-  VkFence fences[FRAME_LAG];
-  int frame_index;
 
+  uint32_t current_buffer;
+  uint32_t swapchainImageCount;
+  SwapchainImageResources *swapchain_image_resources;
+  VkSwapchainKHR swapchain;
+  VkPresentModeKHR presentMode;
+
+  int frame_index;
+  VkFence fences[FRAME_LAG];
   VkCommandPool present_cmd_pool[FRAME_LAG];
   VkCommandBuffer graphics_to_present_cmd[FRAME_LAG];
-
   VkCommandPool cmd_pool[FRAME_LAG];
   VkCommandBuffer cmd[FRAME_LAG];
-
   VkBuffer uniform_buffer[FRAME_LAG];
   VkDeviceMemory uniform_memory[FRAME_LAG];
   VkDescriptorSet descriptor_set[FRAME_LAG];
@@ -388,15 +388,21 @@ struct demo
   VkDebugReportCallbackEXT msg_callback;
   PFN_vkDebugReportMessageEXT DebugReportMessage;
 
-  uint32_t current_buffer;
   uint32_t queue_family_count;
 };
 
+// Forward declaration:
 static void demo_load_pipeline_cache(struct demo *demo);
 
 static void demo_store_pipeline_cache(struct demo *demo);
 
 static void demo_draw(struct demo *demo);
+
+static void demo_resize(struct demo *demo);
+
+static void demo_cleanup(struct demo *demo);
+
+static void demo_cleanup_swapchain(struct demo *demo);
 
 VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags,
                                        VkDebugReportObjectTypeEXT objType,
@@ -489,9 +495,6 @@ bool CanPresentEarlier(uint64_t earliest, uint64_t actual, uint64_t margin,
   }
   return false;
 }
-
-// Forward declaration:
-static void demo_resize(struct demo *demo);
 
 static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits,
                                         VkFlags requirements_mask,
@@ -766,19 +769,15 @@ static void demo_prepare_buffers(struct demo *demo)
 
   // Check the surface capabilities and formats
   VkSurfaceCapabilitiesKHR surfCapabilities;
-  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(
-      demo->gpu, demo->surface, &surfCapabilities);
+  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(demo->gpu, demo->surface, &surfCapabilities);
   assert(!err);
 
   uint32_t presentModeCount;
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(
-      demo->gpu, demo->surface, &presentModeCount, NULL);
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, NULL);
   assert(!err);
-  VkPresentModeKHR *presentModes =
-      (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
+  VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
   assert(presentModes);
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(
-      demo->gpu, demo->surface, &presentModeCount, presentModes);
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, presentModes);
   assert(!err);
 
   VkExtent2D swapchainExtent;
@@ -1818,131 +1817,6 @@ static void demo_prepare(struct demo *demo)
     }
   }
 
-  demo_prepare_swapchain(demo);
-
-  demo->prepared = true;
-}
-
-static void demo_cleanup(struct demo *demo)
-{
-  uint32_t i;
-
-  demo->prepared = false;
-  vkDeviceWaitIdle(demo->device);
-
-  // Wait for fences from present operations
-  for (i = 0; i < FRAME_LAG; i++)
-  {
-    vkWaitForFences(demo->device, 1, &demo->fences[i], VK_TRUE, UINT64_MAX);
-    vkDestroyFence(demo->device, demo->fences[i], NULL);
-    vkDestroySemaphore(demo->device, demo->image_acquired_semaphores[i], NULL);
-    vkDestroySemaphore(demo->device, demo->draw_complete_semaphores[i], NULL);
-    if (demo->separate_present_queue)
-    {
-      vkDestroySemaphore(demo->device, demo->image_ownership_semaphores[i],
-                         NULL);
-    }
-
-    vkFreeCommandBuffers(demo->device, demo->cmd_pool[i], 1, &demo->cmd[i]);
-
-    vkDestroyCommandPool(demo->device, demo->cmd_pool[i], NULL);
-
-    if (demo->separate_present_queue)
-    {
-      vkFreeCommandBuffers(demo->device, demo->present_cmd_pool[i], 1, &demo->graphics_to_present_cmd[i]);
-
-      vkDestroyCommandPool(demo->device, demo->present_cmd_pool[i], NULL);
-    }
-
-    vkDestroyBuffer(demo->device,
-                    demo->uniform_buffer[i], NULL);
-    vkFreeMemory(demo->device,
-                 demo->uniform_memory[i], NULL);
-  }
-
-  for (i = 0; i < demo->swapchainImageCount; i++)
-  {
-    vkDestroyFramebuffer(demo->device,
-                         demo->swapchain_image_resources[i].framebuffer, NULL);
-  }
-  vkDestroyDescriptorPool(demo->device, demo->desc_pool_1, NULL);
-
-  vkDestroyPipeline(demo->device, demo->pipeline_1, NULL);
-  vkDestroyPipelineCache(demo->device, demo->pipelineCache_1, NULL);
-  vkDestroyRenderPass(demo->device, demo->render_pass_1, NULL);
-  vkDestroyPipelineLayout(demo->device, demo->pipeline_layout_1, NULL);
-  vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout_1, NULL);
-
-  for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
-  {
-    vkDestroyImageView(demo->device, demo->texture_assets[i].view, NULL);
-    vkDestroyImage(demo->device, demo->texture_assets[i].image, NULL);
-    vkFreeMemory(demo->device, demo->texture_assets[i].mem, NULL);
-    vkDestroySampler(demo->device, demo->texture_assets[i].sampler, NULL);
-  }
-  demo->fpDestroySwapchainKHR(demo->device, demo->swapchain, NULL);
-
-  vkDestroyImageView(demo->device, demo->depth.view, NULL);
-  vkDestroyImage(demo->device, demo->depth.image, NULL);
-  vkFreeMemory(demo->device, demo->depth.mem, NULL);
-
-  for (i = 0; i < demo->swapchainImageCount; i++)
-  {
-    vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
-                       NULL);
-  }
-  free(demo->swapchain_image_resources);
-  free(demo->queue_props);
-
-  vkDeviceWaitIdle(demo->device);
-  vkDestroyDevice(demo->device, NULL);
-  if (demo->validate)
-  {
-    demo->DestroyDebugReportCallback(demo->inst, demo->msg_callback, NULL);
-  }
-  vkDestroySurfaceKHR(demo->inst, demo->surface, NULL);
-
-  xcb_destroy_window(demo->connection, demo->xcb_window);
-  xcb_disconnect(demo->connection);
-
-  vkDestroyInstance(demo->inst, NULL);
-}
-
-static void demo_resize(struct demo *demo)
-{
-  uint32_t i;
-
-  // Don't react to resize until after first initialization.
-  if (!demo->prepared)
-  {
-    return;
-  }
-  // In order to properly resize the window, we must re-create the swapchain
-  // AND redo the command buffers, etc.
-  //
-  // First, perform part of the demo_cleanup() function:
-  demo->prepared = false;
-  vkDeviceWaitIdle(demo->device);
-
-  for (i = 0; i < demo->swapchainImageCount; i++)
-  {
-    vkDestroyFramebuffer(demo->device,
-                         demo->swapchain_image_resources[i].framebuffer, NULL);
-  }
-
-  vkDestroyImageView(demo->device, demo->depth.view, NULL);
-  vkDestroyImage(demo->device, demo->depth.image, NULL);
-  vkFreeMemory(demo->device, demo->depth.mem, NULL);
-
-  for (i = 0; i < demo->swapchainImageCount; i++)
-  {
-    vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view,
-                       NULL);
-  }
-  free(demo->swapchain_image_resources);
-
-  // Second, re-perform the demo_prepare() function, which will re-create the
-  // swapchain:
   demo_prepare_swapchain(demo);
 
   demo->prepared = true;
@@ -3019,6 +2893,114 @@ static void demo_draw(struct demo *demo)
   // earlier, depends on when the pipeline cache stops being populated
   // internally.
   //demo_store_pipeline_cache(demo);
+}
+
+static void demo_resize(struct demo *demo)
+{
+  uint32_t i;
+
+  // Don't react to resize until after first initialization.
+  if (!demo->prepared)
+  {
+    return;
+  }
+  // In order to properly resize the window, we must re-create the swapchain
+  // AND redo the command buffers, etc.
+  //
+  // First, perform part of the demo_cleanup() function:
+  demo->prepared = false;
+  vkDeviceWaitIdle(demo->device);
+
+  demo_cleanup_swapchain(demo);
+
+  // Second, re-perform the demo_prepare() function, which will re-create the
+  // swapchain:
+  demo_prepare_swapchain(demo);
+
+  demo->prepared = true;
+}
+
+static void demo_cleanup_swapchain(struct demo *demo)
+{
+  uint32_t i;
+
+  for (i = 0; i < demo->swapchainImageCount; i++)
+  {
+    vkDestroyFramebuffer(demo->device, demo->swapchain_image_resources[i].framebuffer, NULL);
+    vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view, NULL);
+  }
+
+  free(demo->swapchain_image_resources);
+
+  vkDestroyImageView(demo->device, demo->depth.view, NULL);
+  vkDestroyImage(demo->device, demo->depth.image, NULL);
+  vkFreeMemory(demo->device, demo->depth.mem, NULL);
+}
+
+static void demo_cleanup(struct demo *demo)
+{
+  uint32_t i;
+
+  demo->prepared = false;
+  vkDeviceWaitIdle(demo->device);
+
+  demo_cleanup_swapchain(demo);
+  demo->fpDestroySwapchainKHR(demo->device, demo->swapchain, NULL);
+
+  // Wait for fences from present operations
+  for (i = 0; i < FRAME_LAG; i++)
+  {
+    vkWaitForFences(demo->device, 1, &demo->fences[i], VK_TRUE, UINT64_MAX);
+    vkDestroyFence(demo->device, demo->fences[i], NULL);
+    vkDestroySemaphore(demo->device, demo->image_acquired_semaphores[i], NULL);
+    vkDestroySemaphore(demo->device, demo->draw_complete_semaphores[i], NULL);
+    if (demo->separate_present_queue)
+    {
+      vkDestroySemaphore(demo->device, demo->image_ownership_semaphores[i], NULL);
+    }
+
+    vkFreeCommandBuffers(demo->device, demo->cmd_pool[i], 1, &demo->cmd[i]);
+    vkDestroyCommandPool(demo->device, demo->cmd_pool[i], NULL);
+    if (demo->separate_present_queue)
+    {
+      vkFreeCommandBuffers(demo->device, demo->present_cmd_pool[i], 1, &demo->graphics_to_present_cmd[i]);
+      vkDestroyCommandPool(demo->device, demo->present_cmd_pool[i], NULL);
+    }
+
+    vkDestroyBuffer(demo->device, demo->uniform_buffer[i], NULL);
+    vkFreeMemory(demo->device, demo->uniform_memory[i], NULL);
+  }
+
+  vkDestroyDescriptorPool(demo->device, demo->desc_pool_1, NULL);
+  vkDestroyPipeline(demo->device, demo->pipeline_1, NULL);
+  vkDestroyPipelineCache(demo->device, demo->pipelineCache_1, NULL);
+  vkDestroyRenderPass(demo->device, demo->render_pass_1, NULL);
+  vkDestroyPipelineLayout(demo->device, demo->pipeline_layout_1, NULL);
+  vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout_1, NULL);
+
+  for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
+  {
+    vkDestroyImageView(demo->device, demo->texture_assets[i].view, NULL);
+    vkDestroyImage(demo->device, demo->texture_assets[i].image, NULL);
+    vkFreeMemory(demo->device, demo->texture_assets[i].mem, NULL);
+    vkDestroySampler(demo->device, demo->texture_assets[i].sampler, NULL);
+  }
+
+  free(demo->queue_props);
+
+  vkDestroyDevice(demo->device, NULL);
+
+  if (demo->validate)
+  {
+    demo->DestroyDebugReportCallback(demo->inst, demo->msg_callback, NULL);
+  }
+
+  vkDestroySurfaceKHR(demo->inst, demo->surface, NULL);
+
+  xcb_destroy_window(demo->connection, demo->xcb_window);
+  xcb_disconnect(demo->connection);
+
+  vkDestroyInstance(demo->inst, NULL);
 }
 
 #include <sys/types.h>
