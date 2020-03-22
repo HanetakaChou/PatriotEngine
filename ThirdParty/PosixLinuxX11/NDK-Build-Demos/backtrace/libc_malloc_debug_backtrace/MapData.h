@@ -84,16 +84,17 @@ class MapData
 public:
   MapData()
   {
-    
+
   }
 
   const MapEntry *find(uintptr_t pc, uintptr_t *rel_pc = NULL);
 
-private:
-  std::mutex m_;
-  std::set<MapEntry> entries_;
-
   void sync_maps();
+
+  void clear();
+
+private:
+  std::set<MapEntry> entries_;
 
   MapData(const MapData &) = delete;
   void operator=(const MapData &) = delete;

@@ -47,15 +47,7 @@ MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
 {
   MapEntry pc_entry(pc);
 
-  std::lock_guard<std::mutex> lock(m_);
-
   auto it = entries_.find(pc_entry);
-  if (it == entries_.end())
-  {
-    sync_maps();
-  }
-
-  it = entries_.find(pc_entry);
   if (it == entries_.end())
   {
     return NULL;
@@ -112,6 +104,11 @@ void MapData::sync_maps()
       break;
     }
   }
+}
+
+void MapData::clear()
+{
+  entries_.clear();
 }
 
 // Format of /proc/<PID>/maps:

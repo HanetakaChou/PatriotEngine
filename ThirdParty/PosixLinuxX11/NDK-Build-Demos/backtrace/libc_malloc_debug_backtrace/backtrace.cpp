@@ -55,11 +55,14 @@ static _Unwind_Reason_Code trace_function(struct _Unwind_Context *context, void 
 void backtrace_startup()
 {
   uintptr_t ip = reinterpret_cast<uintptr_t>(&trace_function);
+  g_map_data.sync_maps();
   g_current_code_map = g_map_data.find(ip, NULL);
 }
 
 void backtrace_shutdown()
 {
+  g_current_code_map = NULL;
+  g_map_data.clear();
 }
 
 struct stack_crawl_state_t
