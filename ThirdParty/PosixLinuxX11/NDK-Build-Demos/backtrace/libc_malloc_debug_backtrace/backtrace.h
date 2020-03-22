@@ -43,6 +43,4 @@ __END_DECLS
 
 //std::string backtrace_string(const uintptr_t *frames, size_t frame_count);
 
-//std::string backtrace_dumpmapdata();
-
 #endif // MALLOC_DEBUG_BACKTRACE_H

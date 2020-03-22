@@ -66,6 +66,7 @@ private:
 
   MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, const char *name, size_t name_len) : start(start), end(end), offset(offset), m_name(name, name_len)
   {
+
   }
 
   template <typename T>
@@ -81,7 +82,6 @@ public:
   ~MapData();
 
   const MapEntry *find(uintptr_t pc, uintptr_t *rel_pc = NULL);
-  //int traverse(int (*traverse_function)(const MapEntry *, void *), void *arg);
 
 private:
   bool SyncMaps();

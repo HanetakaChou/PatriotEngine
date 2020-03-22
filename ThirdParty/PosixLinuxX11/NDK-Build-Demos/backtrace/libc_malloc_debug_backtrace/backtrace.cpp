@@ -54,26 +54,16 @@ extern "C" char *__cxa_demangle(const char *, char *, size_t *, int *);
 static MapData g_map_data;
 static const MapEntry *g_current_code_map = NULL;
 
-static _Unwind_Reason_Code find_current_map(__unwind_context *context, void *)
-{
-  uintptr_t ip = _Unwind_GetIP(context);
-
-  if (ip == 0)
-  {
-    return _URC_END_OF_STACK;
-  }
-  g_current_code_map = g_map_data.find(ip);
-  return _URC_END_OF_STACK;
-}
+static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg);
 
 void backtrace_startup()
 {
-  _Unwind_Backtrace(find_current_map, nullptr);
+  uintptr_t ip = reinterpret_cast<uintptr_t>(&trace_function);
+  g_current_code_map = g_map_data.find(ip, NULL);
 }
 
 void backtrace_shutdown()
 {
-
 }
 
 struct stack_crawl_state_t
@@ -82,12 +72,12 @@ struct stack_crawl_state_t
   size_t frame_count;
   size_t cur_frame = 0;
 
-  stack_crawl_state_t(uintptr_t *frames, size_t frame_count)
-      : frames(frames), frame_count(frame_count) {}
+  stack_crawl_state_t(uintptr_t *frames, size_t frame_count) : frames(frames), frame_count(frame_count)
+  {
+  }
 };
 
-static _Unwind_Reason_Code trace_function(__unwind_context *context,
-                                          void *arg)
+static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg)
 {
   stack_crawl_state_t *state = static_cast<stack_crawl_state_t *>(arg);
 
@@ -138,8 +128,7 @@ static _Unwind_Reason_Code trace_function(__unwind_context *context,
   }
 
   state->frames[state->cur_frame++] = ip;
-  return (state->cur_frame >= state->frame_count) ? _URC_END_OF_STACK
-                                                  : _URC_NO_REASON;
+  return (state->cur_frame >= state->frame_count) ? _URC_END_OF_STACK : _URC_NO_REASON;
 }
 
 size_t backtrace_get(uintptr_t *frames, size_t frame_count)
