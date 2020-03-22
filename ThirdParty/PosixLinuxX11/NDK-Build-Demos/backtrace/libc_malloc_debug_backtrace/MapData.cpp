@@ -120,7 +120,7 @@ MapEntry MapEntry::parse_line(char const *line, char const *line_end)
   uintptr_t offset;
   char permissions[5];
   int name_pos;
-  if (sscanf(line, "%" PRIxPTR "-%" PRIxPTR " %4s %" PRIxPTR " %*x:%*x %*d %n", &start, &end, permissions, &offset, &name_pos) < 2)
+  if (sscanf(line, "%" SCNxPTR "-%" SCNxPTR " %4s %" SCNxPTR " %*x:%*x %*d %n", &start, &end, permissions, &offset, &name_pos) < 2)
   {
     MapEntry entry(0, 0, 0, "<unknown>", strlen("<unknown>"));
     return entry;
