@@ -26,15 +26,15 @@
  * SUCH DAMAGE.
  */
 
-#include <dlfcn.h>
-#include <errno.h>
 #include <inttypes.h>
 #include <malloc.h>
-#include <pthread.h>
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
+#include <pthread.h>
 #include <unwind.h>
+#include <dlfcn.h>
 
 #include "MapData.h"
 #include "backtrace.h"
@@ -51,7 +51,9 @@ typedef struct _Unwind_Context __unwind_context;
 
 extern "C" char *__cxa_demangle(const char *, char *, size_t *, int *);
 
-static MapData g_map_data;
+static std::string get_proc_maps();
+
+static MapData g_map_data(&get_proc_maps);
 static const MapEntry *g_current_code_map = NULL;
 
 static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg);
@@ -118,17 +120,29 @@ static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg)
     // so subtract 1 to estimate where the instruction lives.
     ip--;
 #endif
-
-    // Do not record the frames that fall in our own shared library.
-    MapEntry pc_entry(ip);
-    if ((g_current_code_map != NULL) && (!(pc_entry < (*g_current_code_map) || (*g_current_code_map) < pc_entry)))
+    if (ip != 0)
+    {
+      // Do not record the frames that fall in our own shared library.
+      MapEntry pc_entry(ip);
+      if ((g_current_code_map != NULL) && (!(pc_entry < (*g_current_code_map) || (*g_current_code_map) < pc_entry)))
+      {
+        return _URC_NO_REASON;
+      }
+      else
+      {
+        state->frames[state->cur_frame++] = ip;
+        return (state->cur_frame >= state->frame_count) ? _URC_END_OF_STACK : _URC_NO_REASON;
+      }
+    }
+    else
     {
       return _URC_NO_REASON;
     }
   }
-
-  state->frames[state->cur_frame++] = ip;
-  return (state->cur_frame >= state->frame_count) ? _URC_END_OF_STACK : _URC_NO_REASON;
+  else
+  {
+    return _URC_NO_REASON;
+  }
 }
 
 size_t backtrace_get(uintptr_t *frames, size_t frame_count)
@@ -144,30 +158,49 @@ std::string backtrace_string(const uintptr_t *frames, size_t frame_count)
 
   for (size_t frame_num = 0; frame_num < frame_count; frame_num++)
   {
-    uintptr_t offset = 0;
-    const char *symbol = nullptr;
 
-    Dl_info info;
-    if (dladdr(reinterpret_cast<void *>(frames[frame_num]), &info) != 0)
+    char const *symbol;
+    uintptr_t offset;
+    uintptr_t rel_pc;
+    char const *soname;
     {
-      offset = reinterpret_cast<uintptr_t>(info.dli_saddr);
-      symbol = info.dli_sname;
+      Dl_info info;
+      int ret_dl = dladdr(reinterpret_cast<void *>(frames[frame_num]), &info);
+      if (ret_dl != 0)
+      {
+        symbol = info.dli_sname;
+        offset = reinterpret_cast<uintptr_t>(info.dli_saddr);
+      }
+      else
+      {
+        symbol = NULL;
+      }
+
+      MapEntry const *entry = g_map_data.find(frames[frame_num], &rel_pc);
+      if (entry != NULL)
+      {
+        soname = entry->name();
+      }
+      else
+      {
+        if (ret_dl != 0)
+        {
+          rel_pc = offset;
+          soname = info.dli_fname;
+        }
+      }
+
+      if (soname == NULL)
+      {
+        soname = "<unknown>";
+      }
     }
 
-    uintptr_t rel_pc = offset;
-    const MapEntry *entry = g_map_data.find(frames[frame_num], &rel_pc);
-
-    const char *soname = (entry != nullptr) ? entry->name() : info.dli_fname;
-    if (soname == nullptr)
-    {
-      soname = "<unknown>";
-    }
     char buf[4096];
-    if (symbol != nullptr)
+    if (symbol != NULL)
     {
-      char *demangled_symbol = __cxa_demangle(symbol, nullptr, nullptr, nullptr);
-      const char *best_name = (demangled_symbol != nullptr) ? demangled_symbol : symbol;
-
+      char *demangled_symbol = __cxa_demangle(symbol, NULL, NULL, NULL);
+      char const *best_name = (demangled_symbol != NULL) ? demangled_symbol : symbol;
       snprintf(buf, sizeof(buf), "          #%02zd  pc %" PAD_PTR "  %s (%s+%" PRIuPTR ")\n", frame_num, rel_pc, soname, best_name, frames[frame_num] - offset);
       free(demangled_symbol);
     }
@@ -184,4 +217,27 @@ std::string backtrace_string(const uintptr_t *frames, size_t frame_count)
 void backtrace_log(const uintptr_t *frames, size_t frame_count)
 {
   fprintf(stderr, "%s", backtrace_string(frames, frame_count).c_str());
+}
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+static std::string get_proc_maps()
+{
+  std::string str;
+
+  int fd = open64("/proc/self/maps", O_RDONLY);
+  if (fd != -1)
+  {
+    int ret;
+    char buf[4096];
+    while (((ret = read(fd, buf, 4096)) != -1) && (ret != 0))
+    {
+      str.append(buf, ret);
+    }
+  }
+  close(fd);
+
+  return str;
 }

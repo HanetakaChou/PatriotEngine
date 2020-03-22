@@ -39,11 +39,6 @@
 
 #include "MapData.h"
 
-MapData::~MapData()
-{
-  entries_.clear();
-}
-
 // Find the containing map info for the PC.
 MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
 {
@@ -54,7 +49,7 @@ MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
   auto it = entries_.find(pc_entry);
   if (it == entries_.end())
   {
-    SyncMaps();
+    sync_maps();
   }
 
   it = entries_.find(pc_entry);
@@ -73,40 +68,39 @@ MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
   return entry;
 }
 
-bool MapData::SyncMaps()
+void MapData::sync_maps()
 {
-  FILE *fp = fopen("/proc/self/maps", "re");
-  if (fp == nullptr)
-  {
-    return false;
-  }
+  std::string db_maps = m_get_maps();
 
-  std::vector<char> buffer(1024);
-  while (fgets(buffer.data(), buffer.size(), fp) != nullptr)
-  {
-    //try
-    //{
-    MapEntry entry = MapEntry::parse_line(buffer.data());
-    //}
-    //catch (...)
-    //{
-    //  fclose(fp);
-    //  return false;
-    //}
+  char const *db_cur = db_maps.data();
+  char const *db_end = db_maps.data() + db_maps.length();
 
-    auto it = entries_.find(entry);
-    if (it == entries_.end())
+  while (db_cur < db_end)
+  {
+    char const *line = db_cur;
+    char const *line_end = strchr(line, '\n');
+    if (line_end != NULL)
     {
-      entries_.insert(entry);
+      MapEntry entry = MapEntry::parse_line(line, line_end);
+
+      auto it = entries_.find(entry);
+      if (it == entries_.end())
+      {
+        entries_.insert(entry);
+      }
+
+      db_cur = (line_end + 1);
+    }
+    else
+    {
+      break;
     }
   }
-  fclose(fp);
-  return true;
 }
 
 // Format of /proc/<PID>/maps:
 //   6f000000-6f01e000 rwxp 00000000 00:0c 16389419   /system/lib/libcomposer.so
-MapEntry MapEntry::parse_line(char *line)
+MapEntry MapEntry::parse_line(char const *line, char const *line_end)
 {
   uintptr_t start;
   uintptr_t end;
@@ -115,18 +109,18 @@ MapEntry MapEntry::parse_line(char *line)
   int name_pos;
   if (sscanf(line, "%" PRIxPTR "-%" PRIxPTR " %4s %" PRIxPTR " %*x:%*x %*d %n", &start, &end, permissions, &offset, &name_pos) < 2)
   {
-    //throw;
     MapEntry entry(0, 0, 0, "<unknown>", strlen("<unknown>"));
     return entry;
   }
 
-  const char *name = line + name_pos;
-  size_t name_len = strlen(name);
-  if (name_len && name[name_len - 1] == '\n')
+  char const *name = line + name_pos;
+  if (name > line_end)
   {
-    name_len -= 1;
+    MapEntry entry(start, end, offset, "<unknown>", strlen("<unknown>"));
+    return entry;
   }
 
+  size_t name_len = line_end - name;
   if (permissions[0] != 'r')
   {
     // Any unreadable map will just get a zero load base.

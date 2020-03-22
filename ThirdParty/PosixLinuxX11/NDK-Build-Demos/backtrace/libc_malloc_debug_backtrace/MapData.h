@@ -37,7 +37,7 @@
 
 struct MapEntry
 {
-  static MapEntry parse_line(char *line);
+  static MapEntry parse_line(char const *line, char const *line_end);
 
   MapEntry(uintptr_t pc) : start(pc), end(pc)
   {
@@ -67,12 +67,10 @@ private:
 
   MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, const char *name, size_t name_len) : start(start), end(end), offset(offset), load_base(-1), m_load_base_init(false), m_name(name, name_len)
   {
-
   }
 
   MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, uintptr_t load_base, const char *name, size_t name_len) : start(start), end(end), offset(offset), load_base(load_base), m_load_base_init(true), m_name(name, name_len)
   {
-
   }
 
   template <typename T>
@@ -84,16 +82,19 @@ private:
 class MapData
 {
 public:
-  MapData() = default;
-  ~MapData();
+  MapData(std::string (*get_maps)()) : m_get_maps(get_maps)
+  {
+  }
 
   const MapEntry *find(uintptr_t pc, uintptr_t *rel_pc = NULL);
 
 private:
-  bool SyncMaps();
-
   std::mutex m_;
   std::set<MapEntry> entries_;
+
+  std::string (*m_get_maps)();
+
+  void sync_maps();
 
   MapData(const MapData &) = delete;
   void operator=(const MapData &) = delete;
