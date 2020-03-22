@@ -41,6 +41,4 @@ void backtrace_log(const uintptr_t *frames, size_t frame_count);
 
 __END_DECLS
 
-//std::string backtrace_string(const uintptr_t *frames, size_t frame_count);
-
 #endif // MALLOC_DEBUG_BACKTRACE_H

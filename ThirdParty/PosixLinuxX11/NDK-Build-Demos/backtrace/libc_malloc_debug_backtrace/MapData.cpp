@@ -70,7 +70,7 @@ MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
 
 void MapData::sync_maps()
 {
-  std::string db_maps = m_get_maps();
+  std::string db_maps = m_get_maps(m_get_maps_arg);
 
   char const *db_cur = db_maps.data();
   char const *db_end = db_maps.data() + db_maps.length();

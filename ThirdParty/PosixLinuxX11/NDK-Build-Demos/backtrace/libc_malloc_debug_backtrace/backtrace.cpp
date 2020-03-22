@@ -51,9 +51,9 @@ typedef struct _Unwind_Context __unwind_context;
 
 extern "C" char *__cxa_demangle(const char *, char *, size_t *, int *);
 
-static std::string get_proc_maps();
+static std::string get_proc_maps(void *);
 
-static MapData g_map_data(&get_proc_maps);
+static MapData g_map_data(&get_proc_maps, NULL);
 static const MapEntry *g_current_code_map = NULL;
 
 static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg);
@@ -223,7 +223,7 @@ void backtrace_log(const uintptr_t *frames, size_t frame_count)
 #include <sys/stat.h>
 #include <fcntl.h>
 
-static std::string get_proc_maps()
+static std::string get_proc_maps(void *)
 {
   std::string str;
 
