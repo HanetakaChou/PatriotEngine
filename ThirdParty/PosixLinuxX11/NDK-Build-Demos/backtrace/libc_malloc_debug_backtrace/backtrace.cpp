@@ -47,14 +47,10 @@
 #define PAD_PTR "08" PRIxPTR
 #endif
 
-typedef struct _Unwind_Context __unwind_context;
-
-extern "C" char *__cxa_demangle(const char *, char *, size_t *, int *);
-
 static MapData g_map_data;
 static const MapEntry *g_current_code_map = NULL;
 
-static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg);
+static _Unwind_Reason_Code trace_function(struct _Unwind_Context *context, void *arg);
 
 void backtrace_startup()
 {
@@ -77,7 +73,7 @@ struct stack_crawl_state_t
   }
 };
 
-static _Unwind_Reason_Code trace_function(__unwind_context *context, void *arg)
+static _Unwind_Reason_Code trace_function(struct _Unwind_Context *context, void *arg)
 {
   stack_crawl_state_t *state = static_cast<stack_crawl_state_t *>(arg);
 
@@ -150,6 +146,9 @@ size_t backtrace_get(uintptr_t *frames, size_t frame_count)
   return state.cur_frame;
 }
 
+//#include <cxxabi.h>
+extern "C" char *__cxa_demangle(const char *, char *, size_t *, int *);
+
 bool backtrace_resolve(uintptr_t frame, uintptr_t *addr2line_addr, char *filename, size_t filename_max, char *symbolname, size_t symbolname_max, uintptr_t *symbol_offset)
 {
   char const *symbol;
@@ -202,13 +201,13 @@ bool backtrace_resolve(uintptr_t frame, uintptr_t *addr2line_addr, char *filenam
 
   if (symbol != NULL)
   {
-    char *demangled_symbol = __cxa_demangle(symbol, NULL, NULL, NULL);
-    char const *best_name = (demangled_symbol != NULL) ? demangled_symbol : symbol;
     if (symbolname != NULL)
     {
+      char *demangled_symbol = __cxa_demangle(symbol, NULL, NULL, NULL);
+      char const *best_name = (demangled_symbol != NULL) ? demangled_symbol : symbol;
       strncpy(symbolname, best_name, symbolname_max);
+      free(demangled_symbol);
     }
-    free(demangled_symbol);
 
     if (symbol_offset != NULL)
     {
