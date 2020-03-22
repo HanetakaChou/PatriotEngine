@@ -231,13 +231,15 @@ std::string backtrace_string(const uintptr_t *frames, size_t frame_count)
       char soname[4096];
       char best_name[4096];
       uintptr_t symbol_offset;
+      char *p_soname = soname; //avoid -Werror=format-truncation
+      char *p_best_name = best_name;
       if (backtrace_resolve(frames[frame_num], &rel_pc, soname, 4096, best_name, 4096, &symbol_offset))
       {
-        snprintf(buf, sizeof(buf), "          #%02zd  pc %" PAD_PTR "  %s (%s+%" PRIuPTR ")\n", frame_num, rel_pc, soname, best_name, symbol_offset);
+        snprintf(buf, sizeof(buf), "          #%02zd  pc %" PAD_PTR "  %s (%s+%" PRIuPTR ")\n", frame_num, rel_pc, p_soname, p_best_name, symbol_offset);
       }
       else
       {
-        snprintf(buf, sizeof(buf), "          #%02zd  pc %" PAD_PTR "  %s\n", frame_num, rel_pc, soname);
+        snprintf(buf, sizeof(buf), "          #%02zd  pc %" PAD_PTR "  %s\n", frame_num, rel_pc, p_soname);
       }
     }
 
