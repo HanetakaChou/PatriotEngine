@@ -26,13 +26,14 @@
  * SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <elf.h>
-#include <inttypes.h>
-#include <link.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <inttypes.h>
+#include <ctype.h>
+
+#include <elf.h>
+#include <link.h>
 
 #include <vector>
 
@@ -126,18 +127,17 @@ MapEntry MapEntry::parse_line(char *line)
     name_len -= 1;
   }
 
-  MapEntry entry(start, end, offset, name, name_len);
   if (permissions[0] != 'r')
   {
     // Any unreadable map will just get a zero load base.
-    entry.load_base = 0;
+    MapEntry entry(start, end, offset, 0, name, name_len);
+    return entry;
   }
   else
   {
-    entry.load_base = MapEntry::get_loadbase(&entry);
+    MapEntry entry(start, end, offset, name, name_len);
+    return entry;
   }
-
-  return entry;
 }
 
 template <typename T>
@@ -202,6 +202,12 @@ uintptr_t MapEntry::get_loadbase(MapEntry const *entry)
 
 uintptr_t MapEntry::get_relpc(uintptr_t pc) const
 {
+  if (__builtin_expect(!m_load_base_init, false))
+  {
+    load_base = get_loadbase(this);
+    m_load_base_init = true;
+  }
+
   uintptr_t rel_pc = pc - start + load_base;
   return rel_pc;
 }

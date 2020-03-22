@@ -61,10 +61,16 @@ private:
   uintptr_t start;
   uintptr_t end;
   uintptr_t offset;
-  uintptr_t load_base;
+  mutable uintptr_t load_base; //Don't affect start/end which related to operator< used in std::set
+  mutable bool m_load_base_init;
   std::string m_name;
 
-  MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, const char *name, size_t name_len) : start(start), end(end), offset(offset), m_name(name, name_len)
+  MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, const char *name, size_t name_len) : start(start), end(end), offset(offset), load_base(-1), m_load_base_init(false), m_name(name, name_len)
+  {
+
+  }
+
+  MapEntry(uintptr_t start, uintptr_t end, uintptr_t offset, uintptr_t load_base, const char *name, size_t name_len) : start(start), end(end), offset(offset), load_base(load_base), m_load_base_init(true), m_name(name, name_len)
   {
 
   }
