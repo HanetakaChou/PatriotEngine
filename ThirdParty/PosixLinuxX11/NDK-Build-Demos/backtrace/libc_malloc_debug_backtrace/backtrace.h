@@ -37,6 +37,7 @@ __BEGIN_DECLS
 void backtrace_startup();
 void backtrace_shutdown();
 size_t backtrace_get(uintptr_t *frames, size_t frame_count);
+bool backtrace_resolve(uintptr_t frame, uintptr_t *addr2line_addr, char *filename, size_t filename_max, char *symbolname, size_t symbolname_max, uintptr_t *symbol_offset);
 void backtrace_log(const uintptr_t *frames, size_t frame_count);
 
 __END_DECLS

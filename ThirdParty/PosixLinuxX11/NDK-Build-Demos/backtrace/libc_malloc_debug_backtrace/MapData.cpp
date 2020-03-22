@@ -27,10 +27,13 @@
  */
 
 #include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
 #include <inttypes.h>
-#include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include <elf.h>
 #include <link.h>
@@ -70,7 +73,20 @@ MapEntry const *MapData::find(uintptr_t pc, uintptr_t *rel_pc)
 
 void MapData::sync_maps()
 {
-  std::string db_maps = m_get_maps(m_get_maps_arg);
+  std::string db_maps;
+  {
+    int fd = open64("/proc/self/maps", O_RDONLY);
+    if (fd != -1)
+    {
+      int ret;
+      char buf[4096];
+      while (((ret = read(fd, buf, 4096)) != -1) && (ret != 0))
+      {
+        db_maps.append(buf, ret);
+      }
+    }
+    close(fd);
+  }
 
   char const *db_cur = db_maps.data();
   char const *db_end = db_maps.data() + db_maps.length();

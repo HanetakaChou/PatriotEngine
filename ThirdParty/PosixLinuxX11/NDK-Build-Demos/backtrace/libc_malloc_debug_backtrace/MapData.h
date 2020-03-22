@@ -82,7 +82,7 @@ private:
 class MapData
 {
 public:
-  MapData(std::string (*get_maps)(void *), void *get_maps_arg) : m_get_maps(get_maps), m_get_maps_arg(get_maps_arg)
+  MapData()
   {
     
   }
@@ -92,9 +92,6 @@ public:
 private:
   std::mutex m_;
   std::set<MapEntry> entries_;
-
-  std::string (*m_get_maps)(void *arg);
-  void *m_get_maps_arg;
 
   void sync_maps();
 
