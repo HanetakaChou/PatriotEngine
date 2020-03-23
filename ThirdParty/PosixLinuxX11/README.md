@@ -9,7 +9,10 @@ Therefore, we use Android's [bionic](https://android.googlesource.com/platform/b
 Referring to the official document [Building Open Source Projects Using Standalone Toolchains](https://developer.android.com/ndk/guides/standalone_toolchain#building_open_source_projects_using_standalone_toolchains) provided by Google, we built all third-party libraries ([X11](/ThirdParty/PosixLinuxX11/Bionic-Build/X11-README.md), [Mesa-Vulkan-Drivers](/ThirdParty/PosixLinuxX11/Bionic-Build/Mesa-README.md), [Vulkan-Loader](/ThirdParty/PosixLinuxX11/Bionic-Build/Vulkan-README.md), etc.) depended by PatriotEngine with the bionic\(-[ndk-r11c](https://developer.android.com/ndk/downloads/older_releases)\)-based toolchain.  
   
 Using Andoird's bionic also provides another benefit: we can reuse the Android toolchain(ndk-build, etc.). In theory, we can use the same build system between Linux Desktop and Android, which saves the development time of PatriotEngine a lot.  
-  
+    
+---      
+[Bionic-based RenderDoc](https://github.com/YuqiaoZhang/Bionic-based-RenderDoc)    
+     
 ---    
 
 由于**glibc**和**stdc++**\的版本在不同Linux发行版之间差异较大，在一个Linux发行版上编译的二进制文件很难在未经重新编译的情况下在另一个Linux发行版上稳定并且行为一致地运行  
