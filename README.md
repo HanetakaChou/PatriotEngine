@@ -6,8 +6,8 @@
 我们知道“程序=数据结构+算法”，图形渲染引擎可以认为由**场景**（Scene）和**渲染流程**（Rendering Pipeline)两部分组成。场景即程序中的数据结构部分，描述了我们输入到渲染流程的数据；而渲染流程即程序中的算法部分，对输入的场景进行处理，最终输出图像（Image）的过程（在一些文献中，**图形渲染**（Graphics Rendering）又被称为**图像合成**（Image Synthesis））。本书将会从场景和渲染流程两个方面对图形渲染引擎进行阐述。  
 
 ### 已解决：  
-* 1\.并行编程框架——[PatriotTBB](https://github.com/YuqiaoZhang/PatriotTBB)    
-* 2\.可移植分发——[Bionic-based Linux](https://github.com/YuqiaoZhang/Bionic-based-Linux)  
+* 1\.并行编程框架——[PatriotTBB](https://github.com/YuqiaoZhang/PatriotTBB)  
+* 2\.可移植分发——[Bionic-based Linux](https://github.com/YuqiaoZhang/Bionic-based-Linux)  //[Bionic-based RenderDoc](https://github.com/YuqiaoZhang/Bionic-based-RenderDoc)  
 
 ### 待解决：  
 * 1\.场景管理：对NVIDIA SceniX、NvPro-Pipeline和Pixar Hydra的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
