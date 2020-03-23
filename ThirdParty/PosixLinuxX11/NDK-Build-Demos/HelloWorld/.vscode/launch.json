@@ -16,7 +16,7 @@
             "externalConsole": false,
             "miDebuggerServerAddress": ":27077",
             "MIMode": "gdb",
-            //"miDebuggerPath": "my-ndk-dir/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            "miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r11c/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
             "miDebuggerArgs": "--init-command=${workspaceFolder}/libs/x86_64/gdb.setup",
             "setupCommands": [
                 {
