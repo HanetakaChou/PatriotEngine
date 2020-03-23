@@ -217,4 +217,4 @@ uintptr_t MapEntry::get_relpc(uintptr_t pc) const
 
   uintptr_t rel_pc = pc - start + load_base;
   return rel_pc;
-}
+} 
