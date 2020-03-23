@@ -183,6 +183,10 @@ bool backtrace_resolve(uintptr_t frame, uintptr_t *addr2line_addr, char *filenam
         rel_pc = offset;
         soname = info.dli_fname;
       }
+      else
+      {
+        soname = NULL;
+      }
     }
 
     if (soname == NULL)
