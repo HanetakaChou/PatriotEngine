@@ -1,0 +1,21 @@
+{
+    "C_Cpp.clang_format_style": "Visual Studio",
+    "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
+    "files.associations": {
+        "iostream": "cpp",
+        "ostream": "cpp",
+        "inttypes.h": "c",
+        "cstddef": "cpp",
+        "fstream": "cpp",
+        "locale": "cpp",
+        "atomic": "cpp",
+        "*.tcc": "cpp",
+        "sstream": "cpp",
+        "cstdio": "cpp",
+        "exception": "cpp",
+        "iosfwd": "cpp",
+        "new": "cpp",
+        "streambuf": "cpp",
+        "ios": "cpp"
+    },
+}
