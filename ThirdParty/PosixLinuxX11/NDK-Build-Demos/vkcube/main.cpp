@@ -413,6 +413,8 @@ static void demo_draw(struct demo *demo);
 
 static void demo_resize(struct demo *demo);
 
+static void demo_prepare_swapchain(struct demo *demo);
+
 static void demo_cleanup(struct demo *demo);
 
 static void demo_cleanup_swapchain(struct demo *demo);
@@ -1531,253 +1533,6 @@ static void demo_prepare_framebuffers(struct demo *demo)
   }
 }
 
-static void demo_prepare_swapchain(struct demo *demo)
-{
-  assert(VK_NULL_HANDLE == demo->oldswapchain);
-  demo->oldswapchain = demo->swapchain;
-  demo->swapchain = VK_NULL_HANDLE;
-  assert(0 == demo->old_swapchain_image_resources.size());
-  demo->old_swapchain_image_resources.swap(demo->swapchain_image_resources);
-
-  assert(VK_NULL_HANDLE == demo->old_depth.image);
-  assert(VK_NULL_HANDLE == demo->old_depth.mem);
-  assert(VK_NULL_HANDLE == demo->old_depth.view);
-  demo->old_depth.image = demo->depth.image;
-  demo->old_depth.mem = demo->depth.mem;
-  demo->old_depth.view = demo->depth.view;
-  demo->depth.view = VK_NULL_HANDLE;
-  demo->depth.image = VK_NULL_HANDLE;
-  demo->depth.mem = VK_NULL_HANDLE;
-
-  VkResult U_ASSERT_ONLY err;
-
-  // Check the surface capabilities and formats
-  VkSurfaceCapabilitiesKHR surfCapabilities;
-  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(demo->gpu, demo->surface, &surfCapabilities);
-  if (err == VK_ERROR_SURFACE_LOST_KHR)
-  {
-    demo->quit = true;
-    return;
-  }
-  else
-  {
-    assert(err == VK_SUCCESS);
-  }
-
-  uint32_t presentModeCount;
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, NULL);
-  assert(!err);
-  VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
-  assert(presentModes);
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, presentModes);
-  assert(!err);
-
-  VkExtent2D swapchainExtent;
-  // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-  if (surfCapabilities.currentExtent.width == 0xFFFFFFFF)
-  {
-    // If the surface size is undefined, the size is set to the size
-    // of the images requested, which must fit within the minimum and
-    // maximum values.
-    swapchainExtent.width = demo->width;
-    swapchainExtent.height = demo->height;
-
-    if (swapchainExtent.width < surfCapabilities.minImageExtent.width)
-    {
-      swapchainExtent.width = surfCapabilities.minImageExtent.width;
-    }
-    else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width)
-    {
-      swapchainExtent.width = surfCapabilities.maxImageExtent.width;
-    }
-
-    if (swapchainExtent.height < surfCapabilities.minImageExtent.height)
-    {
-      swapchainExtent.height = surfCapabilities.minImageExtent.height;
-    }
-    else if (swapchainExtent.height > surfCapabilities.maxImageExtent.height)
-    {
-      swapchainExtent.height = surfCapabilities.maxImageExtent.height;
-    }
-  }
-  else
-  {
-    // If the surface size is defined, the swap chain size must match
-    swapchainExtent = surfCapabilities.currentExtent;
-    demo->width = surfCapabilities.currentExtent.width;
-    demo->height = surfCapabilities.currentExtent.height;
-  }
-
-  // The FIFO present mode is guaranteed by the spec to be supported
-  // and to have no tearing.  It's a great default present mode to use.
-  VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-  //  There are times when you may wish to use another present mode.  The
-  //  following code shows how to select them, and the comments provide some
-  //  reasons you may wish to use them.
-  //
-  // It should be noted that Vulkan 1.0 doesn't provide a method for
-  // synchronizing rendering with the presentation engine's display.  There
-  // is a method provided for throttling rendering with the display, but
-  // there are some presentation engines for which this method will not work.
-  // If an application doesn't throttle its rendering, and if it renders much
-  // faster than the refresh rate of the display, this can waste power on
-  // mobile devices.  That is because power is being spent rendering images
-  // that may never be seen.
-
-  // VK_PRESENT_MODE_IMMEDIATE_KHR is for applications that don't care about
-  // tearing, or have some way of synchronizing their rendering with the
-  // display.
-  // VK_PRESENT_MODE_MAILBOX_KHR may be useful for applications that
-  // generally render a new presentable image every refresh cycle, but are
-  // occasionally early.  In this case, the application wants the new image
-  // to be displayed instead of the previously-queued-for-presentation image
-  // that has not yet been displayed.
-  // VK_PRESENT_MODE_FIFO_RELAXED_KHR is for applications that generally
-  // render a new presentable image every refresh cycle, but are occasionally
-  // late.  In this case (perhaps because of stuttering/latency concerns),
-  // the application wants the late image to be immediately displayed, even
-  // though that may mean some tearing.
-
-  if (demo->presentMode != swapchainPresentMode)
-  {
-
-    for (size_t i = 0; i < presentModeCount; ++i)
-    {
-      if (presentModes[i] == demo->presentMode)
-      {
-        swapchainPresentMode = demo->presentMode;
-        break;
-      }
-    }
-  }
-  if (swapchainPresentMode != demo->presentMode)
-  {
-    ERR_EXIT("Present mode specified is not supported\n",
-             "Present mode unsupported");
-  }
-
-  // Determine the number of VkImages to use in the swap chain.
-  // Application desires to acquire 3 images at a time for triple
-  // buffering
-  uint32_t desiredNumOfSwapchainImages = 3;
-  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
-  {
-    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
-  }
-  // If maxImageCount is 0, we can ask for as many images as we want;
-  // otherwise we're limited to maxImageCount
-  if ((surfCapabilities.maxImageCount > 0) && (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
-  {
-    // Application must settle for fewer images than desired:
-    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
-  }
-
-  VkSurfaceTransformFlagBitsKHR preTransform;
-  if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-  {
-    preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  }
-  else
-  {
-    preTransform = surfCapabilities.currentTransform;
-  }
-
-  // Find a supported composite alpha mode - one of these is guaranteed to be
-  // set
-  VkCompositeAlphaFlagBitsKHR compositeAlpha =
-      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[4] = {
-      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-      VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
-      VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
-      VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
-  };
-  for (uint32_t i = 0; i < ARRAY_SIZE(compositeAlphaFlags); i++)
-  {
-    if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i])
-    {
-      compositeAlpha = compositeAlphaFlags[i];
-      break;
-    }
-  }
-
-  VkSwapchainCreateInfoKHR swapchain_ci = {
-      VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      NULL,
-      0U,
-      demo->surface,
-      desiredNumOfSwapchainImages,
-      demo->format,
-      demo->color_space,
-      {
-          swapchainExtent.width,
-          swapchainExtent.height,
-      },
-      1,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      VK_SHARING_MODE_EXCLUSIVE,
-      0,
-      NULL,
-      preTransform,
-      compositeAlpha,
-      swapchainPresentMode,
-      true,
-      demo->oldswapchain};
-
-  assert(VK_NULL_HANDLE == demo->swapchain);
-  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL, &demo->swapchain);
-  assert(!err);
-
-  uint32_t swapchainImageCount;
-  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, NULL);
-  assert(!err);
-
-  VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
-  assert(swapchainImages);
-  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, swapchainImages);
-  assert(!err);
-
-  assert(0 == demo->swapchain_image_resources.size());
-  demo->swapchain_image_resources.resize(swapchainImageCount);
-
-  for (uint32_t i = 0; i < swapchainImageCount; i++)
-  {
-    VkImageViewCreateInfo color_image_view = {
-        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        NULL,
-        0,
-        VK_NULL_HANDLE,
-        VK_IMAGE_VIEW_TYPE_2D,
-        demo->format,
-        {
-            VK_COMPONENT_SWIZZLE_R,
-            VK_COMPONENT_SWIZZLE_G,
-            VK_COMPONENT_SWIZZLE_B,
-            VK_COMPONENT_SWIZZLE_A,
-        },
-        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
-
-    demo->swapchain_image_resources[i].image = swapchainImages[i];
-
-    color_image_view.image = demo->swapchain_image_resources[i].image;
-
-    err = vkCreateImageView(demo->device, &color_image_view, NULL, &demo->swapchain_image_resources[i].view);
-    assert(!err);
-  }
-  free(swapchainImages);
-
-  if (NULL != presentModes)
-  {
-    free(presentModes);
-  }
-
-  demo_prepare_depth(demo);
-  demo_prepare_framebuffers(demo);
-
-  demo->current_buffer = 0;
-}
-
 static void demo_prepare(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
@@ -2179,6 +1934,9 @@ int main(int argc, char **argv)
   struct demo demo;
   demo.swapchain = VK_NULL_HANDLE;
   demo.oldswapchain = VK_NULL_HANDLE;
+  demo.depth.view = VK_NULL_HANDLE;
+  demo.depth.image = VK_NULL_HANDLE;
+  demo.depth.mem = VK_NULL_HANDLE;
   demo.old_depth.view = VK_NULL_HANDLE;
   demo.old_depth.image = VK_NULL_HANDLE;
   demo.old_depth.mem = VK_NULL_HANDLE;
@@ -2883,8 +2641,6 @@ static void demo_init_vk_surface(struct demo *demo)
 
 static void demo_resize(struct demo *demo)
 {
-  uint32_t i;
-
   // Don't react to resize until after first initialization.
   if (!demo->prepared)
   {
@@ -2894,6 +2650,22 @@ static void demo_resize(struct demo *demo)
   // In order to properly resize the window, we must re-create the swapchain
   // AND redo the command buffers, etc.
   demo->prepared = false;
+
+  assert(VK_NULL_HANDLE == demo->oldswapchain);
+  demo->oldswapchain = demo->swapchain;
+  demo->swapchain = VK_NULL_HANDLE;
+  assert(0 == demo->old_swapchain_image_resources.size());
+  demo->old_swapchain_image_resources.swap(demo->swapchain_image_resources);
+
+  assert(VK_NULL_HANDLE == demo->old_depth.image);
+  assert(VK_NULL_HANDLE == demo->old_depth.mem);
+  assert(VK_NULL_HANDLE == demo->old_depth.view);
+  demo->old_depth.image = demo->depth.image;
+  demo->old_depth.mem = demo->depth.mem;
+  demo->old_depth.view = demo->depth.view;
+  demo->depth.view = VK_NULL_HANDLE;
+  demo->depth.image = VK_NULL_HANDLE;
+  demo->depth.mem = VK_NULL_HANDLE;
 
   // re-perform the demo_prepare() function, which will re-create the
   // swapchain:
@@ -2929,6 +2701,237 @@ static void demo_resize(struct demo *demo)
   demo->prepared = true;
 }
 
+static void demo_prepare_swapchain(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  // Check the surface capabilities and formats
+  VkSurfaceCapabilitiesKHR surfCapabilities;
+  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(demo->gpu, demo->surface, &surfCapabilities);
+  if (VK_SUCCESS == err)
+  {
+    assert(VK_SUCCESS == err);
+  }
+  else if (VK_ERROR_SURFACE_LOST_KHR == err)
+  {
+    demo->quit = true;
+    return;
+  }
+  else
+  {
+    assert(VK_SUCCESS == err);
+  }
+
+  uint32_t presentModeCount;
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, NULL);
+  assert(!err);
+  VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
+  assert(presentModes);
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, presentModes);
+  assert(!err);
+
+  VkExtent2D swapchainExtent;
+  // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
+  if (surfCapabilities.currentExtent.width == 0xFFFFFFFF)
+  {
+    // If the surface size is undefined, the size is set to the size
+    // of the images requested, which must fit within the minimum and
+    // maximum values.
+    swapchainExtent.width = demo->width;
+    swapchainExtent.height = demo->height;
+
+    if (swapchainExtent.width < surfCapabilities.minImageExtent.width)
+    {
+      swapchainExtent.width = surfCapabilities.minImageExtent.width;
+    }
+    else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width)
+    {
+      swapchainExtent.width = surfCapabilities.maxImageExtent.width;
+    }
+
+    if (swapchainExtent.height < surfCapabilities.minImageExtent.height)
+    {
+      swapchainExtent.height = surfCapabilities.minImageExtent.height;
+    }
+    else if (swapchainExtent.height > surfCapabilities.maxImageExtent.height)
+    {
+      swapchainExtent.height = surfCapabilities.maxImageExtent.height;
+    }
+  }
+  else
+  {
+    // If the surface size is defined, the swap chain size must match
+    swapchainExtent = surfCapabilities.currentExtent;
+    demo->width = surfCapabilities.currentExtent.width;
+    demo->height = surfCapabilities.currentExtent.height;
+  }
+
+  // The FIFO present mode is guaranteed by the spec to be supported
+  // and to have no tearing.  It's a great default present mode to use.
+  VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+  //  There are times when you may wish to use another present mode.  The
+  //  following code shows how to select them, and the comments provide some
+  //  reasons you may wish to use them.
+  //
+  // It should be noted that Vulkan 1.0 doesn't provide a method for
+  // synchronizing rendering with the presentation engine's display.  There
+  // is a method provided for throttling rendering with the display, but
+  // there are some presentation engines for which this method will not work.
+  // If an application doesn't throttle its rendering, and if it renders much
+  // faster than the refresh rate of the display, this can waste power on
+  // mobile devices.  That is because power is being spent rendering images
+  // that may never be seen.
+
+  // VK_PRESENT_MODE_IMMEDIATE_KHR is for applications that don't care about
+  // tearing, or have some way of synchronizing their rendering with the
+  // display.
+  // VK_PRESENT_MODE_MAILBOX_KHR may be useful for applications that
+  // generally render a new presentable image every refresh cycle, but are
+  // occasionally early.  In this case, the application wants the new image
+  // to be displayed instead of the previously-queued-for-presentation image
+  // that has not yet been displayed.
+  // VK_PRESENT_MODE_FIFO_RELAXED_KHR is for applications that generally
+  // render a new presentable image every refresh cycle, but are occasionally
+  // late.  In this case (perhaps because of stuttering/latency concerns),
+  // the application wants the late image to be immediately displayed, even
+  // though that may mean some tearing.
+
+  if (demo->presentMode != swapchainPresentMode)
+  {
+
+    for (size_t i = 0; i < presentModeCount; ++i)
+    {
+      if (presentModes[i] == demo->presentMode)
+      {
+        swapchainPresentMode = demo->presentMode;
+        break;
+      }
+    }
+  }
+  if (swapchainPresentMode != demo->presentMode)
+  {
+    ERR_EXIT("Present mode specified is not supported\n", "Present mode unsupported");
+  }
+  free(presentModes);
+
+  // Determine the number of VkImages to use in the swap chain.
+  // Application desires to acquire 3 images at a time for triple
+  // buffering
+  uint32_t desiredNumOfSwapchainImages = 3;
+  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
+  {
+    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
+  }
+  // If maxImageCount is 0, we can ask for as many images as we want;
+  // otherwise we're limited to maxImageCount
+  if ((surfCapabilities.maxImageCount > 0) && (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
+  {
+    // Application must settle for fewer images than desired:
+    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
+  }
+
+  VkSurfaceTransformFlagBitsKHR preTransform;
+  if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+  {
+    preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  }
+  else
+  {
+    preTransform = surfCapabilities.currentTransform;
+  }
+
+  // Find a supported composite alpha mode - one of these is guaranteed to be
+  // set
+  VkCompositeAlphaFlagBitsKHR compositeAlpha =
+      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[4] = {
+      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+  };
+  for (uint32_t i = 0; i < ARRAY_SIZE(compositeAlphaFlags); i++)
+  {
+    if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i])
+    {
+      compositeAlpha = compositeAlphaFlags[i];
+      break;
+    }
+  }
+
+  VkSwapchainCreateInfoKHR swapchain_ci = {
+      VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      NULL,
+      0U,
+      demo->surface,
+      desiredNumOfSwapchainImages,
+      demo->format,
+      demo->color_space,
+      {
+          swapchainExtent.width,
+          swapchainExtent.height,
+      },
+      1,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL,
+      preTransform,
+      compositeAlpha,
+      swapchainPresentMode,
+      true,
+      demo->oldswapchain};
+
+  assert(VK_NULL_HANDLE == demo->swapchain);
+  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL, &demo->swapchain);
+  assert(!err);
+
+  uint32_t swapchainImageCount;
+  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, NULL);
+  assert(!err);
+
+  VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
+  assert(swapchainImages);
+  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, swapchainImages);
+  assert(!err);
+
+  assert(0 == demo->swapchain_image_resources.size());
+  demo->swapchain_image_resources.resize(swapchainImageCount);
+
+  for (uint32_t i = 0; i < swapchainImageCount; i++)
+  {
+    VkImageViewCreateInfo color_image_view = {
+        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        NULL,
+        0,
+        VK_NULL_HANDLE,
+        VK_IMAGE_VIEW_TYPE_2D,
+        demo->format,
+        {
+            VK_COMPONENT_SWIZZLE_R,
+            VK_COMPONENT_SWIZZLE_G,
+            VK_COMPONENT_SWIZZLE_B,
+            VK_COMPONENT_SWIZZLE_A,
+        },
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+
+    demo->swapchain_image_resources[i].image = swapchainImages[i];
+
+    color_image_view.image = demo->swapchain_image_resources[i].image;
+
+    err = vkCreateImageView(demo->device, &color_image_view, NULL, &demo->swapchain_image_resources[i].view);
+    assert(!err);
+  }
+  free(swapchainImages);
+
+  demo_prepare_depth(demo);
+
+  demo_prepare_framebuffers(demo);
+
+  demo->current_buffer = 0;
+}
+
 static void demo_cleanup_swapchain(struct demo *demo)
 {
   uint32_t i;
@@ -2952,15 +2955,14 @@ static void demo_cleanup_swapchain(struct demo *demo)
 
 static void demo_cleanup(struct demo *demo)
 {
-  uint32_t i;
-
   demo->prepared = false;
+
   vkDeviceWaitIdle(demo->device);
 
   demo_cleanup_swapchain(demo);
 
   // Wait for fences from present operations
-  for (i = 0; i < FRAME_LAG; i++)
+  for (uint32_t i = 0; i < FRAME_LAG; i++)
   {
     vkWaitForFences(demo->device, 1, &demo->fences[i], VK_TRUE, UINT64_MAX);
     vkDestroyFence(demo->device, demo->fences[i], NULL);
@@ -2990,7 +2992,7 @@ static void demo_cleanup(struct demo *demo)
   vkDestroyPipelineLayout(demo->device, demo->pipeline_layout_1, NULL);
   vkDestroyDescriptorSetLayout(demo->device, demo->desc_layout_1, NULL);
 
-  for (i = 0; i < DEMO_TEXTURE_COUNT; i++)
+  for (uint32_t i = 0; i < DEMO_TEXTURE_COUNT; i++)
   {
     vkDestroyImageView(demo->device, demo->texture_assets[i].view, NULL);
     vkDestroyImage(demo->device, demo->texture_assets[i].image, NULL);
