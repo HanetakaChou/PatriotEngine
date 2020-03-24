@@ -16,6 +16,7 @@
         "iosfwd": "cpp",
         "new": "cpp",
         "streambuf": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "vector": "cpp"
     },
 }

@@ -25,7 +25,6 @@
  * Author: Bill Hollings <bill.hollings@brenwill.com>
  */
 
-#define _GNU_SOURCE
 #include <assert.h>
 #include <signal.h>
 #include <stdarg.h>
@@ -127,7 +126,7 @@ struct texture_object
   uint32_t tex_height;
 };
 
-static char *tex_files[] = {"lunarg.ppm"};
+static char const *tex_files[] = {"lunarg.ppm"};
 
 static int validation_error = 0;
 
@@ -270,6 +269,8 @@ typedef struct
   VkFramebuffer framebuffer;
 } SwapchainImageResources;
 
+#include <vector>
+
 struct demo
 {
   xcb_connection_t *connection;
@@ -307,8 +308,8 @@ struct demo
 
   uint32_t enabled_extension_count;
   uint32_t enabled_layer_count;
-  char *extension_names[64];
-  char *enabled_layers[64];
+  char const *extension_names[64];
+  char const *enabled_layers[64];
 
   uint32_t width;
   uint32_t height;
@@ -316,11 +317,9 @@ struct demo
   VkColorSpaceKHR color_space;
 
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR fpGetPhysicalDeviceSurfaceSupportKHR;
-  PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-      fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
+  PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR fpGetPhysicalDeviceSurfaceCapabilitiesKHR;
   PFN_vkGetPhysicalDeviceSurfaceFormatsKHR fpGetPhysicalDeviceSurfaceFormatsKHR;
-  PFN_vkGetPhysicalDeviceSurfacePresentModesKHR
-      fpGetPhysicalDeviceSurfacePresentModesKHR;
+  PFN_vkGetPhysicalDeviceSurfacePresentModesKHR fpGetPhysicalDeviceSurfacePresentModesKHR;
   PFN_vkCreateSwapchainKHR fpCreateSwapchainKHR;
   PFN_vkDestroySwapchainKHR fpDestroySwapchainKHR;
   PFN_vkGetSwapchainImagesKHR fpGetSwapchainImagesKHR;
@@ -330,9 +329,10 @@ struct demo
   // PFN_vkGetPastPresentationTimingGOOGLE fpGetPastPresentationTimingGOOGLE;
 
   uint32_t current_buffer;
-  uint32_t swapchainImageCount;
-  SwapchainImageResources *swapchain_image_resources;
+  std::vector<SwapchainImageResources> swapchain_image_resources;
+  std::vector<SwapchainImageResources> old_swapchain_image_resources;
   VkSwapchainKHR swapchain;
+  VkSwapchainKHR oldswapchain;
   VkPresentModeKHR presentMode;
 
   int frame_index;
@@ -354,6 +354,13 @@ struct demo
     VkDeviceMemory mem;
     VkImageView view;
   } depth;
+
+  struct
+  {
+    VkImage image;
+    VkDeviceMemory mem;
+    VkImageView view;
+  } old_depth;
 
   struct texture_object texture_assets[DEMO_TEXTURE_COUNT];
   struct texture_object staging_texture;
@@ -392,6 +399,12 @@ struct demo
 };
 
 // Forward declaration:
+static void demo_init_connection(struct demo *demo);
+
+static void demo_init_vk(struct demo *demo);
+
+static void demo_init_vk_surface(struct demo *demo);
+
 static void demo_load_pipeline_cache(struct demo *demo);
 
 static void demo_store_pipeline_cache(struct demo *demo);
@@ -762,243 +775,6 @@ void demo_update_data_buffer(struct demo *demo)
       demo->uniform_memory[demo->frame_index]);
 }
 
-static void demo_prepare_buffers(struct demo *demo)
-{
-  VkResult U_ASSERT_ONLY err;
-  VkSwapchainKHR oldSwapchain = demo->swapchain;
-
-  // Check the surface capabilities and formats
-  VkSurfaceCapabilitiesKHR surfCapabilities;
-  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(demo->gpu, demo->surface, &surfCapabilities);
-  assert(!err);
-
-  uint32_t presentModeCount;
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, NULL);
-  assert(!err);
-  VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
-  assert(presentModes);
-  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, presentModes);
-  assert(!err);
-
-  VkExtent2D swapchainExtent;
-  // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
-  if (surfCapabilities.currentExtent.width == 0xFFFFFFFF)
-  {
-    // If the surface size is undefined, the size is set to the size
-    // of the images requested, which must fit within the minimum and
-    // maximum values.
-    swapchainExtent.width = demo->width;
-    swapchainExtent.height = demo->height;
-
-    if (swapchainExtent.width < surfCapabilities.minImageExtent.width)
-    {
-      swapchainExtent.width = surfCapabilities.minImageExtent.width;
-    }
-    else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width)
-    {
-      swapchainExtent.width = surfCapabilities.maxImageExtent.width;
-    }
-
-    if (swapchainExtent.height < surfCapabilities.minImageExtent.height)
-    {
-      swapchainExtent.height = surfCapabilities.minImageExtent.height;
-    }
-    else if (swapchainExtent.height >
-             surfCapabilities.maxImageExtent.height)
-    {
-      swapchainExtent.height = surfCapabilities.maxImageExtent.height;
-    }
-  }
-  else
-  {
-    // If the surface size is defined, the swap chain size must match
-    swapchainExtent = surfCapabilities.currentExtent;
-    demo->width = surfCapabilities.currentExtent.width;
-    demo->height = surfCapabilities.currentExtent.height;
-  }
-
-  // The FIFO present mode is guaranteed by the spec to be supported
-  // and to have no tearing.  It's a great default present mode to use.
-  VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-  //  There are times when you may wish to use another present mode.  The
-  //  following code shows how to select them, and the comments provide some
-  //  reasons you may wish to use them.
-  //
-  // It should be noted that Vulkan 1.0 doesn't provide a method for
-  // synchronizing rendering with the presentation engine's display.  There
-  // is a method provided for throttling rendering with the display, but
-  // there are some presentation engines for which this method will not work.
-  // If an application doesn't throttle its rendering, and if it renders much
-  // faster than the refresh rate of the display, this can waste power on
-  // mobile devices.  That is because power is being spent rendering images
-  // that may never be seen.
-
-  // VK_PRESENT_MODE_IMMEDIATE_KHR is for applications that don't care about
-  // tearing, or have some way of synchronizing their rendering with the
-  // display.
-  // VK_PRESENT_MODE_MAILBOX_KHR may be useful for applications that
-  // generally render a new presentable image every refresh cycle, but are
-  // occasionally early.  In this case, the application wants the new image
-  // to be displayed instead of the previously-queued-for-presentation image
-  // that has not yet been displayed.
-  // VK_PRESENT_MODE_FIFO_RELAXED_KHR is for applications that generally
-  // render a new presentable image every refresh cycle, but are occasionally
-  // late.  In this case (perhaps because of stuttering/latency concerns),
-  // the application wants the late image to be immediately displayed, even
-  // though that may mean some tearing.
-
-  if (demo->presentMode != swapchainPresentMode)
-  {
-
-    for (size_t i = 0; i < presentModeCount; ++i)
-    {
-      if (presentModes[i] == demo->presentMode)
-      {
-        swapchainPresentMode = demo->presentMode;
-        break;
-      }
-    }
-  }
-  if (swapchainPresentMode != demo->presentMode)
-  {
-    ERR_EXIT("Present mode specified is not supported\n",
-             "Present mode unsupported");
-  }
-
-  // Determine the number of VkImages to use in the swap chain.
-  // Application desires to acquire 3 images at a time for triple
-  // buffering
-  uint32_t desiredNumOfSwapchainImages = 3;
-  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
-  {
-    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
-  }
-  // If maxImageCount is 0, we can ask for as many images as we want;
-  // otherwise we're limited to maxImageCount
-  if ((surfCapabilities.maxImageCount > 0) &&
-      (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
-  {
-    // Application must settle for fewer images than desired:
-    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
-  }
-
-  VkSurfaceTransformFlagBitsKHR preTransform;
-  if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
-  {
-    preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
-  }
-  else
-  {
-    preTransform = surfCapabilities.currentTransform;
-  }
-
-  // Find a supported composite alpha mode - one of these is guaranteed to be
-  // set
-  VkCompositeAlphaFlagBitsKHR compositeAlpha =
-      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-  VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[4] = {
-      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-      VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
-      VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
-      VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
-  };
-  for (uint32_t i = 0; i < ARRAY_SIZE(compositeAlphaFlags); i++)
-  {
-    if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i])
-    {
-      compositeAlpha = compositeAlphaFlags[i];
-      break;
-    }
-  }
-
-  VkSwapchainCreateInfoKHR swapchain_ci = {
-      VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
-      NULL,
-      0U,
-      demo->surface,
-      desiredNumOfSwapchainImages,
-      demo->format,
-      demo->color_space,
-      {
-          swapchainExtent.width,
-          swapchainExtent.height,
-      },
-      1,
-      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
-      VK_SHARING_MODE_EXCLUSIVE,
-      0,
-      NULL,
-      preTransform,
-      compositeAlpha,
-      swapchainPresentMode,
-      true,
-      oldSwapchain};
-  uint32_t i;
-  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL, &demo->swapchain);
-  assert(!err);
-
-  // If we just re-created an existing swapchain, we should destroy the old
-  // swapchain at this point.
-  // Note: destroying the swapchain also cleans up all its associated
-  // presentable images once the platform is done with them.
-  if (oldSwapchain != VK_NULL_HANDLE)
-  {
-    demo->fpDestroySwapchainKHR(demo->device, oldSwapchain, NULL);
-  }
-
-  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain,
-                                      &demo->swapchainImageCount, NULL);
-  assert(!err);
-
-  VkImage *swapchainImages =
-      (VkImage *)malloc(demo->swapchainImageCount * sizeof(VkImage));
-  assert(swapchainImages);
-  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain,
-                                      &demo->swapchainImageCount,
-                                      swapchainImages);
-  assert(!err);
-
-  demo->swapchain_image_resources = (SwapchainImageResources *)malloc(sizeof(SwapchainImageResources) * demo->swapchainImageCount);
-  assert(demo->swapchain_image_resources);
-
-  for (i = 0; i < demo->swapchainImageCount; i++)
-  {
-    VkImageViewCreateInfo color_image_view = {
-        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-        .pNext = NULL,
-        .format = demo->format,
-        .components =
-            {
-                .r = VK_COMPONENT_SWIZZLE_R,
-                .g = VK_COMPONENT_SWIZZLE_G,
-                .b = VK_COMPONENT_SWIZZLE_B,
-                .a = VK_COMPONENT_SWIZZLE_A,
-            },
-        .subresourceRange = {.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-                             .baseMipLevel = 0,
-                             .levelCount = 1,
-                             .baseArrayLayer = 0,
-                             .layerCount = 1},
-        .viewType = VK_IMAGE_VIEW_TYPE_2D,
-        .flags = 0,
-    };
-
-    demo->swapchain_image_resources[i].image = swapchainImages[i];
-
-    color_image_view.image = demo->swapchain_image_resources[i].image;
-
-    err = vkCreateImageView(demo->device, &color_image_view, NULL,
-                            &demo->swapchain_image_resources[i].view);
-    assert(!err);
-  }
-
-  if (NULL != presentModes)
-  {
-    free(presentModes);
-  }
-}
-
 static void demo_prepare_depth(struct demo *demo)
 {
   const VkImageCreateInfo image = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -1034,6 +810,7 @@ static void demo_prepare_depth(struct demo *demo)
   bool U_ASSERT_ONLY pass;
 
   /* create image */
+  assert(VK_NULL_HANDLE == demo->depth.image);
   err = vkCreateImage(demo->device, &image, NULL, &demo->depth.image);
   assert(!err);
 
@@ -1045,14 +822,12 @@ static void demo_prepare_depth(struct demo *demo)
   demo->depth.mem_alloc.allocationSize = mem_reqs.size;
   demo->depth.mem_alloc.memoryTypeIndex = 0;
 
-  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits,
-                                     VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-                                     &demo->depth.mem_alloc.memoryTypeIndex);
+  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &demo->depth.mem_alloc.memoryTypeIndex);
   assert(pass);
 
   /* allocate memory */
-  err = vkAllocateMemory(demo->device, &demo->depth.mem_alloc, NULL,
-                         &demo->depth.mem);
+  assert(VK_NULL_HANDLE == demo->depth.mem);
+  err = vkAllocateMemory(demo->device, &demo->depth.mem_alloc, NULL, &demo->depth.mem);
   assert(!err);
 
   /* bind memory */
@@ -1061,6 +836,7 @@ static void demo_prepare_depth(struct demo *demo)
 
   /* create image view */
   view.image = demo->depth.image;
+  assert(VK_NULL_HANDLE == demo->depth.view);
   err = vkCreateImageView(demo->device, &view, NULL, &demo->depth.view);
   assert(!err);
 }
@@ -1747,7 +1523,7 @@ static void demo_prepare_framebuffers(struct demo *demo)
   VkResult U_ASSERT_ONLY err;
   uint32_t i;
 
-  for (i = 0; i < demo->swapchainImageCount; i++)
+  for (i = 0; i < demo->swapchain_image_resources.size(); i++)
   {
     attachments[0] = demo->swapchain_image_resources[i].view;
     err = vkCreateFramebuffer(demo->device, &fb_info, NULL, &demo->swapchain_image_resources[i].framebuffer);
@@ -1757,10 +1533,246 @@ static void demo_prepare_framebuffers(struct demo *demo)
 
 static void demo_prepare_swapchain(struct demo *demo)
 {
-  demo_prepare_buffers(demo);
+  assert(VK_NULL_HANDLE == demo->oldswapchain);
+  demo->oldswapchain = demo->swapchain;
+  demo->swapchain = VK_NULL_HANDLE;
+  assert(0 == demo->old_swapchain_image_resources.size());
+  demo->old_swapchain_image_resources.swap(demo->swapchain_image_resources);
+
+  assert(VK_NULL_HANDLE == demo->old_depth.image);
+  assert(VK_NULL_HANDLE == demo->old_depth.mem);
+  assert(VK_NULL_HANDLE == demo->old_depth.view);
+  demo->old_depth.image = demo->depth.image;
+  demo->old_depth.mem = demo->depth.mem;
+  demo->old_depth.view = demo->depth.view;
+  demo->depth.view = VK_NULL_HANDLE;
+  demo->depth.image = VK_NULL_HANDLE;
+  demo->depth.mem = VK_NULL_HANDLE;
+
+  VkResult U_ASSERT_ONLY err;
+
+  // Check the surface capabilities and formats
+  VkSurfaceCapabilitiesKHR surfCapabilities;
+  err = demo->fpGetPhysicalDeviceSurfaceCapabilitiesKHR(demo->gpu, demo->surface, &surfCapabilities);
+  if (err == VK_ERROR_SURFACE_LOST_KHR)
+  {
+    demo->quit = true;
+    return;
+  }
+  else
+  {
+    assert(err == VK_SUCCESS);
+  }
+
+  uint32_t presentModeCount;
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, NULL);
+  assert(!err);
+  VkPresentModeKHR *presentModes = (VkPresentModeKHR *)malloc(presentModeCount * sizeof(VkPresentModeKHR));
+  assert(presentModes);
+  err = demo->fpGetPhysicalDeviceSurfacePresentModesKHR(demo->gpu, demo->surface, &presentModeCount, presentModes);
+  assert(!err);
+
+  VkExtent2D swapchainExtent;
+  // width and height are either both 0xFFFFFFFF, or both not 0xFFFFFFFF.
+  if (surfCapabilities.currentExtent.width == 0xFFFFFFFF)
+  {
+    // If the surface size is undefined, the size is set to the size
+    // of the images requested, which must fit within the minimum and
+    // maximum values.
+    swapchainExtent.width = demo->width;
+    swapchainExtent.height = demo->height;
+
+    if (swapchainExtent.width < surfCapabilities.minImageExtent.width)
+    {
+      swapchainExtent.width = surfCapabilities.minImageExtent.width;
+    }
+    else if (swapchainExtent.width > surfCapabilities.maxImageExtent.width)
+    {
+      swapchainExtent.width = surfCapabilities.maxImageExtent.width;
+    }
+
+    if (swapchainExtent.height < surfCapabilities.minImageExtent.height)
+    {
+      swapchainExtent.height = surfCapabilities.minImageExtent.height;
+    }
+    else if (swapchainExtent.height > surfCapabilities.maxImageExtent.height)
+    {
+      swapchainExtent.height = surfCapabilities.maxImageExtent.height;
+    }
+  }
+  else
+  {
+    // If the surface size is defined, the swap chain size must match
+    swapchainExtent = surfCapabilities.currentExtent;
+    demo->width = surfCapabilities.currentExtent.width;
+    demo->height = surfCapabilities.currentExtent.height;
+  }
+
+  // The FIFO present mode is guaranteed by the spec to be supported
+  // and to have no tearing.  It's a great default present mode to use.
+  VkPresentModeKHR swapchainPresentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+  //  There are times when you may wish to use another present mode.  The
+  //  following code shows how to select them, and the comments provide some
+  //  reasons you may wish to use them.
+  //
+  // It should be noted that Vulkan 1.0 doesn't provide a method for
+  // synchronizing rendering with the presentation engine's display.  There
+  // is a method provided for throttling rendering with the display, but
+  // there are some presentation engines for which this method will not work.
+  // If an application doesn't throttle its rendering, and if it renders much
+  // faster than the refresh rate of the display, this can waste power on
+  // mobile devices.  That is because power is being spent rendering images
+  // that may never be seen.
+
+  // VK_PRESENT_MODE_IMMEDIATE_KHR is for applications that don't care about
+  // tearing, or have some way of synchronizing their rendering with the
+  // display.
+  // VK_PRESENT_MODE_MAILBOX_KHR may be useful for applications that
+  // generally render a new presentable image every refresh cycle, but are
+  // occasionally early.  In this case, the application wants the new image
+  // to be displayed instead of the previously-queued-for-presentation image
+  // that has not yet been displayed.
+  // VK_PRESENT_MODE_FIFO_RELAXED_KHR is for applications that generally
+  // render a new presentable image every refresh cycle, but are occasionally
+  // late.  In this case (perhaps because of stuttering/latency concerns),
+  // the application wants the late image to be immediately displayed, even
+  // though that may mean some tearing.
+
+  if (demo->presentMode != swapchainPresentMode)
+  {
+
+    for (size_t i = 0; i < presentModeCount; ++i)
+    {
+      if (presentModes[i] == demo->presentMode)
+      {
+        swapchainPresentMode = demo->presentMode;
+        break;
+      }
+    }
+  }
+  if (swapchainPresentMode != demo->presentMode)
+  {
+    ERR_EXIT("Present mode specified is not supported\n",
+             "Present mode unsupported");
+  }
+
+  // Determine the number of VkImages to use in the swap chain.
+  // Application desires to acquire 3 images at a time for triple
+  // buffering
+  uint32_t desiredNumOfSwapchainImages = 3;
+  if (desiredNumOfSwapchainImages < surfCapabilities.minImageCount)
+  {
+    desiredNumOfSwapchainImages = surfCapabilities.minImageCount;
+  }
+  // If maxImageCount is 0, we can ask for as many images as we want;
+  // otherwise we're limited to maxImageCount
+  if ((surfCapabilities.maxImageCount > 0) && (desiredNumOfSwapchainImages > surfCapabilities.maxImageCount))
+  {
+    // Application must settle for fewer images than desired:
+    desiredNumOfSwapchainImages = surfCapabilities.maxImageCount;
+  }
+
+  VkSurfaceTransformFlagBitsKHR preTransform;
+  if (surfCapabilities.supportedTransforms & VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR)
+  {
+    preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+  }
+  else
+  {
+    preTransform = surfCapabilities.currentTransform;
+  }
+
+  // Find a supported composite alpha mode - one of these is guaranteed to be
+  // set
+  VkCompositeAlphaFlagBitsKHR compositeAlpha =
+      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  VkCompositeAlphaFlagBitsKHR compositeAlphaFlags[4] = {
+      VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
+      VK_COMPOSITE_ALPHA_PRE_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_POST_MULTIPLIED_BIT_KHR,
+      VK_COMPOSITE_ALPHA_INHERIT_BIT_KHR,
+  };
+  for (uint32_t i = 0; i < ARRAY_SIZE(compositeAlphaFlags); i++)
+  {
+    if (surfCapabilities.supportedCompositeAlpha & compositeAlphaFlags[i])
+    {
+      compositeAlpha = compositeAlphaFlags[i];
+      break;
+    }
+  }
+
+  VkSwapchainCreateInfoKHR swapchain_ci = {
+      VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
+      NULL,
+      0U,
+      demo->surface,
+      desiredNumOfSwapchainImages,
+      demo->format,
+      demo->color_space,
+      {
+          swapchainExtent.width,
+          swapchainExtent.height,
+      },
+      1,
+      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL,
+      preTransform,
+      compositeAlpha,
+      swapchainPresentMode,
+      true,
+      demo->oldswapchain};
+
+  assert(VK_NULL_HANDLE == demo->swapchain);
+  err = demo->fpCreateSwapchainKHR(demo->device, &swapchain_ci, NULL, &demo->swapchain);
+  assert(!err);
+
+  uint32_t swapchainImageCount;
+  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, NULL);
+  assert(!err);
+
+  VkImage *swapchainImages = (VkImage *)malloc(swapchainImageCount * sizeof(VkImage));
+  assert(swapchainImages);
+  err = demo->fpGetSwapchainImagesKHR(demo->device, demo->swapchain, &swapchainImageCount, swapchainImages);
+  assert(!err);
+
+  assert(0 == demo->swapchain_image_resources.size());
+  demo->swapchain_image_resources.resize(swapchainImageCount);
+
+  for (uint32_t i = 0; i < swapchainImageCount; i++)
+  {
+    VkImageViewCreateInfo color_image_view = {
+        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        NULL,
+        0,
+        VK_NULL_HANDLE,
+        VK_IMAGE_VIEW_TYPE_2D,
+        demo->format,
+        {
+            VK_COMPONENT_SWIZZLE_R,
+            VK_COMPONENT_SWIZZLE_G,
+            VK_COMPONENT_SWIZZLE_B,
+            VK_COMPONENT_SWIZZLE_A,
+        },
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}};
+
+    demo->swapchain_image_resources[i].image = swapchainImages[i];
+
+    color_image_view.image = demo->swapchain_image_resources[i].image;
+
+    err = vkCreateImageView(demo->device, &color_image_view, NULL, &demo->swapchain_image_resources[i].view);
+    assert(!err);
+  }
+  free(swapchainImages);
+
+  if (NULL != presentModes)
+  {
+    free(presentModes);
+  }
 
   demo_prepare_depth(demo);
-
   demo_prepare_framebuffers(demo);
 
   demo->current_buffer = 0;
@@ -2018,7 +2030,7 @@ static void demo_create_xcb_window(struct demo *demo)
  * Return 1 (true) if all layer names specified in check_names
  * can be found in given layer properties.
  */
-static VkBool32 demo_check_layers(uint32_t check_count, char **check_names,
+static VkBool32 demo_check_layers(uint32_t check_count, char const **check_names,
                                   uint32_t layer_count,
                                   VkLayerProperties *layers)
 {
@@ -2042,20 +2054,377 @@ static VkBool32 demo_check_layers(uint32_t check_count, char **check_names,
   return 1;
 }
 
+static void demo_create_device(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+  float queue_priorities[1] = {0.0};
+  VkDeviceQueueCreateInfo queues[2];
+  queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  queues[0].pNext = NULL;
+  queues[0].queueFamilyIndex = demo->graphics_queue_family_index;
+  queues[0].queueCount = 1;
+  queues[0].pQueuePriorities = queue_priorities;
+  queues[0].flags = 0;
+
+  VkDeviceCreateInfo device = {
+      .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
+      .pNext = NULL,
+      .queueCreateInfoCount = 1,
+      .pQueueCreateInfos = queues,
+      .enabledLayerCount = 0,
+      .ppEnabledLayerNames = NULL,
+      .enabledExtensionCount = demo->enabled_extension_count,
+      .ppEnabledExtensionNames = (const char *const *)demo->extension_names,
+      .pEnabledFeatures =
+          NULL, // If specific features are required, pass them in here
+  };
+  if (demo->separate_present_queue)
+  {
+    queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queues[1].pNext = NULL;
+    queues[1].queueFamilyIndex = demo->present_queue_family_index;
+    queues[1].queueCount = 1;
+    queues[1].pQueuePriorities = queue_priorities;
+    queues[1].flags = 0;
+    device.queueCreateInfoCount = 2;
+  }
+  err = vkCreateDevice(demo->gpu, &device, NULL, &demo->device);
+  assert(!err);
+}
+
+static void demo_init(struct demo *demo, int argc, char **argv)
+{
+  vec3 eye = {0.0f, 3.0f, 5.0f};
+  vec3 origin = {0, 0, 0};
+  vec3 up = {0.0f, 1.0f, 0.0};
+
+  memset(demo, 0, sizeof(*demo));
+  demo->presentMode = VK_PRESENT_MODE_FIFO_KHR;
+  demo->frameCount = INT32_MAX;
+
+  for (int i = 1; i < argc; i++)
+  {
+    if (strcmp(argv[i], "--use_staging") == 0)
+    {
+      demo->use_staging_buffer = true;
+      continue;
+    }
+    if ((strcmp(argv[i], "--present_mode") == 0) && (i < argc - 1))
+    {
+      demo->presentMode = static_cast<VkPresentModeKHR>(atoi(argv[i + 1]));
+      i++;
+      continue;
+    }
+    if (strcmp(argv[i], "--break") == 0)
+    {
+      demo->use_break = true;
+      continue;
+    }
+    if (strcmp(argv[i], "--validate") == 0)
+    {
+      demo->validate = true;
+      continue;
+    }
+    if (strcmp(argv[i], "--xlib") == 0)
+    {
+      fprintf(stderr, "--xlib is deprecated and no longer does anything");
+      continue;
+    }
+    if (strcmp(argv[i], "--c") == 0 && demo->frameCount == INT32_MAX &&
+        i < argc - 1 && sscanf(argv[i + 1], "%d", &demo->frameCount) == 1 &&
+        demo->frameCount >= 0)
+    {
+      i++;
+      continue;
+    }
+    if (strcmp(argv[i], "--suppress_popups") == 0)
+    {
+      demo->suppress_popups = true;
+      continue;
+    }
+
+    fprintf(stderr,
+            "Usage:\n  %s [--use_staging] [--validate] "
+            "       [--break] [--c <framecount>] [--suppress_popups]\n"
+            "       [--present_mode {0,1,2,3}]\n"
+            "\n"
+            "Options for --present_mode:\n"
+            "  %d: VK_PRESENT_MODE_IMMEDIATE_KHR\n"
+            "  %d: VK_PRESENT_MODE_MAILBOX_KHR\n"
+            "  %d: VK_PRESENT_MODE_FIFO_KHR (default)\n"
+            "  %d: VK_PRESENT_MODE_FIFO_RELAXED_KHR\n",
+            APP_SHORT_NAME, VK_PRESENT_MODE_IMMEDIATE_KHR,
+            VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR,
+            VK_PRESENT_MODE_FIFO_RELAXED_KHR);
+    fflush(stderr);
+    exit(1);
+  }
+
+  demo->width = 500;
+  demo->height = 500;
+
+  demo->spin_angle = 4.0f;
+  demo->spin_increment = 0.2f;
+  demo->pause = false;
+
+  mat4x4_perspective(demo->projection_matrix, (float)degreesToRadians(45.0f), 1.0f, 0.1f, 100.0f);
+  mat4x4_look_at(demo->view_matrix, eye, origin, up);
+  mat4x4_identity(demo->model_matrix);
+
+  demo->projection_matrix[1][1] *= -1; // Flip projection matrix from GL to Vulkan orientation.
+}
+
+int main(int argc, char **argv)
+{
+  struct demo demo;
+  demo.swapchain = VK_NULL_HANDLE;
+  demo.oldswapchain = VK_NULL_HANDLE;
+  demo.old_depth.view = VK_NULL_HANDLE;
+  demo.old_depth.image = VK_NULL_HANDLE;
+  demo.old_depth.mem = VK_NULL_HANDLE;
+
+  demo_init(&demo, argc, argv);
+
+  demo_init_connection(&demo);
+
+  demo_init_vk(&demo);
+
+  demo_create_xcb_window(&demo);
+
+  demo_init_vk_surface(&demo);
+
+  demo_prepare_assets(&demo);
+
+  demo_prepare_cube_data_buffers(&demo);
+
+  demo_prepare_descriptor_layout(&demo);
+  demo_prepare_render_pass(&demo);
+  demo_prepare_pipeline(&demo);
+
+  demo_prepare_descriptor_pool(&demo);
+  demo_prepare_descriptor_set(&demo);
+
+  demo_prepare(&demo);
+
+  demo_run_xcb(&demo);
+
+  demo_cleanup(&demo);
+
+  return validation_error;
+}
+
+static void demo_draw(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
+  // make FRAME_LAG desiredNumOfSwapchainImages+1
+
+  // Ensure no more than FRAME_LAG renderings are outstanding
+
+  while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
+  {
+    assert(err == VK_NOT_READY);
+    sched_yield();
+  }
+
+  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
+  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
+  demo_update_data_buffer(demo);
+
+  //update descriptor
+  {
+    VkDescriptorBufferInfo buffer_info;
+    buffer_info.offset = 0;
+    buffer_info.range = sizeof(struct vktexcube_vs_uniform);
+    buffer_info.buffer = demo->uniform_buffer[demo->frame_index];
+
+    VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
+    memset(&tex_descs, 0, sizeof(tex_descs));
+    for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
+    {
+      tex_descs[i].sampler = demo->texture_assets[i].sampler;
+      tex_descs[i].imageView = demo->texture_assets[i].view;
+      tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
+    }
+
+    VkWriteDescriptorSet writes[2];
+    memset(&writes, 0, sizeof(writes));
+    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[0].descriptorCount = 1;
+    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writes[0].pBufferInfo = &buffer_info;
+
+    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writes[1].dstBinding = 1;
+    writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
+    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    writes[1].pImageInfo = tex_descs;
+
+    writes[0].dstSet = demo->descriptor_set[demo->frame_index];
+    writes[1].dstSet = demo->descriptor_set[demo->frame_index];
+
+    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
+  }
+
+  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
+  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
+  assert(!err);
+
+  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
+  do
+  {
+    // Get the index of the next available swapchain image:
+    err = demo->fpAcquireNextImageKHR(
+        demo->device,
+        demo->swapchain,
+        UINT64_MAX,
+        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
+        &demo->current_buffer);
+
+    if (err == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+      // demo->swapchain is out of date (e.g. the window was resized) and
+      // must be recreated:
+      demo_resize(demo);
+    }
+    else if (err == VK_SUBOPTIMAL_KHR)
+    {
+      // demo->swapchain is not as optimal as it could be, but the platform's
+      // presentation engine will still present the image correctly.
+      break;
+    }
+    else
+    {
+      assert(!err);
+    }
+  } while ((!demo->quit) && (err != VK_SUCCESS));
+
+  if (demo->quit)
+  {
+    return;
+  }
+
+  demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
+
+  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
+
+  VkSubmitInfo submit_info;
+  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submit_info.pNext = NULL;
+  // Wait for the image acquired semaphore to be signaled to ensure
+  // that the image won't be rendered to until the presentation
+  // engine has fully released ownership to the application, and it is
+  // okay to render to the image.
+  VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+  VkSemaphore _wait_semphores[1] = {demo->image_acquired_semaphores[demo->frame_index]};
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitDstStageMask = _wait_stages;
+  submit_info.pWaitSemaphores = _wait_semphores;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &demo->cmd[demo->frame_index];
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
+  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
+  assert(!err);
+
+  if (demo->separate_present_queue)
+  {
+    err = vkResetCommandPool(demo->device, demo->present_cmd_pool[demo->frame_index], 0U);
+    assert(!err);
+    demo_build_image_ownership_cmd(demo, demo->frame_index);
+
+    // If we are using separate queues, change image ownership to the
+    // present queue before presenting, waiting for the draw complete
+    // semaphore and signalling the ownership released semaphore when finished
+    VkFence nullFence = VK_NULL_HANDLE;
+    VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submit_info.waitSemaphoreCount = 1;
+    submit_info.pWaitDstStageMask = _wait_stages;
+    submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
+    submit_info.commandBufferCount = 1;
+    submit_info.pCommandBuffers = &demo->graphics_to_present_cmd[demo->frame_index];
+    submit_info.signalSemaphoreCount = 1;
+    submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
+    err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
+    assert(!err);
+  }
+
+  // If we are using separate queues we have to wait for image ownership,
+  // otherwise wait for draw complete
+  VkPresentInfoKHR present = {
+      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+      NULL,
+      1,
+      (demo->separate_present_queue) ? &demo->image_ownership_semaphores[demo->frame_index] : &demo->draw_complete_semaphores[demo->frame_index],
+      1,
+      &demo->swapchain,
+      &demo->current_buffer,
+      NULL};
+
+  err = demo->fpQueuePresentKHR(demo->present_queue, &present);
+  demo->frame_index += 1;
+  demo->frame_index %= FRAME_LAG;
+
+  if (err == VK_ERROR_OUT_OF_DATE_KHR)
+  {
+    // demo->swapchain is out of date (e.g. the window was resized) and
+    // must be recreated:
+    demo_resize(demo);
+  }
+  else if (err == VK_SUBOPTIMAL_KHR)
+  {
+    // demo->swapchain is not as optimal as it could be, but the platform's
+    // presentation engine will still present the image correctly.
+  }
+  else
+  {
+    assert(!err);
+  }
+
+  // Store away the cache that we've populated.  This could conceivably happen
+  // earlier, depends on when the pipeline cache stops being populated
+  // internally.
+  //demo_store_pipeline_cache(demo);
+}
+
+static void demo_init_connection(struct demo *demo)
+{
+  const xcb_setup_t *setup;
+  xcb_screen_iterator_t iter;
+  int scr;
+
+  demo->connection = xcb_connect(NULL, &scr);
+  if (xcb_connection_has_error(demo->connection) > 0)
+  {
+    printf("Cannot find a compatible Vulkan installable client driver "
+           "(ICD).\nExiting ...\n");
+    fflush(stdout);
+    exit(1);
+  }
+
+  setup = xcb_get_setup(demo->connection);
+  iter = xcb_setup_roots_iterator(setup);
+  while (scr-- > 0)
+    xcb_screen_next(&iter);
+
+  demo->screen = iter.data;
+}
+
 static void demo_init_vk(struct demo *demo)
 {
   VkResult err;
   uint32_t instance_extension_count = 0;
   uint32_t instance_layer_count = 0;
   uint32_t validation_layer_count = 0;
-  char **instance_validation_layers = NULL;
+  char const **instance_validation_layers = NULL;
   demo->enabled_extension_count = 0;
   demo->enabled_layer_count = 0;
 
-  char *instance_validation_layers_alt1[] = {
+  char const *instance_validation_layers_alt1[] = {
       "VK_LAYER_LUNARG_standard_validation"};
 
-  char *instance_validation_layers_alt2[] = {
+  char const *instance_validation_layers_alt2[] = {
       "VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation",
       "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation",
       "VK_LAYER_GOOGLE_unique_objects"};
@@ -2064,7 +2433,6 @@ static void demo_init_vk(struct demo *demo)
   VkBool32 validation_found = 0;
   if (demo->validate)
   {
-
     err = vkEnumerateInstanceLayerProperties(&instance_layer_count, NULL);
     assert(!err);
 
@@ -2074,13 +2442,10 @@ static void demo_init_vk(struct demo *demo)
       VkLayerProperties *instance_layers = static_cast<VkLayerProperties *>(
           malloc(sizeof(VkLayerProperties) * instance_layer_count));
 
-      err = vkEnumerateInstanceLayerProperties(&instance_layer_count,
-                                               instance_layers);
+      err = vkEnumerateInstanceLayerProperties(&instance_layer_count, instance_layers);
       assert(!err);
 
-      validation_found = demo_check_layers(
-          ARRAY_SIZE(instance_validation_layers_alt1),
-          instance_validation_layers, instance_layer_count, instance_layers);
+      validation_found = demo_check_layers(ARRAY_SIZE(instance_validation_layers_alt1), instance_validation_layers, instance_layer_count, instance_layers);
       if (validation_found)
       {
         demo->enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt1);
@@ -2092,9 +2457,7 @@ static void demo_init_vk(struct demo *demo)
         // use alternative set of validation layers
         instance_validation_layers = instance_validation_layers_alt2;
         demo->enabled_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
-        validation_found = demo_check_layers(
-            ARRAY_SIZE(instance_validation_layers_alt2),
-            instance_validation_layers, instance_layer_count, instance_layers);
+        validation_found = demo_check_layers(ARRAY_SIZE(instance_validation_layers_alt2), instance_validation_layers, instance_layer_count, instance_layers);
         validation_layer_count = ARRAY_SIZE(instance_validation_layers_alt2);
         for (uint32_t i = 0; i < validation_layer_count; i++)
         {
@@ -2125,35 +2488,26 @@ static void demo_init_vk(struct demo *demo)
 
   if (instance_extension_count > 0)
   {
-    VkExtensionProperties *instance_extensions =
-        static_cast<VkExtensionProperties *>(
-            malloc(sizeof(VkExtensionProperties) * instance_extension_count));
-    err = vkEnumerateInstanceExtensionProperties(
-        NULL, &instance_extension_count, instance_extensions);
+    VkExtensionProperties *instance_extensions = static_cast<VkExtensionProperties *>(malloc(sizeof(VkExtensionProperties) * instance_extension_count));
+    err = vkEnumerateInstanceExtensionProperties(NULL, &instance_extension_count, instance_extensions);
     assert(!err);
     for (uint32_t i = 0; i < instance_extension_count; i++)
     {
-      if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME,
-                  instance_extensions[i].extensionName))
+      if (!strcmp(VK_KHR_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName))
       {
         surfaceExtFound = 1;
-        demo->extension_names[demo->enabled_extension_count++] =
-            VK_KHR_SURFACE_EXTENSION_NAME;
+        demo->extension_names[demo->enabled_extension_count++] = VK_KHR_SURFACE_EXTENSION_NAME;
       }
-      if (!strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME,
-                  instance_extensions[i].extensionName))
+      if (!strcmp(VK_KHR_XCB_SURFACE_EXTENSION_NAME, instance_extensions[i].extensionName))
       {
         platformSurfaceExtFound = 1;
-        demo->extension_names[demo->enabled_extension_count++] =
-            VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+        demo->extension_names[demo->enabled_extension_count++] = VK_KHR_XCB_SURFACE_EXTENSION_NAME;
       }
-      if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-                  instance_extensions[i].extensionName))
+      if (!strcmp(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, instance_extensions[i].extensionName))
       {
         if (demo->validate)
         {
-          demo->extension_names[demo->enabled_extension_count++] =
-              VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
+          demo->extension_names[demo->enabled_extension_count++] = VK_EXT_DEBUG_REPORT_EXTENSION_NAME;
         }
       }
       assert(demo->enabled_extension_count < 64);
@@ -2312,67 +2666,50 @@ static void demo_init_vk(struct demo *demo)
 
   if (demo->validate)
   {
-    demo->CreateDebugReportCallback =
-        (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(
-            demo->inst, "vkCreateDebugReportCallbackEXT");
-    demo->DestroyDebugReportCallback =
-        (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(
-            demo->inst, "vkDestroyDebugReportCallbackEXT");
+    demo->CreateDebugReportCallback = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(demo->inst, "vkCreateDebugReportCallbackEXT");
+    demo->DestroyDebugReportCallback = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(demo->inst, "vkDestroyDebugReportCallbackEXT");
     if (!demo->CreateDebugReportCallback)
     {
-      ERR_EXIT("GetProcAddr: Unable to find vkCreateDebugReportCallbackEXT\n",
-               "vkGetProcAddr Failure");
+      ERR_EXIT("GetProcAddr: Unable to find vkCreateDebugReportCallbackEXT\n", "vkGetProcAddr Failure");
     }
     if (!demo->DestroyDebugReportCallback)
     {
-      ERR_EXIT("GetProcAddr: Unable to find vkDestroyDebugReportCallbackEXT\n",
-               "vkGetProcAddr Failure");
+      ERR_EXIT("GetProcAddr: Unable to find vkDestroyDebugReportCallbackEXT\n", "vkGetProcAddr Failure");
     }
-    demo->DebugReportMessage =
-        (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(
-            demo->inst, "vkDebugReportMessageEXT");
+    demo->DebugReportMessage = (PFN_vkDebugReportMessageEXT)vkGetInstanceProcAddr(demo->inst, "vkDebugReportMessageEXT");
     if (!demo->DebugReportMessage)
     {
-      ERR_EXIT("GetProcAddr: Unable to find vkDebugReportMessageEXT\n",
-               "vkGetProcAddr Failure");
+      ERR_EXIT("GetProcAddr: Unable to find vkDebugReportMessageEXT\n", "vkGetProcAddr Failure");
     }
 
     VkDebugReportCallbackCreateInfoEXT dbgCreateInfo;
-    PFN_vkDebugReportCallbackEXT callback;
-    callback = demo->use_break ? BreakCallback : dbgFunc;
     dbgCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
     dbgCreateInfo.pNext = NULL;
-    dbgCreateInfo.pfnCallback = callback;
+    dbgCreateInfo.pfnCallback = demo->use_break ? BreakCallback : dbgFunc;
     dbgCreateInfo.pUserData = demo;
-    dbgCreateInfo.flags =
-        VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-    err = demo->CreateDebugReportCallback(demo->inst, &dbgCreateInfo, NULL,
-                                          &demo->msg_callback);
+    dbgCreateInfo.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+    err = demo->CreateDebugReportCallback(demo->inst, &dbgCreateInfo, NULL, &demo->msg_callback);
     switch (err)
     {
     case VK_SUCCESS:
       break;
     case VK_ERROR_OUT_OF_HOST_MEMORY:
-      ERR_EXIT("CreateDebugReportCallback: out of host memory\n",
-               "CreateDebugReportCallback Failure");
+      ERR_EXIT("CreateDebugReportCallback: out of host memory\n", "CreateDebugReportCallback Failure");
       break;
     default:
-      ERR_EXIT("CreateDebugReportCallback: unknown failure\n",
-               "CreateDebugReportCallback Failure");
+      ERR_EXIT("CreateDebugReportCallback: unknown failure\n", "CreateDebugReportCallback Failure");
       break;
     }
   }
+
   vkGetPhysicalDeviceProperties(demo->gpu, &demo->gpu_props);
 
   /* Call with NULL data to get count */
-  vkGetPhysicalDeviceQueueFamilyProperties(demo->gpu, &demo->queue_family_count,
-                                           NULL);
+  vkGetPhysicalDeviceQueueFamilyProperties(demo->gpu, &demo->queue_family_count, NULL);
   assert(demo->queue_family_count >= 1);
 
-  demo->queue_props = (VkQueueFamilyProperties *)malloc(
-      demo->queue_family_count * sizeof(VkQueueFamilyProperties));
-  vkGetPhysicalDeviceQueueFamilyProperties(demo->gpu, &demo->queue_family_count,
-                                           demo->queue_props);
+  demo->queue_props = (VkQueueFamilyProperties *)malloc(demo->queue_family_count * sizeof(VkQueueFamilyProperties));
+  vkGetPhysicalDeviceQueueFamilyProperties(demo->gpu, &demo->queue_family_count, demo->queue_props);
 
   // Query fine-grained feature support for this device.
   //  If app has specific feature requirements it should check supported
@@ -2385,65 +2722,13 @@ static void demo_init_vk(struct demo *demo)
   GET_INSTANCE_PROC_ADDR(demo->inst, GetPhysicalDeviceSurfaceFormatsKHR);
   GET_INSTANCE_PROC_ADDR(demo->inst, GetPhysicalDeviceSurfacePresentModesKHR);
   GET_INSTANCE_PROC_ADDR(demo->inst, GetSwapchainImagesKHR);
-}
-
-static void demo_create_device(struct demo *demo)
-{
-  VkResult U_ASSERT_ONLY err;
-  float queue_priorities[1] = {0.0};
-  VkDeviceQueueCreateInfo queues[2];
-  queues[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  queues[0].pNext = NULL;
-  queues[0].queueFamilyIndex = demo->graphics_queue_family_index;
-  queues[0].queueCount = 1;
-  queues[0].pQueuePriorities = queue_priorities;
-  queues[0].flags = 0;
-
-  VkDeviceCreateInfo device = {
-      .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-      .pNext = NULL,
-      .queueCreateInfoCount = 1,
-      .pQueueCreateInfos = queues,
-      .enabledLayerCount = 0,
-      .ppEnabledLayerNames = NULL,
-      .enabledExtensionCount = demo->enabled_extension_count,
-      .ppEnabledExtensionNames = (const char *const *)demo->extension_names,
-      .pEnabledFeatures =
-          NULL, // If specific features are required, pass them in here
-  };
-  if (demo->separate_present_queue)
-  {
-    queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queues[1].pNext = NULL;
-    queues[1].queueFamilyIndex = demo->present_queue_family_index;
-    queues[1].queueCount = 1;
-    queues[1].pQueuePriorities = queue_priorities;
-    queues[1].flags = 0;
-    device.queueCreateInfoCount = 2;
-  }
-  err = vkCreateDevice(demo->gpu, &device, NULL, &demo->device);
-  assert(!err);
-}
-
-static void demo_init_vk_swapchain(struct demo *demo)
-{
-  VkResult U_ASSERT_ONLY err;
-
-  VkXcbSurfaceCreateInfoKHR createInfo;
-  createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-  createInfo.pNext = NULL;
-  createInfo.flags = 0;
-  createInfo.connection = demo->connection;
-  createInfo.window = demo->xcb_window;
-
-  err = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(vkGetInstanceProcAddr(demo->inst, "vkCreateXcbSurfaceKHR"))(demo->inst, &createInfo, NULL, &demo->surface);
-  assert(!err);
 
   // Iterate over each queue to learn whether it supports presenting:
   VkBool32 *supportsPresent = (VkBool32 *)malloc(demo->queue_family_count * sizeof(VkBool32));
   for (uint32_t i = 0; i < demo->queue_family_count; i++)
   {
-    demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, i, demo->surface, &supportsPresent[i]);
+
+    supportsPresent[i] = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(demo->inst, "vkGetPhysicalDeviceXcbPresentationSupportKHR"))(demo->gpu, i, demo->connection, demo->screen->root_visual);
   }
 
   // Search for a graphics and a present queue in the array of queue
@@ -2485,8 +2770,7 @@ static void demo_init_vk_swapchain(struct demo *demo)
   // Generate error if could not find both a graphics and a present queue
   if (graphicsQueueFamilyIndex == UINT32_MAX || presentQueueFamilyIndex == UINT32_MAX)
   {
-    ERR_EXIT("Could not find both graphics and present queues\n",
-             "Swapchain Initialization Failure");
+    ERR_EXIT("Could not find both graphics and present queues\n", "Swapchain Initialization Failure");
   }
 
   demo->graphics_queue_family_index = graphicsQueueFamilyIndex;
@@ -2502,8 +2786,7 @@ static void demo_init_vk_swapchain(struct demo *demo)
   GET_DEVICE_PROC_ADDR(demo->device, AcquireNextImageKHR);
   GET_DEVICE_PROC_ADDR(demo->device, QueuePresentKHR);
 
-  vkGetDeviceQueue(demo->device, demo->graphics_queue_family_index, 0,
-                   &demo->graphics_queue);
+  vkGetDeviceQueue(demo->device, demo->graphics_queue_family_index, 0, &demo->graphics_queue);
 
   if (!demo->separate_present_queue)
   {
@@ -2511,34 +2794,8 @@ static void demo_init_vk_swapchain(struct demo *demo)
   }
   else
   {
-    vkGetDeviceQueue(demo->device, demo->present_queue_family_index, 0,
-                     &demo->present_queue);
+    vkGetDeviceQueue(demo->device, demo->present_queue_family_index, 0, &demo->present_queue);
   }
-
-  // Get the list of VkFormat's that are supported:
-  uint32_t formatCount;
-  err = demo->fpGetPhysicalDeviceSurfaceFormatsKHR(demo->gpu, demo->surface,
-                                                   &formatCount, NULL);
-  assert(!err);
-  VkSurfaceFormatKHR *surfFormats =
-      (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
-  err = demo->fpGetPhysicalDeviceSurfaceFormatsKHR(demo->gpu, demo->surface,
-                                                   &formatCount, surfFormats);
-  assert(!err);
-  // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
-  // the surface has no preferred format.  Otherwise, at least one
-  // supported format will be returned.
-  if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED)
-  {
-    demo->format = VK_FORMAT_B8G8R8A8_UNORM;
-  }
-  else
-  {
-    assert(formatCount >= 1);
-    demo->format = surfFormats[0].format;
-  }
-  demo->color_space = surfFormats[0].colorSpace;
-
   demo->quit = false;
   demo->curFrame = 0;
 
@@ -2552,9 +2809,10 @@ static void demo_init_vk_swapchain(struct demo *demo)
 
   // Create fences that we can use to throttle if we get too far
   // ahead of the image presents
-  VkFenceCreateInfo fence_ci = {.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-                                .pNext = NULL,
-                                .flags = VK_FENCE_CREATE_SIGNALED_BIT};
+  VkFenceCreateInfo fence_ci = {
+      VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+      NULL,
+      VK_FENCE_CREATE_SIGNALED_BIT};
   for (uint32_t i = 0; i < FRAME_LAG; i++)
   {
     err = vkCreateFence(demo->device, &fence_ci, NULL, &demo->fences[i]);
@@ -2581,316 +2839,46 @@ static void demo_init_vk_swapchain(struct demo *demo)
   vkGetPhysicalDeviceMemoryProperties(demo->gpu, &demo->memory_properties);
 }
 
-static void demo_init_connection(struct demo *demo)
-{
-  const xcb_setup_t *setup;
-  xcb_screen_iterator_t iter;
-  int scr;
-
-  demo->connection = xcb_connect(NULL, &scr);
-  if (xcb_connection_has_error(demo->connection) > 0)
-  {
-    printf("Cannot find a compatible Vulkan installable client driver "
-           "(ICD).\nExiting ...\n");
-    fflush(stdout);
-    exit(1);
-  }
-
-  setup = xcb_get_setup(demo->connection);
-  iter = xcb_setup_roots_iterator(setup);
-  while (scr-- > 0)
-    xcb_screen_next(&iter);
-
-  demo->screen = iter.data;
-}
-
-static void demo_init(struct demo *demo, int argc, char **argv)
-{
-  vec3 eye = {0.0f, 3.0f, 5.0f};
-  vec3 origin = {0, 0, 0};
-  vec3 up = {0.0f, 1.0f, 0.0};
-
-  memset(demo, 0, sizeof(*demo));
-  demo->presentMode = VK_PRESENT_MODE_FIFO_KHR;
-  demo->frameCount = INT32_MAX;
-
-  for (int i = 1; i < argc; i++)
-  {
-    if (strcmp(argv[i], "--use_staging") == 0)
-    {
-      demo->use_staging_buffer = true;
-      continue;
-    }
-    if ((strcmp(argv[i], "--present_mode") == 0) && (i < argc - 1))
-    {
-      demo->presentMode = static_cast<VkPresentModeKHR>(atoi(argv[i + 1]));
-      i++;
-      continue;
-    }
-    if (strcmp(argv[i], "--break") == 0)
-    {
-      demo->use_break = true;
-      continue;
-    }
-    if (strcmp(argv[i], "--validate") == 0)
-    {
-      demo->validate = true;
-      continue;
-    }
-    if (strcmp(argv[i], "--xlib") == 0)
-    {
-      fprintf(stderr, "--xlib is deprecated and no longer does anything");
-      continue;
-    }
-    if (strcmp(argv[i], "--c") == 0 && demo->frameCount == INT32_MAX &&
-        i < argc - 1 && sscanf(argv[i + 1], "%d", &demo->frameCount) == 1 &&
-        demo->frameCount >= 0)
-    {
-      i++;
-      continue;
-    }
-    if (strcmp(argv[i], "--suppress_popups") == 0)
-    {
-      demo->suppress_popups = true;
-      continue;
-    }
-
-    fprintf(stderr,
-            "Usage:\n  %s [--use_staging] [--validate] "
-            "       [--break] [--c <framecount>] [--suppress_popups]\n"
-            "       [--present_mode {0,1,2,3}]\n"
-            "\n"
-            "Options for --present_mode:\n"
-            "  %d: VK_PRESENT_MODE_IMMEDIATE_KHR\n"
-            "  %d: VK_PRESENT_MODE_MAILBOX_KHR\n"
-            "  %d: VK_PRESENT_MODE_FIFO_KHR (default)\n"
-            "  %d: VK_PRESENT_MODE_FIFO_RELAXED_KHR\n",
-            APP_SHORT_NAME, VK_PRESENT_MODE_IMMEDIATE_KHR,
-            VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_FIFO_KHR,
-            VK_PRESENT_MODE_FIFO_RELAXED_KHR);
-    fflush(stderr);
-    exit(1);
-  }
-
-  demo_init_connection(demo);
-
-  demo_init_vk(demo);
-
-  demo->width = 500;
-  demo->height = 500;
-
-  demo->spin_angle = 4.0f;
-  demo->spin_increment = 0.2f;
-  demo->pause = false;
-
-  mat4x4_perspective(demo->projection_matrix, (float)degreesToRadians(45.0f),
-                     1.0f, 0.1f, 100.0f);
-  mat4x4_look_at(demo->view_matrix, eye, origin, up);
-  mat4x4_identity(demo->model_matrix);
-
-  demo->projection_matrix[1][1] *=
-      -1; // Flip projection matrix from GL to Vulkan orientation.
-}
-
-int main(int argc, char **argv)
-{
-  struct demo demo;
-
-  demo_init(&demo, argc, argv);
-
-  demo_create_xcb_window(&demo);
-
-  demo_init_vk_swapchain(&demo);
-
-  demo_prepare_assets(&demo);
-
-  demo_prepare_cube_data_buffers(&demo);
-
-  demo_prepare_descriptor_layout(&demo);
-  demo_prepare_render_pass(&demo);
-  demo_prepare_pipeline(&demo);
-
-  demo_prepare_descriptor_pool(&demo);
-  demo_prepare_descriptor_set(&demo);
-
-  demo_prepare(&demo);
-
-  demo_run_xcb(&demo);
-
-  demo_cleanup(&demo);
-
-  return validation_error;
-}
-
-static void demo_draw(struct demo *demo)
+static void demo_init_vk_surface(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
-  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
-  // make FRAME_LAG desiredNumOfSwapchainImages+1
-
-  // Ensure no more than FRAME_LAG renderings are outstanding
-
-  while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
-  {
-    assert(err == VK_NOT_READY);
-    sched_yield();
-  }
-
-  vkResetFences(demo->device, 1, &demo->fences[demo->frame_index]);
-
-  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
-  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
-  demo_update_data_buffer(demo);
-
-  //update descriptor
-  {
-    VkDescriptorBufferInfo buffer_info;
-    buffer_info.offset = 0;
-    buffer_info.range = sizeof(struct vktexcube_vs_uniform);
-    buffer_info.buffer = demo->uniform_buffer[demo->frame_index];
-
-    VkDescriptorImageInfo tex_descs[DEMO_TEXTURE_COUNT];
-    memset(&tex_descs, 0, sizeof(tex_descs));
-    for (unsigned int i = 0; i < DEMO_TEXTURE_COUNT; i++)
-    {
-      tex_descs[i].sampler = demo->texture_assets[i].sampler;
-      tex_descs[i].imageView = demo->texture_assets[i].view;
-      tex_descs[i].imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-    }
-
-    VkWriteDescriptorSet writes[2];
-    memset(&writes, 0, sizeof(writes));
-    writes[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[0].descriptorCount = 1;
-    writes[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writes[0].pBufferInfo = &buffer_info;
-
-    writes[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writes[1].dstBinding = 1;
-    writes[1].descriptorCount = DEMO_TEXTURE_COUNT;
-    writes[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    writes[1].pImageInfo = tex_descs;
-
-    writes[0].dstSet = demo->descriptor_set[demo->frame_index];
-    writes[1].dstSet = demo->descriptor_set[demo->frame_index];
-
-    vkUpdateDescriptorSets(demo->device, 2, writes, 0, NULL);
-  }
-
-  // It is believed that any operations(draw, copy, dispatch etc) in Vulkan consists of multiple stages.
-  err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
+  //create_surface
+  VkXcbSurfaceCreateInfoKHR createInfo;
+  createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+  createInfo.pNext = NULL;
+  createInfo.flags = 0;
+  createInfo.connection = demo->connection;
+  createInfo.window = demo->xcb_window;
+  err = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(vkGetInstanceProcAddr(demo->inst, "vkCreateXcbSurfaceKHR"))(demo->inst, &createInfo, NULL, &demo->surface);
   assert(!err);
 
-  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
-  do
-  {
-    // Get the index of the next available swapchain image:
-    err = demo->fpAcquireNextImageKHR(
-        demo->device,
-        demo->swapchain,
-        UINT64_MAX,
-        demo->image_acquired_semaphores[demo->frame_index], VK_NULL_HANDLE,
-        &demo->current_buffer);
+  // this should be guaranteed by the platform-specific can_present call
+  VkBool32 supported;
+  assert(VK_SUCCESS == demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, demo->present_queue_family_index, demo->surface, &supported));
+  assert(supported);
 
-    if (err == VK_ERROR_OUT_OF_DATE_KHR)
-    {
-      // demo->swapchain is out of date (e.g. the window was resized) and
-      // must be recreated:
-      demo_resize(demo);
-    }
-    else if (err == VK_SUBOPTIMAL_KHR)
-    {
-      // demo->swapchain is not as optimal as it could be, but the platform's
-      // presentation engine will still present the image correctly.
-      break;
-    }
-    else
-    {
-      assert(!err);
-    }
-  } while (err != VK_SUCCESS);
-
-  // Wait for the image acquired semaphore to be signaled to ensure
-  // that the image won't be rendered to until the presentation
-  // engine has fully released ownership to the application, and it is
-  // okay to render to the image.
-
-  demo_draw_build_cmd(demo, demo->cmd[demo->frame_index]);
-
-  VkSubmitInfo submit_info;
-  submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-  submit_info.pNext = NULL;
-  VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-  VkSemaphore _wait_semphores[1] = {demo->image_acquired_semaphores[demo->frame_index]};
-  submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitDstStageMask = _wait_stages;
-  submit_info.pWaitSemaphores = _wait_semphores;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &demo->cmd[demo->frame_index];
-  submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
-  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, demo->fences[demo->frame_index]);
+  // Get the list of VkFormat's that are supported:
+  uint32_t formatCount;
+  err = demo->fpGetPhysicalDeviceSurfaceFormatsKHR(demo->gpu, demo->surface, &formatCount, NULL);
   assert(!err);
-
-  if (demo->separate_present_queue)
+  VkSurfaceFormatKHR *surfFormats = (VkSurfaceFormatKHR *)malloc(formatCount * sizeof(VkSurfaceFormatKHR));
+  err = demo->fpGetPhysicalDeviceSurfaceFormatsKHR(demo->gpu, demo->surface, &formatCount, surfFormats);
+  assert(!err);
+  // If the format list includes just one entry of VK_FORMAT_UNDEFINED,
+  // the surface has no preferred format.  Otherwise, at least one
+  // supported format will be returned.
+  if (formatCount == 1 && surfFormats[0].format == VK_FORMAT_UNDEFINED)
   {
-    err = vkResetCommandPool(demo->device, demo->present_cmd_pool[demo->frame_index], 0U);
-    assert(!err);
-    demo_build_image_ownership_cmd(demo, demo->frame_index);
-
-    // If we are using separate queues, change image ownership to the
-    // present queue before presenting, waiting for the draw complete
-    // semaphore and signalling the ownership released semaphore when finished
-    VkFence nullFence = VK_NULL_HANDLE;
-    VkPipelineStageFlags _wait_stages[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    submit_info.waitSemaphoreCount = 1;
-    submit_info.pWaitDstStageMask = _wait_stages;
-    submit_info.pWaitSemaphores = &demo->draw_complete_semaphores[demo->frame_index];
-    submit_info.commandBufferCount = 1;
-    submit_info.pCommandBuffers = &demo->graphics_to_present_cmd[demo->frame_index];
-    submit_info.signalSemaphoreCount = 1;
-    submit_info.pSignalSemaphores = &demo->image_ownership_semaphores[demo->frame_index];
-    err = vkQueueSubmit(demo->present_queue, 1, &submit_info, nullFence);
-    assert(!err);
-  }
-
-  // If we are using separate queues we have to wait for image ownership,
-  // otherwise wait for draw complete
-  VkPresentInfoKHR present = {
-      VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
-      NULL,
-      1,
-      (demo->separate_present_queue) ? &demo->image_ownership_semaphores[demo->frame_index] : &demo->draw_complete_semaphores[demo->frame_index],
-      1,
-      &demo->swapchain,
-      &demo->current_buffer,
-      NULL};
-
-  err = demo->fpQueuePresentKHR(demo->present_queue, &present);
-  demo->frame_index += 1;
-  demo->frame_index %= FRAME_LAG;
-
-  if (err == VK_ERROR_OUT_OF_DATE_KHR)
-  {
-    // demo->swapchain is out of date (e.g. the window was resized) and
-    // must be recreated:
-    demo_resize(demo);
-  }
-  else if (err == VK_SUBOPTIMAL_KHR)
-  {
-    // demo->swapchain is not as optimal as it could be, but the platform's
-    // presentation engine will still present the image correctly.
+    demo->format = VK_FORMAT_B8G8R8A8_UNORM;
   }
   else
   {
-    assert(!err);
+    assert(formatCount >= 1);
+    demo->format = surfFormats[0].format;
   }
-
-  // Store away the cache that we've populated.  This could conceivably happen
-  // earlier, depends on when the pipeline cache stops being populated
-  // internally.
-  //demo_store_pipeline_cache(demo);
+  demo->color_space = surfFormats[0].colorSpace;
+  free(surfFormats);
 }
 
 static void demo_resize(struct demo *demo)
@@ -2902,18 +2890,41 @@ static void demo_resize(struct demo *demo)
   {
     return;
   }
+
   // In order to properly resize the window, we must re-create the swapchain
   // AND redo the command buffers, etc.
-  //
-  // First, perform part of the demo_cleanup() function:
   demo->prepared = false;
-  vkDeviceWaitIdle(demo->device);
 
-  demo_cleanup_swapchain(demo);
-
-  // Second, re-perform the demo_prepare() function, which will re-create the
+  // re-perform the demo_prepare() function, which will re-create the
   // swapchain:
   demo_prepare_swapchain(demo);
+
+  // perform part of the demo_cleanup() function:
+  vkDeviceWaitIdle(demo->device);
+
+  for (uint32_t i = 0; i < demo->old_swapchain_image_resources.size(); i++)
+  {
+    vkDestroyFramebuffer(demo->device, demo->old_swapchain_image_resources[i].framebuffer, NULL);
+    vkDestroyImageView(demo->device, demo->old_swapchain_image_resources[i].view, NULL);
+  }
+  demo->old_swapchain_image_resources.clear();
+
+  vkDestroyImageView(demo->device, demo->old_depth.view, NULL);
+  vkDestroyImage(demo->device, demo->old_depth.image, NULL);
+  vkFreeMemory(demo->device, demo->old_depth.mem, NULL);
+  demo->old_depth.view = VK_NULL_HANDLE;
+  demo->old_depth.image = VK_NULL_HANDLE;
+  demo->old_depth.mem = VK_NULL_HANDLE;
+
+  // If we just re-created an existing swapchain, we should destroy the old
+  // swapchain at this point.
+  // Note: destroying the swapchain also cleans up all its associated
+  // presentable images once the platform is done with them.
+  if (demo->oldswapchain != VK_NULL_HANDLE)
+  {
+    demo->fpDestroySwapchainKHR(demo->device, demo->oldswapchain, NULL);
+  }
+  demo->oldswapchain = VK_NULL_HANDLE;
 
   demo->prepared = true;
 }
@@ -2922,17 +2933,21 @@ static void demo_cleanup_swapchain(struct demo *demo)
 {
   uint32_t i;
 
-  for (i = 0; i < demo->swapchainImageCount; i++)
+  for (i = 0; i < demo->swapchain_image_resources.size(); i++)
   {
     vkDestroyFramebuffer(demo->device, demo->swapchain_image_resources[i].framebuffer, NULL);
     vkDestroyImageView(demo->device, demo->swapchain_image_resources[i].view, NULL);
   }
-
-  free(demo->swapchain_image_resources);
+  demo->swapchain_image_resources.clear();
 
   vkDestroyImageView(demo->device, demo->depth.view, NULL);
   vkDestroyImage(demo->device, demo->depth.image, NULL);
   vkFreeMemory(demo->device, demo->depth.mem, NULL);
+  demo->depth.view = VK_NULL_HANDLE;
+  demo->depth.image = VK_NULL_HANDLE;
+  demo->depth.mem = VK_NULL_HANDLE;
+
+  demo->fpDestroySwapchainKHR(demo->device, demo->swapchain, NULL);
 }
 
 static void demo_cleanup(struct demo *demo)
@@ -2943,7 +2958,6 @@ static void demo_cleanup(struct demo *demo)
   vkDeviceWaitIdle(demo->device);
 
   demo_cleanup_swapchain(demo);
-  demo->fpDestroySwapchainKHR(demo->device, demo->swapchain, NULL);
 
   // Wait for fences from present operations
   for (i = 0; i < FRAME_LAG; i++)

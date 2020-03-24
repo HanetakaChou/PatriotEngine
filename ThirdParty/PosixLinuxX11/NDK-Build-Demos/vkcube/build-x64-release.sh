@@ -34,7 +34,7 @@ cp -f ../../Bionic-Redistributable/lib64/libm.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libstdc++.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libc++_shared.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan.so ${out_dir}/  
-if [ 0 -eq 1 ]; then #Intel
+if [ 1 -eq 1 ]; then #Intel
 mkdir -p ${out_dir}/vulkan/icd.d/
 cp -f ../../Bionic-Redistributable/lib64/vulkan/icd.d/intel_icd.x86_64.json ${out_dir}/vulkan/icd.d/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan_intel.so ${out_dir}/  

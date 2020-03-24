@@ -13,8 +13,7 @@ rm -rf cube.frag.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
 
 # build by ndk
-# rm -rf obj/local/x86_64
-# rm -rf libs/x86_64
+rm -f ${int_dir}/${target_name}
 ndk-build APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk 
 
 # before execute change the rpath to \$ORIGIN    
@@ -100,6 +99,8 @@ cd ${out_dir}
 
 # execute the generated ${target_name}  
 # gdbserver :27177 ./${target_name}
-export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
-./gdbserver :27177 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
+# export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
+# export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa
+# ./gdbserver :27177 
+./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
 
