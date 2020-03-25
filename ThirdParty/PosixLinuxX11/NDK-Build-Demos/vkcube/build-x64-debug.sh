@@ -12,6 +12,10 @@ rm -rf cube.frag.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o cube.vert.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
 
+# include-bin
+rm -rf lunarg.ppm.h
+../../glibc-include-bin/bin64/include-bin lunarg.ppm lunarg.ppm.h
+
 # build by ndk
 rm -f ${int_dir}/${target_name}
 ndk-build APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk 

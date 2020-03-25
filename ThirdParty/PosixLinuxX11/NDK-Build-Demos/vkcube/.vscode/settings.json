@@ -17,6 +17,11 @@
         "new": "cpp",
         "streambuf": "cpp",
         "ios": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "__functional_base": "cpp",
+        "__functional_base_03": "cpp",
+        "memory": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp"
     },
 }
