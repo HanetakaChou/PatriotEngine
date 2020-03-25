@@ -61,8 +61,16 @@ struct texture_object
   VkMemoryAllocateInfo mem_alloc;
   VkDeviceMemory mem;
   VkImageView view;
+
   uint32_t tex_width;
   uint32_t tex_height;
+};
+
+struct staging_texture_object
+{
+  uint32_t stagingOffset;
+  uint32_t bufferRowLength;
+  uint32_t bufferImageHeight;
 };
 
 static int validation_error = 0;
@@ -97,7 +105,6 @@ struct demo
 
   VkSurfaceKHR surface;
   bool prepared;
-  bool use_staging_buffer;
   bool separate_present_queue;
 
   bool syncd_with_actual_presents;
@@ -178,7 +185,15 @@ struct demo
   } old_depth;
 
   struct texture_object texture_assets[1];
-  struct texture_object staging_texture;
+
+  struct staging_texture_object staging_texture[1];
+
+  struct
+  {
+    VkBuffer buffer;
+    VkMemoryAllocateInfo mem_alloc;
+    VkDeviceMemory mem;
+  } staging_buffer;
 
   //VkCommandBuffer cmd; // Buffer for initialization commands
   VkPipelineLayout pipeline_layout_1;
@@ -228,16 +243,17 @@ static void demo_init_vk_surface(struct demo *demo);
 
 static void demo_prepare_assets(struct demo *demo);
 
-static void demo_prepare_texture_image(struct demo *demo, const char *filename,
+static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd);
+
+static void demo_prepare_texture_staging_buffer(struct demo *demo, struct staging_texture_object *tex_obj);
+
+static void demo_prepare_texture_image(struct demo *demo,
                                        struct texture_object *tex_obj,
                                        VkImageTiling tiling,
                                        VkImageUsageFlags usage,
                                        VkFlags required_props);
 
-static void demo_destroy_texture_image(struct demo *demo,
-                                       struct texture_object *tex_objs);
-
-static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd);
+static void demo_destroy_texture_staging_buffer(struct demo *demo, struct staging_texture_object *tex_objs);
 
 static void demo_set_image_layout(struct demo *demo,
                                   VkCommandBuffer tmp_cmd,
@@ -836,7 +852,7 @@ static void demo_init(struct demo *demo, int argc, char **argv)
   {
     if (strcmp(argv[i], "--use_staging") == 0)
     {
-      demo->use_staging_buffer = true;
+      fprintf(stderr, "--use_staging is deprecated and no longer does anything");
       continue;
     }
     if ((strcmp(argv[i], "--present_mode") == 0) && (i < argc - 1))
@@ -1588,41 +1604,167 @@ static void demo_prepare_assets(struct demo *demo)
 
   vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
 
-  if (demo->staging_texture.image)
+  demo_destroy_texture_staging_buffer(demo, &demo->staging_texture[0]);
+}
+
+static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
+{
+  const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
+  VkFormatProperties props;
+
+  vkGetPhysicalDeviceFormatProperties(demo->gpu, tex_format, &props);
+
+  VkResult U_ASSERT_ONLY err;
+
+  // TextureVk::setSubImage libANGLE/renderer/vulkan/TextureVk.cpp
+  // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/TextureVk.cpp
+
+  // BuildInternalFormatInfoMap libANGLE/formatutils.cpp
+  // From ES 3.0.1 spec, table 3.12
+  //                   | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
+  //AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
+  // From EXT_texture_compression_bptc
+  //                         | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
+  //AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+
+  // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
+  // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0, false, false, false, gl::VertexAttribType::UnsignedByte },
+
+  // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/TextureVk.cpp
+
+  if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
   {
-    demo_destroy_texture_image(demo, &demo->staging_texture);
+    /* Must use staging buffer to copy linear texture to optimized */
+
+    demo_prepare_texture_staging_buffer(demo, &demo->staging_texture[0]);
+
+    demo_prepare_texture_image(demo, &demo->texture_assets[0], VK_IMAGE_TILING_OPTIMAL, (VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT), VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+    demo_set_image_layout(
+        demo,
+        tmp_cmd,
+        demo->texture_assets[0].image,
+        VK_IMAGE_ASPECT_COLOR_BIT,
+        VK_IMAGE_LAYOUT_PREINITIALIZED,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+        0,
+        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+        VK_PIPELINE_STAGE_TRANSFER_BIT);
+
+    VkBufferImageCopy copy_region = {
+        demo->staging_texture[0].stagingOffset,
+        demo->staging_texture[0].bufferRowLength,
+        demo->staging_texture[0].bufferImageHeight,
+        {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
+        {0, 0, 0},
+        {demo->texture_assets[0].tex_width, demo->texture_assets[0].tex_height, 1}};
+
+    vkCmdCopyBufferToImage(tmp_cmd, demo->staging_buffer.buffer, demo->texture_assets[0].image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
+
+    demo_set_image_layout(
+        demo, tmp_cmd, demo->texture_assets[0].image, VK_IMAGE_ASPECT_COLOR_BIT,
+        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, demo->texture_assets[0].imageLayout,
+        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
+        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
   }
+  else
+  {
+    /* Can't support VK_FORMAT_R8G8B8A8_UNORM !? */
+    assert(!"No support for R8G8B8A8_UNORM as texture image format");
+  }
+
+  const VkSamplerCreateInfo sampler = {
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .pNext = NULL,
+      .magFilter = VK_FILTER_NEAREST,
+      .minFilter = VK_FILTER_NEAREST,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .mipLodBias = 0.0f,
+      .anisotropyEnable = VK_FALSE,
+      .maxAnisotropy = 1,
+      .compareOp = VK_COMPARE_OP_NEVER,
+      .minLod = 0.0f,
+      .maxLod = 0.0f,
+      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+      .unnormalizedCoordinates = VK_FALSE,
+  };
+
+  VkImageViewCreateInfo view = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .pNext = NULL,
+      .image = VK_NULL_HANDLE,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = tex_format,
+      .components =
+          {
+              VK_COMPONENT_SWIZZLE_R,
+              VK_COMPONENT_SWIZZLE_G,
+              VK_COMPONENT_SWIZZLE_B,
+              VK_COMPONENT_SWIZZLE_A,
+          },
+      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+      .flags = 0,
+  };
+
+  /* create sampler */
+  err = vkCreateSampler(demo->device, &sampler, NULL, &demo->texture_assets[0].sampler);
+  assert(!err);
+
+  /* create image view */
+  view.image = demo->texture_assets[0].image;
+  err = vkCreateImageView(demo->device, &view, NULL, &demo->texture_assets[0].view);
+  assert(!err);
 }
 
 /* Load a ppm file into memory */
-bool loadTexture(uint8_t *rgba_data,
-                 VkSubresourceLayout *layout, uint32_t *width,
-                 uint32_t *height)
+bool loadTexture(uint8_t *rgba_data, uint32_t outputRowPitch, uint32_t *width, uint32_t *height)
 {
 #include <lunarg.ppm.h>
-  char *cPtr;
-  cPtr = (char *)lunarg_ppm;
-  if ((unsigned char *)cPtr >= (lunarg_ppm + lunarg_ppm_len) ||
-      strncmp(cPtr, "P6\n", 3))
+
+  char *cPtr = (char *)lunarg_ppm;
+  if ((unsigned char *)cPtr >= (lunarg_ppm + lunarg_ppm_len) || strncmp(cPtr, "P6\n", 3))
   {
     return false;
   }
-  while (strncmp(cPtr++, "\n", 1))
-    ;
-  sscanf(cPtr, "%u %u", width, height);
+
+  cPtr = strchr(cPtr, '\n');
+  if (NULL == cPtr)
+  {
+    return false;
+  }
+  ++cPtr;
+
+  if (sscanf(cPtr, "%u %u", width, height) != 2)
+  {
+    return false;
+  }
+
   if (rgba_data == NULL)
   {
     return true;
   }
-  while (strncmp(cPtr++, "\n", 1))
-    ;
-  if ((unsigned char *)cPtr >= (lunarg_ppm + lunarg_ppm_len) ||
-      strncmp(cPtr, "255\n", 4))
+
+  cPtr = strchr(cPtr, '\n');
+  if (NULL == cPtr)
   {
     return false;
   }
-  while (strncmp(cPtr++, "\n", 1))
-    ;
+  ++cPtr;
+
+  if ((unsigned char *)cPtr >= (lunarg_ppm + lunarg_ppm_len) || strncmp(cPtr, "255\n", 4))
+  {
+    return false;
+  }
+
+  cPtr = strchr(cPtr, '\n');
+  if (NULL == cPtr)
+  {
+    return false;
+  }
+  ++cPtr;
 
   for (int y = 0; y < *height; y++)
   {
@@ -1634,10 +1776,128 @@ bool loadTexture(uint8_t *rgba_data,
       rowPtr += 4;
       cPtr += 3;
     }
-    rgba_data += layout->rowPitch;
+    rgba_data += outputRowPitch;
   }
 
   return true;
+}
+
+template <typename T>
+T roundUp(const T value, const T alignment)
+{
+  auto temp = value + alignment - static_cast<T>(1);
+  return temp - temp % alignment;
+}
+
+static void demo_prepare_texture_staging_buffer(struct demo *demo, struct staging_texture_object *tex_obj)
+{
+  // Context::texSubImage2D libANGLE/Context.cpp
+  // Texture::setSubImage libANGLE/Texture.cpp
+  // TextureVk::setSubImage libANGLE/renderer/vulkan/TextureVk.cpp
+  // TextureVk::setSubImageImpl libANGLE/renderer/vulkan/TextureVk.cpp
+  // ImageHelper::stageSubresourceUpdate libANGLE/renderer/vulkan/vk_helpers.cpp
+  // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
+  // ImageHelper::CalculateBufferInfo libANGLE/renderer/vulkan/vk_helpers.cpp
+  // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
+
+  // BuildInternalFormatInfoMap libANGLE/formatutils.cpp
+  // From ES 3.0.1 spec, table 3.12
+  //                    | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
+  // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
+  // From EXT_texture_compression_bptc
+  //                          | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
+  // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+
+  // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
+  // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0, false, false, false, gl::VertexAttribType::UnsignedByte },
+
+  const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
+  uint32_t tex_width;
+  uint32_t tex_height;
+  VkResult U_ASSERT_ONLY err;
+  bool U_ASSERT_ONLY pass;
+
+  if (!loadTexture(NULL, NULL, &tex_width, &tex_height))
+  {
+    ERR_EXIT("Failed to load textures", "Load Texture Failure");
+  }
+
+  //related to your asset
+  uint32_t inputRowPitch = tex_width * (4 * 1);
+  uint32_t inputDepthPitch = inputRowPitch * tex_width;
+  uint32_t inputSkipBytes = 0;
+
+  //related to vulkan
+  //tex_obj->tex_width = tex_width;
+  //tex_obj->tex_height = tex_height;
+
+  uint32_t storageFormat_pixelBytes = 4;
+  uint32_t glExtents_width = tex_width;
+  uint32_t glExtents_height = tex_height;
+  uint32_t glExtents_depth = 1;
+
+  uint32_t outputRowPitch = storageFormat_pixelBytes * glExtents_width;
+  uint32_t outputDepthPitch = outputRowPitch * glExtents_height;
+
+  tex_obj->bufferRowLength = glExtents_width;
+  tex_obj->bufferImageHeight = glExtents_height;
+
+  uint32_t allocationSize = outputDepthPitch * glExtents_depth;
+
+  //Format::getImageCopyBufferAlignment libANGLE/renderer/vulkan/vk_format_utils.cpp
+  uint32_t alignment = 4;
+
+  uint32_t sizeToAllocate = roundUp(allocationSize, alignment);
+
+  const VkBufferCreateInfo buffer_create_info = {
+      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      NULL,
+      0,
+      sizeToAllocate,
+      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0U,
+      NULL};
+
+  err = vkCreateBuffer(demo->device, &buffer_create_info, NULL, &demo->staging_buffer.buffer);
+  assert(!err);
+
+  VkMemoryRequirements mem_reqs;
+  vkGetBufferMemoryRequirements(demo->device, demo->staging_buffer.buffer, &mem_reqs);
+
+  demo->staging_buffer.mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  demo->staging_buffer.mem_alloc.pNext = NULL;
+  demo->staging_buffer.mem_alloc.allocationSize = mem_reqs.size;
+  demo->staging_buffer.mem_alloc.memoryTypeIndex = 0;
+
+  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &demo->staging_buffer.mem_alloc.memoryTypeIndex);
+  assert(pass);
+
+  /* allocate memory */
+  err = vkAllocateMemory(demo->device, &demo->staging_buffer.mem_alloc, NULL, &(demo->staging_buffer.mem));
+  assert(!err);
+
+  /* bind memory */
+  err = vkBindBufferMemory(demo->device, demo->staging_buffer.buffer, demo->staging_buffer.mem, 0);
+  assert(!err);
+
+  void *data;
+  err = vkMapMemory(demo->device, demo->staging_buffer.mem, 0, demo->staging_buffer.mem_alloc.allocationSize, 0, &data);
+  assert(!err);
+
+  //GetLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
+  assert(inputRowPitch == outputRowPitch);
+  assert(inputDepthPitch == outputDepthPitch);
+
+  uint8_t *rgba_data = static_cast<uint8_t *>(data);
+  if (!loadTexture(rgba_data, outputRowPitch, &tex_width, &tex_height))
+  {
+    fprintf(stderr, "Error loading texture \n");
+  }
+
+  vkUnmapMemory(demo->device, demo->staging_buffer.mem);
+
+  tex_obj->stagingOffset = 0;
 }
 
 static void demo_prepare_texture_image(struct demo *demo,
@@ -1690,180 +1950,25 @@ static void demo_prepare_texture_image(struct demo *demo,
   tex_obj->mem_alloc.allocationSize = mem_reqs.size;
   tex_obj->mem_alloc.memoryTypeIndex = 0;
 
-  pass =
-      memory_type_from_properties(demo, mem_reqs.memoryTypeBits, required_props,
-                                  &tex_obj->mem_alloc.memoryTypeIndex);
+  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, required_props, &tex_obj->mem_alloc.memoryTypeIndex);
   assert(pass);
 
   /* allocate memory */
-  err = vkAllocateMemory(demo->device, &tex_obj->mem_alloc, NULL,
-                         &(tex_obj->mem));
+  err = vkAllocateMemory(demo->device, &tex_obj->mem_alloc, NULL, &(tex_obj->mem));
   assert(!err);
 
   /* bind memory */
   err = vkBindImageMemory(demo->device, tex_obj->image, tex_obj->mem, 0);
   assert(!err);
 
-  if (required_props & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-  {
-    const VkImageSubresource subres = {
-        .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-        .mipLevel = 0,
-        .arrayLayer = 0,
-    };
-    VkSubresourceLayout layout;
-    void *data;
-
-    vkGetImageSubresourceLayout(demo->device, tex_obj->image, &subres, &layout);
-
-    err = vkMapMemory(demo->device, tex_obj->mem, 0,
-                      tex_obj->mem_alloc.allocationSize, 0, &data);
-    assert(!err);
-
-    uint8_t *rgba_data = static_cast<uint8_t *>(data);
-    if (!loadTexture(rgba_data, &layout, &tex_width, &tex_height))
-    {
-      fprintf(stderr, "Error loading texture \n");
-    }
-
-    vkUnmapMemory(demo->device, tex_obj->mem);
-  }
-
   tex_obj->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
-static void demo_destroy_texture_image(struct demo *demo,
-                                       struct texture_object *tex_objs)
+static void demo_destroy_texture_staging_buffer(struct demo *demo, struct staging_texture_object *tex_objs)
 {
   /* clean up staging resources */
-  vkFreeMemory(demo->device, tex_objs->mem, NULL);
-  vkDestroyImage(demo->device, tex_objs->image, NULL);
-}
-
-static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
-{
-  const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
-  VkFormatProperties props;
-
-  vkGetPhysicalDeviceFormatProperties(demo->gpu, tex_format, &props);
-
-  VkResult U_ASSERT_ONLY err;
-
-  if ((props.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT) &&
-      !demo->use_staging_buffer)
-  {
-    /* Device can texture using linear textures */
-    demo_prepare_texture_image(demo, &demo->texture_assets[0],
-                               VK_IMAGE_TILING_LINEAR,
-                               VK_IMAGE_USAGE_SAMPLED_BIT,
-                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    // Nothing in the pipeline needs to be complete to start, and don't allow
-    // fragment shader to run until layout transition completes
-    demo_set_image_layout(
-        demo, tmp_cmd, demo->texture_assets[0].image, VK_IMAGE_ASPECT_COLOR_BIT,
-        VK_IMAGE_LAYOUT_PREINITIALIZED, demo->texture_assets[0].imageLayout, 0,
-        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-    demo->staging_texture.image = 0;
-  }
-  else if (props.optimalTilingFeatures &
-           VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)
-  {
-    /* Must use staging buffer to copy linear texture to optimized */
-
-    memset(&demo->staging_texture, 0, sizeof(demo->staging_texture));
-    demo_prepare_texture_image(demo, &demo->staging_texture,
-                               VK_IMAGE_TILING_LINEAR,
-                               VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
-                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-    demo_prepare_texture_image(
-        demo, &demo->texture_assets[0], VK_IMAGE_TILING_OPTIMAL,
-        (VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT),
-        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-
-    demo_set_image_layout(
-        demo, tmp_cmd, demo->staging_texture.image, VK_IMAGE_ASPECT_COLOR_BIT,
-        VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-        0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-    demo_set_image_layout(
-        demo, tmp_cmd, demo->texture_assets[0].image, VK_IMAGE_ASPECT_COLOR_BIT,
-        VK_IMAGE_LAYOUT_PREINITIALIZED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-        0, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT);
-
-    VkImageCopy copy_region = {
-        .srcSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-        .srcOffset = {0, 0, 0},
-        .dstSubresource = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1},
-        .dstOffset = {0, 0, 0},
-        .extent = {demo->staging_texture.tex_width,
-                   demo->staging_texture.tex_height, 1},
-    };
-    vkCmdCopyImage(tmp_cmd, demo->staging_texture.image,
-                   VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                   demo->texture_assets[0].image,
-                   VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy_region);
-
-    demo_set_image_layout(
-        demo, tmp_cmd, demo->texture_assets[0].image, VK_IMAGE_ASPECT_COLOR_BIT,
-        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, demo->texture_assets[0].imageLayout,
-        VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-  }
-  else
-  {
-    /* Can't support VK_FORMAT_R8G8B8A8_UNORM !? */
-    assert(!"No support for R8G8B8A8_UNORM as texture image format");
-  }
-
-  const VkSamplerCreateInfo sampler = {
-      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-      .pNext = NULL,
-      .magFilter = VK_FILTER_NEAREST,
-      .minFilter = VK_FILTER_NEAREST,
-      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-      .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .mipLodBias = 0.0f,
-      .anisotropyEnable = VK_FALSE,
-      .maxAnisotropy = 1,
-      .compareOp = VK_COMPARE_OP_NEVER,
-      .minLod = 0.0f,
-      .maxLod = 0.0f,
-      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-      .unnormalizedCoordinates = VK_FALSE,
-  };
-
-  VkImageViewCreateInfo view = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .pNext = NULL,
-      .image = VK_NULL_HANDLE,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format = tex_format,
-      .components =
-          {
-              VK_COMPONENT_SWIZZLE_R,
-              VK_COMPONENT_SWIZZLE_G,
-              VK_COMPONENT_SWIZZLE_B,
-              VK_COMPONENT_SWIZZLE_A,
-          },
-      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
-      .flags = 0,
-  };
-
-  /* create sampler */
-  err = vkCreateSampler(demo->device, &sampler, NULL,
-                        &demo->texture_assets[0].sampler);
-  assert(!err);
-
-  /* create image view */
-  view.image = demo->texture_assets[0].image;
-  err = vkCreateImageView(demo->device, &view, NULL, &demo->texture_assets[0].view);
-  assert(!err);
+  //vkFreeMemory(demo->device, tex_objs->mem, NULL);
+  //vkDestroyBuffer(demo->device, tex_objs->image, NULL);
 }
 
 static void demo_set_image_layout(struct demo *demo,
@@ -1939,21 +2044,30 @@ static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd)
   assert(!err);
 
   VkFence fence;
-  VkFenceCreateInfo fence_ci = {
-      .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, .pNext = NULL, .flags = 0};
+  VkFenceCreateInfo fence_ci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, NULL, 0};
   err = vkCreateFence(demo->device, &fence_ci, NULL, &fence);
   assert(!err);
 
+  VkStructureType sType;
+  const void *pNext;
+  uint32_t waitSemaphoreCount;
+  const VkSemaphore *pWaitSemaphores;
+  const VkPipelineStageFlags *pWaitDstStageMask;
+  uint32_t commandBufferCount;
+  const VkCommandBuffer *pCommandBuffers;
+  uint32_t signalSemaphoreCount;
+  const VkSemaphore *pSignalSemaphores;
+
   const VkCommandBuffer cmd_bufs[] = {tmp_cmd};
-  VkSubmitInfo submit_info = {.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                              .pNext = NULL,
-                              .waitSemaphoreCount = 0,
-                              .pWaitSemaphores = NULL,
-                              .pWaitDstStageMask = NULL,
-                              .commandBufferCount = 1,
-                              .pCommandBuffers = cmd_bufs,
-                              .signalSemaphoreCount = 0,
-                              .pSignalSemaphores = NULL};
+  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                              NULL,
+                              0,
+                              NULL,
+                              NULL,
+                              1,
+                              cmd_bufs,
+                              0,
+                              NULL};
 
   err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, fence);
   assert(!err);
