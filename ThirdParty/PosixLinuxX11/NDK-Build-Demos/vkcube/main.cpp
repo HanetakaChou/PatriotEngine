@@ -325,7 +325,7 @@ static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf);
 
-void demo_build_image_ownership_cmd(struct demo *demo, int frame_index);
+static void demo_build_image_ownership_cmd(struct demo *demo, int frame_index);
 
 VKAPI_ATTR VkBool32 VKAPI_CALL BreakCallback(VkFlags msgFlags, VkDebugReportObjectTypeEXT objType,
                                              uint64_t srcObject, size_t location, int32_t msgCode,
@@ -835,7 +835,7 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   assert(!err);
 }
 
-void demo_build_image_ownership_cmd(struct demo *demo, int frame_index)
+static void demo_build_image_ownership_cmd(struct demo *demo, int frame_index)
 {
   VkResult U_ASSERT_ONLY err;
 
@@ -1406,7 +1406,7 @@ static void demo_init_vk(struct demo *demo)
   // families, try to find one that supports both
   uint32_t graphicsQueueFamilyIndex = UINT32_MAX;
   uint32_t presentQueueFamilyIndex = UINT32_MAX;
- for (uint32_t i = 0; i < demo->queue_family_count; i++)
+  for (uint32_t i = 0; i < demo->queue_family_count; i++)
   {
     if ((demo->queue_props[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
     {
@@ -1423,7 +1423,7 @@ static void demo_init_vk(struct demo *demo)
       }
     }
   }
-  
+
   if (presentQueueFamilyIndex == UINT32_MAX)
   {
     // If didn't find a queue that supports both graphics and present, then
