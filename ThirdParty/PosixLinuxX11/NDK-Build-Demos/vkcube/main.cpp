@@ -78,10 +78,13 @@ static int validation_error = 0;
 
 struct vktexcube_vs_uniform
 {
-  // Must start with MVP
-  float mvp[4][4];
   float position[12 * 3][4];
   float attr[12 * 3][4];
+};
+
+struct vktexcube_vs_pushconstant
+{
+  float mvp[4][4];
 };
 
 typedef struct
@@ -310,7 +313,9 @@ static void demo_draw(struct demo *demo);
 
 static void demo_resize(struct demo *demo);
 
-void demo_update_data_buffer(struct demo *demo);
+static void demo_update_data_buffer(struct demo *demo);
+
+static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs_pushconstant *data_pushconstant);
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf);
 
@@ -696,12 +701,22 @@ static void demo_resize(struct demo *demo)
   demo->prepared = true;
 }
 
-void demo_update_data_buffer(struct demo *demo)
+static void demo_update_data_buffer(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+
+  //err = vkMapMemory(demo->device, demo->uniform_memory[demo->frame_index], 0, VK_WHOLE_SIZE, 0, (void **)&pData);
+  //assert(!err);
+
+  //memcpy(pData, (const void *)&MVP[0][0], matrixSize);
+
+  //vkUnmapMemory(demo->device, demo->uniform_memory[demo->frame_index]);
+}
+
+static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs_pushconstant *data_pushconstant)
 {
   mat4x4 MVP, Model, VP;
   int matrixSize = sizeof(MVP);
-  uint8_t *pData;
-  VkResult U_ASSERT_ONLY err;
 
   mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
 
@@ -709,22 +724,11 @@ void demo_update_data_buffer(struct demo *demo)
   {
     // Rotate around the Y axis
     mat4x4_dup(Model, demo->model_matrix);
-    mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f,
-                  (float)degreesToRadians(demo->spin_angle));
+    mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f, (float)degreesToRadians(demo->spin_angle));
   }
   mat4x4_mul(MVP, VP, demo->model_matrix);
 
-  err = vkMapMemory(
-      demo->device,
-      demo->uniform_memory[demo->frame_index], 0,
-      VK_WHOLE_SIZE, 0, (void **)&pData);
-  assert(!err);
-
-  memcpy(pData, (const void *)&MVP[0][0], matrixSize);
-
-  vkUnmapMemory(
-      demo->device,
-      demo->uniform_memory[demo->frame_index]);
+  memcpy(&data_pushconstant->mvp[0][0], (const void *)&MVP[0][0], matrixSize);
 }
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
@@ -748,11 +752,17 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
       2,
       clear_values,
   };
+
+  vktexcube_vs_pushconstant data_pushconstant;
+  demo_update_data_pushconstant(demo, &data_pushconstant);
+
   VkResult U_ASSERT_ONLY err;
 
   err = vkBeginCommandBuffer(cmd_buf, &cmd_buf_info);
   assert(!err);
+
   vkCmdBeginRenderPass(cmd_buf, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdPushConstants(cmd_buf, demo->pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vktexcube_vs_pushconstant), &data_pushconstant);
   vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline);
   vkCmdBindDescriptorSets(
       cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_layout, 0, 1,
@@ -2184,10 +2194,9 @@ static const float g_uv_buffer_data[] = {
   bool U_ASSERT_ONLY pass;
   struct vktexcube_vs_uniform data;
 
-  mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
-  mat4x4_mul(MVP, VP, demo->model_matrix);
-  memcpy(data.mvp, MVP, sizeof(MVP));
-  //    dumpMatrix("MVP", MVP);
+  //mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
+  //mat4x4_mul(MVP, VP, demo->model_matrix);
+  //memcpy(data.mvp, MVP, sizeof(MVP));
 
   for (unsigned int i = 0; i < 12 * 3; i++)
   {
@@ -2333,12 +2342,15 @@ static void demo_prepare_descriptor_layout(struct demo *demo)
   err = vkCreateDescriptorSetLayout(demo->device, &descriptor_layout, NULL, &demo->desc_layout);
   assert(!err);
 
+  const VkPushConstantRange pushConstantRanges[1] = {VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vktexcube_vs_pushconstant)};
   const VkPipelineLayoutCreateInfo pPipelineLayoutCreateInfo = {
-      .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-      .pNext = NULL,
-      .setLayoutCount = 1,
-      .pSetLayouts = &demo->desc_layout,
-  };
+      VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+      NULL,
+      0,
+      1,
+      &demo->desc_layout,
+      1,
+      pushConstantRanges};
 
   err = vkCreatePipelineLayout(demo->device, &pPipelineLayoutCreateInfo, NULL, &demo->pipeline_layout);
   assert(!err);
