@@ -852,7 +852,7 @@ static void demo_init(struct demo *demo, int argc, char **argv)
   {
     if (strcmp(argv[i], "--use_staging") == 0)
     {
-      fprintf(stderr, "--use_staging is deprecated and no longer does anything");
+      fprintf(stderr, "--use_staging is deprecated and no longer does anything \n");
       continue;
     }
     if ((strcmp(argv[i], "--present_mode") == 0) && (i < argc - 1))
@@ -873,7 +873,7 @@ static void demo_init(struct demo *demo, int argc, char **argv)
     }
     if (strcmp(argv[i], "--xlib") == 0)
     {
-      fprintf(stderr, "--xlib is deprecated and no longer does anything");
+      fprintf(stderr, "--xlib is deprecated and no longer does anything \n");
       continue;
     }
     if (strcmp(argv[i], "--c") == 0 && demo->frameCount == INT32_MAX &&
@@ -1720,7 +1720,7 @@ static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
 }
 
 /* Load a ppm file into memory */
-bool loadTexture(uint8_t *rgba_data, uint32_t outputRowPitch, uint32_t *width, uint32_t *height)
+bool loadTexture(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
 {
 #include <lunarg.ppm.h>
 
@@ -1776,7 +1776,7 @@ bool loadTexture(uint8_t *rgba_data, uint32_t outputRowPitch, uint32_t *width, u
       rowPtr += 4;
       cPtr += 3;
     }
-    rgba_data += outputRowPitch;
+    rgba_data += (*outputRowPitch);
   }
 
   return true;
@@ -1890,7 +1890,7 @@ static void demo_prepare_texture_staging_buffer(struct demo *demo, struct stagin
   assert(inputDepthPitch == outputDepthPitch);
 
   uint8_t *rgba_data = static_cast<uint8_t *>(data);
-  if (!loadTexture(rgba_data, outputRowPitch, &tex_width, &tex_height))
+  if (!loadTexture(rgba_data, &outputRowPitch, &tex_width, &tex_height))
   {
     fprintf(stderr, "Error loading texture \n");
   }
@@ -1967,8 +1967,8 @@ static void demo_prepare_texture_image(struct demo *demo,
 static void demo_destroy_texture_staging_buffer(struct demo *demo, struct staging_texture_object *tex_objs)
 {
   /* clean up staging resources */
-  //vkFreeMemory(demo->device, tex_objs->mem, NULL);
-  //vkDestroyBuffer(demo->device, tex_objs->image, NULL);
+  vkFreeMemory(demo->device, demo->staging_buffer.mem, NULL);
+  vkDestroyBuffer(demo->device, demo->staging_buffer.buffer, NULL);
 }
 
 static void demo_set_image_layout(struct demo *demo,
