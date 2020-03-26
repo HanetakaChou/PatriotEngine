@@ -78,12 +78,12 @@ static int validation_error = 0;
 
 struct vktexcube_vs_uniform
 {
-  float vp[4][4];
+  float m[4][4];
 };
 
 struct vktexcube_vs_pushconstant
 {
-  float m[4][4];
+  float vp[4][4];
 };
 
 typedef struct
@@ -720,22 +720,14 @@ static void demo_resize(struct demo *demo)
 
 static void demo_update_data_buffer(struct demo *demo)
 {
-  void *pdata_map;
-
   VkResult U_ASSERT_ONLY err;
 
+  void *pdata_map;
   err = vkMapMemory(demo->device, demo->uniform_memory[demo->frame_index], 0, VK_WHOLE_SIZE, 0, &pdata_map);
   assert(!err);
 
-  vktexcube_vs_uniform *pData = static_cast<vktexcube_vs_uniform *>(pdata_map);
+  struct vktexcube_vs_uniform *pData = static_cast<struct vktexcube_vs_uniform *>(pdata_map);
 
-  mat4x4_mul(pData->vp, demo->projection_matrix, demo->view_matrix);
-
-  vkUnmapMemory(demo->device, demo->uniform_memory[demo->frame_index]);
-}
-
-static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs_pushconstant *data_pushconstant)
-{
   mat4x4 Model;
 
   if (!demo->pause)
@@ -745,16 +737,23 @@ static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs
     mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f, (float)degreesToRadians(demo->spin_angle));
   }
 
-  memcpy(&data_pushconstant->m[0][0], (const void *)&demo->model_matrix[0][0], sizeof(Model));
+  memcpy(&pData->m[0][0], (const void *)&demo->model_matrix[0][0], sizeof(Model));
+
+  vkUnmapMemory(demo->device, demo->uniform_memory[demo->frame_index]);
+}
+
+static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs_pushconstant *data_pushconstant)
+{
+  mat4x4_mul(data_pushconstant->vp, demo->projection_matrix, demo->view_matrix);
 }
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
 {
   const VkCommandBufferBeginInfo cmd_buf_info = {
-      .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      .pNext = NULL,
-      .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-      .pInheritanceInfo = NULL,
+      VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      NULL,
+      VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      NULL,
   };
   const VkClearValue clear_values[2] = {
       [0] = {.color.float32 = {0.2f, 0.2f, 0.2f, 0.2f}},
@@ -770,7 +769,7 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
       clear_values,
   };
 
-  vktexcube_vs_pushconstant data_pushconstant;
+  struct vktexcube_vs_pushconstant data_pushconstant;
   demo_update_data_pushconstant(demo, &data_pushconstant);
 
   VkResult U_ASSERT_ONLY err;

@@ -22,12 +22,12 @@
  * Vertex shader used by Cube demo.
  */
 
-layout(set = 0, binding = 0, column_major) uniform _unused_name_ubuf
+layout(push_constant, column_major) uniform _unused_name_ubuf2
 {
         highp mat4x4 VP;
 };
 
-layout(push_constant, column_major) uniform _unused_name_ubuf2
+layout(set = 0, binding = 0, column_major) uniform _unused_name_ubuf
 {
         highp mat4x4 M;
 };
