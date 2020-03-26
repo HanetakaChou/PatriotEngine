@@ -78,13 +78,14 @@ static int validation_error = 0;
 
 struct vktexcube_vs_uniform
 {
+  float vp[4][4];
   float position[12 * 3][4];
   float attr[12 * 3][4];
 };
 
 struct vktexcube_vs_pushconstant
 {
-  float mvp[4][4];
+  float m[4][4];
 };
 
 typedef struct
@@ -273,7 +274,7 @@ static void demo_set_image_layout(struct demo *demo,
 
 static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd);
 
-void demo_prepare_cube_data_buffers(struct demo *demo);
+static void demo_prepare_cube_data_buffers(struct demo *demo);
 
 static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits,
                                         VkFlags requirements_mask,
@@ -703,22 +704,23 @@ static void demo_resize(struct demo *demo)
 
 static void demo_update_data_buffer(struct demo *demo)
 {
+  void *pdata_map;
+
   VkResult U_ASSERT_ONLY err;
 
-  //err = vkMapMemory(demo->device, demo->uniform_memory[demo->frame_index], 0, VK_WHOLE_SIZE, 0, (void **)&pData);
-  //assert(!err);
+  err = vkMapMemory(demo->device, demo->uniform_memory[demo->frame_index], 0, VK_WHOLE_SIZE, 0, &pdata_map);
+  assert(!err);
 
-  //memcpy(pData, (const void *)&MVP[0][0], matrixSize);
+  vktexcube_vs_uniform *pData = static_cast<vktexcube_vs_uniform *>(pdata_map);
 
-  //vkUnmapMemory(demo->device, demo->uniform_memory[demo->frame_index]);
+  mat4x4_mul(pData->vp, demo->projection_matrix, demo->view_matrix);
+
+  vkUnmapMemory(demo->device, demo->uniform_memory[demo->frame_index]);
 }
 
 static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs_pushconstant *data_pushconstant)
 {
-  mat4x4 MVP, Model, VP;
-  int matrixSize = sizeof(MVP);
-
-  mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
+  mat4x4 Model;
 
   if (!demo->pause)
   {
@@ -726,9 +728,8 @@ static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs
     mat4x4_dup(Model, demo->model_matrix);
     mat4x4_rotate(demo->model_matrix, Model, 0.0f, 1.0f, 0.0f, (float)degreesToRadians(demo->spin_angle));
   }
-  mat4x4_mul(MVP, VP, demo->model_matrix);
 
-  memcpy(&data_pushconstant->mvp[0][0], (const void *)&MVP[0][0], matrixSize);
+  memcpy(&data_pushconstant->m[0][0], (const void *)&demo->model_matrix[0][0], sizeof(Model));
 }
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
@@ -757,7 +758,6 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   demo_update_data_pushconstant(demo, &data_pushconstant);
 
   VkResult U_ASSERT_ONLY err;
-
   err = vkBeginCommandBuffer(cmd_buf, &cmd_buf_info);
   assert(!err);
 
@@ -2089,7 +2089,7 @@ static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd)
   vkDestroyFence(demo->device, fence, NULL);
 }
 
-void demo_prepare_cube_data_buffers(struct demo *demo)
+static void demo_prepare_cube_data_buffers(struct demo *demo)
 {
 
   //--------------------------------------------------------------------------------------
@@ -2189,14 +2189,13 @@ static const float g_uv_buffer_data[] = {
   VkMemoryRequirements mem_reqs;
   VkMemoryAllocateInfo mem_alloc;
   uint8_t *pData;
-  mat4x4 MVP, VP;
+  mat4x4 VP;
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
   struct vktexcube_vs_uniform data;
 
-  //mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
-  //mat4x4_mul(MVP, VP, demo->model_matrix);
-  //memcpy(data.mvp, MVP, sizeof(MVP));
+  mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
+  memcpy(data.vp, VP, sizeof(VP));
 
   for (unsigned int i = 0; i < 12 * 3; i++)
   {
@@ -2227,10 +2226,7 @@ static const float g_uv_buffer_data[] = {
     mem_alloc.allocationSize = mem_reqs.size;
     mem_alloc.memoryTypeIndex = 0;
 
-    pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits,
-                                       VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                           VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                       &mem_alloc.memoryTypeIndex);
+    pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mem_alloc.memoryTypeIndex);
     assert(pass);
 
     err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->uniform_memory[i]);
@@ -2239,13 +2235,11 @@ static const float g_uv_buffer_data[] = {
     err = vkMapMemory(demo->device, demo->uniform_memory[i], 0, VK_WHOLE_SIZE, 0, (void **)&pData);
     assert(!err);
 
-    memcpy(pData, &data, sizeof data);
+    memcpy(pData, &data, sizeof(data));
 
     vkUnmapMemory(demo->device, demo->uniform_memory[i]);
 
-    err = vkBindBufferMemory(
-        demo->device, demo->uniform_buffer[i],
-        demo->uniform_memory[i], 0);
+    err = vkBindBufferMemory(demo->device, demo->uniform_buffer[i], demo->uniform_memory[i], 0);
     assert(!err);
   }
 }
@@ -2298,8 +2292,7 @@ static void demo_prepare_vs(struct demo *demo)
   const uint32_t vs_code[] = {
 #include "generated/cube.vert.inc"
   };
-  demo->vert_shader_module =
-      demo_prepare_shader_module(demo, vs_code, sizeof(vs_code));
+  demo->vert_shader_module = demo_prepare_shader_module(demo, vs_code, sizeof(vs_code));
 }
 
 static void demo_prepare_fs(struct demo *demo)
@@ -2307,8 +2300,7 @@ static void demo_prepare_fs(struct demo *demo)
   const uint32_t fs_code[] = {
 #include "generated/cube.frag.inc"
   };
-  demo->frag_shader_module =
-      demo_prepare_shader_module(demo, fs_code, sizeof(fs_code));
+  demo->frag_shader_module = demo_prepare_shader_module(demo, fs_code, sizeof(fs_code));
 }
 
 static void demo_prepare_descriptor_layout(struct demo *demo)
