@@ -79,8 +79,6 @@ static int validation_error = 0;
 struct vktexcube_vs_uniform
 {
   float vp[4][4];
-  float position[12 * 3][4];
-  float attr[12 * 3][4];
 };
 
 struct vktexcube_vs_pushconstant
@@ -201,6 +199,10 @@ struct demo
     VkMemoryAllocateInfo mem_alloc;
     VkDeviceMemory mem;
   } staging_buffer;
+
+  VkDeviceMemory meshdata_memory;
+  VkBuffer vertex_buffer[1];
+  VkBuffer vertex_buffer_addition[1];
 
   struct staging_texture_object staging_texture[1];
   struct texture_object texture_assets[1];
@@ -762,12 +764,7 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   assert(!err);
 
   vkCmdBeginRenderPass(cmd_buf, &rp_begin, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdPushConstants(cmd_buf, demo->pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vktexcube_vs_pushconstant), &data_pushconstant);
   vkCmdBindPipeline(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline);
-  vkCmdBindDescriptorSets(
-      cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_layout, 0, 1,
-      &demo->descriptor_set[demo->frame_index], 0,
-      NULL);
   VkViewport viewport;
   memset(&viewport, 0, sizeof(viewport));
   viewport.height = (float)demo->height;
@@ -775,7 +772,6 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   viewport.minDepth = (float)0.0f;
   viewport.maxDepth = (float)1.0f;
   vkCmdSetViewport(cmd_buf, 0, 1, &viewport);
-
   VkRect2D scissor;
   memset(&scissor, 0, sizeof(scissor));
   scissor.extent.width = demo->width;
@@ -783,6 +779,14 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
   scissor.offset.x = 0;
   scissor.offset.y = 0;
   vkCmdSetScissor(cmd_buf, 0, 1, &scissor);
+  vkCmdPushConstants(cmd_buf, demo->pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(vktexcube_vs_pushconstant), &data_pushconstant);
+  vkCmdBindDescriptorSets(
+      cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, demo->pipeline_layout, 0, 1,
+      &demo->descriptor_set[demo->frame_index], 0,
+      NULL);
+  VkBuffer vb_[2] = {demo->vertex_buffer[0], demo->vertex_buffer_addition[0]};
+  VkDeviceSize vk_offset[2] = {0, 0};
+  vkCmdBindVertexBuffers(cmd_buf, 0, 2, vb_, vk_offset);
   vkCmdDraw(cmd_buf, 12 * 3, 1, 0, 0);
   // Note that ending the renderpass changes the image's layout from
   // COLOR_ATTACHMENT_OPTIMAL to PRESENT_SRC_KHR
@@ -2185,29 +2189,75 @@ static const float g_uv_buffer_data[] = {
 };
   // clang-format on
 
-  VkBufferCreateInfo buf_info;
-  VkMemoryRequirements mem_reqs;
-  VkMemoryAllocateInfo mem_alloc;
-  uint8_t *pData;
-  mat4x4 VP;
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
-  struct vktexcube_vs_uniform data;
 
+  VkBufferCreateInfo buf_info_vertex = {
+      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      NULL,
+      0,
+      sizeof(g_vertex_buffer_data),
+      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL};
+  err = vkCreateBuffer(demo->device, &buf_info_vertex, NULL, &demo->vertex_buffer[0]);
+  assert(!err);
+
+  VkBufferCreateInfo buf_info_vertex_addition = {
+      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      NULL,
+      0,
+      sizeof(g_uv_buffer_data),
+      VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL};
+  err = vkCreateBuffer(demo->device, &buf_info_vertex_addition, NULL, &demo->vertex_buffer_addition[0]);
+  assert(!err);
+
+  VkMemoryRequirements mem_reqs_vertex;
+  vkGetBufferMemoryRequirements(demo->device, demo->vertex_buffer[0], &mem_reqs_vertex);
+
+  VkMemoryRequirements mem_reqs_vertex_addition;
+  vkGetBufferMemoryRequirements(demo->device, demo->vertex_buffer_addition[0], &mem_reqs_vertex_addition);
+
+  VkMemoryAllocateInfo mem_alloc_vertex = {
+      VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      NULL,
+      roundUp(mem_reqs_vertex.size, mem_reqs_vertex_addition.alignment) + mem_reqs_vertex_addition.size,
+      0};
+  pass = memory_type_from_properties(demo, (mem_reqs_vertex.memoryTypeBits & mem_reqs_vertex_addition.memoryTypeBits), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mem_alloc_vertex.memoryTypeIndex);
+  assert(pass);
+
+  err = vkAllocateMemory(demo->device, &mem_alloc_vertex, NULL, &demo->meshdata_memory);
+  assert(!err);
+
+  void *pdata_map;
+  err = vkMapMemory(demo->device, demo->meshdata_memory, 0, VK_WHOLE_SIZE, 0, &pdata_map);
+  assert(!err);
+
+  memcpy(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(pdata_map) + 0), g_vertex_buffer_data, sizeof(g_vertex_buffer_data));
+
+  memcpy(reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(pdata_map) + roundUp(mem_reqs_vertex.size, mem_reqs_vertex_addition.alignment)), g_uv_buffer_data, sizeof(g_uv_buffer_data));
+
+  vkUnmapMemory(demo->device, demo->meshdata_memory);
+
+  err = vkBindBufferMemory(demo->device, demo->vertex_buffer[0], demo->meshdata_memory, 0);
+  assert(!err);
+
+  err = vkBindBufferMemory(demo->device, demo->vertex_buffer_addition[0], demo->meshdata_memory, roundUp(mem_reqs_vertex.size, mem_reqs_vertex_addition.alignment));
+  assert(!err);
+
+  struct vktexcube_vs_uniform data;
+  mat4x4 VP;
   mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
   memcpy(data.vp, VP, sizeof(VP));
 
-  for (unsigned int i = 0; i < 12 * 3; i++)
-  {
-    data.position[i][0] = g_vertex_buffer_data[i * 3];
-    data.position[i][1] = g_vertex_buffer_data[i * 3 + 1];
-    data.position[i][2] = g_vertex_buffer_data[i * 3 + 2];
-    data.position[i][3] = 1.0f;
-    data.attr[i][0] = g_uv_buffer_data[2 * i];
-    data.attr[i][1] = g_uv_buffer_data[2 * i + 1];
-    data.attr[i][2] = 0;
-    data.attr[i][3] = 0;
-  }
+  VkBufferCreateInfo buf_info;
+  VkMemoryRequirements mem_reqs;
+  VkMemoryAllocateInfo mem_alloc;
+  void *pData;
 
   memset(&buf_info, 0, sizeof(buf_info));
   buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -2232,7 +2282,7 @@ static const float g_uv_buffer_data[] = {
     err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->uniform_memory[i]);
     assert(!err);
 
-    err = vkMapMemory(demo->device, demo->uniform_memory[i], 0, VK_WHOLE_SIZE, 0, (void **)&pData);
+    err = vkMapMemory(demo->device, demo->uniform_memory[i], 0, VK_WHOLE_SIZE, 0, &pData);
     assert(!err);
 
     memcpy(pData, &data, sizeof(data));
@@ -2244,9 +2294,7 @@ static const float g_uv_buffer_data[] = {
   }
 }
 
-static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits,
-                                        VkFlags requirements_mask,
-                                        uint32_t *typeIndex)
+static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
 {
   // Search memtypes to find first index with those properties
   for (uint32_t i = 0; i < VK_MAX_MEMORY_TYPES; i++)
@@ -2426,78 +2474,7 @@ static void demo_prepare_render_pass(struct demo *demo)
 
 static void demo_prepare_pipeline(struct demo *demo)
 {
-  VkGraphicsPipelineCreateInfo pipeline;
-  VkPipelineVertexInputStateCreateInfo vi;
-  VkPipelineInputAssemblyStateCreateInfo ia;
-  VkPipelineRasterizationStateCreateInfo rs;
-  VkPipelineColorBlendStateCreateInfo cb;
-  VkPipelineDepthStencilStateCreateInfo ds;
-  VkPipelineViewportStateCreateInfo vp;
-  VkPipelineMultisampleStateCreateInfo ms;
-  VkDynamicState dynamicStateEnables[VK_DYNAMIC_STATE_RANGE_SIZE];
-  VkPipelineDynamicStateCreateInfo dynamicState;
   VkResult U_ASSERT_ONLY err;
-
-  memset(dynamicStateEnables, 0, sizeof dynamicStateEnables);
-  memset(&dynamicState, 0, sizeof dynamicState);
-  dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-  dynamicState.pDynamicStates = dynamicStateEnables;
-
-  memset(&pipeline, 0, sizeof(pipeline));
-  pipeline.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-  pipeline.layout = demo->pipeline_layout;
-
-  memset(&vi, 0, sizeof(vi));
-  vi.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-
-  memset(&ia, 0, sizeof(ia));
-  ia.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  ia.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-  memset(&rs, 0, sizeof(rs));
-  rs.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-  rs.polygonMode = VK_POLYGON_MODE_FILL;
-  rs.cullMode = VK_CULL_MODE_BACK_BIT;
-  rs.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-  rs.depthClampEnable = VK_FALSE;
-  rs.rasterizerDiscardEnable = VK_FALSE;
-  rs.depthBiasEnable = VK_FALSE;
-  rs.lineWidth = 1.0f;
-
-  memset(&cb, 0, sizeof(cb));
-  cb.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-  VkPipelineColorBlendAttachmentState att_state[1];
-  memset(att_state, 0, sizeof(att_state));
-  att_state[0].colorWriteMask = 0xf;
-  att_state[0].blendEnable = VK_FALSE;
-  cb.attachmentCount = 1;
-  cb.pAttachments = att_state;
-
-  memset(&vp, 0, sizeof(vp));
-  vp.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-  vp.viewportCount = 1;
-  dynamicStateEnables[dynamicState.dynamicStateCount++] =
-      VK_DYNAMIC_STATE_VIEWPORT;
-  vp.scissorCount = 1;
-  dynamicStateEnables[dynamicState.dynamicStateCount++] =
-      VK_DYNAMIC_STATE_SCISSOR;
-
-  memset(&ds, 0, sizeof(ds));
-  ds.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-  ds.depthTestEnable = VK_TRUE;
-  ds.depthWriteEnable = VK_TRUE;
-  ds.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
-  ds.depthBoundsTestEnable = VK_FALSE;
-  ds.back.failOp = VK_STENCIL_OP_KEEP;
-  ds.back.passOp = VK_STENCIL_OP_KEEP;
-  ds.back.compareOp = VK_COMPARE_OP_ALWAYS;
-  ds.stencilTestEnable = VK_FALSE;
-  ds.front = ds.back;
-
-  memset(&ms, 0, sizeof(ms));
-  ms.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-  ms.pSampleMask = NULL;
-  ms.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
   demo_prepare_vs(demo);
   demo_prepare_fs(demo);
@@ -2516,20 +2493,118 @@ static void demo_prepare_pipeline(struct demo *demo)
   shaderStages[1].module = demo->frag_shader_module;
   shaderStages[1].pName = "main";
 
+  VkVertexInputBindingDescription vertex_input_binding_[2] = {
+      {0, sizeof(float) * 3, VK_VERTEX_INPUT_RATE_VERTEX},
+      {1, sizeof(float) * 2, VK_VERTEX_INPUT_RATE_VERTEX}};
+
+  VkVertexInputAttributeDescription vertex_input_attrs_[2] = {
+      {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0}, // Position
+      {1, 1, VK_FORMAT_R32G32_SFLOAT, 0}     // UV
+  };
+
+  VkPipelineVertexInputStateCreateInfo vertex_input_state_{
+      VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
+      NULL,
+      0,
+      2,
+      vertex_input_binding_,
+      2,
+      vertex_input_attrs_};
+
+  VkPipelineInputAssemblyStateCreateInfo input_assembly_state_ = {
+      VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
+      NULL,
+      0,
+      VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
+      false};
+
+  VkPipelineViewportStateCreateInfo vp = {
+      VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO,
+      NULL,
+      0,
+      1,
+      NULL,
+      1,
+      NULL};
+
+  VkPipelineRasterizationStateCreateInfo rs = {
+      VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
+      NULL,
+      0,
+      VK_FALSE,
+      VK_FALSE,
+      VK_POLYGON_MODE_FILL,
+      VK_CULL_MODE_BACK_BIT,
+      VK_FRONT_FACE_COUNTER_CLOCKWISE,
+      VK_FALSE,
+      0.0f,
+      0.0f,
+      0.0f,
+      1.0f};
+
+  VkPipelineMultisampleStateCreateInfo ms = {
+      VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO,
+      NULL,
+      0,
+      VK_SAMPLE_COUNT_1_BIT,
+      VK_FALSE,
+      0.0f,
+      NULL,
+      VK_FALSE,
+      VK_FALSE};
+
+  VkPipelineDepthStencilStateCreateInfo ds = {
+      VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO,
+      NULL,
+      0,
+      VK_TRUE,
+      VK_TRUE,
+      VK_COMPARE_OP_LESS_OR_EQUAL,
+      VK_FALSE,
+      VK_FALSE,
+      {VK_STENCIL_OP_KEEP, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_KEEP, VK_COMPARE_OP_ALWAYS, 255, 255, 255},
+      {VK_STENCIL_OP_KEEP, VK_STENCIL_OP_KEEP, VK_STENCIL_OP_KEEP, VK_COMPARE_OP_ALWAYS, 255, 255, 255},
+      0.0f,
+      1.0f};
+
+  VkPipelineColorBlendAttachmentState att_state[1] = {
+      {VK_FALSE, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_BLEND_FACTOR_ZERO, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD, VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT}};
+  VkPipelineColorBlendStateCreateInfo cb = {
+      VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO,
+      NULL,
+      0,
+      VK_FALSE,
+      VK_LOGIC_OP_CLEAR,
+      1,
+      att_state,
+      {0.0f, 0.0f, 0.0f, 0.0f}};
+
+  VkDynamicState dynamicStateEnables[2] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
+  VkPipelineDynamicStateCreateInfo dynamicState = {VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO, NULL, 0, 2, dynamicStateEnables};
+
+  VkGraphicsPipelineCreateInfo pipeline = {
+      VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
+      NULL,
+      0,
+      ARRAY_SIZE(shaderStages),
+      shaderStages,
+      &vertex_input_state_,
+      &input_assembly_state_,
+      NULL,
+      &vp,
+      &rs,
+      &ms,
+      &ds,
+      &cb,
+      &dynamicState,
+      demo->pipeline_layout,
+      demo->render_pass,
+      0,
+      VK_NULL_HANDLE,
+      0};
+
   // Check disk for existing cache data
   demo_load_pipeline_cache(demo);
-
-  pipeline.pVertexInputState = &vi;
-  pipeline.pInputAssemblyState = &ia;
-  pipeline.pRasterizationState = &rs;
-  pipeline.pColorBlendState = &cb;
-  pipeline.pMultisampleState = &ms;
-  pipeline.pViewportState = &vp;
-  pipeline.pDepthStencilState = &ds;
-  pipeline.stageCount = ARRAY_SIZE(shaderStages);
-  pipeline.pStages = shaderStages;
-  pipeline.renderPass = demo->render_pass;
-  pipeline.pDynamicState = &dynamicState;
 
   err = vkCreateGraphicsPipelines(demo->device, demo->pipelineCache, 1, &pipeline, NULL, &demo->pipeline);
   assert(!err);
@@ -3029,6 +3104,10 @@ static void demo_cleanup(struct demo *demo)
   vkDestroyImage(demo->device, demo->texture_assets[0].image, NULL);
   vkFreeMemory(demo->device, demo->texture_assets[0].mem, NULL);
   vkDestroySampler(demo->device, demo->texture_assets[0].sampler, NULL);
+
+  vkDestroyBuffer(demo->device, demo->vertex_buffer_addition[0], NULL);
+  vkDestroyBuffer(demo->device, demo->vertex_buffer[0], NULL);
+  vkFreeMemory(demo->device, demo->meshdata_memory, NULL);
 
   free(demo->queue_props);
 

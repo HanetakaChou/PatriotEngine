@@ -24,10 +24,11 @@
 
 layout(set = 0, binding = 1) highp uniform sampler2D tex;
 
-layout(location = 0) in highp vec4 texcoord;
+layout(location = 0) in highp vec2 texcoord;
+
 layout(location = 0) out highp vec4 uFragColor;
 
 void main()
 {
-   uFragColor = texture(tex, texcoord.xy);
+   uFragColor = texture(tex, texcoord);
 }

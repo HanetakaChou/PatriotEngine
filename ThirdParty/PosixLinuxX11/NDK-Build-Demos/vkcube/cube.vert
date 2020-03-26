@@ -25,8 +25,8 @@
 layout(set = 0, binding = 0, column_major) uniform _unused_name_ubuf
 {
         highp mat4x4 VP;
-        highp vec4 position[12 * 3];
-        highp vec4 attr[12 * 3];
+        highp vec4 _position[12 * 3];
+        highp vec4 _attr[12 * 3];
 };
 
 layout(push_constant, column_major) uniform _unused_name_ubuf2
@@ -34,10 +34,13 @@ layout(push_constant, column_major) uniform _unused_name_ubuf2
         highp mat4x4 M;
 };
 
-layout(location = 0) out highp vec4 texcoord;
+layout(location = 0) in highp vec3 position;
+layout(location = 1) in highp vec2 attr;
+
+layout(location = 0) out highp vec2 texcoord;
 
 void main()
 {
-        texcoord = attr[gl_VertexIndex];
-        gl_Position = VP * M * position[gl_VertexIndex];
+        gl_Position = VP * M * vec4(position, 1.0f);
+        texcoord = attr;
 }
