@@ -35,6 +35,7 @@ cp -f ${int_dir}/${target_name} ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libc.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libdl.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libm.so ${out_dir}/
+cp -f ../../Bionic-Redistributable/lib64/libc++.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libstdc++.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libc++_shared.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan.so ${out_dir}/  

@@ -25,6 +25,7 @@
         "utility": "cpp",
         "*.frag": "cpp",
         "*.vert": "cpp",
-        "*.inc": "cpp"
+        "*.inc": "cpp",
+        "string": "cpp"
     },
 }

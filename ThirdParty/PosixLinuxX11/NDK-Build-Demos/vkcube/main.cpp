@@ -244,6 +244,8 @@ static void demo_init_connection(struct demo *demo);
 
 static void demo_create_xcb_window(struct demo *demo);
 
+static void demo_cleanup_xcb_window(struct demo *demo);
+
 static void demo_init_vk(struct demo *demo);
 
 static void demo_create_device(struct demo *demo);
@@ -337,69 +339,99 @@ VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags,
 
 void ERR_EXIT(char const *err_msg, char const *err_class);
 
+void *intputmain(void *arg);
+
+#include <new>
+
 int main(int argc, char **argv)
 {
-  struct demo demo;
-  demo.swapchain = VK_NULL_HANDLE;
-  demo.oldswapchain = VK_NULL_HANDLE;
-  demo.depth.view = VK_NULL_HANDLE;
-  demo.depth.image = VK_NULL_HANDLE;
-  demo.depth.mem = VK_NULL_HANDLE;
-  demo.old_depth.view = VK_NULL_HANDLE;
-  demo.old_depth.image = VK_NULL_HANDLE;
-  demo.old_depth.mem = VK_NULL_HANDLE;
+  char buf[sizeof(demo)];
+  struct demo *demo = new (buf) struct demo;
 
-  demo_init(&demo, argc, argv);
+  demo->swapchain = VK_NULL_HANDLE;
+  demo->oldswapchain = VK_NULL_HANDLE;
+  demo->depth.view = VK_NULL_HANDLE;
+  demo->depth.image = VK_NULL_HANDLE;
+  demo->depth.mem = VK_NULL_HANDLE;
+  demo->old_depth.view = VK_NULL_HANDLE;
+  demo->old_depth.image = VK_NULL_HANDLE;
+  demo->old_depth.mem = VK_NULL_HANDLE;
 
-  demo_init_connection(&demo);
+  demo_init(demo, argc, argv);
 
-  demo_create_xcb_window(&demo);
+  demo_init_connection(demo);
 
-  demo_init_vk(&demo);
+  demo_create_xcb_window(demo);
 
-  demo_init_vk_surface(&demo);
+  xcb_flush(demo->connection);
 
-  demo_prepare_assets(&demo);
+  //seperate message pump
+  //use FRAME_LAG to throttle
+  //use VK_ERROR_OUT_OF_DATE_KHR to sync with WSI window_size
 
-  demo_prepare_cube_data_buffers(&demo);
+  pthread_t thread;
+  pthread_create(&thread, NULL, intputmain, demo);
 
-  demo_prepare_descriptor_layout(&demo);
-  demo_prepare_render_pass(&demo);
-  demo_prepare_pipeline(&demo);
+  demo_init_vk(demo);
 
-  demo_prepare_descriptor_pool(&demo);
-  demo_prepare_descriptor_set(&demo);
+  demo_init_vk_surface(demo);
 
-  demo_prepare(&demo);
+  demo_prepare_assets(demo);
 
-  demo_run_xcb(&demo);
+  demo_prepare_cube_data_buffers(demo);
 
-  demo_cleanup(&demo);
+  demo_prepare_descriptor_layout(demo);
+  demo_prepare_render_pass(demo);
+  demo_prepare_pipeline(demo);
+
+  demo_prepare_descriptor_pool(demo);
+  demo_prepare_descriptor_set(demo);
+
+  demo_prepare(demo);
+
+  while (!demo->quit)
+  {
+    demo_draw(demo);
+    demo->curFrame++;
+    if (demo->frameCount != UINT32_MAX && demo->curFrame == demo->frameCount)
+    {
+      demo->quit = true;
+    }
+  }
+
+  demo_cleanup(demo);
+
+  void *value_ptr;
+  pthread_join(thread, &value_ptr);
+  assert(value_ptr == NULL);
+
+  demo_cleanup_xcb_window(demo);
 
   return validation_error;
 }
 
+void *intputmain(void *arg)
+{
+  struct demo *demo = static_cast<struct demo *>(arg);
+
+  demo_run_xcb(demo);
+
+  return NULL;
+}
+
 static void demo_run_xcb(struct demo *demo)
 {
-  xcb_flush(demo->connection);
-
   while (!demo->quit)
   {
-    xcb_generic_event_t *event;
-    while ((!demo->quit) && (event = xcb_poll_for_event(demo->connection)))
+    xcb_generic_event_t *event = xcb_wait_for_event(demo->connection);
+    if (event != NULL)
     {
       demo_handle_xcb_event(demo, event);
       free(event);
     }
-
-    if (!demo->quit)
+    else
     {
-      demo_draw(demo);
-      demo->curFrame++;
-      if (demo->frameCount != UINT32_MAX && demo->curFrame == demo->frameCount)
-      {
-        demo->quit = true;
-      }
+      demo->quit = true;
     }
   }
 }
@@ -412,7 +444,6 @@ static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *
   case XCB_KEY_RELEASE:
   {
     const xcb_key_release_event_t *key = (const xcb_key_release_event_t *)event;
-
     switch (key->detail)
     {
     case 0x9: // Escape
@@ -430,41 +461,14 @@ static void demo_handle_xcb_event(struct demo *demo, const xcb_generic_event_t *
     }
   }
   break;
-  case XCB_EXPOSE:
-  {
-    xcb_expose_event_t const *exp =
-        reinterpret_cast<xcb_expose_event_t const *>(event);
-
-    if (exp->window == demo->xcb_window && exp->count == 0)
-    {
-      if ((demo->width != exp->width) || (demo->height != exp->height))
-      {
-        demo->width = exp->width;
-        demo->height = exp->height;
-        demo_resize(demo);
-      }
-    }
-  }
-  break;
-  case XCB_CONFIGURE_NOTIFY:
-  {
-    const xcb_configure_notify_event_t *cfg =
-        (const xcb_configure_notify_event_t *)event;
-    if ((demo->width != cfg->width) || (demo->height != cfg->height))
-    {
-      demo->width = cfg->width;
-      demo->height = cfg->height;
-      demo_resize(demo);
-    }
-  }
-  break;
   case XCB_CLIENT_MESSAGE:
-    if ((*(xcb_client_message_event_t *)event).data.data32[0] ==
-        demo->atom_wm_delete_window)
+  {
+    if ((*(xcb_client_message_event_t *)event).data.data32[0] == demo->atom_wm_delete_window)
     {
       demo->quit = true;
     }
-    break;
+  }
+  break;
   default:
     break;
   }
@@ -474,19 +478,15 @@ static void demo_draw(struct demo *demo)
 {
   VkResult U_ASSERT_ONLY err;
 
-  // Since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap here!
-  // make FRAME_LAG desiredNumOfSwapchainImages+1
-
-  // Ensure no more than FRAME_LAG renderings are outstanding
-
+  // Create fences that we can use to throttle if we get too far ahead of the image presents
   while (((err = vkGetFenceStatus(demo->device, demo->fences[demo->frame_index])) != VK_SUCCESS))
   {
     assert(err == VK_NOT_READY);
     sched_yield();
   }
 
-  //Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
-  //[RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
+  // Fence manage [Re-used Resources](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)
+  // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) may use diffirent (number of) fences
   demo_update_data_buffer(demo);
 
   //update descriptor
@@ -525,7 +525,8 @@ static void demo_draw(struct demo *demo)
   err = vkResetCommandPool(demo->device, demo->cmd_pool[demo->frame_index], 0U);
   assert(!err);
 
-  //only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
+  // since only the COLOR_ATTACHMENT_OUTPUT stage of the below vkQueueSubmit waits the semphore, we can still overlap above
+  // we only need to wait when populate the framebuffer field in VkRenderPassBeginInfo
   do
   {
     // Get the index of the next available swapchain image:
@@ -546,6 +547,11 @@ static void demo_draw(struct demo *demo)
     {
       // demo->swapchain is not as optimal as it could be, but the platform's
       // presentation engine will still present the image correctly.
+      break;
+    }
+    else if (err == VK_ERROR_SURFACE_LOST_KHR)
+    {
+      demo->quit = true;
       break;
     }
     else
@@ -966,7 +972,7 @@ static void demo_create_xcb_window(struct demo *demo)
 
   value_mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
   value_list[0] = demo->screen->black_pixel;
-  value_list[1] = XCB_EVENT_MASK_KEY_RELEASE | XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_STRUCTURE_NOTIFY;
+  value_list[1] = XCB_EVENT_MASK_KEY_RELEASE;
 
   xcb_create_window(demo->connection, demo->screen->root_depth, demo->xcb_window,
                     demo->screen->root, 0, 0, demo->width, demo->height, 0,
@@ -1005,6 +1011,12 @@ static void demo_create_xcb_window(struct demo *demo)
   xcb_change_property(demo->connection, XCB_PROP_MODE_REPLACE, demo->xcb_window, atom3, atom4, 8U, strlen(APP_LONG_NAME), APP_LONG_NAME);
 
   xcb_map_window(demo->connection, demo->xcb_window);
+}
+
+static void demo_cleanup_xcb_window(struct demo *demo)
+{
+  xcb_destroy_window(demo->connection, demo->xcb_window);
+  xcb_disconnect(demo->connection);
 }
 
 /*
@@ -3119,9 +3131,6 @@ static void demo_cleanup(struct demo *demo)
   }
 
   vkDestroySurfaceKHR(demo->inst, demo->surface, NULL);
-
-  xcb_destroy_window(demo->connection, demo->xcb_window);
-  xcb_disconnect(demo->connection);
 
   vkDestroyInstance(demo->inst, NULL);
 }
