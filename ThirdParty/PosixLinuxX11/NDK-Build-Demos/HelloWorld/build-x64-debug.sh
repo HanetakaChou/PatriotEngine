@@ -38,8 +38,7 @@ cd ${out_dir}
 
 # execute the generated ${target_name}  
 # gdbserver :27077 ./${target_name}
-# ./gdbserver :27077 
-./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
+./gdbserver :27077 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
 
 
 
