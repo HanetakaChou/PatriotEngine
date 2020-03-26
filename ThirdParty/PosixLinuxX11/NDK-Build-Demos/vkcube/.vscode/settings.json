@@ -22,6 +22,9 @@
         "__functional_base_03": "cpp",
         "memory": "cpp",
         "tuple": "cpp",
-        "utility": "cpp"
+        "utility": "cpp",
+        "*.frag": "cpp",
+        "*.vert": "cpp",
+        "*.inc": "cpp"
     },
 }

@@ -6,15 +6,17 @@ target_name="vkcube"
 int_dir="obj/local/x86_64"
 out_dir="../../../../Binary/x64/Debug"
 
+mkdir -p generated
+
 # glslang
-rm -rf cube.vert.inc
-rm -rf cube.frag.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o cube.vert.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
+rm -rf generated/cube.vert.inc
+rm -rf generated/cube.frag.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
 
 # include-bin
-rm -rf lunarg.ppm.h
-../../glibc-include-bin/bin64/include-bin lunarg.ppm lunarg.ppm.h
+rm -rf generated/lunarg.ppm.h
+../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
 
 # build by ndk
 rm -f ${int_dir}/${target_name}
@@ -92,6 +94,7 @@ cp -f ../../Bionic-Redistributable/lib64/vulkan/implicit_layer.d/renderdoc_captu
 cp -f ../../Bionic-Redistributable/lib64/librenderdoc.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libX11.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libxcb-keysyms.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/renderdoccmd ${out_dir}/  
 
 # copy the gdb related
 cp -f libs/x86_64/gdbserver ${out_dir}/
@@ -102,8 +105,7 @@ cp -f ../../Bionic-Redistributable/lib64/linker ${out_dir}/
 cd ${out_dir}
 
 # execute the generated ${target_name}  
-# gdbserver :27177 ./${target_name}
 # export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
 # export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
-./gdbserver :27177 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
+./gdbserver :27177 ./${target_name} --use_staging --validate 
 

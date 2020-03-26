@@ -1723,7 +1723,7 @@ static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
 /* Load a ppm file into memory */
 bool loadTexture(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
 {
-#include <lunarg.ppm.h>
+#include "generated/lunarg.ppm.h"
 
   char *cPtr = (char *)lunarg_ppm;
   if ((unsigned char *)cPtr >= (lunarg_ppm + lunarg_ppm_len) || strncmp(cPtr, "P6\n", 3))
@@ -2287,7 +2287,7 @@ static VkShaderModule demo_prepare_shader_module(struct demo *demo,
 static void demo_prepare_vs(struct demo *demo)
 {
   const uint32_t vs_code[] = {
-#include "cube.vert.inc"
+#include "generated/cube.vert.inc"
   };
   demo->vert_shader_module =
       demo_prepare_shader_module(demo, vs_code, sizeof(vs_code));
@@ -2296,7 +2296,7 @@ static void demo_prepare_vs(struct demo *demo)
 static void demo_prepare_fs(struct demo *demo)
 {
   const uint32_t fs_code[] = {
-#include "cube.frag.inc"
+#include "generated/cube.frag.inc"
   };
   demo->frag_shader_module =
       demo_prepare_shader_module(demo, fs_code, sizeof(fs_code));
