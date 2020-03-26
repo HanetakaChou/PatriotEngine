@@ -749,6 +749,11 @@ static void demo_update_data_pushconstant(struct demo *demo, struct vktexcube_vs
 
 static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
 {
+  VkResult U_ASSERT_ONLY err;
+
+  struct vktexcube_vs_pushconstant data_pushconstant;
+  demo_update_data_pushconstant(demo, &data_pushconstant);
+
   const VkCommandBufferBeginInfo cmd_buf_info = {
       VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
       NULL,
@@ -769,10 +774,6 @@ static void demo_draw_build_cmd(struct demo *demo, VkCommandBuffer cmd_buf)
       clear_values,
   };
 
-  struct vktexcube_vs_pushconstant data_pushconstant;
-  demo_update_data_pushconstant(demo, &data_pushconstant);
-
-  VkResult U_ASSERT_ONLY err;
   err = vkBeginCommandBuffer(cmd_buf, &cmd_buf_info);
   assert(!err);
 
