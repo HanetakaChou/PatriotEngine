@@ -1,3 +1,5 @@
+#version 310 es
+
 /*
  * Copyright (c) 2015-2016 The Khronos Group Inc.
  * Copyright (c) 2015-2016 Valve Corporation
@@ -15,22 +17,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Vertex shader used by Cube demo.
  */
-#version 400
-#extension GL_ARB_separate_shader_objects : enable
-#extension GL_ARB_shading_language_420pack : enable
-layout(std140, binding = 0) uniform buf {
-        mat4 MVP;
-        vec4 position[12*3];
-        vec4 attr[12*3];
-} ubuf;
 
-layout (location = 0) out vec4 texcoord;
-
-void main() 
+layout(column_major, set = 0, binding = 0) uniform _unused_name_ubuf
 {
-   texcoord = ubuf.attr[gl_VertexIndex];
-   gl_Position = ubuf.MVP * ubuf.position[gl_VertexIndex];
+        highp mat4x4 MVP;
+        highp vec4 position[12 * 3];
+        highp vec4 attr[12 * 3];
+};
+
+layout(location = 0) out highp vec4 texcoord;
+
+void main()
+{
+        texcoord = attr[gl_VertexIndex];
+        gl_Position = MVP * position[gl_VertexIndex];
 }
