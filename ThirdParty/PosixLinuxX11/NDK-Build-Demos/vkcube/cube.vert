@@ -25,8 +25,6 @@
 layout(set = 0, binding = 0, column_major) uniform _unused_name_ubuf
 {
         highp mat4x4 VP;
-        highp vec4 _position[12 * 3];
-        highp vec4 _attr[12 * 3];
 };
 
 layout(push_constant, column_major) uniform _unused_name_ubuf2

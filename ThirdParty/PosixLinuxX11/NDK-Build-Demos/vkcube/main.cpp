@@ -280,9 +280,7 @@ static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd);
 
 static void demo_prepare_cube_data_buffers(struct demo *demo);
 
-static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits,
-                                        VkFlags requirements_mask,
-                                        uint32_t *typeIndex);
+static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 
 static void demo_prepare_descriptor_layout(struct demo *demo);
 
@@ -295,6 +293,8 @@ static void demo_prepare_descriptor_pool(struct demo *demo);
 static void demo_prepare_descriptor_set(struct demo *demo);
 
 static void demo_prepare(struct demo *demo);
+
+static void demo_prepare_ringbuffer(struct demo *demo);
 
 static void demo_load_pipeline_cache(struct demo *demo);
 
@@ -368,7 +368,6 @@ int main(int argc, char **argv)
   //seperate message pump
   //use FRAME_LAG to throttle
   //use VK_ERROR_OUT_OF_DATE_KHR to sync with WSI window_size
-
   pthread_t thread;
   pthread_create(&thread, NULL, intputmain, demo);
 
@@ -2260,50 +2259,6 @@ static const float g_uv_buffer_data[] = {
 
   err = vkBindBufferMemory(demo->device, demo->vertex_buffer_addition[0], demo->meshdata_memory, roundUp(mem_reqs_vertex.size, mem_reqs_vertex_addition.alignment));
   assert(!err);
-
-  struct vktexcube_vs_uniform data;
-  mat4x4 VP;
-  mat4x4_mul(VP, demo->projection_matrix, demo->view_matrix);
-  memcpy(data.vp, VP, sizeof(VP));
-
-  VkBufferCreateInfo buf_info;
-  VkMemoryRequirements mem_reqs;
-  VkMemoryAllocateInfo mem_alloc;
-  void *pData;
-
-  memset(&buf_info, 0, sizeof(buf_info));
-  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  buf_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-  buf_info.size = sizeof(data);
-
-  for (unsigned int i = 0; i < FRAME_LAG; i++)
-  {
-    err = vkCreateBuffer(demo->device, &buf_info, NULL, &demo->uniform_buffer[i]);
-    assert(!err);
-
-    vkGetBufferMemoryRequirements(demo->device, demo->uniform_buffer[i], &mem_reqs);
-
-    mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-    mem_alloc.pNext = NULL;
-    mem_alloc.allocationSize = mem_reqs.size;
-    mem_alloc.memoryTypeIndex = 0;
-
-    pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mem_alloc.memoryTypeIndex);
-    assert(pass);
-
-    err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->uniform_memory[i]);
-    assert(!err);
-
-    err = vkMapMemory(demo->device, demo->uniform_memory[i], 0, VK_WHOLE_SIZE, 0, &pData);
-    assert(!err);
-
-    memcpy(pData, &data, sizeof(data));
-
-    vkUnmapMemory(demo->device, demo->uniform_memory[i]);
-
-    err = vkBindBufferMemory(demo->device, demo->uniform_buffer[i], demo->uniform_memory[i], 0);
-    assert(!err);
-  }
 }
 
 static bool memory_type_from_properties(struct demo *demo, uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex)
@@ -2726,7 +2681,46 @@ static void demo_prepare(struct demo *demo)
 
   demo_prepare_swapchain(demo);
 
+  demo_prepare_ringbuffer(demo);
+
   demo->prepared = true;
+}
+
+static void demo_prepare_ringbuffer(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+  bool U_ASSERT_ONLY pass;
+
+  VkBufferCreateInfo buf_info;
+  VkMemoryRequirements mem_reqs;
+  VkMemoryAllocateInfo mem_alloc;
+
+  memset(&buf_info, 0, sizeof(buf_info));
+  buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  buf_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+  buf_info.size = sizeof(struct vktexcube_vs_uniform);
+
+  for (unsigned int i = 0; i < FRAME_LAG; i++)
+  {
+    err = vkCreateBuffer(demo->device, &buf_info, NULL, &demo->uniform_buffer[i]);
+    assert(!err);
+
+    vkGetBufferMemoryRequirements(demo->device, demo->uniform_buffer[i], &mem_reqs);
+
+    mem_alloc.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    mem_alloc.pNext = NULL;
+    mem_alloc.allocationSize = mem_reqs.size;
+    mem_alloc.memoryTypeIndex = 0;
+
+    pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &mem_alloc.memoryTypeIndex);
+    assert(pass);
+
+    err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->uniform_memory[i]);
+    assert(!err);
+
+    err = vkBindBufferMemory(demo->device, demo->uniform_buffer[i], demo->uniform_memory[i], 0);
+    assert(!err);
+  }
 }
 
 static void demo_prepare_swapchain(struct demo *demo)
