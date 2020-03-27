@@ -340,7 +340,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags,
 
 void ERR_EXIT(char const *err_msg, char const *err_class);
 
-void *intputmain(void *arg);
+void *rendermain(void *arg);
 
 #include <new>
 
@@ -372,6 +372,21 @@ int main(int argc, char **argv)
   pthread_t thread;
   pthread_create(&thread, NULL, intputmain, demo);
 
+  demo_run_xcb(demo);
+
+  void *value_ptr;
+  pthread_join(thread, &value_ptr);
+  assert(value_ptr == NULL);
+
+  demo_cleanup_xcb_window(demo);
+
+  return validation_error;
+}
+
+void *rendermain(void *arg)
+{
+  struct demo *demo = static_cast<struct demo *>(arg);
+
   demo_init_vk(demo);
 
   demo_init_vk_surface(demo);
@@ -400,21 +415,6 @@ int main(int argc, char **argv)
   }
 
   demo_cleanup(demo);
-
-  void *value_ptr;
-  pthread_join(thread, &value_ptr);
-  assert(value_ptr == NULL);
-
-  demo_cleanup_xcb_window(demo);
-
-  return validation_error;
-}
-
-void *intputmain(void *arg)
-{
-  struct demo *demo = static_cast<struct demo *>(arg);
-
-  demo_run_xcb(demo);
 
   return NULL;
 }
