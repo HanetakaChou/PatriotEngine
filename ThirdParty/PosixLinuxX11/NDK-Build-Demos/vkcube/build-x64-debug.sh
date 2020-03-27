@@ -6,15 +6,20 @@ target_name="vkcube"
 int_dir="obj/local/x86_64"
 out_dir="../../../../Binary/x64/Debug"
 
+mkdir -p generated
+
 # glslang
-rm -rf cube.vert.inc
-rm -rf cube.frag.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o cube.vert.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
+rm -rf generated/cube.vert.inc
+rm -rf generated/cube.frag.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
+
+# include-bin
+rm -rf generated/lunarg.ppm.h
+../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
 
 # build by ndk
-# rm -rf obj/local/x86_64
-# rm -rf libs/x86_64
+rm -f ${int_dir}/${target_name}
 ndk-build APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk 
 
 # before execute change the rpath to \$ORIGIN    
@@ -31,10 +36,11 @@ cp -f ${int_dir}/${target_name} ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libc.so ${out_dir}
 cp -f ../../Bionic-Redistributable/lib64/libdl.so ${out_dir}
 cp -f ../../Bionic-Redistributable/lib64/libm.so ${out_dir}
+cp -f ../../Bionic-Redistributable/lib64/libc++.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libstdc++.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libc++_shared.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan.so ${out_dir}/  
-if [ 1 -eq 1 ]; then #Intel
+if [ 0 -eq 1 ]; then #Intel
 mkdir -p ${out_dir}/vulkan/icd.d/
 cp -f ../../Bionic-Redistributable/lib64/vulkan/icd.d/intel_icd.x86_64.json ${out_dir}/vulkan/icd.d/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan_intel.so ${out_dir}/  
@@ -89,6 +95,7 @@ cp -f ../../Bionic-Redistributable/lib64/vulkan/implicit_layer.d/renderdoc_captu
 cp -f ../../Bionic-Redistributable/lib64/librenderdoc.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libX11.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libxcb-keysyms.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/renderdoccmd ${out_dir}/  
 
 # copy the gdb related
 cp -f libs/x86_64/gdbserver ${out_dir}/
@@ -99,7 +106,8 @@ cp -f ../../Bionic-Redistributable/lib64/linker ${out_dir}/
 cd ${out_dir}
 
 # execute the generated ${target_name}  
-# gdbserver :27177 ./${target_name}
 export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
-./gdbserver :27177 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
+export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
+# ./gdbserver :27177 
+./${target_name} --use_staging --validate 
 

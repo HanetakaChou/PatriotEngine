@@ -86,6 +86,11 @@ cp -f ../../Bionic-Redistributable/lib64/libVkLayer_threading.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libVkLayer_unique_objects.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libVkLayer_utils.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libSPIRV-Tools-shared.so ${out_dir}/  
+mkdir -p ${out_dir}/vulkan/implicit_layer.d/
+cp -f ../../Bionic-Redistributable/lib64/vulkan/implicit_layer.d/renderdoc_capture.json ${out_dir}/vulkan/implicit_layer.d/
+cp -f ../../Bionic-Redistributable/lib64/librenderdoc.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/libX11.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/libxcb-keysyms.so ${out_dir}/  
 
 # copy the gdb related
 cp -f libs/x86_64/gdbserver ${out_dir}/
@@ -97,5 +102,7 @@ cd ${out_dir}
 
 # execute the generated ${target_name}  
 # gdbserver :27077 ./${target_name}
+export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
+export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
 ./gdbserver :27077 ./${target_name} --validate ### //either gdbserver from ndk or your linux distribution is OK
 
