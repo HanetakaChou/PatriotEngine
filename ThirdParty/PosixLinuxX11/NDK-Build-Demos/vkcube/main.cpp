@@ -370,7 +370,7 @@ int main(int argc, char **argv)
   //use FRAME_LAG to throttle
   //use VK_ERROR_OUT_OF_DATE_KHR to sync with WSI window_size
   pthread_t thread;
-  pthread_create(&thread, NULL, intputmain, demo);
+  pthread_create(&thread, NULL, rendermain, demo);
 
   demo_run_xcb(demo);
 
