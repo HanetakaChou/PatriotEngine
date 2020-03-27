@@ -1,3 +1,5 @@
+#version 310 es
+
 /*
  * Copyright (c) 2015-2016 The Khronos Group Inc.
  * Copyright (c) 2015-2016 Valve Corporation
@@ -15,16 +17,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 /*
  * Fragment shader for cube demo
  */
-#version 400
-#extension GL_ARB_separate_shader_objects : enable
-#extension GL_ARB_shading_language_420pack : enable
-layout (binding = 1) uniform sampler2D tex;
 
-layout (location = 0) in vec4 texcoord;
-layout (location = 0) out vec4 uFragColor;
-void main() {
-   uFragColor = texture(tex, texcoord.xy);
+layout(set = 0, binding = 1) highp uniform sampler2D tex;
+
+layout(location = 0) in highp vec2 texcoord;
+
+layout(location = 0) out highp vec4 uFragColor;
+
+void main()
+{
+   uFragColor = texture(tex, texcoord);
 }
