@@ -106,8 +106,7 @@ cp -f ../../Bionic-Redistributable/lib64/linker ${out_dir}/
 cd ${out_dir}
 
 # execute the generated ${target_name}  
-export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
-export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
-# ./gdbserver :27177 
-./${target_name} --use_staging --validate 
+# export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
+# export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
+./gdbserver :27177 ./${target_name} --use_staging --validate 
 
