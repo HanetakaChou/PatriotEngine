@@ -190,9 +190,9 @@ strip = 'x86_64-linux-android-strip'
 pkgconfig = 'pkg-config'
 
 [properties]
-c_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+c_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID', '-D__BIONIC__=1']
 c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared'] ### -shared conflicts -pie ### results errors when use gcc
-cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID', '-D__BIONIC__=1']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared']
 
 [host_machine]
@@ -214,9 +214,9 @@ strip = 'i686-linux-android-strip'
 pkgconfig = 'pkg-config'
 
 [properties]
-c_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+c_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID', '-D__BIONIC__=1']
 c_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared'] ### -shared conflicts -pie ### results errors when use gcc
-cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID']
+cpp_args = ['-fPIE', '-fPIC', '-U__ANDROID__', '-UANDROID', '-D__BIONIC__=1']
 cpp_link_args = ['-pie', '-Wl,--enable-new-dtags', '-Wl,-rpath,/XXXXXX', '-Wl,--no-undefined', '-lc++_shared']
 
 [host_machine]
