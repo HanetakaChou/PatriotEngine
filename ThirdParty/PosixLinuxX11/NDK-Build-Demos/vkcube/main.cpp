@@ -340,7 +340,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL dbgFunc(VkFlags msgFlags,
 
 void ERR_EXIT(char const *err_msg, char const *err_class);
 
-void *intputmain(void *arg);
+void *rendermain(void *arg);
 
 #include <new>
 
@@ -370,7 +370,22 @@ int main(int argc, char **argv)
   //use FRAME_LAG to throttle
   //use VK_ERROR_OUT_OF_DATE_KHR to sync with WSI window_size
   pthread_t thread;
-  pthread_create(&thread, NULL, intputmain, demo);
+  pthread_create(&thread, NULL, rendermain, demo);
+
+  demo_run_xcb(demo);
+
+  void *value_ptr;
+  pthread_join(thread, &value_ptr);
+  assert(value_ptr == NULL);
+
+  demo_cleanup_xcb_window(demo);
+
+  return validation_error;
+}
+
+void *rendermain(void *arg)
+{
+  struct demo *demo = static_cast<struct demo *>(arg);
 
   demo_init_vk(demo);
 
@@ -400,21 +415,6 @@ int main(int argc, char **argv)
   }
 
   demo_cleanup(demo);
-
-  void *value_ptr;
-  pthread_join(thread, &value_ptr);
-  assert(value_ptr == NULL);
-
-  demo_cleanup_xcb_window(demo);
-
-  return validation_error;
-}
-
-void *intputmain(void *arg)
-{
-  struct demo *demo = static_cast<struct demo *>(arg);
-
-  demo_run_xcb(demo);
 
   return NULL;
 }
@@ -1214,7 +1214,7 @@ static void demo_init_vk(struct demo *demo)
       .applicationVersion = 0,
       .pEngineName = APP_SHORT_NAME,
       .engineVersion = 0,
-      .apiVersion = VK_API_VERSION,
+      .apiVersion = VK_API_VERSION_1_0,
   };
   VkInstanceCreateInfo inst_info = {
       .sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
