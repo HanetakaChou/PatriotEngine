@@ -6,11 +6,16 @@ target_name="vkcube"
 int_dir="libs/x86"
 out_dir="../../../../Binary/x86/Release"
 
+rm -rf generated
+mkdir -p generated
+
 # glslang
-rm -rf cube.vert.inc
-rm -rf cube.frag.inc
-../../glibc-glslang/bin/glslangValidator -V cube.vert -x -o cube.vert.inc
-../../glibc-glslang/bin/glslangValidator -V cube.frag -x -o cube.frag.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
+
+# include-bin
+../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-ASTC.pvr generated/ll_hires-ASTC.pvr.h
 
 # build by ndk
 # rm -rf obj/local/x86
@@ -31,10 +36,11 @@ cp -f ${int_dir}/${target_name} ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib/libc.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib/libdl.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib/libm.so ${out_dir}/
+cp -f ../../Bionic-Redistributable/lib64/libc++.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib/libstdc++.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib/libc++_shared.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib/libvulkan.so ${out_dir}/  
-if [ 0 -eq 1 ]; then #Intel
+if [ 1 -eq 1 ]; then #Intel
 mkdir -p ${out_dir}/vulkan/icd.d/
 cp -f ../../Bionic-Redistributable/lib/vulkan/icd.d/intel_icd.i686.json ${out_dir}/vulkan/icd.d/  
 cp -f ../../Bionic-Redistributable/lib/libvulkan_intel.so ${out_dir}/  
@@ -90,4 +96,4 @@ cp -f ../../Bionic-Redistributable/lib/linker ${out_dir}/
 cd ${out_dir}
   
 # execute the generated a.out  
-./${target_name} # --validate
+./${target_name} #--validate

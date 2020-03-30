@@ -9,12 +9,19 @@
 * 1\.并行编程框架——[PatriotTBB](https://github.com/YuqiaoZhang/PatriotTBB)  
 * 2\.可移植分发——[Bionic-based Linux](https://github.com/YuqiaoZhang/Bionic-based-Linux)  //[Bionic-based RenderDoc](https://github.com/YuqiaoZhang/Bionic-based-RenderDoc)  
 
-### 待解决：  
-* 1\.场景管理：对NVIDIA SceniX、NvPro-Pipeline和Pixar Hydra的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
-* 2\.其它图形相关的需求在[Document/目录.md]中列出  
-  
 ### 正在解决：  
-* 1\.设计一套比较完整的实时全局光照解决方案  
+* 1\.材质系统——[PatriotMaterialCompiler](https://github.com/YuqiaoZhang/PatriotMaterialCompiler)  
+  
+* 2\.开发适用于Direct3D12/Vulkan/Metal的内存分配器  
+参考文献：  
+> * [Intel TBB](https://www.threadingbuildingblocks.org/)  
+[Hudson 2006] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.  
+[Kukanov 2007] Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.  
+> * [Vulkan Memory Allocator](https://gpuopen.com/vulkan-memory-allocator-2-2/)  
+> * [D3D12 Memory Allocator](https://gpuopen.com/d3d12-memory-allocator-1-0-0/)  
+> * [\[Gelado 2019\] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.](https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory)  
+
+* 3\.设计一套比较完整的实时全局光照解决方案  
 参考文献：  
 > * 实时渲染  
 [\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 10 Local Illumination  
@@ -37,12 +44,7 @@
 > * 材质  
 [SONY OSL](https://github.com/imageworks/OpenShadingLanguage/)  
 [NVIDIA MDL](https://developer.nvidia.com/mdl-sdk)    
-
-* 2\.开发适用于Direct3D12/Vulkan/Metal的内存分配器  
-参考文献：  
-> * [Intel TBB](https://www.threadingbuildingblocks.org/)  
-[Hudson 2006] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.  
-[Kukanov 2007] Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.  
-> * [Vulkan Memory Allocator](https://gpuopen.com/vulkan-memory-allocator-2-2/)  
-> * [D3D12 Memory Allocator](https://gpuopen.com/d3d12-memory-allocator-1-0-0/)  
-> * [\[Gelado 2019\] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.](https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory)  
+  
+### 待解决：  
+* 1\.场景管理：对NVIDIA SceniX、NvPro-Pipeline和Pixar Hydra的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
+* 2\.其它图形相关的需求在[Document/目录.md]中列出    
