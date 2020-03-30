@@ -7,10 +7,14 @@ int_dir="libs/x86_64"
 out_dir="../../../../Binary/x64/Release"
 
 # glslang
-rm -rf cube.vert.inc
-rm -rf cube.frag.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o cube.vert.inc
-../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o cube.frag.inc
+rm -rf generated/cube.vert.inc
+rm -rf generated/cube.frag.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
+../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
+
+# include-bin
+rm -rf generated/lunarg.ppm.h
+../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
 
 # build by ndk
 # rm -rf obj/local/x86_64
@@ -31,10 +35,11 @@ cp -f ${int_dir}/${target_name} ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libc.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libdl.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libm.so ${out_dir}/
+cp -f ../../Bionic-Redistributable/lib64/libc++.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libstdc++.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libc++_shared.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan.so ${out_dir}/  
-if [ 0 -eq 1 ]; then #Intel
+if [ 1 -eq 1 ]; then #Intel
 mkdir -p ${out_dir}/vulkan/icd.d/
 cp -f ../../Bionic-Redistributable/lib64/vulkan/icd.d/intel_icd.x86_64.json ${out_dir}/vulkan/icd.d/  
 cp -f ../../Bionic-Redistributable/lib64/libvulkan_intel.so ${out_dir}/  

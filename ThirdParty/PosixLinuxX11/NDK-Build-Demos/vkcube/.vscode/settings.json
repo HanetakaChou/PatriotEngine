@@ -16,6 +16,16 @@
         "iosfwd": "cpp",
         "new": "cpp",
         "streambuf": "cpp",
-        "ios": "cpp"
+        "ios": "cpp",
+        "vector": "cpp",
+        "__functional_base": "cpp",
+        "__functional_base_03": "cpp",
+        "memory": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "*.frag": "cpp",
+        "*.vert": "cpp",
+        "*.inc": "cpp",
+        "string": "cpp"
     },
 }
