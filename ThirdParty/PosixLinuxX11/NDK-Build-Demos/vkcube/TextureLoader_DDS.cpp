@@ -232,17 +232,22 @@ struct DDS_HEADER_DXT10
 
 #include <assert.h>
 
-bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stream, void *buf, size_t count), int64_t (*stream_seek)(void *stream, int64_t offset, int whence),
+bool LoadTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                struct Texture_Header *texture_header, size_t *inputSkipBytes)
 {
     assert(texture_header != NULL);
     assert(inputSkipBytes != NULL);
 
+    if (stream_seek(stream, 0, 0) == -1)
+    {
+        return false;
+    }
+
     uint8_t ddsDataBuf[sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)];
     uint8_t const *ddsData = ddsDataBuf;
     {
         ptrdiff_t BytesRead = stream_read(stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
-        if (BytesRead < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
+        if (BytesRead == -1 || BytesRead < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
         {
             return false;
         }
@@ -268,7 +273,7 @@ bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stre
     {
         // Must be long enough for both headers and magic value
         ptrdiff_t BytesRead = stream_read(stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
-        if (BytesRead < sizeof(struct DDS_HEADER_DXT10))
+        if (BytesRead == -1 || BytesRead < sizeof(struct DDS_HEADER_DXT10))
         {
             return false;
         }
