@@ -4,11 +4,38 @@
 #include <stddef.h>
 #include <stdint.h>
 
+enum Texture_Misc_Flag_Bits : uint32_t
+{
+    TEXTURE_MISC_CUBE_BIT = 0x00000010,
+    TEXTURE_MISC_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum Texture_Type : uint32_t
+{
+    TEXTURE_TYPE_1D = 0,
+    TEXTURE_TYPE_2D = 1,
+    TEXTURE_TYPE_3D = 2,
+    TEXTURE_TYPE_MAX_ENUM = 0x7FFFFFFF
+};
+
 enum Texture_Format : uint32_t
 {
-    TEX_FORMAT_BC7_UNORM_BLOCK = 145,
-    TEX_FORMAT_BC7_SRGB_BLOCK = 146,
-    TEX_FORMAT_MAX_ENUM = 0x7FFFFFFF
+    TEXTURE_FORMAT_UNDEFINED = 0,
+    TEXTURE_FORMAT_BC7_UNORM_BLOCK = 145,
+    TEXTURE_FORMAT_BC7_SRGB_BLOCK = 146,
+    TEXTURE_FORMAT_MAX_ENUM = 0x7FFFFFFF
+};
+
+struct Texture_Header
+{
+    uint32_t flags;
+    enum Texture_Type type;
+    enum Texture_Format format;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
 };
 
 // SEEK_SET 0
@@ -16,12 +43,12 @@ enum Texture_Format : uint32_t
 // SEEK_END 2
 
 bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stream, void *buf, size_t count), int64_t (*stream_seek)(void *stream, int64_t offset, int whence),
-                               struct DDS_HEADER const **header, uint8_t const **bitData, size_t *bitSize);
+                               struct Texture_Header *header, size_t *inputSkipBytes);
 
 #include <string.h>
 
 inline bool LoadTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
-                                      struct DDS_HEADER const **header, uint8_t const **bitData, size_t *bitSize)
+                                      struct Texture_Header *header, size_t *inputSkipBytes)
 {
     struct stream_memory
     {
@@ -61,8 +88,7 @@ inline bool LoadTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize
             return static_cast<stream_memory *>(stream)->m_p - static_cast<stream_memory *>(stream)->m_ddsData;
         },
         header,
-        bitData,
-        bitSize);
+        inputSkipBytes);
 }
 
 #endif

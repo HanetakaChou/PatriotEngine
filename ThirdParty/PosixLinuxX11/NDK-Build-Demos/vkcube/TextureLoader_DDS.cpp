@@ -49,11 +49,6 @@ struct DDS_PIXELFORMAT
 
 #define DDS_CUBEMAP 0x00000200 // DDSCAPS2_CUBEMAP
 
-enum DDS_MISC_FLAGS2
-{
-    DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
-};
-
 struct DDS_HEADER
 {
     uint32_t size;
@@ -196,11 +191,39 @@ enum DDS_DXGI_FORMAT : uint32_t
     DDS_DXGI_FORMAT_FORCE_UINT = 0xffffffff
 };
 
+enum DDS_D3D10_RESOURCE_DIMENSION : uint32_t
+{
+    DDS_D3D10_RESOURCE_DIMENSION_TEXTURE1D = 2,
+    DDS_D3D10_RESOURCE_DIMENSION_TEXTURE2D = 3,
+    DDS_D3D10_RESOURCE_DIMENSION_TEXTURE3D = 4
+};
+
+enum DDS_D3D10_RESOURCE_MISC_FLAG : uint32_t
+{
+
+    DDS_D3D10_RESOURCE_MISC_TEXTURECUBE = 0x4L,
+
+};
+
+enum DDS_ALPHA_MODE
+{
+    DDS_ALPHA_MODE_UNKNOWN = 0,
+    DDS_ALPHA_MODE_STRAIGHT = 1,
+    DDS_ALPHA_MODE_PREMULTIPLIED = 2,
+    DDS_ALPHA_MODE_OPAQUE = 3,
+    DDS_ALPHA_MODE_CUSTOM = 4
+};
+
+enum DDS_MISC_FLAGS2
+{
+    DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
+};
+
 struct DDS_HEADER_DXT10
 {
     DDS_DXGI_FORMAT dxgiFormat;
-    uint32_t resourceDimension;
-    uint32_t miscFlag; // see D3D11_RESOURCE_MISC_FLAG
+    DDS_D3D10_RESOURCE_DIMENSION resourceDimension;
+    DDS_D3D10_RESOURCE_MISC_FLAG miscFlag; // see D3D11_RESOURCE_MISC_FLAG
     uint32_t arraySize;
     uint32_t miscFlags2;
 };
@@ -210,11 +233,10 @@ struct DDS_HEADER_DXT10
 #include <assert.h>
 
 bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stream, void *buf, size_t count), int64_t (*stream_seek)(void *stream, int64_t offset, int whence),
-                               struct DDS_HEADER const **header, uint8_t const **bitData, size_t *bitSize)
+                               struct Texture_Header *texture_header, size_t *inputSkipBytes)
 {
-    assert(header != NULL);
-    assert(bitData != NULL);
-    assert(bitSize != NULL);
+    assert(texture_header != NULL);
+    assert(inputSkipBytes != NULL);
 
     uint8_t ddsDataBuf[sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)];
     uint8_t const *ddsData = ddsDataBuf;
@@ -241,7 +263,7 @@ bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stre
     }
 
     // Check for DX10 extension
-    struct DDS_HEADER_DXT10 const *hdrDXT10 = NULL;
+    struct DDS_HEADER_DXT10 const *d3d10ext = NULL;
     if ((hdr->ddspf.flags & DDS_FOURCC) && (DDS_MAKEFOURCC('D', 'X', '1', '0') == hdr->ddspf.fourCC))
     {
         // Must be long enough for both headers and magic value
@@ -251,13 +273,102 @@ bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stre
             return false;
         }
 
-        hdrDXT10 = reinterpret_cast<struct DDS_HEADER_DXT10 const *>(ddsData + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)));
+        d3d10ext = reinterpret_cast<struct DDS_HEADER_DXT10 const *>(ddsData + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)));
     }
 
-    (*header) = hdr;
-    size_t offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + ((hdrDXT10 != NULL) ? sizeof(DDS_HEADER_DXT10) : 0);
-    (*bitData) = ddsData + offset;
-    //(*bitSize) = ddsDataSize - offset;
+    (*inputSkipBytes) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
+
+    texture_header->flags = 0;
+    texture_header->type = TEXTURE_TYPE_2D;
+    texture_header->format = TEXTURE_FORMAT_UNDEFINED;
+    texture_header->width = hdr->width;
+    texture_header->height = hdr->height;
+    texture_header->depth = hdr->depth;
+    texture_header->mipLevels = (hdr->mipMapCount != 0) ? (hdr->mipMapCount) : 1;
+    texture_header->arrayLayers = 1;
+
+    if (d3d10ext != NULL)
+    {
+        texture_header->arrayLayers = d3d10ext->arraySize;
+        if (texture_header->arrayLayers == 0)
+        {
+            return false;
+        }
+
+        switch (d3d10ext->dxgiFormat)
+        {
+        case DDS_DXGI_FORMAT_BC7_UNORM:
+            texture_header->format = TEXTURE_FORMAT_BC7_UNORM_BLOCK;
+            break;
+        case DDS_DXGI_FORMAT_BC7_UNORM_SRGB:
+            texture_header->format = TEXTURE_FORMAT_BC7_SRGB_BLOCK;
+            break;
+        default:
+            return false;
+        }
+
+        switch (d3d10ext->resourceDimension)
+        {
+        case DDS_D3D10_RESOURCE_DIMENSION_TEXTURE1D:
+            texture_header->type = TEXTURE_TYPE_1D;
+            // D3DX writes 1D textures with a fixed Height of 1
+            if ((hdr->flags & DDS_HEIGHT) && hdr->height != 1)
+            {
+                return false;
+            }
+            texture_header->height = 1;
+            texture_header->depth = 1;
+            break;
+        case DDS_D3D10_RESOURCE_DIMENSION_TEXTURE2D:
+            texture_header->type = TEXTURE_TYPE_2D;
+            if (d3d10ext->miscFlag & DDS_D3D10_RESOURCE_MISC_TEXTURECUBE)
+            {
+                texture_header->arrayLayers *= 6;
+                texture_header->flags |= TEXTURE_MISC_CUBE_BIT;
+            }
+            texture_header->depth = 1;
+            break;
+        case DDS_D3D10_RESOURCE_DIMENSION_TEXTURE3D:
+            texture_header->type = TEXTURE_TYPE_3D;
+            if (!(texture_header->flags & DDS_HEADER_FLAGS_VOLUME))
+            {
+                return false;
+            }
+            if (texture_header->arrayLayers > 1)
+            {
+                return false;
+            }
+            break;
+        default:
+            return false;
+        }
+    }
+    else
+    {
+        //format = GetDXGIFormat(header->ddspf);
+
+        if (!(hdr->flags & DDS_HEADER_FLAGS_VOLUME))
+        {
+            texture_header->type = TEXTURE_TYPE_2D;
+            texture_header->depth = 1;
+
+            if (hdr->caps2 & DDS_CUBEMAP)
+            {
+                // We require all six faces to be defined
+                if ((hdr->caps2 & DDS_CUBEMAP_ALLFACES) != DDS_CUBEMAP_ALLFACES)
+                {
+                    return false;
+                }
+
+                texture_header->arrayLayers = 6;
+                texture_header->flags |= TEXTURE_MISC_CUBE_BIT;
+            }
+        }
+        else
+        {
+            texture_header->type = TEXTURE_TYPE_3D;
+        }
+    }
 
     return true;
 }

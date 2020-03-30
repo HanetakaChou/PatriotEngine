@@ -1749,8 +1749,7 @@ static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
   assert(!err);
 }
 
-/* Load a ppm file into memory */
-bool loadTexture(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
+bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
 {
 #include "generated/lunarg.ppm.h"
 
@@ -1812,6 +1811,16 @@ bool loadTexture(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *w
   return true;
 }
 
+#include "TextureLoader_DDS.h"
+bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
+{
+#include "generated/lena_std.dds.h"
+  Texture_Header header;
+  size_t inputSkipBytes = 0;
+  LoadTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &inputSkipBytes);
+  return true;
+}
+
 template <typename T>
 T roundUp(const T value, const T alignment)
 {
@@ -1847,7 +1856,7 @@ static void demo_prepare_texture_staging_buffer(struct demo *demo, struct stagin
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
 
-  if (!loadTexture(NULL, NULL, &tex_width, &tex_height))
+  if (!loadTexture_PPM(NULL, NULL, &tex_width, &tex_height))
   {
     ERR_EXIT("Failed to load textures", "Load Texture Failure");
   }
@@ -1920,7 +1929,7 @@ static void demo_prepare_texture_staging_buffer(struct demo *demo, struct stagin
   assert(inputDepthPitch == outputDepthPitch);
 
   uint8_t *rgba_data = static_cast<uint8_t *>(data);
-  if (!loadTexture(rgba_data, &outputRowPitch, &tex_width, &tex_height))
+  if (!loadTexture_PPM(rgba_data, &outputRowPitch, &tex_width, &tex_height))
   {
     fprintf(stderr, "Error loading texture \n");
   }
@@ -1939,14 +1948,18 @@ static void demo_prepare_texture_image(struct demo *demo,
   const VkFormat tex_format = VK_FORMAT_R8G8B8A8_UNORM;
   uint32_t tex_width;
   uint32_t tex_height;
-  VkResult U_ASSERT_ONLY err;
-  bool U_ASSERT_ONLY pass;
 
-  if (!loadTexture(NULL, NULL, &tex_width, &tex_height))
+  if (!loadTexture_PPM(NULL, NULL, &tex_width, &tex_height))
   {
     ERR_EXIT("Failed to load textures", "Load Texture Failure");
   }
 
+  uint32_t texdds_width;
+  uint32_t texdds_height;
+  loadTexture_DDS(NULL, NULL, &texdds_width, &texdds_height);
+
+  VkResult U_ASSERT_ONLY err;
+  bool U_ASSERT_ONLY pass;
   tex_obj->tex_width = tex_width;
   tex_obj->tex_height = tex_height;
 
