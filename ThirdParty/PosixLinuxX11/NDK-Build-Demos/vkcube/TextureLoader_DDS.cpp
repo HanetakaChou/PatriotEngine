@@ -1,21 +1,18 @@
-#include <stdint.h>
+#include "TextureLoader_DDS.h"
 
 //--------------------------------------------------------------------------------------
 // Macros
 //--------------------------------------------------------------------------------------
-#ifndef DDS_MAKEFOURCC
-#define DDS_MAKEFOURCC(ch0, ch1, ch2, ch3)                        \
-    ((uint32_t)(uint8_t)(ch0) | ((uint32_t)(uint8_t)(ch1) << 8) | \
-     ((uint32_t)(uint8_t)(ch2) << 16) | ((uint32_t)(uint8_t)(ch3) << 24))
-#endif /* defined(MAKEFOURCC) */
+inline constexpr uint32_t DDS_MAKEFOURCC(char ch0, char ch1, char ch2, char ch3)
+{
+    return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) | (static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8) | (static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16) | (static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24);
+}
 
 //--------------------------------------------------------------------------------------
 // DDS file structure definitions
 //
 // See DDS.h in the 'Texconv' sample and the 'DirectXTex' library
 //--------------------------------------------------------------------------------------
-
-const uint32_t DDS_MAGIC = DDS_MAKEFOURCC('D', 'D', 'S', ' '); //0x20534444; // "DDS "
 
 struct DDS_PIXELFORMAT
 {
@@ -207,3 +204,60 @@ struct DDS_HEADER_DXT10
     uint32_t arraySize;
     uint32_t miscFlags2;
 };
+
+//--------------------------------------------------------------------------------------
+
+#include <assert.h>
+
+bool LoadTextureDataFromStream(void *stream, ptrdiff_t (*stream_read)(void *stream, void *buf, size_t count), int64_t (*stream_seek)(void *stream, int64_t offset, int whence),
+                               struct DDS_HEADER const **header, uint8_t const **bitData, size_t *bitSize)
+{
+    assert(header != NULL);
+    assert(bitData != NULL);
+    assert(bitSize != NULL);
+
+    uint8_t ddsDataBuf[sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)];
+    uint8_t const *ddsData = ddsDataBuf;
+    {
+        ptrdiff_t BytesRead = stream_read(stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
+        if (BytesRead < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
+        {
+            return false;
+        }
+    }
+
+    // DDS files always start with the same magic number ("DDS ")
+    uint32_t const *dwMagicNumber = reinterpret_cast<const uint32_t *>(ddsData);
+    if ((*dwMagicNumber) != DDS_MAKEFOURCC('D', 'D', 'S', ' '))
+    {
+        return false;
+    }
+
+    struct DDS_HEADER const *hdr = reinterpret_cast<struct DDS_HEADER const *>(ddsData + sizeof(uint32_t));
+    // Verify header to validate DDS file
+    if (hdr->size != sizeof(struct DDS_HEADER) || hdr->ddspf.size != sizeof(struct DDS_PIXELFORMAT))
+    {
+        return false;
+    }
+
+    // Check for DX10 extension
+    struct DDS_HEADER_DXT10 const *hdrDXT10 = NULL;
+    if ((hdr->ddspf.flags & DDS_FOURCC) && (DDS_MAKEFOURCC('D', 'X', '1', '0') == hdr->ddspf.fourCC))
+    {
+        // Must be long enough for both headers and magic value
+        ptrdiff_t BytesRead = stream_read(stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
+        if (BytesRead < sizeof(struct DDS_HEADER_DXT10))
+        {
+            return false;
+        }
+
+        hdrDXT10 = reinterpret_cast<struct DDS_HEADER_DXT10 const *>(ddsData + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)));
+    }
+
+    (*header) = hdr;
+    size_t offset = sizeof(uint32_t) + sizeof(DDS_HEADER) + ((hdrDXT10 != NULL) ? sizeof(DDS_HEADER_DXT10) : 0);
+    (*bitData) = ddsData + offset;
+    //(*bitSize) = ddsDataSize - offset;
+
+    return true;
+}
