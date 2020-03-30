@@ -200,9 +200,7 @@ enum DDS_D3D10_RESOURCE_DIMENSION : uint32_t
 
 enum DDS_D3D10_RESOURCE_MISC_FLAG : uint32_t
 {
-
-    DDS_D3D10_RESOURCE_MISC_TEXTURECUBE = 0x4L,
-
+    DDS_D3D10_RESOURCE_MISC_TEXTURECUBE = 0x4L
 };
 
 enum DDS_ALPHA_MODE
@@ -216,14 +214,14 @@ enum DDS_ALPHA_MODE
 
 enum DDS_MISC_FLAGS2
 {
-    DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L,
+    DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 0x7L
 };
 
 struct DDS_HEADER_DXT10
 {
     DDS_DXGI_FORMAT dxgiFormat;
-    DDS_D3D10_RESOURCE_DIMENSION resourceDimension;
-    DDS_D3D10_RESOURCE_MISC_FLAG miscFlag; // see D3D11_RESOURCE_MISC_FLAG
+    uint32_t resourceDimension;
+    uint32_t miscFlag;
     uint32_t arraySize;
     uint32_t miscFlags2;
 };
