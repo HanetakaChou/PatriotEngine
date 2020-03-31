@@ -1812,12 +1812,16 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
 }
 
 #include "TextureLoader_DDS.h"
-bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_t *width, uint32_t *height)
+bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint32_t *height)
 {
 #include "generated/lena_std.dds.h"
-  Texture_Header header;
-  size_t inputSkipBytes = 0;
-  LoadTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &inputSkipBytes);
+
+  struct Texture_Header header;
+  size_t header_offset = 0;
+  LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
+
+  struct Texture_Loader_Memcpy_Dest dest[1] = {};
+  FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, dest, 1, &header, &header_offset);
   return true;
 }
 

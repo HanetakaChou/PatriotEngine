@@ -48,7 +48,7 @@ struct Texture_Loader_Memcpy_Dest
     size_t outputDepthPitch;
 };
 
-bool FillInitDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                             struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
                             struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate);
 
@@ -98,7 +98,7 @@ inline bool LoadTextureHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSi
         header_offset);
 }
 
-inline bool FillInitDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
+inline bool FillTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
                                    struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
                                    struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
 {
@@ -109,7 +109,7 @@ inline bool FillInitDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
         mutable uint8_t const *m_p;
     } const stream = {ddsData, ddsDataSize, ddsData};
 
-    return FillInitDataFromStream(
+    return FillTextureDataFromStream(
         &stream,
         [](void const *stream, void *buf, size_t count) -> ptrdiff_t {
             ptrdiff_t countread = ((static_cast<stream_memory const *>(stream)->m_p + count) <= (static_cast<stream_memory const *>(stream)->m_ddsData + static_cast<stream_memory const *>(stream)->m_ddsDataSize))

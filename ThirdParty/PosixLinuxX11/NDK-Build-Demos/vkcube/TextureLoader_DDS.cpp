@@ -685,10 +685,18 @@ static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf)
     return DDS_DXGI_FORMAT_UNKNOWN;
 }
 
+static inline bool GetSurfaceInfo(size_t width,
+                                  size_t height,
+                                  uint32_t fmt,
+                                  size_t *outNumBytes,
+                                  size_t *outRowBytes,
+                                  size_t *outNumRows);
+
+static inline size_t BitsPerPixel(uint32_t fmt);
 //--------------------------------------------------------------------------------------
-bool FillInitDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                            struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
-                            struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
+bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                               struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
+                               struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
 {
 
     struct DDS_TEXTURE_METADATA texture_metadata;
@@ -787,4 +795,321 @@ bool FillInitDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void co
     size_t inputDepthPitch;
 
     return true;
+}
+
+//--------------------------------------------------------------------------------------
+// Get surface information for a particular format
+//--------------------------------------------------------------------------------------
+#include <algorithm>
+static inline bool GetSurfaceInfo(size_t width,
+                                  size_t height,
+                                  uint32_t fmt,
+                                  size_t *outNumBytes,
+                                  size_t *outRowBytes,
+                                  size_t *outNumRows)
+{
+    assert(outNumBytes != NULL);
+    assert(outRowBytes != NULL);
+    assert(outNumRows != NULL);
+
+    uint64_t numBytes = 0;
+    uint64_t rowBytes = 0;
+    uint64_t numRows = 0;
+
+    bool bc = false;
+    bool packed = false;
+    bool planar = false;
+    size_t bpe = 0;
+
+    switch (fmt)
+    {
+    case DDS_DXGI_FORMAT_BC1_TYPELESS:
+    case DDS_DXGI_FORMAT_BC1_UNORM:
+    case DDS_DXGI_FORMAT_BC1_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC4_TYPELESS:
+    case DDS_DXGI_FORMAT_BC4_UNORM:
+    case DDS_DXGI_FORMAT_BC4_SNORM:
+        bc = true;
+        bpe = 8;
+        break;
+
+    case DDS_DXGI_FORMAT_BC2_TYPELESS:
+    case DDS_DXGI_FORMAT_BC2_UNORM:
+    case DDS_DXGI_FORMAT_BC2_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC3_TYPELESS:
+    case DDS_DXGI_FORMAT_BC3_UNORM:
+    case DDS_DXGI_FORMAT_BC3_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC5_TYPELESS:
+    case DDS_DXGI_FORMAT_BC5_UNORM:
+    case DDS_DXGI_FORMAT_BC5_SNORM:
+    case DDS_DXGI_FORMAT_BC6H_TYPELESS:
+    case DDS_DXGI_FORMAT_BC6H_UF16:
+    case DDS_DXGI_FORMAT_BC6H_SF16:
+    case DDS_DXGI_FORMAT_BC7_TYPELESS:
+    case DDS_DXGI_FORMAT_BC7_UNORM:
+    case DDS_DXGI_FORMAT_BC7_UNORM_SRGB:
+        bc = true;
+        bpe = 16;
+        break;
+
+    case DDS_DXGI_FORMAT_R8G8_B8G8_UNORM:
+    case DDS_DXGI_FORMAT_G8R8_G8B8_UNORM:
+    case DDS_DXGI_FORMAT_YUY2:
+        packed = true;
+        bpe = 4;
+        break;
+
+    case DDS_DXGI_FORMAT_Y210:
+    case DDS_DXGI_FORMAT_Y216:
+        packed = true;
+        bpe = 8;
+        break;
+
+    case DDS_DXGI_FORMAT_NV12:
+    case DDS_DXGI_FORMAT_420_OPAQUE:
+    case DDS_DXGI_FORMAT_P208:
+        planar = true;
+        bpe = 2;
+        break;
+
+    case DDS_DXGI_FORMAT_P010:
+    case DDS_DXGI_FORMAT_P016:
+        planar = true;
+        bpe = 4;
+        break;
+
+    default:
+        break;
+    }
+
+    if (bc)
+    {
+        uint64_t numBlocksWide = 0;
+        if (width > 0)
+        {
+            numBlocksWide = std::max<uint64_t>(1u, (uint64_t(width) + 3u) / 4u);
+        }
+        uint64_t numBlocksHigh = 0;
+        if (height > 0)
+        {
+            numBlocksHigh = std::max<uint64_t>(1u, (uint64_t(height) + 3u) / 4u);
+        }
+        rowBytes = numBlocksWide * bpe;
+        numRows = numBlocksHigh;
+        numBytes = rowBytes * numBlocksHigh;
+    }
+    else if (packed)
+    {
+        rowBytes = ((uint64_t(width) + 1u) >> 1) * bpe;
+        numRows = uint64_t(height);
+        numBytes = rowBytes * height;
+    }
+    else if (fmt == DDS_DXGI_FORMAT_NV11)
+    {
+        rowBytes = ((uint64_t(width) + 3u) >> 2) * 4u;
+        numRows = uint64_t(height) * 2u; // Direct3D makes this simplifying assumption, although it is larger than the 4:1:1 data
+        numBytes = rowBytes * numRows;
+    }
+    else if (planar)
+    {
+        rowBytes = ((uint64_t(width) + 1u) >> 1) * bpe;
+        numBytes = (rowBytes * uint64_t(height)) + ((rowBytes * uint64_t(height) + 1u) >> 1);
+        numRows = height + ((uint64_t(height) + 1u) >> 1);
+    }
+    else
+    {
+        size_t bpp = BitsPerPixel(fmt);
+        if (!bpp)
+        {
+            return false;
+        }
+        rowBytes = (uint64_t(width) * bpp + 7u) / 8u; // round up to nearest byte
+        numRows = uint64_t(height);
+        numBytes = rowBytes * height;
+    }
+
+#if defined(_MSC_VER) //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#if defined(_M_IX86) || defined(_M_ARM)
+    static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
+    if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
+    {
+        return false;
+    }
+#elif defined(_M_IX86) || defined(_M_ARM)
+    static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
+#else
+#error Unknown Architecture //未知的架构
+#endif
+#elif defined(__GNUC__) //https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#if defined(__i386__) || defined(__arm__)
+    static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
+    if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
+    {
+        return false;
+    }
+#elif defined(__x86_64__) || defined(__aarch64__)
+    static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
+#else
+#error Unknown Architecture //未知的架构
+#endif
+#else
+#error Unknown Compiler
+#endif
+
+    (*outNumBytes) = static_cast<size_t>(numBytes);
+    (*outRowBytes) = static_cast<size_t>(rowBytes);
+    (*outNumRows) = static_cast<size_t>(numRows);
+    return true;
+}
+
+//--------------------------------------------------------------------------------------
+// Return the BPP for a particular format
+//--------------------------------------------------------------------------------------
+static inline size_t BitsPerPixel(uint32_t fmt) noexcept
+{
+    switch (fmt)
+    {
+    case DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS:
+    case DDS_DXGI_FORMAT_R32G32B32A32_FLOAT:
+    case DDS_DXGI_FORMAT_R32G32B32A32_UINT:
+    case DDS_DXGI_FORMAT_R32G32B32A32_SINT:
+        return 128;
+
+    case DDS_DXGI_FORMAT_R32G32B32_TYPELESS:
+    case DDS_DXGI_FORMAT_R32G32B32_FLOAT:
+    case DDS_DXGI_FORMAT_R32G32B32_UINT:
+    case DDS_DXGI_FORMAT_R32G32B32_SINT:
+        return 96;
+
+    case DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS:
+    case DDS_DXGI_FORMAT_R16G16B16A16_FLOAT:
+    case DDS_DXGI_FORMAT_R16G16B16A16_UNORM:
+    case DDS_DXGI_FORMAT_R16G16B16A16_UINT:
+    case DDS_DXGI_FORMAT_R16G16B16A16_SNORM:
+    case DDS_DXGI_FORMAT_R16G16B16A16_SINT:
+    case DDS_DXGI_FORMAT_R32G32_TYPELESS:
+    case DDS_DXGI_FORMAT_R32G32_FLOAT:
+    case DDS_DXGI_FORMAT_R32G32_UINT:
+    case DDS_DXGI_FORMAT_R32G32_SINT:
+    case DDS_DXGI_FORMAT_R32G8X24_TYPELESS:
+    case DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+    case DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+    case DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+    case DDS_DXGI_FORMAT_Y416:
+    case DDS_DXGI_FORMAT_Y210:
+    case DDS_DXGI_FORMAT_Y216:
+        return 64;
+
+    case DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS:
+    case DDS_DXGI_FORMAT_R10G10B10A2_UNORM:
+    case DDS_DXGI_FORMAT_R10G10B10A2_UINT:
+    case DDS_DXGI_FORMAT_R11G11B10_FLOAT:
+    case DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS:
+    case DDS_DXGI_FORMAT_R8G8B8A8_UNORM:
+    case DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_R8G8B8A8_UINT:
+    case DDS_DXGI_FORMAT_R8G8B8A8_SNORM:
+    case DDS_DXGI_FORMAT_R8G8B8A8_SINT:
+    case DDS_DXGI_FORMAT_R16G16_TYPELESS:
+    case DDS_DXGI_FORMAT_R16G16_FLOAT:
+    case DDS_DXGI_FORMAT_R16G16_UNORM:
+    case DDS_DXGI_FORMAT_R16G16_UINT:
+    case DDS_DXGI_FORMAT_R16G16_SNORM:
+    case DDS_DXGI_FORMAT_R16G16_SINT:
+    case DDS_DXGI_FORMAT_R32_TYPELESS:
+    case DDS_DXGI_FORMAT_D32_FLOAT:
+    case DDS_DXGI_FORMAT_R32_FLOAT:
+    case DDS_DXGI_FORMAT_R32_UINT:
+    case DDS_DXGI_FORMAT_R32_SINT:
+    case DDS_DXGI_FORMAT_R24G8_TYPELESS:
+    case DDS_DXGI_FORMAT_D24_UNORM_S8_UINT:
+    case DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+    case DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+    case DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP:
+    case DDS_DXGI_FORMAT_R8G8_B8G8_UNORM:
+    case DDS_DXGI_FORMAT_G8R8_G8B8_UNORM:
+    case DDS_DXGI_FORMAT_B8G8R8A8_UNORM:
+    case DDS_DXGI_FORMAT_B8G8R8X8_UNORM:
+    case DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM:
+    case DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS:
+    case DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS:
+    case DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_AYUV:
+    case DDS_DXGI_FORMAT_Y410:
+    case DDS_DXGI_FORMAT_YUY2:
+        return 32;
+
+    case DDS_DXGI_FORMAT_P010:
+    case DDS_DXGI_FORMAT_P016:
+    case DDS_DXGI_FORMAT_V408:
+        return 24;
+
+    case DDS_DXGI_FORMAT_R8G8_TYPELESS:
+    case DDS_DXGI_FORMAT_R8G8_UNORM:
+    case DDS_DXGI_FORMAT_R8G8_UINT:
+    case DDS_DXGI_FORMAT_R8G8_SNORM:
+    case DDS_DXGI_FORMAT_R8G8_SINT:
+    case DDS_DXGI_FORMAT_R16_TYPELESS:
+    case DDS_DXGI_FORMAT_R16_FLOAT:
+    case DDS_DXGI_FORMAT_D16_UNORM:
+    case DDS_DXGI_FORMAT_R16_UNORM:
+    case DDS_DXGI_FORMAT_R16_UINT:
+    case DDS_DXGI_FORMAT_R16_SNORM:
+    case DDS_DXGI_FORMAT_R16_SINT:
+    case DDS_DXGI_FORMAT_B5G6R5_UNORM:
+    case DDS_DXGI_FORMAT_B5G5R5A1_UNORM:
+    case DDS_DXGI_FORMAT_A8P8:
+    case DDS_DXGI_FORMAT_B4G4R4A4_UNORM:
+    case DDS_DXGI_FORMAT_P208:
+    case DDS_DXGI_FORMAT_V208:
+        return 16;
+
+    case DDS_DXGI_FORMAT_NV12:
+    case DDS_DXGI_FORMAT_420_OPAQUE:
+    case DDS_DXGI_FORMAT_NV11:
+        return 12;
+
+    case DDS_DXGI_FORMAT_R8_TYPELESS:
+    case DDS_DXGI_FORMAT_R8_UNORM:
+    case DDS_DXGI_FORMAT_R8_UINT:
+    case DDS_DXGI_FORMAT_R8_SNORM:
+    case DDS_DXGI_FORMAT_R8_SINT:
+    case DDS_DXGI_FORMAT_A8_UNORM:
+    case DDS_DXGI_FORMAT_AI44:
+    case DDS_DXGI_FORMAT_IA44:
+    case DDS_DXGI_FORMAT_P8:
+        return 8;
+
+    case DDS_DXGI_FORMAT_R1_UNORM:
+        return 1;
+
+    case DDS_DXGI_FORMAT_BC1_TYPELESS:
+    case DDS_DXGI_FORMAT_BC1_UNORM:
+    case DDS_DXGI_FORMAT_BC1_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC4_TYPELESS:
+    case DDS_DXGI_FORMAT_BC4_UNORM:
+    case DDS_DXGI_FORMAT_BC4_SNORM:
+        return 4;
+
+    case DDS_DXGI_FORMAT_BC2_TYPELESS:
+    case DDS_DXGI_FORMAT_BC2_UNORM:
+    case DDS_DXGI_FORMAT_BC2_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC3_TYPELESS:
+    case DDS_DXGI_FORMAT_BC3_UNORM:
+    case DDS_DXGI_FORMAT_BC3_UNORM_SRGB:
+    case DDS_DXGI_FORMAT_BC5_TYPELESS:
+    case DDS_DXGI_FORMAT_BC5_UNORM:
+    case DDS_DXGI_FORMAT_BC5_SNORM:
+    case DDS_DXGI_FORMAT_BC6H_TYPELESS:
+    case DDS_DXGI_FORMAT_BC6H_UF16:
+    case DDS_DXGI_FORMAT_BC6H_SF16:
+    case DDS_DXGI_FORMAT_BC7_TYPELESS:
+    case DDS_DXGI_FORMAT_BC7_UNORM:
+    case DDS_DXGI_FORMAT_BC7_UNORM_SRGB:
+        return 8;
+
+    default:
+        return 0;
+    }
 }

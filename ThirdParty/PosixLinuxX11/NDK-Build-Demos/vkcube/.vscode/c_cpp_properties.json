@@ -7,7 +7,7 @@
                 "-nostdinc",
                 "-nostdinc++"
             ],
-            "intelliSenseMode": "clang-x64",
+            "intelliSenseMode": "gcc-x64",
             "includePath": [
                 "${env:HOME}/.local/libexec/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include",
                 "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include",
