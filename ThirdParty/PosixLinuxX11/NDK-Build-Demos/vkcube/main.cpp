@@ -1821,7 +1821,7 @@ bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint
   LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
 
   struct Texture_Loader_Memcpy_Dest dest[1] = {};
-  FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, dest, 1, &header, &header_offset);
+  FillTextureDataFromStream(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, dest, 1, &header, &header_offset);
   return true;
 }
 

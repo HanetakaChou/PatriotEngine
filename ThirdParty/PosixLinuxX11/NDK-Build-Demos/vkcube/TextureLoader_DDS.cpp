@@ -299,6 +299,7 @@ bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(vo
 }
 
 static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf);
+static inline size_t BitsPerPixel(uint32_t fmt);
 
 //--------------------------------------------------------------------------------------
 static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
@@ -369,6 +370,20 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
             return false;
         }
 
+        switch (d3d10ext->dxgiFormat)
+        {
+        case DDS_DXGI_FORMAT_AI44:
+        case DDS_DXGI_FORMAT_IA44:
+        case DDS_DXGI_FORMAT_P8:
+        case DDS_DXGI_FORMAT_A8P8:
+            return false;
+        default:
+            if (BitsPerPixel(d3d10ext->dxgiFormat) == 0)
+            {
+                return false;
+            }
+        }
+
         texture_metadata->format = d3d10ext->dxgiFormat;
 
         switch (d3d10ext->resourceDimension)
@@ -437,7 +452,11 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
         else
         {
             texture_metadata->resDim = DDS_DIMENSION_TEXTURE3D;
+
+            // Note there's no way for a legacy Direct3D 9 DDS to express a '1D' texture
         }
+
+        assert(BitsPerPixel(texture_metadata->format) != 0);
     }
 
     return true;
@@ -692,7 +711,6 @@ static inline bool GetSurfaceInfo(size_t width,
                                   size_t *outRowBytes,
                                   size_t *outNumRows);
 
-static inline size_t BitsPerPixel(uint32_t fmt);
 //--------------------------------------------------------------------------------------
 bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
@@ -790,9 +808,95 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
         return false;
     }
 
-    uint8_t *inputSkipBytes;
-    size_t inputRowPitch;
-    size_t inputDepthPitch;
+    size_t inputSkipBytes = texture_data_offset;
+    size_t dds_subresource = 0;
+
+    for (size_t p = 0; p < numberOfPlanes; ++p)
+    {
+        for (size_t j = 0; j < texture_metadata.arraySize; ++j)
+        {
+            size_t w = texture_metadata.width;
+            size_t h = texture_metadata.height;
+            size_t d = texture_metadata.depth;
+            for (size_t i = 0; i < texture_metadata.mipCount; ++i)
+            {
+
+                size_t NumBytes = 0;
+                size_t RowBytes = 0;
+                size_t NumRows = 0;
+                if (!GetSurfaceInfo(w, h, texture_metadata.format, &NumBytes, &RowBytes, &NumRows))
+                {
+                    return false;
+                }
+
+                if (NumBytes > UINT32_MAX || RowBytes > UINT32_MAX || NumRows > UINT32_MAX)
+                {
+                    return false;
+                }
+
+                size_t inputRowPitch = RowBytes;
+                size_t inputDepthPitch = NumBytes;
+
+                //GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
+                //LoadToNative
+                //LoadCompressedToNative
+
+                //MemcpySubresource d3dx12.h
+                size_t NumSlices = d;
+                size_t destSubresource = dds_subresource;
+                if (inputDepthPitch == pDest[destSubresource].outputDepthPitch && inputRowPitch == pDest[destSubresource].outputRowPitch)
+                {
+                    stream_seek(stream, inputSkipBytes, 0);
+                    stream_read(stream, pDest[destSubresource].stagingPointer, inputDepthPitch * NumSlices);
+                }
+                else if (inputRowPitch == pDest[destSubresource].outputRowPitch)
+                {
+                    assert(inputDepthPitch <= pDest[destSubresource].outputDepthPitch);
+                    
+                    for (size_t z = 0; z < NumSlices; ++z)
+                    {
+                        stream_seek(stream, inputSkipBytes + inputDepthPitch * z, 0);
+                        stream_read(stream, pDest[destSubresource].stagingPointer + pDest[destSubresource].outputDepthPitch * z, inputDepthPitch);
+                    }
+                }
+                else
+                {
+                    assert(inputDepthPitch <= pDest[destSubresource].outputDepthPitch);
+                    assert(inputRowPitch <= pDest[destSubresource].outputRowPitch);
+                    size_t RowSizeInBytes = inputDepthPitch;
+
+                    for (size_t z = 0; z < NumSlices; ++z)
+                    {
+                        for (size_t y = 0; y < NumRows; ++y)
+                        {
+                            stream_seek(stream, inputSkipBytes + inputDepthPitch * z + inputRowPitch * y, 0);
+                            stream_read(stream, pDest[destSubresource].stagingPointer + pDest[destSubresource].outputDepthPitch * z + pDest[destSubresource].outputRowPitch * y, RowSizeInBytes)
+                        }
+                    }
+                }
+
+                inputSkipBytes += NumBytes * NumSlices;
+
+                ++dds_subresource;
+
+                w = w >> 1;
+                h = h >> 1;
+                d = d >> 1;
+                if (w == 0)
+                {
+                    w = 1;
+                }
+                if (h == 0)
+                {
+                    h = 1;
+                }
+                if (d == 0)
+                {
+                    d = 1;
+                }
+            }
+        }
+    }
 
     return true;
 }
@@ -919,7 +1023,7 @@ static inline bool GetSurfaceInfo(size_t width,
     else
     {
         size_t bpp = BitsPerPixel(fmt);
-        if (!bpp)
+        if (0 == bpp)
         {
             return false;
         }
