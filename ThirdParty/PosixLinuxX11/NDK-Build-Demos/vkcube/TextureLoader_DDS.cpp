@@ -308,7 +308,7 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
     assert(texture_metadata != NULL);
     assert(texture_data_offset != NULL);
 
-    if (stream_seek(stream, 0, 0) == -1)
+    if (stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_SET) == -1)
     {
         return false;
     }
@@ -736,10 +736,10 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
     );
     assert(texture_data_offset == (*header_offset_validate));
 
-    if (stream_seek(stream, texture_data_offset, 0) == -1)
-    {
-        return false;
-    }
+    //if (stream_seek(stream, texture_data_offset, TEXTURE_LOADER_STREAM_SEEK_SET) == -1)
+    //{
+    //    return false;
+    //}
 
     // Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
     if (texture_metadata.mipCount > 15) //D3D11_REQ_MIP_LEVELS
@@ -846,7 +846,7 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
                 size_t destSubresource = dds_subresource;
                 if (inputDepthPitch == pDest[destSubresource].outputDepthPitch && inputRowPitch == pDest[destSubresource].outputRowPitch)
                 {
-                    stream_seek(stream, inputSkipBytes, 0);
+                    stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET);
                     stream_read(stream, pDest[destSubresource].stagingPointer, inputDepthPitch * NumSlices);
                 }
                 else if (inputRowPitch == pDest[destSubresource].outputRowPitch)
@@ -855,7 +855,7 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
                     
                     for (size_t z = 0; z < NumSlices; ++z)
                     {
-                        stream_seek(stream, inputSkipBytes + inputDepthPitch * z, 0);
+                        stream_seek(stream, inputSkipBytes + inputDepthPitch * z, TEXTURE_LOADER_STREAM_SEEK_SET);
                         stream_read(stream, pDest[destSubresource].stagingPointer + pDest[destSubresource].outputDepthPitch * z, inputDepthPitch);
                     }
                 }
@@ -869,7 +869,7 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
                     {
                         for (size_t y = 0; y < NumRows; ++y)
                         {
-                            stream_seek(stream, inputSkipBytes + inputDepthPitch * z + inputRowPitch * y, 0);
+                            stream_seek(stream, inputSkipBytes + inputDepthPitch * z + inputRowPitch * y, TEXTURE_LOADER_STREAM_SEEK_SET);
                             stream_read(stream, pDest[destSubresource].stagingPointer + pDest[destSubresource].outputDepthPitch * z + pDest[destSubresource].outputRowPitch * y, RowSizeInBytes)
                         }
                     }

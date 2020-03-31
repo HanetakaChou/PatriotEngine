@@ -18,9 +18,9 @@ enum
 
 enum
 {
-    TEXTURE_FORMAT_UNDEFINED = 0,
-    TEXTURE_FORMAT_BC7_UNORM_BLOCK = 145,
-    TEXTURE_FORMAT_BC7_SRGB_BLOCK = 146
+    TEXTURE_FORMAT_UNDEFINED,
+    TEXTURE_FORMAT_BC7_UNORM_BLOCK,
+    TEXTURE_FORMAT_BC7_SRGB_BLOCK
 };
 
 struct Texture_Header
@@ -35,9 +35,12 @@ struct Texture_Header
     uint32_t arrayLayers;
 };
 
-// SEEK_SET 0
-// SEEK_CUR 1
-// SEEK_END 2
+enum
+{
+    TEXTURE_LOADER_STREAM_SEEK_SET = 0,
+    TEXTURE_LOADER_STREAM_SEEK_CUR = 1,
+    TEXTURE_LOADER_STREAM_SEEK_END = 2
+};
 
 bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                  struct Texture_Header *texture_desc, size_t *header_offset);
@@ -49,8 +52,8 @@ struct Texture_Loader_Memcpy_Dest
 };
 
 bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                            struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
-                            struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate);
+                               struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
+                               struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate);
 
 #include <string.h>
 
@@ -79,13 +82,13 @@ inline bool LoadTextureHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSi
         [](void const *stream, int64_t offset, int whence) -> int64_t {
             switch (whence)
             {
-            case 0:
+            case TEXTURE_LOADER_STREAM_SEEK_SET:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_ddsData + offset;
                 break;
-            case 1:
+            case TEXTURE_LOADER_STREAM_SEEK_CUR:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_p + offset;
                 break;
-            case 2:
+            case TEXTURE_LOADER_STREAM_SEEK_END:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_ddsData + offset;
                 break;
             default:
@@ -99,8 +102,8 @@ inline bool LoadTextureHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSi
 }
 
 inline bool FillTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
-                                   struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
-                                   struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
+                                      struct Texture_Loader_Memcpy_Dest const *pDest, size_t NumSubresources,
+                                      struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
 {
     struct stream_memory
     {
@@ -124,13 +127,13 @@ inline bool FillTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize
         [](void const *stream, int64_t offset, int whence) -> int64_t {
             switch (whence)
             {
-            case 0:
+            case TEXTURE_LOADER_STREAM_SEEK_SET:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_ddsData + offset;
                 break;
-            case 1:
+            case TEXTURE_LOADER_STREAM_SEEK_CUR:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_p + offset;
                 break;
-            case 2:
+            case TEXTURE_LOADER_STREAM_SEEK_END:
                 static_cast<stream_memory const *>(stream)->m_p = static_cast<stream_memory const *>(stream)->m_ddsData + offset;
                 break;
             default:

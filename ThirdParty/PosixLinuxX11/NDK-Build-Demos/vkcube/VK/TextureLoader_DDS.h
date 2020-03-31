@@ -6,6 +6,6 @@
 
 #include "../TextureLoader_DDS.h"
 
-void TextureLoader_UpdateSubresources();
+void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc);
 
 #endif
