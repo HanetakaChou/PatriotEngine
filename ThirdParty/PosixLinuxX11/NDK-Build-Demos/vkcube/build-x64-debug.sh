@@ -17,8 +17,8 @@ rm -rf generated/cube.frag.inc
 # include-bin
 rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
-rm -rf generated/lena_std.dds.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/lena_std.dds generated/lena_std.dds.h
+rm -rf generated/l_hires.dds.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires.dds generated/l_hires.dds.h
 
 # build by ndk
 rm -f ${int_dir}/${target_name}

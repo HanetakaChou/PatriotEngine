@@ -307,6 +307,8 @@ static void demo_prepare_stagingbuffer(struct demo *demo);
 
 static void demo_loadTexture_DDS(struct demo *demo);
 
+static void demo_cleanupTexture_DDS(struct demo *demo);
+
 static void demo_prepare_ringbuffer(struct demo *demo);
 
 static void demo_load_pipeline_cache(struct demo *demo);
@@ -430,6 +432,8 @@ void *rendermain(void *arg)
     }
   }
 
+  demo_cleanupTexture_DDS(demo);
+
   demo_cleanup(demo);
 
   return NULL;
@@ -515,7 +519,7 @@ static void demo_draw(struct demo *demo)
     VkDescriptorImageInfo tex_descs[1];
     memset(&tex_descs, 0, sizeof(tex_descs));
     tex_descs[0].sampler = demo->dds_sampler; //texture_assets[0].sampler;
-    tex_descs[0].imageView = demo->dds_view; //texture_assets[0].view;
+    tex_descs[0].imageView = demo->dds_view;  //texture_assets[0].view;
     tex_descs[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet writes[2];
@@ -1830,22 +1834,22 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
   return true;
 }
 
+#include "generated/l_hires.dds.h"
+
 #include "TextureLoader_DDS.h"
 #include "VK/TextureLoader_DDS.h"
 static void demo_loadTexture_DDS(struct demo *demo)
 {
-#include "generated/lena_std.dds.h"
-
   struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
-  LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
+  LoadTextureHeaderFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, &header, &header_offset);
 
   struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
   size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
-                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
+                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, 1, //demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
                                                          1, dest, regions);
 
   uint8_t *ptr;
@@ -1862,7 +1866,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
     regions[i].bufferOffset += offset;
   }
 
-  FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, ptr, 1, dest, &header, &header_offset);
+  FillTextureDataFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, ptr, 1, dest, &header, &header_offset);
 
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
@@ -2048,6 +2052,14 @@ static void demo_loadTexture_DDS(struct demo *demo)
   view.image = demo->dds_image;
   err = vkCreateImageView(demo->device, &view, NULL, &demo->dds_view);
   assert(!err);
+}
+
+static void demo_cleanupTexture_DDS(struct demo *demo)
+{
+  vkDestroyImageView(demo->device, demo->dds_view, NULL);
+  vkDestroyImage(demo->device, demo->dds_image, NULL);
+  vkFreeMemory(demo->device, demo->dds_mem, NULL);
+  vkDestroySampler(demo->device, demo->dds_sampler, NULL);
 }
 
 template <typename T>
