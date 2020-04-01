@@ -20,7 +20,7 @@ struct TextureLoader_ImageInfo
     uint32_t arrayLayers;
 };
 
-void TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_desc, struct TextureLoader_ImageInfo *pImageInfo);
+struct TextureLoader_ImageInfo TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_header);
 
 size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImageInfo,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
