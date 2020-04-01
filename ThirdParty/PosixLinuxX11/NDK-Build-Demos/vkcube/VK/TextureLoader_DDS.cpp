@@ -15,15 +15,15 @@ struct FormatInfo
             uint32_t compressedBlockHeight;
             uint32_t compressedBlockDepth;
             uint32_t compressedBlockSize;
-        } _compressed
+        } compressed
     };
 
     inline uint32_t computeCompressedImageSize(uint32_t width, uint32_t height, uint32_t depth)
     {
         assert(isBlock);
-        uint32_t pixelBytes = _compressed.compressedBlockSize / 8;
-        uint32_t numBlocksWide = (width + _compressed.compressedBlockWidth - 1) / _compressed.compressedBlockWidth;
-        uint32_t numBlocksHigh = (height + _compressed.compressedBlockHeight - 1) / _compressed.compressedBlockHeight;
+        uint32_t pixelBytes = compressed.compressedBlockSize / 8;
+        uint32_t numBlocksWide = (width + compressed.compressedBlockWidth - 1) / compressed.compressedBlockWidth;
+        uint32_t numBlocksHigh = (height + compressed.compressedBlockHeight - 1) / compressed.compressedBlockHeight;
         uint32_t bytes = numBlocksWide * numBlocksHigh * pixelBytes * depth;
     }
 };
@@ -35,12 +35,24 @@ static struct FormatInfo const gFormatInfoTable[] = {
     {VK_FORMAT_BC7_SRGB_BLOCK, true, 4, 4, 1, 128}
     // clang-format on
 };
+static_assert(TEXTURE_FORMAT_RANGE_SIZE == (sizeof(gFormatInfoTable) / sizeof(gFormatInfoTable[0])), "gFormatInfoTable may not match!");
 
 template <typename T>
 static inline T roundUp(const T value, const T alignment)
 {
     auto temp = value + alignment - static_cast<T>(1);
     return temp - temp % alignment;
+}
+
+//optimalBufferCopyOffsetAlignment
+//optimalBufferCopyRowPitchAlignment
+
+size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_desc,
+                                           VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
+                                           size_t NumSubresources, struct Texture_Loader_Memcpy_Dest *pDest, VkBufferImageCopy *pRegions)
+{
+    size_t TotalBytes = 0;
+    return TotalBytes;
 }
 
 void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
@@ -50,7 +62,6 @@ void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
     // TextureVk::setSubImage libANGLE/renderer/vulkan/TextureVk.cpp
     // TextureVk::setSubImageImpl libANGLE/renderer/vulkan/TextureVk.cpp
     // ImageHelper::stageSubresourceUpdate libANGLE/renderer/vulkan/vk_helpers.cpp
-    // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
     // ImageHelper::CalculateBufferInfo libANGLE/renderer/vulkan/vk_helpers.cpp
     // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
 
@@ -73,6 +84,8 @@ void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
     uint32_t bufferRowLength;
     uint32_t bufferImageHeight;
 
+    size_t allocationSize;
+
     if (storageFormat.isBlock)
     {
         uint32_t rowPitch;
@@ -86,12 +99,12 @@ void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
         outputRowPitch = rowPitch;
         outputDepthPitch = depthPitch;
 
-        bufferRowLength = roundUp(texture_desc->width, storageFormat.compressedBlockWidth);
-        bufferImageHeight = roundUp(texture_desc->height, storageFormat.compressedBlockHeight);
+        bufferRowLength = roundUp(texture_desc->width, storageFormat.compressed.compressedBlockWidth);
+        bufferImageHeight = roundUp(texture_desc->height, storageFormat.compressed.compressedBlockHeight);
+        allocationSize = totalSize;
     }
     else
     {
-        
     }
 
 #if 0
