@@ -8,9 +8,7 @@
 
 #include <vulkan/vulkan.h>
 
-//void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc);
-
-struct TextureLoader_ImageInfo
+struct TextureLoader_SpecificHeader
 {
     bool isCubeCompatible;
     VkImageType imageType;
@@ -20,9 +18,9 @@ struct TextureLoader_ImageInfo
     uint32_t arrayLayers;
 };
 
-struct TextureLoader_ImageInfo TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_header);
+struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct TextureLoader_NeutralHeader const *neutral_texture_header);
 
-size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImageInfo,
+size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader const *vk_texture_header,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
                                            size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions);
 

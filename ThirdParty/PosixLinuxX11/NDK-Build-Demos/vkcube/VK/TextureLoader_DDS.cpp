@@ -6,21 +6,20 @@ static inline VkImageType _NeutralToVulkanTypeMap(uint32_t neutraltype);
 
 static inline VkFormat _NeutralToVulkanFormatMap(uint32_t neutralformat);
 
-struct TextureLoader_ImageInfo TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_header)
+struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct TextureLoader_NeutralHeader const *neutral_texture_header)
 {
-    struct TextureLoader_ImageInfo vkImageInfoBuf;
+    struct TextureLoader_SpecificHeader specific_texture_header;
 
-    struct TextureLoader_ImageInfo *pImageInfo = &vkImageInfoBuf;
-    pImageInfo->isCubeCompatible = neutral_texture_header->isCubeMap;
-    pImageInfo->imageType = _NeutralToVulkanTypeMap(neutral_texture_header->type);
-    pImageInfo->format = _NeutralToVulkanFormatMap(neutral_texture_header->format);
-    pImageInfo->extent.width = neutral_texture_header->width;
-    pImageInfo->extent.height = neutral_texture_header->height;
-    pImageInfo->extent.depth = neutral_texture_header->depth;
-    pImageInfo->mipLevels = neutral_texture_header->mipLevels;
-    pImageInfo->arrayLayers = neutral_texture_header->arrayLayers;
+    specific_texture_header.isCubeCompatible = neutral_texture_header->isCubeMap;
+    specific_texture_header.imageType = _NeutralToVulkanTypeMap(neutral_texture_header->type);
+    specific_texture_header.format = _NeutralToVulkanFormatMap(neutral_texture_header->format);
+    specific_texture_header.extent.width = neutral_texture_header->width;
+    specific_texture_header.extent.height = neutral_texture_header->height;
+    specific_texture_header.extent.depth = neutral_texture_header->depth;
+    specific_texture_header.mipLevels = neutral_texture_header->mipLevels;
+    specific_texture_header.arrayLayers = neutral_texture_header->arrayLayers;
 
-    return vkImageInfoBuf;
+    return specific_texture_header;
 }
 
 struct FormatInfo
@@ -59,7 +58,7 @@ static inline T roundUp(const T value, const T alignment)
 //optimalBufferCopyOffsetAlignment
 //optimalBufferCopyRowPitchAlignment
 
-size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImageInfo,
+size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader const *vk_texture_header,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
                                            size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions)
 {
@@ -82,7 +81,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImag
     //                          | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
     // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4 */ {false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
-    struct FormatInfo storageFormat = _FormatInfoTable(pImageInfo->format);
+    struct FormatInfo storageFormat = _FormatInfoTable(vk_texture_header->format);
 
     size_t stagingOffset = 0;
     size_t TotalBytes = 0;
@@ -90,12 +89,12 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImag
 
     for (uint32_t aspect = 0; aspect < 1; ++aspect)
     {
-        for (uint32_t mipLevel = 0; mipLevel < pImageInfo->mipLevels; ++mipLevel)
+        for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mipLevels; ++mipLevel)
         {
-            size_t w = pImageInfo->extent.width;
-            size_t h = pImageInfo->extent.height;
-            size_t d = pImageInfo->extent.depth;
-            for (uint32_t arrayLayer = 0; arrayLayer < pImageInfo->arrayLayers; ++arrayLayer)
+            size_t w = vk_texture_header->extent.width;
+            size_t h = vk_texture_header->extent.height;
+            size_t d = vk_texture_header->extent.depth;
+            for (uint32_t arrayLayer = 0; arrayLayer < vk_texture_header->arrayLayers; ++arrayLayer)
             {
                 size_t outputRowPitch;
                 size_t outputRowSize;
@@ -118,8 +117,8 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImag
                     outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
                     outputSlicePitch = outputRowPitch * outputNumRows;
 
-                    bufferRowLength = roundUp(pImageInfo->extent.width, storageFormat.compressed.compressedBlockWidth); //support optimalBufferCopyRowPitchAlignment?
-                    bufferImageHeight = roundUp(pImageInfo->extent.height, storageFormat.compressed.compressedBlockHeight);
+                    bufferRowLength = roundUp(vk_texture_header->extent.width, storageFormat.compressed.compressedBlockWidth); //support optimalBufferCopyRowPitchAlignment?
+                    bufferImageHeight = roundUp(vk_texture_header->extent.height, storageFormat.compressed.compressedBlockHeight);
 
                     allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
                 }
@@ -178,7 +177,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImag
 }
 
 #if 0
-void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
+void TextureLoader_UpdateSubresources(struct TextureLoader_NeutralHeader const *texture_desc)
 {
     // Context::texSubImage2D libANGLE/Context.cpp
     // Texture::setSubImage libANGLE/Texture.cpp
@@ -330,7 +329,7 @@ static enum VkImageType gNeutralToVulkanTypeMap[] = {
     VK_IMAGE_TYPE_1D,
     VK_IMAGE_TYPE_2D,
     VK_IMAGE_TYPE_3D};
-static_assert(TEXTURE_TYPE_RANGE_SIZE == (sizeof(gNeutralToVulkanTypeMap) / sizeof(gNeutralToVulkanTypeMap[0])), "gNeutralToVulkanTypeMap may not match!");
+static_assert(TEXTURE_LOADER_TYPE_RANGE_SIZE == (sizeof(gNeutralToVulkanTypeMap) / sizeof(gNeutralToVulkanTypeMap[0])), "gNeutralToVulkanTypeMap may not match!");
 
 static inline VkImageType _NeutralToVulkanTypeMap(uint32_t neutraltype)
 {
@@ -523,7 +522,7 @@ static enum VkFormat gNeutralToVulkanFormatMap[] = {
     VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
     VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
     VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-static_assert(TEXTURE_FORMAT_RANGE_SIZE == (sizeof(gNeutralToVulkanFormatMap) / sizeof(gNeutralToVulkanFormatMap[0])), "gNeutralToVulkanFormatMap may not match!");
+static_assert(TEXTURE_LOADER_FORMAT_RANGE_SIZE == (sizeof(gNeutralToVulkanFormatMap) / sizeof(gNeutralToVulkanFormatMap[0])), "gNeutralToVulkanFormatMap may not match!");
 
 static inline VkFormat _NeutralToVulkanFormatMap(uint32_t neutralformat)
 {

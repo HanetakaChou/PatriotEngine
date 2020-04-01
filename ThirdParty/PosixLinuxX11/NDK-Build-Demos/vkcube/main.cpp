@@ -1817,15 +1817,15 @@ bool loadTexture_DDS(struct demo *demo, uint8_t *rgba_data, uint32_t const *, ui
 {
 #include "generated/lena_std.dds.h"
 
-  struct Texture_Header header;
+  struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
   LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
 
-  struct TextureLoader_ImageInfo imageinfo = TextureLoader_ToImageInfo(&header);
+  struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
-  TextureLoader_GetCopyableFootprints(&imageinfo,
+  TextureLoader_GetCopyableFootprints(&vkheader,
                                       demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
                                       1, dest, regions);
 
