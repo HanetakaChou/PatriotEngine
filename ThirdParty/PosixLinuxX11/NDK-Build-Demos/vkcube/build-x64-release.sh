@@ -15,8 +15,8 @@ rm -rf generated/cube.frag.inc
 # include-bin
 rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
-rm -rf generated/lena_std.dds.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/lena_std.dds generated/lena_std.dds.h
+rm -rf generated/l_hires.dds.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires.dds generated/l_hires.dds.h
 
 # build by ndk
 # rm -rf obj/local/x86_64
@@ -97,4 +97,4 @@ cp -f ../../Bionic-Redistributable/lib64/linker ${out_dir}/
 cd ${out_dir}
   
 # execute the generated a.out  
-./${target_name} # --validate
+./${target_name} --validate

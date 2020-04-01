@@ -173,6 +173,10 @@ struct demo
   } old_depth;
 
   struct StagingBuffer mStagingBuffer;
+
+  VkBuffer stagingbuffer_buffer;
+  VkDeviceMemory stagingbuffer_mem;
+
   VkImage dds_image;
   VkDeviceMemory dds_mem;
   VkSampler dds_sampler;
@@ -305,6 +309,8 @@ static void demo_prepare(struct demo *demo);
 
 static void demo_prepare_stagingbuffer(struct demo *demo);
 
+static void demo_cleanup_stagingbuffer(struct demo *demo);
+
 static void demo_loadTexture_DDS(struct demo *demo);
 
 static void demo_cleanupTexture_DDS(struct demo *demo);
@@ -433,6 +439,8 @@ void *rendermain(void *arg)
   }
 
   demo_cleanupTexture_DDS(demo);
+
+  demo_cleanup_stagingbuffer(demo);
 
   demo_cleanup(demo);
 
@@ -1584,7 +1592,8 @@ static void demo_init_vk_surface(struct demo *demo)
 
   // this should be guaranteed by the platform-specific can_present call
   VkBool32 supported;
-  assert(VK_SUCCESS == demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, demo->present_queue_family_index, demo->surface, &supported));
+  err = demo->fpGetPhysicalDeviceSurfaceSupportKHR(demo->gpu, demo->present_queue_family_index, demo->surface, &supported);
+  assert(VK_SUCCESS == err);
   assert(supported);
 
   // Get the list of VkFormat's that are supported:
@@ -2947,12 +2956,11 @@ static void demo_prepare_stagingbuffer(struct demo *demo)
       0,
       NULL};
 
-  VkBuffer buffer;
-  err = vkCreateBuffer(demo->device, &buf_info, NULL, &buffer);
+  err = vkCreateBuffer(demo->device, &buf_info, NULL, &demo->stagingbuffer_buffer);
   assert(!err);
 
   VkMemoryRequirements mem_reqs;
-  vkGetBufferMemoryRequirements(demo->device, buffer, &mem_reqs);
+  vkGetBufferMemoryRequirements(demo->device, demo->stagingbuffer_buffer, &mem_reqs);
 
   uint32_t typeIndex;
   pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &typeIndex);
@@ -2964,18 +2972,23 @@ static void demo_prepare_stagingbuffer(struct demo *demo)
       mem_reqs.size,
       typeIndex};
 
-  VkDeviceMemory mem;
-  err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &mem);
+  err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &demo->stagingbuffer_mem);
   assert(!err);
 
-  err = vkBindBufferMemory(demo->device, buffer, mem, 0);
+  err = vkBindBufferMemory(demo->device, demo->stagingbuffer_buffer, demo->stagingbuffer_mem, 0);
   assert(!err);
 
   void *pdata_map;
-  err = vkMapMemory(demo->device, mem, 0, VK_WHOLE_SIZE, 0, &pdata_map);
+  err = vkMapMemory(demo->device, demo->stagingbuffer_mem, 0, VK_WHOLE_SIZE, 0, &pdata_map);
   assert(!err);
 
-  demo->mStagingBuffer.init(buffer, mem, buffersize, static_cast<uint8_t *>(pdata_map));
+  demo->mStagingBuffer.init(demo->stagingbuffer_buffer, demo->stagingbuffer_mem, buffersize, static_cast<uint8_t *>(pdata_map));
+}
+
+static void demo_cleanup_stagingbuffer(struct demo *demo)
+{
+  vkDestroyBuffer(demo->device, demo->stagingbuffer_buffer, NULL);
+  vkFreeMemory(demo->device, demo->stagingbuffer_mem, NULL);
 }
 
 static void demo_prepare_ringbuffer(struct demo *demo)

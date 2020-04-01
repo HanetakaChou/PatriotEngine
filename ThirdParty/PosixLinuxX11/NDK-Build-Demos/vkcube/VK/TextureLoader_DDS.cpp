@@ -48,8 +48,8 @@ struct FormatInfo
 
 static inline struct FormatInfo _FormatInfoTable(VkFormat vkformat);
 
-template <typename T>
-static inline T roundUp(const T value, const T alignment)
+template <typename T, typename T2>
+static inline T roundUp(const T value, const T2 alignment)
 {
     auto temp = value + alignment - static_cast<T>(1);
     return temp - temp % alignment;
