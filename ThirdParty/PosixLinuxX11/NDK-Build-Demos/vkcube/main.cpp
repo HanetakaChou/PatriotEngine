@@ -1821,9 +1821,12 @@ bool loadTexture_DDS(struct demo *demo, uint8_t *rgba_data, uint32_t const *, ui
   size_t header_offset = 0;
   LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
 
+  struct TextureLoader_ImageInfo imageinfo;
+  TextureLoader_ToImageInfo(&header, &imageinfo);
+
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
-  TextureLoader_GetCopyableFootprints(&header,
+  TextureLoader_GetCopyableFootprints(&imageinfo,
                                       demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
                                       1, dest, regions);
 

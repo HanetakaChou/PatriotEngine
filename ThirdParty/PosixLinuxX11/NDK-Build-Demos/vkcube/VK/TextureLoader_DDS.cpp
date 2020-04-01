@@ -2,9 +2,214 @@
 
 #include <assert.h>
 
+static VkImageType gNeutralToVulkanTypeMap[] = {
+    VK_IMAGE_TYPE_1D,
+    VK_IMAGE_TYPE_2D,
+    VK_IMAGE_TYPE_3D,
+};
+static_assert(TEXTURE_TYPE_RANGE_SIZE == (sizeof(gNeutralToVulkanTypeMap) / sizeof(gNeutralToVulkanTypeMap[0])), "gNeutralToVulkanTypeMap may not match!");
+
+static VkFormat gNeutralToVulkanFormatMap[] = {
+    VK_FORMAT_R4G4_UNORM_PACK8,
+    VK_FORMAT_R4G4B4A4_UNORM_PACK16,
+    VK_FORMAT_B4G4R4A4_UNORM_PACK16,
+    VK_FORMAT_R5G6B5_UNORM_PACK16,
+    VK_FORMAT_B5G6R5_UNORM_PACK16,
+    VK_FORMAT_R5G5B5A1_UNORM_PACK16,
+    VK_FORMAT_B5G5R5A1_UNORM_PACK16,
+    VK_FORMAT_A1R5G5B5_UNORM_PACK16,
+    VK_FORMAT_R8_UNORM,
+    VK_FORMAT_R8_SNORM,
+    VK_FORMAT_R8_USCALED,
+    VK_FORMAT_R8_SSCALED,
+    VK_FORMAT_R8_UINT,
+    VK_FORMAT_R8_SINT,
+    VK_FORMAT_R8_SRGB,
+    VK_FORMAT_R8G8_UNORM,
+    VK_FORMAT_R8G8_SNORM,
+    VK_FORMAT_R8G8_USCALED,
+    VK_FORMAT_R8G8_SSCALED,
+    VK_FORMAT_R8G8_UINT,
+    VK_FORMAT_R8G8_SINT,
+    VK_FORMAT_R8G8_SRGB,
+    VK_FORMAT_R8G8B8_UNORM,
+    VK_FORMAT_R8G8B8_SNORM,
+    VK_FORMAT_R8G8B8_USCALED,
+    VK_FORMAT_R8G8B8_SSCALED,
+    VK_FORMAT_R8G8B8_UINT,
+    VK_FORMAT_R8G8B8_SINT,
+    VK_FORMAT_R8G8B8_SRGB,
+    VK_FORMAT_B8G8R8_UNORM,
+    VK_FORMAT_B8G8R8_SNORM,
+    VK_FORMAT_B8G8R8_USCALED,
+    VK_FORMAT_B8G8R8_SSCALED,
+    VK_FORMAT_B8G8R8_UINT,
+    VK_FORMAT_B8G8R8_SINT,
+    VK_FORMAT_B8G8R8_SRGB,
+    VK_FORMAT_R8G8B8A8_UNORM,
+    VK_FORMAT_R8G8B8A8_SNORM,
+    VK_FORMAT_R8G8B8A8_USCALED,
+    VK_FORMAT_R8G8B8A8_SSCALED,
+    VK_FORMAT_R8G8B8A8_UINT,
+    VK_FORMAT_R8G8B8A8_SINT,
+    VK_FORMAT_R8G8B8A8_SRGB,
+    VK_FORMAT_B8G8R8A8_UNORM,
+    VK_FORMAT_B8G8R8A8_SNORM,
+    VK_FORMAT_B8G8R8A8_USCALED,
+    VK_FORMAT_B8G8R8A8_SSCALED,
+    VK_FORMAT_B8G8R8A8_UINT,
+    VK_FORMAT_B8G8R8A8_SINT,
+    VK_FORMAT_B8G8R8A8_SRGB,
+    VK_FORMAT_A8B8G8R8_UNORM_PACK32,
+    VK_FORMAT_A8B8G8R8_SNORM_PACK32,
+    VK_FORMAT_A8B8G8R8_USCALED_PACK32,
+    VK_FORMAT_A8B8G8R8_SSCALED_PACK32,
+    VK_FORMAT_A8B8G8R8_UINT_PACK32,
+    VK_FORMAT_A8B8G8R8_SINT_PACK32,
+    VK_FORMAT_A8B8G8R8_SRGB_PACK32,
+    VK_FORMAT_A2R10G10B10_UNORM_PACK32,
+    VK_FORMAT_A2R10G10B10_SNORM_PACK32,
+    VK_FORMAT_A2R10G10B10_USCALED_PACK32,
+    VK_FORMAT_A2R10G10B10_SSCALED_PACK32,
+    VK_FORMAT_A2R10G10B10_UINT_PACK32,
+    VK_FORMAT_A2R10G10B10_SINT_PACK32,
+    VK_FORMAT_A2B10G10R10_UNORM_PACK32,
+    VK_FORMAT_A2B10G10R10_SNORM_PACK32,
+    VK_FORMAT_A2B10G10R10_USCALED_PACK32,
+    VK_FORMAT_A2B10G10R10_SSCALED_PACK32,
+    VK_FORMAT_A2B10G10R10_UINT_PACK32,
+    VK_FORMAT_A2B10G10R10_SINT_PACK32,
+    VK_FORMAT_R16_UNORM,
+    VK_FORMAT_R16_SNORM,
+    VK_FORMAT_R16_USCALED,
+    VK_FORMAT_R16_SSCALED,
+    VK_FORMAT_R16_UINT,
+    VK_FORMAT_R16_SINT,
+    VK_FORMAT_R16_SFLOAT,
+    VK_FORMAT_R16G16_UNORM,
+    VK_FORMAT_R16G16_SNORM,
+    VK_FORMAT_R16G16_USCALED,
+    VK_FORMAT_R16G16_SSCALED,
+    VK_FORMAT_R16G16_UINT,
+    VK_FORMAT_R16G16_SINT,
+    VK_FORMAT_R16G16_SFLOAT,
+    VK_FORMAT_R16G16B16_UNORM,
+    VK_FORMAT_R16G16B16_SNORM,
+    VK_FORMAT_R16G16B16_USCALED,
+    VK_FORMAT_R16G16B16_SSCALED,
+    VK_FORMAT_R16G16B16_UINT,
+    VK_FORMAT_R16G16B16_SINT,
+    VK_FORMAT_R16G16B16_SFLOAT,
+    VK_FORMAT_R16G16B16A16_UNORM,
+    VK_FORMAT_R16G16B16A16_SNORM,
+    VK_FORMAT_R16G16B16A16_USCALED,
+    VK_FORMAT_R16G16B16A16_SSCALED,
+    VK_FORMAT_R16G16B16A16_UINT,
+    VK_FORMAT_R16G16B16A16_SINT,
+    VK_FORMAT_R16G16B16A16_SFLOAT,
+    VK_FORMAT_R32_UINT,
+    VK_FORMAT_R32_SINT,
+    VK_FORMAT_R32_SFLOAT,
+    VK_FORMAT_R32G32_UINT,
+    VK_FORMAT_R32G32_SINT,
+    VK_FORMAT_R32G32_SFLOAT,
+    VK_FORMAT_R32G32B32_UINT,
+    VK_FORMAT_R32G32B32_SINT,
+    VK_FORMAT_R32G32B32_SFLOAT,
+    VK_FORMAT_R32G32B32A32_UINT,
+    VK_FORMAT_R32G32B32A32_SINT,
+    VK_FORMAT_R32G32B32A32_SFLOAT,
+    VK_FORMAT_R64_UINT,
+    VK_FORMAT_R64_SINT,
+    VK_FORMAT_R64_SFLOAT,
+    VK_FORMAT_R64G64_UINT,
+    VK_FORMAT_R64G64_SINT,
+    VK_FORMAT_R64G64_SFLOAT,
+    VK_FORMAT_R64G64B64_UINT,
+    VK_FORMAT_R64G64B64_SINT,
+    VK_FORMAT_R64G64B64_SFLOAT,
+    VK_FORMAT_R64G64B64A64_UINT,
+    VK_FORMAT_R64G64B64A64_SINT,
+    VK_FORMAT_R64G64B64A64_SFLOAT,
+    VK_FORMAT_B10G11R11_UFLOAT_PACK32,
+    VK_FORMAT_E5B9G9R9_UFLOAT_PACK32,
+    VK_FORMAT_D16_UNORM,
+    VK_FORMAT_X8_D24_UNORM_PACK32,
+    VK_FORMAT_D32_SFLOAT,
+    VK_FORMAT_S8_UINT,
+    VK_FORMAT_D16_UNORM_S8_UINT,
+    VK_FORMAT_D24_UNORM_S8_UINT,
+    VK_FORMAT_D32_SFLOAT_S8_UINT,
+    VK_FORMAT_BC1_RGB_UNORM_BLOCK,
+    VK_FORMAT_BC1_RGB_SRGB_BLOCK,
+    VK_FORMAT_BC1_RGBA_UNORM_BLOCK,
+    VK_FORMAT_BC1_RGBA_SRGB_BLOCK,
+    VK_FORMAT_BC2_UNORM_BLOCK,
+    VK_FORMAT_BC2_SRGB_BLOCK,
+    VK_FORMAT_BC3_UNORM_BLOCK,
+    VK_FORMAT_BC3_SRGB_BLOCK,
+    VK_FORMAT_BC4_UNORM_BLOCK,
+    VK_FORMAT_BC4_SNORM_BLOCK,
+    VK_FORMAT_BC5_UNORM_BLOCK,
+    VK_FORMAT_BC5_SNORM_BLOCK,
+    VK_FORMAT_BC6H_UFLOAT_BLOCK,
+    VK_FORMAT_BC6H_SFLOAT_BLOCK,
+    VK_FORMAT_BC7_UNORM_BLOCK,
+    VK_FORMAT_BC7_SRGB_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK,
+    VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK,
+    VK_FORMAT_EAC_R11_UNORM_BLOCK,
+    VK_FORMAT_EAC_R11_SNORM_BLOCK,
+    VK_FORMAT_EAC_R11G11_UNORM_BLOCK,
+    VK_FORMAT_EAC_R11G11_SNORM_BLOCK,
+    VK_FORMAT_ASTC_4x4_UNORM_BLOCK,
+    VK_FORMAT_ASTC_4x4_SRGB_BLOCK,
+    VK_FORMAT_ASTC_5x4_UNORM_BLOCK,
+    VK_FORMAT_ASTC_5x4_SRGB_BLOCK,
+    VK_FORMAT_ASTC_5x5_UNORM_BLOCK,
+    VK_FORMAT_ASTC_5x5_SRGB_BLOCK,
+    VK_FORMAT_ASTC_6x5_UNORM_BLOCK,
+    VK_FORMAT_ASTC_6x5_SRGB_BLOCK,
+    VK_FORMAT_ASTC_6x6_UNORM_BLOCK,
+    VK_FORMAT_ASTC_6x6_SRGB_BLOCK,
+    VK_FORMAT_ASTC_8x5_UNORM_BLOCK,
+    VK_FORMAT_ASTC_8x5_SRGB_BLOCK,
+    VK_FORMAT_ASTC_8x6_UNORM_BLOCK,
+    VK_FORMAT_ASTC_8x6_SRGB_BLOCK,
+    VK_FORMAT_ASTC_8x8_UNORM_BLOCK,
+    VK_FORMAT_ASTC_8x8_SRGB_BLOCK,
+    VK_FORMAT_ASTC_10x5_UNORM_BLOCK,
+    VK_FORMAT_ASTC_10x5_SRGB_BLOCK,
+    VK_FORMAT_ASTC_10x6_UNORM_BLOCK,
+    VK_FORMAT_ASTC_10x6_SRGB_BLOCK,
+    VK_FORMAT_ASTC_10x8_UNORM_BLOCK,
+    VK_FORMAT_ASTC_10x8_SRGB_BLOCK,
+    VK_FORMAT_ASTC_10x10_UNORM_BLOCK,
+    VK_FORMAT_ASTC_10x10_SRGB_BLOCK,
+    VK_FORMAT_ASTC_12x10_UNORM_BLOCK,
+    VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
+    VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
+    VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
+static_assert(TEXTURE_FORMAT_RANGE_SIZE == (sizeof(gNeutralToVulkanFormatMap) / sizeof(gNeutralToVulkanFormatMap[0])), "gNeutralToVulkanFormatMap may not match!");
+
+void TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_desc, struct TextureLoader_ImageInfo *pImageInfo)
+{
+    pImageInfo->isCubeCompatible = neutral_texture_desc->isCubeMap;
+    pImageInfo->imageType = gNeutralToVulkanTypeMap[neutral_texture_desc->type];
+    pImageInfo->format = gNeutralToVulkanFormatMap[neutral_texture_desc->format];
+    pImageInfo->extent.width = neutral_texture_desc->width;
+    pImageInfo->extent.height = neutral_texture_desc->height;
+    pImageInfo->extent.depth = neutral_texture_desc->depth;
+    pImageInfo->mipLevels = neutral_texture_desc->mipLevels;
+    pImageInfo->arrayLayers = neutral_texture_desc->arrayLayers;
+}
+
 struct FormatInfo
 {
-    VkFormat format;
     bool isBlock;
     union {
         struct
@@ -29,12 +234,193 @@ struct FormatInfo
 
 static struct FormatInfo const gFormatInfoTable[] = {
     // clang-format off
-    {VK_FORMAT_UNDEFINED, false},
-    {VK_FORMAT_BC7_UNORM_BLOCK, true, 4, 4, 1, 128},
-    {VK_FORMAT_BC7_SRGB_BLOCK, true, 4, 4, 1, 128}
     // clang-format on
-};
-static_assert(TEXTURE_FORMAT_RANGE_SIZE == (sizeof(gFormatInfoTable) / sizeof(gFormatInfoTable[0])), "gFormatInfoTable may not match!");
+    /* VK_FORMAT_UNDEFINED */ {false},
+    /* VK_FORMAT_R4G4_UNORM_PACK8 */ {false, 1},
+    /* VK_FORMAT_R4G4B4A4_UNORM_PACK16 */ {false, 2},
+    /* VK_FORMAT_B4G4R4A4_UNORM_PACK16 */ {false, 3},
+    /* VK_FORMAT_R5G6B5_UNORM_PACK16 */ {false, 4},
+    /* VK_FORMAT_B5G6R5_UNORM_PACK16 */ {false, 5},
+    /* VK_FORMAT_R5G5B5A1_UNORM_PACK16 */ {false, 6},
+    /* VK_FORMAT_B5G5R5A1_UNORM_PACK16 */ {false, 7},
+    /* VK_FORMAT_A1R5G5B5_UNORM_PACK16 */ {false, 8},
+    /* VK_FORMAT_R8_UNORM */ {false, 9},
+    /* VK_FORMAT_R8_SNORM */ {false, 10},
+    /* VK_FORMAT_R8_USCALED */ {false, 11},
+    /* VK_FORMAT_R8_SSCALED */ {false, 12},
+    /* VK_FORMAT_R8_UINT */ {false, 13},
+    /* VK_FORMAT_R8_SINT */ {false, 14},
+    /* VK_FORMAT_R8_SRGB */ {false, 15},
+    /* VK_FORMAT_R8G8_UNORM */ {false, 16},
+    /* VK_FORMAT_R8G8_SNORM */ {false, 17},
+    /* VK_FORMAT_R8G8_USCALED */ {false, 18},
+    /* VK_FORMAT_R8G8_SSCALED */ {false, 19},
+    /* VK_FORMAT_R8G8_UINT */ {false, 20},
+    /* VK_FORMAT_R8G8_SINT */ {false, 21},
+    /* VK_FORMAT_R8G8_SRGB */ {false, 22},
+    /* VK_FORMAT_R8G8B8_UNORM */ {false, 23},
+    /* VK_FORMAT_R8G8B8_SNORM */ {false, 24},
+    /* VK_FORMAT_R8G8B8_USCALED */ {false, 25},
+    /* VK_FORMAT_R8G8B8_SSCALED */ {false, 26},
+    /* VK_FORMAT_R8G8B8_UINT */ {false, 27},
+    /* VK_FORMAT_R8G8B8_SINT */ {false, 28},
+    /* VK_FORMAT_R8G8B8_SRGB */ {false, 29},
+    /* VK_FORMAT_B8G8R8_UNORM */ {false, 30},
+    /* VK_FORMAT_B8G8R8_SNORM */ {false, 31},
+    /* VK_FORMAT_B8G8R8_USCALED */ {false, 32},
+    /* VK_FORMAT_B8G8R8_SSCALED */ {false, 33},
+    /* VK_FORMAT_B8G8R8_UINT */ {false, 34},
+    /* VK_FORMAT_B8G8R8_SINT */ {false, 35},
+    /* VK_FORMAT_B8G8R8_SRGB */ {false, 36},
+    /* VK_FORMAT_R8G8B8A8_UNORM */ {false, 37},
+    /* VK_FORMAT_R8G8B8A8_SNORM */ {false, 38},
+    /* VK_FORMAT_R8G8B8A8_USCALED */ {false, 39},
+    /* VK_FORMAT_R8G8B8A8_SSCALED */ {false, 40},
+    /* VK_FORMAT_R8G8B8A8_UINT */ {false, 41},
+    /* VK_FORMAT_R8G8B8A8_SINT */ {false, 42},
+    /* VK_FORMAT_R8G8B8A8_SRGB */ {false, 43},
+    /* VK_FORMAT_B8G8R8A8_UNORM */ {false, 44},
+    /* VK_FORMAT_B8G8R8A8_SNORM */ {false, 45},
+    /* VK_FORMAT_B8G8R8A8_USCALED */ {false, 46},
+    /* VK_FORMAT_B8G8R8A8_SSCALED */ {false, 47},
+    /* VK_FORMAT_B8G8R8A8_UINT */ {false, 48},
+    /* VK_FORMAT_B8G8R8A8_SINT */ {false, 49},
+    /* VK_FORMAT_B8G8R8A8_SRGB */ {false, 50},
+    /* VK_FORMAT_A8B8G8R8_UNORM_PACK32 */ {false, 51},
+    /* VK_FORMAT_A8B8G8R8_SNORM_PACK32 */ {false, 52},
+    /* VK_FORMAT_A8B8G8R8_USCALED_PACK32 */ {false, 53},
+    /* VK_FORMAT_A8B8G8R8_SSCALED_PACK32 */ {false, 54},
+    /* VK_FORMAT_A8B8G8R8_UINT_PACK32 */ {false, 55},
+    /* VK_FORMAT_A8B8G8R8_SINT_PACK32 */ {false, 56},
+    /* VK_FORMAT_A8B8G8R8_SRGB_PACK32 */ {false, 57},
+    /* VK_FORMAT_A2R10G10B10_UNORM_PACK32 */ {false, 58},
+    /* VK_FORMAT_A2R10G10B10_SNORM_PACK32 */ {false, 59},
+    /* VK_FORMAT_A2R10G10B10_USCALED_PACK32 */ {false, 60},
+    /* VK_FORMAT_A2R10G10B10_SSCALED_PACK32 */ {false, 61},
+    /* VK_FORMAT_A2R10G10B10_UINT_PACK32 */ {false, 62},
+    /* VK_FORMAT_A2R10G10B10_SINT_PACK32 */ {false, 63},
+    /* VK_FORMAT_A2B10G10R10_UNORM_PACK32 */ {false, 64},
+    /* VK_FORMAT_A2B10G10R10_SNORM_PACK32 */ {false, 65},
+    /* VK_FORMAT_A2B10G10R10_USCALED_PACK32 */ {false, 66},
+    /* VK_FORMAT_A2B10G10R10_SSCALED_PACK32 */ {false, 67},
+    /* VK_FORMAT_A2B10G10R10_UINT_PACK32 */ {false, 68},
+    /* VK_FORMAT_A2B10G10R10_SINT_PACK32 */ {false, 69},
+    /* VK_FORMAT_R16_UNORM */ {false, 70},
+    /* VK_FORMAT_R16_SNORM */ {false, 71},
+    /* VK_FORMAT_R16_USCALED */ {false, 72},
+    /* VK_FORMAT_R16_SSCALED */ {false, 73},
+    /* VK_FORMAT_R16_UINT */ {false, 74},
+    /* VK_FORMAT_R16_SINT */ {false, 75},
+    /* VK_FORMAT_R16_SFLOAT */ {false, 76},
+    /* VK_FORMAT_R16G16_UNORM */ {false, 77},
+    /* VK_FORMAT_R16G16_SNORM */ {false, 78},
+    /* VK_FORMAT_R16G16_USCALED */ {false, 79},
+    /* VK_FORMAT_R16G16_SSCALED */ {false, 80},
+    /* VK_FORMAT_R16G16_UINT */ {false, 81},
+    /* VK_FORMAT_R16G16_SINT */ {false, 82},
+    /* VK_FORMAT_R16G16_SFLOAT */ {false, 83},
+    /* VK_FORMAT_R16G16B16_UNORM */ {false, 84},
+    /* VK_FORMAT_R16G16B16_SNORM */ {false, 85},
+    /* VK_FORMAT_R16G16B16_USCALED */ {false, 86},
+    /* VK_FORMAT_R16G16B16_SSCALED */ {false, 87},
+    /* VK_FORMAT_R16G16B16_UINT */ {false, 88},
+    /* VK_FORMAT_R16G16B16_SINT */ {false, 89},
+    /* VK_FORMAT_R16G16B16_SFLOAT */ {false, 90},
+    /* VK_FORMAT_R16G16B16A16_UNORM */ {false, 91},
+    /* VK_FORMAT_R16G16B16A16_SNORM */ {false, 92},
+    /* VK_FORMAT_R16G16B16A16_USCALED */ {false, 93},
+    /* VK_FORMAT_R16G16B16A16_SSCALED */ {false, 94},
+    /* VK_FORMAT_R16G16B16A16_UINT */ {false, 95},
+    /* VK_FORMAT_R16G16B16A16_SINT */ {false, 96},
+    /* VK_FORMAT_R16G16B16A16_SFLOAT */ {false, 97},
+    /* VK_FORMAT_R32_UINT */ {false, 98},
+    /* VK_FORMAT_R32_SINT */ {false, 99},
+    /* VK_FORMAT_R32_SFLOAT */ {false, 100},
+    /* VK_FORMAT_R32G32_UINT */ {false, 101},
+    /* VK_FORMAT_R32G32_SINT */ {false, 102},
+    /* VK_FORMAT_R32G32_SFLOAT */ {false, 103},
+    /* VK_FORMAT_R32G32B32_UINT */ {false, 104},
+    /* VK_FORMAT_R32G32B32_SINT */ {false, 105},
+    /* VK_FORMAT_R32G32B32_SFLOAT */ {false, 106},
+    /* VK_FORMAT_R32G32B32A32_UINT */ {false, 107},
+    /* VK_FORMAT_R32G32B32A32_SINT */ {false, 108},
+    /* VK_FORMAT_R32G32B32A32_SFLOAT */ {false, 109},
+    /* VK_FORMAT_R64_UINT */ {false, 110},
+    /* VK_FORMAT_R64_SINT */ {false, 111},
+    /* VK_FORMAT_R64_SFLOAT */ {false, 112},
+    /* VK_FORMAT_R64G64_UINT */ {false, 113},
+    /* VK_FORMAT_R64G64_SINT */ {false, 114},
+    /* VK_FORMAT_R64G64_SFLOAT */ {false, 115},
+    /* VK_FORMAT_R64G64B64_UINT */ {false, 116},
+    /* VK_FORMAT_R64G64B64_SINT */ {false, 117},
+    /* VK_FORMAT_R64G64B64_SFLOAT */ {false, 118},
+    /* VK_FORMAT_R64G64B64A64_UINT */ {false, 119},
+    /* VK_FORMAT_R64G64B64A64_SINT */ {false, 120},
+    /* VK_FORMAT_R64G64B64A64_SFLOAT */ {false, 121},
+    /* VK_FORMAT_B10G11R11_UFLOAT_PACK32 */ {false, 122},
+    /* VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 */ {false, 123},
+    /* VK_FORMAT_D16_UNORM */ {false, 124},
+    /* VK_FORMAT_X8_D24_UNORM_PACK32 */ {false, 125},
+    /* VK_FORMAT_D32_SFLOAT */ {false, 126},
+    /* VK_FORMAT_S8_UINT */ {false, 127},
+    /* VK_FORMAT_D16_UNORM_S8_UINT */ {false, 128},
+    /* VK_FORMAT_D24_UNORM_S8_UINT */ {false, 129},
+    /* VK_FORMAT_D32_SFLOAT_S8_UINT */ {false, 130},
+    /* VK_FORMAT_BC1_RGB_UNORM_BLOCK */ {false, 131},
+    /* VK_FORMAT_BC1_RGB_SRGB_BLOCK */ {false, 132},
+    /* VK_FORMAT_BC1_RGBA_UNORM_BLOCK */ {false, 133},
+    /* VK_FORMAT_BC1_RGBA_SRGB_BLOCK */ {false, 134},
+    /* VK_FORMAT_BC2_UNORM_BLOCK */ {false, 135},
+    /* VK_FORMAT_BC2_SRGB_BLOCK */ {false, 136},
+    /* VK_FORMAT_BC3_UNORM_BLOCK */ {false, 137},
+    /* VK_FORMAT_BC3_SRGB_BLOCK */ {false, 138},
+    /* VK_FORMAT_BC4_UNORM_BLOCK */ {false, 139},
+    /* VK_FORMAT_BC4_SNORM_BLOCK */ {false, 140},
+    /* VK_FORMAT_BC5_UNORM_BLOCK */ {false, 141},
+    /* VK_FORMAT_BC5_SNORM_BLOCK */ {false, 142},
+    /* VK_FORMAT_BC6H_UFLOAT_BLOCK */ {false, 143},
+    /* VK_FORMAT_BC6H_SFLOAT_BLOCK */ {false, 144},
+    /* VK_FORMAT_BC7_UNORM_BLOCK */ {true, 4, 4, 1, 128},
+    /* VK_FORMAT_BC7_SRGB_BLOCK */ {true, 4, 4, 1, 128},
+    /* VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK */ {false, 147},
+    /* VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK */ {false, 148},
+    /* VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK */ {false, 149},
+    /* VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK */ {false, 150},
+    /* VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK */ {false, 151},
+    /* VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK */ {false, 152},
+    /* VK_FORMAT_EAC_R11_UNORM_BLOCK */ {false, 153},
+    /* VK_FORMAT_EAC_R11_SNORM_BLOCK */ {false, 154},
+    /* VK_FORMAT_EAC_R11G11_UNORM_BLOCK */ {false, 155},
+    /* VK_FORMAT_EAC_R11G11_SNORM_BLOCK */ {false, 156},
+    /* VK_FORMAT_ASTC_4x4_UNORM_BLOCK */ {false, 157},
+    /* VK_FORMAT_ASTC_4x4_SRGB_BLOCK */ {false, 158},
+    /* VK_FORMAT_ASTC_5x4_UNORM_BLOCK */ {false, 159},
+    /* VK_FORMAT_ASTC_5x4_SRGB_BLOCK */ {false, 160},
+    /* VK_FORMAT_ASTC_5x5_UNORM_BLOCK */ {false, 161},
+    /* VK_FORMAT_ASTC_5x5_SRGB_BLOCK */ {false, 162},
+    /* VK_FORMAT_ASTC_6x5_UNORM_BLOCK */ {false, 163},
+    /* VK_FORMAT_ASTC_6x5_SRGB_BLOCK */ {false, 164},
+    /* VK_FORMAT_ASTC_6x6_UNORM_BLOCK */ {false, 165},
+    /* VK_FORMAT_ASTC_6x6_SRGB_BLOCK */ {false, 166},
+    /* VK_FORMAT_ASTC_8x5_UNORM_BLOCK */ {false, 167},
+    /* VK_FORMAT_ASTC_8x5_SRGB_BLOCK */ {false, 168},
+    /* VK_FORMAT_ASTC_8x6_UNORM_BLOCK */ {false, 169},
+    /* VK_FORMAT_ASTC_8x6_SRGB_BLOCK */ {false, 170},
+    /* VK_FORMAT_ASTC_8x8_UNORM_BLOCK */ {false, 171},
+    /* VK_FORMAT_ASTC_8x8_SRGB_BLOCK */ {false, 172},
+    /* VK_FORMAT_ASTC_10x5_UNORM_BLOCK */ {false, 173},
+    /* VK_FORMAT_ASTC_10x5_SRGB_BLOCK */ {false, 174},
+    /* VK_FORMAT_ASTC_10x6_UNORM_BLOCK */ {false, 175},
+    /* VK_FORMAT_ASTC_10x6_SRGB_BLOCK */ {false, 176},
+    /* VK_FORMAT_ASTC_10x8_UNORM_BLOCK */ {false, 177},
+    /* VK_FORMAT_ASTC_10x8_SRGB_BLOCK */ {false, 178},
+    /* VK_FORMAT_ASTC_10x10_UNORM_BLOCK */ {false, 179},
+    /* VK_FORMAT_ASTC_10x10_SRGB_BLOCK */ {false, 180},
+    /* VK_FORMAT_ASTC_12x10_UNORM_BLOCK */ {false, 181},
+    /* VK_FORMAT_ASTC_12x10_SRGB_BLOCK */ {false, 182},
+    /* VK_FORMAT_ASTC_12x12_UNORM_BLOCK */ {false, 183},
+    /* VK_FORMAT_ASTC_12x12_SRGB_BLOCK */ {false, 184}};
+static_assert(VK_FORMAT_RANGE_SIZE == (sizeof(gFormatInfoTable) / sizeof(gFormatInfoTable[0])), "gFormatInfoTable may not match!");
 
 template <typename T>
 static inline T roundUp(const T value, const T alignment)
@@ -46,12 +432,10 @@ static inline T roundUp(const T value, const T alignment)
 //optimalBufferCopyOffsetAlignment
 //optimalBufferCopyRowPitchAlignment
 
-size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_desc,
+size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImageInfo,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
                                            size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions)
 {
-    size_t TotalBytes = 0;
-
     // Context::texSubImage2D libANGLE/Context.cpp
     // Texture::setSubImage libANGLE/Texture.cpp
     // TextureVk::setSubImage libANGLE/renderer/vulkan/TextureVk.cpp
@@ -61,29 +445,30 @@ size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_
     // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
 
     // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
-    // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0, false, false, false, gl::VertexAttribType::UnsignedByte },
+    // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0 */ {false */ {false */ {false, gl::VertexAttribType::UnsignedByte },
 
     // BuildInternalFormatInfoMap libANGLE/formatutils.cpp
     // From ES 3.0.1 spec, table 3.12
     //                    | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
-    // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
+    // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED */ {false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
     // From EXT_texture_compression_bptc
     //                          | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
-    // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4 */ {false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
-    struct FormatInfo storageFormat = gFormatInfoTable[texture_desc->format];
+    struct FormatInfo storageFormat = gFormatInfoTable[pImageInfo->format];
 
-    size_t DstSubresource = 0;
     size_t stagingOffset = 0;
+    size_t TotalBytes = 0;
+    size_t DstSubresource = 0;
 
     for (uint32_t aspect = 0; aspect < 1; ++aspect)
     {
-        for (uint32_t mipLevel = 0; mipLevel < texture_desc->mipLevels; ++mipLevel)
+        for (uint32_t mipLevel = 0; mipLevel < pImageInfo->mipLevels; ++mipLevel)
         {
-            size_t w = texture_desc->width;
-            size_t h = texture_desc->height;
-            size_t d = texture_desc->depth;
-            for (uint32_t arrayLayer = 0; arrayLayer < texture_desc->arrayLayers; ++arrayLayer)
+            size_t w = pImageInfo->extent.width;
+            size_t h = pImageInfo->extent.height;
+            size_t d = pImageInfo->extent.depth;
+            for (uint32_t arrayLayer = 0; arrayLayer < pImageInfo->arrayLayers; ++arrayLayer)
             {
                 size_t outputRowPitch;
                 size_t outputRowSize;
@@ -106,8 +491,8 @@ size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_
                     outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
                     outputSlicePitch = outputRowPitch * outputNumRows;
 
-                    bufferRowLength = roundUp(texture_desc->width, storageFormat.compressed.compressedBlockWidth); //support optimalBufferCopyRowPitchAlignment?
-                    bufferImageHeight = roundUp(texture_desc->height, storageFormat.compressed.compressedBlockHeight);
+                    bufferRowLength = roundUp(pImageInfo->extent.width, storageFormat.compressed.compressedBlockWidth); //support optimalBufferCopyRowPitchAlignment?
+                    bufferImageHeight = roundUp(pImageInfo->extent.height, storageFormat.compressed.compressedBlockHeight);
 
                     allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
                 }
@@ -116,6 +501,14 @@ size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_
                 }
 
                 assert(DstSubresource < NumSubresources);
+
+                pDest[DstSubresource].stagingOffset = stagingOffset;
+                pDest[DstSubresource].outputRowPitch = outputRowPitch;
+                pDest[DstSubresource].outputRowSize = outputRowSize;
+                pDest[DstSubresource].outputNumRows = outputNumRows;
+                pDest[DstSubresource].outputSlicePitch = outputSlicePitch;
+                pDest[DstSubresource].outputNumSlices = outputNumSlices;
+
                 pRegions[DstSubresource].bufferOffset = stagingOffset;
                 pRegions[DstSubresource].bufferRowLength = bufferRowLength;
                 pRegions[DstSubresource].bufferImageHeight = bufferImageHeight;
@@ -168,15 +561,15 @@ void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
     // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
 
     // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
-    // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0, false, false, false, gl::VertexAttribType::UnsignedByte },
+    // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0 */ {false */ {false */ {false, gl::VertexAttribType::UnsignedByte },
 
     // BuildInternalFormatInfoMap libANGLE/formatutils.cpp
     // From ES 3.0.1 spec, table 3.12
     //                    | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
-    // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
+    // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED */ {false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
     // From EXT_texture_compression_bptc
     //                          | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
-    // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+    // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4 */ {false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
 
     struct FormatInfo storageFormat = gFormatInfoTable[texture_desc->format];
 

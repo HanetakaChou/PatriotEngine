@@ -10,7 +10,19 @@
 
 //void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc);
 
-size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_desc,
+struct TextureLoader_ImageInfo
+{
+    bool isCubeCompatible;
+    VkImageType imageType;
+    VkFormat format;
+    VkExtent3D extent;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
+};
+
+void TextureLoader_ToImageInfo(struct Texture_Header const *neutral_texture_desc, struct TextureLoader_ImageInfo *pImageInfo);
+
+size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_ImageInfo *pImageInfo,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
                                            size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions);
 

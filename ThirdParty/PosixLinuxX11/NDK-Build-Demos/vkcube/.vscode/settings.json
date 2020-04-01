@@ -26,7 +26,8 @@
         "*.frag": "cpp",
         "*.vert": "cpp",
         "*.inc": "cpp",
-        "string": "cpp"
+        "string": "cpp",
+        "__config": "cpp"
     },
     "C_Cpp.default.cppStandard": "c++11",
     "C_Cpp.default.cStandard": "c99",
