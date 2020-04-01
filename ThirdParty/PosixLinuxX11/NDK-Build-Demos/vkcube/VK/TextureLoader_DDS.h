@@ -6,10 +6,12 @@
 
 #include "../TextureLoader_DDS.h"
 
+#include <vulkan/vulkan.h>
+
 //void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc);
 
 size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_desc,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
-                                           size_t NumSubresources, struct Texture_Loader_Memcpy_Dest *pDest, VkBufferImageCopy *pRegions);
+                                           size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions);
 
 #endif

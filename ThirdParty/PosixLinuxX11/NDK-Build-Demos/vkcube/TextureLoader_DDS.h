@@ -45,7 +45,7 @@ enum
 
 bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                  struct Texture_Header *texture_desc, size_t *header_offset);
-struct Texture_Loader_Memcpy_Dest
+struct TextureLoader_MemcpyDest
 {
     size_t stagingOffset;
     size_t outputRowPitch;
@@ -56,7 +56,7 @@ struct Texture_Loader_Memcpy_Dest
 };
 
 bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                               uint8_t *stagingPointer, size_t NumSubresources, struct Texture_Loader_Memcpy_Dest const *pDest,
+                               uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
                                struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate);
 
 #include <string.h>
@@ -106,7 +106,7 @@ inline bool LoadTextureHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSi
 }
 
 inline bool FillTextureDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
-                                      uint8_t *stagingPointer, size_t NumSubresources, struct Texture_Loader_Memcpy_Dest const *pDest,
+                                      uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
                                       struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
 {
     struct stream_memory

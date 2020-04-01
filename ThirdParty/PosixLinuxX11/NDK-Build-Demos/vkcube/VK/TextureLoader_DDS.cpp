@@ -1,7 +1,5 @@
 #include "TextureLoader_DDS.h"
 
-#include <vulkan/vulkan.h>
-
 #include <assert.h>
 
 struct FormatInfo
@@ -15,7 +13,7 @@ struct FormatInfo
             uint32_t compressedBlockHeight;
             uint32_t compressedBlockDepth;
             uint32_t compressedBlockSize;
-        } compressed
+        } compressed;
     };
 
     inline uint32_t computeCompressedImageSize(uint32_t width, uint32_t height, uint32_t depth)
@@ -25,6 +23,7 @@ struct FormatInfo
         uint32_t numBlocksWide = (width + compressed.compressedBlockWidth - 1) / compressed.compressedBlockWidth;
         uint32_t numBlocksHigh = (height + compressed.compressedBlockHeight - 1) / compressed.compressedBlockHeight;
         uint32_t bytes = numBlocksWide * numBlocksHigh * pixelBytes * depth;
+        return bytes;
     }
 };
 
@@ -49,9 +48,112 @@ static inline T roundUp(const T value, const T alignment)
 
 size_t TextureLoader_GetCopyableFootprints(struct Texture_Header const *texture_desc,
                                            VkDeviceSize optimalBufferCopyOffsetAlignment, VkDeviceSize optimalBufferCopyRowPitchAlignment,
-                                           size_t NumSubresources, struct Texture_Loader_Memcpy_Dest *pDest, VkBufferImageCopy *pRegions)
+                                           size_t NumSubresources, struct TextureLoader_MemcpyDest *pDest, VkBufferImageCopy *pRegions)
 {
     size_t TotalBytes = 0;
+
+    // Context::texSubImage2D libANGLE/Context.cpp
+    // Texture::setSubImage libANGLE/Texture.cpp
+    // TextureVk::setSubImage libANGLE/renderer/vulkan/TextureVk.cpp
+    // TextureVk::setSubImageImpl libANGLE/renderer/vulkan/TextureVk.cpp
+    // ImageHelper::stageSubresourceUpdate libANGLE/renderer/vulkan/vk_helpers.cpp
+    // ImageHelper::CalculateBufferInfo libANGLE/renderer/vulkan/vk_helpers.cpp
+    // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
+
+    // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
+    // { FormatID::R8G8B8A8_UNORM, GL_RGBA8, GL_RGBA8, GenerateMip<R8G8B8A8>, NoCopyFunctions, ReadColor<R8G8B8A8, GLfloat>, WriteColor<R8G8B8A8, GLfloat>, GL_UNSIGNED_NORMALIZED, 8, 8, 8, 8, 0, 0, 0, 4, 0, false, false, false, gl::VertexAttribType::UnsignedByte },
+
+    // BuildInternalFormatInfoMap libANGLE/formatutils.cpp
+    // From ES 3.0.1 spec, table 3.12
+    //                    | Internal format     |sized| R | G | B | A |S | Format         | Type                             | Component type        | SRGB | Texture supported                                | Filterable     | Texture attachment                               | Renderbuffer                                   | Blend
+    // AddRGBAFormat(&map, GL_RGBA8,             true,  8,  8,  8,  8, 0, GL_RGBA,         GL_UNSIGNED_BYTE,                  GL_UNSIGNED_NORMALIZED, false, RequireESOrExt<3, 0, &Extensions::textureStorage>, AlwaysSupported, RequireESOrExt<3, 0, &Extensions::textureStorage>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>, RequireESOrExt<3, 0, &Extensions::rgb8rgba8OES>);
+    // From EXT_texture_compression_bptc
+    //                          | Internal format                         | W | H |D | BS |CC| SRGB | Texture supported                              | Filterable     | Texture attachment | Renderbuffer  | Blend
+    // AddCompressedFormat(&map, GL_COMPRESSED_RGBA_BPTC_UNORM_EXT,         4,  4, 1, 128, 4, false, RequireExt<&Extensions::textureCompressionBPTC>, AlwaysSupported, NeverSupported,      NeverSupported, NeverSupported);
+
+    struct FormatInfo storageFormat = gFormatInfoTable[texture_desc->format];
+
+    size_t DstSubresource = 0;
+    size_t stagingOffset = 0;
+
+    for (uint32_t aspect = 0; aspect < 1; ++aspect)
+    {
+        for (uint32_t mipLevel = 0; mipLevel < texture_desc->mipLevels; ++mipLevel)
+        {
+            size_t w = texture_desc->width;
+            size_t h = texture_desc->height;
+            size_t d = texture_desc->depth;
+            for (uint32_t arrayLayer = 0; arrayLayer < texture_desc->arrayLayers; ++arrayLayer)
+            {
+                size_t outputRowPitch;
+                size_t outputRowSize;
+                size_t outputNumRows;
+                size_t outputSlicePitch;
+                size_t outputNumSlices;
+
+                uint32_t bufferRowLength;
+                uint32_t bufferImageHeight;
+
+                size_t allocationSize;
+
+                if (storageFormat.isBlock)
+                {
+                    outputRowSize = storageFormat.computeCompressedImageSize(w, 1, 1);
+                    size_t outputSliceSize = storageFormat.computeCompressedImageSize(w, h, 1);
+                    outputNumRows = outputSliceSize / outputRowSize;
+                    outputNumSlices = storageFormat.computeCompressedImageSize(w, h, d) / outputSliceSize;
+
+                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
+                    outputSlicePitch = outputRowPitch * outputNumRows;
+
+                    bufferRowLength = roundUp(texture_desc->width, storageFormat.compressed.compressedBlockWidth); //support optimalBufferCopyRowPitchAlignment?
+                    bufferImageHeight = roundUp(texture_desc->height, storageFormat.compressed.compressedBlockHeight);
+
+                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                }
+                else
+                {
+                }
+
+                assert(DstSubresource < NumSubresources);
+                pRegions[DstSubresource].bufferOffset = stagingOffset;
+                pRegions[DstSubresource].bufferRowLength = bufferRowLength;
+                pRegions[DstSubresource].bufferImageHeight = bufferImageHeight;
+                //GetFormatAspectFlags
+                pRegions[DstSubresource].imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                pRegions[DstSubresource].imageSubresource.mipLevel = mipLevel;
+                pRegions[DstSubresource].imageSubresource.baseArrayLayer = arrayLayer;
+                pRegions[DstSubresource].imageSubresource.layerCount = 1;
+                pRegions[DstSubresource].imageOffset.x = 0;
+                pRegions[DstSubresource].imageOffset.y = 0;
+                pRegions[DstSubresource].imageOffset.z = 0;
+                pRegions[DstSubresource].imageExtent.width = w;
+                pRegions[DstSubresource].imageExtent.height = h;
+                pRegions[DstSubresource].imageExtent.depth = d;
+
+                stagingOffset += allocationSize;
+                TotalBytes += allocationSize;
+                ++DstSubresource;
+
+                w = w >> 1;
+                h = h >> 1;
+                d = d >> 1;
+                if (w == 0)
+                {
+                    w = 1;
+                }
+                if (h == 0)
+                {
+                    h = 1;
+                }
+                if (d == 0)
+                {
+                    d = 1;
+                }
+            }
+        }
+    }
+
     return TotalBytes;
 }
 
@@ -202,5 +304,5 @@ void TextureLoader_UpdateSubresources(struct Texture_Header const *texture_desc)
     }
 #endif
 
-    return true;
+    //return true;
 }

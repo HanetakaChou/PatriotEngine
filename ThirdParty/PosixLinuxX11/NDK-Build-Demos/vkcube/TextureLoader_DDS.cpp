@@ -713,7 +713,7 @@ static inline bool GetSurfaceInfo(size_t width,
 
 //--------------------------------------------------------------------------------------
 bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                               uint8_t *stagingPointer, size_t NumSubresources, struct Texture_Loader_Memcpy_Dest const *pDest,
+                               uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
                                struct Texture_Header const *texture_desc_validate, size_t const *header_offset_validate)
 {
 

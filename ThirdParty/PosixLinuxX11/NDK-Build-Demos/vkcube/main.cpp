@@ -1812,7 +1812,8 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
 }
 
 #include "TextureLoader_DDS.h"
-bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint32_t *height)
+#include "VK/TextureLoader_DDS.h"
+bool loadTexture_DDS(struct demo *demo, uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint32_t *height)
 {
 #include "generated/lena_std.dds.h"
 
@@ -1820,8 +1821,14 @@ bool loadTexture_DDS(uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint
   size_t header_offset = 0;
   LoadTextureHeaderFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, &header, &header_offset);
 
-  struct Texture_Loader_Memcpy_Dest dest[1] = {};
+  struct TextureLoader_MemcpyDest dest[1];
+  struct VkBufferImageCopy regions[1];
+  TextureLoader_GetCopyableFootprints(&header,
+                                      demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
+                                      1, dest, regions);
+
   FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, NULL, 1, dest, &header, &header_offset);
+
   return true;
 }
 
@@ -1960,7 +1967,7 @@ static void demo_prepare_texture_image(struct demo *demo,
 
   uint32_t texdds_width;
   uint32_t texdds_height;
-  loadTexture_DDS(NULL, NULL, &texdds_width, &texdds_height);
+  loadTexture_DDS(demo, NULL, NULL, &texdds_width, &texdds_height);
 
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
