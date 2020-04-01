@@ -14,7 +14,8 @@
                 "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include",
                 "${env:HOME}/.local/libexec/android-ndk-r14b/sources/android/support/include",
                 "${workspaceFolder}/../../Bionic-Redistributable/include/",
-                "${workspaceFolder}/**"
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/VK/**"
             ],
             "defines": [
                 "__ANDROID__",

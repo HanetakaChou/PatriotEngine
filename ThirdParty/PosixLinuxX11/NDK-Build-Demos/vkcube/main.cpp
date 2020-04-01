@@ -99,6 +99,8 @@ typedef struct
 // We can use fences to throttle if we get too far ahead of the image presents
 uint32_t const FRAME_LAG = 2;
 
+#include "VK/StagingBuffer.h"
+
 struct demo
 {
   uint32_t enabled_extension_count;
@@ -169,6 +171,12 @@ struct demo
     VkDeviceMemory mem;
     VkImageView view;
   } old_depth;
+
+  struct StagingBuffer mStagingBuffer;
+  VkImage dds_image;
+  VkDeviceMemory dds_mem;
+  VkSampler dds_sampler;
+  VkImageView dds_view;
 
   // frame_index related
 
@@ -295,6 +303,10 @@ static void demo_prepare_descriptor_set(struct demo *demo);
 
 static void demo_prepare(struct demo *demo);
 
+static void demo_prepare_stagingbuffer(struct demo *demo);
+
+static void demo_loadTexture_DDS(struct demo *demo);
+
 static void demo_prepare_ringbuffer(struct demo *demo);
 
 static void demo_load_pipeline_cache(struct demo *demo);
@@ -390,6 +402,10 @@ void *rendermain(void *arg)
   demo_init_vk(demo);
 
   demo_init_vk_surface(demo);
+
+  demo_prepare_stagingbuffer(demo);
+
+  demo_loadTexture_DDS(demo);
 
   demo_prepare_assets(demo);
 
@@ -498,8 +514,8 @@ static void demo_draw(struct demo *demo)
 
     VkDescriptorImageInfo tex_descs[1];
     memset(&tex_descs, 0, sizeof(tex_descs));
-    tex_descs[0].sampler = demo->texture_assets[0].sampler;
-    tex_descs[0].imageView = demo->texture_assets[0].view;
+    tex_descs[0].sampler = demo->dds_sampler; //texture_assets[0].sampler;
+    tex_descs[0].imageView = demo->dds_view; //texture_assets[0].view;
     tex_descs[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet writes[2];
@@ -1519,6 +1535,9 @@ static void demo_create_device(struct demo *demo)
   queues[0].pQueuePriorities = queue_priorities;
   queues[0].flags = 0;
 
+  VkPhysicalDeviceFeatures enableFeatures = {0};
+  enableFeatures.textureCompressionBC = VK_TRUE;
+
   VkDeviceCreateInfo device = {
       .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
       .pNext = NULL,
@@ -1529,7 +1548,7 @@ static void demo_create_device(struct demo *demo)
       .enabledExtensionCount = demo->enabled_extension_count,
       .ppEnabledExtensionNames = (const char *const *)demo->extension_names,
       .pEnabledFeatures =
-          NULL, // If specific features are required, pass them in here
+          &enableFeatures // If specific features are required, pass them in here
   };
   if (demo->separate_present_queue)
   {
@@ -1675,7 +1694,7 @@ static void demo_prepare_textures(struct demo *demo, VkCommandBuffer tmp_cmd)
         tmp_cmd,
         demo->texture_assets[0].image,
         VK_IMAGE_ASPECT_COLOR_BIT,
-        VK_IMAGE_LAYOUT_PREINITIALIZED,
+        VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
         0,
         VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -1813,7 +1832,7 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
 
 #include "TextureLoader_DDS.h"
 #include "VK/TextureLoader_DDS.h"
-bool loadTexture_DDS(struct demo *demo, uint8_t *rgba_data, uint32_t const *, uint32_t *width, uint32_t *height)
+static void demo_loadTexture_DDS(struct demo *demo)
 {
 #include "generated/lena_std.dds.h"
 
@@ -1825,13 +1844,210 @@ bool loadTexture_DDS(struct demo *demo, uint8_t *rgba_data, uint32_t const *, ui
 
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
-  TextureLoader_GetCopyableFootprints(&vkheader,
-                                      demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
-                                      1, dest, regions);
+  size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
+                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
+                                                         1, dest, regions);
 
-  FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, NULL, 1, dest, &header, &header_offset);
+  uint8_t *ptr;
+  VkDeviceSize offset;
+  demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
 
-  return true;
+  for (int i = 0; i < 1; ++i)
+  {
+    dest[i].stagingOffset += offset;
+  }
+
+  for (int i = 0; i < 1; ++i)
+  {
+    regions[i].bufferOffset += offset;
+  }
+
+  FillTextureDataFromMemory(_________Assets_Lenna_lena_std_dds, _________Assets_Lenna_lena_std_dds_len, ptr, 1, dest, &header, &header_offset);
+
+  VkResult U_ASSERT_ONLY err;
+  bool U_ASSERT_ONLY pass;
+
+  //prepare cmd buffer
+
+  const VkCommandPoolCreateInfo cmd_pool_info = {
+      VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+      NULL,
+      0,
+      demo->graphics_queue_family_index,
+  };
+
+  VkCommandPool tmp_cmd_pool;
+  err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &tmp_cmd_pool);
+  assert(!err);
+
+  VkCommandBuffer tmp_cmd;
+  const VkCommandBufferAllocateInfo cmd = {
+      VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+      NULL,
+      tmp_cmd_pool,
+      VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+      1,
+  };
+  err = vkAllocateCommandBuffers(demo->device, &cmd, &tmp_cmd);
+  assert(!err);
+
+  const VkCommandBufferBeginInfo cmd_buf_info = {
+      VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+      NULL,
+      VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+      NULL,
+  };
+  err = vkBeginCommandBuffer(tmp_cmd, &cmd_buf_info);
+  assert(!err);
+
+  //prepare_image
+
+  struct VkImageCreateInfo const image_create_info = {
+      VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+      NULL,
+      (!vkheader.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+      vkheader.imageType,
+      vkheader.format,
+      {vkheader.extent.width, vkheader.extent.height, vkheader.extent.depth},
+      vkheader.mipLevels,
+      vkheader.arrayLayers,
+      VK_SAMPLE_COUNT_1_BIT,
+      VK_IMAGE_TILING_OPTIMAL,
+      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0U,
+      NULL,
+      VK_IMAGE_LAYOUT_UNDEFINED};
+
+  err = vkCreateImage(demo->device, &image_create_info, NULL, &demo->dds_image);
+  assert(!err);
+
+  VkMemoryRequirements mem_reqs;
+  vkGetImageMemoryRequirements(demo->device, demo->dds_image, &mem_reqs);
+
+  uint32_t typeIndex;
+  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &typeIndex);
+  assert(pass);
+
+  VkMemoryAllocateInfo dds_mem_alloc = {
+      VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      NULL,
+      mem_reqs.size,
+      typeIndex};
+
+  err = vkAllocateMemory(demo->device, &dds_mem_alloc, NULL, &demo->dds_mem);
+  assert(!err);
+
+  err = vkBindImageMemory(demo->device, demo->dds_image, demo->dds_mem, 0);
+  assert(!err);
+
+  //memory layout
+
+  VkImageMemoryBarrier image_memory_barrier_pre[1] = {
+      {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+       NULL,
+       0,
+       VK_ACCESS_TRANSFER_WRITE_BIT,
+       VK_IMAGE_LAYOUT_UNDEFINED,
+       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+       VK_QUEUE_FAMILY_IGNORED,
+       VK_QUEUE_FAMILY_IGNORED,
+       demo->dds_image,
+       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}};
+
+  vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_pre);
+
+  vkCmdCopyBufferToImage(tmp_cmd, demo->mStagingBuffer.buffer(), demo->dds_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, regions);
+
+  VkImageMemoryBarrier image_memory_barrier_post[1] = {
+      {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+       NULL,
+       0,
+       VK_ACCESS_SHADER_READ_BIT,
+       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+       VK_QUEUE_FAMILY_IGNORED,
+       VK_QUEUE_FAMILY_IGNORED,
+       demo->dds_image,
+       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}};
+  vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_post);
+
+  //flush cmd
+  err = vkEndCommandBuffer(tmp_cmd);
+  assert(!err);
+
+  VkFence fence;
+  VkFenceCreateInfo fence_ci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, NULL, 0};
+  err = vkCreateFence(demo->device, &fence_ci, NULL, &fence);
+  assert(!err);
+
+  const VkCommandBuffer cmd_bufs[] = {tmp_cmd};
+  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
+                              NULL,
+                              0,
+                              NULL,
+                              NULL,
+                              1,
+                              cmd_bufs,
+                              0,
+                              NULL};
+
+  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, fence);
+  assert(!err);
+
+  err = vkWaitForFences(demo->device, 1, &fence, VK_TRUE, UINT64_MAX);
+  assert(!err);
+
+  vkDestroyFence(demo->device, fence, NULL);
+
+  vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
+
+  vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
+
+  // create sampler
+  const VkSamplerCreateInfo sampler = {
+      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
+      .pNext = NULL,
+      .magFilter = VK_FILTER_NEAREST,
+      .minFilter = VK_FILTER_NEAREST,
+      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
+      .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+      .mipLodBias = 0.0f,
+      .anisotropyEnable = VK_FALSE,
+      .maxAnisotropy = 1,
+      .compareOp = VK_COMPARE_OP_NEVER,
+      .minLod = 0.0f,
+      .maxLod = 0.0f,
+      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
+      .unnormalizedCoordinates = VK_FALSE,
+  };
+  err = vkCreateSampler(demo->device, &sampler, NULL, &demo->dds_sampler);
+  assert(!err);
+
+  // create image view
+
+  VkImageViewCreateInfo view = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+      .pNext = NULL,
+      .image = VK_NULL_HANDLE,
+      .viewType = VK_IMAGE_VIEW_TYPE_2D,
+      .format = vkheader.format,
+      .components =
+          {
+              VK_COMPONENT_SWIZZLE_R,
+              VK_COMPONENT_SWIZZLE_G,
+              VK_COMPONENT_SWIZZLE_B,
+              VK_COMPONENT_SWIZZLE_A,
+          },
+      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+      .flags = 0,
+  };
+
+  view.image = demo->dds_image;
+  err = vkCreateImageView(demo->device, &view, NULL, &demo->dds_view);
+  assert(!err);
 }
 
 template <typename T>
@@ -1967,10 +2183,6 @@ static void demo_prepare_texture_image(struct demo *demo,
     ERR_EXIT("Failed to load textures", "Load Texture Failure");
   }
 
-  uint32_t texdds_width;
-  uint32_t texdds_height;
-  loadTexture_DDS(demo, NULL, NULL, &texdds_width, &texdds_height);
-
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
   tex_obj->tex_width = tex_width;
@@ -1991,7 +2203,7 @@ static void demo_prepare_texture_image(struct demo *demo,
       VK_SHARING_MODE_EXCLUSIVE,
       0U,
       NULL,
-      VK_IMAGE_LAYOUT_PREINITIALIZED,
+      VK_IMAGE_LAYOUT_UNDEFINED,
   };
 
   VkMemoryRequirements mem_reqs;
@@ -2103,16 +2315,6 @@ static void demo_flush_init_cmd(struct demo *demo, VkCommandBuffer tmp_cmd)
   VkFenceCreateInfo fence_ci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, NULL, 0};
   err = vkCreateFence(demo->device, &fence_ci, NULL, &fence);
   assert(!err);
-
-  VkStructureType sType;
-  const void *pNext;
-  uint32_t waitSemaphoreCount;
-  const VkSemaphore *pWaitSemaphores;
-  const VkPipelineStageFlags *pWaitDstStageMask;
-  uint32_t commandBufferCount;
-  const VkCommandBuffer *pCommandBuffers;
-  uint32_t signalSemaphoreCount;
-  const VkSemaphore *pSignalSemaphores;
 
   const VkCommandBuffer cmd_bufs[] = {tmp_cmd};
   VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
@@ -2714,6 +2916,54 @@ static void demo_prepare(struct demo *demo)
   demo_prepare_ringbuffer(demo);
 
   demo->prepared = true;
+}
+
+static void demo_prepare_stagingbuffer(struct demo *demo)
+{
+  VkResult U_ASSERT_ONLY err;
+  bool U_ASSERT_ONLY pass;
+
+  size_t buffersize = 1024 * 1024 * 12;
+
+  VkBufferCreateInfo buf_info = {
+      VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
+      NULL,
+      0,
+      buffersize,
+      VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+      VK_SHARING_MODE_EXCLUSIVE,
+      0,
+      NULL};
+
+  VkBuffer buffer;
+  err = vkCreateBuffer(demo->device, &buf_info, NULL, &buffer);
+  assert(!err);
+
+  VkMemoryRequirements mem_reqs;
+  vkGetBufferMemoryRequirements(demo->device, buffer, &mem_reqs);
+
+  uint32_t typeIndex;
+  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, &typeIndex);
+  assert(pass);
+
+  VkMemoryAllocateInfo mem_alloc = {
+      VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
+      NULL,
+      mem_reqs.size,
+      typeIndex};
+
+  VkDeviceMemory mem;
+  err = vkAllocateMemory(demo->device, &mem_alloc, NULL, &mem);
+  assert(!err);
+
+  err = vkBindBufferMemory(demo->device, buffer, mem, 0);
+  assert(!err);
+
+  void *pdata_map;
+  err = vkMapMemory(demo->device, mem, 0, VK_WHOLE_SIZE, 0, &pdata_map);
+  assert(!err);
+
+  demo->mStagingBuffer.init(buffer, mem, buffersize, static_cast<uint8_t *>(pdata_map));
 }
 
 static void demo_prepare_ringbuffer(struct demo *demo)

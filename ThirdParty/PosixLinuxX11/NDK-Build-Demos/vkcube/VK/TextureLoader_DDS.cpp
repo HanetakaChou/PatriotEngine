@@ -111,6 +111,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 {
                     outputRowSize = storageFormat.computeCompressedImageSize(w, 1, 1);
                     size_t outputSliceSize = storageFormat.computeCompressedImageSize(w, h, 1);
+                    
                     outputNumRows = outputSliceSize / outputRowSize;
                     outputNumSlices = storageFormat.computeCompressedImageSize(w, h, d) / outputSliceSize;
 
@@ -124,6 +125,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 }
                 else
                 {
+                    
                 }
 
                 assert(DstSubresource < NumSubresources);
