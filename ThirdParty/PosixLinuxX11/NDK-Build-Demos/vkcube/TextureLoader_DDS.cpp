@@ -599,8 +599,14 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
 
                 if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
                 {
-                    stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET);
-                    stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    int64_t offset_cur;
+                    assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+                    
+                    ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                    {
+                        return false;
+                    }
                 }
                 else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
                 {
@@ -608,8 +614,14 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
-                        stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET);
-                        stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                        int64_t offset_cur;
+                        assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+
+                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                        if (BytesRead == -1 || BytesRead < inputSliceSize)
+                        {
+                            return false;
+                        }
                     }
                 }
                 else
@@ -621,8 +633,14 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                     {
                         for (size_t y = 0; y < inputNumRows; ++y)
                         {
-                            stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET);
-                            stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                            int64_t offset_cur;
+                            assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+
+                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                            if (BytesRead == -1 || BytesRead < inputRowSize)
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
@@ -648,6 +666,8 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
         }
     }
 
+    uint8_t u_assert_only[1];
+    assert(0 == stream_read(stream, u_assert_only, sizeof(uint8_t)));
     return true;
 }
 
