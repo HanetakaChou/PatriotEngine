@@ -1843,7 +1843,7 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
   return true;
 }
 
-#include "generated/l_hires-DirectXTex.dds.h"
+#include "generated/l_hires-NVIDIA.dds.h"
 
 #include "TextureLoader_DDS.h"
 #include "VK/TextureLoader_VK.h"
@@ -1851,7 +1851,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
 {
   struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
-  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_DirectXTex_dds, _________Assets_Lenna_l_hires_DirectXTex_dds_len, &header, &header_offset);
+  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_NVIDIA_dds, _________Assets_Lenna_l_hires_NVIDIA_dds_len, &header, &header_offset);
 
   struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
@@ -1881,7 +1881,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
     regions[i].bufferOffset += offset;
   }
 
-  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_DirectXTex_dds, _________Assets_Lenna_l_hires_DirectXTex_dds_len, ptr, NumSubresource, dest, &header, &header_offset);
+  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_NVIDIA_dds, _________Assets_Lenna_l_hires_NVIDIA_dds_len, ptr, NumSubresource, dest, &header, &header_offset);
 
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
@@ -1972,7 +1972,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
        VK_QUEUE_FAMILY_IGNORED,
        VK_QUEUE_FAMILY_IGNORED,
        demo->dds_image,
-       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}};
+       {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1}}};
 
   vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_pre);
 
@@ -1988,7 +1988,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
        VK_QUEUE_FAMILY_IGNORED,
        VK_QUEUE_FAMILY_IGNORED,
        demo->dds_image,
-       {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1}}};
+       {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1}}};
   vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_post);
 
   //flush cmd

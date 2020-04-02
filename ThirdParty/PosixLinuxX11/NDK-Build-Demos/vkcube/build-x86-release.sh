@@ -6,6 +6,8 @@ target_name="vkcube"
 int_dir="libs/x86"
 out_dir="../../../../Binary/x86/Release"
 
+mkdir -p generated
+
 # glslang
 rm -rf generated/cube.vert.inc
 rm -rf generated/cube.frag.inc
@@ -15,8 +17,8 @@ rm -rf generated/cube.frag.inc
 # include-bin
 rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin/include-bin lunarg.ppm generated/lunarg.ppm.h
-rm -rf generated/l_hires.dds.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires.dds generated/l_hires.dds.h
+rm -rf generated/l_hires-NVIDIA.dds.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-NVIDIA.dds generated/l_hires-NVIDIA.dds.h
 
 # build by ndk
 # rm -rf obj/local/x86
