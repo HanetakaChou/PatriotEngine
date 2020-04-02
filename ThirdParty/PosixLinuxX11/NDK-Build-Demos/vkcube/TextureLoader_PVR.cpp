@@ -4,11 +4,16 @@
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/TextureReaderPVR.h
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/TextureReaderPVR.cpp
 
+static inline constexpr uint32_t Pvr_MakeFourCC(char ch0, char ch1, char ch2, char ch3)
+{
+    return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) | (static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8) | (static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16) | (static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24);
+}
+
 enum
 {
-    Pvr_HeaderSizeV1 = 44,           // Header sizes, used as identifiers for previous versions of the header.
-    Pvr_HeaderSizeV2 = 52,           // Header sizes, used as identifiers for previous versions of the header.
-    Pvr_HeaderVersionV3 = 0x03525650 //!< PVR format v3 identifier
+    Pvr_HeaderSizeV1 = 44, // Header sizes, used as identifiers for previous versions of the header.
+    Pvr_HeaderSizeV2 = 52, // Header sizes, used as identifiers for previous versions of the header.
+    Pvr_HeaderVersionV3 = Pvr_MakeFourCC('P', 'V', 'R', 3)
 };
 
 /// <summary>Version 1 of the PVR file format</summary>
@@ -43,27 +48,6 @@ struct Pvr_HeaderV2
     uint32_t alphaBitMask;        //!< mask for alpha channel
     uint32_t pvrMagic;            /*!< magic number identifying pvr file */
     uint32_t numSurfaces;         /*!< the number of surfaces present in the pvr */
-};
-
-// V3 Header Identifiers.
-/// <summary>This header stores everything that you would ever need to load (but not necessarily use) a texture's
-/// data accurately, but no more. Data that is provided but is not needed to read the data is stored in the
-/// Metadata section (See TextureHeaderWithMetadata). Correct use of the texture may rely on meta data, but
-/// accurate data loading can be done through the standard header alone.</summary>
-struct Pvr_HeaderV3
-{
-    uint32_t version;      //!< PVR format v3 identifier
-    uint32_t flags;        //!< Various format flags.
-    uint64_t pixelFormat;  //!< The pixel format, 8cc value storing the 4 channel identifiers and their respective sizes.
-    uint32_t colorSpace;   //!< The Color Space of the texture, currently either linear RGB or sRGB.
-    uint32_t channelType;  //!< Variable type that the channel is stored in. Supports signed/unsigned int/short/char/float.
-    uint32_t height;       //!< Height of the texture.
-    uint32_t width;        //!< Width of the texture.
-    uint32_t depth;        //!< Depth of the texture. (Z-slices)
-    uint32_t numSurfaces;  //!< Number of members in a Texture Array.
-    uint32_t numFaces;     //!< Number of faces in a Cube Map. Maybe be a value other than 6.
-    uint32_t numMipMaps;   //!< Number of MIP Maps in the texture - NB: Includes top level.
-    uint32_t metaDataSize; //!< Size of the accompanying meta data.
 };
 
 enum
@@ -175,13 +159,67 @@ enum
 enum
 {
     Pvr_ColorSpace_lRGB = 0,
-    Pvr_ColorSpace_sRGB = 0
+    Pvr_ColorSpace_sRGB = 1
+};
+
+// V3 Header Identifiers.
+/// <summary>This header stores everything that you would ever need to load (but not necessarily use) a texture's
+/// data accurately, but no more. Data that is provided but is not needed to read the data is stored in the
+/// Metadata section (See TextureHeaderWithMetadata). Correct use of the texture may rely on meta data, but
+/// accurate data loading can be done through the standard header alone.</summary>
+struct Pvr_HeaderV3
+{
+    uint32_t version;      //!< PVR format v3 identifier
+    uint32_t flags;        //!< Various format flags.
+    uint64_t pixelFormat;  //!< The pixel format, 8cc value storing the 4 channel identifiers and their respective sizes.
+    uint32_t colorSpace;   //!< The Color Space of the texture, currently either linear RGB or sRGB.
+    uint32_t channelType;  //!< Variable type that the channel is stored in. Supports signed/unsigned int/short/char/float.
+    uint32_t height;       //!< Height of the texture.
+    uint32_t width;        //!< Width of the texture.
+    uint32_t depth;        //!< Depth of the texture. (Z-slices)
+    uint32_t numSurfaces;  //!< Number of members in a Texture Array.
+    uint32_t numFaces;     //!< Number of faces in a Cube Map. Maybe be a value other than 6.
+    uint32_t numMipMaps;   //!< Number of MIP Maps in the texture - NB: Includes top level.
+    uint32_t metaDataSize; //!< Size of the accompanying meta data.
+};
+
+struct Pvr_MetaData
+{
+    uint32_t _fourCC;   // A 4cc descriptor of the data type's creator. // Values equating to values between 'P' 'V' 'R' 0 and 'P' 'V' 'R' 255 will be used by our headers.
+    uint32_t _key;      // Enumeration key identifying the data type.
+    uint32_t _dataSize; // Size of attached data.
+    char _data[1];      // Data array, can be absolutely anything, the loader needs to know how to handle it based on fourCC and key.
 };
 
 //--------------------------------------------------------------------------------------
 
 struct TextureLoader_PVRHeader
 {
+    bool _pvr3_0;
+    uint8_t textureAtlasCount;
+    struct
+    {
+        uint32_t XPosition;
+        uint32_t YPosition;
+        uint32_t Width;
+        uint32_t Height;
+    } textureAtlasCoords[255];
+
+    bool _pvr3_1;
+    struct
+    {
+        float bumpScale;
+        uint8_t bumpOrder[4];
+    } bumpData;
+
+    bool _pvr3_2;
+    uint8_t cubeMapOrder[6];
+
+    bool _pvr3_3;
+    uint8_t textureOrientation[3];
+
+    bool _pvr3_4;
+    uint32_t borderData[3];
 };
 
 #include <assert.h>
@@ -207,12 +245,126 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
     {
         Pvr_HeaderV3 header;
         header.version = version;
-
-        ptrdiff_t BytesRead = stream_read(stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
-        if (BytesRead == -1 || BytesRead < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
         {
-            return false;
+            ptrdiff_t BytesRead = stream_read(stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
+            if (BytesRead == -1 || BytesRead < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
+            {
+                return false;
+            }
         }
+
+        texture_header->_pvr3_0 = false;
+        texture_header->_pvr3_1 = false;
+        texture_header->_pvr3_2 = false;
+        texture_header->_pvr3_3 = false;
+        texture_header->_pvr3_4 = false;
+
+        uint32_t metaDataRead = 0;
+        while (metaDataRead < header.metaDataSize)
+        {
+            Pvr_MetaData metadata;
+            {
+                ptrdiff_t BytesRead = stream_read(stream, &metadata, sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
+                if (BytesRead == -1 || BytesRead < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
+                {
+                    return false;
+                }
+                metaDataRead += (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
+            }
+
+            switch (metadata._fourCC)
+            {
+            case Pvr_HeaderVersionV3:
+            {
+                switch (metadata._key)
+                {
+                case 0:
+                {
+                    if (metadata._dataSize <= sizeof(texture_header->textureAtlasCoords))
+                    {
+                        assert(0 == (metadata._dataSize % sizeof(texture_header->textureAtlasCoords[0])));
+                        ptrdiff_t BytesRead = stream_read(stream, &texture_header->textureAtlasCoords, metadata._dataSize);
+                        if (BytesRead == -1 || BytesRead < metadata._dataSize)
+                        {
+                            return false;
+                        }
+                        texture_header->textureAtlasCount = metadata._dataSize / sizeof(texture_header->textureAtlasCoords[0]);
+                        texture_header->_pvr3_0 = true;
+                        metaDataRead += metadata._dataSize;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+                break;
+                case 1:
+                {
+                    assert(sizeof(texture_header->bumpData) == metadata._dataSize);
+                    ptrdiff_t BytesRead = stream_read(stream, &texture_header->bumpData, metadata._dataSize);
+                    if (BytesRead == -1 || BytesRead < metadata._dataSize)
+                    {
+                        return false;
+                    }
+                    texture_header->_pvr3_1 = true;
+                    metaDataRead += metadata._dataSize;
+                }
+                break;
+                case 2:
+                {
+                    assert(sizeof(texture_header->cubeMapOrder) == metadata._dataSize);
+                    ptrdiff_t BytesRead = stream_read(stream, &texture_header->cubeMapOrder, metadata._dataSize);
+                    if (BytesRead == -1 || BytesRead < metadata._dataSize)
+                    {
+                        return false;
+                    }
+                    texture_header->_pvr3_2 = true;
+                    metaDataRead += metadata._dataSize;
+                }
+                break;
+                case 3:
+                {
+                    assert(sizeof(texture_header->textureOrientation) == metadata._dataSize);
+                    ptrdiff_t BytesRead = stream_read(stream, &texture_header->textureOrientation, metadata._dataSize);
+                    if (BytesRead == -1 || BytesRead < metadata._dataSize)
+                    {
+                        return false;
+                    }
+                    texture_header->_pvr3_3 = true;
+                    metaDataRead += metadata._dataSize;
+                }
+                break;
+                case 4:
+                {
+                    assert(sizeof(texture_header->borderData) == metadata._dataSize);
+                    ptrdiff_t BytesRead = stream_read(stream, &texture_header->borderData, metadata._dataSize);
+                    if (BytesRead == -1 || BytesRead < metadata._dataSize)
+                    {
+                        return false;
+                    }
+                    texture_header->_pvr3_4 = true;
+                    metaDataRead += metadata._dataSize;
+                }
+                break;
+                case 5:
+                {
+                    if (-1 == stream_seek(stream, metadata._dataSize, TEXTURE_LOADER_STREAM_SEEK_CUR))
+                    {
+                        return false;
+                    }
+                    metaDataRead += metadata._dataSize;
+                }
+                break;
+                default:
+                    return false;
+                }
+            }
+            break;
+            default:
+                return false;
+            }
+        }
+        assert(metaDataRead == header.metaDataSize);
     }
 
     return true;
