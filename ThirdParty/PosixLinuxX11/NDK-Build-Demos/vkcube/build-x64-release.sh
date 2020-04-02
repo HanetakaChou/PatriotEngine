@@ -19,6 +19,8 @@ rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
 rm -rf generated/l_hires-NVIDIA.dds.h
 ../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-NVIDIA.dds generated/l_hires-NVIDIA.dds.h
+rm -rf generated/l_hires.pvr.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires.pvr generated/l_hires.pvr.h
 
 # build by ndk
 # rm -rf obj/local/x86_64

@@ -427,8 +427,12 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
 
 //--------------------------------------------------------------------------------------
 bool DDSTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+                                           struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
+
+    assert(neutral_texture_header != NULL);
+    assert(neutral_header_offset != NULL);
+
     struct TextureLoader_DDSHeader dds_texture_header;
     size_t dds_texture_data_offset;
     if (LoadTextureHeaderFromStream(stream, stream_read, stream_seek, &dds_texture_header, &dds_texture_data_offset))
@@ -458,8 +462,8 @@ bool DDSTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
 
 //--------------------------------------------------------------------------------------
 bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                      uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
-                                      struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
+                                         uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                         struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
 {
 
     struct TextureLoader_DDSHeader texture_header;

@@ -315,6 +315,8 @@ static void demo_loadTexture_DDS(struct demo *demo);
 
 static void demo_cleanupTexture_DDS(struct demo *demo);
 
+static void demo_loadTexture_PVR(struct demo *demo);
+
 static void demo_prepare_ringbuffer(struct demo *demo);
 
 static void demo_load_pipeline_cache(struct demo *demo);
@@ -414,6 +416,8 @@ void *rendermain(void *arg)
   demo_prepare_stagingbuffer(demo);
 
   demo_loadTexture_DDS(demo);
+
+  demo_loadTexture_PVR(demo);
 
   demo_prepare_assets(demo);
 
@@ -1860,11 +1864,6 @@ static void demo_loadTexture_DDS(struct demo *demo)
   vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
   assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
-
-  VkFormatProperties props1;
-  vkGetPhysicalDeviceFormatProperties(demo->gpu, VK_FORMAT_ASTC_4x4_UNORM_BLOCK, &props1);
-  assert(props1.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-
   uint32_t NumSubresource = TextureLoader_GetFormatAspectCount(vkheader.format) * vkheader.arrayLayers * vkheader.mipLevels;
 
   struct TextureLoader_MemcpyDest dest[15];
@@ -2020,15 +2019,6 @@ static void demo_loadTexture_DDS(struct demo *demo)
   err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, fence);
   assert(!err);
 
-  err = vkWaitForFences(demo->device, 1, &fence, VK_TRUE, UINT64_MAX);
-  assert(!err);
-
-  vkDestroyFence(demo->device, fence, NULL);
-
-  vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
-
-  vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
-
   // create sampler
   const VkSamplerCreateInfo sampler = {
       .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
@@ -2073,6 +2063,15 @@ static void demo_loadTexture_DDS(struct demo *demo)
   view.image = demo->dds_image;
   err = vkCreateImageView(demo->device, &view, NULL, &demo->dds_view);
   assert(!err);
+
+  err = vkWaitForFences(demo->device, 1, &fence, VK_TRUE, UINT64_MAX);
+  assert(!err);
+
+  vkDestroyFence(demo->device, fence, NULL);
+
+  vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
+
+  vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
 }
 
 static void demo_cleanupTexture_DDS(struct demo *demo)
@@ -2081,6 +2080,17 @@ static void demo_cleanupTexture_DDS(struct demo *demo)
   vkDestroyImage(demo->device, demo->dds_image, NULL);
   vkFreeMemory(demo->device, demo->dds_mem, NULL);
   vkDestroySampler(demo->device, demo->dds_sampler, NULL);
+}
+
+#include "generated/l_hires-RGBA.pvr.h"
+
+#include "TextureLoader_PVR.h"
+static void demo_loadTexture_PVR(struct demo *demo)
+{
+
+  struct TextureLoader_NeutralHeader header;
+  size_t header_offset = 0;
+  PVRTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_RGBA_pvr, _________Assets_Lenna_l_hires_RGBA_pvr_len, &header, &header_offset);
 }
 
 template <typename T>
