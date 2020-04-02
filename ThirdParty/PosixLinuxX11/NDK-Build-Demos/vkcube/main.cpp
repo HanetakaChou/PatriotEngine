@@ -1548,6 +1548,7 @@ static void demo_create_device(struct demo *demo)
   queues[0].flags = 0;
 
   VkPhysicalDeviceFeatures enableFeatures = {0};
+  enableFeatures.textureCompressionASTC_LDR = VK_TRUE;
   enableFeatures.textureCompressionBC = VK_TRUE;
 
   VkDeviceCreateInfo device = {
@@ -1858,6 +1859,11 @@ static void demo_loadTexture_DDS(struct demo *demo)
   VkFormatProperties props;
   vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
   assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+
+
+  VkFormatProperties props1;
+  vkGetPhysicalDeviceFormatProperties(demo->gpu, VK_FORMAT_ASTC_4x4_UNORM_BLOCK, &props1);
+  assert(props1.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
   uint32_t NumSubresource = TextureLoader_GetFormatAspectCount(vkheader.format) * vkheader.arrayLayers * vkheader.mipLevels;
 

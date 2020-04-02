@@ -418,6 +418,14 @@ struct _FormatInfo
     union {
         struct
         {
+            uint32_t unused;
+        } rgba;
+        struct
+        {
+            uint32_t unused;
+        } depthstencil;
+        struct
+        {
             uint32_t compressedBlockWidth;
             uint32_t compressedBlockHeight;
             uint32_t compressedBlockDepth;
@@ -551,67 +559,67 @@ static struct _FormatInfo const gVulkanFormatInfoTable[] = {
     /* VK_FORMAT_R64G64B64A64_SFLOAT */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 121},
     /* VK_FORMAT_B10G11R11_UFLOAT_PACK32 */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 122},
     /* VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 123},
-    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                    //VK_FORMAT_D16_UNORM
-    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                    //VK_FORMAT_X8_D24_UNORM_PACK32
-    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                    //VK_FORMAT_D32_SFLOAT
-    {1, {VK_IMAGE_ASPECT_STENCIL_BIT}, false},                                  //VK_FORMAT_S8_UINT
-    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D16_UNORM_S8_UINT
-    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D24_UNORM_S8_UINT
-    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D32_SFLOAT_S8_UINT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGB_UNORM_BLOCK     //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGBA_UNORM_BLOCK    //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC2_UNORM_BLOCK         //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC2_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC3_UNORM_BLOCK         //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC3_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_UNORM_BLOCK         //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_SNORM_BLOCK         //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_UNORM_BLOCK         //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_SNORM_BLOCK         //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_UFLOAT_BLOCK       //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_SFLOAT_BLOCK       //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_UNORM_BLOCK         //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_SRGB_BLOCK          //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-    /* VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 147},
-    /* VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 148},
-    /* VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 149},
-    /* VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 150},
-    /* VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 151},
-    /* VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 152},
-    /* VK_FORMAT_EAC_R11_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 153},
-    /* VK_FORMAT_EAC_R11_SNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 154},
-    /* VK_FORMAT_EAC_R11G11_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 155},
-    /* VK_FORMAT_EAC_R11G11_SNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 156},
-    /* VK_FORMAT_ASTC_4x4_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 157},
-    /* VK_FORMAT_ASTC_4x4_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 158},
-    /* VK_FORMAT_ASTC_5x4_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 159},
-    /* VK_FORMAT_ASTC_5x4_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 160},
-    /* VK_FORMAT_ASTC_5x5_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 161},
-    /* VK_FORMAT_ASTC_5x5_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 162},
-    /* VK_FORMAT_ASTC_6x5_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 163},
-    /* VK_FORMAT_ASTC_6x5_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 164},
-    /* VK_FORMAT_ASTC_6x6_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 165},
-    /* VK_FORMAT_ASTC_6x6_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 166},
-    /* VK_FORMAT_ASTC_8x5_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 167},
-    /* VK_FORMAT_ASTC_8x5_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 168},
-    /* VK_FORMAT_ASTC_8x6_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 169},
-    /* VK_FORMAT_ASTC_8x6_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 170},
-    /* VK_FORMAT_ASTC_8x8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 171},
-    /* VK_FORMAT_ASTC_8x8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 172},
-    /* VK_FORMAT_ASTC_10x5_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 173},
-    /* VK_FORMAT_ASTC_10x5_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 174},
-    /* VK_FORMAT_ASTC_10x6_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 175},
-    /* VK_FORMAT_ASTC_10x6_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 176},
-    /* VK_FORMAT_ASTC_10x8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 177},
-    /* VK_FORMAT_ASTC_10x8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 178},
-    /* VK_FORMAT_ASTC_10x10_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 179},
-    /* VK_FORMAT_ASTC_10x10_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 180},
-    /* VK_FORMAT_ASTC_12x10_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 181},
-    /* VK_FORMAT_ASTC_12x10_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 182},
-    /* VK_FORMAT_ASTC_12x12_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 183},
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false} //VK_FORMAT_ASTC_12x12_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                      //VK_FORMAT_D16_UNORM
+    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                      //VK_FORMAT_X8_D24_UNORM_PACK32
+    {1, {VK_IMAGE_ASPECT_DEPTH_BIT}, false},                                      //VK_FORMAT_D32_SFLOAT
+    {1, {VK_IMAGE_ASPECT_STENCIL_BIT}, false},                                    //VK_FORMAT_S8_UINT
+    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},         //VK_FORMAT_D16_UNORM_S8_UINT
+    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},         //VK_FORMAT_D24_UNORM_S8_UINT
+    {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},         //VK_FORMAT_D32_SFLOAT_S8_UINT
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC2_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC3_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {5, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {5, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {5, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {5, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {6, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {6, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {6, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {6, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 8, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {8, 8, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 5, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 5, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 6, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 6, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 8, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 8, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {10, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {12, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {12, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {12, 12, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {12, 12, 1, (128 / 8)}}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
 };
 static_assert(VK_FORMAT_RANGE_SIZE == (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])), "gVulkanFormatInfoTable may not match!");
 
