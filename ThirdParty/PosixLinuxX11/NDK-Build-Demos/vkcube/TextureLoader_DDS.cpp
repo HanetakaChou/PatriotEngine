@@ -255,9 +255,9 @@ struct DDS_TEXTURE_METADATA
 static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                                  struct DDS_TEXTURE_METADATA *texture_metadata, size_t *texture_data_offset);
 
-static inline uint32_t DdsToNeutralFormatMap(uint32_t ddsformat);
+static inline uint32_t _GetNeutralType(uint32_t ddstype);
 
-static inline uint32_t DdsToNeutralTypeMap(uint32_t ddstype);
+static inline uint32_t _GetNeutralFormat(uint32_t ddsformat);
 
 //--------------------------------------------------------------------------------------
 bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
@@ -267,10 +267,10 @@ bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(vo
     size_t dds_texture_data_offset;
     if (LoadTextureMetadataFromStream(stream, stream_read, stream_seek, &dds_texture_metadata, &dds_texture_data_offset))
     {
-        neutral_texture_header->type = DdsToNeutralTypeMap(dds_texture_metadata.resDim);
+        neutral_texture_header->type = _GetNeutralType(dds_texture_metadata.resDim);
         assert(TEXTURE_LOADER_TYPE_UNDEFINED != neutral_texture_header->type);
 
-        neutral_texture_header->format = DdsToNeutralFormatMap(dds_texture_metadata.format);
+        neutral_texture_header->format = _GetNeutralFormat(dds_texture_metadata.format);
         assert(TEXTURE_LOADER_FORMAT_UNDEFINED != neutral_texture_header->format);
 
         neutral_texture_header->width = dds_texture_metadata.width;
@@ -703,6 +703,8 @@ static inline bool GetSurfaceInfo(size_t width,
                                   size_t *outRowBytes,
                                   size_t *outNumRows);
 
+static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat);
+
 //--------------------------------------------------------------------------------------
 bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
@@ -718,8 +720,8 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
 
     assert(
         texture_metadata.isCubeMap == neutral_texture_header_validate->isCubeMap &&
-        DdsToNeutralTypeMap(texture_metadata.resDim) == neutral_texture_header_validate->type &&
-        DdsToNeutralFormatMap(texture_metadata.format) == neutral_texture_header_validate->format &&
+        _GetNeutralType(texture_metadata.resDim) == neutral_texture_header_validate->type &&
+        _GetNeutralFormat(texture_metadata.format) == neutral_texture_header_validate->format &&
         texture_metadata.width == neutral_texture_header_validate->width &&
         texture_metadata.height == neutral_texture_header_validate->height &&
         texture_metadata.depth == neutral_texture_header_validate->depth &&
@@ -785,7 +787,7 @@ bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void
         return false;
     }
 
-    size_t numberOfPlanes = 1;
+    size_t numberOfPlanes = _GetFormatPlaneCount(texture_metadata.format);
 
     // Create the texture
     size_t numberOfResources = numberOfPlanes * texture_metadata.mipCount * texture_metadata.arraySize;
@@ -1215,6 +1217,22 @@ static inline size_t BitsPerPixel(uint32_t fmt) noexcept
 }
 
 //--------------------------------------------------------------------------------------
+static uint32_t gDdsToNeutralTypeMap[] = {
+    TEXTURE_LOADER_TYPE_UNDEFINED,
+    TEXTURE_LOADER_TYPE_UNDEFINED,
+    TEXTURE_LOADER_TYPE_1D,
+    TEXTURE_LOADER_TYPE_2D,
+    TEXTURE_LOADER_TYPE_3D,
+};
+static_assert(DDS_DIMENSION_RANGE == (sizeof(gDdsToNeutralTypeMap) / sizeof(gDdsToNeutralTypeMap[0])), "gDdsToNeutralTypeMap may not match!");
+
+static inline uint32_t _GetNeutralType(uint32_t ddstype)
+{
+    assert(ddstype < (sizeof(gDdsToNeutralTypeMap) / sizeof(gDdsToNeutralTypeMap[0])));
+    return gDdsToNeutralTypeMap[ddstype];
+}
+
+//--------------------------------------------------------------------------------------
 static uint32_t gDdsToNeutralFormatMap[] = {
     TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
     TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
@@ -1348,30 +1366,156 @@ static uint32_t gDdsToNeutralFormatMap[] = {
     TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_129
     TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P208 //130
     TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V208
-    TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V408
+    TEXTURE_LOADER_FORMAT_UNDEFINED                 //DDS_DXGI_FORMAT_V408
 };
 static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(gDdsToNeutralFormatMap) / sizeof(gDdsToNeutralFormatMap[0])), "gDdsToNeutralFormatMap may not match!");
 
-//--------------------------------------------------------------------------------------
-static inline uint32_t DdsToNeutralFormatMap(uint32_t ddsformat)
+static inline uint32_t _GetNeutralFormat(uint32_t ddsformat)
 {
     assert(ddsformat < (sizeof(gDdsToNeutralFormatMap) / sizeof(gDdsToNeutralFormatMap[0])));
     return gDdsToNeutralFormatMap[ddsformat];
 }
 
 //--------------------------------------------------------------------------------------
-static uint32_t gDdsToNeutralTypeMap[] = {
-    TEXTURE_LOADER_TYPE_UNDEFINED,
-    TEXTURE_LOADER_TYPE_UNDEFINED,
-    TEXTURE_LOADER_TYPE_1D,
-    TEXTURE_LOADER_TYPE_2D,
-    TEXTURE_LOADER_TYPE_3D,
+static uint32_t gDdsFormatInfoTable[] = {
+    0, //DDS_DXGI_FORMAT_UNKNOWN
+    1, //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
+    1, //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
+    1, //DDS_DXGI_FORMAT_R32G32B32A32_UINT
+    1, //DDS_DXGI_FORMAT_R32G32B32A32_SINT
+    1, //DDS_DXGI_FORMAT_R32G32B32_TYPELESS
+    1, //DDS_DXGI_FORMAT_R32G32B32_FLOAT
+    1, //DDS_DXGI_FORMAT_R32G32B32_UINT
+    1, //DDS_DXGI_FORMAT_R32G32B32_SINT
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_FLOAT
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_UNORM
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_UINT
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_SNORM
+    1, //DDS_DXGI_FORMAT_R16G16B16A16_SINT
+    1, //DDS_DXGI_FORMAT_R32G32_TYPELESS
+    1, //DDS_DXGI_FORMAT_R32G32_FLOAT
+    1, //DDS_DXGI_FORMAT_R32G32_UINT
+    1, //DDS_DXGI_FORMAT_R32G32_SINT
+    2, //DDS_DXGI_FORMAT_R32G8X24_TYPELESS
+    2, //DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT
+    2, //DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
+    2, //DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
+    1, //DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS
+    1, //DDS_DXGI_FORMAT_R10G10B10A2_UNORM
+    1, //DDS_DXGI_FORMAT_R10G10B10A2_UINT
+    1, //DDS_DXGI_FORMAT_R11G11B10_FLOAT
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_UNORM
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_UINT
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_SNORM
+    1, //DDS_DXGI_FORMAT_R8G8B8A8_SINT
+    1, //DDS_DXGI_FORMAT_R16G16_TYPELESS
+    1, //DDS_DXGI_FORMAT_R16G16_FLOAT
+    1, //DDS_DXGI_FORMAT_R16G16_UNORM
+    1, //DDS_DXGI_FORMAT_R16G16_UINT
+    1, //DDS_DXGI_FORMAT_R16G16_SNORM
+    1, //DDS_DXGI_FORMAT_R16G16_SINT
+    1, //DDS_DXGI_FORMAT_R32_TYPELESS
+    1, //DDS_DXGI_FORMAT_D32_FLOAT
+    1, //DDS_DXGI_FORMAT_R32_FLOAT
+    1, //DDS_DXGI_FORMAT_R32_UINT
+    1, //DDS_DXGI_FORMAT_R32_SINT
+    2, //DDS_DXGI_FORMAT_R24G8_TYPELESS
+    2, //DDS_DXGI_FORMAT_D24_UNORM_S8_UINT
+    2, //DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+    2, //DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT
+    1, //DDS_DXGI_FORMAT_R8G8_TYPELESS
+    1, //DDS_DXGI_FORMAT_R8G8_UNORM
+    1, //DDS_DXGI_FORMAT_R8G8_UINT
+    1, //DDS_DXGI_FORMAT_R8G8_SNORM
+    1, //DDS_DXGI_FORMAT_R8G8_SINT
+    1, //DDS_DXGI_FORMAT_R16_TYPELESS
+    1, //DDS_DXGI_FORMAT_R16_FLOAT
+    1, //DDS_DXGI_FORMAT_D16_UNORM
+    1, //DDS_DXGI_FORMAT_R16_UNORM
+    1, //DDS_DXGI_FORMAT_R16_UINT
+    1, //DDS_DXGI_FORMAT_R16_SNORM
+    1, //DDS_DXGI_FORMAT_R16_SINT
+    1, //DDS_DXGI_FORMAT_R8_TYPELESS
+    1, //DDS_DXGI_FORMAT_R8_UNORM
+    1, //DDS_DXGI_FORMAT_R8_UINT
+    1, //DDS_DXGI_FORMAT_R8_SNORM
+    1, //DDS_DXGI_FORMAT_R8_SINT
+    1, //DDS_DXGI_FORMAT_A8_UNORM
+    1, //DDS_DXGI_FORMAT_R1_UNORM
+    1, //DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP
+    1, //DDS_DXGI_FORMAT_R8G8_B8G8_UNORM
+    1, //DDS_DXGI_FORMAT_G8R8_G8B8_UNORM
+    1, //DDS_DXGI_FORMAT_BC1_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC1_UNORM
+    1, //DDS_DXGI_FORMAT_BC1_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_BC2_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC2_UNORM
+    1, //DDS_DXGI_FORMAT_BC2_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_BC3_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC3_UNORM
+    1, //DDS_DXGI_FORMAT_BC3_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_BC4_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC4_UNORM
+    1, //DDS_DXGI_FORMAT_BC4_SNORM
+    1, //DDS_DXGI_FORMAT_BC5_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC5_UNORM
+    1, //DDS_DXGI_FORMAT_BC5_SNORM
+    1, //DDS_DXGI_FORMAT_B5G6R5_UNORM
+    1, //DDS_DXGI_FORMAT_B5G5R5A1_UNORM
+    1, //DDS_DXGI_FORMAT_B8G8R8A8_UNORM
+    1, //DDS_DXGI_FORMAT_B8G8R8X8_UNORM
+    1, //DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM
+    1, //DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS
+    1, //DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS
+    1, //DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
+    1, //DDS_DXGI_FORMAT_BC6H_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC6H_UF16
+    1, //DDS_DXGI_FORMAT_BC6H_SF16
+    1, //DDS_DXGI_FORMAT_BC7_TYPELESS
+    1, //DDS_DXGI_FORMAT_BC7_UNORM
+    1, //DDS_DXGI_FORMAT_BC7_UNORM_SRGB
+    0, //DDS_DXGI_FORMAT_AYUV
+    0, //DDS_DXGI_FORMAT_Y410
+    0, //DDS_DXGI_FORMAT_Y416
+    0, //DDS_DXGI_FORMAT_NV12
+    0, //DDS_DXGI_FORMAT_P010
+    0, //DDS_DXGI_FORMAT_P016
+    0, //DDS_DXGI_FORMAT_420_OPAQUE
+    0, //DDS_DXGI_FORMAT_YUY2
+    0, //DDS_DXGI_FORMAT_Y210
+    0, //DDS_DXGI_FORMAT_Y216
+    0, //DDS_DXGI_FORMAT_NV11
+    0, //DDS_DXGI_FORMAT_AI44
+    0, //DDS_DXGI_FORMAT_IA44
+    0, //DDS_DXGI_FORMAT_P8
+    0, //DDS_DXGI_FORMAT_A8P8
+    1, //DDS_DXGI_FORMAT_B4G4R4A4_UNORM //115
+    0, //DDS_DXGI_FORMAT_116
+    0, //DDS_DXGI_FORMAT_117
+    0, //DDS_DXGI_FORMAT_118
+    0, //DDS_DXGI_FORMAT_119
+    0, //DDS_DXGI_FORMAT_120
+    0, //DDS_DXGI_FORMAT_121
+    0, //DDS_DXGI_FORMAT_122
+    0, //DDS_DXGI_FORMAT_123
+    0, //DDS_DXGI_FORMAT_124
+    0, //DDS_DXGI_FORMAT_125
+    0, //DDS_DXGI_FORMAT_126
+    0, //DDS_DXGI_FORMAT_127
+    0, //DDS_DXGI_FORMAT_128
+    0, //DDS_DXGI_FORMAT_129
+    0, //DDS_DXGI_FORMAT_P208 //130
+    0, //DDS_DXGI_FORMAT_V208
+    0  //DDS_DXGI_FORMAT_V408
 };
-static_assert(DDS_DIMENSION_RANGE == (sizeof(gDdsToNeutralTypeMap) / sizeof(gDdsToNeutralTypeMap[0])), "gDdsToNeutralTypeMap may not match!");
+static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(gDdsFormatInfoTable) / sizeof(gDdsFormatInfoTable[0])), "gDdsFormatInfoTable may not match!");
 
-//--------------------------------------------------------------------------------------
-static inline uint32_t DdsToNeutralTypeMap(uint32_t ddstype)
+static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat)
 {
-    assert(ddstype < (sizeof(gDdsToNeutralTypeMap) / sizeof(gDdsToNeutralTypeMap[0])));
-    return gDdsToNeutralTypeMap[ddstype];
+    assert(ddsformat < (sizeof(gDdsFormatInfoTable) / sizeof(gDdsFormatInfoTable[0])));
+    return gDdsFormatInfoTable[ddsformat];
 }
