@@ -578,15 +578,15 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                     return false;
                 }
 
-                //GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
-                //LoadToNative
-                //LoadCompressedToNative
+                // GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
+                // LoadToNative
+                // LoadCompressedToNative
                 size_t inputRowSize = RowBytes;
                 size_t inputNumRows = NumRows;
                 size_t inputSliceSize = NumBytes;
                 size_t inputNumSlices = d;
 
-                //MemcpySubresource d3dx12.h
+                // MemcpySubresource d3dx12.h
                 size_t dstSubresource = TextureLoader_CalcSubresource(i, j, p, texture_header.mipCount, texture_header.arraySize);
 
                 assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
