@@ -259,9 +259,17 @@ static inline uint32_t _GetNeutralType(uint32_t ddstype);
 
 static inline uint32_t _GetNeutralFormat(uint32_t ddsformat);
 
+static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf);
+
+static inline size_t BitsPerPixel(uint32_t fmt);
+
+static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows);
+
+static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat);
+
 //--------------------------------------------------------------------------------------
-bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                 struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
     struct DDS_TEXTURE_METADATA dds_texture_metadata;
     size_t dds_texture_data_offset;
@@ -289,9 +297,6 @@ bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(vo
         return false;
     }
 }
-
-static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf);
-static inline size_t BitsPerPixel(uint32_t fmt);
 
 //--------------------------------------------------------------------------------------
 static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
@@ -449,6 +454,200 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
         }
 
         assert(BitsPerPixel(texture_metadata->format) != 0);
+    }
+
+    return true;
+}
+
+//--------------------------------------------------------------------------------------
+bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                      uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                      struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
+{
+
+    struct DDS_TEXTURE_METADATA texture_metadata;
+    size_t texture_data_offset;
+    if (!LoadTextureMetadataFromStream(stream, stream_read, stream_seek, &texture_metadata, &texture_data_offset))
+    {
+        return false;
+    }
+
+    assert(
+        texture_metadata.isCubeMap == neutral_texture_header_validate->isCubeMap &&
+        _GetNeutralType(texture_metadata.resDim) == neutral_texture_header_validate->type &&
+        _GetNeutralFormat(texture_metadata.format) == neutral_texture_header_validate->format &&
+        texture_metadata.width == neutral_texture_header_validate->width &&
+        texture_metadata.height == neutral_texture_header_validate->height &&
+        texture_metadata.depth == neutral_texture_header_validate->depth &&
+        texture_metadata.mipCount == neutral_texture_header_validate->mipLevels &&
+        texture_metadata.arraySize == neutral_texture_header_validate->arrayLayers //
+    );
+    assert(texture_data_offset == (*neutral_header_offset_validate));
+
+    //if (stream_seek(stream, texture_data_offset, TEXTURE_LOADER_STREAM_SEEK_SET) == -1)
+    //{
+    //    return false;
+    //}
+
+    // Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
+    if (texture_metadata.mipCount > 15) //D3D11_REQ_MIP_LEVELS
+    {
+        return false;
+    }
+
+    switch (texture_metadata.resDim)
+    {
+    case DDS_DIMENSION_TEXTURE1D:
+        if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+            (texture_metadata.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
+        {
+            return false;
+        }
+        break;
+
+    case DDS_DIMENSION_TEXTURE2D:
+        if (!(texture_metadata.isCubeMap))
+        {
+            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // This is the right bound because we set arraySize to (NumCubes*6) above
+            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
+                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
+            {
+                return false;
+            }
+        }
+        break;
+
+    case DDS_DIMENSION_TEXTURE3D:
+        if ((texture_metadata.arraySize > 1) ||
+            (texture_metadata.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (texture_metadata.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (texture_metadata.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+        {
+            return false;
+        }
+        break;
+
+    default:
+        return false;
+    }
+
+    size_t numberOfPlanes = _GetFormatPlaneCount(texture_metadata.format);
+
+    // Create the texture
+    size_t numberOfResources = numberOfPlanes * texture_metadata.mipCount * texture_metadata.arraySize;
+
+    if (numberOfResources > 30720) //D3D12_REQ_SUBRESOURCES
+    {
+        return false;
+    }
+
+    if (numberOfResources != NumSubresources)
+    {
+        return false;
+    }
+
+    size_t inputSkipBytes = texture_data_offset;
+    size_t dds_subresource = 0;
+
+    for (size_t p = 0; p < numberOfPlanes; ++p)
+    {
+        for (size_t j = 0; j < texture_metadata.arraySize; ++j)
+        {
+            size_t w = texture_metadata.width;
+            size_t h = texture_metadata.height;
+            size_t d = texture_metadata.depth;
+            for (size_t i = 0; i < texture_metadata.mipCount; ++i)
+            {
+
+                size_t NumBytes = 0;
+                size_t RowBytes = 0;
+                size_t NumRows = 0;
+                if (!GetSurfaceInfo(w, h, texture_metadata.format, &NumBytes, &RowBytes, &NumRows))
+                {
+                    return false;
+                }
+
+                if (NumBytes > UINT32_MAX || RowBytes > UINT32_MAX || NumRows > UINT32_MAX)
+                {
+                    return false;
+                }
+
+                //GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
+                //LoadToNative
+                //LoadCompressedToNative
+                size_t inputRowSize = RowBytes;
+                size_t inputNumRows = NumRows;
+                size_t inputSliceSize = NumBytes;
+                size_t inputNumSlices = d;
+
+                //MemcpySubresource d3dx12.h
+                size_t destSubresource = dds_subresource;
+
+                assert(inputNumSlices == pDest[destSubresource].outputNumSlices);
+                assert(inputNumRows == pDest[destSubresource].outputNumRows);
+                assert(inputRowSize == pDest[destSubresource].outputRowSize);
+
+                if (inputSliceSize == pDest[destSubresource].outputSlicePitch && inputRowSize == pDest[destSubresource].outputRowPitch)
+                {
+                    stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET);
+                    stream_read(stream, stagingPointer + pDest[destSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                }
+                else if (inputRowSize == pDest[destSubresource].outputRowPitch)
+                {
+                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
+
+                    for (size_t z = 0; z < inputNumSlices; ++z)
+                    {
+                        stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET);
+                        stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z), inputSliceSize);
+                    }
+                }
+                else
+                {
+                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
+                    assert(inputRowSize <= pDest[destSubresource].outputRowPitch);
+
+                    for (size_t z = 0; z < inputNumSlices; ++z)
+                    {
+                        for (size_t y = 0; y < inputNumRows; ++y)
+                        {
+                            stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET);
+                            stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z + pDest[destSubresource].outputRowPitch * y), inputRowSize);
+                        }
+                    }
+                }
+
+                inputSkipBytes += inputSliceSize * inputNumSlices;
+
+                ++dds_subresource;
+
+                w = w >> 1;
+                h = h >> 1;
+                d = d >> 1;
+                if (w == 0)
+                {
+                    w = 1;
+                }
+                if (h == 0)
+                {
+                    h = 1;
+                }
+                if (d == 0)
+                {
+                    d = 1;
+                }
+            }
+        }
     }
 
     return true;
@@ -696,219 +895,11 @@ static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf)
     return DDS_DXGI_FORMAT_UNKNOWN;
 }
 
-static inline bool GetSurfaceInfo(size_t width,
-                                  size_t height,
-                                  uint32_t fmt,
-                                  size_t *outNumBytes,
-                                  size_t *outRowBytes,
-                                  size_t *outNumRows);
-
-static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat);
-
-//--------------------------------------------------------------------------------------
-bool FillTextureDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                               uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
-                               struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
-{
-
-    struct DDS_TEXTURE_METADATA texture_metadata;
-    size_t texture_data_offset;
-    if (!LoadTextureMetadataFromStream(stream, stream_read, stream_seek, &texture_metadata, &texture_data_offset))
-    {
-        return false;
-    }
-
-    assert(
-        texture_metadata.isCubeMap == neutral_texture_header_validate->isCubeMap &&
-        _GetNeutralType(texture_metadata.resDim) == neutral_texture_header_validate->type &&
-        _GetNeutralFormat(texture_metadata.format) == neutral_texture_header_validate->format &&
-        texture_metadata.width == neutral_texture_header_validate->width &&
-        texture_metadata.height == neutral_texture_header_validate->height &&
-        texture_metadata.depth == neutral_texture_header_validate->depth &&
-        texture_metadata.mipCount == neutral_texture_header_validate->mipLevels &&
-        texture_metadata.arraySize == neutral_texture_header_validate->arrayLayers //
-    );
-    assert(texture_data_offset == (*neutral_header_offset_validate));
-
-    //if (stream_seek(stream, texture_data_offset, TEXTURE_LOADER_STREAM_SEEK_SET) == -1)
-    //{
-    //    return false;
-    //}
-
-    // Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
-    if (texture_metadata.mipCount > 15) //D3D11_REQ_MIP_LEVELS
-    {
-        return false;
-    }
-
-    switch (texture_metadata.resDim)
-    {
-    case DDS_DIMENSION_TEXTURE1D:
-        if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-            (texture_metadata.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
-        {
-            return false;
-        }
-        break;
-
-    case DDS_DIMENSION_TEXTURE2D:
-        if (!(texture_metadata.isCubeMap))
-        {
-            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
-                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
-            {
-                return false;
-            }
-        }
-        else
-        {
-            // This is the right bound because we set arraySize to (NumCubes*6) above
-            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
-                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
-            {
-                return false;
-            }
-        }
-        break;
-
-    case DDS_DIMENSION_TEXTURE3D:
-        if ((texture_metadata.arraySize > 1) ||
-            (texture_metadata.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_metadata.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_metadata.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-        {
-            return false;
-        }
-        break;
-
-    default:
-        return false;
-    }
-
-    size_t numberOfPlanes = _GetFormatPlaneCount(texture_metadata.format);
-
-    // Create the texture
-    size_t numberOfResources = numberOfPlanes * texture_metadata.mipCount * texture_metadata.arraySize;
-
-    if (numberOfResources > 30720) //D3D12_REQ_SUBRESOURCES
-    {
-        return false;
-    }
-
-    if (numberOfResources != NumSubresources)
-    {
-        return false;
-    }
-
-    size_t inputSkipBytes = texture_data_offset;
-    size_t dds_subresource = 0;
-
-    for (size_t p = 0; p < numberOfPlanes; ++p)
-    {
-        for (size_t j = 0; j < texture_metadata.arraySize; ++j)
-        {
-            size_t w = texture_metadata.width;
-            size_t h = texture_metadata.height;
-            size_t d = texture_metadata.depth;
-            for (size_t i = 0; i < texture_metadata.mipCount; ++i)
-            {
-
-                size_t NumBytes = 0;
-                size_t RowBytes = 0;
-                size_t NumRows = 0;
-                if (!GetSurfaceInfo(w, h, texture_metadata.format, &NumBytes, &RowBytes, &NumRows))
-                {
-                    return false;
-                }
-
-                if (NumBytes > UINT32_MAX || RowBytes > UINT32_MAX || NumRows > UINT32_MAX)
-                {
-                    return false;
-                }
-
-                //GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
-                //LoadToNative
-                //LoadCompressedToNative
-                size_t inputRowSize = RowBytes;
-                size_t inputNumRows = NumRows;
-                size_t inputSliceSize = NumBytes;
-                size_t inputNumSlices = d;
-
-                //MemcpySubresource d3dx12.h
-                size_t destSubresource = dds_subresource;
-
-                assert(inputNumSlices == pDest[destSubresource].outputNumSlices);
-                assert(inputNumRows == pDest[destSubresource].outputNumRows);
-                assert(inputRowSize == pDest[destSubresource].outputRowSize);
-
-                if (inputSliceSize == pDest[destSubresource].outputSlicePitch && inputRowSize == pDest[destSubresource].outputRowPitch)
-                {
-                    stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET);
-                    stream_read(stream, stagingPointer + pDest[destSubresource].stagingOffset, inputSliceSize * inputNumSlices);
-                }
-                else if (inputRowSize == pDest[destSubresource].outputRowPitch)
-                {
-                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
-
-                    for (size_t z = 0; z < inputNumSlices; ++z)
-                    {
-                        stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET);
-                        stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z), inputSliceSize);
-                    }
-                }
-                else
-                {
-                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
-                    assert(inputRowSize <= pDest[destSubresource].outputRowPitch);
-
-                    for (size_t z = 0; z < inputNumSlices; ++z)
-                    {
-                        for (size_t y = 0; y < inputNumRows; ++y)
-                        {
-                            stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET);
-                            stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z + pDest[destSubresource].outputRowPitch * y), inputRowSize);
-                        }
-                    }
-                }
-
-                inputSkipBytes += inputSliceSize * inputNumSlices;
-
-                ++dds_subresource;
-
-                w = w >> 1;
-                h = h >> 1;
-                d = d >> 1;
-                if (w == 0)
-                {
-                    w = 1;
-                }
-                if (h == 0)
-                {
-                    h = 1;
-                }
-                if (d == 0)
-                {
-                    d = 1;
-                }
-            }
-        }
-    }
-
-    return true;
-}
-
 //--------------------------------------------------------------------------------------
 // Get surface information for a particular format
 //--------------------------------------------------------------------------------------
 #include <algorithm>
-static inline bool GetSurfaceInfo(size_t width,
-                                  size_t height,
-                                  uint32_t fmt,
-                                  size_t *outNumBytes,
-                                  size_t *outRowBytes,
-                                  size_t *outNumRows)
+static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows)
 {
     assert(outNumBytes != NULL);
     assert(outRowBytes != NULL);
