@@ -222,6 +222,12 @@ struct TextureLoader_PVRHeader
     uint32_t borderData[3];
 };
 
+//--------------------------------------------------------------------------------------
+
+static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t *minX, uint32_t *minY, uint32_t *minZ);
+
+static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat);
+
 #include <assert.h>
 
 //--------------------------------------------------------------------------------------
@@ -236,8 +242,6 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
         return false;
     }
 
-    auto huhu = Pvr_PixelTypeChar_R8G8B8A8;
-
     // Read the texture header version
     uint32_t version;
     stream_read(stream, &version, sizeof(version));
@@ -251,6 +255,21 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
             {
                 return false;
             }
+        }
+
+        {
+            uint32_t uiSmallestWidth;
+            uint32_t uiSmallestHeight;
+            uint32_t uiSmallestDepth;
+            if (!Pvr_GetMinDimensionsForFormat(header.pixelFormat, &uiSmallestWidth, &uiSmallestHeight, &uiSmallestDepth))
+            {
+                return false;
+            }
+        }
+        
+        if (0 == Pvr_GetBitsPerPixel(header.pixelFormat))
+        {
+            return false;
         }
 
         texture_header->_pvr3_0 = false;
@@ -382,4 +401,251 @@ bool PVRTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
     }
 
     return true;
+}
+
+//--------------------------------------------------------------------------------------
+static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t *minX, uint32_t *minY, uint32_t *minZ)
+{
+    assert(NULL != minX);
+    assert(NULL != minY);
+    assert(NULL != minZ);
+
+    if (0 == (pixelFormat >> 32))
+    {
+        switch (pixelFormat)
+        {
+        case Pvr_PixelTypeID_DXT1:
+        case Pvr_PixelTypeID_DXT2:
+        case Pvr_PixelTypeID_DXT3:
+        case Pvr_PixelTypeID_DXT4:
+        case Pvr_PixelTypeID_DXT5:
+        case Pvr_PixelTypeID_BC4:
+        case Pvr_PixelTypeID_BC5:
+        case Pvr_PixelTypeID_ETC1:
+        case Pvr_PixelTypeID_ETC2_RGB:
+        case Pvr_PixelTypeID_ETC2_RGBA:
+        case Pvr_PixelTypeID_ETC2_RGB_A1:
+        case Pvr_PixelTypeID_EAC_R11:
+        case Pvr_PixelTypeID_EAC_RG11:
+            (*minX) = 4;
+            (*minY) = 4;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_PVRTCI_4bpp_RGB:
+        case Pvr_PixelTypeID_PVRTCI_4bpp_RGBA:
+            (*minX) = 8;
+            (*minY) = 8;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_PVRTCI_2bpp_RGB:
+        case Pvr_PixelTypeID_PVRTCI_2bpp_RGBA:
+            (*minX) = 16;
+            (*minY) = 8;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_PVRTCII_4bpp:
+            (*minX) = 4;
+            (*minY) = 4;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_PVRTCII_2bpp:
+            (*minX) = 8;
+            (*minY) = 4;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_UYVY:
+        case Pvr_PixelTypeID_YUY2:
+        case Pvr_PixelTypeID_RGBG8888:
+        case Pvr_PixelTypeID_GRGB8888:
+            (*minX) = 2;
+            (*minY) = 1;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_BW1bpp:
+            (*minX) = 8;
+            (*minY) = 1;
+            (*minZ) = 1;
+            break;
+            // Error
+        case Pvr_PixelTypeID_ASTC_4x4:
+            (*minX) = 4;
+            (*minY) = 4;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_5x4:
+            (*minX) = 5;
+            (*minY) = 4;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_5x5:
+            (*minX) = 5;
+            (*minY) = 5;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_6x5:
+            (*minX) = 6;
+            (*minY) = 5;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_6x6:
+            (*minX) = 6;
+            (*minY) = 6;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_8x5:
+            (*minX) = 8;
+            (*minY) = 5;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_8x6:
+            (*minX) = 8;
+            (*minY) = 6;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_8x8:
+            (*minX) = 8;
+            (*minY) = 8;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_10x5:
+            (*minX) = 10;
+            (*minY) = 5;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_10x6:
+            (*minX) = 10;
+            (*minY) = 6;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_10x8:
+            (*minX) = 10;
+            (*minY) = 8;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_10x10:
+            (*minX) = 10;
+            (*minY) = 10;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_12x10:
+            (*minX) = 12;
+            (*minY) = 10;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_12x12:
+            (*minX) = 12;
+            (*minY) = 12;
+            (*minZ) = 1;
+            break;
+        case Pvr_PixelTypeID_ASTC_3x3x3:
+            (*minX) = 3;
+            (*minY) = 3;
+            (*minZ) = 3;
+            break;
+        case Pvr_PixelTypeID_ASTC_4x3x3:
+            (*minX) = 4;
+            (*minY) = 3;
+            (*minZ) = 3;
+            break;
+        case Pvr_PixelTypeID_ASTC_4x4x3:
+            (*minX) = 4;
+            (*minY) = 4;
+            (*minZ) = 3;
+            break;
+        case Pvr_PixelTypeID_ASTC_4x4x4:
+            (*minX) = 4;
+            (*minY) = 4;
+            (*minZ) = 4;
+            break;
+        case Pvr_PixelTypeID_ASTC_5x4x4:
+            (*minX) = 5;
+            (*minY) = 4;
+            (*minZ) = 4;
+            break;
+        case Pvr_PixelTypeID_ASTC_5x5x4:
+            (*minX) = 5;
+            (*minY) = 5;
+            (*minZ) = 4;
+            break;
+        case Pvr_PixelTypeID_ASTC_5x5x5:
+            (*minX) = 5;
+            (*minY) = 5;
+            (*minZ) = 5;
+            break;
+        case Pvr_PixelTypeID_ASTC_6x5x5:
+            (*minX) = 6;
+            (*minY) = 5;
+            (*minZ) = 5;
+            break;
+        case Pvr_PixelTypeID_ASTC_6x6x5:
+            (*minX) = 6;
+            (*minY) = 6;
+            (*minZ) = 5;
+            break;
+        case Pvr_PixelTypeID_ASTC_6x6x6:
+            (*minX) = 6;
+            (*minY) = 6;
+            (*minZ) = 6;
+            break;
+        default:
+            return false;
+        }
+
+        return true;
+    }
+    else
+    {
+        (*minX) = 1;
+        (*minY) = 1;
+        (*minZ) = 1;
+        return true;
+    }
+}
+
+//--------------------------------------------------------------------------------------
+static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
+{
+    if (0 == (pixelFormat >> 32))
+    {
+        switch (pixelFormat)
+        {
+        case Pvr_PixelTypeID_BW1bpp:
+            return 1;
+        case Pvr_PixelTypeID_PVRTCI_2bpp_RGB:
+        case Pvr_PixelTypeID_PVRTCI_2bpp_RGBA:
+        case Pvr_PixelTypeID_PVRTCII_2bpp:
+            return 2;
+        case Pvr_PixelTypeID_PVRTCI_4bpp_RGB:
+        case Pvr_PixelTypeID_PVRTCI_4bpp_RGBA:
+        case Pvr_PixelTypeID_PVRTCII_4bpp:
+        case Pvr_PixelTypeID_ETC1:
+        case Pvr_PixelTypeID_EAC_R11:
+        case Pvr_PixelTypeID_ETC2_RGB:
+        case Pvr_PixelTypeID_ETC2_RGB_A1:
+        case Pvr_PixelTypeID_DXT1:
+        case Pvr_PixelTypeID_BC4:
+            return 4;
+        case Pvr_PixelTypeID_DXT2:
+        case Pvr_PixelTypeID_DXT3:
+        case Pvr_PixelTypeID_DXT4:
+        case Pvr_PixelTypeID_DXT5:
+        case Pvr_PixelTypeID_BC5:
+        case Pvr_PixelTypeID_EAC_RG11:
+        case Pvr_PixelTypeID_ETC2_RGBA:
+            return 8;
+        case Pvr_PixelTypeID_YUY2:
+        case Pvr_PixelTypeID_UYVY:
+        case Pvr_PixelTypeID_RGBG8888:
+        case Pvr_PixelTypeID_GRGB8888:
+            return 16;
+        case Pvr_PixelTypeID_SharedExponentR9G9B9E5:
+            return 32;
+        default:
+            return 0;
+        }
+    }
+    else
+    {
+        return reinterpret_cast<char *>(&pixelFormat)[4] + reinterpret_cast<char *>(&pixelFormat)[5] + reinterpret_cast<char *>(&pixelFormat)[6] + reinterpret_cast<char *>(&pixelFormat)[7];
+    }
 }
