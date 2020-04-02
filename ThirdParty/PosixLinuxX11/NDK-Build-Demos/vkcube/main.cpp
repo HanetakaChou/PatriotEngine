@@ -1843,7 +1843,7 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
   return true;
 }
 
-#include "generated/l_hires.dds.h"
+#include "generated/l_hires-DirectXTex.dds.h"
 
 #include "TextureLoader_DDS.h"
 #include "VK/TextureLoader_VK.h"
@@ -1851,7 +1851,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
 {
   struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
-  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, &header, &header_offset);
+  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_DirectXTex_dds, _________Assets_Lenna_l_hires_DirectXTex_dds_len, &header, &header_offset);
 
   struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
@@ -1859,27 +1859,29 @@ static void demo_loadTexture_DDS(struct demo *demo)
   vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
   assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
-  struct TextureLoader_MemcpyDest dest[1];
-  struct VkBufferImageCopy regions[1];
+  uint32_t NumSubresource = TextureLoader_GetFormatAspectCount(vkheader.format) * vkheader.arrayLayers * vkheader.mipLevels;
+
+  struct TextureLoader_MemcpyDest dest[15];
+  struct VkBufferImageCopy regions[15];
   size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
                                                          demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
-                                                         1, dest, regions);
+                                                         NumSubresource, dest, regions);
 
   uint8_t *ptr;
   VkDeviceSize offset;
   demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
 
-  for (int i = 0; i < 1; ++i)
+  for (int i = 0; i < NumSubresource; ++i)
   {
     dest[i].stagingOffset += offset;
   }
 
-  for (int i = 0; i < 1; ++i)
+  for (int i = 0; i < NumSubresource; ++i)
   {
     regions[i].bufferOffset += offset;
   }
 
-  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, ptr, 1, dest, &header, &header_offset);
+  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_DirectXTex_dds, _________Assets_Lenna_l_hires_DirectXTex_dds_len, ptr, NumSubresource, dest, &header, &header_offset);
 
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
@@ -1974,7 +1976,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
 
   vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_pre);
 
-  vkCmdCopyBufferToImage(tmp_cmd, demo->mStagingBuffer.buffer(), demo->dds_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, regions);
+  vkCmdCopyBufferToImage(tmp_cmd, demo->mStagingBuffer.buffer(), demo->dds_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, NumSubresource, regions);
 
   VkImageMemoryBarrier image_memory_barrier_post[1] = {
       {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -2058,7 +2060,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
               VK_COMPONENT_SWIZZLE_B,
               VK_COMPONENT_SWIZZLE_A,
           },
-      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1},
+      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1},
       .flags = 0,
   };
 
@@ -2948,7 +2950,7 @@ static void demo_prepare_stagingbuffer(struct demo *demo)
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
 
-  size_t buffersize = 1024 * 1024 * 12;
+  size_t buffersize = 1024 * 1024 * 64;
 
   VkBufferCreateInfo buf_info = {
       VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,

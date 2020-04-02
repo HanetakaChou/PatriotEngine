@@ -27,8 +27,6 @@ struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct Textur
     return specific_texture_header;
 }
 
-static inline uint32_t _GetFormatAspectCount(VkFormat vkformat);
-
 static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspectIndex);
 
 static inline bool _IsFormatCompressed(VkFormat vkformat);
@@ -63,20 +61,19 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
     // ImageHelper::CalculateBufferInfo libANGLE/renderer/vulkan/vk_helpers.cpp
     // ImageHelper::stageSubresourceUpdateImpl libANGLE/renderer/vulkan/vk_helpers.cpp
 
-    uint32_t aspectCount = _GetFormatAspectCount(vk_texture_header->format);
+    uint32_t aspectCount = TextureLoader_GetFormatAspectCount(vk_texture_header->format);
 
     size_t stagingOffset = 0;
     size_t TotalBytes = 0;
-    size_t DstSubresource = 0;
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
-        for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mipLevels; ++mipLevel)
+        for (uint32_t arrayLayer = 0; arrayLayer < vk_texture_header->arrayLayers; ++arrayLayer)
         {
             size_t w = vk_texture_header->extent.width;
             size_t h = vk_texture_header->extent.height;
             size_t d = vk_texture_header->extent.depth;
-            for (uint32_t arrayLayer = 0; arrayLayer < vk_texture_header->arrayLayers; ++arrayLayer)
+            for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mipLevels; ++mipLevel)
             {
                 size_t outputRowPitch;
                 size_t outputRowSize;
@@ -137,6 +134,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 {
                 }
 
+                size_t DstSubresource = TextureLoader_CalcSubresource(mipLevel, arrayLayer, aspectIndex, vk_texture_header->mipLevels, vk_texture_header->arrayLayers);
                 assert(DstSubresource < NumSubresources);
 
                 pDest[DstSubresource].stagingOffset = stagingOffset;
@@ -164,7 +162,6 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
 
                 stagingOffset += allocationSize;
                 TotalBytes += allocationSize;
-                ++DstSubresource;
 
                 w = w >> 1;
                 h = h >> 1;
@@ -561,22 +558,22 @@ static struct _FormatInfo const gVulkanFormatInfoTable[] = {
     {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D16_UNORM_S8_UINT
     {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D24_UNORM_S8_UINT
     {2, {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT}, false},       //VK_FORMAT_D32_SFLOAT_S8_UINT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGB_UNORM_BLOCK //GL_COMPRESSED_RGB_S3TC_DXT1_EXT
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGB_UNORM_BLOCK     //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
     {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGBA_UNORM_BLOCK //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGBA_UNORM_BLOCK    //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
     {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC2_UNORM_BLOCK//GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC2_UNORM_BLOCK         //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
     {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC2_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC3_UNORM_BLOCK //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC3_UNORM_BLOCK         //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
     {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC3_SRGB_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_UNORM_BLOCK  //GL_COMPRESSED_RED_RGTC1_EXT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_SNORM_BLOCK //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_UNORM_BLOCK //GL_COMPRESSED_RED_GREEN_RGTC2_EXT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_SNORM_BLOCK //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_UFLOAT_BLOCK //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_SFLOAT_BLOCK //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_UNORM_BLOCK //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_SRGB_BLOCK //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_UNORM_BLOCK         //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (64 / 8)}},  //VK_FORMAT_BC4_SNORM_BLOCK         //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_UNORM_BLOCK         //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC5_SNORM_BLOCK         //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_UFLOAT_BLOCK       //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC6H_SFLOAT_BLOCK       //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_UNORM_BLOCK         //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_SRGB_BLOCK          //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
     /* VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 147},
     /* VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 148},
     /* VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 149},
@@ -618,7 +615,7 @@ static struct _FormatInfo const gVulkanFormatInfoTable[] = {
 };
 static_assert(VK_FORMAT_RANGE_SIZE == (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])), "gVulkanFormatInfoTable may not match!");
 
-static inline uint32_t _GetFormatAspectCount(VkFormat vkformat)
+uint32_t TextureLoader_GetFormatAspectCount(VkFormat vkformat)
 {
     assert(vkformat < (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])));
 
