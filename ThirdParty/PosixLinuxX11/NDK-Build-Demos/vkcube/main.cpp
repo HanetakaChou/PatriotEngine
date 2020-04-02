@@ -1846,7 +1846,7 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
 #include "generated/l_hires.dds.h"
 
 #include "TextureLoader_DDS.h"
-#include "VK/TextureLoader_DDS.h"
+#include "VK/TextureLoader_VK.h"
 static void demo_loadTexture_DDS(struct demo *demo)
 {
   struct TextureLoader_NeutralHeader header;

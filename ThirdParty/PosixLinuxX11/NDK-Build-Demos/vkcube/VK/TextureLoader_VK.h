@@ -1,5 +1,5 @@
-#ifndef _VK_TEXTURELOADER_DDS_H_
-#define _VK_TEXTURELOADER_DDS_H_ 1
+#ifndef _VK_TEXTURELOADER_VK_H_
+#define _VK_TEXTURELOADER_VK_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>

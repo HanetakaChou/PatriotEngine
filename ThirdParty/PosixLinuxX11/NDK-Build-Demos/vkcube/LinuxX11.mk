@@ -11,7 +11,7 @@ LOCAL_MODULE := vkcube
 LOCAL_SRC_FILES := \
 	main.cpp \
 	TextureLoader_DDS.cpp \
-	VK/TextureLoader_DDS.cpp \
+	VK/TextureLoader_VK.cpp \
 	VK/StagingBuffer.cpp 
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Bionic-Redistributable/include
