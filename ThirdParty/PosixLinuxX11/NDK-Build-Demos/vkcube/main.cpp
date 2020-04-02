@@ -1851,7 +1851,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
 {
   struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
-  TextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, &header, &header_offset);
+  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, &header, &header_offset);
 
   struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
@@ -1875,7 +1875,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
     regions[i].bufferOffset += offset;
   }
 
-   TextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, ptr, 1, dest, &header, &header_offset);
+  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_dds, _________Assets_Lenna_l_hires_dds_len, ptr, 1, dest, &header, &header_offset);
 
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;

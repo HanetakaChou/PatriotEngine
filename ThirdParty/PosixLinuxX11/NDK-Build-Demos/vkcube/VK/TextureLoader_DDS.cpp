@@ -2,6 +2,11 @@
 
 #include <assert.h>
 
+uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+{
+    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
+}
+
 static inline enum VkImageType _GetVulkanType(uint32_t neutraltype);
 
 static inline enum VkFormat _GetVulkanFormat(uint32_t neutralformat);
@@ -24,7 +29,7 @@ struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct Textur
 
 static inline uint32_t _GetFormatAspectCount(VkFormat vkformat);
 
-static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspect);
+static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspectIndex);
 
 static inline bool _IsFormatCompressed(VkFormat vkformat);
 
@@ -64,7 +69,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
     size_t TotalBytes = 0;
     size_t DstSubresource = 0;
 
-    for (uint32_t aspect = 0; aspect < aspectCount; ++aspect)
+    for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
         for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mipLevels; ++mipLevel)
         {
@@ -146,7 +151,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 pRegions[DstSubresource].bufferImageHeight = bufferImageHeight;
 
                 //GetFormatAspectFlags
-                pRegions[DstSubresource].imageSubresource.aspectMask = _GetFormatAspectMask(vk_texture_header->format, aspect);
+                pRegions[DstSubresource].imageSubresource.aspectMask = _GetFormatAspectMask(vk_texture_header->format, aspectIndex);
                 pRegions[DstSubresource].imageSubresource.mipLevel = mipLevel;
                 pRegions[DstSubresource].imageSubresource.baseArrayLayer = arrayLayer;
                 pRegions[DstSubresource].imageSubresource.layerCount = 1;
@@ -618,15 +623,15 @@ static inline uint32_t _GetFormatAspectCount(VkFormat vkformat)
     return vk_format_info.aspectCount;
 }
 
-static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspect)
+static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspectIndex)
 {
     assert(vkformat < (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])));
 
     _FormatInfo vk_format_info = gVulkanFormatInfoTable[vkformat];
 
-    assert(aspect < vk_format_info.aspectCount);
+    assert(aspectIndex < vk_format_info.aspectCount);
 
-    return vk_format_info.aspectMasks[aspect];
+    return vk_format_info.aspectMasks[aspectIndex];
 }
 
 static inline bool _IsFormatCompressed(VkFormat vkformat)

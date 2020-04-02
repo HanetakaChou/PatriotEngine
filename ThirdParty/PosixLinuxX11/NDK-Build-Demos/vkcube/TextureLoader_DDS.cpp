@@ -266,7 +266,7 @@ struct TextureLoader_DDSHeader
 
 //--------------------------------------------------------------------------------------
 static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                                 struct TextureLoader_DDSHeader *texture_header, size_t *texture_data_offset)
+                                               struct TextureLoader_DDSHeader *texture_header, size_t *texture_data_offset)
 {
     assert(texture_header != NULL);
     assert(texture_data_offset != NULL);
@@ -426,7 +426,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
 }
 
 //--------------------------------------------------------------------------------------
-bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+bool DDSTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                         struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
     struct TextureLoader_DDSHeader dds_texture_header;
@@ -457,7 +457,7 @@ bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_r
 }
 
 //--------------------------------------------------------------------------------------
-bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                       uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
                                       struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
 {
@@ -554,7 +554,6 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
     }
 
     size_t inputSkipBytes = texture_data_offset;
-    size_t dds_subresource = 0;
 
     for (size_t p = 0; p < numberOfPlanes; ++p)
     {
@@ -588,45 +587,43 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
                 size_t inputNumSlices = d;
 
                 //MemcpySubresource d3dx12.h
-                size_t destSubresource = dds_subresource;
+                size_t dstSubresource = TextureLoader_CalcSubresource(i, j, p, texture_header.mipCount, texture_header.arraySize);
 
-                assert(inputNumSlices == pDest[destSubresource].outputNumSlices);
-                assert(inputNumRows == pDest[destSubresource].outputNumRows);
-                assert(inputRowSize == pDest[destSubresource].outputRowSize);
+                assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
+                assert(inputNumRows == pDest[dstSubresource].outputNumRows);
+                assert(inputRowSize == pDest[dstSubresource].outputRowSize);
 
-                if (inputSliceSize == pDest[destSubresource].outputSlicePitch && inputRowSize == pDest[destSubresource].outputRowPitch)
+                if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
                 {
                     stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET);
-                    stream_read(stream, stagingPointer + pDest[destSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
                 }
-                else if (inputRowSize == pDest[destSubresource].outputRowPitch)
+                else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
                 {
-                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
+                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
                         stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET);
-                        stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z), inputSliceSize);
+                        stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
                     }
                 }
                 else
                 {
-                    assert(inputSliceSize <= pDest[destSubresource].outputSlicePitch);
-                    assert(inputRowSize <= pDest[destSubresource].outputRowPitch);
+                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+                    assert(inputRowSize <= pDest[dstSubresource].outputRowPitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
                         for (size_t y = 0; y < inputNumRows; ++y)
                         {
                             stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET);
-                            stream_read(stream, stagingPointer + (pDest[destSubresource].stagingOffset + pDest[destSubresource].outputSlicePitch * z + pDest[destSubresource].outputRowPitch * y), inputRowSize);
+                            stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
                         }
                     }
                 }
 
                 inputSkipBytes += inputSliceSize * inputNumSlices;
-
-                ++dds_subresource;
 
                 w = w >> 1;
                 h = h >> 1;
