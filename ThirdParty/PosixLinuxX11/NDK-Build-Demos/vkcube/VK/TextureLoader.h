@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../TextureLoader_DDS.h"
+#include "../TextureLoader.h"
 
 #include <vulkan/vulkan.h>
 
