@@ -215,15 +215,6 @@ struct TextureLoader_NeutralHeader
     uint32_t arrayLayers;
 };
 
-enum
-{
-    TEXTURE_LOADER_STREAM_SEEK_SET = 0,
-    TEXTURE_LOADER_STREAM_SEEK_CUR = 1,
-    TEXTURE_LOADER_STREAM_SEEK_END = 2
-};
-
-bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                 struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset);
 struct TextureLoader_MemcpyDest
 {
     size_t stagingOffset;
@@ -234,14 +225,24 @@ struct TextureLoader_MemcpyDest
     size_t outputNumSlices;
 };
 
+enum
+{
+    TEXTURE_LOADER_STREAM_SEEK_SET = 0,
+    TEXTURE_LOADER_STREAM_SEEK_CUR = 1,
+    TEXTURE_LOADER_STREAM_SEEK_END = 2
+};
+
+bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset);
+
 bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                               uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
-                               struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate);
+                                      uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                      struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate);
 
 #include <string.h>
 
 inline bool TextureLoader_LoadHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
-                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+                                               struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
     struct stream_memory
     {
@@ -285,8 +286,8 @@ inline bool TextureLoader_LoadHeaderFromMemory(uint8_t const *ddsData, size_t dd
 }
 
 inline bool TextureLoader_FillDataFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
-                                      uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
-                                      struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
+                                             uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                             struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
 {
     struct stream_memory
     {
