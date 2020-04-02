@@ -66,9 +66,9 @@ enum
     Pvr_PixelTypeID_DXT5 = 11,
 
     // These formats are identical to some DXT formats.
-    Pvr_PixelTypeID_BC1 = 7,
-    Pvr_PixelTypeID_BC2 = 9,
-    Pvr_PixelTypeID_BC3 = 11,
+    Pvr_PixelTypeID_BC1 = Pvr_PixelTypeID_DXT1,
+    Pvr_PixelTypeID_BC2 = Pvr_PixelTypeID_DXT3,
+    Pvr_PixelTypeID_BC3 = Pvr_PixelTypeID_DXT5,
 
     // These are currently unsupported:
     Pvr_PixelTypeID_BC4 = 12,
@@ -160,6 +160,25 @@ enum
 {
     Pvr_ColorSpace_lRGB = 0,
     Pvr_ColorSpace_sRGB = 1
+};
+
+enum
+{
+    Pvr_ChannelType_UnsignedByteNorm = 0,
+    Pvr_ChannelType_SignedByteNorm = 1,
+    Pvr_ChannelType_UnsignedByte = 2,
+    Pvr_ChannelType_SignedByte = 3,
+    Pvr_ChannelType_UnsignedShortNorm = 4,
+    Pvr_ChannelType_SignedShortNorm = 5,
+    Pvr_ChannelType_UnsignedShort = 6,
+    Pvr_ChannelType_SignedShort = 7,
+    Pvr_ChannelType_UnsignedIntegerNorm = 8,
+    Pvr_ChannelType_SignedIntegerNorm = 9,
+    Pvr_ChannelType_UnsignedInteger = 10,
+    Pvr_ChannelType_SignedInteger = 11,
+    Pvr_ChannelType_SignedFloat = 12,
+    Pvr_ChannelType_Float = Pvr_ChannelType_SignedFloat, // the name PVRFloat is now deprecated.
+    Pvr_ChannelType_UnsignedFloat = 13
 };
 
 // V3 Header Identifiers.
@@ -266,7 +285,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
                 return false;
             }
         }
-        
+
         if (0 == Pvr_GetBitsPerPixel(header.pixelFormat))
         {
             return false;
