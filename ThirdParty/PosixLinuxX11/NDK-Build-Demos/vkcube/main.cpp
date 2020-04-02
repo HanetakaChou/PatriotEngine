@@ -1855,6 +1855,10 @@ static void demo_loadTexture_DDS(struct demo *demo)
 
   struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
 
+  VkFormatProperties props;
+  vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
+  assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
   size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
