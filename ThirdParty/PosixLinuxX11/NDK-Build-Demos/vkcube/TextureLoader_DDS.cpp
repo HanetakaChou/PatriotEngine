@@ -238,23 +238,6 @@ struct DDS_HEADER_DXT10
 
 //--------------------------------------------------------------------------------------
 
-#include <assert.h>
-
-struct DDS_TEXTURE_METADATA
-{
-    bool isCubeMap;
-    uint32_t resDim;
-    uint32_t format;
-    uint32_t width;
-    uint32_t height;
-    uint32_t depth;
-    uint32_t mipCount;
-    uint32_t arraySize;
-};
-
-static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                                 struct DDS_TEXTURE_METADATA *texture_metadata, size_t *texture_data_offset);
-
 static inline uint32_t _GetNeutralType(uint32_t ddstype);
 
 static inline uint32_t _GetNeutralFormat(uint32_t ddsformat);
@@ -267,42 +250,25 @@ static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, siz
 
 static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat);
 
-//--------------------------------------------------------------------------------------
-bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+struct TextureLoader_DDSHeader
 {
-    struct DDS_TEXTURE_METADATA dds_texture_metadata;
-    size_t dds_texture_data_offset;
-    if (LoadTextureMetadataFromStream(stream, stream_read, stream_seek, &dds_texture_metadata, &dds_texture_data_offset))
-    {
-        neutral_texture_header->type = _GetNeutralType(dds_texture_metadata.resDim);
-        assert(TEXTURE_LOADER_TYPE_UNDEFINED != neutral_texture_header->type);
+    bool isCubeMap;
+    uint32_t resDim;
+    uint32_t format;
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    uint32_t mipCount;
+    uint32_t arraySize;
+};
 
-        neutral_texture_header->format = _GetNeutralFormat(dds_texture_metadata.format);
-        assert(TEXTURE_LOADER_FORMAT_UNDEFINED != neutral_texture_header->format);
-
-        neutral_texture_header->width = dds_texture_metadata.width;
-        neutral_texture_header->height = dds_texture_metadata.height;
-        neutral_texture_header->depth = dds_texture_metadata.depth;
-        neutral_texture_header->mipLevels = dds_texture_metadata.mipCount;
-        neutral_texture_header->arrayLayers = dds_texture_metadata.arraySize;
-        neutral_texture_header->isCubeMap = dds_texture_metadata.isCubeMap;
-
-        (*neutral_header_offset) = dds_texture_data_offset;
-
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
+#include <assert.h>
 
 //--------------------------------------------------------------------------------------
-static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
-                                                 struct DDS_TEXTURE_METADATA *texture_metadata, size_t *texture_data_offset)
+static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                                 struct TextureLoader_DDSHeader *texture_header, size_t *texture_data_offset)
 {
-    assert(texture_metadata != NULL);
+    assert(texture_header != NULL);
     assert(texture_data_offset != NULL);
 
     if (stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_SET) == -1)
@@ -350,19 +316,19 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
 
     (*texture_data_offset) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
 
-    texture_metadata->isCubeMap = false;
-    texture_metadata->resDim = DDS_DIMENSION_TEXTURE2D;
-    texture_metadata->format = DDS_DXGI_FORMAT_UNKNOWN;
-    texture_metadata->width = header->dwWidth;
-    texture_metadata->height = header->dwHeight;
-    texture_metadata->depth = header->dwDepth;
-    texture_metadata->mipCount = (header->dwMipMapCount != 0) ? (header->dwMipMapCount) : 1;
-    texture_metadata->arraySize = 1;
+    texture_header->isCubeMap = false;
+    texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
+    texture_header->format = DDS_DXGI_FORMAT_UNKNOWN;
+    texture_header->width = header->dwWidth;
+    texture_header->height = header->dwHeight;
+    texture_header->depth = header->dwDepth;
+    texture_header->mipCount = (header->dwMipMapCount != 0) ? (header->dwMipMapCount) : 1;
+    texture_header->arraySize = 1;
 
     if (d3d10ext != NULL)
     {
-        texture_metadata->arraySize = d3d10ext->arraySize;
-        if (texture_metadata->arraySize == 0)
+        texture_header->arraySize = d3d10ext->arraySize;
+        if (texture_header->arraySize == 0)
         {
             return false;
         }
@@ -381,41 +347,41 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
             }
         }
 
-        texture_metadata->format = d3d10ext->dxgiFormat;
+        texture_header->format = d3d10ext->dxgiFormat;
 
         switch (d3d10ext->resourceDimension)
         {
         case DDS_DIMENSION_TEXTURE1D:
         {
-            texture_metadata->resDim = DDS_DIMENSION_TEXTURE1D;
+            texture_header->resDim = DDS_DIMENSION_TEXTURE1D;
             // D3DX writes 1D textures with a fixed Height of 1
             if ((header->dwFlags & DDSD_HEIGHT) && header->dwHeight != 1)
             {
                 return false;
             }
-            texture_metadata->height = 1;
-            texture_metadata->depth = 1;
+            texture_header->height = 1;
+            texture_header->depth = 1;
         }
         break;
         case DDS_DIMENSION_TEXTURE2D:
         {
-            texture_metadata->resDim = DDS_DIMENSION_TEXTURE2D;
+            texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
             if (d3d10ext->miscFlag & DDS_RESOURCE_MISC_TEXTURECUBE)
             {
-                texture_metadata->arraySize *= 6;
-                texture_metadata->isCubeMap = true;
+                texture_header->arraySize *= 6;
+                texture_header->isCubeMap = true;
             }
-            texture_metadata->depth = 1;
+            texture_header->depth = 1;
         }
         break;
         case DDS_DIMENSION_TEXTURE3D:
         {
-            texture_metadata->resDim = DDS_DIMENSION_TEXTURE3D;
+            texture_header->resDim = DDS_DIMENSION_TEXTURE3D;
             if (!(header->dwFlags & DDSD_DEPTH))
             {
                 return false;
             }
-            if (texture_metadata->arraySize > 1)
+            if (texture_header->arraySize > 1)
             {
                 return false;
             }
@@ -427,12 +393,12 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
     }
     else
     {
-        texture_metadata->format = GetDXGIFormat(&header->ddspf);
+        texture_header->format = GetDXGIFormat(&header->ddspf);
 
         if (!(header->dwFlags & DDSD_DEPTH))
         {
-            texture_metadata->resDim = DDS_DIMENSION_TEXTURE2D;
-            texture_metadata->depth = 1;
+            texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
+            texture_header->depth = 1;
 
             if (header->dwCaps2 & DDSCAPS2_CUBEMAP)
             {
@@ -442,21 +408,52 @@ static inline bool LoadTextureMetadataFromStream(void const *stream, ptrdiff_t (
                     return false;
                 }
 
-                texture_metadata->arraySize = 6;
-                texture_metadata->isCubeMap = true;
+                texture_header->arraySize = 6;
+                texture_header->isCubeMap = true;
             }
         }
         else
         {
-            texture_metadata->resDim = DDS_DIMENSION_TEXTURE3D;
+            texture_header->resDim = DDS_DIMENSION_TEXTURE3D;
 
             // Note there's no way for a legacy Direct3D 9 DDS to express a '1D' texture
         }
 
-        assert(BitsPerPixel(texture_metadata->format) != 0);
+        assert(BitsPerPixel(texture_header->format) != 0);
     }
 
     return true;
+}
+
+//--------------------------------------------------------------------------------------
+bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+{
+    struct TextureLoader_DDSHeader dds_texture_header;
+    size_t dds_texture_data_offset;
+    if (LoadTextureHeaderFromStream(stream, stream_read, stream_seek, &dds_texture_header, &dds_texture_data_offset))
+    {
+        neutral_texture_header->type = _GetNeutralType(dds_texture_header.resDim);
+        assert(TEXTURE_LOADER_TYPE_UNDEFINED != neutral_texture_header->type);
+
+        neutral_texture_header->format = _GetNeutralFormat(dds_texture_header.format);
+        assert(TEXTURE_LOADER_FORMAT_UNDEFINED != neutral_texture_header->format);
+
+        neutral_texture_header->width = dds_texture_header.width;
+        neutral_texture_header->height = dds_texture_header.height;
+        neutral_texture_header->depth = dds_texture_header.depth;
+        neutral_texture_header->mipLevels = dds_texture_header.mipCount;
+        neutral_texture_header->arrayLayers = dds_texture_header.arraySize;
+        neutral_texture_header->isCubeMap = dds_texture_header.isCubeMap;
+
+        (*neutral_header_offset) = dds_texture_data_offset;
+
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -465,22 +462,22 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
                                       struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
 {
 
-    struct DDS_TEXTURE_METADATA texture_metadata;
+    struct TextureLoader_DDSHeader texture_header;
     size_t texture_data_offset;
-    if (!LoadTextureMetadataFromStream(stream, stream_read, stream_seek, &texture_metadata, &texture_data_offset))
+    if (!LoadTextureHeaderFromStream(stream, stream_read, stream_seek, &texture_header, &texture_data_offset))
     {
         return false;
     }
 
     assert(
-        texture_metadata.isCubeMap == neutral_texture_header_validate->isCubeMap &&
-        _GetNeutralType(texture_metadata.resDim) == neutral_texture_header_validate->type &&
-        _GetNeutralFormat(texture_metadata.format) == neutral_texture_header_validate->format &&
-        texture_metadata.width == neutral_texture_header_validate->width &&
-        texture_metadata.height == neutral_texture_header_validate->height &&
-        texture_metadata.depth == neutral_texture_header_validate->depth &&
-        texture_metadata.mipCount == neutral_texture_header_validate->mipLevels &&
-        texture_metadata.arraySize == neutral_texture_header_validate->arrayLayers //
+        texture_header.isCubeMap == neutral_texture_header_validate->isCubeMap &&
+        _GetNeutralType(texture_header.resDim) == neutral_texture_header_validate->type &&
+        _GetNeutralFormat(texture_header.format) == neutral_texture_header_validate->format &&
+        texture_header.width == neutral_texture_header_validate->width &&
+        texture_header.height == neutral_texture_header_validate->height &&
+        texture_header.depth == neutral_texture_header_validate->depth &&
+        texture_header.mipCount == neutral_texture_header_validate->mipLevels &&
+        texture_header.arraySize == neutral_texture_header_validate->arrayLayers //
     );
     assert(texture_data_offset == (*neutral_header_offset_validate));
 
@@ -490,27 +487,27 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
     //}
 
     // Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
-    if (texture_metadata.mipCount > 15) //D3D11_REQ_MIP_LEVELS
+    if (texture_header.mipCount > 15) //D3D11_REQ_MIP_LEVELS
     {
         return false;
     }
 
-    switch (texture_metadata.resDim)
+    switch (texture_header.resDim)
     {
     case DDS_DIMENSION_TEXTURE1D:
-        if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-            (texture_metadata.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
+        if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+            (texture_header.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
         {
             return false;
         }
         break;
 
     case DDS_DIMENSION_TEXTURE2D:
-        if (!(texture_metadata.isCubeMap))
+        if (!(texture_header.isCubeMap))
         {
-            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
-                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+            if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (texture_header.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+                (texture_header.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
             {
                 return false;
             }
@@ -518,9 +515,9 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
         else
         {
             // This is the right bound because we set arraySize to (NumCubes*6) above
-            if ((texture_metadata.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_metadata.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
-                (texture_metadata.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
+            if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (texture_header.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
+                (texture_header.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
             {
                 return false;
             }
@@ -528,10 +525,10 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
         break;
 
     case DDS_DIMENSION_TEXTURE3D:
-        if ((texture_metadata.arraySize > 1) ||
-            (texture_metadata.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_metadata.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_metadata.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+        if ((texture_header.arraySize > 1) ||
+            (texture_header.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (texture_header.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (texture_header.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
         {
             return false;
         }
@@ -541,10 +538,10 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
         return false;
     }
 
-    size_t numberOfPlanes = _GetFormatPlaneCount(texture_metadata.format);
+    size_t numberOfPlanes = _GetFormatPlaneCount(texture_header.format);
 
     // Create the texture
-    size_t numberOfResources = numberOfPlanes * texture_metadata.mipCount * texture_metadata.arraySize;
+    size_t numberOfResources = numberOfPlanes * texture_header.mipCount * texture_header.arraySize;
 
     if (numberOfResources > 30720) //D3D12_REQ_SUBRESOURCES
     {
@@ -561,18 +558,18 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
 
     for (size_t p = 0; p < numberOfPlanes; ++p)
     {
-        for (size_t j = 0; j < texture_metadata.arraySize; ++j)
+        for (size_t j = 0; j < texture_header.arraySize; ++j)
         {
-            size_t w = texture_metadata.width;
-            size_t h = texture_metadata.height;
-            size_t d = texture_metadata.depth;
-            for (size_t i = 0; i < texture_metadata.mipCount; ++i)
+            size_t w = texture_header.width;
+            size_t h = texture_header.height;
+            size_t d = texture_header.depth;
+            for (size_t i = 0; i < texture_header.mipCount; ++i)
             {
 
                 size_t NumBytes = 0;
                 size_t RowBytes = 0;
                 size_t NumRows = 0;
-                if (!GetSurfaceInfo(w, h, texture_metadata.format, &NumBytes, &RowBytes, &NumRows))
+                if (!GetSurfaceInfo(w, h, texture_header.format, &NumBytes, &RowBytes, &NumRows))
                 {
                     return false;
                 }
