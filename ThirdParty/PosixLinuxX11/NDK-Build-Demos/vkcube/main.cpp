@@ -1858,7 +1858,7 @@ static void demo_loadTexture_DDS(struct demo *demo)
   struct TextureLoader_MemcpyDest dest[1];
   struct VkBufferImageCopy regions[1];
   size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
-                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, 1, //demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
+                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
                                                          1, dest, regions);
 
   uint8_t *ptr;

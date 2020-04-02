@@ -34,6 +34,8 @@ static inline uint32_t _GetCompressedFormatBlockWidth(VkFormat vkformat);
 
 static inline uint32_t _GetCompressedFormatBlockHeight(VkFormat vkformat);
 
+static inline uint32_t _GetCompressedFormatBlockSizeInBytes(VkFormat vkformat);
+
 template <typename T, typename T2>
 static inline T roundUp(const T value, const T2 alignment)
 {
@@ -93,8 +95,36 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                     outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
                     outputSlicePitch = outputRowPitch * outputNumRows;
 
-                    bufferRowLength = roundUp(vk_texture_header->extent.width, _GetCompressedFormatBlockWidth(vk_texture_header->format)); //support optimalBufferCopyRowPitchAlignment?
-                    bufferImageHeight = roundUp(vk_texture_header->extent.height, _GetCompressedFormatBlockHeight(vk_texture_header->format));
+                    // bufferOffset must be a multiple of 4
+                    // bufferRowLength must be 0, or greater than or equal to the width member of imageExtent
+                    // bufferImageHeight must be 0, or greater than or equal to the height member of imageExtent
+                    // If the calling command’s VkImage parameter is a compressed image, ... , bufferRowLength must be a multiple of the compressed texel block width
+                    // If the calling command’s VkImage parameter is a compressed image, ... , bufferImageHeight must be a multiple of the compressed texel block height
+
+                    // 19.4.1. Buffer and Image Addressing
+                    // For block-compressed formats, all parameters are still specified in texels rather than compressed texel blocks, but the addressing math operates on whole compressed texel blocks.
+                    // Pseudocode for compressed copy addressing is:
+                    // ```
+                    // rowLength = region->bufferRowLength;
+                    // if (rowLength == 0) rowLength = region->imageExtent.width;
+                    //
+                    // imageHeight = region->bufferImageHeight;
+                    // if (imageHeight == 0) imageHeight = region->imageExtent.height;
+                    //
+                    // compressedTexelBlockSizeInBytes = <compressed texel block size taken from the src/dstImage>;
+                    // rowLength /= compressedTexelBlockWidth;
+                    // imageHeight /= compressedTexelBlockHeight;
+                    //
+                    // address of (x,y,z) = region->bufferOffset + (((z * imageHeight) + y) * rowLength + x) * compressedTexelBlockSizeInBytes;
+                    // where x,y,z range from (0,0,0) to region->imageExtent.{width/compressedTexelBlockWidth,height/compressedTexelBlockHeight,depth/compressedTexelBlockDepth}.
+                    //
+                    // ```
+
+                    bufferRowLength = (outputRowPitch / _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format)) * _GetCompressedFormatBlockWidth(vk_texture_header->format);
+                    bufferImageHeight = outputNumRows * _GetCompressedFormatBlockHeight(vk_texture_header->format);
+
+                    //bufferRowLength = roundUp(vk_texture_header->extent.width, _GetCompressedFormatBlockWidth(vk_texture_header->format));
+                    //bufferImageHeight = roundUp(vk_texture_header->extent.height, _GetCompressedFormatBlockHeight(vk_texture_header->format));
 
                     allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
                 }
@@ -114,6 +144,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 pRegions[DstSubresource].bufferOffset = stagingOffset;
                 pRegions[DstSubresource].bufferRowLength = bufferRowLength;
                 pRegions[DstSubresource].bufferImageHeight = bufferImageHeight;
+
                 //GetFormatAspectFlags
                 pRegions[DstSubresource].imageSubresource.aspectMask = _GetFormatAspectMask(vk_texture_header->format, aspect);
                 pRegions[DstSubresource].imageSubresource.mipLevel = mipLevel;
@@ -384,7 +415,7 @@ struct _FormatInfo
             uint32_t compressedBlockWidth;
             uint32_t compressedBlockHeight;
             uint32_t compressedBlockDepth;
-            uint32_t compressedBlockSize;
+            uint32_t compressedBlockSizeInBytes;
         } compressed;
     };
 };
@@ -535,8 +566,8 @@ static struct _FormatInfo const gVulkanFormatInfoTable[] = {
     /* VK_FORMAT_BC5_SNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 142},
     /* VK_FORMAT_BC6H_UFLOAT_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 143},
     /* VK_FORMAT_BC6H_SFLOAT_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 144},
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, 128}}, //VK_FORMAT_BC7_UNORM_BLOCK
-    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, 128}}, //VK_FORMAT_BC7_SRGB_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_UNORM_BLOCK
+    {1, {VK_IMAGE_ASPECT_COLOR_BIT}, true, .compressed = {4, 4, 1, (128 / 8)}}, //VK_FORMAT_BC7_SRGB_BLOCK
     /* VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 147},
     /* VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 148},
     /* VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK */ {1, {VK_IMAGE_ASPECT_COLOR_BIT}, false, 149},
@@ -593,7 +624,7 @@ static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspect)
 
     _FormatInfo vk_format_info = gVulkanFormatInfoTable[vkformat];
 
-    assert(assert < vk_format_info.aspectCount);
+    assert(aspect < vk_format_info.aspectCount);
 
     return vk_format_info.aspectMasks[aspect];
 }
@@ -614,10 +645,10 @@ static inline uint32_t _ComputeCompressedFormatImageSize(VkFormat vkformat, uint
     _FormatInfo vk_format_info = gVulkanFormatInfoTable[vkformat];
 
     assert(vk_format_info.isBlock);
-    uint32_t pixelBytes = vk_format_info.compressed.compressedBlockSize / 8;
+    uint32_t blockSizeInBytes = vk_format_info.compressed.compressedBlockSizeInBytes;
     uint32_t numBlocksWide = (width + vk_format_info.compressed.compressedBlockWidth - 1) / vk_format_info.compressed.compressedBlockWidth;
     uint32_t numBlocksHigh = (height + vk_format_info.compressed.compressedBlockHeight - 1) / vk_format_info.compressed.compressedBlockHeight;
-    uint32_t bytes = numBlocksWide * numBlocksHigh * pixelBytes * depth;
+    uint32_t bytes = numBlocksWide * numBlocksHigh * blockSizeInBytes * depth;
 
     return bytes;
 }
@@ -642,6 +673,17 @@ static inline uint32_t _GetCompressedFormatBlockHeight(VkFormat vkformat)
     assert(vk_format_info.isBlock);
 
     return vk_format_info.compressed.compressedBlockHeight;
+}
+
+static inline uint32_t _GetCompressedFormatBlockSizeInBytes(VkFormat vkformat)
+{
+    assert(vkformat < (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])));
+
+    _FormatInfo vk_format_info = gVulkanFormatInfoTable[vkformat];
+
+    assert(vk_format_info.isBlock);
+
+    return vk_format_info.compressed.compressedBlockSizeInBytes;
 }
 
 #if 0
