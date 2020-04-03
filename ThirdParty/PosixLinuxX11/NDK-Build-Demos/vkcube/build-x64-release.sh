@@ -6,19 +6,16 @@ target_name="vkcube"
 int_dir="libs/x86_64"
 out_dir="../../../../Binary/x64/Release"
 
+rm -rf generated
 mkdir -p generated
 
 # glslang
-rm -rf generated/cube.vert.inc
-rm -rf generated/cube.frag.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
 
 # include-bin
-rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
-rm -rf generated/l_hires-ASTC.pvr.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-ASTC.pvr generated/l_hires-ASTC.pvr.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-ASTC.pvr generated/ll_hires-ASTC.pvr.h
 
 # build by ndk
 # rm -rf obj/local/x86_64

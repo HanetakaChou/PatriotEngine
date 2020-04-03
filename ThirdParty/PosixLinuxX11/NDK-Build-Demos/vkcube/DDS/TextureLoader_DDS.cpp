@@ -1,4 +1,4 @@
-#include "TextureLoader.h"
+#include "../TextureLoader.h"
 #include "TextureLoader_DDS.h"
 
 //--------------------------------------------------------------------------------------

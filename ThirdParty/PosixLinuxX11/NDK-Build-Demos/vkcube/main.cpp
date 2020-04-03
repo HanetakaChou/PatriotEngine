@@ -315,8 +315,6 @@ static void demo_loadTexture_DDS(struct demo *demo);
 
 static void demo_cleanupTexture_DDS(struct demo *demo);
 
-static void demo_loadTexture_PVR(struct demo *demo);
-
 static void demo_prepare_ringbuffer(struct demo *demo);
 
 static void demo_load_pipeline_cache(struct demo *demo);
@@ -415,13 +413,11 @@ void *rendermain(void *arg)
 
   demo_prepare_stagingbuffer(demo);
 
-  //demo_loadTexture_DDS(demo);
-
   uint8_t *ptr;
   VkDeviceSize offset;
   demo->mStagingBuffer.allocate(1000, 128, &ptr, &offset);
 
-  demo_loadTexture_PVR(demo);
+  demo_loadTexture_DDS(demo);
 
   demo_prepare_assets(demo);
 
@@ -1852,234 +1848,6 @@ bool loadTexture_PPM(uint8_t *rgba_data, uint32_t const *outputRowPitch, uint32_
   return true;
 }
 
-#if 0
-#include "generated/l_hires-NVIDIA.dds.h"
-
-#include "TextureLoader_DDS.h"
-#include "VK/TextureLoader_VK.h"
-static void demo_loadTexture_DDS(struct demo *demo)
-{
-  struct TextureLoader_NeutralHeader header;
-  size_t header_offset = 0;
-  DDSTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_NVIDIA_dds, _________Assets_Lenna_l_hires_NVIDIA_dds_len, &header, &header_offset);
-
-  struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
-
-  VkFormatProperties props;
-  vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
-  assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
-
-  uint32_t NumSubresource = TextureLoader_GetFormatAspectCount(vkheader.format) * vkheader.arrayLayers * vkheader.mipLevels;
-
-  struct TextureLoader_MemcpyDest dest[15];
-  struct VkBufferImageCopy regions[15];
-  size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
-                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
-                                                         NumSubresource, dest, regions);
-
-  uint8_t *ptr;
-  VkDeviceSize offset;
-  demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
-
-  //for (int i = 0; i < NumSubresource; ++i)
-  //{
-  //  dest[i].stagingOffset += offset;
-  //}
-
-  for (int i = 0; i < NumSubresource; ++i)
-  {
-    regions[i].bufferOffset += offset;
-  }
-
-  DDSTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_NVIDIA_dds, _________Assets_Lenna_l_hires_NVIDIA_dds_len, ptr, NumSubresource, dest, &header, &header_offset);
-
-  VkResult U_ASSERT_ONLY err;
-  bool U_ASSERT_ONLY pass;
-
-  //prepare cmd buffer
-
-  const VkCommandPoolCreateInfo cmd_pool_info = {
-      VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-      NULL,
-      0,
-      demo->graphics_queue_family_index,
-  };
-
-  VkCommandPool tmp_cmd_pool;
-  err = vkCreateCommandPool(demo->device, &cmd_pool_info, NULL, &tmp_cmd_pool);
-  assert(!err);
-
-  VkCommandBuffer tmp_cmd;
-  const VkCommandBufferAllocateInfo cmd = {
-      VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-      NULL,
-      tmp_cmd_pool,
-      VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-      1,
-  };
-  err = vkAllocateCommandBuffers(demo->device, &cmd, &tmp_cmd);
-  assert(!err);
-
-  const VkCommandBufferBeginInfo cmd_buf_info = {
-      VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-      NULL,
-      VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
-      NULL,
-  };
-  err = vkBeginCommandBuffer(tmp_cmd, &cmd_buf_info);
-  assert(!err);
-
-  //prepare_image
-
-  struct VkImageCreateInfo const image_create_info = {
-      VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-      NULL,
-      (!vkheader.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
-      vkheader.imageType,
-      vkheader.format,
-      {vkheader.extent.width, vkheader.extent.height, vkheader.extent.depth},
-      vkheader.mipLevels,
-      vkheader.arrayLayers,
-      VK_SAMPLE_COUNT_1_BIT,
-      VK_IMAGE_TILING_OPTIMAL,
-      VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
-      VK_SHARING_MODE_EXCLUSIVE,
-      0U,
-      NULL,
-      VK_IMAGE_LAYOUT_UNDEFINED};
-
-  err = vkCreateImage(demo->device, &image_create_info, NULL, &demo->dds_image);
-  assert(!err);
-
-  VkMemoryRequirements mem_reqs;
-  vkGetImageMemoryRequirements(demo->device, demo->dds_image, &mem_reqs);
-
-  uint32_t typeIndex;
-  pass = memory_type_from_properties(demo, mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, &typeIndex);
-  assert(pass);
-
-  VkMemoryAllocateInfo dds_mem_alloc = {
-      VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO,
-      NULL,
-      mem_reqs.size,
-      typeIndex};
-
-  err = vkAllocateMemory(demo->device, &dds_mem_alloc, NULL, &demo->dds_mem);
-  assert(!err);
-
-  err = vkBindImageMemory(demo->device, demo->dds_image, demo->dds_mem, 0);
-  assert(!err);
-
-  //memory layout
-
-  VkImageMemoryBarrier image_memory_barrier_pre[1] = {
-      {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-       NULL,
-       0,
-       VK_ACCESS_TRANSFER_WRITE_BIT,
-       VK_IMAGE_LAYOUT_UNDEFINED,
-       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-       VK_QUEUE_FAMILY_IGNORED,
-       VK_QUEUE_FAMILY_IGNORED,
-       demo->dds_image,
-       {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1}}};
-
-  vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_pre);
-
-  vkCmdCopyBufferToImage(tmp_cmd, demo->mStagingBuffer.buffer(), demo->dds_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, NumSubresource, regions);
-
-  VkImageMemoryBarrier image_memory_barrier_post[1] = {
-      {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-       NULL,
-       0,
-       VK_ACCESS_SHADER_READ_BIT,
-       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-       VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-       VK_QUEUE_FAMILY_IGNORED,
-       VK_QUEUE_FAMILY_IGNORED,
-       demo->dds_image,
-       {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1}}};
-  vkCmdPipelineBarrier(tmp_cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_post);
-
-  //flush cmd
-  err = vkEndCommandBuffer(tmp_cmd);
-  assert(!err);
-
-  VkFence fence;
-  VkFenceCreateInfo fence_ci = {VK_STRUCTURE_TYPE_FENCE_CREATE_INFO, NULL, 0};
-  err = vkCreateFence(demo->device, &fence_ci, NULL, &fence);
-  assert(!err);
-
-  const VkCommandBuffer cmd_bufs[] = {tmp_cmd};
-  VkSubmitInfo submit_info = {VK_STRUCTURE_TYPE_SUBMIT_INFO,
-                              NULL,
-                              0,
-                              NULL,
-                              NULL,
-                              1,
-                              cmd_bufs,
-                              0,
-                              NULL};
-
-  err = vkQueueSubmit(demo->graphics_queue, 1, &submit_info, fence);
-  assert(!err);
-
-  // create sampler
-  const VkSamplerCreateInfo sampler = {
-      .sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO,
-      .pNext = NULL,
-      .magFilter = VK_FILTER_NEAREST,
-      .minFilter = VK_FILTER_NEAREST,
-      .mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST,
-      .addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
-      .mipLodBias = 0.0f,
-      .anisotropyEnable = VK_FALSE,
-      .maxAnisotropy = 1,
-      .compareOp = VK_COMPARE_OP_NEVER,
-      .minLod = 0.0f,
-      .maxLod = 0.0f,
-      .borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE,
-      .unnormalizedCoordinates = VK_FALSE,
-  };
-  err = vkCreateSampler(demo->device, &sampler, NULL, &demo->dds_sampler);
-  assert(!err);
-
-  // create image view
-
-  VkImageViewCreateInfo view = {
-      .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
-      .pNext = NULL,
-      .image = VK_NULL_HANDLE,
-      .viewType = VK_IMAGE_VIEW_TYPE_2D,
-      .format = vkheader.format,
-      .components =
-          {
-              VK_COMPONENT_SWIZZLE_R,
-              VK_COMPONENT_SWIZZLE_G,
-              VK_COMPONENT_SWIZZLE_B,
-              VK_COMPONENT_SWIZZLE_A,
-          },
-      .subresourceRange = {VK_IMAGE_ASPECT_COLOR_BIT, 0, vkheader.mipLevels, 0, 1},
-      .flags = 0,
-  };
-
-  view.image = demo->dds_image;
-  err = vkCreateImageView(demo->device, &view, NULL, &demo->dds_view);
-  assert(!err);
-
-  err = vkWaitForFences(demo->device, 1, &fence, VK_TRUE, UINT64_MAX);
-  assert(!err);
-
-  vkDestroyFence(demo->device, fence, NULL);
-
-  vkFreeCommandBuffers(demo->device, tmp_cmd_pool, 1, &tmp_cmd);
-
-  vkDestroyCommandPool(demo->device, tmp_cmd_pool, NULL);
-}
-#endif
-
 static void demo_cleanupTexture_DDS(struct demo *demo)
 {
   vkDestroyImageView(demo->device, demo->dds_view, NULL);
@@ -2093,7 +1861,7 @@ extern unsigned int _pvr_asset_len;
 
 #include "TextureLoader.h"
 #include "VK/TextureLoader_VK.h"
-static void demo_loadTexture_PVR(struct demo *demo)
+static void demo_loadTexture_DDS(struct demo *demo)
 {
 
   struct TextureLoader_NeutralHeader header;

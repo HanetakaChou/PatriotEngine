@@ -11,8 +11,8 @@ LOCAL_MODULE := vkcube
 LOCAL_SRC_FILES := \
 	main.cpp \
 	TextureLoader.cpp \
-	TextureLoader_DDS.cpp \
-	TextureLoader_PVR.cpp \
+	DDS/TextureLoader_DDS.cpp \
+	PVR/TextureLoader_PVR.cpp \
 	VK/TextureLoader_VK.cpp \
 	VK/StagingBuffer.cpp \
 	asset.cpp

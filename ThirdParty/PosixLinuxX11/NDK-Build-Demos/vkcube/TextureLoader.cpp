@@ -13,8 +13,8 @@ enum
     PVR_HEADER_V3 = TextureLoader_MakeFourCC('P', 'V', 'R', 3)
 };
 
-#include "TextureLoader_DDS.h"
-#include "TextureLoader_PVR.h"
+#include "DDS/TextureLoader_DDS.h"
+#include "PVR/TextureLoader_PVR.h"
 
 bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
                                         struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
