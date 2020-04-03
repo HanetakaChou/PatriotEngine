@@ -31,11 +31,11 @@ static inline uint32_t _GetFormatAspectMask(VkFormat vkformat, uint32_t aspectIn
 
 static inline bool _IsFormatCompressed(VkFormat vkformat);
 
-static inline uint32_t _ComputeCompressedFormatImageSize(VkFormat vkformat, uint32_t width, uint32_t height, uint32_t depth);
-
 static inline uint32_t _GetCompressedFormatBlockWidth(VkFormat vkformat);
 
 static inline uint32_t _GetCompressedFormatBlockHeight(VkFormat vkformat);
+
+static inline uint32_t _GetCompressedFormatBlockDepth(VkFormat vkformat);
 
 static inline uint32_t _GetCompressedFormatBlockSizeInBytes(VkFormat vkformat);
 
@@ -88,11 +88,11 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
 
                 if (_IsFormatCompressed(vk_texture_header->format))
                 {
-                    outputRowSize = _ComputeCompressedFormatImageSize(vk_texture_header->format, w, 1, 1);
-                    size_t outputSliceSize = _ComputeCompressedFormatImageSize(vk_texture_header->format, w, h, 1);
+                    assert(1 == _GetCompressedFormatBlockDepth(vk_texture_header->format));
 
-                    outputNumRows = outputSliceSize / outputRowSize;
-                    outputNumSlices = _ComputeCompressedFormatImageSize(vk_texture_header->format, w, h, d) / outputSliceSize;
+                    outputRowSize = ((w + _GetCompressedFormatBlockWidth(vk_texture_header->format) - 1) / _GetCompressedFormatBlockWidth(vk_texture_header->format)) * _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format);
+                    outputNumRows = (h + _GetCompressedFormatBlockHeight(vk_texture_header->format) - 1) / _GetCompressedFormatBlockHeight(vk_texture_header->format);
+                    outputNumSlices = d;
 
                     outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
                     outputSlicePitch = outputRowPitch * outputNumRows;
@@ -687,6 +687,17 @@ static inline uint32_t _GetCompressedFormatBlockHeight(VkFormat vkformat)
     assert(vk_format_info.isBlock);
 
     return vk_format_info.compressed.compressedBlockHeight;
+}
+
+static inline uint32_t _GetCompressedFormatBlockDepth(VkFormat vkformat)
+{
+    assert(vkformat < (sizeof(gVulkanFormatInfoTable) / sizeof(gVulkanFormatInfoTable[0])));
+
+    _FormatInfo vk_format_info = gVulkanFormatInfoTable[vkformat];
+
+    assert(vk_format_info.isBlock);
+
+    return vk_format_info.compressed.compressedBlockDepth;
 }
 
 static inline uint32_t _GetCompressedFormatBlockSizeInBytes(VkFormat vkformat)

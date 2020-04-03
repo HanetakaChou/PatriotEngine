@@ -250,6 +250,8 @@ static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, siz
 
 static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat);
 
+static inline bool IsDepthStencil(uint32_t ddsformat);
+
 struct TextureLoader_DDSHeader
 {
     bool isCubeMap;
@@ -542,7 +544,17 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
         return false;
     }
 
-    size_t numberOfPlanes = _GetFormatPlaneCount(texture_header.format);
+    uint32_t numberOfPlanes = _GetFormatPlaneCount(texture_header.format);
+    if (0 == numberOfPlanes)
+    {
+        return false;
+    }
+
+    if ((numberOfPlanes > 1) && IsDepthStencil(texture_header.format))
+    {
+        // DirectX 12 uses planes for stencil, DirectX 11 does not
+        return false;
+    }
 
     // Create the texture
     size_t numberOfResources = numberOfPlanes * texture_header.mipCount * texture_header.arraySize;
@@ -559,39 +571,40 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
 
     size_t inputSkipBytes = texture_data_offset;
 
-    for (size_t p = 0; p < numberOfPlanes; ++p)
+    for (uint32_t arraySlice = 0; arraySlice < texture_header.arraySize; ++arraySlice)
     {
-        for (size_t j = 0; j < texture_header.arraySize; ++j)
+        size_t w = texture_header.width;
+        size_t h = texture_header.height;
+        size_t d = texture_header.depth;
+        for (uint32_t mipSlice = 0; mipSlice < texture_header.mipCount; ++mipSlice)
         {
-            size_t w = texture_header.width;
-            size_t h = texture_header.height;
-            size_t d = texture_header.depth;
-            for (size_t i = 0; i < texture_header.mipCount; ++i)
+
+            size_t NumBytes = 0;
+            size_t RowBytes = 0;
+            size_t NumRows = 0;
+            if (!GetSurfaceInfo(w, h, texture_header.format, &NumBytes, &RowBytes, &NumRows))
             {
+                return false;
+            }
 
-                size_t NumBytes = 0;
-                size_t RowBytes = 0;
-                size_t NumRows = 0;
-                if (!GetSurfaceInfo(w, h, texture_header.format, &NumBytes, &RowBytes, &NumRows))
-                {
-                    return false;
-                }
+            if (NumBytes > UINT32_MAX || RowBytes > UINT32_MAX || NumRows > UINT32_MAX)
+            {
+                return false;
+            }
 
-                if (NumBytes > UINT32_MAX || RowBytes > UINT32_MAX || NumRows > UINT32_MAX)
-                {
-                    return false;
-                }
+            // GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
+            // LoadToNative
+            // LoadCompressedToNative
+            size_t inputRowSize = RowBytes;
+            size_t inputNumRows = NumRows;
+            size_t inputSliceSize = NumBytes;
+            size_t inputNumSlices = d;
 
-                // GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
-                // LoadToNative
-                // LoadCompressedToNative
-                size_t inputRowSize = RowBytes;
-                size_t inputNumRows = NumRows;
-                size_t inputSliceSize = NumBytes;
-                size_t inputNumSlices = d;
-
+            assert(1 == numberOfPlanes);
+            for (size_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
+            {
                 // MemcpySubresource d3dx12.h
-                size_t dstSubresource = TextureLoader_CalcSubresource(i, j, p, texture_header.mipCount, texture_header.arraySize);
+                size_t dstSubresource = TextureLoader_CalcSubresource(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
 
                 assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
                 assert(inputNumRows == pDest[dstSubresource].outputNumRows);
@@ -601,7 +614,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                 {
                     int64_t offset_cur;
                     assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
-                    
+
                     ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
                     if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
                     {
@@ -644,24 +657,24 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                         }
                     }
                 }
+            }
 
-                inputSkipBytes += inputSliceSize * inputNumSlices;
+            inputSkipBytes += inputSliceSize * inputNumSlices;
 
-                w = w >> 1;
-                h = h >> 1;
-                d = d >> 1;
-                if (w == 0)
-                {
-                    w = 1;
-                }
-                if (h == 0)
-                {
-                    h = 1;
-                }
-                if (d == 0)
-                {
-                    d = 1;
-                }
+            w = w >> 1;
+            h = h >> 1;
+            d = d >> 1;
+            if (w == 0)
+            {
+                w = 1;
+            }
+            if (h == 0)
+            {
+                h = 1;
+            }
+            if (d == 0)
+            {
+                d = 1;
             }
         }
     }
@@ -1527,4 +1540,25 @@ static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat)
 {
     assert(ddsformat < (sizeof(gDdsFormatInfoTable) / sizeof(gDdsFormatInfoTable[0])));
     return gDdsFormatInfoTable[ddsformat];
+}
+
+static inline bool IsDepthStencil(uint32_t ddsformat)
+{
+    switch (ddsformat)
+    {
+    case DDS_DXGI_FORMAT_R32G8X24_TYPELESS:
+    case DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT:
+    case DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS:
+    case DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT:
+    case DDS_DXGI_FORMAT_D32_FLOAT:
+    case DDS_DXGI_FORMAT_R24G8_TYPELESS:
+    case DDS_DXGI_FORMAT_D24_UNORM_S8_UINT:
+    case DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS:
+    case DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT:
+    case DDS_DXGI_FORMAT_D16_UNORM:
+        return true;
+
+    default:
+        return false;
+    }
 }

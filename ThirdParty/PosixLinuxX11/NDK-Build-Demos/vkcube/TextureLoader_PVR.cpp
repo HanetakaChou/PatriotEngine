@@ -214,15 +214,24 @@ struct Pvr_MetaData
 
 struct TextureLoader_PVRHeader
 {
-    bool _pvr3_0;
-    uint8_t textureAtlasCount;
-    struct
-    {
-        uint32_t XPosition;
-        uint32_t YPosition;
-        uint32_t Width;
-        uint32_t Height;
-    } textureAtlasCoords[255];
+    uint64_t pixelFormat;
+
+    uint32_t width;
+    uint32_t height;
+    uint32_t depth;
+    uint32_t numMipMaps;
+    uint32_t numSurfaces;
+    uint32_t numFaces;
+
+    //The UV has been baked into meshes
+    //bool _pvr3_0;
+    //struct
+    //{
+    //    uint32_t XPosition;
+    //    uint32_t YPosition;
+    //    uint32_t Width;
+    //    uint32_t Height;
+    //} textureAtlasCoords[...];
 
     bool _pvr3_1;
     struct
@@ -239,9 +248,14 @@ struct TextureLoader_PVRHeader
 
     bool _pvr3_4;
     uint32_t borderData[3];
+
+    //bool _pvr3_5;
+    //uint8_t paddingData[...];
 };
 
 //--------------------------------------------------------------------------------------
+
+static inline uint32_t Pvr_GetPixelFormatPartHigh(uint64_t pixelFormat);
 
 static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t *minX, uint32_t *minY, uint32_t *minZ);
 
@@ -276,22 +290,6 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
             }
         }
 
-        {
-            uint32_t uiSmallestWidth;
-            uint32_t uiSmallestHeight;
-            uint32_t uiSmallestDepth;
-            if (!Pvr_GetMinDimensionsForFormat(header.pixelFormat, &uiSmallestWidth, &uiSmallestHeight, &uiSmallestDepth))
-            {
-                return false;
-            }
-        }
-
-        if (0 == Pvr_GetBitsPerPixel(header.pixelFormat))
-        {
-            return false;
-        }
-
-        texture_header->_pvr3_0 = false;
         texture_header->_pvr3_1 = false;
         texture_header->_pvr3_2 = false;
         texture_header->_pvr3_3 = false;
@@ -318,22 +316,13 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
                 {
                 case 0:
                 {
-                    if (metadata._dataSize <= sizeof(texture_header->textureAtlasCoords))
-                    {
-                        assert(0 == (metadata._dataSize % sizeof(texture_header->textureAtlasCoords[0])));
-                        ptrdiff_t BytesRead = stream_read(stream, &texture_header->textureAtlasCoords, metadata._dataSize);
-                        if (BytesRead == -1 || BytesRead < metadata._dataSize)
-                        {
-                            return false;
-                        }
-                        texture_header->textureAtlasCount = metadata._dataSize / sizeof(texture_header->textureAtlasCoords[0]);
-                        texture_header->_pvr3_0 = true;
-                        metaDataRead += metadata._dataSize;
-                    }
-                    else
+                    //The UV has been baked into meshes
+                    assert(0 == (metadata._dataSize % (sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t))));
+                    if (-1 == stream_seek(stream, metadata._dataSize, TEXTURE_LOADER_STREAM_SEEK_CUR))
                     {
                         return false;
                     }
+                    metaDataRead += metadata._dataSize;
                 }
                 break;
                 case 1:
@@ -423,13 +412,161 @@ bool PVRTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
 }
 
 //--------------------------------------------------------------------------------------
+#include <algorithm>
+bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_read)(void const *stream, void *buf, size_t count), int64_t (*stream_seek)(void const *stream, int64_t offset, int whence),
+                                         uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                         struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
+{
+    struct TextureLoader_PVRHeader texture_header;
+    size_t texture_data_offset;
+    if (!LoadTextureHeaderFromStream(stream, stream_read, stream_seek, &texture_header, &texture_data_offset))
+    {
+        return false;
+    }
+
+    uint32_t numberOfPlanes = 1;
+
+    // The smallest divisible sizes for a pixel format
+    uint32_t uiSmallestWidth = 1;
+    uint32_t uiSmallestHeight = 1;
+    uint32_t uiSmallestDepth = 1;
+
+    // Get the pixel format's minimum dimensions.
+    if (!Pvr_GetMinDimensionsForFormat(texture_header.pixelFormat, &uiSmallestWidth, &uiSmallestHeight, &uiSmallestDepth))
+    {
+        return false;
+    }
+
+    size_t inputSkipBytes = texture_data_offset;
+
+    // Write the texture data
+    for (uint32_t mipMap = 0; mipMap < texture_header.numMipMaps; ++mipMap)
+    {
+        // Get the dimensions of the current MIP Map level.
+        uint32_t uiWidth = std::max<uint32_t>(texture_header.width >> mipMap, 1);
+        uint32_t uiHeight = std::max<uint32_t>(texture_header.height >> mipMap, 1);
+        uint32_t uiDepth = std::max<uint32_t>(texture_header.depth >> mipMap, 1);
+
+        // If pixel format is compressed, the dimensions need to be padded.
+        if (0 == Pvr_GetPixelFormatPartHigh(texture_header.pixelFormat))
+        {
+            uiWidth = uiWidth + ((-1 * uiWidth) % uiSmallestWidth);
+            uiHeight = uiHeight + ((-1 * uiHeight) % uiSmallestHeight);
+            uiDepth = uiDepth + ((-1 * uiDepth) % uiSmallestDepth);
+        }
+
+        uint32_t uiRowBytes;
+        uint32_t uiNumRows;
+        uint32_t uiNumSlices;
+
+        if (texture_header.pixelFormat >= Pvr_PixelTypeID_ASTC_4x4 && texture_header.pixelFormat <= Pvr_PixelTypeID_ASTC_6x6x6)
+        {
+            uiRowBytes = (128 / 8) * (uiWidth / uiSmallestWidth);
+            uiNumRows = (uiHeight / uiSmallestHeight);
+            uiNumSlices = (uiDepth / uiSmallestDepth);
+        }
+        else
+        {
+            uint32_t bpp = Pvr_GetBitsPerPixel(texture_header.pixelFormat);
+            if (0 == bpp)
+            {
+                return false;
+            }
+
+            uiRowBytes = ((bpp * uiWidth) / 8) * uiSmallestHeight * uiSmallestDepth;
+            uiNumRows = (uiHeight / uiSmallestHeight);
+            uiNumSlices = (uiDepth / uiSmallestDepth);
+        }
+
+        size_t inputRowSize = uiRowBytes;
+        size_t inputNumRows = uiNumRows;
+        size_t inputSliceSize = uiRowBytes * uiNumRows;
+        size_t inputNumSlices = uiNumSlices;
+
+        for (uint32_t surface = 0; surface < texture_header.numSurfaces; ++surface)
+        {
+            for (uint32_t face = 0; face < texture_header.numFaces; ++face)
+            {
+                assert(1 == numberOfPlanes);
+                for (uint32_t plane = 0; plane < numberOfPlanes; ++plane)
+                {
+                    size_t dstSubresource = TextureLoader_CalcSubresource(mipMap, texture_header.numFaces * texture_header.numSurfaces, plane, texture_header.numMipMaps, texture_header.numFaces * texture_header.numSurfaces);
+
+                    assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
+                    assert(inputNumRows == pDest[dstSubresource].outputNumRows);
+                    assert(inputRowSize == pDest[dstSubresource].outputRowSize);
+
+                    if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
+                    {
+                        int64_t offset_cur;
+                        assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+
+                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                        if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                        {
+                            return false;
+                        }
+                    }
+                    else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
+                    {
+                        assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+
+                        for (size_t z = 0; z < inputNumSlices; ++z)
+                        {
+                            int64_t offset_cur;
+                            assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+
+                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                            if (BytesRead == -1 || BytesRead < inputSliceSize)
+                            {
+                                return false;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+                        assert(inputRowSize <= pDest[dstSubresource].outputRowPitch);
+
+                        for (size_t z = 0; z < inputNumSlices; ++z)
+                        {
+                            for (size_t y = 0; y < inputNumRows; ++y)
+                            {
+                                int64_t offset_cur;
+                                assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
+
+                                ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                                if (BytesRead == -1 || BytesRead < inputRowSize)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                inputSkipBytes += inputSliceSize * inputNumSlices;
+            }
+        }
+    }
+
+    return false;
+}
+
+//--------------------------------------------------------------------------------------
+static inline uint32_t Pvr_GetPixelFormatPartHigh(uint64_t pixelFormat)
+{
+    return (pixelFormat >> 32);
+}
+
+//--------------------------------------------------------------------------------------
 static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t *minX, uint32_t *minY, uint32_t *minZ)
 {
     assert(NULL != minX);
     assert(NULL != minY);
     assert(NULL != minZ);
 
-    if (0 == (pixelFormat >> 32))
+    if (0 == Pvr_GetPixelFormatPartHigh(pixelFormat))
     {
         switch (pixelFormat)
         {
@@ -624,7 +761,7 @@ static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t 
 //--------------------------------------------------------------------------------------
 static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
 {
-    if (0 == (pixelFormat >> 32))
+    if (0 == Pvr_GetPixelFormatPartHigh(pixelFormat))
     {
         switch (pixelFormat)
         {
