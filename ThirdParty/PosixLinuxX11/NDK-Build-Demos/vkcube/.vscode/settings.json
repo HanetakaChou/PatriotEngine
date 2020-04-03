@@ -31,7 +31,8 @@
         "__split_buffer": "cpp",
         "initializer_list": "cpp",
         "iterator": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "memory_resource": "cpp"
     },
     "C_Cpp.default.cppStandard": "c++11",
     "C_Cpp.default.cStandard": "c99",

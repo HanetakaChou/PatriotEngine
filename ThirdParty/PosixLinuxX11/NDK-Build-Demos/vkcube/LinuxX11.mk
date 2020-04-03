@@ -13,7 +13,8 @@ LOCAL_SRC_FILES := \
 	TextureLoader_DDS.cpp \
 	TextureLoader_PVR.cpp \
 	VK/TextureLoader_VK.cpp \
-	VK/StagingBuffer.cpp 
+	VK/StagingBuffer.cpp \
+	asset.cpp
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Bionic-Redistributable/include
 
