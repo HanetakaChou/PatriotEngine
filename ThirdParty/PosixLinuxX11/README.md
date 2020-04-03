@@ -39,11 +39,15 @@ ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86_64/libc++
 mv my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a.bak
 ln -s libc++_shared.so my-ndk-dir/sources/cxx-stl/llvm-libc++/libs/x86/libc++_static.a
 
-## Alternative
+my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch="$target_arch" --platform=android-24 --install-dir="$HOME/bionic-toolchain-$target_arch"
+
+## Alternative (After make-standalone-toolchain) ## default to c++shared
 rm -rf "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
 ln -s libc++_shared.so "$HOME/bionic-toolchain-x86_64/${target_host}/lib/libstdc++.a"
 
-my-ndk-dir/build/tools/make-standalone-toolchain.sh --use-llvm --stl=libc++ --arch="$target_arch" --platform=android-24 --install-dir="$HOME/bionic-toolchain-$target_arch"
+## Fix libcxx headers
+in directory "include/c++/4.9", search "__ANDROID__" in headers
+append "|| __linux && __BIONIC__"
 
 ## Patch for x86_64 
 rm -rf "$HOME/bionic-toolchain-x86_64/sysroot/usr/lib"

@@ -6,15 +6,16 @@ target_name="vkcube"
 int_dir="libs/x86"
 out_dir="../../../../Binary/x86/Release"
 
+rm -rf generated
+mkdir -p generated
+
 # glslang
-rm -rf generated/cube.vert.inc
-rm -rf generated/cube.frag.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.vert -x -o generated/cube.vert.inc
 ../../glibc-glslang/bin64/glslangValidator -V cube.frag -x -o generated/cube.frag.inc
 
 # include-bin
-rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-ASTC.pvr generated/ll_hires-ASTC.pvr.h
 
 # build by ndk
 # rm -rf obj/local/x86
@@ -95,4 +96,4 @@ cp -f ../../Bionic-Redistributable/lib/linker ${out_dir}/
 cd ${out_dir}
   
 # execute the generated a.out  
-./${target_name} # --validate
+./${target_name} #--validate
