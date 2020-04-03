@@ -556,7 +556,6 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
         return false;
     }
 
-    // Create the texture
     size_t numberOfResources = numberOfPlanes * texture_header.mipCount * texture_header.arraySize;
 
     if (numberOfResources > 30720) //D3D12_REQ_SUBRESOURCES
@@ -571,6 +570,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
 
     size_t inputSkipBytes = texture_data_offset;
 
+    // Create the texture
     for (uint32_t arraySlice = 0; arraySlice < texture_header.arraySize; ++arraySlice)
     {
         size_t w = texture_header.width;
@@ -1240,7 +1240,7 @@ static inline size_t BitsPerPixel(uint32_t fmt) noexcept
 }
 
 //--------------------------------------------------------------------------------------
-static uint32_t gDdsToNeutralTypeMap[] = {
+static uint32_t const gDdsToNeutralTypeMap[] = {
     TEXTURE_LOADER_TYPE_UNDEFINED,
     TEXTURE_LOADER_TYPE_UNDEFINED,
     TEXTURE_LOADER_TYPE_1D,
@@ -1256,7 +1256,7 @@ static inline uint32_t _GetNeutralType(uint32_t ddstype)
 }
 
 //--------------------------------------------------------------------------------------
-static uint32_t gDdsToNeutralFormatMap[] = {
+static uint32_t const gDdsToNeutralFormatMap[] = {
     TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
     TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
     TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
@@ -1400,7 +1400,7 @@ static inline uint32_t _GetNeutralFormat(uint32_t ddsformat)
 }
 
 //--------------------------------------------------------------------------------------
-static uint32_t gDdsFormatInfoTable[] = {
+static uint32_t const gDdsFormatPlaneCountInfoTable[] = {
     0, //DDS_DXGI_FORMAT_UNKNOWN
     1, //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
     1, //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
@@ -1535,12 +1535,12 @@ static uint32_t gDdsFormatInfoTable[] = {
     0, //DDS_DXGI_FORMAT_V208
     0  //DDS_DXGI_FORMAT_V408
 };
-static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(gDdsFormatInfoTable) / sizeof(gDdsFormatInfoTable[0])), "gDdsFormatInfoTable may not match!");
+static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(gDdsFormatPlaneCountInfoTable) / sizeof(gDdsFormatPlaneCountInfoTable[0])), "gDdsFormatPlaneCountInfoTable may not match!");
 
 static inline uint32_t _GetFormatPlaneCount(uint32_t ddsformat)
 {
-    assert(ddsformat < (sizeof(gDdsFormatInfoTable) / sizeof(gDdsFormatInfoTable[0])));
-    return gDdsFormatInfoTable[ddsformat];
+    assert(ddsformat < (sizeof(gDdsFormatPlaneCountInfoTable) / sizeof(gDdsFormatPlaneCountInfoTable[0])));
+    return gDdsFormatPlaneCountInfoTable[ddsformat];
 }
 
 static inline bool IsDepthStencil(uint32_t ddsformat)
@@ -1558,7 +1558,6 @@ static inline bool IsDepthStencil(uint32_t ddsformat)
     case DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT:
     case DDS_DXGI_FORMAT_D16_UNORM:
         return true;
-
     default:
         return false;
     }

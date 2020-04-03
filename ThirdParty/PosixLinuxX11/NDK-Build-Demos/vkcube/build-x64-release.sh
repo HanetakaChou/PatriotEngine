@@ -17,10 +17,8 @@ rm -rf generated/cube.frag.inc
 # include-bin
 rm -rf generated/lunarg.ppm.h
 ../../glibc-include-bin/bin64/include-bin lunarg.ppm generated/lunarg.ppm.h
-rm -rf generated/l_hires-NVIDIA.dds.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-NVIDIA.dds generated/l_hires-NVIDIA.dds.h
-rm -rf generated/l_hires.pvr.h
-../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires.pvr generated/l_hires.pvr.h
+rm -rf generated/l_hires-ASTC.pvr.h
+../../glibc-include-bin/bin/include-bin ../../../Assets/Lenna/l_hires-ASTC.pvr generated/l_hires-ASTC.pvr.h
 
 # build by ndk
 # rm -rf obj/local/x86_64
@@ -95,10 +93,18 @@ cp -f ../../Bionic-Redistributable/lib64/libVkLayer_threading.so ${out_dir}/
 cp -f ../../Bionic-Redistributable/lib64/libVkLayer_unique_objects.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libVkLayer_utils.so ${out_dir}/  
 cp -f ../../Bionic-Redistributable/lib64/libSPIRV-Tools-shared.so ${out_dir}/  
+mkdir -p ${out_dir}/vulkan/implicit_layer.d/
+cp -f ../../Bionic-Redistributable/lib64/vulkan/implicit_layer.d/renderdoc_capture.json ${out_dir}/vulkan/implicit_layer.d/
+cp -f ../../Bionic-Redistributable/lib64/librenderdoc.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/libX11.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/libxcb-keysyms.so ${out_dir}/  
+cp -f ../../Bionic-Redistributable/lib64/renderdoccmd ${out_dir}/  
 
 # place the linker at cwd   
 cp -f ../../Bionic-Redistributable/lib64/linker ${out_dir}/
 cd ${out_dir}
   
 # execute the generated a.out  
-./${target_name} --validate
+export ENABLE_VULKAN_RENDERDOC_CAPTURE=1
+export RENDERDOC_CAPOPTS=ababaaabaaaaaaaaaaaaaaaaaaaaaaaaabaaaaaa #use /proc/**PID**/environ to view the options
+./${target_name} #--validate

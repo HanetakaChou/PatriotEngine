@@ -99,4 +99,4 @@ cp -f ../../Bionic-Redistributable/lib/linker ${out_dir}/
 cd ${out_dir}
   
 # execute the generated a.out  
-./${target_name} --validate
+./${target_name} #--validate
