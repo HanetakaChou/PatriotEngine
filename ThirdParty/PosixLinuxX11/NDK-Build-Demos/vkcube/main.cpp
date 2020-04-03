@@ -417,9 +417,9 @@ void *rendermain(void *arg)
 
   //demo_loadTexture_DDS(demo);
 
-  //uint8_t *ptr;
-  //VkDeviceSize offset;
-  //demo->mStagingBuffer.allocate(1000, 128, &ptr, &offset);
+  uint8_t *ptr;
+  VkDeviceSize offset;
+  demo->mStagingBuffer.allocate(1000, 128, &ptr, &offset);
 
   demo_loadTexture_PVR(demo);
 
@@ -1881,10 +1881,10 @@ static void demo_loadTexture_DDS(struct demo *demo)
   VkDeviceSize offset;
   demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
 
-  for (int i = 0; i < NumSubresource; ++i)
-  {
-    dest[i].stagingOffset += offset;
-  }
+  //for (int i = 0; i < NumSubresource; ++i)
+  //{
+  //  dest[i].stagingOffset += offset;
+  //}
 
   for (int i = 0; i < NumSubresource; ++i)
   {
@@ -2118,10 +2118,10 @@ static void demo_loadTexture_PVR(struct demo *demo)
   VkDeviceSize offset;
   demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
 
-  for (int i = 0; i < NumSubresource; ++i)
-  {
-    dest[i].stagingOffset += offset;
-  }
+  //for (int i = 0; i < NumSubresource; ++i)
+  //{
+  //  dest[i].stagingOffset += offset;
+  //}
 
   for (int i = 0; i < NumSubresource; ++i)
   {
