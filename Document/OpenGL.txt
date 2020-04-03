@@ -36,7 +36,7 @@ glCompressedTextureSubImage2D
 
 //Block Compression
 http://msdn.microsoft.com/en-us/library/hh308955
-R5 G6 B5 A0-1 UNORM             ->  DXGI_FORMAT_BC1_UNORM           D3DFMT_DXT1                     VK_FORMAT_BC1_RGBA_UNORM_BLOCK      GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+R5 G6 B5 A0-1 UNORM             ->  DXGI_FORMAT_BC1_UNORM           D3DFMT_DXT1                     VK_FORMAT_BC1_RGBA_UNORM_BLOCK      GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
                                     DXGI_FORMAT_BC1_UNORM_SRGB                                      VK_FORMAT_BC1_RGBA_SRGB_BLOCK
 R5 G6 B5 A4 UNORM               ->  DXGI_FORMAT_BC2_UNORM           D3DFMT_DXT2/D3DFMT_DXT3         VK_FORMAT_BC2_UNORM_BLOCK           GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
                                     DXGI_FORMAT_BC2_UNORM_SRGB                                      VK_FORMAT_BC2_SRGB_BLOCK

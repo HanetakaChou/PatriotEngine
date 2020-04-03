@@ -8,7 +8,14 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := vkcube
 
-LOCAL_SRC_FILES := main.cpp
+LOCAL_SRC_FILES := \
+	main.cpp \
+	TextureLoader.cpp \
+	DDS/TextureLoader_DDS.cpp \
+	PVR/TextureLoader_PVR.cpp \
+	VK/TextureLoader_VK.cpp \
+	VK/StagingBuffer.cpp \
+	asset.cpp
 
 LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Bionic-Redistributable/include
 
