@@ -2091,6 +2091,36 @@ static void demo_loadTexture_PVR(struct demo *demo)
   struct TextureLoader_NeutralHeader header;
   size_t header_offset = 0;
   PVRTextureLoader_LoadHeaderFromMemory(_________Assets_Lenna_l_hires_RGBA_pvr, _________Assets_Lenna_l_hires_RGBA_pvr_len, &header, &header_offset);
+
+  struct TextureLoader_SpecificHeader vkheader = TextureLoader_ToSpecificHeader(&header);
+
+  VkFormatProperties props;
+  vkGetPhysicalDeviceFormatProperties(demo->gpu, vkheader.format, &props);
+  assert(props.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+
+  uint32_t NumSubresource = TextureLoader_GetFormatAspectCount(vkheader.format) * vkheader.arrayLayers * vkheader.mipLevels;
+
+  struct TextureLoader_MemcpyDest dest[15];
+  struct VkBufferImageCopy regions[15];
+  size_t TotalSize = TextureLoader_GetCopyableFootprints(&vkheader,
+                                                         demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, demo->gpu_props.limits.optimalBufferCopyRowPitchAlignment,
+                                                         NumSubresource, dest, regions);
+
+  uint8_t *ptr;
+  VkDeviceSize offset;
+  demo->mStagingBuffer.allocate(TotalSize, demo->gpu_props.limits.optimalBufferCopyOffsetAlignment, &ptr, &offset);
+
+  for (int i = 0; i < NumSubresource; ++i)
+  {
+    dest[i].stagingOffset += offset;
+  }
+
+  for (int i = 0; i < NumSubresource; ++i)
+  {
+    regions[i].bufferOffset += offset;
+  }
+
+  PVRTextureLoader_FillDataFromMemory(_________Assets_Lenna_l_hires_RGBA_pvr, _________Assets_Lenna_l_hires_RGBA_pvr_len, ptr, NumSubresource, dest, &header, &header_offset);
 }
 
 template <typename T>
@@ -2966,7 +2996,7 @@ static void demo_prepare_stagingbuffer(struct demo *demo)
   VkResult U_ASSERT_ONLY err;
   bool U_ASSERT_ONLY pass;
 
-  size_t buffersize = 1024 * 1024 * 64;
+  size_t buffersize = 1024 * 1024 * 128;
 
   VkBufferCreateInfo buf_info = {
       VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,

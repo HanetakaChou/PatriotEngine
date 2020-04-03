@@ -11,9 +11,10 @@ static inline constexpr uint32_t Pvr_MakeFourCC(char ch0, char ch1, char ch2, ch
 
 enum
 {
-    Pvr_HeaderSizeV1 = 44, // Header sizes, used as identifiers for previous versions of the header.
-    Pvr_HeaderSizeV2 = 52, // Header sizes, used as identifiers for previous versions of the header.
-    Pvr_HeaderVersionV3 = Pvr_MakeFourCC('P', 'V', 'R', 3)
+    Pvr_HeaderSizeV1 = 44,                                          // Header sizes, used as identifiers for previous versions of the header.
+    Pvr_HeaderSizeV2 = 52,                                          // Header sizes, used as identifiers for previous versions of the header.
+    Pvr_HeaderVersionV3 = Pvr_MakeFourCC('P', 'V', 'R', 3),         // if endianess does match.
+    Pvr_HeaderVersionV3_Reversed = Pvr_MakeFourCC(3, 'R', 'V', 'P') // if endianess does not match.
 };
 
 /// <summary>Version 1 of the PVR file format</summary>
@@ -46,8 +47,14 @@ struct Pvr_HeaderV2
     uint32_t greenBitMask;        //!< mask for green bits
     uint32_t blueBitMask;         //!< mask for blue bits
     uint32_t alphaBitMask;        //!< mask for alpha channel
-    uint32_t pvrMagic;            /*!< magic number identifying pvr file */
-    uint32_t numSurfaces;         /*!< the number of surfaces present in the pvr */
+    uint32_t pvrMagic;            //!< magic number identifying pvr file
+    uint32_t numSurfaces;         //!< the number of surfaces present in the pvr
+};
+
+enum
+{
+    Pvr_CompressedFlag = 0X01,   /// <summary>Sets whether or not the texture is compressed using PVRTexLib's FILE compression - this is independent of any texture compression. Currently unsupported.</summary>
+    Pvr_PremultipliedFlag = 0X02 /// <summary>Sets whether or not the texture's color has been pre-multiplied by the alpha values.</summary>
 };
 
 enum
@@ -113,7 +120,10 @@ enum
     Pvr_PixelTypeID_ASTC_5x5x5 = 47,
     Pvr_PixelTypeID_ASTC_6x5x5 = 48,
     Pvr_PixelTypeID_ASTC_6x6x5 = 49,
-    Pvr_PixelTypeID_ASTC_6x6x6 = 50
+    Pvr_PixelTypeID_ASTC_6x6x6 = 50,
+
+    // Invalid value
+    Pvr_PixelTypeID_NumCompressedPFs = 51
 };
 
 static inline constexpr uint64_t Pvr_MakePixelTypeChar(char C1Name, char C2Name, char C3Name, char C4Name, char C1Bits, char C2Bits, char C3Bits, char C4Bits)
@@ -127,39 +137,40 @@ enum
     Pvr_PixelTypeChar_R8 = Pvr_MakePixelTypeChar('r', '\0', '\0', '\0', 8, 0, 0, 0),
     Pvr_PixelTypeChar_R8G8 = Pvr_MakePixelTypeChar('r', 'g', '\0', '\0', 8, 8, 0, 0),
     Pvr_PixelTypeChar_R8G8B8 = Pvr_MakePixelTypeChar('r', 'g', 'b', '\0', 8, 8, 8, 0),
+    Pvr_PixelTypeChar_B8G8R8 = Pvr_MakePixelTypeChar('b', 'g', 'r', '\0', 8, 8, 8, 0),
     Pvr_PixelTypeChar_R8G8B8A8 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 8, 8, 8, 8),
+    Pvr_PixelTypeChar_B8G8R8A8 = Pvr_MakePixelTypeChar('b', 'g', 'r', 'a', 8, 8, 8, 8),
     Pvr_PixelTypeChar_A8B8G8R8 = Pvr_MakePixelTypeChar('a', 'b', 'g', 'r', 8, 8, 8, 8),
     Pvr_PixelTypeChar_R16 = Pvr_MakePixelTypeChar('r', '\0', '\0', '\0', 16, 0, 0, 0),
     Pvr_PixelTypeChar_R16G16 = Pvr_MakePixelTypeChar('r', 'g', '\0', '\0', 16, 16, 0, 0),
+    Pvr_PixelTypeChar_L16A16 = Pvr_MakePixelTypeChar('l', 'a', '\0', '\0', 16, 16, 0, 0),
+    Pvr_PixelTypeChar_R16G16B16 = Pvr_MakePixelTypeChar('r', 'g', 'b', '\0', 16, 16, 16, 0),
+    Pvr_PixelTypeChar_R16G16B16A16 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 16, 16, 16, 16),
     Pvr_PixelTypeChar_R32 = Pvr_MakePixelTypeChar('r', '\0', '\0', '\0', 32, 0, 0, 0),
+    Pvr_PixelTypeChar_L32 = Pvr_MakePixelTypeChar('l', '\0', '\0', '\0', 32, 0, 0, 0),
     Pvr_PixelTypeChar_R32G32 = Pvr_MakePixelTypeChar('r', 'g', '\0', '\0', 32, 32, 0, 0),
+    Pvr_PixelTypeChar_L32A32 = Pvr_MakePixelTypeChar('l', 'a', '\0', '\0', 32, 32, 0, 0),
     Pvr_PixelTypeChar_R32G32B32 = Pvr_MakePixelTypeChar('r', 'g', 'b', '\0', 32, 32, 32, 0),
     Pvr_PixelTypeChar_R32G32B32A32 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 32, 32, 32, 32),
     Pvr_PixelTypeChar_R5G6B5 = Pvr_MakePixelTypeChar('r', 'g', 'b', '\0', 5, 6, 5, 0),
     Pvr_PixelTypeChar_R4G4B4A4 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 4, 4, 4, 4),
     Pvr_PixelTypeChar_R5G5B5A1 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 5, 5, 5, 1),
-    Pvr_PixelTypeChar_B8G8R8 = Pvr_MakePixelTypeChar('b', 'g', 'r', '\0', 8, 8, 8, 0),
-    Pvr_PixelTypeChar_B8G8R8A8 = Pvr_MakePixelTypeChar('b', 'g', 'r', 'a', 8, 8, 8, 8),
+    Pvr_PixelTypeChar_R11G11B10 = Pvr_MakePixelTypeChar('b', 'g', 'r', '\0', 10, 11, 11, 0),
     Pvr_PixelTypeChar_D8 = Pvr_MakePixelTypeChar('d', '\0', '\0', '\0', 8, 0, 0, 0),
+    Pvr_PixelTypeChar_S8 = Pvr_MakePixelTypeChar('s', '\0', '\0', '\0', 8, 0, 0, 0),
     Pvr_PixelTypeChar_D16 = Pvr_MakePixelTypeChar('d', '\0', '\0', '\0', 16, 0, 0, 0),
     Pvr_PixelTypeChar_D24 = Pvr_MakePixelTypeChar('d', '\0', '\0', '\0', 24, 0, 0, 0),
     Pvr_PixelTypeChar_D32 = Pvr_MakePixelTypeChar('d', '\0', '\0', '\0', 32, 0, 0, 0),
     Pvr_PixelTypeChar_D16S8 = Pvr_MakePixelTypeChar('d', 's', '\0', '\0', 16, 8, 0, 0),
     Pvr_PixelTypeChar_D24S8 = Pvr_MakePixelTypeChar('d', 's', '\0', '\0', 24, 8, 0, 0),
-    Pvr_PixelTypeChar_D32S8 = Pvr_MakePixelTypeChar('d', 's', '\0', '\0', 32, 8, 0, 0),
-    Pvr_PixelTypeChar_S8 = Pvr_MakePixelTypeChar('s', '\0', '\0', '\0', 8, 0, 0, 0),
-    Pvr_PixelTypeChar_L32 = Pvr_MakePixelTypeChar('l', '\0', '\0', '\0', 32, 0, 0, 0),
-    Pvr_PixelTypeChar_L16A16 = Pvr_MakePixelTypeChar('l', 'a', '\0', '\0', 16, 16, 0, 0),
-    Pvr_PixelTypeChar_L32A32 = Pvr_MakePixelTypeChar('l', 'a', '\0', '\0', 32, 32, 0, 0),
-    Pvr_PixelTypeChar_R16G16B16A16 = Pvr_MakePixelTypeChar('r', 'g', 'b', 'a', 16, 16, 16, 16),
-    Pvr_PixelTypeChar_R16G16B16 = Pvr_MakePixelTypeChar('r', 'g', 'b', '\0', 16, 16, 16, 0),
-    Pvr_PixelTypeChar_R11G11B10 = Pvr_MakePixelTypeChar('b', 'g', 'r', '\0', 10, 11, 11, 0)
+    Pvr_PixelTypeChar_D32S8 = Pvr_MakePixelTypeChar('d', 's', '\0', '\0', 32, 8, 0, 0)
 };
 
 enum
 {
     Pvr_ColorSpace_lRGB = 0,
-    Pvr_ColorSpace_sRGB = 1
+    Pvr_ColorSpace_sRGB = 1,
+    Pvr_ColorSpace_NumCSs = 2
 };
 
 enum
@@ -178,7 +189,8 @@ enum
     Pvr_ChannelType_SignedInteger = 11,
     Pvr_ChannelType_SignedFloat = 12,
     Pvr_ChannelType_Float = Pvr_ChannelType_SignedFloat, // the name PVRFloat is now deprecated.
-    Pvr_ChannelType_UnsignedFloat = 13
+    Pvr_ChannelType_UnsignedFloat = 13,
+    Pvr_ChannelType_NumCTs = 14
 };
 
 // V3 Header Identifiers.
@@ -215,6 +227,8 @@ struct Pvr_MetaData
 struct TextureLoader_PVRHeader
 {
     uint64_t pixelFormat;
+    uint32_t colorSpace;
+    uint32_t channelType;
 
     uint32_t width;
     uint32_t height;
@@ -255,6 +269,10 @@ struct TextureLoader_PVRHeader
 
 //--------------------------------------------------------------------------------------
 
+static inline uint32_t _GetNeutralType(uint32_t height, uint32_t depth);
+
+static inline uint32_t _GetNeutralFormat(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType);
+
 static inline uint32_t Pvr_GetPixelFormatPartHigh(uint64_t pixelFormat);
 
 static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t *minX, uint32_t *minY, uint32_t *minZ);
@@ -289,6 +307,17 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
                 return false;
             }
         }
+
+        texture_header->pixelFormat = header.pixelFormat;
+        texture_header->colorSpace = header.colorSpace;
+        texture_header->channelType = header.channelType;
+
+        texture_header->width = header.width;
+        texture_header->height = header.height;
+        texture_header->depth = header.depth;
+        texture_header->numMipMaps = header.numMipMaps;
+        texture_header->numSurfaces = header.numSurfaces;
+        texture_header->numFaces = header.numFaces;
 
         texture_header->_pvr3_1 = false;
         texture_header->_pvr3_2 = false;
@@ -392,9 +421,14 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
             }
         }
         assert(metaDataRead == header.metaDataSize);
-    }
 
-    return true;
+        (*texture_data_offset) = (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize) + metaDataRead);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 //--------------------------------------------------------------------------------------
@@ -406,6 +440,28 @@ bool PVRTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
     size_t pvr_texture_data_offset;
     if (LoadTextureHeaderFromStream(stream, stream_read, stream_seek, &pvr_texture_header, &pvr_texture_data_offset))
     {
+        neutral_texture_header->type = _GetNeutralType(pvr_texture_header.height, pvr_texture_header.depth);
+        assert(TEXTURE_LOADER_TYPE_UNDEFINED != neutral_texture_header->type);
+
+        neutral_texture_header->format = _GetNeutralFormat(pvr_texture_header.pixelFormat, pvr_texture_header.colorSpace, pvr_texture_header.channelType);
+        assert(TEXTURE_LOADER_FORMAT_UNDEFINED != neutral_texture_header->format);
+
+        neutral_texture_header->width = pvr_texture_header.width;
+        neutral_texture_header->height = pvr_texture_header.height;
+        neutral_texture_header->depth = pvr_texture_header.depth;
+        neutral_texture_header->mipLevels = pvr_texture_header.numMipMaps;
+        neutral_texture_header->arrayLayers = pvr_texture_header.numFaces * pvr_texture_header.numSurfaces;
+
+        assert(0 != pvr_texture_header.numFaces);
+        neutral_texture_header->isCubeMap = (pvr_texture_header.numFaces > 1);
+
+        (*neutral_header_offset) = pvr_texture_data_offset;
+
+        return true;
+    }
+    else
+    {
+        return false;
     }
 
     return true;
@@ -423,6 +479,18 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
     {
         return false;
     }
+
+    assert(
+        (0 != texture_header.numFaces) && ((texture_header.numFaces > 1) == neutral_texture_header_validate->isCubeMap) &&
+        _GetNeutralType(texture_header.height, texture_header.depth) == neutral_texture_header_validate->type &&
+        _GetNeutralFormat(texture_header.pixelFormat, texture_header.colorSpace, texture_header.channelType) == neutral_texture_header_validate->format &&
+        texture_header.width == neutral_texture_header_validate->width &&
+        texture_header.height == neutral_texture_header_validate->height &&
+        texture_header.depth == neutral_texture_header_validate->depth &&
+        texture_header.numMipMaps == neutral_texture_header_validate->mipLevels &&
+        texture_header.numFaces * texture_header.numSurfaces == neutral_texture_header_validate->arrayLayers //
+    );
+    assert(texture_data_offset == (*neutral_header_offset_validate));
 
     uint32_t numberOfPlanes = 1;
 
@@ -804,4 +872,801 @@ static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
     {
         return reinterpret_cast<char *>(&pixelFormat)[4] + reinterpret_cast<char *>(&pixelFormat)[5] + reinterpret_cast<char *>(&pixelFormat)[6] + reinterpret_cast<char *>(&pixelFormat)[7];
     }
+}
+
+//--------------------------------------------------------------------------------------
+static inline uint32_t _GetNeutralType(uint32_t height, uint32_t depth)
+{
+    assert(0 != height);
+    assert(0 != depth);
+
+    if (depth == 1)
+    {
+        if (height > 1)
+        {
+            return TEXTURE_LOADER_TYPE_2D;
+        }
+        else if (height == 1)
+        {
+            return TEXTURE_LOADER_TYPE_1D;
+        }
+        else
+        {
+            return TEXTURE_LOADER_TYPE_UNDEFINED;
+        }
+    }
+    else if (depth > 1)
+    {
+        return TEXTURE_LOADER_TYPE_3D;
+    }
+    else
+    {
+        return TEXTURE_LOADER_TYPE_UNDEFINED;
+    }
+}
+
+//--------------------------------------------------------------------------------------
+static uint32_t gPvrCompressedToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGB
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGBA
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGB
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGBA
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_2bpp
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_4bpp
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ETC1
+    {TEXTURE_LOADER_FORMAT_BC1_RGBA_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT1
+    {TEXTURE_LOADER_FORMAT_BC1_RGBA_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT2
+    {TEXTURE_LOADER_FORMAT_BC2_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT3
+    {TEXTURE_LOADER_FORMAT_BC2_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT4
+    {TEXTURE_LOADER_FORMAT_BC3_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC3_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT5
+    {TEXTURE_LOADER_FORMAT_BC4_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC4
+    {TEXTURE_LOADER_FORMAT_BC5_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC5
+    {TEXTURE_LOADER_FORMAT_BC6H_SFLOAT_BLOCK, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_PixelTypeID_BC6
+    {TEXTURE_LOADER_FORMAT_BC7_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_BC7_SRGB_BLOCK},                     //Pvr_PixelTypeID_BC7
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_UYVY
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_YUY2
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_BW1bpp
+    {TEXTURE_LOADER_FORMAT_E5B9G9R9_UFLOAT_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED},                   //Pvr_PixelTypeID_SharedExponentR9G9B9E5,
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_RGBG8888
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_GRGB8888
+    {TEXTURE_LOADER_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ETC2_R8G8B8_SRGB_BLOCK},     //Pvr_PixelTypeID_ETC2_RGB
+    {TEXTURE_LOADER_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGBA
+    {TEXTURE_LOADER_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGB_A1
+    {TEXTURE_LOADER_FORMAT_EAC_R11_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_EAC_R11_SNORM_BLOCK},            //Pvr_PixelTypeID_EAC_R11
+    {TEXTURE_LOADER_FORMAT_EAC_R11G11_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_EAC_R11G11_SNORM_BLOCK},      //Pvr_PixelTypeID_EAC_RG11
+    {TEXTURE_LOADER_FORMAT_ASTC_4x4_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_4x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_4x4
+    {TEXTURE_LOADER_FORMAT_ASTC_5x4_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_5x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x4
+    {TEXTURE_LOADER_FORMAT_ASTC_5x5_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_5x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x5
+    {TEXTURE_LOADER_FORMAT_ASTC_6x5_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_6x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x5
+    {TEXTURE_LOADER_FORMAT_ASTC_6x6_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_6x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x6
+    {TEXTURE_LOADER_FORMAT_ASTC_8x5_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_8x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x5
+    {TEXTURE_LOADER_FORMAT_ASTC_8x6_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_8x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x6
+    {TEXTURE_LOADER_FORMAT_ASTC_8x8_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_8x8_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x8
+    {TEXTURE_LOADER_FORMAT_ASTC_10x5_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_10x5_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x5
+    {TEXTURE_LOADER_FORMAT_ASTC_10x6_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_10x6_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x6
+    {TEXTURE_LOADER_FORMAT_ASTC_10x8_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_10x8_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x8
+    {TEXTURE_LOADER_FORMAT_ASTC_10x10_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_10x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_10x10
+    {TEXTURE_LOADER_FORMAT_ASTC_12x10_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_12x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x10
+    {TEXTURE_LOADER_FORMAT_ASTC_12x12_UNORM_BLOCK, TEXTURE_LOADER_FORMAT_ASTC_12x12_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x12
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_3x3x3
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x3x3
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x3
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x4
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x4x4
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x4
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x5
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x5x5
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x6x5
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}                                 //Pvr_PixelTypeID_ASTC_6x6x6
+};
+static_assert(Pvr_PixelTypeID_NumCompressedPFs == (sizeof(gPvrCompressedToNeutralFormatMap) / sizeof(gPvrCompressedToNeutralFormatMap[0])), "gPvrToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrCompressedToNeutralFormatMap[0]) / sizeof(gPvrCompressedToNeutralFormatMap[0][0])), "gPvrToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_R8_UNORM, TEXTURE_LOADER_FORMAT_R8_SRGB},    //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_R8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR8ToNeutralFormatMap) / sizeof(gPvrR8ToNeutralFormatMap[0])), "gPvrR8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR8ToNeutralFormatMap[0]) / sizeof(gPvrR8ToNeutralFormatMap[0][0])), "gPvrR8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR8G8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_R8G8_UNORM, TEXTURE_LOADER_FORMAT_R8G8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_R8G8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR8G8ToNeutralFormatMap) / sizeof(gPvrR8G8ToNeutralFormatMap[0])), "gPvrR8G8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR8G8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8ToNeutralFormatMap[0][0])), "gPvrR8G8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR8G8B8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_R8G8B8_UNORM, TEXTURE_LOADER_FORMAT_R8G8B8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8B8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8B8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_R8G8B8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR8G8B8ToNeutralFormatMap) / sizeof(gPvrR8G8B8ToNeutralFormatMap[0])), "gPvrR8G8B8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR8G8B8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8B8ToNeutralFormatMap[0][0])), "gPvrR8G8B8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrB8G8R8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_B8G8R8_UNORM, TEXTURE_LOADER_FORMAT_B8G8R8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_B8G8R8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_B8G8R8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_B8G8R8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrB8G8R8ToNeutralFormatMap) / sizeof(gPvrB8G8R8ToNeutralFormatMap[0])), "gPvrB8G8R8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrB8G8R8ToNeutralFormatMap[0]) / sizeof(gPvrB8G8R8ToNeutralFormatMap[0][0])), "gPvrB8G8R8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR8G8B8A8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_R8G8B8A8_UNORM, TEXTURE_LOADER_FORMAT_R8G8B8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8B8A8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_R8G8B8A8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_R8G8B8A8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR8G8B8A8ToNeutralFormatMap) / sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0])), "gPvrR8G8B8A8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0][0])), "gPvrR8G8B8A8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrB8G8R8A8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_B8G8R8A8_UNORM, TEXTURE_LOADER_FORMAT_B8G8R8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_B8G8R8A8_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_B8G8R8A8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_B8G8R8A8_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrB8G8R8A8ToNeutralFormatMap) / sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0])), "gPvrB8G8R8A8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0]) / sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0][0])), "gPvrB8G8R8A8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrA8B8G8R8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_A8B8G8R8_UNORM_PACK32, TEXTURE_LOADER_FORMAT_A8B8G8R8_SRGB_PACK32}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_A8B8G8R8_SNORM_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED},            //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_A8B8G8R8_UINT_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_A8B8G8R8_SINT_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}                         //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrA8B8G8R8ToNeutralFormatMap) / sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0])), "gPvrA8B8G8R8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0]) / sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0][0])), "gPvrA8B8G8R8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR16ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R16_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R16_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R16_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR16ToNeutralFormatMap) / sizeof(gPvrR16ToNeutralFormatMap[0])), "gPvrR16ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR16ToNeutralFormatMap[0]) / sizeof(gPvrR16ToNeutralFormatMap[0][0])), "gPvrR16ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR16G16ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R16G16_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R16G16_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R16G16_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR16G16ToNeutralFormatMap) / sizeof(gPvrR16G16ToNeutralFormatMap[0])), "gPvrR16G16ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR16G16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16ToNeutralFormatMap[0][0])), "gPvrR16G16ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR16G16B16ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R16G16B16_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16B16_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16B16_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R16G16B16_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R16G16B16_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR16G16B16ToNeutralFormatMap) / sizeof(gPvrR16G16B16ToNeutralFormatMap[0])), "gPvrR16G16B16ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR16G16B16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16B16ToNeutralFormatMap[0][0])), "gPvrR16G16B16ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR16G16B16A16ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R16G16B16A16_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16B16A16_SNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16G16B16A16_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R16G16B16A16_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R16G16B16A16_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR16G16B16A16ToNeutralFormatMap) / sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0])), "gPvrR16G16B16A16ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0][0])), "gPvrR16G16B16A16ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR32ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R32_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R32_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R32_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR32ToNeutralFormatMap) / sizeof(gPvrR32ToNeutralFormatMap[0])), "gPvrR32ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR32ToNeutralFormatMap[0]) / sizeof(gPvrR32ToNeutralFormatMap[0][0])), "gPvrR32ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR32G32ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R32G32_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R32G32_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R32G32_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR32G32ToNeutralFormatMap) / sizeof(gPvrR32G32ToNeutralFormatMap[0])), "gPvrR32G32ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR32G32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32ToNeutralFormatMap[0][0])), "gPvrR32G32ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR32G32B32ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R32G32B32_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R32G32B32_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R32G32B32_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR32G32B32ToNeutralFormatMap) / sizeof(gPvrR32G32B32ToNeutralFormatMap[0])), "gPvrR32G32B32ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR32G32B32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32B32ToNeutralFormatMap[0][0])), "gPvrR32G32B32ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR32G32B32A32ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R32G32B32A32_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_R32G32B32A32_SINT, TEXTURE_LOADER_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR32G32B32A32ToNeutralFormatMap) / sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0])), "gPvrR32G32B32A32ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0][0])), "gPvrR32G32B32A32ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR5G6B5ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R5G6B5_UNORM_PACK16, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR5G6B5ToNeutralFormatMap) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0])), "gPvrR5G6B5ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR5G6B5ToNeutralFormatMap[0]) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0][0])), "gPvrR5G6B5ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR4G4B4A4ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_R4G4B4A4_UNORM_PACK16, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}              //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR4G4B4A4ToNeutralFormatMap) / sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0])), "gPvrR4G4B4A4ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0]) / sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0][0])), "gPvrR4G4B4A4ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrR11G11B10ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_B10G11R11_UFLOAT_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED} //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrR11G11B10ToNeutralFormatMap) / sizeof(gPvrR11G11B10ToNeutralFormatMap[0])), "gPvrR11G11B10ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrR11G11B10ToNeutralFormatMap[0]) / sizeof(gPvrR11G11B10ToNeutralFormatMap[0][0])), "gPvrR11G11B10ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R8_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD8ToNeutralFormatMap) / sizeof(gPvrD8ToNeutralFormatMap[0])), "gPvrD8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD8ToNeutralFormatMap[0]) / sizeof(gPvrD8ToNeutralFormatMap[0][0])), "gPvrD8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrS8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R8_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrS8ToNeutralFormatMap) / sizeof(gPvrS8ToNeutralFormatMap[0])), "gPvrS8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrS8ToNeutralFormatMap[0]) / sizeof(gPvrS8ToNeutralFormatMap[0][0])), "gPvrS8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD16ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_R16_UNORM, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R16_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD16ToNeutralFormatMap) / sizeof(gPvrD16ToNeutralFormatMap[0])), "gPvrD16ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD16ToNeutralFormatMap[0]) / sizeof(gPvrD16ToNeutralFormatMap[0][0])), "gPvrD16ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD24ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_X8_D24_UNORM_PACK32, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD24ToNeutralFormatMap) / sizeof(gPvrD24ToNeutralFormatMap[0])), "gPvrD24ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD24ToNeutralFormatMap[0]) / sizeof(gPvrD24ToNeutralFormatMap[0][0])), "gPvrD24ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD32ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_R32_SFLOAT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD32ToNeutralFormatMap) / sizeof(gPvrD32ToNeutralFormatMap[0])), "gPvrD32ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD32ToNeutralFormatMap[0]) / sizeof(gPvrD32ToNeutralFormatMap[0][0])), "gPvrD32ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD16S8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_D16_UNORM_S8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_D16_UNORM_S8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD16S8ToNeutralFormatMap) / sizeof(gPvrD16S8ToNeutralFormatMap[0])), "gPvrD16S8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD16S8ToNeutralFormatMap[0]) / sizeof(gPvrD16S8ToNeutralFormatMap[0][0])), "gPvrD16S8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD24S8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD24S8ToNeutralFormatMap) / sizeof(gPvrD24S8ToNeutralFormatMap[0])), "gPvrD24S8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD24S8ToNeutralFormatMap[0]) / sizeof(gPvrD24S8ToNeutralFormatMap[0][0])), "gPvrD24S8ToNeutralFormatMap may not match!");
+
+static uint32_t gPvrD32S8ToNeutralFormatMap[][2] = {
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByteNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByte
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+    {TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT, TEXTURE_LOADER_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+    {TEXTURE_LOADER_FORMAT_UNDEFINED, TEXTURE_LOADER_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+};
+static_assert(Pvr_ChannelType_NumCTs == (sizeof(gPvrD32S8ToNeutralFormatMap) / sizeof(gPvrD32S8ToNeutralFormatMap[0])), "gPvrD32S8ToNeutralFormatMap may not match!");
+static_assert(Pvr_ColorSpace_NumCSs == (sizeof(gPvrD32S8ToNeutralFormatMap[0]) / sizeof(gPvrD32S8ToNeutralFormatMap[0][0])), "gPvrD32S8ToNeutralFormatMap may not match!");
+
+static inline uint32_t _GetNeutralFormat(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
+{
+    uint32_t neutralFormat;
+
+    if (0 == Pvr_GetPixelFormatPartHigh(pixelFormat))
+    {
+        assert(pixelFormat < (sizeof(gPvrCompressedToNeutralFormatMap) / sizeof(gPvrCompressedToNeutralFormatMap[0])));
+        assert(colorSpace < (sizeof(gPvrCompressedToNeutralFormatMap[0]) / sizeof(gPvrCompressedToNeutralFormatMap[0][0])));
+        neutralFormat = gPvrCompressedToNeutralFormatMap[pixelFormat][colorSpace];
+    }
+    else
+    {
+        switch (pixelFormat)
+        {
+        case Pvr_PixelTypeChar_I8:
+        case Pvr_PixelTypeChar_R8:
+        {
+            assert(channelType < (sizeof(gPvrR8ToNeutralFormatMap) / sizeof(gPvrR8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR8ToNeutralFormatMap[0]) / sizeof(gPvrR8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R8G8:
+        {
+            assert(channelType < (sizeof(gPvrR8G8ToNeutralFormatMap) / sizeof(gPvrR8G8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR8G8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR8G8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R8G8B8:
+        {
+            assert(channelType < (sizeof(gPvrR8G8B8ToNeutralFormatMap) / sizeof(gPvrR8G8B8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR8G8B8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8B8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR8G8B8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_B8G8R8:
+        {
+            assert(channelType < (sizeof(gPvrB8G8R8ToNeutralFormatMap) / sizeof(gPvrB8G8R8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrB8G8R8ToNeutralFormatMap[0]) / sizeof(gPvrB8G8R8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrB8G8R8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R8G8B8A8:
+        {
+            assert(channelType < (sizeof(gPvrR8G8B8A8ToNeutralFormatMap) / sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0]) / sizeof(gPvrR8G8B8A8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR8G8B8A8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_B8G8R8A8:
+        {
+            assert(channelType < (sizeof(gPvrB8G8R8A8ToNeutralFormatMap) / sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0]) / sizeof(gPvrB8G8R8A8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrB8G8R8A8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_A8B8G8R8:
+        {
+            assert(channelType < (sizeof(gPvrA8B8G8R8ToNeutralFormatMap) / sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0]) / sizeof(gPvrA8B8G8R8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrA8B8G8R8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R16:
+        {
+            assert(channelType < (sizeof(gPvrR16ToNeutralFormatMap) / sizeof(gPvrR16ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR16ToNeutralFormatMap[0]) / sizeof(gPvrR16ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR16ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R16G16:
+        case Pvr_PixelTypeChar_L16A16:
+        {
+            assert(channelType < (sizeof(gPvrR16G16ToNeutralFormatMap) / sizeof(gPvrR16G16ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR16G16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR16G16ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R16G16B16:
+        {
+            assert(channelType < (sizeof(gPvrR16G16B16ToNeutralFormatMap) / sizeof(gPvrR16G16B16ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR16G16B16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16B16ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR16G16B16ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R16G16B16A16:
+        {
+            assert(channelType < (sizeof(gPvrR16G16B16A16ToNeutralFormatMap) / sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0]) / sizeof(gPvrR16G16B16A16ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR16G16B16A16ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R32:
+        case Pvr_PixelTypeChar_L32:
+        {
+            assert(channelType < (sizeof(gPvrR32ToNeutralFormatMap) / sizeof(gPvrR32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR32ToNeutralFormatMap[0]) / sizeof(gPvrR32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R32G32:
+        case Pvr_PixelTypeChar_L32A32:
+        {
+            assert(channelType < (sizeof(gPvrR32G32ToNeutralFormatMap) / sizeof(gPvrR32G32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR32G32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR32G32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R32G32B32:
+        {
+            assert(channelType < (sizeof(gPvrR32G32B32ToNeutralFormatMap) / sizeof(gPvrR32G32B32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR32G32B32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32B32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR32G32B32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R32G32B32A32:
+        {
+            assert(channelType < (sizeof(gPvrR32G32B32A32ToNeutralFormatMap) / sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0]) / sizeof(gPvrR32G32B32A32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR32G32B32A32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R5G6B5:
+        {
+            assert(channelType < (sizeof(gPvrR5G6B5ToNeutralFormatMap) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR5G6B5ToNeutralFormatMap[0]) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR5G6B5ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R4G4B4A4:
+        {
+            assert(channelType < (sizeof(gPvrR5G6B5ToNeutralFormatMap) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR5G6B5ToNeutralFormatMap[0]) / sizeof(gPvrR5G6B5ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR5G6B5ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R5G5B5A1:
+        {
+            assert(channelType < (sizeof(gPvrR4G4B4A4ToNeutralFormatMap) / sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0]) / sizeof(gPvrR4G4B4A4ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR4G4B4A4ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_R11G11B10:
+        {
+            assert(channelType < (sizeof(gPvrR11G11B10ToNeutralFormatMap) / sizeof(gPvrR11G11B10ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrR11G11B10ToNeutralFormatMap[0]) / sizeof(gPvrR11G11B10ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrR11G11B10ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D8:
+        {
+            assert(channelType < (sizeof(gPvrD8ToNeutralFormatMap) / sizeof(gPvrD8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD8ToNeutralFormatMap[0]) / sizeof(gPvrD8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_S8:
+        {
+            assert(channelType < (sizeof(gPvrS8ToNeutralFormatMap) / sizeof(gPvrS8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrS8ToNeutralFormatMap[0]) / sizeof(gPvrS8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrS8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D16:
+        {
+            assert(channelType < (sizeof(gPvrD16ToNeutralFormatMap) / sizeof(gPvrD16ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD16ToNeutralFormatMap[0]) / sizeof(gPvrD16ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD16ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D24:
+        {
+            assert(channelType < (sizeof(gPvrD32ToNeutralFormatMap) / sizeof(gPvrD32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD32ToNeutralFormatMap[0]) / sizeof(gPvrD32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D32:
+        {
+            assert(channelType < (sizeof(gPvrD32ToNeutralFormatMap) / sizeof(gPvrD32ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD32ToNeutralFormatMap[0]) / sizeof(gPvrD32ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD32ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D16S8:
+        {
+            assert(channelType < (sizeof(gPvrD16S8ToNeutralFormatMap) / sizeof(gPvrD16S8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD16S8ToNeutralFormatMap[0]) / sizeof(gPvrD16S8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD16S8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D24S8:
+        {
+            assert(channelType < (sizeof(gPvrD24S8ToNeutralFormatMap) / sizeof(gPvrD24S8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD24S8ToNeutralFormatMap[0]) / sizeof(gPvrD24S8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD24S8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        case Pvr_PixelTypeChar_D32S8:
+        {
+            assert(channelType < (sizeof(gPvrD32S8ToNeutralFormatMap) / sizeof(gPvrD32S8ToNeutralFormatMap[0])));
+            assert(colorSpace < (sizeof(gPvrD32S8ToNeutralFormatMap[0]) / sizeof(gPvrD32S8ToNeutralFormatMap[0][0])));
+            neutralFormat = gPvrD32S8ToNeutralFormatMap[channelType][colorSpace];
+        }
+        break;
+        default:
+            neutralFormat = TEXTURE_LOADER_TYPE_UNDEFINED;
+        }
+    }
+
+    return neutralFormat;
 }
