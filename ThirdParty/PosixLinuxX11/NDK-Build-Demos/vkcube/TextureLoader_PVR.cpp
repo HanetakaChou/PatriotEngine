@@ -422,7 +422,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
         }
         assert(metaDataRead == header.metaDataSize);
 
-        (*texture_data_offset) = (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize) + metaDataRead);
+        (*texture_data_offset) = (sizeof(version) + sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize) + metaDataRead);
         return true;
     }
     else
@@ -558,7 +558,8 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                 assert(1 == numberOfPlanes);
                 for (uint32_t plane = 0; plane < numberOfPlanes; ++plane)
                 {
-                    size_t dstSubresource = TextureLoader_CalcSubresource(mipMap, texture_header.numFaces * texture_header.numSurfaces, plane, texture_header.numMipMaps, texture_header.numFaces * texture_header.numSurfaces);
+                    size_t dstSubresource = TextureLoader_CalcSubresource(mipMap, face * surface, plane, texture_header.numMipMaps, texture_header.numFaces * texture_header.numSurfaces);
+                    assert(dstSubresource < NumSubresources);
 
                     assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
                     assert(inputNumRows == pDest[dstSubresource].outputNumRows);
@@ -618,7 +619,9 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
         }
     }
 
-    return false;
+    uint8_t u_assert_only[1];
+    assert(0 == stream_read(stream, u_assert_only, sizeof(uint8_t)));
+    return true;
 }
 
 //--------------------------------------------------------------------------------------

@@ -605,6 +605,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
             {
                 // MemcpySubresource d3dx12.h
                 size_t dstSubresource = TextureLoader_CalcSubresource(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
+                assert(dstSubresource < NumSubresources);
 
                 assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
                 assert(inputNumRows == pDest[dstSubresource].outputNumRows);
