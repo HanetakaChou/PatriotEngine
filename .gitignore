@@ -1,5 +1,7 @@
 Binary
 Intermediate
+**/.DS_Store
+
 /Runtime/Solution/PosixXCB/.vs
 /Runtime/Solution/PosixXCB/*.vcxproj.user
 /Runtime/Private/Video/D3D12/PTShader_*.h
