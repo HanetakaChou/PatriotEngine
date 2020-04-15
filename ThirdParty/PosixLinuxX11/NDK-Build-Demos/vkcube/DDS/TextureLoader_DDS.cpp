@@ -602,10 +602,10 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
             size_t inputNumSlices = d;
 
             assert(1 == numberOfPlanes);
-            for (size_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
+            for (uint32_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
             {
                 // MemcpySubresource d3dx12.h
-                size_t dstSubresource = TextureLoader_CalcSubresource(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
+                uint32_t dstSubresource = TextureLoader_CalcSubresource(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
                 assert(dstSubresource < NumSubresources);
 
                 assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
@@ -1091,7 +1091,7 @@ static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, siz
 //--------------------------------------------------------------------------------------
 // Return the BPP for a particular format
 //--------------------------------------------------------------------------------------
-static inline size_t BitsPerPixel(uint32_t fmt) noexcept
+static inline size_t BitsPerPixel(uint32_t fmt)
 {
     switch (fmt)
     {

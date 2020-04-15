@@ -243,6 +243,15 @@ uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, u
 
 #include <string.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+static_assert(SEEK_SET == TEXTURE_LOADER_STREAM_SEEK_SET, "");
+static_assert(SEEK_CUR == TEXTURE_LOADER_STREAM_SEEK_CUR, "");
+static_assert(SEEK_END == TEXTURE_LOADER_STREAM_SEEK_END, "");
+#include <assert.h>
+
 inline bool TextureLoader_LoadHeaderFromMemory(uint8_t const *ddsData, size_t ddsDataSize,
                                                struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
@@ -282,6 +291,28 @@ inline bool TextureLoader_LoadHeaderFromMemory(uint8_t const *ddsData, size_t dd
             }
 
             return static_cast<stream_memory const *>(stream)->m_p - static_cast<stream_memory const *>(stream)->m_ddsData;
+        },
+        neutral_texture_header,
+        neutral_header_offset);
+}
+
+inline bool TextureLoader_LoadHeaderFromFile(char const *filename,
+                                             struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
+{
+    struct stream_file
+    {
+        int const m_fd;
+        inline stream_file(int fd) : m_fd(fd) { assert(fd != -1); }
+        inline ~stream_file() { close(m_fd); }
+    } const stream = {openat(AT_FDCWD, filename, O_RDONLY)};
+
+    return TextureLoader_LoadHeaderFromStream(
+        &stream,
+        [](void const *stream, void *buf, size_t count) -> ptrdiff_t {
+            return read(static_cast<stream_file const *>(stream)->m_fd, buf, count);
+        },
+        [](void const *stream, int64_t offset, int whence) -> int64_t {
+            return lseek(static_cast<stream_file const *>(stream)->m_fd, offset, whence);
         },
         neutral_texture_header,
         neutral_header_offset);
@@ -327,6 +358,32 @@ inline bool TextureLoader_FillDataFromMemory(uint8_t const *ddsData, size_t ddsD
             }
 
             return static_cast<stream_memory const *>(stream)->m_p - static_cast<stream_memory const *>(stream)->m_ddsData;
+        },
+        stagingPointer,
+        NumSubresources,
+        pDest,
+        neutral_texture_header_validate,
+        neutral_header_offset_validate);
+}
+
+inline bool TextureLoader_FillDataFromFile(char const *filename,
+                                             uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+                                             struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate)
+{
+    struct stream_file
+    {
+        int const m_fd;
+        inline stream_file(int fd) : m_fd(fd) { assert(fd != -1); }
+        inline ~stream_file() { close(m_fd); }
+    } const stream = {openat(AT_FDCWD, filename, O_RDONLY)};
+
+    return TextureLoader_FillDataFromStream(
+        &stream,
+        [](void const *stream, void *buf, size_t count) -> ptrdiff_t {
+            return read(static_cast<stream_file const *>(stream)->m_fd, buf, count);
+        },
+        [](void const *stream, int64_t offset, int whence) -> int64_t {
+            return lseek(static_cast<stream_file const *>(stream)->m_fd, offset, whence);
         },
         stagingPointer,
         NumSubresources,
