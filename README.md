@@ -21,7 +21,7 @@
 > * [D3D12 Memory Allocator](https://gpuopen.com/d3d12-memory-allocator-1-0-0/)  
 > * [\[Gelado 2019\] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.](https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory)  
 
-* 3\.设计一套比较完整的实时全局光照解决方案  v
+* 3\.设计一套比较完整的实时全局光照解决方案  
 参考文献：  
 > * 实时渲染  
 [\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 10 Local Illumination  
