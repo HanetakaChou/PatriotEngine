@@ -39,22 +39,24 @@ Parser.h Specification
 
 #include "Scanner.h"
 
-#ifdef _BOOL
-// ICC predefines this as "1"
-#undef _BOOL
-#endif
-
-#ifdef _COMMA
-// defined by something in the VC11 build
-#undef _COMMA
-#endif
-
 -->namespace_open
 
-class Parser {
+class Errors {
 public:
--->constantsheader
+	int count;			// number of errors detected
+
+	Errors();
+	void SynErr(int line, int col, int n);
+	void Error(int line, int col, const wchar_t *s);
+	void Warning(int line, int col, const wchar_t *s);
+	void Warning(const wchar_t *s);
+	void Exception(const wchar_t *s);
+
+}; // Errors
+
+class Parser {
 private:
+-->constantsheader
 	Token *dummyToken;
 	int errDist;
 	int minErrDist;
@@ -75,7 +77,7 @@ public:
 
 -->declarations
 
-	Parser(Scanner *scanner, Errors *err);
+	Parser(Scanner *scanner);
 	~Parser();
 	void SemErr(const wchar_t* msg);
 
@@ -104,12 +106,12 @@ Parser.cpp Specification
 -->namespace_open
 
 void Parser::SynErr(int n) {
-	if (errDist >= minErrDist) errors->SynErr(la, n);
+	if (errDist >= minErrDist) errors->SynErr(la->line, la->col, n);
 	errDist = 0;
 }
 
 void Parser::SemErr(const wchar_t* msg) {
-	if (errDist >= minErrDist) errors->Error(t, msg);
+	if (errDist >= minErrDist) errors->Error(t->line, t->col, msg);
 	errDist = 0;
 }
 
@@ -125,7 +127,8 @@ void Parser::Get() {
 			dummyToken->col = t->col;
 			dummyToken->line = t->line;
 			dummyToken->next = NULL;
-			dummyToken->val = t->val;
+			coco_string_delete(dummyToken->val);
+			dummyToken->val = coco_string_create(t->val);
 			t = dummyToken;
 		}
 		la = t;
@@ -249,13 +252,13 @@ struct ParserDestroyCaller<T, true> {
 
 void Parser::Parse() {
 	t = NULL;
-	la = dummyToken = scanner->CreateToken();
-	la->val = L"Dummy Token";
+	la = dummyToken = new Token();
+	la->val = coco_string_create(L"Dummy Token");
 	Get();
 -->parseRoot
 }
 
-Parser::Parser(Scanner *scanner, Errors *err) {
+Parser::Parser(Scanner *scanner) {
 -->constants
 	ParserInitCaller<Parser>::CallInit(this);
 	dummyToken = NULL;
@@ -263,7 +266,7 @@ Parser::Parser(Scanner *scanner, Errors *err) {
 	minErrDist = 2;
 	errDist = minErrDist;
 	this->scanner = scanner;
-	errors = err;
+	errors = new Errors();
 }
 
 bool Parser::StartOf(int s) {
@@ -277,27 +280,33 @@ bool Parser::StartOf(int s) {
 
 Parser::~Parser() {
 	ParserDestroyCaller<Parser>::CallDestroy(this);
+	delete errors;
+	delete dummyToken;
 }
 
-Errors::Errors()
-	: count(0)
-{
+Errors::Errors() {
+	count = 0;
 }
 
-void Errors::SynErr(Token const *la, int n) {
-	wchar_t format[20];
-	const wchar_t* s = format;
+void Errors::SynErr(int line, int col, int n) {
+	wchar_t* s;
 	switch (n) {
 -->errors
 		default:
+		{
+			wchar_t format[20];
 			coco_swprintf(format, 20, L"error %d", n);
-			break;
+			s = coco_string_create(format);
+		}
+		break;
 	}
-	Error(la, s);
+	wprintf(L"-- line %d col %d: %ls\n", line, col, s);
+	coco_string_delete(s);
+	count++;
 }
 
-void Errors::Error(Token const *t, const wchar_t *s) {
-	wprintf(L"-- line %d col %d: %ls\n", t->line, t->col, s);
+void Errors::Error(int line, int col, const wchar_t *s) {
+	wprintf(L"-- line %d col %d: %ls\n", line, col, s);
 	count++;
 }
 
@@ -312,11 +321,6 @@ void Errors::Warning(const wchar_t *s) {
 void Errors::Exception(const wchar_t* s) {
 	wprintf(L"%ls", s); 
 	exit(1);
-}
-
-void Errors::Error(int line, int col, int code, Error_params const &params) {
-	wprintf(L"-- line %d col %d: Error code %d\n", line, col, code);
-	count++;
 }
 
 -->namespace_close
