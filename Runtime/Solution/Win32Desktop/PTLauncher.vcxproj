@@ -19,22 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTDInput.h" />
-    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTResource.h" />
-    <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.h" />
+    <ClInclude Include="..\..\Private\WSI\Win32Desktop\PTDInput.h" />
+    <ClInclude Include="..\..\Private\WSI\Win32Desktop\PTResource.h" />
+    <ClInclude Include="..\..\Private\WSI\Win32Desktop\PTWindowImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
     <ClInclude Include="..\..\Public\WSI\PT_WSI_Common.h" />
     <ClInclude Include="..\..\Public\WSI\PT_WSI_Window.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTDInput.cpp" />
-    <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="..\..\Private\Launcher\Win32Desktop\PTResource.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\Private\Launcher\Win32Desktop\PTDesktop.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="PTApp.vcxproj">
@@ -43,6 +33,13 @@
     <ProjectReference Include="PTMcRT.vcxproj">
       <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\WSI\Win32Desktop\PTDInput.cpp" />
+    <ClCompile Include="..\..\Private\WSI\Win32Desktop\PTWindowImpl.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\Private\WSI\Win32Desktop\PTResource.rc" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{AF9C0C51-3308-4CA6-A1A3-68D57E5D0C40}</ProjectGuid>
