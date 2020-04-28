@@ -1,12 +1,19 @@
 ﻿#include "PTWindowImpl.h"
 #include "../../../Public/McRT/PTSMemoryAllocator.h"
+#include "../../../Public/McRT/PTSConvUTF.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <ShellAPI.h>
 #include <stdio.h>
 
 #include "PTDInput.h"
+
+static inline struct PT_WSI_Display_T *wrap(HINSTANCE v) { return reinterpret_cast<struct PT_WSI_Display_T *>(v); }
+static inline HINSTANCE unwrap(struct PT_WSI_Display_T *v) { return reinterpret_cast<HINSTANCE>(v); }
+
+static inline struct PT_WSI_Window_T *wrap(HWND v) { return reinterpret_cast<PT_WSI_Window_T *>(static_cast<void *>(v)); }
+static inline HWND unwrap(struct PT_WSI_Window_T *v) { return static_cast<HWND>(reinterpret_cast<void *>(v)); }
+
 
 static unsigned __stdcall PTInvokeMain(void *pVoid);
 
@@ -77,7 +84,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 					}
 				}
 				return ::CallNextHookEx(NULL, nCode, wParam, lParam);
-		}, NULL, 0U);
+			}, NULL, 0U);
 			assert(hHook != NULL);
 #endif 
 			PTWWindowImpl *pSingleton = static_cast<PTWWindowImpl *>(reinterpret_cast<CREATESTRUCT *>(lParam)->lpCreateParams);
@@ -85,30 +92,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 			//WindowLongPtr-Get/Set
 			::SetWindowLongPtrW(hWnd, 0U, reinterpret_cast<LONG_PTR>(pSingleton));
-
-			//PTEventOutputType_WindowCreated
-			{
-				void (PTPTR * pHere_EventOutputCallback)(void *pUserData, void *pEventData);
-
-				//SpinLock
-				while ((pHere_EventOutputCallback = reinterpret_cast<void (PTPTR *)(void *pUserData, void *pEventData)>(
-					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback))
-					)) == NULL)
-				{
-					::PTS_Yield();
-				}
-
-				void *pHere_EventOutputCallback_UserData = reinterpret_cast<void *>(
-					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback_UserData))
-					);
-
-				PT_WSI_IWindow::EventOutput_WindowCreated EventData;
-				EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowCreated;
-				EventData.m_hDisplay = reinterpret_cast<HINSTANCE>(::GetClassLongPtrW(hWnd, GCLP_HMODULE));
-				EventData.m_hWindow = hWnd;
-
-				pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventData);
-			}
 		}
 		return 0;
 #if 0
@@ -121,10 +104,10 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 			bRet = ::GetMonitorInfoW(hMonitor, &MonitorInfo);
 			assert(bRet != 0);
 			bRet = ::SetWindowPos(
-				hWnd, 
-				NULL, 
-				MonitorInfo.rcWork.left, MonitorInfo.rcWork.top, 
-				MonitorInfo.rcWork.right - MonitorInfo.rcWork.left, MonitorInfo.rcWork.bottom - MonitorInfo.rcWork.top, 
+				hWnd,
+				NULL,
+				MonitorInfo.rcWork.left, MonitorInfo.rcWork.top,
+				MonitorInfo.rcWork.right - MonitorInfo.rcWork.left, MonitorInfo.rcWork.bottom - MonitorInfo.rcWork.top,
 				SWP_NOZORDER
 			);
 			assert(bRet != 0);
@@ -140,29 +123,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 			//PTEventOutputType_WindowResized
 			{
-				void (PTPTR * pHere_EventOutputCallback)(void *pUserData, void *pEventData);
-
-				//SpinLock
-				while ((pHere_EventOutputCallback = reinterpret_cast<void (PTPTR *)(void *pUserData, void *pEventData)>(
-					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback))
-					)) == NULL)
-				{
-					::PTS_Yield();
-				}
-
-				void *pHere_EventOutputCallback_UserData = reinterpret_cast<void *>(
-					::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&pSingleton->m_pEventOutputCallback_UserData))
-					);
-
 				PT_WSI_IWindow::EventOutput_WindowResized EventData;
 				EventData.m_Type = PT_WSI_IWindow::EventOutput::Type_WindowResized;
-				EventData.m_hDisplay = reinterpret_cast<HINSTANCE>(::GetClassLongPtrW(hWnd, GCLP_HMODULE));
-				EventData.m_hWindow = hWnd;
+				EventData.m_hDisplay = wrap(reinterpret_cast<HINSTANCE>(::GetClassLongPtrW(hWnd, GCLP_HMODULE)));
+				EventData.m_hWindow = wrap(hWnd);
 				EventData.m_Width = static_cast<uint32_t>(LOWORD(lParam));
 				EventData.m_Height = static_cast<uint32_t>(HIWORD(lParam));
 
-				pHere_EventOutputCallback(pHere_EventOutputCallback_UserData, &EventData);
-			}	
+				pSingleton->m_pEventOutputCallback(pSingleton->m_pEventOutputCallback_UserData, &EventData);
+			}
 		}
 		return 0;
 		default:
@@ -178,8 +147,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	wc.hCursor = ::LoadCursorW(NULL, IDC_ARROW);
 	wc.hbrBackground = NULL;
 	wc.lpszMenuName = NULL;
-	WCHAR szClassName[33];
-	::swprintf_s(szClassName, 33, L"PTWindowClass:0X%p", &wc);
+	WCHAR szClassName[64]; //33
+	_snwprintf_s(szClassName, 64, L"PTWindowClass:0X%p", &wc);
 	wc.lpszClassName = szClassName;
 	wc.hIconSm = wc.hIcon;
 	hAtom = ::RegisterClassExW(&wc);
@@ -193,11 +162,56 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	assert(bRet != 0);
 
 	PTWWindowImpl l_WindowImpl_Singleton;
-	l_WindowImpl_Singleton.m_pCmdLine_Cache = lpCmdLine;
+	char l_WindowImpl_CmdLine[4096] = { "PTLauncher " };
+	{
+		//iconv
+		uint32_t InCharsLeft = static_cast<uint32_t>(::wcslen(lpCmdLine)) + 1U;//包括'\0'
+		uint32_t OutCharsLeft = 4096 - 11;
+		bool bResult = ::PTSConv_UTF16ToUTF8(reinterpret_cast<char16_t *>(lpCmdLine), &InCharsLeft, l_WindowImpl_CmdLine + 11, &OutCharsLeft);
+		assert(bResult);
+	}
+	char *l_WindowImpl_Argv[64];
+	int l_WindowImpl_Argc = 0;
+	{
+		//lexer
+		enum
+		{
+			WhiteSpace,
+			Text
+		}StateMachine = WhiteSpace;
 
-	PTSThread hThreadInvoke;
-	bool bThreadCreate = ::PTSThread_Create(&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton), &hThreadInvoke);
-	assert(bThreadCreate != false);
+		for (size_t i = 0U; l_WindowImpl_CmdLine[i] != '\0'; ++i)
+		{
+			switch (StateMachine)
+			{
+			case WhiteSpace:
+			{
+				if (!((l_WindowImpl_CmdLine[i] == ' ' || l_WindowImpl_CmdLine[i] == '\t' || l_WindowImpl_CmdLine[i] == '\r' || l_WindowImpl_CmdLine[i] == '\n')))
+				{
+					assert(l_WindowImpl_Argc < 64);
+					l_WindowImpl_Argv[l_WindowImpl_Argc] = l_WindowImpl_CmdLine + i;
+					++l_WindowImpl_Argc;
+					StateMachine = Text;
+				}
+			}
+			case Text:
+			{
+				if ((l_WindowImpl_CmdLine[i] == ' ' || l_WindowImpl_CmdLine[i] == '\t' || l_WindowImpl_CmdLine[i] == '\r' || l_WindowImpl_CmdLine[i] == '\n'))
+				{
+					l_WindowImpl_CmdLine[i] = '\0';
+					StateMachine = WhiteSpace;
+				}
+			}
+			}
+
+			assert(i < 0X10000U);
+		}
+
+		l_WindowImpl_Argv[l_WindowImpl_Argc] = NULL;
+	}
+	l_WindowImpl_Singleton.m_Argv_Cache = l_WindowImpl_Argv;
+	l_WindowImpl_Singleton.m_Argc_Cache = l_WindowImpl_Argc;
+
 
 	HWND hWnd = ::CreateWindowExW(
 		WS_EX_APPWINDOW,
@@ -214,11 +228,9 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	//HWND hWnd = ::CreateWindowExW(WS_EX_APPWINDOW, MAKEINTATOM(atom), L"PTWindow", WS_POPUP | WS_VISIBLE, MonitorInfo.rcWork.left, MonitorInfo.rcWork.top, MonitorInfo.rcWork.right, MonitorInfo.rcWork.bottom, hDesktop, NULL, hInstance, NULL);	
 	assert(hWnd != NULL);
 
-	l_WindowImpl_Singleton.m_hWindow_Cache = hWnd;
-
 	//GameControl Support
 	HANDLE hEventDInput = ::CreateEventExW(NULL, NULL, 0U, DELETE | SYNCHRONIZE | EVENT_MODIFY_STATE);
-	
+
 #if 0
 	IDirectInputDevice8W *pDInputDevice = NULL;
 	DICONTROLLERTYPE eDIControllerType = DICT_UNKNOWN;
@@ -260,7 +272,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 		//DirectInput and XUSB Devices
 		//https://docs.microsoft.com/en-us/windows/win32/xinput/directinput-and-xusb-devices
-		
+
 		//XInput compatible HID controller //Support Both XInput And DirectInput //Example: XboxOne Controller
 		//HID-compliant game controller //Support DirectInput Only //Example: PS4 Controller
 
@@ -271,7 +283,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 		//HID Joystick -> DirectInput //The RAWHID::bRawData Is Invisible To Applications
 
 		//pDInputDevice->SetCooperativeLevel
-	
+
 		switch (eDIControllerType)
 		{
 		case DICT_XBOXONE:
@@ -309,7 +321,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 		//https://docs.microsoft.com/en-us/windows/win32/xinput/getting-started-with-xinput#dead-zone
 		dipdw.dwData = 1200; //Dead Zone //1200/10000=12%
-		
+
 		//9500 //Saturation //9500/10000=95%
 
 		switch (eDIControllerType)
@@ -337,24 +349,24 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 		case DICT_PS4:
 		{
 			assert(DICT_PS4 == eDIControllerType);
-			
+
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, LT); //LT(Left Trigger)
 			HRESULT hHuhu71 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, RT); //RT(Right Trigger)
 			HRESULT hHuhu711 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
-		
+
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, LS_X); //L(Left Stick)_X(AxisX)
 			HRESULT hHuhu712 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, LS_Y); //L(Left Stick)_Y(AxisY)
 			HRESULT hHuhu716 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
-			
+
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, RS_X); //R(Left Stick)_X(AxisX)
 			HRESULT hHuhu7172 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 
 			dipdw.diph.dwObj = offsetof(DIPS4STATE, RS_Y); //R(Left Stick)_Y(AxisY)
-			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);			
+			HRESULT hHuhu7131 = pDInputDevice->SetProperty(DIPROP_DEADZONE, &dipdw.diph);
 		}
 		break;
 		default:
@@ -370,9 +382,28 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	}
 #endif
 
+	PTSThread hThreadInvoke;
+	bool tbResult = ::PTSThread_Create(
+		&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton),
+		&hThreadInvoke);
+	assert(tbResult != false);
+
+	// Wait for PTApp
+	while (
+		(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+			&l_WindowImpl_Singleton.m_pEventOutputCallback_UserData)) == NULL) ||
+			(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+				&l_WindowImpl_Singleton.m_pEventOutputCallback)) == NULL) ||
+				(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+					&l_WindowImpl_Singleton.m_pEventInputCallback_UserData)) == NULL) ||
+					(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+						&l_WindowImpl_Singleton.m_pEventInputCallback)) == NULL))
+	{
+		::PTS_Yield();
+	}
+
 	// Main message loop:
-	bool bMessageLoop = true;
-	while (bMessageLoop)
+	while (l_WindowImpl_Singleton.m_bMessagePump)
 	{
 		constexpr DWORD const nCount = 2U;
 		HANDLE handles[2] = { hEventDInput, hThreadInvoke };
@@ -426,7 +457,7 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 #endif
 		case (WAIT_OBJECT_0 + 1):
 		{
-			bMessageLoop = false;
+			l_WindowImpl_Singleton.m_bMessagePump = false;
 		}
 		break;
 		case (WAIT_OBJECT_0 + nCount):
@@ -442,15 +473,15 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 		default:
 		{
 			assert(0);
-			bMessageLoop = false;
+			l_WindowImpl_Singleton.m_bMessagePump = false;
 		}
 		break;
 		}
 	}
 
 	//确保栈中的内存 PTInvokeParam ParamInvoke 在PTInvokeMain的整个生命期内是有效的
-	bool bThreadJoin = ::PTSThread_Join(&hThreadInvoke);
-	assert(bThreadJoin != false);
+	tbResult = ::PTSThread_Join(&hThreadInvoke);
+	assert(tbResult != false);
 
 	//DInput_Free
 	{
@@ -470,18 +501,14 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 
 inline PTWWindowImpl::PTWWindowImpl()
 {
-	//EventOutputCallback
+	// EventOutputCallback
 	m_pEventOutputCallback = NULL;
 	m_pEventOutputCallback_UserData = NULL;
-	//EventInputCallback
+	// EventInputCallback
 	m_pEventInputCallback = NULL;
 	m_pEventInputCallback_UserData = NULL;
-	//Parent_Set
-	m_hWindow_Cache = NULL;
-	//TermminateMessagePump
-	//m_ThreadID_Cache = -1;
-	//PTInvokeMain
-	m_pCmdLine_Cache = NULL;
+	// TermminateMessagePump
+	m_bMessagePump = true;
 }
 
 inline PTWWindowImpl::~PTWWindowImpl()
@@ -491,126 +518,56 @@ inline PTWWindowImpl::~PTWWindowImpl()
 
 void PTWWindowImpl::EventOutputCallback_Hook(void *pUserData, void(PTPTR *pEventOutputCallback)(void *pUserData, void *pOutputData))
 {
-	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventOutputCallback_UserData), reinterpret_cast<uintptr_t>(pUserData));
-	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventOutputCallback), reinterpret_cast<uintptr_t>(pEventOutputCallback));
+	assert(m_pEventOutputCallback_UserData == NULL);
+	assert(m_pEventOutputCallback == NULL);
+	m_pEventOutputCallback_UserData = pUserData;
+	m_pEventOutputCallback = pEventOutputCallback;
 }
 
 void PTWWindowImpl::EventInputCallback_Hook(void *pUserData, void(PTPTR *pEventInputCallback)(void *pUserData, void *pInputData))
 {
-	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventInputCallback_UserData), reinterpret_cast<uintptr_t>(pUserData));
-	::PTSAtomic_Set(reinterpret_cast<uintptr_t volatile *>(&m_pEventInputCallback), reinterpret_cast<uintptr_t>(pEventInputCallback));
+	assert(m_pEventInputCallback_UserData == NULL);
+	assert(m_pEventInputCallback == NULL);
+	m_pEventInputCallback_UserData = pUserData;
+	m_pEventInputCallback = pEventInputCallback;
 }
 
 void PTWWindowImpl::Parent_Set(struct PT_WSI_Window_T * hWindowParent)
 {
-	if (hWindowParent == NULL)
-	{
-		LONG_PTR lResult = ::SetWindowLongPtrW(m_hWindow_Cache, GWL_STYLE, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_VISIBLE);
-		assert(lResult != 0);
 
-		HWND hDesktop = ::GetDesktopWindow();
-		assert(hDesktop != NULL);
-
-		HWND hParentPrevious = ::SetParent(m_hWindow_Cache, hDesktop);
-		assert(hParentPrevious != NULL);
-	}
-	else
-	{
-		LONG_PTR lResult = ::SetWindowLongPtrW(m_hWindow_Cache, GWL_STYLE, WS_CHILD | WS_VISIBLE);
-		assert(lResult != 0);
-
-		HWND hParentPrevious = ::SetParent(m_hWindow_Cache, hWindowParent);
-		assert(hParentPrevious != NULL);
-	}
 }
 
 void PTWWindowImpl::Position_Set(uint32_t TopLeftX, uint32_t TopLeftY)
 {
-	BOOL wbResult = ::SetWindowPos(m_hWindow_Cache, NULL, TopLeftX, TopLeftY, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-	assert(wbResult != FALSE);
+
 }
 
 void PTWWindowImpl::Size_Set(uint32_t Width, uint32_t Height)
 {
-	BOOL wbResult = ::SetWindowPos(m_hWindow_Cache, NULL, 0, 0, Width, Height, SWP_NOZORDER | SWP_NOMOVE);
-	assert(wbResult != FALSE);
+
 }
 
 void PTWWindowImpl::TermminateMessagePump()
 {
-	HWND hWnd;
-
-	//SpinLock
-	while ((hWnd = reinterpret_cast<HWND>(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(&m_hWindow_Cache)))) == NULL)
-	{
-		::PTS_Yield();
-	}
-
-	DWORD ThreadId_wWinMain = ::GetWindowThreadProcessId(hWnd, NULL);
-	BOOL wbResult = ::PostThreadMessageW(ThreadId_wWinMain, WM_QUIT, 0U, 0U);
-	assert(wbResult != FALSE);
+	m_bMessagePump = false;
 }
 
 
-#include "../../../Public/App/PTAExport.h"
+#include "../../../Public/App/PT_APP_Export.h"
 #include "../../../Public/McRT/PTSConvUTF.h"
 
 static unsigned __stdcall PTInvokeMain(void *pVoid)
 {
 	PTWWindowImpl *pWindow = static_cast<PTWWindowImpl *>(pVoid);
 
-	assert(pWindow->m_pCmdLine_Cache != NULL);
+	assert(pWindow->m_Argv_Cache != NULL);
 
-	char CmdLineA[0X10000] = { "PTLauncher " };
-	{
-		uint32_t InCharsLeft = static_cast<uint32_t>(::wcslen(pWindow->m_pCmdLine_Cache)) + 1U;//包括'\0'
-		uint32_t OutCharsLeft = 4096 - 11;
-		bool bResult = ::PTSConv_UTF16ToUTF8(reinterpret_cast<char16_t *>(pWindow->m_pCmdLine_Cache), &InCharsLeft, CmdLineA + 11, &OutCharsLeft);
-		assert(bResult);
-	}
-
-	//Lexer
-
-	char *argv[0X10000];
-	int argc = 0;
-
-	enum
-	{
-		WhiteSpace,
-		Text
-	}StateMachine = WhiteSpace;
-
-	for (size_t i = 0U; CmdLineA[i] != '\0'; ++i)
-	{
-		switch (StateMachine)
-		{
-		case WhiteSpace:
-		{
-			if (!((CmdLineA[i] == ' ' || CmdLineA[i] == '\t' || CmdLineA[i] == '\r' || CmdLineA[i] == '\n')))
-			{
-				assert(argc < 0X10000);
-				argv[argc] = CmdLineA + i;
-				++argc;
-				StateMachine = Text;
-			}
-		}
-		case Text:
-		{
-			if ((CmdLineA[i] == ' ' || CmdLineA[i] == '\t' || CmdLineA[i] == '\r' || CmdLineA[i] == '\n'))
-			{
-				CmdLineA[i] = '\0';
-				StateMachine = WhiteSpace;
-			}
-		}
-		}
-
-		assert(i < 0X10000U);
-	}
-
-	argv[argc] = NULL;
-
-	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow), argc, argv);
+	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
 	assert(iResult == 0);
+	for (int i = 0; i < 6666; ++i)
+	{
+		::PTS_Yield();
+	}
 
 	//pWindow->TermminateMessagePump();
 

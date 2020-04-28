@@ -25,10 +25,10 @@ class PTWWindowImpl : public PT_WSI_IWindow
 	friend void *PTInvokeMain(void *pVoid);
 
 public:
-	//main�̵߳���
+	//main线程调用
 	inline PTWWindowImpl(int argc, char *argv[]);
 	inline ~PTWWindowImpl();
 
-	//PTInvokeMain�̵߳���
+	//PTInvokeMain线程调用
 	inline void TermminateMessagePump();
 };

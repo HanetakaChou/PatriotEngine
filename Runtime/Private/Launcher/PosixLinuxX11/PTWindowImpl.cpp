@@ -349,7 +349,7 @@ void *PTInvokeMain(void *pVoid)
 	assert(iResult == 0);
 	for (int i = 0; i < 6666; ++i)
 	{
-		sched_yield();
+		::PTS_Yield();
 	}
 
 	//pWindow->TermminateMessagePump();
