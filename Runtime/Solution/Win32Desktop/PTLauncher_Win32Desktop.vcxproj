@@ -23,8 +23,8 @@
     <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTResource.h" />
     <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
-    <ClInclude Include="..\..\Public\Launcher\PTWCommon.h" />
-    <ClInclude Include="..\..\Public\Launcher\PTWWindow.h" />
+    <ClInclude Include="..\..\Public\WSI\PT_WSI_Common.h" />
+    <ClInclude Include="..\..\Public\WSI\PT_WSI_Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Private\Launcher\Win32Desktop\PTDInput.cpp" />
@@ -48,7 +48,7 @@
     <ProjectGuid>{AF9C0C51-3308-4CA6-A1A3-68D57E5D0C40}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>PTLauncher_Win32Desktop</RootNamespace>
-    <ProjectName>PTLauncher_Win32Desktop</ProjectName>
+    <ProjectName>PTLauncher</ProjectName>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -99,32 +99,32 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTWindow</TargetName>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)_Win32Desktop\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>PTLauncher</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)_Win32Desktop\$(Platform)\$(Configuration)\</IntDir>
     <TargetName>PTLauncher</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTWindow</TargetName>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)_Win32Desktop\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>PTLauncher</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>..\..\..\Binary\Win32Desktop\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>PTWindow</TargetName>
+    <IntDir>..\..\..\Intermediate\$(ProjectName)_Win32Desktop\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>PTLauncher</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWSIAPI=PTEXPORT;_WINDOWS;_DEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -138,7 +138,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX64;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWSIAPI=PTEXPORT;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -153,7 +153,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX86;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWSIAPI=PTEXPORT;_WINDOWS;NDEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
@@ -171,7 +171,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>PTWIN32;PTWIN32DESKTOP;PTX64;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PTWSIAPI=PTEXPORT;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>

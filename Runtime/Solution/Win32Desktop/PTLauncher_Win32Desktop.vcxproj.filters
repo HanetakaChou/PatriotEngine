@@ -10,7 +10,7 @@
     <Filter Include="Public">
       <UniqueIdentifier>{4b349faa-73e9-4183-b86d-1acaac865396}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Public\Window">
+    <Filter Include="Public\WSI">
       <UniqueIdentifier>{d724b681-1887-4df1-969f-2cfb5e164bff}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -24,14 +24,14 @@
     <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTResource.h">
       <Filter>Private\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\Launcher\PTWCommon.h">
-      <Filter>Public\Window</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Private\Launcher\Win32Desktop\PTWindowImpl.h">
       <Filter>Private\Window</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\Launcher\PTWWindow.h">
-      <Filter>Public\Window</Filter>
+    <ClInclude Include="..\..\Public\WSI\PT_WSI_Common.h">
+      <Filter>Public\WSI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\WSI\PT_WSI_Window.h">
+      <Filter>Public\WSI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

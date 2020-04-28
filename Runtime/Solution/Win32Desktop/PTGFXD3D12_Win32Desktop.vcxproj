@@ -33,11 +33,6 @@
     <None Include="..\..\Private\GFX\ResourceBinding.md" />
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="PTMcRT_Win32Desktop.vcxproj">
-      <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6DFF1720-EED3-4408-8637-C2A45775BF83}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
