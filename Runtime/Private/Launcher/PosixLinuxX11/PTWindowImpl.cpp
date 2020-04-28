@@ -347,7 +347,7 @@ void *PTInvokeMain(void *pVoid)
 	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow),
 							pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
 	assert(iResult == 0);
-	for (int i = 0; i < 6666; ++i)
+	for (int i = 0; i < 666666666; ++i)
 	{
 		::PTS_Yield();
 	}

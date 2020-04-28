@@ -30,5 +30,5 @@ public:
 	inline ~PTWWindowImpl();
 
 	//PTInvokeMain线程调用
-	void TermminateMessagePump();
+	//void TermminateMessagePump();
 };

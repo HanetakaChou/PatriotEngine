@@ -212,6 +212,25 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	l_WindowImpl_Singleton.m_Argv_Cache = l_WindowImpl_Argv;
 	l_WindowImpl_Singleton.m_Argc_Cache = l_WindowImpl_Argc;
 
+	PTSThread hThreadInvoke;
+	bool tbResult = ::PTSThread_Create(
+		&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton),
+		&hThreadInvoke);
+	assert(tbResult != false);
+
+	// Wait for PTApp
+	while (
+		(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+			&l_WindowImpl_Singleton.m_pEventOutputCallback_UserData)) == NULL) ||
+			(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+				&l_WindowImpl_Singleton.m_pEventOutputCallback)) == NULL) ||
+				(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+					&l_WindowImpl_Singleton.m_pEventInputCallback_UserData)) == NULL) ||
+					(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
+						&l_WindowImpl_Singleton.m_pEventInputCallback)) == NULL))
+	{
+		::PTS_Yield();
+	}
 
 	HWND hWnd = ::CreateWindowExW(
 		WS_EX_APPWINDOW,
@@ -382,26 +401,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR lpCmdLine, int)
 	}
 #endif
 
-	PTSThread hThreadInvoke;
-	bool tbResult = ::PTSThread_Create(
-		&PTInvokeMain, static_cast<PTWWindowImpl *>(&l_WindowImpl_Singleton),
-		&hThreadInvoke);
-	assert(tbResult != false);
-
-	// Wait for PTApp
-	while (
-		(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
-			&l_WindowImpl_Singleton.m_pEventOutputCallback_UserData)) == NULL) ||
-			(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
-				&l_WindowImpl_Singleton.m_pEventOutputCallback)) == NULL) ||
-				(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
-					&l_WindowImpl_Singleton.m_pEventInputCallback_UserData)) == NULL) ||
-					(::PTSAtomic_Get(reinterpret_cast<uintptr_t volatile *>(
-						&l_WindowImpl_Singleton.m_pEventInputCallback)) == NULL))
-	{
-		::PTS_Yield();
-	}
-
 	// Main message loop:
 	while (l_WindowImpl_Singleton.m_bMessagePump)
 	{
@@ -547,10 +546,10 @@ void PTWWindowImpl::Size_Set(uint32_t Width, uint32_t Height)
 
 }
 
-void PTWWindowImpl::TermminateMessagePump()
-{
-	m_bMessagePump = false;
-}
+//void PTWWindowImpl::TermminateMessagePump()
+//{
+//	m_bMessagePump = false;
+//}
 
 
 #include "../../../Public/App/PT_APP_Export.h"
@@ -564,11 +563,12 @@ static unsigned __stdcall PTInvokeMain(void *pVoid)
 
 	int iResult = ::PTAMain(static_cast<PT_WSI_IWindow *>(pWindow), pWindow->m_Argc_Cache, pWindow->m_Argv_Cache);
 	assert(iResult == 0);
-	for (int i = 0; i < 6666; ++i)
+	for (int i = 0; i < 6666666; ++i)
 	{
 		::PTS_Yield();
 	}
 
+	//replaced by MsgWaitForMultipleObjectsEx
 	//pWindow->TermminateMessagePump();
 
 	return static_cast<unsigned>(iResult);
