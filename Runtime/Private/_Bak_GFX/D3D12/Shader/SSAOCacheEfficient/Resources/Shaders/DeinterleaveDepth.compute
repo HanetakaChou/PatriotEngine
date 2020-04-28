@@ -1,0 +1,15 @@
+﻿Texture2D<float> g_TextureDepth;
+RWTexture2DArray<unorm float> g_TextureDepthDeinterleaved;
+
+#pragma kernel main
+
+[numthreads(16, 16, 1)]
+void main(uint3 CS_Global_ID : SV_DispatchThreadID)
+{
+	g_TextureDepthDeinterleaved[
+		uint3(
+			CS_Global_ID.x / 4, CS_Global_ID.y / 4, 
+			(CS_Global_ID.x % 4) + 4 * (CS_Global_ID.y % 4)
+			)
+	] = g_TextureDepth.mips[0][CS_Global_ID.xy];
+}

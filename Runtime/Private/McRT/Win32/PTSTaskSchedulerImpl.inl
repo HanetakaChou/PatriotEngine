@@ -1,4 +1,4 @@
-#include <intrin.h>
+﻿#include <intrin.h>
 
 #if defined(PTARM)
 static inline unsigned int __popcnt(unsigned int value)
@@ -23,7 +23,7 @@ static inline uint32_t PTS_Info_HardwareThreadNumber()
 	static_assert(sizeof(DWORD_PTR) == 8U, "");
 	ProcessProcessorCount = static_cast<uint32_t>(::__popcnt64(ProcessAffinityMask));
 #else
-#error δ֪�ļܹ�
+#error δ֪�ļܹ�
 #endif
 	return ProcessProcessorCount;
 }

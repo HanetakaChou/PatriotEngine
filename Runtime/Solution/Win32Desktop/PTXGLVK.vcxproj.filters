@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Public">
+      <UniqueIdentifier>{c9951e9e-6146-487f-bf70-9896ee0856a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private">
+      <UniqueIdentifier>{46e28385-6705-44c3-8d77-cd1bd111d76d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math">
+      <UniqueIdentifier>{4168b892-6d1c-4684-8792-6f53d48c741a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\Math\SSE">
+      <UniqueIdentifier>{a0bbb667-fd4f-443f-87b9-20da6f0ee938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX">
+      <UniqueIdentifier>{52ad3c63-03b5-4aca-88dd-9ceb840bbddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX\VK">
+      <UniqueIdentifier>{41ede4c3-90e7-4bea-86fa-c2bc75c8e35e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\GFX">
+      <UniqueIdentifier>{66c6ff07-f80f-4825-b8ec-da0aa23de0f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\GFX\Win32">
+      <UniqueIdentifier>{a7bb022e-5ff4-405d-958e-f13919926ae5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solution">
+      <UniqueIdentifier>{c80e7c38-03e6-4042-851a-deeddfae6271}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Solution\Win32Desktop">
+      <UniqueIdentifier>{dbf76366-09f2-4513-9827-8e04c7f94894}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\Math\PTMath.h">
+      <Filter>Public\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h">
+      <Filter>Private\GFX\VK</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h">
+      <Filter>Private\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\PTGFXAssetDDS.h">
+      <Filter>Private\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXHAL.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\GFX\PTGFXHALUtil.h">
+      <Filter>Public\GFX</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\GFX\VK\PTGFXHALDevice.h">
+      <Filter>Private\GFX\VK</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\GFX\PTGFXMemoryAllocator.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\Win32\PTGFXDllMain.cpp">
+      <Filter>Private\GFX\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\PTGFXAssetDDS.cpp">
+      <Filter>Private\GFX</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\GFX\VK\PTGFXHALDevice.cpp">
+      <Filter>Private\GFX\VK</Filter>
+    </ClCompile>
+    <ClCompile Include="dllmain.cpp">
+      <Filter>Solution\Win32Desktop</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
+      <Filter>Public\Math\SSE</Filter>
+    </None>
+    <None Include="..\..\Private\GFX\ResourceBinding.md">
+      <Filter>Private\GFX</Filter>
+    </None>
+  </ItemGroup>
+</Project>
