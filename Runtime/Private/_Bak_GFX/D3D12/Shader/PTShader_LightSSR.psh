@@ -1,0 +1,161 @@
+
+cbuffer g_BufferConstant_Sensor:register(b0)
+{
+	column_major float4x4 g_Sensor_View;
+	column_major float4x4 g_Sensor_Projection;
+	column_major float4x4 g_Sensor_InverseView;
+	column_major float4x4 g_Sensor_InverseProjection;
+};
+
+Texture2D<float> g_Texture_GBufferDepth:register(t0);
+Texture2D<unorm float3> g_Texture_GBufferNormal:register(t1);
+Texture2D<unorm float3> g_Texture_GBufferSpecular:register(t2);
+Texture2D<unorm float3> g_Texture_RadianceDirect:register(t3);
+
+struct RS_TO_PS
+{
+	float4 Position : SV_Position;
+	float2 UV_Screen : Location0;
+};
+
+struct PS_TO_OM
+{
+	float4 RadianceTotal : SV_TARGET0;
+};
+
+[earlydepthstencil]
+PS_TO_OM main(RS_TO_PS PixelIn)
+{
+	//GBuffer
+	float3 GBuffer_Specular = g_Texture_GBufferSpecular.mips[0][PixelIn.Position.xy];
+	float3 GBuffer_Normal = g_Texture_GBufferNormal.mips[0][PixelIn.Position.xy] * 2.0f - 1.0f;
+	float GBuffer_Depth = g_Texture_GBufferDepth.mips[0][PixelIn.Position.xy];
+	float3 Radiance_Direct = g_Texture_RadianceDirect.mips[0][PixelIn.Position.xy];
+
+	//SpecularFilter
+	if (dot(GBuffer_Specular, float3(0.2126f, 0.7152f, 0.0722f)) < 0.2f)
+	{
+		PS_TO_OM PixelOut;
+		PixelOut.RadianceTotal = float4(Radiance_Direct, 1.0f);
+		return PixelOut;
+	}
+
+	//ReflectionDirection
+	float3 Position_World;
+	{
+		float4 Position_NormalizedDevice;
+		Position_NormalizedDevice.x = PixelIn.UV_Screen.x*2.0f - 1.0f;
+		Position_NormalizedDevice.y = -PixelIn.UV_Screen.y*2.0f + 1.0f;
+		Position_NormalizedDevice.z = GBuffer_Depth;
+		Position_NormalizedDevice.w = 1.0f;
+
+		float4 Position_View = mul(Position_NormalizedDevice, g_Sensor_InverseProjection);
+		Position_View.xyzw /= Position_View.wwww;
+
+		Position_World = (mul(Position_View, g_Sensor_InverseView)).xyz;
+	}
+
+	float3 ViewDirection;
+	{
+		float3 PositionSensor_World = g_Sensor_InverseView[3].xyz; //g_InvView * vec4(0.0f,0.0f,0.0f,1.0f);
+
+		ViewDirection = normalize(PositionSensor_World - Position_World);
+	}
+
+	float3 NormalMacro = GBuffer_Normal;
+
+	float3 ReflectionDirection = NormalMacro * dot(ViewDirection, NormalMacro)*2.0f - ViewDirection;
+
+	//RayTrace
+	float3 Position_RayFrom_FrameBuffer = float3(PixelIn.Position.xy, GBuffer_Depth);
+
+	float3 Position_RayTo_FrameBuffer;
+	{
+		float3 Position_RayTo_World = Position_World + ReflectionDirection;
+
+		float4 Position_RayTo_View = mul(float4(Position_RayTo_World, 1.0f), g_Sensor_View);
+
+		//Clip to NearZ 
+		if (Position_RayTo_View.z > -0.1f) //右手系
+		{
+			PS_TO_OM PixelOut;
+			PixelOut.RadianceTotal = float4(1.0f, 0.0f, 1.0f, 1.0f);
+			return PixelOut;
+		}
+
+		float4 Position_RayTo_NormalizedDevice = mul(Position_RayTo_View, g_Sensor_Projection);
+		Position_RayTo_NormalizedDevice.xyzw /= Position_RayTo_NormalizedDevice.wwww;
+
+		//Viewport
+		Position_RayTo_FrameBuffer = float3(
+			((Position_RayTo_NormalizedDevice.x + 1.0f)*0.5f)*800.0f,
+			((Position_RayTo_NormalizedDevice.y - 1.0f)*-0.5f)*600.0f,
+			Position_RayTo_NormalizedDevice.z
+			);
+	}
+
+	bool bLongX = abs(Position_RayTo_FrameBuffer.x - Position_RayFrom_FrameBuffer.x) > abs(Position_RayTo_FrameBuffer.y - Position_RayFrom_FrameBuffer.y);
+	float LongFrom = bLongX ? Position_RayFrom_FrameBuffer.x : Position_RayFrom_FrameBuffer.y;
+	float LongTo = bLongX ? Position_RayTo_FrameBuffer.x : Position_RayTo_FrameBuffer.y;
+	float ShortFrom = bLongX ? Position_RayFrom_FrameBuffer.y : Position_RayFrom_FrameBuffer.x;
+	float ShortTo = bLongX ? Position_RayTo_FrameBuffer.y : Position_RayTo_FrameBuffer.x;
+
+	float DeltaLong;
+	float DeltaShort;
+	float DeltaDepth;
+	{
+		DeltaLong = sign(LongTo - LongFrom);
+		//Line Degenerate
+		float AbsLong = abs(LongTo - LongFrom);
+		if (AbsLong <= 1.0f)
+		{
+			PS_TO_OM PixelOut;
+			PixelOut.RadianceTotal = float4(Radiance_Direct, 1.0f);
+			return PixelOut;
+		}
+		float InverseAbsLong = 1.0f / AbsLong;
+		DeltaShort = (ShortTo - ShortFrom) * InverseAbsLong;
+		DeltaDepth = (Position_RayTo_FrameBuffer.z - Position_RayFrom_FrameBuffer.z) * InverseAbsLong; //不需要透视校正插值
+	}
+	//Stride
+	DeltaLong *= 4.0f;
+	DeltaShort *= 4.0f;
+	DeltaDepth *= 4.0f;
+
+	//1/2 Pixel
+	float LongCurrent = LongFrom + DeltaLong*0.5f;
+	float ShortCurrent = ShortFrom + DeltaShort*0.5f;
+	float DepthCurrent = Position_RayFrom_FrameBuffer.z + DeltaDepth*0.5f;
+	float2 TexelCoord = bLongX ? float2(LongCurrent, ShortCurrent) : float2(ShortCurrent, LongCurrent);
+
+	float3 LightRadiance;
+
+	for (int i_Step = 0; i_Step < 100; ++i_Step)
+	{
+		LongCurrent += DeltaLong;
+		ShortCurrent += DeltaShort;
+		DepthCurrent += DeltaDepth;
+		TexelCoord = bLongX ? float2(LongCurrent, ShortCurrent) : float2(ShortCurrent, LongCurrent);
+
+		if (TexelCoord.x <= 0.0f || TexelCoord.x >= 799.0f || TexelCoord.y <= 0.0f || TexelCoord.y >= 599.0f)
+		{
+			//LightRadiance = float3(0.0f, 0.0f, 0.0f);
+			break;
+		}
+
+		float DepthScene = g_Texture_GBufferDepth.mips[0][TexelCoord.xy];
+
+		if (DepthCurrent < DepthScene && DepthScene > 0.001f) //Reverse-Z //RayCastTerrain //SkyBox
+		{
+			LightRadiance = g_Texture_RadianceDirect.mips[0][TexelCoord.xy];
+			break;
+		}
+	}
+
+	float3 Fresnel = GBuffer_Specular;
+	float3 RadianceIndirect = Fresnel*LightRadiance;
+
+	PS_TO_OM PixelOut;
+	PixelOut.RadianceTotal = float4(Radiance_Direct + RadianceIndirect, 1.0f);
+	return PixelOut;
+}
