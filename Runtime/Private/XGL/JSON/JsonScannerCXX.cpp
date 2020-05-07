@@ -2,9 +2,9 @@
 #include <exception>
 extern "C" JsonFrontend *json_llget_extra(struct llscan_t *yyscanner);
 
-extern "C" int json_ll_stream_read(JsonFrontend *pUserData, MDLFrontend_InputStreamRef _InputStreamRef, void *buf, size_t size)
+extern "C" int json_ll_stream_read(JsonFrontend *pUserData, PT_XGL_StreamReaderRef _pStreamReaderRef, void *buf, size_t size)
 {
-	ptrdiff_t _res = pUserData->Callback_InputStreamRead(_InputStreamRef, buf, size);
+	ptrdiff_t _res = pUserData->Callback_StreamReader_Read(_InputStreamRef, buf, size);
 	return static_cast<int>(_res);
 }
 
