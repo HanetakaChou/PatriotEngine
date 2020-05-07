@@ -64,11 +64,11 @@
 
 
 /* Substitute the variable and function names.  */
-#define yyparse         json_yparse
-#define yylex           json_ylex
-#define yyerror         json_yerror
-#define yydebug         json_ydebug
-#define yynerrs         json_ynerrs
+#define yyparse         json_yyparse
+#define yylex           json_yylex
+#define yyerror         json_yyerror
+#define yydebug         json_yydebug
+#define yynerrs         json_yynerrs
 
 
 
@@ -98,7 +98,7 @@
 # define YYDEBUG 0
 #endif
 #if YYDEBUG
-extern int json_ydebug;
+extern int json_yydebug;
 #endif
 
 /* Token type.  */
@@ -108,7 +108,7 @@ extern int json_ydebug;
   {
     TRUE = 258,
     FALSE = 259,
-    NULL = 260,
+    JSONNULL = 260,
     LEFTBRACE = 261,
     RIGHTBRACE = 262,
     COLON = 263,
@@ -116,8 +116,9 @@ extern int json_ydebug;
     RIGHTBRACKET = 265,
     COMMA = 266,
     STRING = 267,
-    NUMBER = 268,
-    PSEUDO_LEX_ERROR = 269
+    NUMBER_INT = 268,
+    NUMBER_FLOAT = 269,
+    PSEUDO_LEX_ERROR = 270
   };
 #endif
 
@@ -144,18 +145,18 @@ struct YYLTYPE
 
 
 
-int json_yparse (void *pUserData, void *pScanner);
+int json_yyparse (void *pUserData, void *pScanner);
 
 
 
 
 /* Unqualified %code blocks.  */
-#line 13 "jsonParser.y" /* yacc.c:355  */
+#line 13 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:355  */
 
     int yylex(union YYSTYPE *lvalp, YYLTYPE *llocp, void *pUserData, void *pScanner);
     void yyerror(YYLTYPE *llocp, void *pUserData, void *pScanner, const char *s);
 
-#line 159 "JsonParserYacc.inl" /* yacc.c:355  */
+#line 160 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:355  */
 
 #ifdef short
 # undef short
@@ -388,21 +389,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  22
+#define YYFINAL  21
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   32
+#define YYLAST   29
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  16
+#define YYNTOKENS  17
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  11
+#define YYNNTS  9
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  21
+#define YYNRULES  20
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  31
+#define YYNSTATES  30
 
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   269
+#define YYMAXUTOK   270
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
    as returned by yylex, with out-of-bounds checking.  */
@@ -418,7 +419,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,    15,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,    16,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -439,16 +440,17 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
-       5,     6,     7,     8,     9,    10,    11,    12,    13,    14
+       5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
+      15
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    50,    50,    52,    53,    54,    55,    56,    57,    58,
-      60,    61,    63,    64,    66,    68,    69,    71,    72,    74,
-      76,    77
+       0,    49,    49,    51,    52,    53,    54,    55,    56,    57,
+      58,    60,    64,    68,    72,    77,    82,    86,    90,    95,
+     100
 };
 #endif
 
@@ -458,10 +460,10 @@ static const yytype_uint8 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "\"true\"", "\"false\"", "\"null\"",
-  "\"{\"", "\"}\"", "\":\"", "\"[\"", "\"]\"", "\",\"", "STRING", "NUMBER",
-  "\"[A lex error has occurred!]\"", "':'", "$accept", "json", "value",
-  "object", "members", "member", "array", "elements", "element", "string",
-  "number", YY_NULLPTR
+  "\"{\"", "\"}\"", "\":\"", "\"[\"", "\"]\"", "\",\"", "STRING",
+  "NUMBER_INT", "NUMBER_FLOAT", "\"[A lex error has occurred!]\"", "':'",
+  "$accept", "json", "value", "object", "members", "member", "array",
+  "elements", "element", YY_NULLPTR
 };
 #endif
 
@@ -471,14 +473,14 @@ static const char *const yytname[] =
 static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,    58
+     265,   266,   267,   268,   269,   270,    58
 };
 # endif
 
-#define YYPACT_NINF -5
+#define YYPACT_NINF -6
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-5)))
+  (!!((Yystate) == (-6)))
 
 #define YYTABLE_NINF -1
 
@@ -489,10 +491,9 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-      10,    -5,    -5,    -5,    17,    -1,    -5,    -5,     6,    -5,
-      -5,    -5,    -5,    -5,    -5,     3,    -4,     2,    -5,    -5,
-       8,     9,    -5,    -5,    14,    10,    -5,    10,    -5,    -5,
-      -5
+      11,    -6,    -6,    -6,     6,    -2,    -6,    -6,    -6,     9,
+      -6,    -6,    -6,    -6,     3,    14,    15,    -6,    -6,    -5,
+      -6,    -6,    11,    -6,    16,    -6,    11,    -6,    -6,    -6
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -500,24 +501,21 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,     7,     8,     9,     0,     0,    20,    21,     0,     2,
-       3,     4,     5,     6,    11,     0,    13,     0,    16,    19,
-       0,    18,     1,    10,     0,     0,    15,     0,    12,    14,
-      17
+       0,     8,     9,    10,     0,     0,     5,     6,     7,     0,
+       2,     3,     4,    12,     0,     0,    14,    17,    20,     0,
+      19,     1,     0,    11,     0,    16,     0,    15,    13,    18
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -5,    -5,     0,    -5,     4,    -5,    -5,     5,    -5,    -3,
-      -5
+      -6,    -6,     0,    -6,     5,    -6,    -6,    -6,     1
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     8,    19,    10,    15,    16,    11,    20,    21,    12,
-      13
+      -1,     9,    18,    11,    15,    16,    12,    19,    20
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -525,44 +523,41 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-       9,    17,     1,     2,     3,     4,    22,    24,     5,    18,
-      23,     6,     7,     1,     2,     3,     4,    25,    26,     5,
-      27,    17,     6,     7,    14,    29,     6,     0,    28,     6,
-       0,     0,    30
+      10,     1,     2,     3,     4,    25,    26,     5,    17,    21,
+       6,     7,     8,    13,     1,     2,     3,     4,    14,    22,
+       5,    23,    27,     6,     7,     8,    24,    29,    14,    28
 };
 
-static const yytype_int8 yycheck[] =
+static const yytype_uint8 yycheck[] =
 {
-       0,     4,     3,     4,     5,     6,     0,    11,     9,    10,
-       7,    12,    13,     3,     4,     5,     6,    15,    10,     9,
-      11,    24,    12,    13,     7,    25,    12,    -1,    24,    12,
-      -1,    -1,    27
+       0,     3,     4,     5,     6,    10,    11,     9,    10,     0,
+      12,    13,    14,     7,     3,     4,     5,     6,    12,    16,
+       9,     7,    22,    12,    13,    14,    11,    26,    12,    24
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     3,     4,     5,     6,     9,    12,    13,    17,    18,
-      19,    22,    25,    26,     7,    20,    21,    25,    10,    18,
-      23,    24,     0,     7,    11,    15,    10,    11,    20,    18,
-      23
+       0,     3,     4,     5,     6,     9,    12,    13,    14,    18,
+      19,    20,    23,     7,    12,    21,    22,    10,    19,    24,
+      25,     0,    16,     7,    11,    10,    11,    19,    21,    25
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    16,    17,    18,    18,    18,    18,    18,    18,    18,
-      19,    19,    20,    20,    21,    22,    22,    23,    23,    24,
-      25,    26
+       0,    17,    18,    19,    19,    19,    19,    19,    19,    19,
+      19,    20,    20,    21,    21,    22,    23,    23,    24,    24,
+      25
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     1,     1,     1,     1,     1,     1,     1,     1,
-       3,     2,     3,     1,     3,     3,     2,     3,     1,     1,
-       1,     1
+       1,     3,     2,     3,     1,     3,     3,     2,     3,     1,
+       1
 };
 
 
@@ -1352,127 +1347,147 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 50 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1358 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 49 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
+#line 1353 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 3:
-#line 52 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1364 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 51 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
+#line 1359 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 4:
-#line 53 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1370 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 52 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
+#line 1365 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 5:
-#line 54 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1376 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 53 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromString(pUserData, (yyvsp[0]._valuestring)._text, (yyvsp[0]._valuestring)._leng); }
+#line 1371 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 6:
-#line 55 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1382 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 54 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromInt(pUserData, (yyvsp[0]._valueint)); }
+#line 1377 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 7:
-#line 56 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1388 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 55 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromFloat(pUserData, (yyvsp[0]._valuefloat)); }
+#line 1383 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 8:
-#line 57 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1394 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 56 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_True(pUserData); }
+#line 1389 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 9:
-#line 58 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1400 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 57 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_False(pUserData); }
+#line 1395 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 10:
-#line 60 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1406 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 58 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_Null(pUserData); }
+#line 1401 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 11:
-#line 61 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1412 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 60 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._jsonvalue) = JsonFrontend_CreateJsonObject_FromStdUnorderedMap(pUserData, (yyvsp[-1]._stdunorderedmap));
+    JsonFrontend_DisposeStdUnorderedMap(pUserData, (yyvsp[-1]._stdunorderedmap));
+    }
+#line 1410 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 12:
-#line 63 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1418 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 64 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._jsonvalue) = JsonFrontend_CreateJsonObject_FromEmpty(pUserData); 
+    }
+#line 1418 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 13:
-#line 64 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1424 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 68 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    JsonFrontend_StdUnorderedMap_InsertStdPair(pUserData, (yyvsp[-2]._stdpair), (yyvsp[0]._stdunorderedmap));
+    JsonFrontend_DisposeStdPair(pUserData, (yyvsp[0]._stdunorderedmap));
+    }
+#line 1427 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 14:
-#line 66 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1430 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 72 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._stdunorderedmap) = JsonFrontend_CreateStdUnorderedMap_FromStdPair(pUserData, (yyvsp[0]._stdpair));
+    JsonFrontend_DisposeStdPair(pUserData, (yyvsp[0]._stdpair));
+    }
+#line 1436 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 15:
-#line 68 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1436 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 77 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._stdpair) = JsonFrontend_CreateStdPair_FromStringAndJsonValue(pUserData, (yyvsp[-2]._valuestring)._text, (yyvsp[-2]._valuestring)._leng, (yyvsp[0]._jsonvalue)); 
+    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
+    }
+#line 1445 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 16:
-#line 69 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1442 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 82 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._jsonvalue) = JsonFrontend_CreateJsonArray_FromStdVector(pUserData, (yyvsp[-1]._stdvector)); 
+    JsonFrontend_DisposeStdVector(pUserData, (yyvsp[-1]._stdvector));
+    }
+#line 1454 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 17:
-#line 71 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1448 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 86 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._jsonvalue) = JsonFrontend_CreateJsonArray_FromEmpty(pUserData); 
+    }
+#line 1462 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 18:
-#line 72 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1454 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 90 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    JsonFrontend_StdVector_PushJsonValue(pUserData, (yyvsp[-2]._stdvector), (yyvsp[0]._jsonvalue));
+    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
+    (yyval._stdvector) = (yyvsp[-2]._stdvector);
+    }
+#line 1472 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 19:
-#line 74 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._null) = NULL; }
-#line 1460 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 95 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { 
+    (yyval._stdvector) = JsonFrontend_CreateStdVector_FromJsonValue(pUserData, (yyvsp[0]._jsonvalue)); 
+    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
+    }
+#line 1481 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
   case 20:
-#line 76 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._string) = NULL; }
-#line 1466 "JsonParserYacc.inl" /* yacc.c:1652  */
-    break;
-
-  case 21:
-#line 77 "jsonParser.y" /* yacc.c:1652  */
-    { (yyval._float) = NULL; }
-#line 1472 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 100 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
+#line 1487 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
     break;
 
 
-#line 1476 "JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1491 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1709,5 +1724,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 79 "jsonParser.y" /* yacc.c:1918  */
+#line 102 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1918  */
 

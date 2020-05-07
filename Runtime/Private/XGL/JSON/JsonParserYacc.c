@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "JsonParser.h"
+#include "JsonScannerParser.h"
 
 extern void *json_yyalloc(size_t size, void *pUserData);
 extern void *json_yyrealloc(void *ptr, size_t size, void *pUserData);
@@ -24,10 +24,11 @@ int YYTOKEN_COLON = COLON;
 int YYTOKEN_LEFTBRACKET = LEFTBRACKET;
 int YYTOKEN_RIGHTBRACKET = RIGHTBRACKET;
 int YYTOKEN_COMMA = COMMA;
-int YYTOKEN_NUMBER = NUMBER;
+int YYTOKEN_NUMBER_INT = NUMBER_INT;
+int YYTOKEN_NUMBER_FLOAT = NUMBER_FLOAT;
 int YYTOKEN_TRUE = TRUE;
 int YYTOKEN_FALSE = FALSE;
-int YYTOKEN_NULL = NULL;
+int YYTOKEN_JSONNULL = JSONNULL;
 int YYTOKEN_PSEUDO_LEX_ERROR = PSEUDO_LEX_ERROR;
 int YYTOKEN_EOF = YYEOF;
 

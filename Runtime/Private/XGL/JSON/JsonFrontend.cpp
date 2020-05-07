@@ -6,7 +6,7 @@
 #include <new>
 #include <assert.h>
 
-void PT_XGL_JsonFrontend_Run(char const *pInitialFileName, PT_XGL_StreamReaderCallbacks const *pStreamReader)
+void PT_XGL_JsonFrontend_Run(char const *pInitialFileName, struct PT_XGL_StreamReader_Callbacks const *pStreamReader)
 {
 	
 }

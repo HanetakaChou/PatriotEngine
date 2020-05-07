@@ -18,34 +18,44 @@
 
     /* https://www.crockford.com/mckeeman.html */
 
-NEWLINE (("\n")|("\r\n"))
 WS ([ \r\t](([ \r\t])*))
+
 STRING (\"(\\.|[^\\"\n])*\")
+
 LEFTBRACE ("{")
 RIGHTBRACE ("}")
 COLON (":")
 LEFTBRACKET ("[")
 RIGHTBRACKET ("]")
 COMMA (",")
-NUMBER ((("-"?)([0-9])(([0-9])*))(((".")([0-9])(([0-9])*))?)(([eE]([-+]?)([0-9])(([0-9])*))?))
+
+INTERGER (("-"?)([0-9])(([0-9])*))
+FRACTION ((".")([0-9])(([0-9])*))
+EXPONENT ([eE]([-+]?)([0-9])(([0-9])*))
+NUMBER_INT {INTERGER}
+NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION}{EXPONENT}))
+
 TRUE ("true")
 FALSE ("false")
-NULL ("null")
+JSONNULL ("null")
 
 %%
-    /* Bugs for yylineno */
-{NEWLINE} {
+    /* bugs for yylineno */
+    /* ("\r\n") compatible WS \r */
+("\n") {
     (yycolumn) = 0;
 }
 
-    /* Ignore whitespace */
+    /* ignore whitespace */
 {WS} { 
     
     }
 
      /* string literal */
 {STRING} {
-    return YYTOKEN_STRING_LITERAL;
+    lvalp->_valuestring->_text = (yytext);
+    lvalp->_valuestring->_leng = (yyleng);
+    return YYTOKEN_STRING;
     }
 
     /* split */
@@ -73,14 +83,7 @@ NULL ("null")
     return YYTOKEN_COMMA;
     }
 
-     /* literal values */
-{NUMBER} { 
-    char *endptr = NULL;
-    lvalp->_INTEGER_LITERAL = strtol(yytext, &endptr, 10);
-    assert(endptr <= ((yytext) + (yyleng)));
-    return YYTOKEN_INTEGER_LITERAL; 
-    }
-
+    /* keywords */
 {TRUE} {
     return YYTOKEN_TRUE;
     }
@@ -89,9 +92,24 @@ NULL ("null")
     return YYTOKEN_FALSE;
     }
 
-{NULL} {
-    return YYTOKEN_NULL;
+{JSONNULL} {
+    return YYTOKEN_JSONNULL;
     }
+
+    /* literal values */
+{NUMBER_INT} { 
+    char *endptr = NULL;
+    lvalp->_valueint = strtol((yytext), &endptr, 10);
+    assert(endptr <= ((yytext) + (yyleng)));
+    return YYTOKEN_NUMBER_INT; 
+    }
+
+{NUMBER_FLOAT} { 
+    char *endptr = NULL;
+    lvalp->_valuefloat = strtof((yytext), &endptr);
+    assert(endptr <= ((yytext) + (yyleng)));
+    return YYTOKEN_NUMBER_FLOAT; 
+}
 
     /* catch-all rule for any other single characters */
 (.) { 

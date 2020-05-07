@@ -19,61 +19,84 @@
 // Define the terminal symbols.
 %token TRUE "true"
 %token FALSE "false"
-%token NULL "null"
+%token JSONNULL "null"
 %token LEFTBRACE "{"
 %token RIGHTBRACE "}"
 %token COLON ":"
 %token LEFTBRACKET "["
 %token RIGHTBRACKET "]"
 %token COMMA ","
-%token <_string> STRING
-%token <_float> NUMBER
+%token <_valuestring> STRING
+%token <_valueint> NUMBER_INT
+%token <_valuefloat> NUMBER_FLOAT
 %token PSEUDO_LEX_ERROR "[A lex error has occurred!]"
 
 // Define the nonterminals 
-%type <_null> json 
-%type <_null> element 
-%type <_null> value 
-%type <_null> object
-%type <_null> members
-%type <_null> member
-%type <_null> array
-%type <_null> elements
-%type <_string> string
-%type <_float> number
+%type <_jsonvalue> json 
+%type <_jsonvalue> value 
+%type <_jsonvalue> object
+%type <_stdunorderedmap> members
+%type <_stdpair> member
+%type <_jsonvalue> array
+%type <_stdvector> elements
+%type <_jsonvalue> element 
 
 // Define the starting nonterminal
 %start json
 
 %%
 
-json: value { $$ = NULL; };
+json: value { $$ = $1; };
 
-value: object { $$ = NULL; };
-value: array { $$ = NULL; };
-value: string { $$ = NULL; };
-value: number { $$ = NULL; };
-value: TRUE { $$ = NULL; };
-value: FALSE { $$ = NULL; };
-value: NULL { $$ = NULL; };
+value: object { $$ = $1; };
+value: array { $$ = $1; };
+value: STRING { $$ = JsonFrontend_CreateJsonValue_FromString(pUserData, $1._text, $1._leng); };
+value: NUMBER_INT { $$ = JsonFrontend_CreateJsonValue_FromInt(pUserData, $1); };
+value: NUMBER_FLOAT { $$ = JsonFrontend_CreateJsonValue_FromFloat(pUserData, $1); };
+value: TRUE { $$ = JsonFrontend_CreateJsonValue_True(pUserData); };
+value: FALSE { $$ = JsonFrontend_CreateJsonValue_False(pUserData); };
+value: JSONNULL { $$ = JsonFrontend_CreateJsonValue_Null(pUserData); };
 
-object: LEFTBRACE members RIGHTBRACE { $$ = NULL; };
-object: LEFTBRACE RIGHTBRACE { $$ = NULL; };
+object: LEFTBRACE members RIGHTBRACE { 
+    $$ = JsonFrontend_CreateJsonObject_FromStdUnorderedMap(pUserData, $2);
+    JsonFrontend_DisposeStdUnorderedMap(pUserData, $2);
+    };
+object: LEFTBRACE RIGHTBRACE { 
+    $$ = JsonFrontend_CreateJsonObject_FromEmpty(pUserData); 
+    };
 
-members: member COMMA members { $$ = NULL; };
-members: member { $$ = NULL; };
+members: member COMMA members { 
+    JsonFrontend_StdUnorderedMap_InsertStdPair(pUserData, $1, $3);
+    JsonFrontend_DisposeStdPair(pUserData, $3);
+    };
+members: member { 
+    $$ = JsonFrontend_CreateStdUnorderedMap_FromStdPair(pUserData, $1);
+    JsonFrontend_DisposeStdPair(pUserData, $1);
+    };
 
-member: string ':' value { $$ = NULL; };
+member: STRING ':' value { 
+    $$ = JsonFrontend_CreateStdPair_FromStringAndJsonValue(pUserData, $1._text, $1._leng, $3); 
+    JsonFrontend_DisposeJsonValue(pUserData, $3);
+    };
 
-array: LEFTBRACKET elements RIGHTBRACKET { $$ = NULL; };
-array: LEFTBRACKET RIGHTBRACKET { $$ = NULL; };
+array: LEFTBRACKET elements RIGHTBRACKET { 
+    $$ = JsonFrontend_CreateJsonArray_FromStdVector(pUserData, $2); 
+    JsonFrontend_DisposeStdVector(pUserData, $2);
+    };
+array: LEFTBRACKET RIGHTBRACKET { 
+    $$ = JsonFrontend_CreateJsonArray_FromEmpty(pUserData); 
+    };
 
-elements: element COMMA elements { $$ = NULL; };
-elements: element { $$ = NULL; };
+elements: elements COMMA element { 
+    JsonFrontend_StdVector_PushJsonValue(pUserData, $1, $3);
+    JsonFrontend_DisposeJsonValue(pUserData, $3);
+    $$ = $1;
+    };
+elements: element { 
+    $$ = JsonFrontend_CreateStdVector_FromJsonValue(pUserData, $1); 
+    JsonFrontend_DisposeJsonValue(pUserData, $1);
+    };
 
-element: value { $$ = NULL; };
-
-string: STRING { $$ = NULL; };
-number: NUMBER { $$ = NULL; };
+element: value { $$ = $1; };
 
 %%

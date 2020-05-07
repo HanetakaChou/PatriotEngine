@@ -50,7 +50,7 @@ typedef struct YYLTYPE YYLTYPE;
         (yycolumn) += (yyleng);                       \
     }
 
-#include "JsonParser.h"
+#include "JsonScannerParser.h"
 
 #include "JsonScannerLex.inl"
 
