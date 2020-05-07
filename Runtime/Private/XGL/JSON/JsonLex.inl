@@ -1,6 +1,6 @@
-#line 1 "../../Private/XGL/JSON/JsonScannerLex.inl"
+#line 1 "../../Private/XGL/JSON/JsonLex.inl"
 
-#line 3 "../../Private/XGL/JSON/JsonScannerLex.inl"
+#line 3 "../../Private/XGL/JSON/JsonLex.inl"
 
 #define  YY_INT_ALIGNED short int
 
@@ -851,14 +851,14 @@ static const flex_int32_t yy_rule_can_match_eol[17] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "../../Private/XGL/JSON/JsonScanner.l"
+#line 1 "../../Private/XGL/JSON/JsonLex.l"
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-#line 16 "../../Private/XGL/JSON/JsonScanner.l"
+#line 16 "../../Private/XGL/JSON/JsonLex.l"
     /* https://westes.github.io/flex/manual/Start-Conditions.html#Start-Conditions */
     /* https://westes.github.io/flex/manual/Patterns.html#Patterns */
     /* https://www.crockford.com/mckeeman.html */
-#line 861 "../../Private/XGL/JSON/JsonScannerLex.inl"
+#line 861 "../../Private/XGL/JSON/JsonLex.inl"
 
 #define INITIAL 0
 
@@ -1100,11 +1100,11 @@ YY_DECL
 		}
 
 	{
-#line 43 "../../Private/XGL/JSON/JsonScanner.l"
+#line 43 "../../Private/XGL/JSON/JsonLex.l"
 
     /* bugs for yylineno */
     /* ("\r\n") compatible WS \r */
-#line 1107 "../../Private/XGL/JSON/JsonScannerLex.inl"
+#line 1107 "../../Private/XGL/JSON/JsonLex.inl"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1171,7 +1171,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 46 "../../Private/XGL/JSON/JsonScanner.l"
+#line 46 "../../Private/XGL/JSON/JsonLex.l"
 {
     (yycolumn) = 0;
 }
@@ -1179,7 +1179,7 @@ YY_RULE_SETUP
 /* ignore whitespace */
 case 2:
 YY_RULE_SETUP
-#line 51 "../../Private/XGL/JSON/JsonScanner.l"
+#line 51 "../../Private/XGL/JSON/JsonLex.l"
 { 
     
     }
@@ -1187,52 +1187,51 @@ YY_RULE_SETUP
 /* string literal */
 case 3:
 YY_RULE_SETUP
-#line 56 "../../Private/XGL/JSON/JsonScanner.l"
+#line 56 "../../Private/XGL/JSON/JsonLex.l"
 {
-    lvalp->_valuestring->_text = (yytext);
-    lvalp->_valuestring->_leng = (yyleng);
+    lvalp->_stdstring = JsonParser_Std_String_Create((yyextra), (yytext), (yyleng));
     return YYTOKEN_STRING;
     }
 	YY_BREAK
 /* split */
 case 4:
 YY_RULE_SETUP
-#line 63 "../../Private/XGL/JSON/JsonScanner.l"
+#line 62 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_LEFTBRACE;
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 67 "../../Private/XGL/JSON/JsonScanner.l"
+#line 66 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_RIGHTBRACE;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 71 "../../Private/XGL/JSON/JsonScanner.l"
+#line 70 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_COLON;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 75 "../../Private/XGL/JSON/JsonScanner.l"
+#line 74 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_LEFTBRACKET;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 79 "../../Private/XGL/JSON/JsonScanner.l"
+#line 78 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_RIGHTBRACKET;
 }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 83 "../../Private/XGL/JSON/JsonScanner.l"
+#line 82 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_COMMA;
     }
@@ -1240,21 +1239,21 @@ YY_RULE_SETUP
 /* keywords */
 case 10:
 YY_RULE_SETUP
-#line 88 "../../Private/XGL/JSON/JsonScanner.l"
+#line 87 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_TRUE;
     }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 92 "../../Private/XGL/JSON/JsonScanner.l"
+#line 91 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_FALSE;
     }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 96 "../../Private/XGL/JSON/JsonScanner.l"
+#line 95 "../../Private/XGL/JSON/JsonLex.l"
 {
     return YYTOKEN_JSONNULL;
     }
@@ -1262,7 +1261,7 @@ YY_RULE_SETUP
 /* literal values */
 case 13:
 YY_RULE_SETUP
-#line 101 "../../Private/XGL/JSON/JsonScanner.l"
+#line 100 "../../Private/XGL/JSON/JsonLex.l"
 { 
     char *endptr = NULL;
     lvalp->_valueint = strtol((yytext), &endptr, 10);
@@ -1272,7 +1271,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 108 "../../Private/XGL/JSON/JsonScanner.l"
+#line 107 "../../Private/XGL/JSON/JsonLex.l"
 { 
     char *endptr = NULL;
     lvalp->_valuefloat = strtof((yytext), &endptr);
@@ -1283,7 +1282,7 @@ YY_RULE_SETUP
 /* catch-all rule for any other single characters */
 case 15:
 YY_RULE_SETUP
-#line 116 "../../Private/XGL/JSON/JsonScanner.l"
+#line 115 "../../Private/XGL/JSON/JsonLex.l"
 { 
         char msg_fatal_error[4096];
         assert(((yyleng) == 1));
@@ -1292,7 +1291,7 @@ YY_RULE_SETUP
     }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 123 "../../Private/XGL/JSON/JsonScanner.l"
+#line 122 "../../Private/XGL/JSON/JsonLex.l"
 {
     json_llpop_buffer_state(yyscanner);
     if(!YY_CURRENT_BUFFER)
@@ -1303,10 +1302,10 @@ case YY_STATE_EOF(INITIAL):
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 131 "../../Private/XGL/JSON/JsonScanner.l"
+#line 130 "../../Private/XGL/JSON/JsonLex.l"
 ECHO;
 	YY_BREAK
-#line 1309 "../../Private/XGL/JSON/JsonScannerLex.inl"
+#line 1308 "../../Private/XGL/JSON/JsonLex.inl"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2407,5 +2406,5 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 131 "../../Private/XGL/JSON/JsonScanner.l"
+#line 130 "../../Private/XGL/JSON/JsonLex.l"
 

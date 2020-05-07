@@ -53,8 +53,7 @@ JSONNULL ("null")
 
      /* string literal */
 {STRING} {
-    lvalp->_valuestring->_text = (yytext);
-    lvalp->_valuestring->_leng = (yyleng);
+    lvalp->_stdstring = JsonParser_Std_String_Create((yyextra), (yytext), (yyleng));
     return YYTOKEN_STRING;
     }
 

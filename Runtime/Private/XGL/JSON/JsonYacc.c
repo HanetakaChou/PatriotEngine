@@ -1,6 +1,6 @@
 #include <stddef.h>
 
-#include "JsonScannerParser.h"
+#include "JsonLexYacc.h"
 
 extern void *json_yyalloc(size_t size, void *pUserData);
 extern void *json_yyrealloc(void *ptr, size_t size, void *pUserData);
@@ -12,10 +12,30 @@ extern void json_yyfree(void *ptr, void *pUserData);
 
 //https://www.gnu.org/software/bison/manual/html_node/Table-of-Symbols.html
 //#define YYSTACK_USE_ALLOCA 1
-#include "JsonParserYacc.inl"
+#include "JsonYacc.inl"
 
 //https://www.gnu.org/software/bison/manual/html_node/Union-Decl.html#Union-Decl
 //https://www.gnu.org/software/bison/manual/html_node/Location-Type.html
+
+void json_yyerror(YYLTYPE *llocp, void *pUserData, struct llscan_t *scanner, const char *s)
+{
+    JsonParser_Error(pUserData, llocp->first_line, llocp->first_column, s);
+}
+
+void *json_yyalloc(size_t size, void *pUserData)
+{
+    return JsonParser_Malloc(pUserData, size);
+}
+
+void *json_yyrealloc(void *ptr, size_t size, void *pUserData)
+{
+    return JsonParser_Realloc(pUserData, ptr, size);
+}
+
+void json_yyfree(void *ptr, void *pUserData)
+{
+    return JsonParser_Free(pUserData, ptr);
+}
 
 int YYTOKEN_STRING = STRING;
 int YYTOKEN_LEFTBRACE = LEFTBRACE;

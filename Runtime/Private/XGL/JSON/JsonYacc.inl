@@ -151,12 +151,12 @@ int json_yyparse (void *pUserData, void *pScanner);
 
 
 /* Unqualified %code blocks.  */
-#line 13 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:355  */
+#line 13 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:355  */
 
     int yylex(union YYSTYPE *lvalp, YYLTYPE *llocp, void *pUserData, void *pScanner);
     void yyerror(YYLTYPE *llocp, void *pUserData, void *pScanner, const char *s);
 
-#line 160 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:355  */
+#line 160 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:355  */
 
 #ifdef short
 # undef short
@@ -391,7 +391,7 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  21
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   29
+#define YYLAST   30
 
 /* YYNTOKENS -- Number of terminals.  */
 #define YYNTOKENS  17
@@ -448,9 +448,9 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    49,    49,    51,    52,    53,    54,    55,    56,    57,
-      58,    60,    64,    68,    72,    77,    82,    86,    90,    95,
-     100
+       0,    49,    49,    51,    54,    57,    61,    64,    67,    70,
+      73,    77,    80,    84,    90,    98,   103,   106,   110,   114,
+     120
 };
 #endif
 
@@ -492,8 +492,8 @@ static const yytype_uint16 yytoknum[] =
 static const yytype_int8 yypact[] =
 {
       11,    -6,    -6,    -6,     6,    -2,    -6,    -6,    -6,     9,
-      -6,    -6,    -6,    -6,     3,    14,    15,    -6,    -6,    -5,
-      -6,    -6,    11,    -6,    16,    -6,    11,    -6,    -6,    -6
+      -6,    -6,    -6,    -6,     3,    19,    -6,    -6,    -6,    -5,
+      -6,    -6,    11,    -6,    15,    -6,    11,    -6,    -6,    -6
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -509,7 +509,7 @@ static const yytype_uint8 yydefact[] =
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-      -6,    -6,     0,    -6,     5,    -6,    -6,    -6,     1
+      -6,    -6,     0,    -6,    -6,    -3,    -6,    -6,     2
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
@@ -525,14 +525,16 @@ static const yytype_uint8 yytable[] =
 {
       10,     1,     2,     3,     4,    25,    26,     5,    17,    21,
        6,     7,     8,    13,     1,     2,     3,     4,    14,    22,
-       5,    23,    27,     6,     7,     8,    24,    29,    14,    28
+       5,    28,    27,     6,     7,     8,    23,    14,    29,     0,
+      24
 };
 
-static const yytype_uint8 yycheck[] =
+static const yytype_int8 yycheck[] =
 {
        0,     3,     4,     5,     6,    10,    11,     9,    10,     0,
       12,    13,    14,     7,     3,     4,     5,     6,    12,    16,
-       9,     7,    22,    12,    13,    14,    11,    26,    12,    24
+       9,    24,    22,    12,    13,    14,     7,    12,    26,    -1,
+      11
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
@@ -541,7 +543,7 @@ static const yytype_uint8 yystos[] =
 {
        0,     3,     4,     5,     6,     9,    12,    13,    14,    18,
       19,    20,    23,     7,    12,    21,    22,    10,    19,    24,
-      25,     0,    16,     7,    11,    10,    11,    19,    21,    25
+      25,     0,    16,     7,    11,    10,    11,    19,    22,    25
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
@@ -1347,147 +1349,167 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 49 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
-#line 1353 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 49 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); JsonParser_Json_Root_Value(pUserData, (yyval._jsonvalue)); }
+#line 1355 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 3:
-#line 51 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
-#line 1359 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 51 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = (yyvsp[0]._jsonvalue); 
+	}
+#line 1363 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 4:
-#line 52 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
-#line 1365 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 54 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = (yyvsp[0]._jsonvalue); 
+	}
+#line 1371 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 5:
-#line 53 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromString(pUserData, (yyvsp[0]._valuestring)._text, (yyvsp[0]._valuestring)._leng); }
-#line 1371 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 57 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_String_Create(pUserData, (yyvsp[0]._stdstring)); 
+	JsonParser_Std_String_Dispose(pUserData, (yyvsp[0]._stdstring)); 
+	}
+#line 1380 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 6:
-#line 54 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromInt(pUserData, (yyvsp[0]._valueint)); }
-#line 1377 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 61 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_NumberInt_Create(pUserData, (yyvsp[0]._valueint)); 
+	}
+#line 1388 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 7:
-#line 55 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_FromFloat(pUserData, (yyvsp[0]._valuefloat)); }
-#line 1383 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 64 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_NumberFloat_Create(pUserData, (yyvsp[0]._valuefloat)); 
+	}
+#line 1396 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 8:
-#line 56 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_True(pUserData); }
-#line 1389 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 67 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_True_Create(pUserData); 
+	}
+#line 1404 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 9:
-#line 57 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_False(pUserData); }
-#line 1395 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 70 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_False_Create(pUserData); 
+	}
+#line 1412 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 10:
-#line 58 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
-    { (yyval._jsonvalue) = JsonFrontend_CreateJsonValue_Null(pUserData); }
-#line 1401 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 73 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
+    { 
+	(yyval._jsonvalue) = JsonParser_Json_Null_Create(pUserData); 
+	}
+#line 1420 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 11:
-#line 60 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 77 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._jsonvalue) = JsonFrontend_CreateJsonObject_FromStdUnorderedMap(pUserData, (yyvsp[-1]._stdunorderedmap));
-    JsonFrontend_DisposeStdUnorderedMap(pUserData, (yyvsp[-1]._stdunorderedmap));
+	(yyval._jsonvalue) = (yyvsp[-1]._jsonvalue);
     }
-#line 1410 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1428 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 12:
-#line 64 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 80 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._jsonvalue) = JsonFrontend_CreateJsonObject_FromEmpty(pUserData); 
+    (yyval._jsonvalue) = JsonParser_Json_Object_Create(pUserData);
     }
-#line 1418 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1436 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 13:
-#line 68 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 84 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    JsonFrontend_StdUnorderedMap_InsertStdPair(pUserData, (yyvsp[-2]._stdpair), (yyvsp[0]._stdunorderedmap));
-    JsonFrontend_DisposeStdPair(pUserData, (yyvsp[0]._stdunorderedmap));
+	bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, (yyvsp[-2]._jsonvalue), (yyvsp[0]._jsonmember)._stdstring, (yyvsp[0]._jsonmember)._jsonvalue); 
+	JsonParser_Std_String_Dispose(pUserData, (yyvsp[0]._jsonmember)._stdstring);
+	if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
+	(yyval._jsonvalue) = (yyvsp[-2]._jsonvalue);
     }
-#line 1427 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1447 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 14:
-#line 72 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 90 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._stdunorderedmap) = JsonFrontend_CreateStdUnorderedMap_FromStdPair(pUserData, (yyvsp[0]._stdpair));
-    JsonFrontend_DisposeStdPair(pUserData, (yyvsp[0]._stdpair));
+    void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
+	bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, (yyvsp[0]._jsonmember)._stdstring, (yyvsp[0]._jsonmember)._jsonvalue);
+	JsonParser_Std_String_Dispose(pUserData, (yyvsp[0]._jsonmember)._stdstring);
+	if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
+	(yyval._jsonvalue) = _jsonobject;
     }
-#line 1436 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1459 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 15:
-#line 77 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 98 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._stdpair) = JsonFrontend_CreateStdPair_FromStringAndJsonValue(pUserData, (yyvsp[-2]._valuestring)._text, (yyvsp[-2]._valuestring)._leng, (yyvsp[0]._jsonvalue)); 
-    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
+	(yyval._jsonmember)._stdstring = (yyvsp[-2]._stdstring);
+	(yyval._jsonmember)._jsonvalue = (yyvsp[0]._jsonvalue);
     }
-#line 1445 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1468 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 16:
-#line 82 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 103 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._jsonvalue) = JsonFrontend_CreateJsonArray_FromStdVector(pUserData, (yyvsp[-1]._stdvector)); 
-    JsonFrontend_DisposeStdVector(pUserData, (yyvsp[-1]._stdvector));
+    (yyval._jsonvalue) = (yyvsp[-1]._jsonvalue);
     }
-#line 1454 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1476 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 17:
-#line 86 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 106 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._jsonvalue) = JsonFrontend_CreateJsonArray_FromEmpty(pUserData); 
+    (yyval._jsonvalue) = JsonParser_Json_Array_Create(pUserData); 
     }
-#line 1462 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1484 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 18:
-#line 90 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 110 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    JsonFrontend_StdVector_PushJsonValue(pUserData, (yyvsp[-2]._stdvector), (yyvsp[0]._jsonvalue));
-    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
-    (yyval._stdvector) = (yyvsp[-2]._stdvector);
+    JsonParser_Json_Array_AddElement(pUserData, (yyvsp[-2]._jsonvalue), (yyvsp[0]._jsonvalue));
+    (yyval._jsonvalue) = (yyvsp[-2]._jsonvalue);
     }
-#line 1472 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1493 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 19:
-#line 95 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 114 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { 
-    (yyval._stdvector) = JsonFrontend_CreateStdVector_FromJsonValue(pUserData, (yyvsp[0]._jsonvalue)); 
-    JsonFrontend_DisposeJsonValue(pUserData, (yyvsp[0]._jsonvalue));
+    void *_jsonarray = JsonParser_Json_Array_Create(pUserData);
+	JsonParser_Json_Array_AddElement(pUserData, _jsonarray, (yyvsp[0]._jsonvalue)); 
+	(yyval._jsonvalue) = _jsonarray;
     }
-#line 1481 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1503 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
   case 20:
-#line 100 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1652  */
+#line 120 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1652  */
     { (yyval._jsonvalue) = (yyvsp[0]._jsonvalue); }
-#line 1487 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1509 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
     break;
 
 
-#line 1491 "../../Private/XGL//JSON/JsonParserYacc.inl" /* yacc.c:1652  */
+#line 1513 "../../Private/XGL//JSON/JsonYacc.inl" /* yacc.c:1652  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1724,5 +1746,5 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 102 "../../Private/XGL/JSON/jsonParser.y" /* yacc.c:1918  */
+#line 122 "../../Private/XGL/JSON/JsonYacc.y" /* yacc.c:1918  */
 

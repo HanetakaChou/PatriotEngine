@@ -12,21 +12,21 @@ extern __attribute__((__noreturn__)) void json_ll_fatal_error(int line, int colu
 #error Unknown Compiler //未知的编译器
 #endif
 
-#define YY_FATAL_ERROR(msg)                                           \
-    {                                                                 \
-        struct yyguts_t *yyg = (struct yyguts_t *)yyscanner;          \
+#define YY_FATAL_ERROR(msg)                                            \
+    {                                                                  \
+        struct yyguts_t *yyg = (struct yyguts_t *)yyscanner;           \
         (json_ll_fatal_error((yylineno), (yycolumn), msg, (yyextra))); \
     }
 
 extern ptrdiff_t json_ll_stream_read(void *pUserData, void *pUserStream, void *buf, size_t size);
 
-#define YY_INPUT(buf, result, max_size)                                              \
-    {                                                                                \
+#define YY_INPUT(buf, result, max_size)                                               \
+    {                                                                                 \
         (*(&result)) = json_ll_stream_read((yyextra), ((void *)yyin), buf, max_size); \
-        if (result == -1)                                                            \
-        {                                                                            \
-            YY_FATAL_ERROR("input in flex scanner failed");                          \
-        }                                                                            \
+        if (result == -1)                                                             \
+        {                                                                             \
+            YY_FATAL_ERROR("input in flex scanner failed");                           \
+        }                                                                             \
     }
 
 //https://www.gnu.org/software/bison/manual/bison.html#Location-Type
@@ -50,9 +50,36 @@ typedef struct YYLTYPE YYLTYPE;
         (yycolumn) += (yyleng);                       \
     }
 
-#include "JsonScannerParser.h"
+#include "JsonLexYacc.h"
 
-#include "JsonScannerLex.inl"
+#include "JsonLex.inl"
+
+void *json_llalloc(size_t size, struct llscan_t *scanner)
+{
+    return JsonParser_Malloc(json_llget_extra(scanner), size);
+}
+
+void *json_llrealloc(void *ptr, size_t size, struct llscan_t *scanner)
+{
+    return JsonParser_Realloc(json_llget_extra(scanner), ptr, size);
+}
+
+void json_llfree(void *ptr, struct llscan_t *scanner)
+{
+    return JsonParser_Free(json_llget_extra(scanner), ptr);
+}
+
+int json_ll_stream_read(void *pUserData, void *pUserStream, void *buf, size_t size)
+{
+    ptrdiff_t _res = JsonParser_Callback_StreamReader_Read(pUserData, pUserStream, buf, size);
+    return _res;
+}
+
+//https://westes.github.io/flex/manual/Generated-Scanner.html#Generated-Scanner
+int json_llwrap(struct llscan_t *scanner)
+{
+    return JsonParser_Callback_Wrap(json_llget_extra(scanner));
+}
 
 static void _static_assert_json_ll_lexer_(void)
 {
