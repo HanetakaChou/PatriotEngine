@@ -23,10 +23,6 @@
     <ClInclude Include="..\..\Private\GFX\PTGFXMemoryAllocator.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTGFXHALDevice.h" />
     <ClInclude Include="..\..\Private\GFX\VK\PTVDVulkanHeader.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXHAL.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXHALUtil.h" />
     <ClInclude Include="..\..\Public\Math\PTMath.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
   </ItemGroup>
