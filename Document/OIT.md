@@ -22,9 +22,9 @@ You should have received a copy of the GNU Lesser General Public License along w
 因此，以上等式又可以写作：$C_{Final} = {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i C_i )$。  
 
 > 值得注意的是，在物理含义上， Alpha模拟的是局部覆盖（Partial Coverage）而非透射率（Transmittance）。  
-
+>   
 > Alpha的含义是片元覆盖的面积占像素面积的比例（这也是我们用标量float而非向量RGB来表示Alpha的原因；这种情况在一些文献中被称作波长无关的（Wavelength-Independent））。比如，我们透过一条蓝色的真丝围巾观察一块红色的砖，我们看到砖的颜色大体为蓝色和红色“**相加**”； 真丝围巾的纤维本身是不透明的，只是真丝围巾的纤维之间存在着间隙，我们通过这些间隙看到了红色的砖，即真丝围巾“局部覆盖”了砖。  
-
+>   
 > 而透射率是波长相关的（Wavelengh-Dependent）；比如，我们透过一块蓝色的塑料薄膜观察一块红色的砖，我们看到的砖的颜色大体为黑色（即蓝色和红色“**相乘**”）；红色的砖只反射红色的光，而蓝色的塑料薄膜只允许蓝色的光通过，红色的砖的反射光全部会被蓝色的塑料薄膜吸收，即呈现出黑色（参考文献：[《科学七年级下册》（ISBN: 9787553603162）/第2章对环境的感觉/第4节光的颜色/物体的颜色]）。  
 >   
 > ![](./OIT_1.png)   
@@ -223,13 +223,20 @@ $1-\prod_i ( 1-A_i )$。
 >> 随后，基于CorrectAlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}$ = TransparentColor + CorrectAlphaTotal × BackgroundColor ） //注：可以在片元着色器中输出TransparentColor和CorrectAlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
 
 ### Tile/On-Chip Memory  
-&nbsp;&nbsp;&nbsp;&nbsp;随机透明在本质上是比较适合移动GPU的。  
-&nbsp;&nbsp;&nbsp;&nbsp;在传统的桌面GPU上，随机透明的性能瓶颈在于MSAA，1个片元对应于S个采样点的MSAA会使带宽的开销增加S倍。  
-&nbsp;&nbsp;&nbsp;&nbsp;然而在移动GPU上，这个问题得到了有效的解决，可以将开启MSAA的图像保存在Tile/On-Chip Memory中，并在RenderPass结束后丢弃，并不会与主存进行通信，从而将带宽开销降低到几乎为零。次世代的API允许应用程序显式地对此进行设置：使用VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT(Vulkan) / MTLStorageModeMemoryless(Metal)可以将图像的存储模式显式地设置为Tile/On-Chip Memory（在RenderPass结束后丢弃，并不会写回主存）；不过在片元着色器（Fragment Shader）中，使用该存储模式的图像不再被允许用传统的TextureUnit来读取，而必须用Subpass Input(Vulkan) / [color(m)]Attribute(Metal)来读取。传统的API并不允许将图像的存储模式显式地设置为Tile/On-Chip Memory，但是可以用FrameBufferFetch(OpenGL) / PixelLocalStorage(OpenGL)进行暗示（16.[Bjorge 2014] ）。  
-&nbsp;  
-#### Vulkan  
-&nbsp;&nbsp;&nbsp;&nbsp;在Vulkan中，1个RenderPass由若干个SubPass组成，RenderPass中的不同Attachment的MSAA设置并不要求相同，但是同一SubPass引用的所有ColorAttachment和DepthStencilAttachment的MSAA设置应当相同（即与调用DrawCall时所绑定的PipelineState中的MultisampleState相同）。  
-&nbsp;&nbsp;&nbsp;&nbsp;随机透明可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
+> 随机透明在本质上是比较适合移动GPU的。  
+>  
+> 在传统的桌面GPU上，随机透明的性能瓶颈在于MSAA，1个片元对应于S个采样点的MSAA会使带宽的开销增加S倍。  
+>  
+> 但是，在移动GPU上，这个问题得到了有效的解决，可以将开启MSAA的图像保存在Tile/On-Chip Memory中，并在RenderPass结束后丢弃，并不会与主存进行通信，从而将带宽开销降低到几乎为零。  
+次世代的API允许应用程序显式地对此进行设置：使用VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT(Vulkan) / MTLStorageModeMemoryless(Metal)可以将图像的存储模式显式地设置为Tile/On-Chip Memory（在RenderPass结束后丢弃，并不会写回主存）；不过在片元着色器（Fragment Shader）中，使用该存储模式的图像不再被允许用传统的TextureUnit来读取，而必须用Subpass Input(Vulkan) / \[color(m)\]Attribute(Metal)来读取。  
+传统的API并不允许将图像的存储模式显式地设置为Tile/On-Chip Memory，但是可以用FrameBufferFetch(OpenGL) / PixelLocalStorage(OpenGL)进行暗示（16.[Bjorge 2014] ）。  
+  
+#### Vulkan   
+  
+> 在Vulkan中，1个RenderPass由若干个SubPass组成，RenderPass中的不同Attachment的MSAA设置并不要求相同，但是同一SubPass引用的所有ColorAttachment和DepthStencilAttachment的MSAA设置应当相同（即与调用DrawCall时所绑定的PipelineState中的MultisampleState相同）。  
+>     
+> 随机透明可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
+  
 ```  
     RenderPass:  
         Attachment:  
@@ -254,7 +261,7 @@ $1-\prod_i ( 1-A_i )$。
                 DepthStencilAttachment: 1.BackGroupDepth  
             4.CompositePass:
                 InputAttachment: 3.StochasticColor 4.CorrectAlphaTotal  5.StochasticTotalAlpha
-                ColorAttachment: 0.FinalColor  //TransparentColor  +CorrectAlphaTotal*BackgroundColor->FinalColor //用硬件的AlphaBlend阶段实现Over操作  
+                ColorAttachment: 0.FinalColor  //TransparentColor+CorrectAlphaTotal×BackgroundColor->FinalColor //用硬件的AlphaBlend阶段实现Over操作  
         Dependency:
             0.SrcSubPass:0 -> DstSubPass:1
                 //DepthStencilAttachment->InputAttachment: 1.BackGroupDepth
@@ -268,15 +275,20 @@ $1-\prod_i ( 1-A_i )$。
                 //ColorAttachment->InputAttachment: 4.CorrectAlphaTotal
                 //ColorAttachment->InputAttachment: 5.StochasticTotalAlpha  
 ```  
-&nbsp;  
+  
 #### Metal  
-&nbsp;&nbsp;&nbsp;&nbsp;Metal在API层面并没有InputAttachment的概念，而是通过[color(m)]Attribute允许在片元着色器中读取ColorAttachment；但是，这样的设计存在着缺陷：[color(m)]Attribute只允许读取ColorAttachment，而不允许读取DepthAttachment，需要增加1个额外的ColorAttachment并将Depth写入到该ColorAttachment中（17.[Apple]）。  
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;并且，在Metal中开启MSAA时，通过[color(m)]Attribute读取ColorAttachment会导致片元着色器对每个采样点执行一次，得到ColorAttachment在该采样点处的值，从而导致无法求解$\operatorname{SV}( Z_i)$（因为在片元着色器的一次执行中，我们无法得到所有采样点的数据，而只能得到某一个采样点的数据）；因此，硬件的MSAA不可用，我们只能尝试用多个ColorAttachment来模拟MSAA，考虑到ColorAttachment的存在着个数上限（A7->4个 A8,A9,A10,A11->8个）和大小上限（A7->128位 A8,A9,A10->256位 A11->512位），最多可以模拟20X MSAA；由于没有开启硬件的MSAA，硬件的深度测试不可用（DepthAttachment中只有1个采样点），只能在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入，硬件会保证该RMW操作的原子性（下文在介绍K-Buffer时会对**可编程融合**的具体细节进行介绍）。  
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;//注：Metal中不存在SubPass的概念，因此缺少某种将DepthAttachment转换成InputAttachment的屏障（Barrier）机制。  
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;随机透明在Metal中也可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
+
+> Metal在API层面并没有InputAttachment的概念，而是通过\[color(m)\]Attribute允许在片元着色器中读取ColorAttachment。  
+但是，这样的设计存在着缺陷：\[color(m)\]Attribute只允许读取ColorAttachment，而不允许读取DepthAttachment，需要增加1个额外的ColorAttachment并将Depth写入到该ColorAttachment中（17.[Apple]）。  
+> 
+> 并且，在Metal中开启MSAA时，通过\[color(m)\]Attribute读取ColorAttachment会导致片元着色器对每个采样点执行一次，得到ColorAttachment在该采样点处的值，从而导致无法求解$\operatorname{SV}( Z_i )$（因为在片元着色器的一次执行中，我们无法得到所有采样点的数据，而只能得到某一个采样点的数据）。  
+因此，硬件的MSAA不可用，我们只能尝试用多个ColorAttachment来模拟MSAA，考虑到ColorAttachment的存在着个数上限（A7->4个 A8,A9,A10,A11->8个）和大小上限（A7->128位 A8,A9,A10->256位 A11->512位），最多可以模拟20X MSAA。  
+由于没有开启硬件的MSAA，硬件的深度测试不可用（DepthAttachment中只有1个采样点），只能在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入，硬件会保证该RMW操作的原子性（下文在介绍K-Buffer时会对**可编程融合**的具体细节进行介绍）。  
+>  
+> //注：Metal中不存在SubPass的概念，因此缺少某种将DepthAttachment转换成InputAttachment的屏障（Barrier）机制。  
+>  
+> 随机透明在Metal中也可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
+  
 ```  
     RenderPassDescriptor:
         ColorAttachment:
@@ -316,18 +328,26 @@ $1-\prod_i ( 1-A_i )$。
             Color[0]->BackgroundColor
             TransparentColor+CorrectAlphaTotal*BackgroundColor->Color[0]  
 ```  
-&nbsp;  
+  
 ### 综合评价  
-&nbsp;&nbsp;&nbsp;&nbsp;由于移动GPU上的MSAA是高效的，随机透明在本质上是比较适合移动GPU的。我们可以使用次世代API充分挖掘移动GPU的相关优势。但是，由于Metal在设计上的缺陷，导致我们不得不在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入；不过，Metal却又允许我们在一个几何体Pass中模拟最多20X的MSAA（在桌面GPU上，需要用多个Pass才能模拟8X以上MSAA）。（当然，在Metal上像桌面GPU那样使用多个RenderPass绘制并不会产生这些问题；但是，很有可能会导致开启MSAA的图像被从Tile/On-Chip Memory中写回主存，产生大量的带宽开销）  
-&nbsp;&nbsp;&nbsp;&nbsp;移动GPU擅长片元处理而不擅长几何处理（10.[Harris 2019] ），随机透明的一个缺陷在于：随机透明需要2个几何体Pass（StochasticDepthPass和AccumulateAndTotalAlphaPass），这可能会使几何处理成为性能的瓶颈。  
-&nbsp;&nbsp;&nbsp;&nbsp;随机透明的误差在于随机抽样本身；不过，Alpha校正可以在很好地消除随机抽样产生的噪声，在效果上并不会产生太大的影响。  
-&nbsp;  
+  
+> 由于移动GPU上的MSAA是高效的，随机透明在本质上是比较适合移动GPU的。  
+我们可以使用次世代API充分挖掘移动GPU的相关优势。  
+>  
+> 但是，由于Metal在设计上的缺陷，导致我们不得不在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入；不过，Metal却又允许我们在一个几何体Pass中模拟最多20X的MSAA（在桌面GPU上，需要用多个Pass才能模拟8X以上MSAA）。  
+//当然，在Metal上像桌面GPU那样使用多个RenderPass绘制并不会产生这些问题；但是，很有可能会导致开启MSAA的图像被从Tile/On-Chip Memory中写回主存，产生大量的带宽开销   
+>  
+> 显然，顶点着色器没有ColorAttachment，并且不会读写Tile/On-Chip Memory，因此，顶点着色器并不会受益于Tile/On-Chip Memory，移动GPU擅长片元处理而不擅长几何处理（10.[Harris 2019]）。  
+随机透明的一个缺陷在于：随机透明需要2个几何体Pass（StochasticDepthPass和AccumulateAndTotalAlphaPass），这可能会使几何处理成为性能的瓶颈。  
+>   
+> 随机透明的误差在于随机抽样本身；不过，Alpha校正可以在很好地消除随机抽样产生的噪声，在效果上并不会产生太大的影响。  
+    
 ### Demo  
-&nbsp;&nbsp;&nbsp;&nbsp;Demo地址：[https://gitee.com/YuqiaoZhang/StochasticTransparency](https://gitee.com/YuqiaoZhang/StochasticTransparency) / [https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)。该Demo改编自NVIDIA SDK11 Samples中的StochasticTransparency（9.[Bavoil 2011]），在NVIDIA提供的原始代码中，存在着3个比较严重的问题：  
-&nbsp;&nbsp;&nbsp;&nbsp;1.我在前文中指出：“随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA”； 在NVIDIA提供的原始代码中，所有Pass都使用了相同的MSAA设置，导致随机透明的帧率反而低于深度剥离（个人测试的结果是：修正该问题后，帧率从670提升至1170（用于对比的深度剥离为1070））。  
-&nbsp;&nbsp;&nbsp;&nbsp;2.我在前文中指出：“论文原文中的2个分离的Pass（AccumulatePass和TotalAlphaPass）应当合并到同一个Pass”；NVIDIA提供的原始代码并没有这么做（个人测试的结果是：修正该问题后，帧率从1170提升至1370）。  
-&nbsp;&nbsp;&nbsp;&nbsp;3.我在前文中指出：“在AccumulatePass中计算$\operatorname{SV}( Z_i)$时，$Z_i$为着色点的深度；为了保持一致，在StochasticDepthPass中应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth”；NVIDIA提供的原始代码并没有这么做，导致在求解$\operatorname{SV}( Z_i)$时，$Z_i$ Equal $Z_s$几乎不可能成立，产生较大的误差；不过Alpha校正可以很好地修正这个误差，在效果上并没有产生太大的影响。  
-&nbsp;  
+> Demo地址：[https://gitee.com/YuqiaoZhang/StochasticTransparency](https://gitee.com/YuqiaoZhang/StochasticTransparency) / [https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)。该Demo改编自NVIDIA SDK11 Samples中的StochasticTransparency（9.[Bavoil 2011]），在NVIDIA提供的原始代码中，存在着3个比较严重的问题：  
+>> 1\.我在前文中指出：“随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA”； 在NVIDIA提供的原始代码中，所有Pass都使用了相同的MSAA设置，导致随机透明的帧率反而低于深度剥离（个人测试的结果是：修正该问题后，帧率从670提升至1170（用于对比的深度剥离为1070））。  
+>> 2\.我在前文中指出：“论文原文中的2个分离的Pass（AccumulatePass和TotalAlphaPass）应当合并到同一个Pass”；NVIDIA提供的原始代码并没有这么做（个人测试的结果是：修正该问题后，帧率从1170提升至1370）。  
+>> 3\.我在前文中指出：“在AccumulatePass中计算$\operatorname{SV}( Z_i )$时，$Z_i$为着色点的深度；为了保持一致，在StochasticDepthPass中应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth”；NVIDIA提供的原始代码并没有这么做，导致在求解$\operatorname{SV}( Z_i )$时，$Z_i$ Equal $Z_s$几乎不可能成立，产生较大的误差；不过Alpha校正可以很好地修正这个误差，在效果上并没有产生太大的影响。  
+  
 ## K-Buffer  
 &nbsp;&nbsp;&nbsp;&nbsp;在Porter提出Alpha通道的同一年，Carpenter提出了A-Buffer：在A-Buffer中，每个像素对应于一个链表，存放对应到该像素的所有片元；基于深度对链表中的片元排序后，用Over/Under操作即可得到$C_{Final}$（11.[Carpenter 1984]）。虽然，目前的硬件在理论上已经可以通过UAV(Direct3D)和原子操作实现A-Buffer，但是，由于实现的过程极其繁琐（编程是一门艺术，A-Buffer的实现极不优雅）且效率低下（主要是链表的地址不连续导致缓存命中率下降），几乎不存在A-Buffer的实际应用。  
 &nbsp;&nbsp;&nbsp;&nbsp;在2007年，Bavoil在A-Buffer的基础上进行了改进，将每个像素对应的片元个数限定为K个，提出了更具有实用价值的K-Buffer（12.[Bavoil 2007]）。  
