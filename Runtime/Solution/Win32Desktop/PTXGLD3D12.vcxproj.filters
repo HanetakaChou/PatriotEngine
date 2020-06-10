@@ -13,17 +13,17 @@
     <Filter Include="Public\Math\SSE">
       <UniqueIdentifier>{835f4b46-01d1-4cdf-a5c1-eb892f289cee}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Private\GFX">
-      <UniqueIdentifier>{db0b4d2f-3b22-4c7a-be0f-8cafc8fa551d}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Public\GFX">
-      <UniqueIdentifier>{a4e9f3ef-b8e8-412b-8964-06e3efa2644f}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Solution">
       <UniqueIdentifier>{600dd9c9-0dde-44c7-932b-005ce86a5a8f}</UniqueIdentifier>
     </Filter>
     <Filter Include="Solution\Win32Desktop">
       <UniqueIdentifier>{1e876b6c-eab4-40de-bc4a-2033f3a0927c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\XGL">
+      <UniqueIdentifier>{a4e9f3ef-b8e8-412b-8964-06e3efa2644f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\XGL\JSON">
+      <UniqueIdentifier>{1e26da8b-b5a7-442a-9221-334e9cc76598}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -33,33 +33,51 @@
     <ClInclude Include="..\..\Public\Math\PTMath.h">
       <Filter>Public\Math</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.h">
-      <Filter>Private\GFX</Filter>
+    <ClInclude Include="..\..\Private\XGL\JSON\JsonLexYacc.h">
+      <Filter>Private\XGL\JSON</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h">
-      <Filter>Public\GFX</Filter>
+    <ClInclude Include="..\..\Private\XGL\JSON\JsonParserCXX.h">
+      <Filter>Private\XGL\JSON</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTGFXSceneUtil.h">
-      <Filter>Public\GFX</Filter>
+    <ClInclude Include="..\..\Private\XGL\PT_XGL_JsonParser.h">
+      <Filter>Private\XGL</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h">
-      <Filter>Public\GFX</Filter>
+    <ClInclude Include="..\..\Private\XGL\PT_XGL_StreamReader.h">
+      <Filter>Private\XGL</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.cpp">
-      <Filter>Private\GFX</Filter>
-    </ClCompile>
     <ClCompile Include="dllmain.cpp">
       <Filter>Solution\Win32Desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonLex.c">
+      <Filter>Private\XGL\JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonLexYacc.cpp">
+      <Filter>Private\XGL\JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonParserCXX.cpp">
+      <Filter>Private\XGL\JSON</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonYacc.c">
+      <Filter>Private\XGL\JSON</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl">
       <Filter>Public\Math\SSE</Filter>
     </None>
-    <None Include="..\..\Private\GFX\ResourceBinding.md">
-      <Filter>Private\GFX</Filter>
+    <None Include="..\..\Private\XGL\JSON\JsonLex.inl">
+      <Filter>Private\XGL\JSON</Filter>
+    </None>
+    <None Include="..\..\Private\XGL\JSON\JsonLex.l">
+      <Filter>Private\XGL\JSON</Filter>
+    </None>
+    <None Include="..\..\Private\XGL\JSON\JsonYacc.inl">
+      <Filter>Private\XGL\JSON</Filter>
+    </None>
+    <None Include="..\..\Private\XGL\JSON\JsonYacc.y">
+      <Filter>Private\XGL\JSON</Filter>
     </None>
   </ItemGroup>
 </Project>

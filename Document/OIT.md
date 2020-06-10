@@ -84,22 +84,52 @@ N+2.CompositePass //FullScreenTrianglePass
 &nbsp;&nbsp;&nbsp;&nbsp;注：希望读者不要混淆片元、像素和采样点的含义：一个像素可能对应于若干个采样点（比如8X MSAA即对应于8个采样点）；同时，一个像素可能对应于若干个片元，但是同一像素中的同一采样点最终只能被其中的某一个片元覆盖（由于存储空间的限制，只能存储一个片元，这是显然的）  
 &nbsp;  
 ### Alpha校正（Alpha Correction）  
-&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen=1-\prod_i\lparen 1-A_i\rparen$。  
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;不妨设$A_0$ = 0.4 $A_1$ = 0.7 $A_2$ = 0.6，我们有：  
-左边 = 0.4 + (1 - 0.4)×0.7 + (1 - 0.4)×(1 - 0.7)×0.6  
-= 0.4 + (1 - 0.4)×0.7 + (1 - 0.4)×(1 - 0.7)×0.6 **+ (1 - 0.4)×(1 - 0.7)×(1 - 0.6) - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)**  
-= 0.4 + (1 - 0.4)×0.7 **+ (1 - 0.4)×(1 - 0.7)×0.6 + (1 - 0.4)×(1 - 0.7)×(1 - 0.6)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
-= 0.4 + (1 - 0.4)×0.7 **+ (1 - 0.4)×(1 - 0.7)×(0.6 + 1 - 0.6)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
-= 0.4 **+ (1 - 0.4)×0.7 + (1 - 0.4)×(1 - 0.7)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
-= 0.4 **+ (1 - 0.4)×(0.7 + 1 - 0.7)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
-= **0.4 + (1 - 0.4)** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6)  
-= **1** - (1 - 0.4)×(1 - 0.7)×(1 - 0.6) = 右边   
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;不难证明：$\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen$的数学期望为$\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen$即$1-\prod_i\lparen 1-A_i\rparen$。  
-&nbsp;  
-&nbsp;&nbsp;&nbsp;&nbsp;Alpha校正可以认为是对$\operatorname{SV}\lparen Z_i\rparen$进行归一化（Normalize），即假定$\frac{\operatorname{SV}\lparen Z_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}=\frac{\operatorname{V}\lparen Z_i\rparen}{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}$，从而得到${\operatorname{V}\lparen Z_i\rparen}={\operatorname{SV}\lparen Z_i\rparen}{\frac{\sum_i\lparen\operatorname{V}\lparen Z_i\rparen A_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}}={\operatorname{SV}\lparen Z_i\rparen}{\frac{1-\prod_i\lparen 1-A_i\rparen}{\sum_i\lparen\operatorname{SV}\lparen Z_i\rparen A_i\rparen}}$。  
-&nbsp;  
+> 不难证明：$\displaystyle{\sum_{i = 0}^n} ( \operatorname{V} ( Z_i ) A_i ) = 1 - \displaystyle{\prod_{i = 0}^n} ( 1 - A_i )$。  
+>> 
+>> 可以用数学归纳法证明  
+>> 
+>> 1\.基本情况：  
+>> 
+>> 当n=0时  
+>> 
+>> 左边 = $\displaystyle{\sum_{i = 0}^0} ( \operatorname{V} ( Z_i ) A_i )$  
+>>  = $\operatorname{V} ( Z_0 ) A_0$  
+>> = $1 \cdot A_0$  
+>> = $A_0$  
+>> 
+>> 右边 = $1 - \displaystyle{\prod_{i = 0}^0} ( 1 - A_i )$  
+>> = $1 - ( 1 - A_0 )$  
+>> = $A_0$  
+>> 
+>> 左边 = 右边 等式成立  
+>> 命题得证  
+>> 
+>> 2\.归纳步进：
+>> 
+>> 设当n=k时命题成立，下面证明当n=k+1时命题也成立  
+>> 左边 = $\displaystyle{\sum_{i = 0}^{k + 1}} ( \operatorname{V} ( Z_i ) A_i )$  
+>> = $\displaystyle{\sum_{i = 0}^k} ( \operatorname{V} ( Z_i ) A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
+>> = $1 - \displaystyle{\prod_{i = 0}^k} ( 1 - A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
+>> = $1 - \displaystyle{\prod_{i = 0}^k} ( 1 - A_i ) + ( \displaystyle{\prod_{i=0}^k} ( 1 - A_i ) ) \cdot A_{k+1}$   
+>> = $1 - (\displaystyle{\prod_{i = 0}^k} ( 1 - A_i )) \cdot ( 1 - A_{k+1} )$  
+>> = $1 - \displaystyle{\prod_{i = 0}^{k + 1}} ( 1 - A_i )$   
+>> 
+>> 右边 = $1 - \displaystyle{\prod_{i = 0}^{k + 1}} ( 1 - A_i )$ 
+>> 
+>> 左边 = 右边 等式成立  
+>> 命题得证  
+
+> 不难证明：$\displaystyle{\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )$的数学期望为$\displaystyle{\sum_{i = 0}^n} ( \operatorname{V} ( Z_i ) A_i )$。 
+>> 
+>> 证明从略  
+>>   
+>> 由于$\displaystyle{\sum_{i = 0}^n} ( \operatorname{V} ( Z_i ) A_i ) = 1 - \displaystyle{\prod_{i = 0}^n} ( 1 - A_i )$，即$\displaystyle{\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )$的数学期望为
+$1-\prod_i ( 1-A_i )$。  
+  
+> Alpha校正可以认为是对$\operatorname{SV} ( Z_i )$进行归一化（Normalize）：  
+>>
+>> 即假定$\frac{\operatorname{SV} ( Z_i )}{\displaystyle{\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )} = \frac{\operatorname{V} ( Z_i )}{\displaystyle{\sum_{i = 0}^n} ( \operatorname{V} ( Z_i ) A_i ) }$，从而得到${\operatorname{V} ( Z_i )} = {\operatorname{SV} ( Z_i )}{\frac{ \displaystyle{\sum_{i = 0}^n} ( \operatorname{V} ( Z_i ) A_i ) }{ \displaystyle{\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ） A_i ）}} = { \operatorname{SV}( Z_i )}{\frac{1 - \displaystyle{\prod_{i = 0}^n} ( 1-A_i )}{ \displaystyle{\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )}}$。  
+  
 ### Render Pass  
 1.OpaquePass  
 &nbsp;&nbsp;&nbsp;&nbsp;绘制不透明物体，得到BackgroundColor和BackgroundDepth  

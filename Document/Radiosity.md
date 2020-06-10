@@ -15,16 +15,31 @@ surface appears to leak, or bleed, onto nearby surfaces. The Cornell box, origin
 designed by early global illumination researchers at Cornell University, is a classic testing
 environment for global illumination algorithms.（[Ramamoorthi 2009] / Lecture 3 "Global Illumination and the Rendering Equation" / 1 "Introduction to Global Illumination"、[Christensen 2008]）  
   
-
-
 //$M_d = \int_{\Omega}{L_r \lparen\overrightarrow{\omega_i}\rparen \cos \theta_i d\omega}$  
   
-//渲染方程（Rendering Equation）  
+## 渲染方程（Rendering Equation）  
   
-//w_i指入射光的相反方向  
-//x指入射点的位置  
-//x’指发出入射光的位置  
-  
+符号约定：  
+$x$ 入射点的位置（即入射光的终点）  
+$\omega_i$ 入射光的方向  
+$\omega_r$ 反射光的相反方向  
+$L_i{\lparen x, \overrightarrow{\omega_i} \rparen}$ //x处$\overrightarrow{\omega_i}$方向的入射光的辐射亮度  
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen}$ //x处$\overrightarrow{\omega_r}$相反方向的反射光的辐射亮度  
+
+渲染方程（Rendering Equation）  
+
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = \int_{H} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} L_i{\lparen x,\overrightarrow{\omega_i} \rparen} \cos\theta_i \, d{\omega_i}$  
+
+### 非面光源(Punctual Light)
+在实时渲染中，非面光源的$f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen}$为狄拉克δ函数(Dirac delta function)，即只在某一个方向（设$\overrightarrow{\omega_p}$）存在，渲染方程被简化为 $L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_p} \rparen} L_i{\lparen x,\overrightarrow{\omega_p} \rparen} \cos\theta_p$  
+
+
+### 辐射度（Radiosity）
+
+由于$L_i{\lparen x, \overrightarrow{\omega_i} \rparen} = L_r{\lparen x', -\overrightarrow{\omega_i} \rparen} V{\lparen x'\rarr x \rparen}$  //V代表可见性  //在可见时，x处的入射光即x'处的反射光 //$x'$可以看作是入射光的起点（在实际中可以认为是 发出入射光的光源的位置 或 反射入射光的表面的位置）    
+
+渲染方程又可写为$L_r{\lparen x, \overrightarrow{\omega_r} \rparen} = L_e{\lparen x,\overrightarrow{\omega_r} \rparen} + \int_{All\,x'} f_r{\lparen x, \overrightarrow{\omega_r}, \overrightarrow{\omega_i}  \rparen} L_r{\lparen x',-\overrightarrow{\omega_i} \rparen} \frac{\cos\theta_i\cos\theta_o}{{\vert x'-x\vert}^2} V{\lparen x'\rarr x \rparen} \, dA'$  //注意到方程两侧的$L_r$是同一个函数，渲染方程在本质上是一个微分方程   
+
 渲染方程是第二类弗雷德霍姆积分方程（Fredholm Integral
 Equation），可以利用刘维尔-诺伊曼级数（Liouville–Neumann series
 ）求解（[Ramamoorthi 2009], Scribe of Lecture 3 "Global Illumination and the Rendering Equation", 3 "Deriving the Rendering Equation"）  
@@ -192,11 +207,16 @@ error.
 //光源的表示：用Albedo为0的Element来表示光源  //OSL(Open Shading Language)的思想，不区分光源和表面  
   
 Form Factor  
-$\omega_i$ 指入射光的相反方向  
-$x$ 指入射点的位置（即入射光的终点）  
-$x'$ 指入射光的起点
 
-$L_i{\lparen x, \overrightarrow{\omega_i} \rparen} = L_r{\lparen x', -\overrightarrow{\omega_i} \rparen} V{\lparen x'\rarr x \rparen}$  //V代表可见性  //在可见时，x处的入射光即x'处的反射光  
+符号约定：  
+$x$ 入射点的位置（即入射光的终点）  
+$\omega_i$ 入射光的方向  
+$\omega_r$ 反射光的相反方向  
+$L_i{\lparen x, \overrightarrow{\omega_i} \rparen}$ //x处$\overrightarrow{\omega_i}$方向的入射光的辐射亮度  
+$L_r{\lparen x, \overrightarrow{\omega_r} \rparen}$ //x处$\overrightarrow{\omega_r}$相反方向的反射光的辐射亮度  
+
+$L_i{\lparen x, \overrightarrow{\omega_i} \rparen} = L_r{\lparen x', -\overrightarrow{\omega_i} \rparen} V{\lparen x'\rarr x \rparen}$  //V代表可见性  //在可见时，x处的入射光即x'处的反射光 //$x'$可以看作是入射光的起点（在实际中可以认为是 发出入射光的光源的位置 或 反射入射光的表面的位置）  
+  
 
 一些常用的等式  
 Projected Solid Angle  

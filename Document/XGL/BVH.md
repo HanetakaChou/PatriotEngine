@@ -93,11 +93,27 @@ BSP / kd-tree / octree
 ### 动态场景  
 6\.\[Wald 2007\] 7\.\[Wald 2007\]
 
-## 视锥体剔除（View Frustum Culling）   
-避免重复访问
+## 避免重复访问
+空间分割中，同一图元可能同时出现在不同的子树中  
+
+--视锥体剔除（View Frustum Culling）   
 每个物体用Frame Number标记（Tag） 1\.\[Moller 2018\]/19.5 Portal Culling  
 
-  
+--光线追踪（Ray Casting）   
+传统方法——mailboxing: each ray is given a unique integer identifier, and each primitive records the id of the last ray that was tested against it. If the ids match, then the intersection test is unnecessary and can be skipped.  
+```  
+Amanatides, J., and A. Woo. 1987. A fast voxel traversal algorithm for ray tracing. In Proceedings of Eurographics ’87, 3–10.  
+Arnaldi, B., T. Priol, and K. Bouatouch. 1987. A new space subdivision method for ray tracing CSG modeled scenes. The Visual Computer 3 (2), 98–108.  
+```  
+
+mailboxing不适合并行  
+```  
+Boulos, S., and E. Haines. 2006. Ray–box sorting. Ray Tracing News 19 (1)  
+Shevtsov, M., A. Soupikov, and A. Kapustin. 2007a. Ray–triangle intersection algorithm for modern CPU architectures. In Proceedings of GraphiCon 2007, 33–39.  
+```  
+
+## 视锥体剔除（View Frustum Culling）   
+
 ## 光线投射（Ray Casting）  
   
 在交互式应用中 用于实现 pick up object //UE4/Unity/CryEngine的例子  

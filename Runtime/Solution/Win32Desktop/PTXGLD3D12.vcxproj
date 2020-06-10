@@ -19,20 +19,31 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXCommon.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXScene.h" />
-    <ClInclude Include="..\..\Public\GFX\PTGFXSceneUtil.h" />
+    <ClInclude Include="..\..\Private\XGL\JSON\JsonLexYacc.h" />
+    <ClInclude Include="..\..\Private\XGL\JSON\JsonParserCXX.h" />
+    <ClInclude Include="..\..\Private\XGL\PT_XGL_JsonParser.h" />
+    <ClInclude Include="..\..\Private\XGL\PT_XGL_StreamReader.h" />
     <ClInclude Include="..\..\Public\Math\PTMath.h" />
     <ClInclude Include="..\..\Public\PTCommon.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\DirectXTex\DDSTextureLoader\DDSTextureLoader12.cpp" />
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonLex.c" />
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonLexYacc.cpp" />
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonParserCXX.cpp" />
+    <ClCompile Include="..\..\Private\XGL\JSON\JsonYacc.c" />
     <ClCompile Include="dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\Private\GFX\ResourceBinding.md" />
+    <None Include="..\..\Private\XGL\JSON\JsonLex.inl" />
+    <None Include="..\..\Private\XGL\JSON\JsonLex.l" />
+    <None Include="..\..\Private\XGL\JSON\JsonYacc.inl" />
+    <None Include="..\..\Private\XGL\JSON\JsonYacc.y" />
     <None Include="..\..\Public\Math\SSE\PTMathSIMD.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="PTMcRT.vcxproj">
+      <Project>{fed171ce-f280-46f3-b633-0e1c345dca4f}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{6DFF1720-EED3-4408-8637-C2A45775BF83}</ProjectGuid>
@@ -124,7 +135,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dxgi.lib;D3D12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxgi.lib;D3D12.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -141,7 +152,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dxgi.lib;D3D12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxgi.lib;D3D12.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -162,7 +173,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dxgi.lib;D3D12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxgi.lib;D3D12.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -183,7 +194,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>dxgi.lib;D3D12.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxgi.lib;D3D12.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
