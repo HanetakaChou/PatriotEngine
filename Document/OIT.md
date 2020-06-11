@@ -100,10 +100,9 @@ OpaquePass得到的图像将在最后以A = 1, C = BackgroundColor的形式合�
 > 可见性函数$\operatorname{V} ( Z_i ) =  {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} ( 1 - A_j )$的求解依赖于片元的顺序，导致了$C_{Final} = {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i )  A_i C_i )$的求解依赖于片元的顺序。基于这个事实，Enderton在2010年提出了随机透明：随机透明基于概率论的原理，利用硬件的MSAA特性进行随机抽样，给出了一种顺序无关地求解可见性函数$\operatorname{V} ( Z_i )$的方式，以达到以顺序无关的方式求解$C_{Final}$的目的（6.[Enderton 2010]）。  
     
 ### 随机深度（Stochastic Depth）  
-> 在开启MSAA的情况下，我们约定像素（Pixel）、片元（Fragment）和采样点（Sample）的对应关系如图OIT-2：  
+> 在开启MSAA的情况下，我们约定像素（Pixel）、片元（Fragment）和采样点（Sample）的对应关系如图：  
 > 
 > ![](./OIT-2.png)  
-图OIT-2  
 >
 > 一个像素对应于若干个采样点（比如，演示图中一个像素对应于4个采样点，即4X MSAA）；同时，一个像素也对应于若干个片元。  
 但是，同一像素中的同一采样点最终只可能被该像素对应的一系列片元中的某一个片元占据（由于存储空间的限制，只能存储一个片元，这是显然的）  
