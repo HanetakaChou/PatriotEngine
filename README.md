@@ -1,4 +1,28 @@
-﻿### 项目简介 
+﻿### Project Description     
+PatriotEngine is the source code of the book "Developing A Graphics Rendering Engine With Vulkan/Metal/Direct3D12" which is being written.   
+
+Although there is no official standard of the **Graphics Rendering** Engine at present, the functionality of the **Graphics Rendering** Engine has steadily stabilized with the evolution of the **Graphics Rendering** Engine in the past few decades and thus has formed the de facto standard.   
+
+As we all know "Program = Data Structure + Algorithm" and this book will elaborate the **Graphics Rendering** Engine from two aspects: Scene (Data Structure) and Rendering Pipeline (Algorithm). 
+
+The contents of this book is likely to be as follows:   
+>    
+> [Document/XGL/SceneTree.md] //In Chinese  
+> [Document/XGL/BVH.md] //In Chinese    
+>        
+> ---    
+>     
+> [Document/XGL/RenderingPipeline.md] //In English      
+>        
+> ---    
+>      
+> [Document/McRT/Scalable-Allocator.md] //In Chinese      
+> [Document/McRT/Task-Scheduler.md] //In Chinese    
+>     
+      
+---     
+        
+### 项目简介 
 本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
   
 虽然**图形渲染**（Graphics Rendering）引擎在目前并没有标准定义，但是，与软件工程中很多其它领域的情况一样——比如LLVM框架已经成为了编译器领域事实上的标准——随着图形渲染技术在几十年间的发展，图形渲染引擎的功能不断趋于稳定，目前正是对图形渲染引擎未成文的事实上的标准进行一次系统性总结的最佳时机。  
