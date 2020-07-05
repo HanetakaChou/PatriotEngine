@@ -1,13 +1,8 @@
-### 颜色
-谱功率分布（SPD，Spectral Power Distribution）  
+### Mathematics              
+              
+#### Lebesgue Integral    
 
-本质上与傅里叶分析类似 将谱功率分布表示为基函数的系数 //即投影（Project）到基函数（Basis Function）上  
-//在傅里叶分析中 基函数为三角函数系 //三角函数系的正交性    
-  
-### 材质  
-  
-True Geometric Normal  
-Shading Normal //Perturb //Bump Mapping  
+The mathematics courses of the Computer Science Major in college only involve the Riemann integrals. However, I think it is beneficial to learn the Lebesgue integrals which will bring you a deeper understand of the formulas in the Computer Graphics.    
 
-### 光源  
-不区分光源和表面 //OSL（OpenShadingLanguage）  
+
+
