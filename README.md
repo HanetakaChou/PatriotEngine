@@ -70,5 +70,5 @@ The contents of this book is likely to be as follows:
 [NVIDIA MDL](https://developer.nvidia.com/mdl-sdk)    
   
 ### 待解决：  
-* 1\.场景管理：对NVIDIA SceniX、NvPro-Pipeline和Pixar Hydra的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
+* 1\.场景管理：对NVIDIA SceniX、NvPro-Pipeline、Pixar Hydra、Sony Alembic的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块 //设计符合Vulkan和Direct3D12用法的渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
 * 2\.其它图形相关的需求在[Document/目录.md]中列出    
