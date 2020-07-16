@@ -3,11 +3,11 @@
         {
             "name": "Linux",
             "includePath": [
-                "${env:HOME}/.local/libexec/android-ndk-r11c/platforms/android-24/arch-x86_64/usr/include",
-                "${env:HOME}/.local/libexec/android-ndk-r11c/sources/cxx-stl/llvm-libc++/libcxx/include",
-                "${env:HOME}/.local/libexec/android-ndk-r11c/sources/cxx-stl/llvm-libc++abi/libcxxabi/include",
-                "${env:HOME}/.local/libexec/android-ndk-r11c/sources/android/support/include",
-                "${workspaceFolder}/../ThirdParty/PosixLinuxX11/Bionic-Redistributable/include"
+                "${env:HOME}/.local/libexec/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include",
+                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include",
+                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include",
+                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/android/support/include",
+                "/system/include"
             ],
             "defines": [
                 "__ANDROID__",

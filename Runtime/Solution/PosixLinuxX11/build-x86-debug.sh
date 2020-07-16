@@ -28,24 +28,3 @@ rm -rf ${out_dir}/${out_name2}
 cp -f ${intermediate_dir}/${out_name} ${out_dir}/
 cp -f ${intermediate_dir}/${out_name1} ${out_dir}/
 cp -f ${intermediate_dir}/${out_name2} ${out_dir}/
-
-# copy the dep libs to out dir   
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libxcb.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libXau.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libc.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libdl.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libm.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libstdc++.so ${out_dir}/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libc++_shared.so ${out_dir}/
-
-# copy the gdb related
-cp -f libs/x86/gdbserver ${out_dir}/
-cp -f libs/x86/gdb.setup ${out_dir}/
-
-# place the linker at cwd  
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/linker ${out_dir}/
-cd ${out_dir}/
-
-# execute the generated pie  
-# gdbserver :27077 ./${out_name}
-./gdbserver :27077 ./${out_name} ### //either gdbserver from ndk or your linux distribution is OK
