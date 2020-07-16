@@ -38,7 +38,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := PTLauncher.bundle
 
 LOCAL_SRC_FILES:= \
-	$(LOCAL_PATH)/../../Private/Launcher/PosixLinuxX11/PTWindowImpl.cpp
+	$(LOCAL_PATH)/../../Private/WSI/PosixLinuxX11/PTWindowImpl.cpp
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -53,25 +53,21 @@ LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
 
-LOCAL_SHARED_LIBRARIES := libxcb libPTApp
-
-include $(BUILD_EXECUTABLE)
-
-# libxcb
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := libxcb
+LOCAL_C_INCLUDES += /system/include
 
 ifeq (x86_64,$(TARGET_ARCH))
-LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libxcb.so
+LOCAL_LDFLAGS += -L/system/lib64
 endif
 
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_SRC_FILES := $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib/libxcb.so
+LOCAL_LDFLAGS += -L/system/lib
 endif
 
-include $(PREBUILT_SHARED_LIBRARY) # ndk-build will strip the so
+LOCAL_LDFLAGS += -lxcb
+
+LOCAL_SHARED_LIBRARIES := libPTApp
+
+include $(BUILD_EXECUTABLE)
 
 # libPTApp
 
