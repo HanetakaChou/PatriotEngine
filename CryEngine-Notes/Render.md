@@ -22,7 +22,7 @@ CSceneGBufferStage::Execute
   RenderSceneOpaque   
 ```  
 
-### 
+### Geometry Format
 
 ```  
 CEntity::LoadGeometry // the logic layer   
@@ -30,19 +30,31 @@ CEntity::LoadGeometry // the logic layer
 //-------------------------------------------------------  
     C3DEngine::LoadStatObj
       CObjManager::LoadStatObj  // see the notes related to stream
+        //Load Default Object
+
 ```  
 
 ```   
 CEntity::LoadCharacter 
   CRenderProxy::LoadCharacter
     CharacterManager::CreateInstance
-      CharacterManager::LoadCharacterDefinition  
-        ...
+      CharacterManager::LoadCharacterDefinition //cdf 
+        CharacterManager::GetOrLoadCDFId
           CharacterManager::LoadCDF // sync load // not stream
-            CharacterManager::LoadCDFFromXML
+            CharacterManager::LoadCDFFromXML 
+              CMatMan::LoadMaterial  
+        CharacterManager::CreateInstance //chr  
+          CharacterManager::CreateSKELInstance //chr
+            CharacterManager::FetchModelSKEL //chr
+            CDefaultSkeleton::LoadNewSKEL //chr
+              C3DEngine::LoadChunkFileContent //chr
+                CLoaderCGF::LoadCGF //chr
+              CDefaultSkeleton::LoadCHRPARAMS//chrparams
 ```   
 
 ### Runtime Format   
 
 #### 
-CharacterDefinition //CharacterManager::LoadCDFFromXML  
+//cdf CharacterDefinition //CharacterManager::LoadCDFFromXML  
+
+CRenderMesh 

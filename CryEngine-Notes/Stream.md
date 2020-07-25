@@ -1,24 +1,62 @@
-### Stream
+Request  
+//Wait //no wait  
+Signal  
 
-Request
-Wait
-Signal
+//Streaming+LOD  
+  
+//nRoundId  
+//CObjManager::m_nUpdateStreamingPrioriryRoundId  
+//CObjManager::m_nUpdateStreamingPrioriryRoundIdFast  
 
-IStreamEngine  //能否用OS的异步IO取代？
-  StartRead //Request
-    StartFileRequest
-      CStreamingIOThread::AddRequest
+CObjManager: The Manager for Static Objects  
+CharacterManager: The Manager for Characters  
 
+### Rendering Loop - Request
+//Request
 ```   
-CStreamingIOThread   
+C3DEngine::RenderWorld
+  C3DEngine::UpdateRenderingCamera
+    CObjManager::UpdateRenderNodeStreamingPriority
+      CObjManager::GetObjectLOD //the LOD system  
+      ...
+      CObjManager::PrecacheStatObj
+        CStatObj::UpdateStreamableComponents
+          CStatObj::UpdateStreamingPrioriryInternal
+            IStreamable::UpdateStreamingPrioriryLowLevel //use nRoundId to avoid duplicated streaming 
+            CObjManager::RegisterForStreaming //add to m_arrStreamableObjects
+  ...
+  C3DEngine::RenderInternal
+    C3DEngine::RenderScene
+      ...
+      //2.Charactor
+      CharacterManager::UpdateStreaming
+        CharacterManager::UpdateStreaming_SKEL
+          CryCHRLoader::BeginLoadCHRRenderMesh
+    ...   
+    //1.Static Object
+    CObjManager::ProcessObjectsStreaming
+      CObjManager::ProcessObjectsStreaming_Finish
+        CStatObj::StartStreaming 
+          CStreamEngine::StartRead //Forward to the Streaming module          
+```   
 
-  AddRequest //Request   
-    // -> m_newFileRequest   
+### Streaming Module //能否用OS的异步IO取代？
+//Request
+```
+CStreamEngine::StartRead  
+  CStreamEngine::StartFileRequest
+      CStreamingIOThread::AddRequest
+        //m_newFileRequests.push_back
+```   
+   
+//The number of CStreamingIOThread is fixed  
+Streaming File IO HDD Thread //磁盘   
+Streaming File IO Optical Thread //光驱   
+Streaming File IO InMemory Thread //内存   
 
-  Streaming File IO HDD Thread //磁盘   
-  Streaming File IO Optical Thread //光驱   
-  Streaming File IO InMemory Thread //内存   
-
+//Signal  
+```
+CStreamingIOThread  
   while
     ProcessNewRequests 
       //m_newFileRequest <-> temporaryArray
@@ -45,34 +83,41 @@ SStreamRequestQueue //General Stream Request
     TryPopRequest //Wait
 ```   
 
+//Signal
 ```   
 Streaming AsyncCallback Thread
     poll //TryPopRequest The SStreamRequestQueue
         CStreamEngine::ReportAsyncFileRequestComplete //Signal
           ...
             IStreamCallback::StreamAsyncOnComplete
+            //Following Implementations
+            //1.Static Object
+            CStatObj::StreamAsyncOnComplete
+              CStatObj::LoadStreamRenderMeshes
+                ReadOnlyChunkFile::ReadFromMemory
+                CLoaderCGF::LoadCGF
+                  CLoaderCGF::LoadCGF_Int //Int(ernal)
+                  CLoaderCGF::LoadChunks
+                CStatObj::MakeRenderMesh
+            //2.Charactor
+            CryCHRLoader::StreamAsyncOnComplete
+              CryCHRLoader::EndStreamSkel //chr
+                CModelMesh::InitRenderMeshAsync
+                  CModelMesh::CreateRenderMesh //sync in fact ???
+                    CRenderMesh::SetMesh
+                      CRenderMesh::SetMesh_Int
+                        CRenderMesh::LockVB 
+              CryCHRLoader::EndStreamSkinAsync //skin
+                  CModelMesh::InitRenderMeshAsync
+                    CModelMesh::CreateRenderMesh //sync in fact ???
 ```   
 
 ### TextureStream
-s_StreamInTasks
+s_StreamInTasks  
 
-CSystem::RenderEnd
-  CTexture::Update //Static Method
-  CTexture::StartStreaming
-
-
-### Graphics Rendering   
-
-```   
-C3DEngine::RenderWorld
-  C3DEngine::RenderInternal
-    C3DEngine::RenderScene
-//------------------------------------------       
-    CObjManager::ProcessObjectsStreaming
-      CStatObj::StartStreaming
-```   
-
-
+CSystem::RenderEnd  
+  CTexture::Update //Static Method  
+  CTexture::StartStreaming  
 
 ### Thread
 
