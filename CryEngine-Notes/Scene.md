@@ -21,7 +21,7 @@ CEntity::LoadGeometry // the logic/application layer
 //-------------------------------------------------------  
     C3DEngine::LoadStatObj
       CObjManager::LoadStatObj  // see the notes related to stream
-        //Load Default Object
+    ...
     CRenderProxy::InvalidateBounds
       CRenderProxy::RegisterForRendering  //Add to m_deferredRenderProxyStreamingPriorityUpdates
 ```  
