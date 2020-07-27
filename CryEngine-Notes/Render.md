@@ -22,6 +22,11 @@ CSceneGBufferStage::Execute
   RenderSceneOpaque   
 ```  
 
+
+### Portal Culling   
+    
+[CRYENGINE 3 Manual / Entities, Shapes and Tools / Area Objects / VisArea and Portals](https://docs.cryengine.com/display/SDKDOC2/VisArea+and+Portals)   
+   
 ### Geometry Format
 
 ```  

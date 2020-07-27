@@ -1,9 +1,6 @@
-Request  
-//Wait //no wait  
-Signal  
 
-### Application Layer - Request for Rendering   
-
+### Application Layer - Request for Rendering     
+   
 //There is no SceneTree in CryEngine   
 //CryEngine doesn't maintain the propagation of the transform from the parent to the child and leave this work to the application layer  
 
@@ -20,7 +17,7 @@ CEntity::LoadGeometry // the logic/application layer
   CRenderProxy::LoadGeometry 
 //-------------------------------------------------------  
     C3DEngine::LoadStatObj
-      CObjManager::LoadStatObj  // see the notes related to stream
+      CObjManager::LoadStatObj  // not actually load // create an empty static object instead  
     ...
     CRenderProxy::InvalidateBounds
       CRenderProxy::RegisterForRendering  //Add to m_deferredRenderProxyStreamingPriorityUpdates
@@ -83,19 +80,32 @@ C3DEngine::RenderWorld
 ```   
 
 
-### Streaming Module //能否用OS的异步IO取代？
+### Streaming Module 
+
+Request  
+//Wait //no wait  
+Signal  
+
 //Request
 ```
-CStreamEngine::StartRead  
+CStreamEngine::StartRead //Invoked from CStatObj::StartStreaming   
   CStreamEngine::StartFileRequest
       CStreamingIOThread::AddRequest
         //m_newFileRequests.push_back
 ```   
-   
-//The number of CStreamingIOThread is fixed  
+
 Streaming File IO HDD Thread //磁盘   
 Streaming File IO Optical Thread //光驱   
 Streaming File IO InMemory Thread //内存   
+
+//Could these code be replaced by OS's async read?    
+//Perhaps not? The OS's read may be replaced by gzread or etc sometimes and thus it is difficulty to interact with the OS's read.
+
+//The number of CStreamingIOThread is fixed   
+//Only one thread is permitted to access the same disk at the same time.  
+//Thus, one thread would be enough when there is only one disk.  
+
+//Could these code be replaced by the seiral stage of the pipeline pattern? //Intel TBB  
 
 //Signal  
 ```
@@ -165,3 +175,25 @@ CSystem::RenderEnd
 ### Thread
 
 CrySetThreadName
+   
+
+---   
+   
+### Geometry Format   
+  
+[CRYENGINE 3 Manual / Asset Creation / Art Asset File Types](https://docs.cryengine.com/display/SDKDOC2/Art+Asset+File+Types)  
+
+CGF \/\*Crytek Geometry Format\*\/   
+The Static Geometry  
+
+CGA \/\*Crytek Geometry Animation\*\/  
+The nodes are not merged and can be animated at runtime.
+
+CHR \/\*Character\*\/  
+The Skeleton 
+
+SKIN \/\*Skinned Render Mesh\*\/  
+The Skeletal Geometry  //contain vertex weights  
+//Addition: morph targets are also stored in this format  
+    
+   
