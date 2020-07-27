@@ -2,7 +2,33 @@ Request
 //Wait //no wait  
 Signal  
 
-//Streaming+LOD  
+### Application Layer - Request for Rendering   
+
+//There is no SceneTree in CryEngine   
+//CryEngine doesn't maintain the propagation of the transform from the parent to the child and leave this work to the application layer  
+
+CryEngine provides three interfaces:  
+1\.Static Object  
+CEntity::LoadGeometry  
+2\.Character  
+CEntity::LoadCharacter    
+3\.Light  
+CEntity::LoadLight  
+
+```  
+CEntity::LoadGeometry // the logic/application layer   
+  CRenderProxy::LoadGeometry 
+//-------------------------------------------------------  
+    C3DEngine::LoadStatObj
+      CObjManager::LoadStatObj  // see the notes related to stream
+    ...
+    CRenderProxy::InvalidateBounds
+      CRenderProxy::RegisterForRendering  //Add to m_deferredRenderProxyStreamingPriorityUpdates
+```  
+
+### Rendering Loop - Request for Streaming  
+    
+//Streaming + LOD  
   
 //nRoundId  
 //CObjManager::m_nUpdateStreamingPrioriryRoundId  
@@ -11,19 +37,30 @@ Signal
 CObjManager: The Manager for Static Objects  
 CharacterManager: The Manager for Characters  
 
-### Rendering Loop - Request
-//Request
-```   
+\/\/Precache - Loading   
+   
+```    
+CObjManager::UpdateRenderNodeStreamingPriority
+  CObjManager::GetObjectLOD //the LOD system  
+  ...
+  //1.Static Object
+  CObjManager::PrecacheStatObj //Add to m_arrStreamableObjects
+    CStatObj::UpdateStreamableComponents
+      CStatObj::UpdateStreamingPrioriryInternal
+        IStreamable::UpdateStreamingPrioriryLowLevel //use nRoundId to avoid duplicated streaming 
+        ...
+        CObjManager::RegisterForStreaming //Add to m_arrStreamableObjects  
+  //For CGA ???
+  CObjManager::PrecacheCharacter
+```      
+    
+---
+
+//Request      
+```     
 C3DEngine::RenderWorld
   C3DEngine::UpdateRenderingCamera
-    CObjManager::UpdateRenderNodeStreamingPriority
-      CObjManager::GetObjectLOD //the LOD system  
-      ...
-      CObjManager::PrecacheStatObj
-        CStatObj::UpdateStreamableComponents
-          CStatObj::UpdateStreamingPrioriryInternal
-            IStreamable::UpdateStreamingPrioriryLowLevel //use nRoundId to avoid duplicated streaming 
-            CObjManager::RegisterForStreaming //add to m_arrStreamableObjects
+    CObjManager::UpdateRenderNodeStreamingPriority //Remove from m_deferredRenderProxyStreamingPriorityUpdates //Add to m_arrStreamableObjects
   ...
   C3DEngine::RenderInternal
     C3DEngine::RenderScene
@@ -35,10 +72,16 @@ C3DEngine::RenderWorld
     ...   
     //1.Static Object
     CObjManager::ProcessObjectsStreaming
-      CObjManager::ProcessObjectsStreaming_Finish
+      CObjManager::UpdateStreamingPriority 
+        CObjManager::UpdateObjectsStreamingPriority
+          COctreeNode::UpdateStreamingPriority //Remove from m_arrStreamingNodeStack
+            CObjManager::UpdateRenderNodeStreamingPriority //Iter the m_arrObjects //Add to m_arrStreamableObjects
+      ...  
+      CObjManager::ProcessObjectsStreaming_Finish //Remove from m_arrStreamableObjects
         CStatObj::StartStreaming 
           CStreamEngine::StartRead //Forward to the Streaming module          
 ```   
+
 
 ### Streaming Module //能否用OS的异步IO取代？
 //Request
