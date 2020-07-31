@@ -2,24 +2,29 @@
 
 cd "$(dirname "$(readlink -f "${0}")")"
  
+intermediate_dir="libs/x86_64/"
+out_dir="../../../Binary/PosixLinuxX11/x64/Release/"
+out_name="PTLauncher.bundle"
+out_name1="libPTMcRT.so"
+out_name2="libPTApp.so"
+
 # build by ndk
 rm -rf obj
 rm -rf libs
 ndk-build APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk 
 
 # before execute change the rpath to \$ORIGIN  
-chrpath -r '$ORIGIN' libs/x86_64/libPTMcRT.so
+chrpath -r '$ORIGIN' ${intermediate_dir}/${out_name}
+chrpath -r '$ORIGIN' ${intermediate_dir}/${out_name1}
+chrpath -r '$ORIGIN' ${intermediate_dir}/${out_name2}
 
 # mkdir the out dir if necessary
-mkdir -p ../../../Binary/PosixLinuxX11/x64/Release/
+mkdir -p ${out_dir}
 
 # copy the striped so to out dir
-rm -rf ../../../Binary/PosixLinuxX11/x64/Release/libPTMcRT.so
-cp -f libs/x86_64/libPTMcRT.so ../../../Binary/PosixLinuxX11/x64/Release/
-  
-# copy the dep libs to out dir  
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libc.so ../../../Binary/PosixLinuxX11/x64/Release/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libdl.so ../../../Binary/PosixLinuxX11/x64/Release/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libm.so ../../../Binary/PosixLinuxX11/x64/Release/
-cp -f ../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/lib64/libstdc++.so ../../../Binary/PosixLinuxX11/x64/Release/  
-
+rm -rf ${out_dir}/${out_name}
+rm -rf ${out_dir}/${out_name1}
+rm -rf ${out_dir}/${out_name2}
+cp -f ${intermediate_dir}/${out_name} ${out_dir}/
+cp -f ${intermediate_dir}/${out_name1} ${out_dir}/
+cp -f ${intermediate_dir}/${out_name2} ${out_dir}/
