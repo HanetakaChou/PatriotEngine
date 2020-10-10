@@ -1,5 +1,4 @@
 
-McRT 中的 Bucket 由 Slab 发展而来  
 
 The name derives from one of the allocator’s main data structures, the slab. The name stuck within Sun because it was more distinctive than “object" or "cache". (\[Bonwick 1994\])     
 
