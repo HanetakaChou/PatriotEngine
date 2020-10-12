@@ -77,7 +77,7 @@ digraph slab_allocator {
 
 一个Cache中含有若干个Slab，同一Cache中的Slab中的Buffer的大小都相同。同一Cache中的Slab的控制块构成双向链表，在Cache中存放着一个表头指针，指向双向链表中某一个Slab，并确保该Slab之后（Next）的Slab都至少含有一个空闲的Buffer。当Buffer被释放时，可以检测Buffer所在的Slab中未被释放的Buffer的个数，当Slab中的所有Buffer都被释放时，可以将Slab插入到双向链表的尾部，从而确保了Cache中的表头指针指向的Slab之后（Next）的Slab都至少含有一个空闲的Buffer //注：当Buffer被释放时，只需要Buffer的地址对齐到页大小，即可定位到Buffer所在的Slab的地址。 检测Buffer所在的Slab中未被释放的Buffer的个数是一个平凡的操作，只需在Slab的控制块中维护一个变量计数即可。         
 
-所谓的分离存储是指，
+所谓的分离存储是指， Buffer的大小 维护了n个双向链表，每个双向链表
 
 在分配内存时，
 
