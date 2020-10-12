@@ -11,7 +11,7 @@
 
 显然，Slab分配器属于分离存储。在 \[Bonwick 1994\] / 3. Slab Allocator Implementation 和 \[Bonwick 1994\] / 4. Hardware Cache Effects 中对Slab分配器进行了详尽的介绍。接下来，本文也打算对Slab分配器进行介绍。为了方便读者参阅国际上的文献资料，同时为了提高辨识度，本文保留了表示Slab分配器中的数据结构的英文术语Cache、Slab和Buffer，而不译作中文。
 
-```graphviz
+```graphvi z
 digraph slab_allocator {
     rankdir=LR;
 
@@ -75,15 +75,15 @@ digraph slab_allocator {
 
 一个Slab中含有若干个Buffer，同一Slab中的Buffer的大小都相同，Slab的控制块（Slab Data）被置于Slab的结束位置。 // 注：根据 \[Bonwick 1994\] / 3.2.2. Slab Layout for Small Objects 中的说法，经验表明，当应用程序尝试非法地修改已经被释放的内存时，Slab开始位置的数据被修改的可能性更高，将Slab的控制块置于结束位置，可以减少Slab的控制块被错误修改的可能性，更有利于调试。然而，经验性的法则多不可靠，读者大可不必理会。当下主流的TBB-Malloc（\[Kukanov 2007\]）就将Slab的控制块置于开始位置。    
 
-一个Cache中含有若干个Slab，同一Cache中的Slab中的Buffer的大小都相同。同一Cache中的Slab的控制块构成双向链表，在Cache中存放着一个表头指针，指向双向链表中某一个Slab，并确保该Slab之后（Next）的Slab都至少含有一个空闲的Buffer。当Buffer被释放时，可以检测Buffer所在的Slab中未被释放的Buffer的个数，当Slab中的所有Buffer都被释放时，可以将Slab插入到双向链表的尾部，从而确保了Cache中的表头指针指向的Slab之后（Next）的Slab都至少含有一个空闲的Buffer //注：当Buffer被释放时，只需要Buffer的地址对齐到页大小，即可定位到Buffer所在的Slab的地址。 检测Buffer所在的Slab中未被释放的Buffer的个数是一个平凡的操作，只需在Slab的控制块中维护一个变量计数即可。         
+一个Cache中含有若干个Slab，同一Cache中的Slab中的Buffer的大小都相同。同一Cache中的Slab的控制块构成双向链表，在Cache中存放着一个表头指针，指向双向链表中某一个Slab，并确保该Slab之后（Next）的Slab都至少含有一个空闲的Buffer。 //注：当Buffer被释放时，可以检测Buffer所在的Slab中未被释放的Buffer的个数，当Slab中的所有Buffer都被释放时，可以将Slab插入到双向链表的尾部，从而即可确保Cache中的表头指针指向的Slab之后（Next）的Slab都至少含有一个空闲的Buffer。当Buffer被释放时，只需要将Buffer的地址对齐到页大小，即可定位到Buffer所在的Slab的地址。检测Buffer所在的Slab中未被释放的Buffer的个数只是一个平凡的操作，只需在Slab的控制块中维护一个变量计数即可。         
 
-所谓的分离存储是指， Buffer的大小 维护了n个双向链表，每个双向链表
+所谓的分离存储是指：Buffer的大小只可能是事先设定的若干种（比如：8b、16b、32b、48b ...），并且维护了若干个Slab双向链表，Slab双向链表的个数与Buffer大小的可能取值的个数相同。每个Slab双向链表对应于一个Cache，同时也对应于Buffer大小的某一个取值。也就是说，同一Cache中的Buffer大小一定相同，不同大小的Buffer被**分离存储**在不同的Cache中。  
 
 在分配内存时，
 
-在释放内存时，Slab分配器需要借助哈希表来区分被释放的地址是Buffer还是Large Object。      
+根据 \[Bonwick 1994\] / 3.2.3. Slab Layout for Large Objects 中的说法，在释放内存时，Slab分配器需要借助哈希表来区分被释放的地址是Buffer还是Large Object。      
 
-显然，Slab分配器的解决方案过于低效，让人很难接受。实际上，我们可以将Slab的控制块置于开始位置，从而确保了Slab中的Buffer一定不会对齐到页大小。然而，由于Large Object的内存直接向系统申请，Large Object一定对齐到页大小。因此，在释放内存时，我们可以根据被释放的地址是否对齐对页大小来区分Buffer和Large Object，避免了借助哈希表进行映射的过程，这也是TBB-Malloc（\[Kukanov 2007\]）的做法。
+显然，这种借助哈希表的解决方案过于低效，让人很难接受。实际上，我们可以将Slab的控制块置于开始位置，从而确保了Slab中的Buffer一定不会对齐到页大小。然而，由于Large Object的内存直接向系统申请，Large Object一定对齐到页大小。因此，在释放内存时，我们可以根据被释放的地址是否对齐对页大小来区分Buffer和Large Object，避免了借助哈希表进行映射的过程，这也是TBB-Malloc（\[Kukanov 2007\]）的做法。
 
 ### McRT-Malloc  
 
