@@ -182,18 +182,24 @@ CrySetThreadName
 ### Geometry Format   
   
 [CRYENGINE 3 Manual / Asset Creation / Art Asset File Types](https://docs.cryengine.com/display/SDKDOC2/Art+Asset+File+Types)  
+[CRYENGINE V Manual / Asset Prep (External) / Asset Exporting Overview / Art Asset File Types](https://docs.cryengine.com/display/CEMANUAL/Art+Asset+File+Types)  
 
-CGF \/\*Crytek Geometry Format\*\/   
-The Static Geometry  
+CGF \/\*Crytek Geometry Format\*\/  The Static Geometry  
 
-CGA \/\*Crytek Geometry Animation\*\/  
-The nodes are not merged and can be animated at runtime.
+//Shadow Proxy  
+[CRYENGINE V Manual / Asset Prep (External) / Asset Exporting Overview / Geometry Creation Overview / Static Geometry / Shadow Proxies](https://docs.cryengine.com/display/CEMANUAL/Shadow+Proxies)   
+//CryEngine introduce Shadow Proxy to boost performance  
+The engine should provides functionality to support the No-Shadow option and it's the convention/Artist-Workflow to create the RenderMesh with the No-Shadow option checked and the Shadow Proxy with No-Shadow option unchecked.   
+  
+𓃤𓁴  
+CGA \/\*Crytek Geometry Animation\*\/ //Rigid Body Animation   
+The nodes are not merged and can be animated at runtime. //Diff from the CGF   
+   
+CHR \/\*Character\*\/   
+The Skeleton   
 
-CHR \/\*Character\*\/  
-The Skeleton 
-
-SKIN \/\*Skinned Render Mesh\*\/  
-The Skeletal Geometry  //contain vertex weights  
-//Addition: morph targets are also stored in this format  
+SKIN \/\*Skinned Render Mesh\*\/   
+The Skeletal Geometry  //contain vertex weights    
+//Addition: morph targets are also stored in this format   
     
    

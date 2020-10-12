@@ -222,7 +222,7 @@ $L_i{\lparen x, \overrightarrow{\omega_i} \rparen} = L_r{\lparen x', -\overright
 Projected Solid Angle  
 $d{\omega}^{\perp}=\cos\theta \, d{\omega}$  //[Cohen 1993] 2.4.3、[Pharr 2017] 5.5.1  
 
-积分为$\pi$  
+积分为π //第一类换元法    
 $\int_\Omega{\cos\theta}\,d\omega = \int_\Omega d\omega^{\perp} = \pi$ （等式Ⅰ） //用投影球面度证明  //[Pharr 2017] 5.5.1  
   
 Integrals over Area  
