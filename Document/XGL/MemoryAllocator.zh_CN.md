@@ -11,24 +11,65 @@
 
 显然，Slab分配器属于分离存储。在 \[Bonwick 1994\] / 3. Slab Allocator Implementation 和 \[Bonwick 1994\] / 4. Hardware Cache Effects 中对Slab分配器进行了详尽的介绍。接下来，本文也打算对Slab分配器进行介绍。为了方便读者参阅国际上的文献资料，同时为了提高辨识度，本文保留了表示Slab分配器中的数据结构的英文术语Cache、Slab和Buffer，而不译作中文。
 
-```graphviz   
-digraph slab_allocator {    
-    
-    //rankdir=LR;
+```graphviz
+digraph slab_allocator {
+    rankdir=LR;
 
+    newrank="true"
 
-    subgraph cluster_slab{ 
-        label="slab";
+    { rank="same"; backend_allocator; cache_1_slab_1_end; }
 
-        slab_begin [shape = record, label = "<buf0> buf | <buf1> buf | ... | <buf2> buf | <buf3> buf | unused | <slab_data> slab data"];
+    subgraph cluster_backend_allocator {
+        label = "backend allocator";
 
-        slab_end [shape = record, label = "slab data", rank=1];
-
-       slab_begin -> slab_end;
+        backend_allocator[shape = box, label ="system mmap/munmap"];
     }
 
-}  
-```  
+    subgraph cluster_small_object{
+        label = "small object";
+
+        subgraph cluster_cache_1{
+            label = "cache";
+            
+            cache_1_slab_prev [shape = box, label ="prev"];
+            
+            subgraph cluster_cache_1_slab_1 {
+                label = "slab";
+                
+                rank="same";
+                
+                cache_1_slab_1_end [shape = record, label= "slab data"];
+                
+                cache_1_slab_1_unused [shape = record, label= "unused"];
+                
+                cache_1_slab_1_begin [shape = record, label = "buf | buf | ... | buf |  buf"];
+            }
+
+            subgraph cluster_cache_1_slab_2 {
+                label = "slab";
+            
+                rank="same";
+            
+                cache_1_slab_2_end [shape = record, label = "slab data"];  
+
+                cache_1_slab_2_unused [shape = record, label = "unused"];
+            
+                cache_1_slab_2_begin [shape = record, label = "buf | buf | ... | buf |  buf"];
+            }
+
+            cache_1_slab_next [shape = box, label ="next"];
+            
+            cache_1_slab_prev -> cache_1_slab_1_end;
+            
+            cache_1_slab_1_end -> cache_1_slab_2_end;
+            
+            cache_1_slab_2_end -> cache_1_slab_1_end;
+            
+            cache_1_slab_2_end -> cache_1_slab_next;
+        }
+    }
+}
+```
 
 所有Slab的大小都相同，被设定为一个页（Page）的大小。在POSIX系统上，一个页的大小可以用sysconf(_SC_PAGESIZE)查询。  
 
