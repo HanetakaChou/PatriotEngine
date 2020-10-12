@@ -83,7 +83,7 @@ digraph slab_allocator {
 
 在释放内存时，Slab分配器需要借助哈希表来区分被释放的地址是Buffer还是Large Object。      
 
-显然，Slab分配器的解决方案过于低效，让人很难接受。实际上，我们可以将Slab的控制块置于开始位置，从而确保了Slab中的Buffer一定不会对齐到页大小。然而，由于Large Object的内存直接向系统申请，Large Object一定对齐到页大小。因此，在释放内存时，我们可以根据被释放的地址是否对齐对页大小来区分Buffer和Large Object，避免了借助哈希表进行映射的过程，这也是TBB-Malloc的做法（\[Kukanov 2007\]）。
+显然，Slab分配器的解决方案过于低效，让人很难接受。实际上，我们可以将Slab的控制块置于开始位置，从而确保了Slab中的Buffer一定不会对齐到页大小。然而，由于Large Object的内存直接向系统申请，Large Object一定对齐到页大小。因此，在释放内存时，我们可以根据被释放的地址是否对齐对页大小来区分Buffer和Large Object，避免了借助哈希表进行映射的过程，这也是TBB-Malloc（\[Kukanov 2007\]）的做法。
 
 ### McRT-Malloc  
 
