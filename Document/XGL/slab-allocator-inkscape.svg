@@ -5,11 +5,35 @@
    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
    xmlns:svg="http://www.w3.org/2000/svg"
    xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="873.73279mm"
    height="659.26245mm"
    viewBox="0 0 873.73271 659.26243"
    version="1.1"
-   id="svg8">
+   id="svg8"
+   sodipodi:docname="slab-allocator-inkscape.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1311"
+     inkscape:window-height="783"
+     id="namedview219"
+     showgrid="false"
+     inkscape:zoom="0.68226495"
+     inkscape:cx="2405.6802"
+     inkscape:cy="553.34497"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
   <defs
      id="defs2">
     <marker
@@ -165,14 +189,15 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <g
      id="layer2"
      style="display:inline"
-     transform="translate(155.63767,312.64133)">
+     transform="translate(155.63767,312.64133)"
+     sodipodi:insensitive="true">
     <rect
        style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1.49964;stroke-miterlimit:4;stroke-dasharray:none"
        id="rect853"
@@ -1094,7 +1119,7 @@
          y="-220.76399" />
     </g>
     <g
-       transform="translate(327.64162,-447.5002)"
+       transform="translate(327.64162,-440.30195)"
        id="g2475-0-2-0-2"
        style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
       <rect
@@ -1112,8 +1137,8 @@
          xml:space="preserve">Application Request</text>
     </g>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.49999996;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1933);marker-end:url(#marker2653)"
-       d="m 558.13138,-255.94056 -1.08813,38.86423"
+       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1933);marker-end:url(#marker2653)"
+       d="m 558.13138,-252.23637 -1.08813,38.86423"
        id="path1130" />
   </g>
 </svg>
