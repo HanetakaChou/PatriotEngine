@@ -155,7 +155,7 @@
    <rect x="-131.4" y="-220.76" width="835.87" height="462.39" fill="none" stroke="#000"/>
    <g transform="translate(327.64 -447.5)">
     <rect x="177.24" y="153.16" width="105.88" height="34.401" fill="none" stroke="#000"/>
-    <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Application Reguest</text>
+    <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Application Request</text>
    </g>
    <path d="m558.13-255.94-1.0881 38.864" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
   </g>
