@@ -1,0 +1,1061 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="466.80597mm"
+   height="258.99728mm"
+   viewBox="0 0 466.80595 258.99728"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="slab-allocator.svg">
+  <defs
+     id="defs2">
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker2653"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path2651"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker1981"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lend"
+       inkscape:collect="always">
+      <path
+         inkscape:connector-curvature="0"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1979" />
+    </marker>
+    <marker
+       inkscape:isstock="true"
+       style="overflow:visible"
+       id="marker1933"
+       refX="0"
+       refY="0"
+       orient="auto"
+       inkscape:stockid="Arrow1Lstart">
+      <path
+         inkscape:connector-curvature="0"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         id="path1931" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4221"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path4219"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker4215"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path4213"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker2606"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path2604"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lend"
+       style="overflow:visible"
+       inkscape:isstock="true"
+       inkscape:collect="always">
+      <path
+         id="path1381"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker2600"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path2598"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker2596"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path2594"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="marker2592"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path2590"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Lend"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow2Lend"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path1399"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.625;stroke-linejoin:round;stroke-opacity:1"
+         d="M 8.7185878,4.0337352 -2.2072895,0.01601326 8.7185884,-4.0017078 c -1.7454984,2.3720609 -1.7354408,5.6174519 -6e-7,8.035443 z"
+         transform="matrix(-1.1,0,0,-1.1,-1.1,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0"
+       refX="0"
+       id="Arrow1Lstart"
+       style="overflow:visible"
+       inkscape:isstock="true">
+      <path
+         id="path1378"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         style="fill:#000000;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:1.00000003pt;stroke-opacity:1"
+         transform="matrix(0.8,0,0,0.8,10,0)"
+         inkscape:connector-curvature="0" />
+    </marker>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.7071068"
+     inkscape:cx="801.97492"
+     inkscape:cy="594.97122"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1381"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     viewbox-x="0"
+     units="mm"
+     inkscape:pagecheckerboard="false"
+     borderlayer="true"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0"
+     inkscape:measure-start="797.616,794.788"
+     inkscape:measure-end="0,0" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:groupmode="layer"
+     id="layer2"
+     inkscape:label="Layer 2"
+     style="display:inline"
+     transform="translate(118.53052,27.562031)"
+     sodipodi:insensitive="true">
+    <rect
+       style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.68699294;stroke-miterlimit:4;stroke-dasharray:none"
+       id="rect853"
+       width="466.11899"
+       height="258.3103"
+       x="-118.18702"
+       y="-27.218534"
+       inkscape:label="background"
+       sodipodi:insensitive="true" />
+  </g>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(118.53052,27.562031)">
+    <g
+       id="g2790"
+       style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+       inkscape:label="cache's insider">
+      <g
+         inkscape:label="slab3"
+         id="g1193-6"
+         transform="translate(0,94.562958)"
+         style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+        <g
+           inkscape:label="buf"
+           id="g319-1"
+           transform="translate(-11.177272,-21.431245)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-43.83514"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-87"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-92"
+             y="85.567093"
+             x="-38.444103"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-0"
+               y="85.567093"
+               x="-38.444103"
+               sodipodi:role="line"><tspan
+                 id="tspan20-23"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-38.444103">buf</tspan><tspan
+                 id="tspan22-7"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-24.574152"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g307-5"
+           transform="translate(-11.177272,-21.431245)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-17.529951"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-3-9"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-6-2"
+             y="85.567093"
+             x="-12.138915"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-4-2"
+               y="85.567093"
+               x="-12.138915"
+               sodipodi:role="line"><tspan
+                 id="tspan20-2-8"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-12.138915">buf</tspan><tspan
+                 id="tspan22-2-9"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="1.7310365"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="..."
+           id="g331-7"
+           transform="translate(-2.9104166,-26.193749)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="78.322227"
+             x="0.50838286"
+             height="16.950758"
+             width="48.330376"
+             id="rect855-8-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-5-6"
+             y="87.961639"
+             x="21.831406"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-1-1"
+               y="87.961639"
+               x="21.831406"
+               sodipodi:role="line"><tspan
+                 id="tspan20-1-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="21.831406">...</tspan><tspan
+                 id="tspan22-3-9"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="35.701355"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g295-3"
+           transform="translate(10.847919,-21.431249)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="35.080429"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-6-1"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-7-9"
+             y="85.567093"
+             x="40.471466"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-5-4"
+               y="85.567093"
+               x="40.471466"
+               sodipodi:role="line"><tspan
+                 id="tspan20-3-7"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="40.471466">buf</tspan><tspan
+                 id="tspan22-5-8"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="54.341415"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="unused"
+           id="g276-4"
+           transform="translate(10.847919,-21.431249)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.593246"
+             x="61.41914"
+             height="16.883715"
+             width="36.346443"
+             id="rect855-2-5"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9-0"
+             y="85.037926"
+             x="64.130821"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12-3"
+               y="85.037926"
+               x="64.130821"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7-61"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="64.130821">unused</tspan><tspan
+                 id="tspan22-0-0"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="78.000771"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           id="g283-6"
+           transform="translate(7.6648654,-21.458341)"
+           inkscape:label="slab data"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.620338"
+             x="100.94863"
+             height="16.829542"
+             width="45.678806"
+             id="rect855-2-3-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9-6-2"
+             y="85.037926"
+             x="104.69157"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12-0-0"
+               y="85.037926"
+               x="104.69157"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7-6-6"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="104.69157">slab data</tspan><tspan
+                 id="tspan22-0-2-1"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="118.56149"
+                 dx="0" /></tspan></text>
+        </g>
+      </g>
+      <g
+         transform="translate(0,39.63339)"
+         inkscape:label="slab2"
+         id="g1193"
+         style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+        <g
+           inkscape:label="buf"
+           id="g319"
+           transform="translate(-11.177272,-21.431245)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-43.83514"
+             height="16.950758"
+             width="26.305189"
+             id="rect855"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26"
+             y="85.567093"
+             x="-38.444103"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24"
+               y="85.567093"
+               x="-38.444103"
+               sodipodi:role="line"><tspan
+                 id="tspan20"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-38.444103">buf</tspan><tspan
+                 id="tspan22"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-24.574152"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g307"
+           transform="translate(-11.177272,-21.431245)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-17.529951"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-6"
+             y="85.567093"
+             x="-12.138915"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-4"
+               y="85.567093"
+               x="-12.138915"
+               sodipodi:role="line"><tspan
+                 id="tspan20-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-12.138915">buf</tspan><tspan
+                 id="tspan22-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="1.7310365"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="..."
+           id="g331"
+           transform="translate(-2.9104166,-26.193749)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="78.322227"
+             x="0.50838286"
+             height="16.950758"
+             width="48.330376"
+             id="rect855-8"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-5"
+             y="87.961639"
+             x="21.831406"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-1"
+               y="87.961639"
+               x="21.831406"
+               sodipodi:role="line"><tspan
+                 id="tspan20-1"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="21.831406">...</tspan><tspan
+                 id="tspan22-3"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="35.701355"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g295"
+           transform="translate(10.847919,-21.431249)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="35.080429"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-6"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-7"
+             y="85.567093"
+             x="40.471466"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-5"
+               y="85.567093"
+               x="40.471466"
+               sodipodi:role="line"><tspan
+                 id="tspan20-3"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="40.471466">buf</tspan><tspan
+                 id="tspan22-5"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="54.341415"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="unused"
+           id="g276"
+           transform="translate(10.847919,-21.431249)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.593246"
+             x="61.41914"
+             height="16.883715"
+             width="36.346443"
+             id="rect855-2"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9"
+             y="85.037926"
+             x="64.130821"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12"
+               y="85.037926"
+               x="64.130821"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="64.130821">unused</tspan><tspan
+                 id="tspan22-0"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="78.000771"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           id="g283"
+           transform="translate(7.6648654,-21.458341)"
+           inkscape:label="slab data"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.620338"
+             x="100.94863"
+             height="16.829542"
+             width="45.678806"
+             id="rect855-2-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9-6"
+             y="85.037926"
+             x="104.69157"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12-0"
+               y="85.037926"
+               x="104.69157"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7-6"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="104.69157">slab data</tspan><tspan
+                 id="tspan22-0-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="118.56149"
+                 dx="0" /></tspan></text>
+        </g>
+      </g>
+      <path
+         inkscape:label="doubly linked list slab1 slab2"
+         inkscape:connection-end="#g283"
+         inkscape:connection-start="#g283-6-0"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="0"
+         id="path4217"
+         d="m 131.4529,72.745378 0,19.050009"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker2596);marker-end:url(#marker4221)" />
+      <path
+         inkscape:label="doubly linked list slab2 slab3"
+         inkscape:connection-end="#g283-6"
+         inkscape:connection-start="#g283"
+         inkscape:connector-curvature="0"
+         inkscape:connector-type="polyline"
+         id="path3927"
+         d="m 131.4529,108.62493 v 38.10003"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:1.00000003, 3.00000008;stroke-dashoffset:0;stroke-opacity:1;marker-start:url(#marker2600);marker-end:url(#marker4215)" />
+      <g
+         transform="translate(9.3544332,164.08506)"
+         inkscape:label="next"
+         id="g1339-5"
+         style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+        <rect
+           y="20.458929"
+           x="108.55664"
+           height="16.943239"
+           width="27.083637"
+           id="rect855-2-3-3-6-4-7"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:1.00000003, 3.00000008;stroke-dashoffset:0" />
+        <text
+           id="text26-9-6-2-8-9-8"
+           y="30.875031"
+           x="112.35643"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           xml:space="preserve"><tspan
+             style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             id="tspan24-12-0-0-9-5-5"
+             y="30.875031"
+             x="112.35643"
+             sodipodi:role="line"><tspan
+               id="tspan20-7-6-6-2-0-9"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               y="30.875031"
+               x="112.35643">next</tspan><tspan
+               id="tspan22-0-2-1-6-4-2"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               y="30.875031"
+               x="126.22636"
+               dx="0" /></tspan></text>
+      </g>
+      <g
+         transform="translate(9.3544332,-10.395307)"
+         inkscape:label="prev"
+         id="g1339"
+         style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+        <rect
+           y="20.458929"
+           x="108.55664"
+           height="16.943239"
+           width="27.083637"
+           id="rect855-2-3-3-6-4"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:1.00000003, 3.00000008;stroke-dashoffset:0" />
+        <text
+           id="text26-9-6-2-8-9"
+           y="30.875031"
+           x="112.35643"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           xml:space="preserve"><tspan
+             style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             id="tspan24-12-0-0-9-5"
+             y="30.875031"
+             x="112.35643"
+             sodipodi:role="line"><tspan
+               id="tspan20-7-6-6-2-0"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               y="30.875031"
+               x="112.35643">prev</tspan><tspan
+               id="tspan22-0-2-1-6-4"
+               style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               y="30.875031"
+               x="126.22636"
+               dx="0" /></tspan></text>
+      </g>
+      <path
+         inkscape:label="doubly linked list prev slab1"
+         inkscape:connection-end="#g283-6-0"
+         inkscape:connection-start="#g1339"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="3"
+         id="path1553"
+         d="m 131.45289,27.006861 1e-5,28.908974"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker2606);marker-end:url(#Arrow1Lend)" />
+      <path
+         inkscape:label="doubly linked list slab3 next"
+         inkscape:connection-end="#g1339-5"
+         inkscape:connection-start="#g283-6"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="3"
+         id="path1555"
+         d="m 131.4529,163.5545 -1e-5,20.98949"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#marker1933);marker-end:url(#marker1981)" />
+      <g
+         transform="translate(22.824817,98.408637)"
+         inkscape:label="freelist pointer"
+         id="g2475"
+         style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+        <rect
+           y="-14.966179"
+           x="151.97523"
+           height="34.435635"
+           width="97.335037"
+           id="rect855-2-3-3-6-4-7-3"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+        <text
+           id="text26-9-6-2-8-9-8-6"
+           y="-4.971221"
+           x="162.83742"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           xml:space="preserve"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+   id="tspan24-12-0-0-9-5-5-4"
+   y="-4.971221"
+   x="162.83742"
+   sodipodi:role="line" />Freelist Pointer</text>
+        <text
+           id="text26-9-6-2-8-9-8-6-5"
+           y="4.7573895"
+           x="169.16862"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           xml:space="preserve"><tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+   id="tspan24-12-0-0-9-5-5-4-1"
+   y="4.7573895"
+   x="169.16862"
+   sodipodi:role="line" />which means</text>
+        <text
+           y="15.608533"
+           x="155.69826"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           xml:space="preserve"
+           id="text2467">Cache's Head Pointer</text>
+      </g>
+      <path
+         inkscape:label="cache's head pointer"
+         inkscape:connection-end="#g283"
+         inkscape:connection-start="#g2475"
+         inkscape:connector-type="polyline"
+         inkscape:connector-curvature="3"
+         id="path2477"
+         d="M 174.80005,100.4222 154.2923,100.32188"
+         style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker2653)" />
+      <g
+         id="g2903"
+         inkscape:label="slab1">
+        <g
+           inkscape:label="buf"
+           id="g319-1-5"
+           transform="translate(-11.17727,-17.677407)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-43.83514"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-87-4"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-92-7"
+             y="85.567093"
+             x="-38.444103"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-0-6"
+               y="85.567093"
+               x="-38.444103"
+               sodipodi:role="line"><tspan
+                 id="tspan20-23-5"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-38.444103">buf</tspan><tspan
+                 id="tspan22-7-6"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-24.574152"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g307-5-9"
+           transform="translate(-11.17727,-17.677407)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="-17.529951"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-3-9-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-6-2-7"
+             y="85.567093"
+             x="-12.138915"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-4-2-4"
+               y="85.567093"
+               x="-12.138915"
+               sodipodi:role="line"><tspan
+                 id="tspan20-2-8-5"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="-12.138915">buf</tspan><tspan
+                 id="tspan22-2-9-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="1.7310365"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="..."
+           id="g331-7-5"
+           transform="translate(-2.9104151,-22.439911)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="78.322227"
+             x="0.50838286"
+             height="16.950758"
+             width="48.330376"
+             id="rect855-8-3-4"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-5-6-7"
+             y="87.961639"
+             x="21.831406"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-1-1-4"
+               y="87.961639"
+               x="21.831406"
+               sodipodi:role="line"><tspan
+                 id="tspan20-1-2-4"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="21.831406">...</tspan><tspan
+                 id="tspan22-3-9-3"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="87.961639"
+                 x="35.701355"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="buf"
+           id="g295-3-0"
+           transform="translate(10.847921,-17.677411)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.559723"
+             x="35.080429"
+             height="16.950758"
+             width="26.305189"
+             id="rect855-6-1-7"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-7-9-8"
+             y="85.567093"
+             x="40.471466"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-5-4-6"
+               y="85.567093"
+               x="40.471466"
+               sodipodi:role="line"><tspan
+                 id="tspan20-3-7-8"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="40.471466">buf</tspan><tspan
+                 id="tspan22-5-8-8"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.567093"
+                 x="54.341415"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           inkscape:label="unused"
+           id="g276-4-4"
+           transform="translate(10.847921,-17.677411)"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.593246"
+             x="61.41914"
+             height="16.883715"
+             width="36.346443"
+             id="rect855-2-5-3"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9-0-1"
+             y="85.037926"
+             x="64.130821"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12-3-4"
+               y="85.037926"
+               x="64.130821"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7-61-9"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="64.130821">unused</tspan><tspan
+                 id="tspan22-0-0-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="78.000771"
+                 dx="0" /></tspan></text>
+        </g>
+        <g
+           id="g283-6-0"
+           transform="translate(7.6648669,-17.704503)"
+           inkscape:label="slab data"
+           style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none">
+          <rect
+             y="73.620338"
+             x="100.94863"
+             height="16.829542"
+             width="45.678806"
+             id="rect855-2-3-3-6"
+             style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none" />
+          <text
+             id="text26-9-6-2-8"
+             y="85.037926"
+             x="104.69157"
+             style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Serif Modern GPL&amp;GNU';-inkscape-font-specification:'BPG Serif Modern GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+             xml:space="preserve"><tspan
+               style="stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+               id="tspan24-12-0-0-9"
+               y="85.037926"
+               x="104.69157"
+               sodipodi:role="line"><tspan
+                 id="tspan20-7-6-6-2"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="104.69157">slab data</tspan><tspan
+                 id="tspan22-0-2-1-6"
+                 style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+                 y="85.037926"
+                 x="118.56149"
+                 dx="0" /></tspan></text>
+        </g>
+        <rect
+           y="37.883907"
+           x="-70.416695"
+           height="37.625828"
+           width="226.83257"
+           id="rect2825"
+           style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0" />
+        <text
+           id="text2467-9-7"
+           xml:space="preserve"
+           style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+           x="-65.767426"
+           y="50.127186">Slab</text>
+      </g>
+    </g>
+    <rect
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0"
+       id="rect2792"
+       width="361.40469"
+       height="204.61798"
+       x="-82.547157"
+       y="2.8817034" />
+    <text
+       y="15.446075"
+       x="-77.682884"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:10.58333302px;line-height:1.25;font-family:'BPG Classic GPL&amp;GNU';-inkscape-font-specification:'BPG Classic GPL&amp;GNU';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.5;stroke-miterlimit:4;stroke-dasharray:none"
+       xml:space="preserve"
+       id="text2467-9">Cache</text>
+  </g>
+</svg>
