@@ -22,6 +22,41 @@ inline bool PTSThread_Join(PTSThread *pThread)
 	return ((::WaitForSingleObjectEx(hThread, INFINITE, FALSE) == WAIT_OBJECT_0) && (::CloseHandle(hThread) != FALSE)) ? true : false;
 }
 
+inline bool mcrt_thread_setname(PTSThread *pThread, char const *name)
+{
+	HANDLE hThread = *pThread;
+	LPCSTR threadName = name;
+
+	//https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/how-to-set-a-thread-name-in-native-code.md#set-a-thread-name-by-throwing-an-exception
+
+	DWORD const MS_VC_EXCEPTION = 0X406D1388;
+
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType;	  // Must be 0x1000.
+		LPCSTR szName;	  // Pointer to name (in user addr space).
+		DWORD dwThreadID; // Thread ID (-1=caller thread).
+		DWORD dwFlags;	  // Reserved for future use, must be zero.
+	} THREADNAME_INFO;
+
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = threadName;
+	info.dwThreadID = GetThreadId(hThread);
+	info.dwFlags = 0;
+
+	__try
+	{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR *)&info);
+	}
+	__except ((GetExceptionCode() == MS_VC_EXCEPTIO) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+	{
+		//Do Nothing
+	}
+
+	return true;
+}
+
 inline void PTS_Yield()
 {
 	::SwitchToThread();
@@ -44,12 +79,12 @@ inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 
 inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
-	HANDLE hSemaphore = ::CreateSemaphoreExW(NULL, iInitialValue, 32767, NULL, 0U, DELETE | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE);//#define _POSIX_SEM_VALUE_MAX  32767 //与Posix一致
+	HANDLE hSemaphore = ::CreateSemaphoreExW(NULL, iInitialValue, 32767, NULL, 0U, DELETE | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE); //#define _POSIX_SEM_VALUE_MAX  32767 //与Posix一致
 	assert(hSemaphore != NULL);
 
 	(*pSemaphoreOut) = hSemaphore;
 
-	return(hSemaphore != NULL) ? true : false;
+	return (hSemaphore != NULL) ? true : false;
 }
 
 inline bool PTSSemaphore_Passern(PTSSemaphore *pSemaphore)
@@ -127,7 +162,7 @@ inline void PTS_Pause()
 #endif
 
 inline int32_t PTSAtomic_CompareAndSet(int32_t volatile *pTarget, int32_t expect, int32_t update)
-{ 
+{
 	return ::_InterlockedCompareExchange(reinterpret_cast<LONG volatile *>(pTarget), update, expect);
 }
 inline int64_t PTSAtomic_CompareAndSet(int64_t volatile *pTarget, int64_t expect, int64_t update)
@@ -150,7 +185,6 @@ inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue)
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue)
 {
 	return InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(pTarget), newValue);
-
 }
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue)
 {
