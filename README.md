@@ -7,17 +7,19 @@ It's widely establish that "Program = Data Structure + Algorithm" and this book 
 
 The contents of this book is likely to be as follows:   
 >    
-> [Document/XGL/SceneTree.md] //In Chinese  
-> [Document/XGL/BVH.md] //In Chinese    
+> [docs/XGL/SceneTree.zh_CN.md](docs/XGL/SceneTree.zh_CN.md)  
+> [docs/XGL/BVH.md](docs/XGL/BVH.md)     
+> [docs/XGL/BVH.zh_CN.md](docs/XGL/BVH.zh_CN.md)     
 >        
 > ---    
 >     
-> [Document/XGL/RenderingPipeline.md] //In English      
+> [docs/XGL/RenderingPipeline.md](docs/XGL/RenderingPipeline.md)      
+> [docs/XGL/RenderingPipeline.zh_CN.md](docs/XGL/RenderingPipeline.zh_CN.md)      
 >        
 > ---    
 >      
-> [Document/McRT/Scalable-Allocator.md] //In Chinese      
-> [Document/McRT/Task-Scheduler.md] //In Chinese    
+> [docs/McRT/Scalable-Allocator.zh_CN.md]             
+> [docs/McRT/Task-Scheduler.zh_CN.md]        
 >     
       
 ---     
