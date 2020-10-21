@@ -7,6 +7,11 @@ It's widely establish that "Program = Data Structure + Algorithm" and this book 
 
 The contents of this book is likely to be as follows:   
 >    
+> [docs/XGL/MemoryAllocator.md](docs/XGL/MemoryAllocator.md)  
+> [docs/XGL/MemoryAllocator.zh_CN.md](docs/XGL/MemoryAllocator.zh_CN.md)  
+>        
+> ---    
+>     
 > [docs/XGL/SceneTree.zh_CN.md](docs/XGL/SceneTree.zh_CN.md)  
 > [docs/XGL/BVH.md](docs/XGL/BVH.md)     
 > [docs/XGL/BVH.zh_CN.md](docs/XGL/BVH.zh_CN.md)     
@@ -18,8 +23,8 @@ The contents of this book is likely to be as follows:
 >        
 > ---    
 >      
-> [docs/McRT/Scalable-Allocator.zh_CN.md]             
-> [docs/McRT/Task-Scheduler.zh_CN.md]        
+> [docs/McRT/Scalable-Allocator.zh_CN.md](docs/McRT/Scalable-Allocator.zh_CN.md)             
+> [docs/McRT/Task-Scheduler.zh_CN.md](docs/McRT/Task-Scheduler.zh_CN.md)        
 >     
       
 ---     
