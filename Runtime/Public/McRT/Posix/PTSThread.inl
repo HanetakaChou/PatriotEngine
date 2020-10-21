@@ -17,6 +17,17 @@ inline bool PTSThread_Join(PTSThread *pThread)
 	return (::pthread_join(*pThread, NULL) == 0) ? true : false;
 }
 
+inline bool mcrt_thread_setname(PTSThread *pThread, char const *name)
+{
+	pthread_t thread = (*pThread);
+
+	//prctl(PR_SET_NAME PR_SET_NAME )
+
+	int err = pthread_setname_np(thread, name);
+
+	return (err == 0) ? true : false;
+}
+
 inline void PTS_Yield()
 {
 	::sched_yield();
@@ -103,7 +114,7 @@ inline int64_t PTSTick_Frequency()
 //__builtin_arm_yield
 inline void PTS_Pause()
 {
-	__asm__ volatile ("yield");
+	__asm__ volatile("yield");
 }
 #elif defined(PTX86) || defined(PTX64)
 //#include <emmintrin.h>
@@ -111,7 +122,7 @@ inline void PTS_Pause()
 //__builtin_ia32_pause
 inline void PTS_Pause()
 {
-	__asm__ volatile ("pause");
+	__asm__ volatile("pause");
 }
 #else
 #error 未知的架构
@@ -141,7 +152,6 @@ inline int32_t PTSAtomic_GetAndSet(int32_t volatile *pTarget, int32_t newValue)
 inline int64_t PTSAtomic_GetAndSet(int64_t volatile *pTarget, int64_t newValue)
 {
 	return ::__sync_lock_test_and_set(pTarget, newValue);
-
 }
 inline uint32_t PTSAtomic_GetAndSet(uint32_t volatile *pTarget, uint32_t newValue)
 {
@@ -242,60 +252,94 @@ inline void PTSAtomic_Set(uint64_t volatile *pTarget, uint64_t newValue)
 
 inline void PTS_CompilerReadBarrier()
 {
-	__asm__ __volatile__("": : : "memory");
+	__asm__ __volatile__(""
+						 :
+						 :
+						 : "memory");
 }
 
 inline void PTS_CompilerWriteBarrier()
 {
-	__asm__ __volatile__("": : : "memory");
+	__asm__ __volatile__(""
+						 :
+						 :
+						 : "memory");
 }
 
 inline void PTS_CompilerReadWriteBarrier()
 {
-	__asm__ __volatile__("": : : "memory");
+	__asm__ __volatile__(""
+						 :
+						 :
+						 : "memory");
 }
 
 #if defined(PTARM)
 inline void PTS_HardwareReadBarrier()
 {
-	__asm__ __volatile__("dmb sy": : : "memory");
+	__asm__ __volatile__("dmb sy"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareWriteBarrier()
 {
-	__asm__ __volatile__("dmb st": : : "memory");
+	__asm__ __volatile__("dmb st"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareReadWriteBarrier()
 {
-	__asm__ __volatile__("dmb sy": : : "memory");
+	__asm__ __volatile__("dmb sy"
+						 :
+						 :
+						 : "memory");
 }
 #elif defined(PTARM64)
 inline void PTS_HardwareReadBarrier()
 {
-	__asm__ __volatile__("dmb ld": : : "memory");
+	__asm__ __volatile__("dmb ld"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareWriteBarrier()
 {
-	__asm__ __volatile__("dmb st": : : "memory");
+	__asm__ __volatile__("dmb st"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareReadWriteBarrier()
 {
-	__asm__ __volatile__("dmb sy": : : "memory");
+	__asm__ __volatile__("dmb sy"
+						 :
+						 :
+						 : "memory");
 }
 #elif defined(PTX86) || defined(PTX64)
 inline void PTS_HardwareReadBarrier()
 {
-	__asm__ __volatile__("mfence": : : "memory");
+	__asm__ __volatile__("mfence"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareWriteBarrier()
 {
-	__asm__ __volatile__("mfence": : : "memory");
+	__asm__ __volatile__("mfence"
+						 :
+						 :
+						 : "memory");
 }
 inline void PTS_HardwareReadWriteBarrier()
 {
-	__asm__ __volatile__("mfence": : : "memory");
+	__asm__ __volatile__("mfence"
+						 :
+						 :
+						 : "memory");
 }
 #else
 #error 未知的架构
 #endif
-
-
