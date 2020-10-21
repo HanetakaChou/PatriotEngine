@@ -7,19 +7,19 @@ It's widely establish that "Program = Data Structure + Algorithm" and this book 
 
 The contents of this book is likely to be as follows:   
 >    
-> [docs/XGL/MemoryAllocator.md](docs/XGL/MemoryAllocator.md)  
-> [docs/XGL/MemoryAllocator.zh_CN.md](docs/XGL/MemoryAllocator.zh_CN.md)  
+> [docs/gfx/MemoryAllocator.md](docs/gfx/MemoryAllocator.md)  
+> [docs/gfx/MemoryAllocator.zh_CN.md](docs/gfx/MemoryAllocator.zh_CN.md)  
 >        
 > ---    
 >     
-> [docs/XGL/SceneTree.zh_CN.md](docs/XGL/SceneTree.zh_CN.md)  
-> [docs/XGL/BVH.md](docs/XGL/BVH.md)     
-> [docs/XGL/BVH.zh_CN.md](docs/XGL/BVH.zh_CN.md)     
+> [docs/gfx/SceneTree.zh_CN.md](docs/gfx/SceneTree.zh_CN.md)  
+> [docs/gfx/BVH.md](docs/gfx/BVH.md)     
+> [docs/gfx/BVH.zh_CN.md](docs/gfx/BVH.zh_CN.md)     
 >        
 > ---    
 >     
-> [docs/XGL/RenderingPipeline.md](docs/XGL/RenderingPipeline.md)      
-> [docs/XGL/RenderingPipeline.zh_CN.md](docs/XGL/RenderingPipeline.zh_CN.md)      
+> [docs/gfx/RenderingPipeline.md](docs/gfx/RenderingPipeline.md)      
+> [docs/gfx/RenderingPipeline.zh_CN.md](docs/gfx/RenderingPipeline.zh_CN.md)      
 >        
 > ---    
 >      
