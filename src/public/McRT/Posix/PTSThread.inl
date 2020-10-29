@@ -52,6 +52,166 @@ inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (::pthread_equal(TID1, TID2) != 0) ? true : false;
 }
 
+mcrt_event::mcrt_event() : m_isValid(false)
+{
+}
+
+bool mcrt_event::create_manual_event(bool initial_state)
+{
+	m_manual_reset = true;
+	m_state = initial_state;
+	initialize();
+}
+
+bool mcrt_event::create_auto_event(bool initial_state)
+{
+	m_manual_reset = false;
+	m_state = initial_state;
+	initialize();
+}
+
+bool mcrt_event::initialize()
+{
+	int st = pthread_mutex_init(&m_mutex, NULL);
+	if (st != 0)
+	{
+		assert(!"Failed to initialize UnixEvent mutex");
+		return false;
+	}
+
+	st = pthread_cond_init(&m_condition, NULL);
+	if (st != 0)
+	{
+		assert(!"Failed to initialize UnixEvent condition variable");
+
+		st = pthread_mutex_destroy(&m_mutex);
+		assert(st == 0 && "Failed to destroy UnixEvent mutex");
+		return false;
+	}
+
+	m_is_valid = true;
+
+	return true;
+}
+
+void mcrt_event::close_event()
+{
+	if (m_is_valid)
+	{
+		int st = pthread_mutex_destroy(&m_mutex);
+		assert(st == 0 && "Failed to destroy UnixEvent mutex");
+
+		st = pthread_cond_destroy(&m_condition);
+		assert(st == 0 && "Failed to destroy UnixEvent condition variable");
+	}
+}
+
+inline bool mcrt_event::wait()
+{
+	int st = 0;
+
+	pthread_mutex_lock(&m_mutex);
+
+	while (!m_state)
+	{
+		st = pthread_cond_wait(&m_condition, &m_mutex);
+
+		if (st != 0)
+		{
+			// wait failed or timed out
+			break;
+		}
+	}
+
+	if ((st == 0) && !m_manual_reset)
+	{
+		// Clear the state for auto-reset events so that only one waiter gets released
+		m_state = false;
+	}
+
+	pthread_mutex_unlock(&m_mutex);
+
+	bool wait_status;
+
+	if (st == 0)
+	{
+		wait_status = true;
+	}
+	else
+	{
+		wait_status = false;
+	}
+
+	return wait_status;
+}
+
+inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
+{
+	struct timeval now_time;
+	gettimeofday(&now_time, NULL);
+
+	struct timespec end_time;
+	end_time.tv_sec = now_time.tv_sec;
+	end_time.tv_nsec = 1000l * (now.tv_usec + 1000l * timeout_milliseconds);
+
+	int st = 0;
+
+	pthread_mutex_lock(&m_mutex);
+
+	while (!m_state)
+	{
+		st = pthread_cond_timedwait(&m_condition, &m_mutex, &end_time);
+
+		if (st != 0)
+		{
+			// wait failed or timed out
+			break;
+		}
+	}
+
+	if ((st == 0) && !m_manual_reset)
+	{
+		// Clear the state for auto-reset events so that only one waiter gets released
+		m_state = false;
+	}
+
+	pthread_mutex_unlock(&m_mutex);
+
+	bool wait_status;
+
+	if (st == 0)
+	{
+		wait_status = true;
+	}
+	else if (st == ETIMEDOUT)
+	{
+		wait_status = false;
+	}
+	else
+	{
+		wait_status = false;
+	}
+
+	return wait_status;
+}
+
+inline void mcrt_event::set()
+{
+	pthread_mutex_lock(&m_mutex);
+	m_state = true;
+	pthread_mutex_unlock(&m_mutex);
+
+	// Unblock all threads waiting for the condition variable
+	pthread_cond_broadcast(&m_condition);
+}
+
+inline void mcrt_event::reset()
+{
+	pthread_mutex_lock(&m_mutex);
+	m_state = false;
+	pthread_mutex_unlock(&m_mutex);
+}
+
 inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	return (::sem_init(pSemaphoreOut, 0, iInitialValue) == 0) ? true : false;

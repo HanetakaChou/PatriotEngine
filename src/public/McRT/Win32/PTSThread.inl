@@ -77,6 +77,142 @@ inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (TID1 == TID2) ? true : false;
 }
 
+mcrt_event::mcrt_event() : m_isValid(false)
+{
+}
+
+bool mcrt_event::create_manual_event(bool initial_state)
+{
+	m_manual_reset = true;
+	m_state = initial_state;
+	initialize();
+}
+
+bool mcrt_event::create_auto_event(bool initial_state)
+{
+	m_manual_reset = false;
+	m_state = initial_state;
+	initialize();
+}
+
+bool mcrt_event::initialize()
+{
+	InitializeCriticalSection(&m_mutex);
+
+	InitializeConditionVariable(&m_condition);
+
+	m_is_valid = true;
+
+	return true;
+}
+
+void mcrt_event::close_event()
+{
+	if (m_is_valid)
+	{
+		DeleteCriticalSection(&m_mutex);
+	}
+}
+
+inline bool mcrt_event::wait()
+{
+	BOOL st = TRUE;
+
+	EnterCriticalSection(&m_mutex);
+
+	while (!m_state)
+	{
+		st = SleepConditionVariableCS(&m_condition, &m_mutex, INFINITE);
+
+		if (st == FALSE)
+		{
+			// wait failed or timed out
+			break;
+		}
+	}
+
+	if ((st != FALSE) && !m_manual_reset)
+	{
+		// Clear the state for auto-reset events so that only one waiter gets released
+		m_state = false;
+	}
+
+	LeaveCriticalSection(&m_mutex);
+
+	bool wait_status;
+
+	if (st != FALSE)
+	{
+		wait_status = true;
+	}
+	else
+	{
+		wait_status = false;
+	}
+
+	return wait_status;
+}
+
+inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
+{
+	BOOL st = TRUE;
+
+	EnterCriticalSection(&m_mutex);
+
+	while (!m_state)
+	{
+		st = SleepConditionVariableCS(&m_condition, &m_mutex, timeout_milliseconds);
+
+		if (st == FALSE)
+		{
+			// wait failed or timed out
+			break;
+		}
+	}
+
+	if ((st != FALSE) && !m_manual_reset)
+	{
+		// Clear the state for auto-reset events so that only one waiter gets released
+		m_state = false;
+	}
+
+	LeaveCriticalSection(&m_mutex);
+
+	bool wait_status;
+
+	if (st != FALSE)
+	{
+		wait_status = true;
+	}
+	else if (GetLastError() == ERROR_TIMEOUT)
+	{
+		wait_status = false;
+	}
+	else
+	{
+		wait_status = false;
+	}
+
+	return wait_status;
+}
+
+inline void mcrt_event::set()
+{
+	EnterCriticalSection(&m_mutex);
+	m_state = true;
+	LeaveCriticalSection(&m_mutex);
+
+	// Unblock all threads waiting for the condition variable
+	WakeAllConditionVariable(&m_condition);
+}
+
+inline void mcrt_event::reset()
+{
+	EnterCriticalSection(&m_mutex);
+	m_state = false;
+	LeaveCriticalSection(&m_mutex);
+}
+
 inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
 {
 	HANDLE hSemaphore = ::CreateSemaphoreExW(NULL, iInitialValue, 32767, NULL, 0U, DELETE | SYNCHRONIZE | SEMAPHORE_MODIFY_STATE); //#define _POSIX_SEM_VALUE_MAX  32767 //与Posix一致
