@@ -13,6 +13,53 @@
 #error 未知的平台
 #endif
 
+#include <stddef.h>
+#include <stdlib.h>
+
+#if defined(PT_POSIX)
+typedef pthread_mutex_t mcrt_os_mutex;
+typedef pthread_cond_t mcrt_os_cond;
+#elif defined(PT_WIN32)
+typedef CRITICAL_SECTION mcrt_os_mutex;
+typedef CONDITION_VARIABLE mcrt_os_cond;
+#else
+#error Unknown Platform
+#endif
+
+inline void mcrt_os_mutex_init (mcrt_os_mutex *mutex);
+inline void mcrt_os_mutex_destroy (mcrt_os_mutex *mutex);
+inline void mcrt_os_mutex_lock (mcrt_os_mutex *mutex);
+inline void mcrt_os_mutex_unlock (mcrt_os_mutex *mutex);
+
+inline void mcrt_os_cond_init(mcrt_os_cond *cond);
+inline void mcrt_os_cond_destroy(mcrt_os_cond *cond);
+inline void mcrt_os_cond_wait(mcrt_os_cond *cond);
+inline int mcrt_os_cond_timedwait(mcrt_os_cond *cond, uint32_t timeout_ms);
+inline void mcrt_os_cond_signal(mcrt_os_cond *cond);
+inline void mcrt_os_cond_broadcast(mcrt_os_cond *cond);
+
+typedef struct mcrt_os_event
+{
+    bool m_manual_reset;
+    bool m_state_signalled;
+} mcrt_os_event;
+
+inline void mcrt_os_event_init(mcrt_os_event *event, bool manual_reset, bool initial_state);
+
+inline void mcrt_os_event_destroy(mcrt_os_event *event);
+
+inline void mcrt_os_event_set(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+
+inline void mcrt_os_event_reset(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+
+inline void mcrt_os_event_wait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+
+inline int mcrt_os_event_timedwait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event, uint32_t timeout_ms);
+
+inline int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall);
+
+inline int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+
 class mcrt_event
 {
 #if defined(PTPOSIX)
@@ -73,6 +120,8 @@ public:
 };
 
 #include "PTSThread.h"
+
+inline bool mcrt_thread_create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
 
 inline void mcrt_thread_setname(PTSThread *pThread, char const *name);
 

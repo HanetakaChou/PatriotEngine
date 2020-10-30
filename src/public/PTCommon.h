@@ -6,6 +6,8 @@
 
 //Platform
 #define PTWIN32 1
+#define PT_WIN32 1
+
 #if defined(WINAPI_FAMILY_APP) || defined(WINAPI_FAMILY_DESKTOP_APP)
 //Has Include <winapifamily.h>
 #if (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
@@ -47,6 +49,7 @@
 
 //Platform
 #define PTPOSIX 1
+#define PT_POSIX 1
 
 #if defined(__linux__)
 #define PTPOSIXLINUX 1
