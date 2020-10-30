@@ -49,7 +49,7 @@ inline bool mcrt_thread_setname(PTSThread *pThread, char const *name)
 	{
 		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR *)&info);
 	}
-	__except ((GetExceptionCode() == MS_VC_EXCEPTIO) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+	__except ((GetExceptionCode() == MS_VC_EXCEPTION) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
 	{
 		//Do Nothing
 	}
@@ -77,59 +77,66 @@ inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (TID1 == TID2) ? true : false;
 }
 
-mcrt_event::mcrt_event() : m_isValid(false)
+mcrt_event::mcrt_event()
+#ifndef NDEBUG
+	: m_is_valid(false)
+#endif
 {
 }
 
-bool mcrt_event::create_manual_event(bool initial_state)
+void mcrt_event::create_manual_event(bool initial_state)
 {
 	m_manual_reset = true;
 	m_state = initial_state;
 	initialize();
 }
 
-bool mcrt_event::create_auto_event(bool initial_state)
+void mcrt_event::create_auto_event(bool initial_state)
 {
 	m_manual_reset = false;
 	m_state = initial_state;
 	initialize();
 }
 
-bool mcrt_event::initialize()
+void mcrt_event::initialize()
 {
-	InitializeCriticalSection(&m_mutex);
+	assert(!m_is_valid);
+
+	BOOL st = InitializeCriticalSectionAndSpinCount(&m_mutex);
+	assert(st != FALSE);
 
 	InitializeConditionVariable(&m_condition);
 
+#ifndef NDEBUG
 	m_is_valid = true;
+#endif
 
 	return true;
 }
 
 void mcrt_event::close_event()
 {
-	if (m_is_valid)
-	{
-		DeleteCriticalSection(&m_mutex);
-	}
+	assert(m_is_valid);
+
+	DeleteCriticalSection(&m_mutex);
+
+#ifndef NDEBUG
+	m_is_valid = false;
+#endif
 }
 
-inline bool mcrt_event::wait()
+inline void mcrt_event::wait()
 {
-	BOOL st = TRUE;
+	assert(m_is_valid);
 
 	EnterCriticalSection(&m_mutex);
 
-	while (!m_state)
+	BOOL st;
+
+	do
 	{
 		st = SleepConditionVariableCS(&m_condition, &m_mutex, INFINITE);
-
-		if (st == FALSE)
-		{
-			// wait failed or timed out
-			break;
-		}
-	}
+	} while ((st != FALSE) && (!m_state));
 
 	if ((st != FALSE) && !m_manual_reset)
 	{
@@ -139,36 +146,21 @@ inline bool mcrt_event::wait()
 
 	LeaveCriticalSection(&m_mutex);
 
-	bool wait_status;
-
-	if (st != FALSE)
-	{
-		wait_status = true;
-	}
-	else
-	{
-		wait_status = false;
-	}
-
-	return wait_status;
+	assert(st != FALSE);
 }
 
-inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
+inline bool mcrt_event::wait_time(uint32_t timeout_milliseconds)
 {
-	BOOL st = TRUE;
+	assert(m_is_valid);
 
 	EnterCriticalSection(&m_mutex);
 
-	while (!m_state)
+	BOOL st;
+
+	do
 	{
 		st = SleepConditionVariableCS(&m_condition, &m_mutex, timeout_milliseconds);
-
-		if (st == FALSE)
-		{
-			// wait failed or timed out
-			break;
-		}
-	}
+	} while ((st != FALSE) && (!m_state));
 
 	if ((st != FALSE) && !m_manual_reset)
 	{
@@ -184,12 +176,9 @@ inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
 	{
 		wait_status = true;
 	}
-	else if (GetLastError() == ERROR_TIMEOUT)
-	{
-		wait_status = false;
-	}
 	else
 	{
+		assert(GetLastError() == ERROR_TIMEOUT);
 		wait_status = false;
 	}
 
@@ -198,6 +187,8 @@ inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
 
 inline void mcrt_event::set()
 {
+	assert(m_is_valid);
+
 	EnterCriticalSection(&m_mutex);
 	m_state = true;
 	LeaveCriticalSection(&m_mutex);
@@ -208,6 +199,8 @@ inline void mcrt_event::set()
 
 inline void mcrt_event::reset()
 {
+	assert(m_is_valid);
+
 	EnterCriticalSection(&m_mutex);
 	m_state = false;
 	LeaveCriticalSection(&m_mutex);

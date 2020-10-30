@@ -52,101 +52,87 @@ inline bool PTSThreadID_Equal(PTSThreadID TID1, PTSThreadID TID2)
 	return (::pthread_equal(TID1, TID2) != 0) ? true : false;
 }
 
-mcrt_event::mcrt_event() : m_isValid(false)
+mcrt_event::mcrt_event()
+#ifndef NDEBUG
+	: m_is_valid(false)
+#endif
 {
 }
 
-bool mcrt_event::create_manual_event(bool initial_state)
+void mcrt_event::create_manual_event(bool initial_state)
 {
 	m_manual_reset = true;
 	m_state = initial_state;
 	initialize();
 }
 
-bool mcrt_event::create_auto_event(bool initial_state)
+void mcrt_event::create_auto_event(bool initial_state)
 {
 	m_manual_reset = false;
 	m_state = initial_state;
 	initialize();
 }
 
-bool mcrt_event::initialize()
+void mcrt_event::initialize()
 {
-	int st = pthread_mutex_init(&m_mutex, NULL);
-	if (st != 0)
-	{
-		assert(!"Failed to initialize UnixEvent mutex");
-		return false;
-	}
+	assert(!m_is_valid);
 
-	st = pthread_cond_init(&m_condition, NULL);
-	if (st != 0)
-	{
-		assert(!"Failed to initialize UnixEvent condition variable");
+	int st1 = pthread_mutex_init(&m_mutex, NULL);
+	assert(st1 == 0);
 
-		st = pthread_mutex_destroy(&m_mutex);
-		assert(st == 0 && "Failed to destroy UnixEvent mutex");
-		return false;
-	}
+	int st2 = pthread_cond_init(&m_condition, NULL);
+	assert(st2 == 0);
 
+#ifndef NDEBUG
 	m_is_valid = true;
-
-	return true;
+#endif
 }
 
 void mcrt_event::close_event()
 {
-	if (m_is_valid)
-	{
-		int st = pthread_mutex_destroy(&m_mutex);
-		assert(st == 0 && "Failed to destroy UnixEvent mutex");
+	assert(m_is_valid);
 
-		st = pthread_cond_destroy(&m_condition);
-		assert(st == 0 && "Failed to destroy UnixEvent condition variable");
-	}
+	int st1 = pthread_mutex_destroy(&m_mutex);
+	assert(st1 == 0);
+
+	int st2 = pthread_cond_destroy(&m_condition);
+	assert(st2 == 0);
+
+#ifndef NDEBUG
+	m_is_valid = false;
+#endif
 }
 
-inline bool mcrt_event::wait()
+inline void mcrt_event::wait()
 {
-	int st = 0;
+	assert(m_is_valid);
 
-	pthread_mutex_lock(&m_mutex);
+	int st1 = pthread_mutex_lock(&m_mutex);
+	assert(st1 == 0);
 
-	while (!m_state)
+	int st2;
+
+	do
 	{
-		st = pthread_cond_wait(&m_condition, &m_mutex);
+		st2 = pthread_cond_wait(&m_condition, &m_mutex);
+	} while ((st2 == 0) && (!m_state));
 
-		if (st != 0)
-		{
-			// wait failed or timed out
-			break;
-		}
-	}
-
-	if ((st == 0) && !m_manual_reset)
+	if ((st2 == 0) && !m_manual_reset)
 	{
 		// Clear the state for auto-reset events so that only one waiter gets released
 		m_state = false;
 	}
 
-	pthread_mutex_unlock(&m_mutex);
+	int st3 = pthread_mutex_unlock(&m_mutex);
+	assert(st3 == 0);
 
-	bool wait_status;
-
-	if (st == 0)
-	{
-		wait_status = true;
-	}
-	else
-	{
-		wait_status = false;
-	}
-
-	return wait_status;
+	assert(st2 == 0);
 }
 
-inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
+inline bool mcrt_event::wait_time(uint32_t timeout_milliseconds)
 {
+	assert(m_is_valid);
+
 	struct timeval now_time;
 	gettimeofday(&now_time, NULL);
 
@@ -154,41 +140,34 @@ inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
 	end_time.tv_sec = now_time.tv_sec;
 	end_time.tv_nsec = 1000l * (now.tv_usec + 1000l * timeout_milliseconds);
 
-	int st = 0;
+	int st1 = pthread_mutex_lock(&m_mutex);
+	assert(st1 == 0);
 
-	pthread_mutex_lock(&m_mutex);
+	int st2 = 0;
 
-	while (!m_state)
+	while ((!m_state) && (st2 == 0))
 	{
-		st = pthread_cond_timedwait(&m_condition, &m_mutex, &end_time);
-
-		if (st != 0)
-		{
-			// wait failed or timed out
-			break;
-		}
+		st2 = pthread_cond_timedwait(&m_condition, &m_mutex, &end_time);
 	}
 
-	if ((st == 0) && !m_manual_reset)
+	if ((st2 == 0) && !m_manual_reset)
 	{
 		// Clear the state for auto-reset events so that only one waiter gets released
 		m_state = false;
 	}
 
-	pthread_mutex_unlock(&m_mutex);
+	int st3 = pthread_mutex_unlock(&m_mutex);
+	assert(st3 == 0);
 
 	bool wait_status;
 
-	if (st == 0)
+	if (st2 == 0)
 	{
 		wait_status = true;
 	}
-	else if (st == ETIMEDOUT)
-	{
-		wait_status = false;
-	}
 	else
 	{
+		assert(st2 == ETIMEDOUT);
 		wait_status = false;
 	}
 
@@ -197,19 +176,32 @@ inline bool mcrt_event::timedwait(uint32_t timeout_milliseconds)
 
 inline void mcrt_event::set()
 {
-	pthread_mutex_lock(&m_mutex);
+	assert(m_is_valid);
+
+	int st1 = pthread_mutex_lock(&m_mutex);
+	assert(st1 == 0);
+
 	m_state = true;
-	pthread_mutex_unlock(&m_mutex);
+
+	int st2 = pthread_mutex_unlock(&m_mutex);
+	assert(st2 == 0);
 
 	// Unblock all threads waiting for the condition variable
-	pthread_cond_broadcast(&m_condition);
+	int st3 = pthread_cond_broadcast(&m_condition);
+	assert(st3 == 0);
 }
 
 inline void mcrt_event::reset()
 {
-	pthread_mutex_lock(&m_mutex);
+	assert(m_is_valid);
+
+	int st1 = pthread_mutex_lock(&m_mutex);
+	assert(st1 == 0);
+
 	m_state = false;
-	pthread_mutex_unlock(&m_mutex);
+
+	int st2 = pthread_mutex_unlock(&m_mutex);
+	assert(st2 == 0);
 }
 
 inline bool PTSSemaphore_Create(uint32_t iInitialValue, PTSSemaphore *pSemaphoreOut)
