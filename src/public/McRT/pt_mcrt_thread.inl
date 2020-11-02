@@ -1,16 +1,39 @@
 
-inline void mcrt_os_event_init(mcrt_os_event *event, bool manual_reset, bool initial_state)
+inline void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
     event->mcrtp_manual_reset = manual_reset;
     event->mcrtp_state_signalled = initial_state;
+#ifndef NDEBUG
+    event->mcrtp_condition = condition;
+    event->mcrtp_mutex = mutex;
+#endif
 }
 
-inline void mcrt_os_event_destroy(mcrt_os_event *event)
+inline void mcrt_os_event_destroy(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
+#ifndef NDEBUG
+    event->mcrtp_condition = NULL;
+    event->mcrtp_mutex = NULL;
+#endif
 }
 
-inline void mcrt_os_event_set(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event)
+inline void mcrt_os_event_set(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
+    assert(event->mcrtp_condition == condition);
+    assert(event->mcrtp_mutex == mutex);
+
     mcrt_os_mutex_lock(mutex);
 
     event->mcrtp_state_signalled = true;
@@ -22,8 +45,15 @@ inline void mcrt_os_event_set(mcrt_os_mutex *mutex, mono_os_cond *condition, mcr
     mcrt_os_cond_broadcast(condition);
 }
 
-inline void mcrt_os_event_reset(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event)
+inline void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
+    assert(event->mcrtp_condition == condition);
+    assert(event->mcrtp_mutex == mutex);
+
     mcrt_os_mutex_lock(mutex);
 
     event->mcrtp_state_signalled = false;
@@ -31,65 +61,260 @@ inline void mcrt_os_event_reset(mcrt_os_mutex *mutex, mono_os_cond *condition, m
     mcrt_os_mutex_unlock(mutex);
 }
 
-inline void mcrt_os_event_wait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event)
+inline void mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
+    assert(event->mcrtp_condition == condition);
+    assert(event->mcrtp_mutex == mutex);
+
+    mcrt_os_mutex_lock(mutex);
+
+    int res;
+    bool signalled;
+    do
+    {
+        res = mcrt_os_cond_wait(condition, mutex);
+
+        signalled = event->mcrtp_state_signalled;
+
+    } while ((res == 0) && (!signalled));
+
+    if ((res == 0) && signalled && (event->mcmcrtp_manual_reset))
+    {
+        event->mcrtp_state_signalled = false;
+    }
+
+    mcrt_os_mutex_unlock(mutex);
+
+    return ((res == 0) ? 0 : -1);
 }
 
-inline int mcrt_os_event_timedwait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event, uint32_t timeout_ms)
+inline int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, uint32_t timeout_ms)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(event != NULL);
+
+    assert(event->mcrtp_condition == condition);
+    assert(event->mcrtp_mutex == mutex);
+
+    mcrt_os_mutex_lock(mutex);
+
+    int res;
+    bool signalled;
+    do
+    {
+        res = mcrt_os_cond_timedwait(condition, mutex, timeout_ms);
+
+        signalled = event->mcrtp_state_signalled;
+
+    } while ((res == 0) && (!signalled));
+
+    if ((res == 0) && signalled && (event->mcmcrtp_manual_reset))
+    {
+        event->mcrtp_state_signalled = false;
+    }
+
+    mcrt_os_mutex_unlock(mutex);
+
+    return ((res == 0) ? 0 : -1);
 }
 
-inline int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall)
+inline int mcrt_os_event_wait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall)
 {
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(events != NULL);
+    assert(nevents > 0);
+
+#ifndef NDEBUG
+    for (size_t i = 0; i < nevents; ++i)
+    {
+        assert(events[i]->mcrtp_condition == condition);
+        assert(events[i]->mcrtp_mutex == mutex);
+    }
+#endif
+
     if (waitall)
     {
         mcrt_os_mutex_lock(mutex);
 
-        for (;;)
+        int res;
+        int lowest; //==-1
+        bool signalled;
+        do
         {
-            mcrt_os_cond_wait(condition);
+            res = mcrt_os_cond_wait(condition, mutex);
 
-            bool all_signalled = true;
+            bool signalled_and = true;
             for (size_t i = 0; i < nevents; ++i)
             {
                 if (!events[i]->mcrtp_state_signalled)
                 {
-                    all_signalled = false;
+                    signalled_and = false;
+                    lowest = i;
                     break;
                 }
             }
 
-            if (all_signalled)
-            {
-                for (size_t i = 0; i < nevents; ++i)
-                {
-                    if (events[i]->mcrtp_manual_reset)
-                    {
-                        events[i]->mcrtp_state_signalled = false;
-                    }
-                }
+            signalled = signalled_and;
 
-                break;
+        } while ((res == 0) && (!signalled));
+
+        if ((res == 0) && signalled)
+        {
+            for (size_t i = 0; i < nevents; ++i)
+            {
+                if (events[i]->mcrtp_manual_reset)
+                {
+                    events[i]->mcrtp_state_signalled = false;
+                }
             }
         }
 
         mcrt_os_mutex_unlock(mutex);
+
+        return ((res == 0) ? 0 : -1);
     }
     else
     {
+        mcrt_os_mutex_lock(mutex);
+
+        int res;
+        int lowest; //==-1
+        bool signalled;
+        do
+        {
+            res = mcrt_os_cond_wait(condition, mutex);
+
+            bool signalled_or = false;
+            for (size_t i = 0; i < nevents; ++i)
+            {
+                if (events[i]->mcrtp_state_signalled)
+                {
+                    signalled_or = true;
+                    lowest = i;
+                    break;
+                }
+            }
+
+            signalled = signalled_or;
+
+        } while ((res == 0) && (!signalled));
+
+        if ((res == 0) && signalled)
+        {
+            assert(lowest >= 0);
+            assert(lowest < nevents);
+            if (events[lowest]->mcrtp_manual_reset)
+            {
+                events[lowest]->mcrtp_state_signalled = false;
+            }
+        }
+
+        mcrt_os_mutex_unlock(mutex);
+
+        return ((res == 0) ? lowest : -1);
     }
-
-    do
-    {
-    } while ((st2 == 0) && (!m_state));
-
-    if ((st2 == 0) && !m_manual_reset)
-    {
-        // Clear the state for auto-reset events so that only one waiter gets released
-        m_state = false;
-    }
-
-    int st3 =
 }
 
-inline int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+inline int mcrt_os_event_timedwait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms)
+{
+    assert(condition != NULL);
+    assert(mutex != NULL);
+    assert(events != NULL);
+    assert(nevents > 0);
+
+#ifndef NDEBUG
+    for (size_t i = 0; i < nevents; ++i)
+    {
+        assert(events[i]->mcrtp_condition == condition);
+        assert(events[i]->mcrtp_mutex == mutex);
+    }
+#endif
+
+    if (waitall)
+    {
+        mcrt_os_mutex_lock(mutex);
+
+        int res;
+        int lowest; //==-1
+        bool signalled;
+        do
+        {
+            res = mcrt_os_cond_timedwait(condition, mutex, timeout_ms);
+
+            bool signalled_and = true;
+            for (size_t i = 0; i < nevents; ++i)
+            {
+                if (!events[i]->mcrtp_state_signalled)
+                {
+                    signalled_and = false;
+                    lowest = i;
+                    break;
+                }
+            }
+
+            signalled = signalled_and;
+
+        } while ((res == 0) && (!signalled));
+
+        if ((res == 0) && signalled)
+        {
+            for (size_t i = 0; i < nevents; ++i)
+            {
+                if (events[i]->mcrtp_manual_reset)
+                {
+                    events[i]->mcrtp_state_signalled = false;
+                }
+            }
+        }
+
+        mcrt_os_mutex_unlock(mutex);
+
+        return ((res == 0) ? 0 : -1);
+    }
+    else
+    {
+        mcrt_os_mutex_lock(mutex);
+
+        int res;
+        int lowest; //==-1
+        bool signalled;
+        do
+        {
+            res = mcrt_os_cond_timedwait(condition, mutex, timeout_ms);
+
+            bool signalled_or = false;
+            for (size_t i = 0; i < nevents; ++i)
+            {
+                if (events[i]->mcrtp_state_signalled)
+                {
+                    signalled_or = true;
+                    lowest = i;
+                    break;
+                }
+            }
+
+            signalled = signalled_or;
+
+        } while ((res == 0) && (!signalled));
+
+        if ((res == 0) && signalled)
+        {
+            assert(lowest >= 0);
+            assert(lowest < nevents);
+            if (events[lowest]->mcrtp_manual_reset)
+            {
+                events[lowest]->mcrtp_state_signalled = false;
+            }
+        }
+
+        mcrt_os_mutex_unlock(mutex);
+
+        return ((res == 0) ? lowest : -1);
+    }
+}

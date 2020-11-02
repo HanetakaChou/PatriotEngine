@@ -33,8 +33,8 @@ inline void mcrt_os_mutex_unlock(mcrt_os_mutex *mutex);
 
 inline void mcrt_os_cond_init(mcrt_os_cond *cond);
 inline void mcrt_os_cond_destroy(mcrt_os_cond *cond);
-inline void mcrt_os_cond_wait(mcrt_os_cond *cond);
-inline int mcrt_os_cond_timedwait(mcrt_os_cond *cond, uint32_t timeout_ms);
+inline int mcrt_os_cond_wait(mcrt_os_cond *cond, mcrt_os_mutex *mutex);
+inline int mcrt_os_cond_timedwait(mcrt_os_cond *cond, mcrt_os_mutex *mutex, uint32_t timeout_ms);
 inline void mcrt_os_cond_signal(mcrt_os_cond *cond);
 inline void mcrt_os_cond_broadcast(mcrt_os_cond *cond);
 
@@ -46,15 +46,18 @@ private:
     bool mcrtp_manual_reset;
     bool mcrtp_state_signalled;
 #ifndef NDEBUG
+    bool mcrtp_condition;
+    bool mcrtp_mutex;
+
 public:
-    friend void mcrt_os_event_init(mcrt_os_event *event, bool manual_reset, bool initial_state);
-    friend void mcrt_os_event_destroy(mcrt_os_event *event);
-    friend void mcrt_os_event_set(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
-    friend void mcrt_os_event_reset(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
-    friend void mcrt_os_event_wait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
-    friend int mcrt_os_event_timedwait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event, uint32_t timeout_ms);
-    friend int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall);
-    friend int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+    friend void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state);
+    friend void mcrt_os_event_destroy(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
+    friend void mcrt_os_event_set(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
+    friend void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
+    friend int mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
+    friend int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, , mcrt_os_event *event, uint32_t timeout_ms);
+    friend int mcrt_os_event_wait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall);
+    friend int mcrt_os_event_timedwait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
 #endif
 } mcrt_os_event;
 
@@ -62,17 +65,35 @@ inline void mcrt_os_event_init(mcrt_os_event *event, bool manual_reset, bool ini
 
 inline void mcrt_os_event_destroy(mcrt_os_event *event);
 
-inline void mcrt_os_event_set(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+inline void mcrt_os_event_set(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event *event);
 
-inline void mcrt_os_event_reset(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+inline void mcrt_os_event_reset(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event *event);
 
-inline void mcrt_os_event_wait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event);
+inline int mcrt_os_event_wait_one(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event *event);
 
-inline int mcrt_os_event_timedwait_one(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event *event, uint32_t timeout_ms);
+inline int mcrt_os_event_timedwait_one(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event *event, uint32_t timeout_ms);
 
-inline int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall);
+// Returns:
+//  If waitall is true:
+//       0 - The return value indicates that the state of all specified events is signaled.
+//      -1 - The function has failed.
+//  If waitall is false:
+//       0 to (nevents-1) - The return value indicates the events array index of the event that satisfied the wait.
+//                          If more than one event became signaled during the call, this is the array index of
+//                          the signaled event with the smallest index value of all the signaled events.
+//      -1                - The function has failed.
+inline int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall);
 
-inline int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mono_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+// Returns:
+//  If waitall is true:
+//       0 - The return value indicates that the state of all specified events is signaled.
+//      -1 - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
+//  If waitall is false:
+//       0 to (nevents-1) - The return value indicates the events array index of the event that satisfied the wait.
+//                          If more than one event became signaled during the call, this is the array index of
+//                          the signaled event with the smallest index value of all the signaled events.
+//      -1                - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
+inline int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
 
 class mcrt_event
 {
@@ -140,5 +161,13 @@ inline bool mcrt_thread_create(PTSThreadEntry *, void *pThreadParam, PTSThread *
 inline void mcrt_thread_setname(PTSThread *pThread, char const *name);
 
 #include "pt_mcrt_thread.inl"
+
+#if defined PT_POSIX
+#include "pt_mcrt_thread_posix.inl"
+#elif defined PT_WIN32
+#include "pt_mcrt_thread_win32.inl"
+#else
+#error 未知的平台
+#endif
 
 #endif
