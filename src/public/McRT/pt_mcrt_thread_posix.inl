@@ -1,3 +1,54 @@
+inline void mcrt_os_mutex_init(mcrt_os_mutex *mutex)
+{
+	int res = pthread_mutex_init(mutex, NULL);
+	assert(res == 0);
+}
+
+inline void mcrt_os_mutex_destroy(mcrt_os_mutex *mutex)
+{
+	int res = pthread_mutex_destroy(mutex);
+	assert(res == 0);
+}
+
+inline void mcrt_os_mutex_lock(mcrt_os_mutex *mutex)
+{
+	int res = pthread_mutex_lock(mutex);
+	assert(res == 0);
+}
+
+inline int mcrt_os_mutex_trylock(mcrt_os_mutex *mutex)
+{
+	int res = pthread_mutex_trylock(mutex);
+	assert(res == 0 || res == EBUSY);
+
+	return ((res == 0) ? 0 : -1);
+}
+
+inline void mcrt_os_mutex_unlock(mcrt_os_mutex *mutex)
+{
+	int res = pthread_mutex_unlock(mutex);
+	assert(res == 0);
+}
+
+inline void mcrt_os_cond_init(mcrt_os_cond *cond)
+{
+	int res = pthread_cond_init(cond, NULl);
+	assert(res == 0);
+}
+
+inline void mcrt_os_cond_destroy(mcrt_os_cond *cond)
+{
+	int res = pthread_cond_destroy(cond);
+	assert(res == 0);
+}
+
+inline int mcrt_os_cond_wait(mcrt_os_cond *cond, mcrt_os_mutex *mutex)
+{
+	int res = pthread_cond_wait(cond, mutex);
+	assert(res == 0);
+	return ((res == 0) ? 0 : -1);
+}
+
 inline int mcrt_os_cond_timedwait(mcrt_os_cond *cond, mcrt_os_mutex *mutex, uint32_t timeout_ms)
 {
 	struct timespec ts;
@@ -26,4 +77,16 @@ inline int mcrt_os_cond_timedwait(mcrt_os_cond *cond, mcrt_os_mutex *mutex, uint
 	assert(res == 0 || res == ETIMEDOUT);
 
 	return ((res == 0) ? 0 : -1);
+}
+
+inline void mcrt_os_cond_signal(mcrt_os_cond *cond)
+{
+	int res = pthread_cond_signal(cond);
+	assert(res == 0);
+}
+
+inline void mcrt_os_cond_broadcast(mcrt_os_cond *cond)
+{
+	int res = pthread_cond_broadcast(cond);
+	assert(res == 0);
 }
