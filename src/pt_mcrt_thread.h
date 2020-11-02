@@ -1,7 +1,7 @@
 #ifndef PT_MCRT_THREAD_H
 #define PT_MCRT_THREAD_H 1
 
-#include "../PTCommon.h"
+#include "pt_common.h"
 
 #include <stddef.h>
 #include <stdlib.h>
@@ -19,6 +19,10 @@ typedef CONDITION_VARIABLE mcrt_os_cond;
 #else
 #error Unknown Platform
 #endif
+
+//inline bool mcrt_thread_create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
+
+//inline void mcrt_thread_setname(PTSThread *pThread, char const *name);
 
 inline void mcrt_os_mutex_init(mcrt_os_mutex *mutex);
 inline void mcrt_os_mutex_destroy(mcrt_os_mutex *mutex);
@@ -41,8 +45,8 @@ private:
     bool mcrtp_manual_reset;
     bool mcrtp_state_signalled;
 #ifndef NDEBUG
-    bool mcrtp_condition;
-    bool mcrtp_mutex;
+    mcrt_os_cond *mcrtp_condition;
+    mcrt_os_mutex *mcrtp_mutex;
 
 public:
     friend void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state);
@@ -50,7 +54,7 @@ public:
     friend void mcrt_os_event_set(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
     friend void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
     friend int mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event);
-    friend int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, , mcrt_os_event *event, uint32_t timeout_ms);
+    friend int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, uint32_t timeout_ms);
     friend int mcrt_os_event_wait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall);
     friend int mcrt_os_event_timedwait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
 #endif
@@ -89,12 +93,6 @@ inline int mcrt_os_event_wait_multiple(mcrt_os_mutex *mutex, mcrt_os_cond *condi
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
 inline int mcrt_os_event_timedwait_multiple(mcrt_os_mutex *mutex, mcrt_os_cond *condition, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms);
-
-#include "PTSThread.h"
-
-inline bool mcrt_thread_create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
-
-inline void mcrt_thread_setname(PTSThread *pThread, char const *name);
 
 #include "pt_mcrt_thread.inl"
 

@@ -3,8 +3,8 @@
 
 #include "pt_common.h"
 
-#ifndef PT_ATTR
-#define PT_ATTR PT_IMPORT
+#ifndef PT_WSI_ATTR
+#define PT_WSI_ATTR PT_IMPORT
 #endif
 
 #endif

@@ -1,3 +1,4 @@
+#include <assert.h>
 
 inline void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state)
 {
@@ -61,7 +62,7 @@ inline void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, m
     mcrt_os_mutex_unlock(mutex);
 }
 
-inline void mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
+inline int mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -82,7 +83,7 @@ inline void mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex
 
     } while ((res == 0) && (!signalled));
 
-    if ((res == 0) && signalled && (event->mcmcrtp_manual_reset))
+    if ((res == 0) && signalled && (event->mcrtp_manual_reset))
     {
         event->mcrtp_state_signalled = false;
     }
@@ -113,7 +114,7 @@ inline int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *m
 
     } while ((res == 0) && (!signalled));
 
-    if ((res == 0) && signalled && (event->mcmcrtp_manual_reset))
+    if ((res == 0) && signalled && (event->mcrtp_manual_reset))
     {
         event->mcrtp_state_signalled = false;
     }

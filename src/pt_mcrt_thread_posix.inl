@@ -32,7 +32,7 @@ inline void mcrt_os_mutex_unlock(mcrt_os_mutex *mutex)
 
 inline void mcrt_os_cond_init(mcrt_os_cond *cond)
 {
-	int res = pthread_cond_init(cond, NULl);
+	int res = pthread_cond_init(cond, NULL);
 	assert(res == 0);
 }
 
