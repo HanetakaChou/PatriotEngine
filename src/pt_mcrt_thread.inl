@@ -1,6 +1,6 @@
 #include <assert.h>
 
-inline void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state)
+inline void mcrt_os_event_init(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event, bool manual_reset, bool initial_state)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -14,7 +14,7 @@ inline void mcrt_os_event_init(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mc
 #endif
 }
 
-inline void mcrt_os_event_destroy(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
+inline void mcrt_os_event_destroy(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -26,7 +26,7 @@ inline void mcrt_os_event_destroy(mcrt_os_cond *condition, mcrt_os_mutex *mutex,
 #endif
 }
 
-inline void mcrt_os_event_set(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
+inline void mcrt_os_event_set(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -46,7 +46,7 @@ inline void mcrt_os_event_set(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcr
     mcrt_os_cond_broadcast(condition);
 }
 
-inline void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
+inline void mcrt_os_event_reset(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -62,7 +62,7 @@ inline void mcrt_os_event_reset(mcrt_os_cond *condition, mcrt_os_mutex *mutex, m
     mcrt_os_mutex_unlock(mutex);
 }
 
-inline int mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event)
+inline int mcrt_os_event_wait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -93,7 +93,7 @@ inline int mcrt_os_event_wait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex,
     return ((res == 0) ? 0 : -1);
 }
 
-inline int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event *event, uint32_t timeout_ms)
+inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event *event, uint32_t timeout_ms)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -124,7 +124,7 @@ inline int mcrt_os_event_timedwait_one(mcrt_os_cond *condition, mcrt_os_mutex *m
     return ((res == 0) ? 0 : -1);
 }
 
-inline int mcrt_os_event_wait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall)
+inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event **events, size_t nevents, bool waitall)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -222,7 +222,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *m
     }
 }
 
-inline int mcrt_os_event_timedwait_multiple(mcrt_os_cond *condition, mcrt_os_mutex *mutex, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms)
+inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_os_event **events, size_t nevents, bool waitall, uint32_t timeout_ms)
 {
     assert(condition != NULL);
     assert(mutex != NULL);

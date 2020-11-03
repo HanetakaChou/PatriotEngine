@@ -37,45 +37,37 @@ then
     exit 1
 fi
 
-DIR="$(dirname "$(readlink -f "${0}")")"
-cd ${DIR}
+# configure
+MY_DIR="$(dirname "$(readlink -f "${0}")")"
+cd ${MY_DIR}
 
 if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
 then
     NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    intermediate_dir="${DIR}/obj/local/x86/"
-    out_dir="${DIR}/../../bin/posix_linux_x11/x86/debug/"
-    #out_name1="PTLauncher.bundle"
-    out_name2="libPTMcRT.so"
-    #out_name3="libPTApp.so"
+    INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86/"
+    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
 then
     NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    intermediate_dir="${DIR}/obj/local/x86_64/"
-    out_dir="${DIR}/../../bin/posix_linux_x11/x64/debug/"
-    #out_name1="PTLauncher.bundle"
-    out_name2="libPTMcRT.so"
-    #out_name3="libPTApp.so"
+    INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86_64/"
+    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
 then
     NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    intermediate_dir="${DIR}/libs/x86/"
-    out_dir="${DIR}/../../bin/posix_linux_x11/x86/release/"
-    #out_name1="PTLauncher.bundle"
-    out_name2="libPTMcRT.so"
-    #out_name3="libPTApp.so"
+    INTERMEDIATE_DIR="${MY_DIR}/libs/x86/"
+    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/release/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
 then
     NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=LinuxX11.mk"
-    intermediate_dir="${DIR}/libs/x86_64/"
-    out_dir="${DIR}/../../bin/posix_linux_x11/x64/release/"
-    #out_name1="PTLauncher.bundle"
-    out_name2="libPTMcRT.so"
-    #out_name3="libPTApp.so"
+    INTERMEDIATE_DIR="${MY_DIR}/libs/x86_64/"
+    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/release/"
 else
     echo "Unsupported config \"$1\" and platform \"$2\"!"
     exit 1
 fi
+
+#OUT_BINS="PTLauncher.bundle libPTMcRT.so libPTApp.so"
+OUT_BINS="libPTMcRT.so"
 
 # build by ndk  
 rm -rf obj
@@ -84,25 +76,17 @@ ndk-build ${NDK_BUILD_ARGS}
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk
-
-# https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-CHRPATH_PATH=""
-#CHRPATH_PATH=${CHRPATH_PATH}${CHRPATH_PATH:+" "}${intermediate_dir}${out_name1}
-CHRPATH_PATH=${CHRPATH_PATH}${CHRPATH_PATH:+" "}${intermediate_dir}${out_name2}
-#CHRPATH_PATH=${CHRPATH_PATH}${CHRPATH_PATH:+" "}${intermediate_dir}${out_name3}
-
-for i in ${CHRPATH_PATH}
+for i in ${OUT_BINS}
 do
-chrpath -r '$ORIGIN' $i 
+    chrpath -r '$ORIGIN' ${INTERMEDIATE_DIR}/${i} 
 done
 
 # mkdir the out dir if necessary
-mkdir -p ${out_dir}
+mkdir -p ${OUT_DIR}
 
 # copy the unstriped so to out dir
-#rm -rf ${out_dir}/${out_name1}
-rm -rf ${out_dir}${out_name2}
-#rm -rf ${out_dir}/${out_name3}
-#cp -f ${intermediate_dir}/${out_name1} ${out_dir}/
-cp -f ${intermediate_dir}/${out_name2} ${out_dir}/
-#cp -f ${intermediate_dir}/${out_name3} ${out_dir}/
+for i in ${OUT_BINS}
+do
+    rm -rf ${OUT_DIR}/${i}
+    cp -f ${INTERMEDIATE_DIR}/${i} ${OUT_DIR}/
+done
