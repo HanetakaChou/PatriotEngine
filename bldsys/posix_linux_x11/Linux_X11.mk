@@ -8,7 +8,7 @@ PT_SRC_ROOT_DIR:= $(abspath $(LOCAL_PATH)/../../src/)
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libPTMcRT
+LOCAL_MODULE := libpt_mcrt
 
 LOCAL_SRC_FILES:= \
 	$(PT_SRC_ROOT_DIR)/pt_mcrt_malloc.cpp \

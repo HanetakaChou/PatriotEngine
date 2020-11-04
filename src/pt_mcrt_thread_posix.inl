@@ -4,26 +4,26 @@ inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(
 	return ((res == 0) ? true : false);
 }
 
-inline bool mcrt_native_tls_alloc(mcrt_native_thread_id *key, void (*destructor)(void *))
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *))
 {
 	int res = pthread_key_create(key, destructor);
 	assert(res == 0);
 	return ((res == 0) ? true : false);
 }
 
-inline void mcrt_native_tls_free(mcrt_native_thread_id key)
+inline void mcrt_native_tls_free(mcrt_native_tls_key key)
 {
 	int res = pthread_key_delete(key);
 	assert(res == 0);
 }
 
-inline bool mcrt_native_tls_set_value(mcrt_native_thread_id key, void *value)
+inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value)
 {
 	int res = pthread_setspecific(key, value);
 	return ((res == 0) ? true : false);
 }
 
-inline void *mcrt_native_tls_get_value(mcrt_native_thread_id key)
+inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 {
 	return pthread_getspecific(key);
 }

@@ -30,10 +30,10 @@ typedef CONDITION_VARIABLE mcrt_cond_t;
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name);
 
-inline bool mcrt_native_tls_alloc(mcrt_native_thread_id *key, void(*destructor)(void *));
-inline void mcrt_native_tls_free(mcrt_native_thread_id key);
-inline bool mcrt_native_tls_set_value(mcrt_native_thread_id key, void *value);
-inline void *mcrt_native_tls_get_value(mcrt_native_thread_id key);
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));
+inline void mcrt_native_tls_free(mcrt_native_tls_key key);
+inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value);
+inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key);
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex);
 inline void mcrt_os_mutex_destroy(mcrt_mutex_t *mutex);
