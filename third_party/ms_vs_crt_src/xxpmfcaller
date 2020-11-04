@@ -1,0 +1,62 @@
+// xxpmfcaller TR1 internal header
+// NOTE: no include guard
+
+#define _NAME _CLASS_NAME(_Pmf_caller)
+
+ #if _NARGS != 0
+template<class _Ty>
+	class reference_wrapper;
+
+template<class _Ret,
+	class _Arg0>
+	struct _NAME
+	{	// bind object and pointer to member function
+	template<class _Ty>
+		static _Ty& _Unwrap(_Ty& _Val)
+		{	// remove any wrapper
+		return (_Val);
+		}
+
+	template<class _Ty>
+		static _Ty& _Unwrap(reference_wrapper<_Ty>& _Val)
+		{	// remove any wrapper
+		return (_Val.get());
+		}
+
+	//	call pointer to member function
+	template<class _Pmf,
+		_CLASS_FARG0>
+		static _Ret _Call_pmf(
+			const volatile typename _Remove_reference<_Arg0>::_Type *,
+			_Pmf _Pm, _FARG0_F0_REF)
+		{	// call through object reference
+		return ((_Fx0.*_Pm)(_F1_F2));
+		}
+
+	template<class _Pmf,
+		_CLASS_FARG0>
+		static _Ret _Call_pmf(
+			const volatile void *,
+			_Pmf _Pm, _FARG0_F0_REF)
+		{	// call through pointer or smart pointer
+		return (((*_Fx0).*_Pm)(_F1_F2));
+		}
+
+	// apply pmf through reference, pointer, smart pointer,
+	// or reference_wrapper
+	template<class _Pmf,
+		_CLASS_FARG0>
+		static _Ret _Apply_pmf(_Pmf _Pm, _FARG0_F0_REF)
+		{	// apply through reference, pointer, etc.
+		return (_Call_pmf<_Pmf>(
+			&_Unwrap(_Fx0), _Pm, _Unwrap(_Fx0) _C_F1_F2));
+		}
+	};
+ #endif /* _NARGS != 0 */
+
+#undef _NAME
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */

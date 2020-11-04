@@ -1,0 +1,69 @@
+// xxshared internal header
+// NOTE: no include guard
+
+ #ifdef _REF_COUNT_OBJ_CTOR
+
+ #if _NARGS != 0
+	template<_CLASS_ARG0>
+ #endif /* _NARGS != 0 */
+
+	_Ref_count_obj(_ARG0_A0_REFREF)
+		: _Ref_count_base()
+		{	// construct
+		new ((void *) &_Storage) _Ty(_A0_A1_FWD);
+		}
+ #endif /* _REF_COUNT_OBJ_CTOR */
+
+ #ifdef _REF_COUNT_OBJ_ALLOC_CTOR
+
+ #if _NARGS != 0
+	template<_CLASS_ARG0>
+ #endif /* _NARGS != 0 */
+
+	_Ref_count_obj_alloc(_Myalty _Al _C_ARG0_A0_REFREF)
+		: _Ref_count_base(), _Myal(_Al)
+		{	// construct
+		new ((void *) &_Storage) _Ty(_A0_A1_FWD);
+		}
+ #endif /* _REF_COUNT_OBJ_ALLOC_CTOR */
+
+ #ifdef _MAKE_SHARED
+	// TEMPLATE FUNCTION make_shared
+template<class _Ty _C_CLASS_ARG0> inline
+	shared_ptr<_Ty> make_shared(_ARG0_A0_REFREF)
+	{	// make a shared_ptr
+	_Ref_count_obj<_Ty> * _Rx = new _Ref_count_obj<_Ty>(_A0_A1_FWD);
+
+	shared_ptr<_Ty> _Ret;
+	_Ret._Resetp0(_Rx->_Getptr(), _Rx);
+	return (_Ret);
+	}
+
+	// TEMPLATE FUNCTION allocate_shared
+template<class _Ty,
+	class _Alloc _C_CLASS_ARG0> inline
+		shared_ptr<_Ty> allocate_shared(
+			const _Alloc& _Al_arg _C_ARG0_A0_REFREF)
+	{	// make a shared_ptr
+	typedef _Ref_count_obj_alloc<_Ty, _Alloc> _Refoa;
+	typename _Alloc::template rebind<_Refoa>::other _Alref = _Al_arg;
+
+	_Refoa * _Rx = _Alref.allocate(1);
+
+	_TRY_BEGIN
+		new (_Rx) _Refoa(_Al_arg _COMMA0 _A0_A1_FWD);
+	_CATCH_ALL
+		_Alref.deallocate(_Rx, 1);
+	_RERAISE;
+	_CATCH_END
+
+	shared_ptr<_Ty> _Ret;
+	_Ret._Resetp0(_Rx->_Getptr(), _Rx);
+	return (_Ret);
+	}
+ #endif /* _MAKE_SHARED */
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */

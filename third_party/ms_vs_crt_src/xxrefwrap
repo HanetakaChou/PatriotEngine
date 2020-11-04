@@ -1,0 +1,1238 @@
+// xxrefwrap TR1 internal header
+// NOTE: no include guard
+
+	// TEMPLATE CLASS _Refwrap_impl FOR FUNCTIONS
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx __cdecl (_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__cdecl *)(_ARG0_ARG1), false> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__cdecl * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, false> >(_Val)
+		{	// construct
+		}
+	};
+
+ #ifdef _M_IX86
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx __stdcall (_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__stdcall *)(_ARG0_ARG1), false> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__stdcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, false> >(_Val)
+		{	// construct
+		}
+	};
+
+  #ifndef _M_CEE
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx __fastcall (_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__fastcall *)(_ARG0_ARG1), false> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__fastcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, false> >(_Val)
+		{	// construct
+		}
+	};
+  #endif /* _M_CEE */
+ #endif /* _M_IX86 */
+
+ #ifdef _M_CEE
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx __clrcall (_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__clrcall *)(_ARG0_ARG1), false> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__clrcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, false> >(_Val)
+		{	// construct
+		}
+	};
+ #endif /* _M_CEE */
+
+
+	// TEMPLATE CLASS _Refwrap_impl FOR POINTERS TO FUNCTIONS
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl *)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__cdecl *)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__cdecl * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl *const)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__cdecl *const)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__cdecl *const _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+ #ifdef _M_IX86
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall *)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__stdcall *)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__stdcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall *const)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__stdcall *const)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__stdcall *const _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+  #ifndef _M_CEE
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall *)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__fastcall *)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__fastcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall *const)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__fastcall *const)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__fastcall *const _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+  #endif /* _M_CEE */
+ #endif /* _M_IX86 */
+
+ #ifdef _M_CEE
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall *)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__clrcall *)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__clrcall * _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall *const)(_ARG0_ARG1)>
+		: _Call_wrapper<_Callable_fun<
+			_Rx(__clrcall *const)(_ARG0_ARG1), true> >
+
+ #if _NARGS == 1
+			, unary_function<_Arg0, _Rx>
+
+ #elif _NARGS == 2
+			, binary_function<_Arg0, _Arg1, _Rx>
+ #endif /* _NARGS */
+
+	{	// implement for pointer to function
+	typedef _Rx(__clrcall *const _Fty)(_ARG0_ARG1);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_fun<_Fty, true> >(_Val)
+		{	// construct
+		}
+	};
+ #endif /* _M_CEE */
+
+
+	// TEMPLATE CLASS _Refwrap_impl FOR POINTERS TO MEMBER FUNCTIONS
+ #if _NARGS != 0
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__thiscall _Arg0::*const _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__thiscall _Arg0::*const _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__thiscall _Arg0::*const _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*const)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__thiscall _Arg0::*const _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__thiscall _Arg0::* _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__thiscall _Arg0::* _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__thiscall _Arg0::* _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__thiscall _Arg0::*)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__thiscall _Arg0::* _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+
+ #ifdef _M_IX86
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__cdecl _Arg0::*const _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__cdecl _Arg0::*const _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__cdecl _Arg0::*const _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*const)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__cdecl _Arg0::*const _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__cdecl _Arg0::* _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__cdecl _Arg0::* _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__cdecl _Arg0::* _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__cdecl _Arg0::*)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__cdecl _Arg0::* _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__stdcall _Arg0::*const _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__stdcall _Arg0::*const _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__stdcall _Arg0::*const _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*const)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__stdcall _Arg0::*const _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__stdcall _Arg0::* _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__stdcall _Arg0::* _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__stdcall _Arg0::* _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__stdcall _Arg0::*)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__stdcall _Arg0::* _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+
+  #ifndef _M_CEE
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__fastcall _Arg0::*const _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__fastcall _Arg0::*const _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__fastcall _Arg0::*const _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*const)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__fastcall _Arg0::*const _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__fastcall _Arg0::* _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__fastcall _Arg0::* _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__fastcall _Arg0::* _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__fastcall _Arg0::*)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__fastcall _Arg0::* _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+  #endif /* _M_CEE */
+ #endif /* _M_IX86 */
+
+ #ifdef _M_CEE
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__clrcall _Arg0::*const _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__clrcall _Arg0::*const _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__clrcall _Arg0::*const _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*const)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__clrcall _Arg0::*const _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*)(_ARG1_ARG2)>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*)(_ARG1_ARG2), _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to member function
+	typedef _Rx(__clrcall _Arg0::* _Fty)(_ARG1_ARG2);
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) const>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) const, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const member function
+	typedef _Rx(__clrcall _Arg0::* _Fty)(_ARG1_ARG2) const;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to volatile member function
+	typedef _Rx(__clrcall _Arg0::* _Fty)(_ARG1_ARG2) volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+template<class _Rx
+	_C_CLASS_ARG0>
+	struct _Refwrap_impl<_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) const volatile>
+		: _Call_wrapper<_Callable_pmf<
+			_Rx(__clrcall _Arg0::*)(_ARG1_ARG2) const volatile, _Arg0, true> >
+
+  #if _NARGS == 1
+			, unary_function<_Arg0 *const, _Rx>
+
+  #elif _NARGS == 2
+			, binary_function<_Arg0 *const, _Arg1, _Rx>
+  #endif /* _NARGS */
+
+	{	// implement for pointer to const volatile member function
+	typedef _Rx(__clrcall _Arg0::* _Fty)(_ARG1_ARG2) const volatile;
+	typedef _Rx result_type;
+
+	_Refwrap_impl(_Fty& _Val)
+		: _Call_wrapper<_Callable_pmf<_Fty, _Arg0, true> >(_Val)
+		{	// construct
+		}
+	};
+
+ #endif /* _M_CEE */
+
+ #endif /* _NARGS != 0 */
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */

@@ -1,0 +1,13 @@
+// xxcallfun internal header
+// NOTE: no include guard
+
+template<class _Ret _C_CLASS_ARG0>
+	_Ret _ApplyX(_ARG0_A0_REFREF) const
+	{ // call pointer to function
+	return (this->_Get()(_A0_A1_FWD));
+	}
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */
