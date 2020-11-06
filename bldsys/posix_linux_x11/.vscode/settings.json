@@ -36,6 +36,10 @@
         "xtr1common": "cpp",
         "*.tcc": "cpp",
         "istream": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "map": "cpp",
+        "queue": "cpp",
+        "unordered_map": "cpp",
+        "xhash": "cpp"
     }
 }

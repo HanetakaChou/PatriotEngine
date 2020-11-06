@@ -7,8 +7,8 @@ It's widely establish that "Program = Data Structure + Algorithm" and this book 
 
 The contents of this book is likely to be as follows:   
 >    
-> [docs/gfx/MemoryAllocator.md](docs/gfx/MemoryAllocator.md)  
-> [docs/gfx/MemoryAllocator.zh_CN.md](docs/gfx/MemoryAllocator.zh_CN.md)  
+> [docs/malloc.md](docs/malloc.md)  
+> [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
 >        
 > ---    
 >     

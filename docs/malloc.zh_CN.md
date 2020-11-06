@@ -1,17 +1,13 @@
 
 ### Slab分配器（Slab Allocator）  
-   
-#### Slab的命名   
-   
+      
 根据 \[Bonwick 1994\] / 3. Slab Allocator Implementation 中的说法，Slab的命名源于SunOS中的源代码，并无特别的含义。 // 注：起初，在编写SunOS的源代码时，仅仅是出于“Slab”相对于“Object”或“Cache”而言更具有区分度，才作此命名。   
-
-#### 分离存储（Segregated-Storage）   
    
 根据 \[Bonwick 1994\] / 4.4. Arena Management 中的说法，分配器（Allocator）对区域（Arena）的管理策略可以大致分为三类：顺序适配（Sequential-Fit）、伙伴（Buddy）和分离存储（Segregated-Storage）。 // 注：根据 Wikipedia / Region-based memory management 中的说明，此处的Arena与Region同义，译为“区域”再合适不过。  
 
 显然，Slab分配器属于分离存储。在 \[Bonwick 1994\] / 3. Slab Allocator Implementation 和 \[Bonwick 1994\] / 4. Hardware Cache Effects 中对Slab分配器进行了详尽的介绍。接下来，本文也打算对Slab分配器进行介绍。为了方便读者参阅国际上的文献资料，同时为了提高辨识度，本文保留了表示Slab分配器中的数据结构的英文术语Cache、Slab和Buffer，而不译作中文。
 
-![](./slab-allocator.svg)  
+![](./malloc_slab_allocator.svg)  
 
 所有Slab的大小都相同，被设定为一个页（Page）的大小。在POSIX系统上，一个页的大小可以用sysconf(_SC_PAGESIZE)查询。Slab所占用的内存从后端（Backend）分配器中分配。// 注：所谓的后端分配器是一个比Slab分配器粒度更粗的分配器，所谓的粒度更粗是指所允许的内存请求的最小值更大。比如，直接向操作系统申请，此时，所允许的内存请求的最小值为一页（在x86上为4096b）大小，即在每次内存请求时至少分配一页内存。在POSIX系统上，可以用mmap/munmap直接向操作系统申请。        
 
