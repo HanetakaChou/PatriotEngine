@@ -1,25 +1,104 @@
 #include <process.h>
+#include <assert.h>
+#include "pt_mcrt_malloc.h"
+
+typedef struct mcrtp_tiddata
+{
+	void *(*mcrtp_initaddr)(void *);
+	void *mcrtp_initarg;
+} mcrtp_tiddata;
+
+static unsigned __stdcall mcrtp_threadstartex(void *ptd)
+{
+	void *(*initaddr)(void *) = static_cast<mcrtp_tiddata *>(ptd)->mcrtp_initaddr;
+	void *(*initarg)(void *) = static_cast<mcrtp_tiddata *>(ptd)->mcrtp_initarg;
+	mcrt_free(ptd);
+	assert(initaddr != NULL);
+
+	void *retcode = initaddr(initarg);
+
+	return static_cast<unsigned>(retcode);
+}
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
-	HANDLE hThread = reinterpret_cast<HANDLE>(::_beginthreadex(NULL, 0U, pThreadEntry, pThreadParam, 0U, NULL));
-	assert(hThread != NULL);
+	mcrtp_tiddata *ptd = mcrt_aligned_malloc(sizeof(mcrtp_tiddata), alignof(mcrtp_tiddata));
+	assert(ptd != NULL);
+	ptd->mcrtp_tiddata = func;
+	ptd->mcrtp_initarg = arg;
 
-	(*pThreadOut) = hThread;
+	HANDLE thdl = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0U, mcrtp_threadstartex, ptd, 0U, NULL));
+	assert(thdl != NULL);
 
-	return (hThread != NULL) ? true : false;
-	int res = pthread_create(tid, NULL, (void *(*)(void *))func, arg);
-	return ((res == 0) ? true : false);
+	(*tid) = thdl;
+
+	return (thdl != NULL) ? true : false;
 }
 
-inline bool mcrt_native_tls_alloc(mcrt_native_thread_id *key, void (*destructor)(void *))
+inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name)
 {
+	//https://github.com/MicrosoftDocs/visualstudio-docs/blob/master/docs/debugger/how-to-set-a-thread-name-in-native-code.md#set-a-thread-name-by-throwing-an-exception
 
+	DWORD const MS_VC_EXCEPTION = 0X406D1388;
+
+	typedef struct tagTHREADNAME_INFO
+	{
+		DWORD dwType;	  // Must be 0x1000.
+		LPCSTR szName;	  // Pointer to name (in user addr space).
+		DWORD dwThreadID; // Thread ID (-1=caller thread).
+		DWORD dwFlags;	  // Reserved for future use, must be zero.
+	} THREADNAME_INFO;
+
+	THREADNAME_INFO info;
+	info.dwType = 0x1000;
+	info.szName = name;
+	info.dwThreadID = GetThreadId(tid);
+	info.dwFlags = 0;
+
+	__try
+	{
+		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR *)&info);
+	}
+	__except (EXCEPTION_EXECUTE_HANDLER)
+	{
+		//Do Nothing
+	}
+
+	return true;
 }
 
-inline void mcrt_native_tls_free(mcrt_native_thread_id key);
-inline bool mcrt_native_tls_set_value(mcrt_native_thread_id key, void *value);
-inline void *mcrt_native_tls_get_value(mcrt_native_thread_id key);
+inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
+{
+	DWORD res = WaitForSingleObjectEx(tid, INFINITE, FALSE);
+
+	BOOL res2 = CloseHandle(tid);
+	assert(res2 != FALSE);
+
+	return ((res == WAIT_OBJECT_0) ? true : false);
+}
+
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *))
+{
+	(*key) = FlsAlloc(destructor);
+	return (((*key) != TLS_OUT_OF_INDEXES) ? true : false);
+}
+
+inline void mcrt_native_tls_free(mcrt_native_tls_key key)
+{
+	BOOL res = FlsFree(key);
+	assert(res != FALSE);
+}
+
+inline bool mcrt_native_tls_set_value(mcrt_native_thread_id key, void *value)
+{
+	BOOL res = FlsSetValue(key, value);
+	return ((res != FALSE) ? true : false);
+}
+
+inline void *mcrt_native_tls_get_value(mcrt_native_thread_id key)
+{
+	return (FlsGetValue(key));
+}
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)
 {
@@ -40,7 +119,7 @@ inline void mcrt_os_mutex_lock(mcrt_mutex_t *mutex)
 inline int mcrt_os_mutex_trylock(mcrt_mutex_t *mutex)
 {
 	BOOL res = TryEnterCriticalSection(&mutex->critical_section);
-	return ((res == 0) ? 0 : -1);
+	return ((res != FALSE) ? 0 : -1);
 }
 
 inline void mcrt_os_mutex_unlock(mcrt_mutex_t *mutex)
@@ -80,8 +159,6 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 {
 	WakeAllConditionVariable(cond);
 }
-
-
 
 //
 // thread.cpp

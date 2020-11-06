@@ -2,16 +2,14 @@
 
 LOCAL_PATH:= $(call my-dir)
 
-PT_SRC_ROOT_DIR:= $(abspath $(LOCAL_PATH)/../../src/)
-
-# libPTMcRT
+# libpt_mcrt
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := libpt_mcrt
 
 LOCAL_SRC_FILES:= \
-	$(PT_SRC_ROOT_DIR)/pt_mcrt_malloc.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8

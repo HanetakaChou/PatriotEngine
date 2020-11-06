@@ -55,15 +55,15 @@ LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
 
 LOCAL_C_INCLUDES += /system/include
 
-ifeq (x86_64,$(TARGET_ARCH))
-LOCAL_LDFLAGS += -L/system/lib64
-endif
+#ifeq (x86_64,$(TARGET_ARCH))
+#LOCAL_LDFLAGS += -L/system/lib64
+#endif
 
-ifeq (x86,$(TARGET_ARCH))
-LOCAL_LDFLAGS += -L/system/lib
-endif
+#ifeq (x86,$(TARGET_ARCH))
+#LOCAL_LDFLAGS += -L/system/lib
+#endif
 
-LOCAL_LDFLAGS += -lxcb
+LOCAL_LDLIBS += -lxcb
 
 LOCAL_SHARED_LIBRARIES := libPTApp
 

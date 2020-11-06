@@ -4,6 +4,19 @@ inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(
 	return ((res == 0) ? true : false);
 }
 
+inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name)
+{
+	int res = pthread_setname_np(tid, name);
+	assert(res == 0);
+}
+
+inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
+{
+	void *retcode;
+	int res = pthread_join(tid, &retcode);
+	return ((res == 0) ? true : false);
+}
+
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *))
 {
 	int res = pthread_key_create(key, destructor);
@@ -25,7 +38,7 @@ inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value)
 
 inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 {
-	return pthread_getspecific(key);
+	return (pthread_getspecific(key));
 }
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)

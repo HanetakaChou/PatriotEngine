@@ -85,7 +85,7 @@
 #elif defined(__arm__)
 #define PT_ARM 1
 #else
-#error Unknown Architecture //未知的架构
+#error Unknown Architecture
 #endif
 
 //CompileAndLink
@@ -95,7 +95,7 @@
 #define PT_EXPORT __attribute__((visibility("default")))
 
 #else
-#error Unknown Compiler //未知的编译器
+#error Unknown Compiler
 #endif
 
 #endif

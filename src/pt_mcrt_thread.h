@@ -1,5 +1,5 @@
-#ifndef PT_MCRT_THREAD_H
-#define PT_MCRT_THREAD_H 1
+#ifndef _MCRT_THREAD_H_
+#define _MCRT_THREAD_H_ 1
 
 #include "pt_common.h"
 
@@ -24,11 +24,9 @@ typedef CONDITION_VARIABLE mcrt_cond_t;
 #error Unknown Platform
 #endif
 
-//inline bool mcrt_thread_create(PTSThreadEntry *, void *pThreadParam, PTSThread *pThreadOut);
-
-//inline void mcrt_thread_setname(PTSThread *pThread, char const *name);
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name);
+inline bool mcrt_native_thread_join(mcrt_native_thread_id tid);
 
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));
 inline void mcrt_native_tls_free(mcrt_native_tls_key key);
@@ -112,7 +110,7 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *co
 #elif defined PT_WIN32
 #include "pt_mcrt_thread_win32.inl"
 #else
-#error 未知的平台
+#error Unknown Platform
 #endif
 
 #endif
