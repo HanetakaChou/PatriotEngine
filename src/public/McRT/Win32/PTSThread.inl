@@ -49,7 +49,7 @@ inline bool mcrt_thread_setname(PTSThread *pThread, char const *name)
 	{
 		RaiseException(MS_VC_EXCEPTION, 0, sizeof(info) / sizeof(ULONG_PTR), (ULONG_PTR *)&info);
 	}
-	__except ((GetExceptionCode() == MS_VC_EXCEPTIO) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
+	__except ((GetExceptionCode() == MS_VC_EXCEPTION) ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH)
 	{
 		//Do Nothing
 	}

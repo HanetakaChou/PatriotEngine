@@ -1,0 +1,90 @@
+/*
+ * Copyright (C) YuqiaoZhang
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+#include <sdkddkver.h>
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+
+inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t comp)
+{
+    return InterlockedCompareExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch), static_cast<LONG>(comp));
+}
+
+inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t comp)
+{
+    return InterlockedCompareExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch), static_cast<LONGLONG>(comp));
+}
+
+inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp)
+{
+    return InterlockedCompareExchangePointer(dest, exch, comp);
+}
+
+inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
+{
+    return InterlockedExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch));
+}
+
+inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
+{
+    return InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch));
+}
+
+inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch)
+{
+    return InterlockedExchange64(dest, exch);
+}
+
+inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)
+{
+    return InterlockedAdd(reinterpret_cast<LONG volatile *>(dest), static_cast<LONGLONG>(add));
+}
+
+inline int64_t mcrt_atomic_add_i64(int64_t volatile *dest, int64_t add)
+{
+    return InterlockedAdd64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(add));
+}
+
+inline int32_t mcrt_atomic_inc_i32(int32_t volatile *dest)
+{
+    return InterlockedIncrement(reinterpret_cast<LONG volatile *>(dest));
+}
+
+inline int64_t mcrt_atomic_inc_i64(int64_t volatile *dest)
+{
+    return InterlockedIncrement64(reinterpret_cast<LONGLONG volatile *>(dest));
+}
+
+inline int32_t mcrt_atomic_dec_i32(int32_t volatile *dest)
+{
+    return InterlockedDecrement(reinterpret_cast<LONG volatile *>(dest));
+}
+
+inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest)
+{
+    return InterlockedDecrement64(reinterpret_cast<LONGLONG volatile *>(dest));
+}
+
+inline int32_t mcrt_atomic_fetch_add_i32(int32_t volatile *dest, int32_t add)
+{
+    return InterlockedExchangeAdd(reinterpret_cast<LONG volatile *>(dest), static_cast<LONGLONG>(add));
+}
+
+inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add)
+{
+    return InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(add));
+}

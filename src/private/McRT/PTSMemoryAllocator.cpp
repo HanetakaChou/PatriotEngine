@@ -1,4 +1,5 @@
-﻿#include "../../Public/McRT/PTSThread.h"
+﻿#include "../../public/McRT/pt_mcrt_thread.h"
+#include "../../Public/McRT/PTSThread.h"
 #include "../../Public/McRT/PTSMemoryAllocator.h"
 #include "../../Public/McRT/PTSMemory.h"
 #include <stddef.h> 

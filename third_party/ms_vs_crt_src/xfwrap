@@ -1,0 +1,76 @@
+// xfwrap internal header
+// NOTE: no include guard
+
+// includes <xfwrap1> for [0,10] arguments
+
+ #if _NMAX != 10
+  #error argument number mismatch
+ #endif /* _NMAX != 10 */
+
+#ifdef _NOZERO
+ #undef _NOZERO
+
+#else /* _NOZERO */
+ #define _NARGS 0
+ #include <xfwrap1>
+ #undef _NARGS
+#endif /* _NOZERO */
+
+#define _NARGS 1
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 2
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 3
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 4
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 5
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 6
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 7
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 8
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 9
+#include <xfwrap1>
+#undef _NARGS
+
+#define _NARGS 10
+#include <xfwrap1>
+#undef _NARGS
+
+#undef _INCL_FILE_xxbind1
+#undef _INCL_FILE_xxcallfun
+#undef _INCL_FILE_xxcallobj
+#undef _INCL_FILE_xxcallpmf
+#undef _INCL_FILE_xxfunction
+#undef _INCL_FILE_xxmem_fn
+#undef _INCL_FILE_xxpmfcaller
+#undef _INCL_FILE_xxrefwrap
+#undef _INCL_FILE_xxresult
+#undef _INCL_FILE_xxshared
+#undef _INCL_FILE_xxtuple0
+#undef _INCL_FILE_xxtuple1
+#undef _INCL_FILE_xxtype_traits
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */

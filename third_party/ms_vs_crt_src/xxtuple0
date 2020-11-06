@@ -1,0 +1,17 @@
+// xxtuple0 internal header
+// NOTE: no include guard
+
+ #if _NARGS != 0
+
+template<_CLASS_FARG0>
+	explicit tuple(_FARG0_F0_REFREF)
+	: _Impl(_F0_F1_FWD _C_TAIL(_Nil_obj))
+	{	// construct from one or more arguments
+	}
+
+ #endif /* _NARGS != 0 */
+
+/*
+ * Copyright (c) 1992-2009 by P.J. Plauger.  ALL RIGHTS RESERVED.
+ * Consult your license regarding permissions and restrictions.
+V5.20:0009 */
