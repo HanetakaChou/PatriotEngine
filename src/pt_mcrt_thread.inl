@@ -181,8 +181,6 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
         bool signalled;
         do
         {
-            res = mcrt_os_cond_wait(condition, mutex);
-
             bool signalled_and = true;
             for (size_t i = 0; i < nevents; ++i)
             {
