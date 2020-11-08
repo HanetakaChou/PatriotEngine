@@ -46,7 +46,7 @@ inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
 
 inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch)
 {
-    return InterlockedExchange64(dest, exch);
+    return InterlockedExchangePointer(dest, exch);
 }
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)

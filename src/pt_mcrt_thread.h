@@ -21,7 +21,7 @@
 #include "pt_common.h"
 
 #include <stddef.h>
-#include <stdlib.h>
+#include <stdint.h>
 
 #if defined(PT_POSIX)
 #include <pthread.h>
@@ -41,11 +41,23 @@ typedef CONDITION_VARIABLE mcrt_cond_t;
 #error Unknown Platform
 #endif
 
+#if defined(PT_POSIX)
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
+#elif defined(PT_WIN32)
+inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall *func)(void *), void *arg);
+#else
+#error Unknown Platform
+#endif
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name);
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid);
 
-inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));
+#if defined(PT_POSIX)
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(NTAPI *destructor)(void *));
+#elif defined(PT_WIN32)
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(NTAPI *destructor)(void *));
+#else
+#error Unknown Platform
+#endif
 inline void mcrt_native_tls_free(mcrt_native_tls_key key);
 inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value);
 inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key);
@@ -87,17 +99,11 @@ public:
 } mcrt_event_t;
 
 inline void mcrt_os_event_init(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, bool manual_reset, bool initial_state);
-
 inline void mcrt_os_event_destroy(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
-
 inline void mcrt_os_event_set(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
-
 inline void mcrt_os_event_reset(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
-
 inline int mcrt_os_event_wait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
-
 inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, uint32_t timeout_ms);
-
 // Returns:
 //  If waitall is true:
 //       0 - The return value indicates that the state of all specified events is signaled.
@@ -108,7 +114,6 @@ inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mut
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The function has failed.
 inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, size_t nevents, bool waitall);
-
 // Returns:
 //  If waitall is true:
 //       0 - The return value indicates that the state of all specified events is signaled.
