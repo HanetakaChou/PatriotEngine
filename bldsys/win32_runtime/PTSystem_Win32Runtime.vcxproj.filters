@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{518661d4-c586-4347-8800-f4bdcfcecd4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public">
+      <UniqueIdentifier>{66250689-f3e5-4c8a-b805-ffc87da2e456}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System">
+      <UniqueIdentifier>{0782ab7e-61bd-48a1-bb1a-65be92bc3b22}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System">
+      <UniqueIdentifier>{aa6bde4a-61f0-43ad-b074-f0e3552690eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\System\Win32">
+      <UniqueIdentifier>{449202ca-315b-4298-af4a-7eaa66ccb33b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Public\System\Win32">
+      <UniqueIdentifier>{cc52246e-6e4e-448a-9f92-1e334866e211}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\System\Win32\PTSDllMain.cpp">
+      <Filter>Private\System\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSMemoryAllocator.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\PTSTaskSchedulerImpl.cpp">
+      <Filter>Private\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.cpp">
+      <Filter>Private\System\Win32</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Public\PTCommon.h">
+      <Filter>Public</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSFile.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSThread.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSMemoryAllocator.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSCommon.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Public\System\PTSTaskScheduler.h">
+      <Filter>Public\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\PTSTaskSchedulerImpl.h">
+      <Filter>Private\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Private\System\Win32\PTSFileImpl_Win32Runtime.h">
+      <Filter>Private\System\Win32</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Private\System\Win32\PTSMemoryAllocator.inl">
+      <Filter>Private\System\Win32</Filter>
+    </None>
+    <None Include="..\..\Private\System\Win32\PTSTaskSchedulerImpl.inl">
+      <Filter>Private\System\Win32</Filter>
+    </None>
+    <None Include="..\..\Public\System\Win32\PTSThread.inl">
+      <Filter>Public\System\Win32</Filter>
+    </None>
+  </ItemGroup>
+</Project>

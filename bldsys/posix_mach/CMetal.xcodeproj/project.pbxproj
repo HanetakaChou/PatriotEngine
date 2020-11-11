@@ -1,0 +1,415 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		47CE1B7F21FE53E2003A3B9F /* CMetal.h in Headers */ = {isa = PBXBuildFile; fileRef = 47CE1B7C21FE53E2003A3B9F /* CMetal.h */; };
+		47CE1B8021FE53E2003A3B9F /* CMetal.h in Headers */ = {isa = PBXBuildFile; fileRef = 47CE1B7C21FE53E2003A3B9F /* CMetal.h */; };
+		47CE1B8121FE53E2003A3B9F /* CMetalImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 47CE1B7D21FE53E2003A3B9F /* CMetalImpl.h */; };
+		47CE1B8221FE53E2003A3B9F /* CMetalImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 47CE1B7D21FE53E2003A3B9F /* CMetalImpl.h */; };
+		47CE1B8621FE5421003A3B9F /* CMetalImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 47CE1B8521FE5421003A3B9F /* CMetalImpl.mm */; };
+		47CE1B8721FE5421003A3B9F /* CMetalImpl.mm in Sources */ = {isa = PBXBuildFile; fileRef = 47CE1B8521FE5421003A3B9F /* CMetalImpl.mm */; };
+		47CE1B8D21FE59C7003A3B9F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 47CE1B8C21FE59C7003A3B9F /* Metal.framework */; };
+		47CE1B8F21FE59D2003A3B9F /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 47CE1B8E21FE59D2003A3B9F /* Metal.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		47CE1B4E21FE4F00003A3B9F /* libCMetal.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libCMetal.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47CE1B7B21FE5137003A3B9F /* libCMetal.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libCMetal.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47CE1B7C21FE53E2003A3B9F /* CMetal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMetal.h; sourceTree = "<group>"; };
+		47CE1B7D21FE53E2003A3B9F /* CMetalImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CMetalImpl.h; sourceTree = "<group>"; };
+		47CE1B8521FE5421003A3B9F /* CMetalImpl.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = CMetalImpl.mm; sourceTree = "<group>"; };
+		47CE1B8C21FE59C7003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = McRT/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		47CE1B8E21FE59D2003A3B9F /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS12.1.sdk/McRT/Library/Frameworks/Metal.framework; sourceTree = DEVELOPER_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		47CE1B4C21FE4F00003A3B9F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8D21FE59C7003A3B9F /* Metal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47CE1B7721FE5137003A3B9F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8F21FE59D2003A3B9F /* Metal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		47CE1B4521FE4F00003A3B9F = {
+			isa = PBXGroup;
+			children = (
+				47CE1B8A21FE543C003A3B9F /* Public */,
+				47CE1B8921FE542E003A3B9F /* Private */,
+				47CE1B4F21FE4F00003A3B9F /* Products */,
+				47CE1B8B21FE59C7003A3B9F /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		47CE1B4F21FE4F00003A3B9F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				47CE1B4E21FE4F00003A3B9F /* libCMetal.dylib */,
+				47CE1B7B21FE5137003A3B9F /* libCMetal.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		47CE1B8921FE542E003A3B9F /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				47CE1B8521FE5421003A3B9F /* CMetalImpl.mm */,
+				47CE1B7D21FE53E2003A3B9F /* CMetalImpl.h */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
+		47CE1B8A21FE543C003A3B9F /* Public */ = {
+			isa = PBXGroup;
+			children = (
+				47CE1B7C21FE53E2003A3B9F /* CMetal.h */,
+			);
+			name = Public;
+			sourceTree = "<group>";
+		};
+		47CE1B8B21FE59C7003A3B9F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				47CE1B8E21FE59D2003A3B9F /* Metal.framework */,
+				47CE1B8C21FE59C7003A3B9F /* Metal.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		47CE1B4A21FE4F00003A3B9F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8121FE53E2003A3B9F /* CMetalImpl.h in Headers */,
+				47CE1B7F21FE53E2003A3B9F /* CMetal.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47CE1B7221FE5137003A3B9F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8221FE53E2003A3B9F /* CMetalImpl.h in Headers */,
+				47CE1B8021FE53E2003A3B9F /* CMetal.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		47CE1B4D21FE4F00003A3B9F /* CMetal_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 47CE1B5921FE4F00003A3B9F /* Build configuration list for PBXNativeTarget "CMetal_macOS" */;
+			buildPhases = (
+				47CE1B4A21FE4F00003A3B9F /* Headers */,
+				47CE1B4B21FE4F00003A3B9F /* Sources */,
+				47CE1B4C21FE4F00003A3B9F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CMetal_macOS;
+			productName = CMetal;
+			productReference = 47CE1B4E21FE4F00003A3B9F /* libCMetal.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		47CE1B7121FE5137003A3B9F /* CMetal_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 47CE1B7821FE5137003A3B9F /* Build configuration list for PBXNativeTarget "CMetal_iOS" */;
+			buildPhases = (
+				47CE1B7221FE5137003A3B9F /* Headers */,
+				47CE1B7521FE5137003A3B9F /* Sources */,
+				47CE1B7721FE5137003A3B9F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CMetal_iOS;
+			productName = CMetal;
+			productReference = 47CE1B7B21FE5137003A3B9F /* libCMetal.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		47CE1B4621FE4F00003A3B9F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = Patriot;
+				TargetAttributes = {
+					47CE1B4D21FE4F00003A3B9F = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 47CE1B4921FE4F00003A3B9F /* Build configuration list for PBXProject "CMetal" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 47CE1B4521FE4F00003A3B9F;
+			productRefGroup = 47CE1B4F21FE4F00003A3B9F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				47CE1B4D21FE4F00003A3B9F /* CMetal_macOS */,
+				47CE1B7121FE5137003A3B9F /* CMetal_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		47CE1B4B21FE4F00003A3B9F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8621FE5421003A3B9F /* CMetalImpl.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47CE1B7521FE5137003A3B9F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47CE1B8721FE5421003A3B9F /* CMetalImpl.mm in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		47CE1B5721FE4F00003A3B9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = "-fvisibility=hidden";
+				SDKROOT = "";
+			};
+			name = Debug;
+		};
+		47CE1B5821FE4F00003A3B9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = "-fvisibility=hidden";
+				SDKROOT = "";
+			};
+			name = Release;
+		};
+		47CE1B5A21FE4F00003A3B9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = CMetal;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		47CE1B5B21FE4F00003A3B9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = CMetal;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		47CE1B7921FE5137003A3B9F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = CMetal;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		47CE1B7A21FE5137003A3B9F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = CMetal;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		47CE1B4921FE4F00003A3B9F /* Build configuration list for PBXProject "CMetal" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47CE1B5721FE4F00003A3B9F /* Debug */,
+				47CE1B5821FE4F00003A3B9F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		47CE1B5921FE4F00003A3B9F /* Build configuration list for PBXNativeTarget "CMetal_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47CE1B5A21FE4F00003A3B9F /* Debug */,
+				47CE1B5B21FE4F00003A3B9F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		47CE1B7821FE5137003A3B9F /* Build configuration list for PBXNativeTarget "CMetal_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47CE1B7921FE5137003A3B9F /* Debug */,
+				47CE1B7A21FE5137003A3B9F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 47CE1B4621FE4F00003A3B9F /* Project object */;
+}

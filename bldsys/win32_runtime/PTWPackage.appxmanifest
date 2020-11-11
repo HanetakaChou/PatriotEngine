@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" IgnorableNamespaces="uap mp">
+  <Identity Name="201aa149-91ee-4b6d-9578-3c9d1347bee2" Publisher="CN=Administrator" Version="0.1.0.0" />
+  <mp:PhoneIdentity PhoneProductId="201aa149-91ee-4b6d-9578-3c9d1347bee2" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
+  <Properties>
+    <DisplayName>PTWindow_Win32Runtime</DisplayName>
+    <PublisherDisplayName>Administrator</PublisherDisplayName>
+    <Logo>PTWStoreLogo.png</Logo>
+  </Properties>
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.0.0.0" />
+  </Dependencies>
+  <Resources>
+    <Resource Language="x-generate" />
+  </Resources>
+  <Applications>
+    <Application Id="App" Executable="$targetnametoken$.exe" EntryPoint="PatriotEngine">
+      <uap:VisualElements DisplayName="爱国者引擎" Square150x150Logo="PTWSquare150x150Logo.png" Square44x44Logo="PTWSquare44x44Logo.png" Description="Copyright (C)  张羽乔 License: LGPL 3" BackgroundColor="transparent">
+        <uap:DefaultTile>
+          <uap:ShowNameOnTiles>
+            <uap:ShowOn Tile="square150x150Logo" />
+          </uap:ShowNameOnTiles>
+        </uap:DefaultTile>
+        <uap:SplashScreen Image="PTWSplashScreen.png" />
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+  <Capabilities>
+    <Capability Name="internetClient" />
+  </Capabilities>
+</Package>

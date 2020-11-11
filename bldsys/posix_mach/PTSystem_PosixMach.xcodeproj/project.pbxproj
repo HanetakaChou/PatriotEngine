@@ -1,0 +1,549 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		47511ACA222F78810014C632 /* PTCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AC9222F78810014C632 /* PTCommon.h */; };
+		47511ACB222F78810014C632 /* PTCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AC9222F78810014C632 /* PTCommon.h */; };
+		47511ACF222F78C40014C632 /* PTSThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ACE222F78C40014C632 /* PTSThread.h */; };
+		47511AD0222F78C40014C632 /* PTSThread.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ACE222F78C40014C632 /* PTSThread.h */; };
+		47511AD2222F78D50014C632 /* PTSTaskScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD1222F78D50014C632 /* PTSTaskScheduler.h */; };
+		47511AD3222F78D50014C632 /* PTSTaskScheduler.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD1222F78D50014C632 /* PTSTaskScheduler.h */; };
+		47511AD5222F78E00014C632 /* PTSMemoryAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD4222F78E00014C632 /* PTSMemoryAllocator.h */; };
+		47511AD6222F78E00014C632 /* PTSMemoryAllocator.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD4222F78E00014C632 /* PTSMemoryAllocator.h */; };
+		47511AD8222F78E50014C632 /* PTSMemory.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD7222F78E50014C632 /* PTSMemory.h */; };
+		47511AD9222F78E50014C632 /* PTSMemory.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AD7222F78E50014C632 /* PTSMemory.h */; };
+		47511ADB222F78EC0014C632 /* PTSConvUTF.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ADA222F78EC0014C632 /* PTSConvUTF.h */; };
+		47511ADC222F78EC0014C632 /* PTSConvUTF.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ADA222F78EC0014C632 /* PTSConvUTF.h */; };
+		47511ADE222F78F20014C632 /* PTSCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ADD222F78F20014C632 /* PTSCommon.h */; };
+		47511ADF222F78F20014C632 /* PTSCommon.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511ADD222F78F20014C632 /* PTSCommon.h */; };
+		47511AEB222F7A140014C632 /* PTSImportTableHook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AEA222F7A140014C632 /* PTSImportTableHook.cpp */; };
+		47511AEC222F7A140014C632 /* PTSImportTableHook.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AEA222F7A140014C632 /* PTSImportTableHook.cpp */; };
+		47511AF0222F7A2D0014C632 /* PTSConvUTF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AEF222F7A2D0014C632 /* PTSConvUTF.cpp */; };
+		47511AF1222F7A2D0014C632 /* PTSConvUTF.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AEF222F7A2D0014C632 /* PTSConvUTF.cpp */; };
+		47511AF3222F7A3B0014C632 /* PTSMemory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF2222F7A3A0014C632 /* PTSMemory.cpp */; };
+		47511AF4222F7A3B0014C632 /* PTSMemory.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF2222F7A3A0014C632 /* PTSMemory.cpp */; };
+		47511AF6222F7A3F0014C632 /* PTSMemoryAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF5222F7A3F0014C632 /* PTSMemoryAllocator.cpp */; };
+		47511AF7222F7A3F0014C632 /* PTSMemoryAllocator.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF5222F7A3F0014C632 /* PTSMemoryAllocator.cpp */; };
+		47511AF9222F7A440014C632 /* PTSTaskSchedulerImpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF8222F7A440014C632 /* PTSTaskSchedulerImpl.cpp */; };
+		47511AFA222F7A440014C632 /* PTSTaskSchedulerImpl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 47511AF8222F7A440014C632 /* PTSTaskSchedulerImpl.cpp */; };
+		47511AFC222F7A4A0014C632 /* PTSTaskSchedulerImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AFB222F7A4A0014C632 /* PTSTaskSchedulerImpl.h */; };
+		47511AFD222F7A4A0014C632 /* PTSTaskSchedulerImpl.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AFB222F7A4A0014C632 /* PTSTaskSchedulerImpl.h */; };
+		47511AFF222F7BFD0014C632 /* PTSImportTableHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AFE222F7BFD0014C632 /* PTSImportTableHook.h */; };
+		47511B00222F7BFD0014C632 /* PTSImportTableHook.h in Headers */ = {isa = PBXBuildFile; fileRef = 47511AFE222F7BFD0014C632 /* PTSImportTableHook.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTMcRT.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libPTMcRT.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		47511AC9222F78810014C632 /* PTCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTCommon.h; path = ../../Public/PTCommon.h; sourceTree = "<group>"; };
+		47511ACE222F78C40014C632 /* PTSThread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSThread.h; path = ../../Public/McRT/PTSThread.h; sourceTree = "<group>"; };
+		47511AD1222F78D50014C632 /* PTSTaskScheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSTaskScheduler.h; path = ../../Public/McRT/PTSTaskScheduler.h; sourceTree = "<group>"; };
+		47511AD4222F78E00014C632 /* PTSMemoryAllocator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSMemoryAllocator.h; path = ../../Public/McRT/PTSMemoryAllocator.h; sourceTree = "<group>"; };
+		47511AD7222F78E50014C632 /* PTSMemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSMemory.h; path = ../../Public/McRT/PTSMemory.h; sourceTree = "<group>"; };
+		47511ADA222F78EC0014C632 /* PTSConvUTF.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSConvUTF.h; path = ../../Public/McRT/PTSConvUTF.h; sourceTree = "<group>"; };
+		47511ADD222F78F20014C632 /* PTSCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSCommon.h; path = ../../Public/McRT/PTSCommon.h; sourceTree = "<group>"; };
+		47511AEA222F7A140014C632 /* PTSImportTableHook.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PTSImportTableHook.cpp; path = ../../Private/McRT/Posix/Mach/PTSImportTableHook.cpp; sourceTree = "<group>"; };
+		47511AED222F7A230014C632 /* PTSMemoryAllocator.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = PTSMemoryAllocator.inl; path = ../../Private/McRT/Posix/PTSMemoryAllocator.inl; sourceTree = "<group>"; };
+		47511AEE222F7A230014C632 /* PTSTaskSchedulerImpl.inl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = PTSTaskSchedulerImpl.inl; path = ../../Private/McRT/Posix/PTSTaskSchedulerImpl.inl; sourceTree = "<group>"; };
+		47511AEF222F7A2D0014C632 /* PTSConvUTF.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PTSConvUTF.cpp; path = ../../Private/McRT/PTSConvUTF.cpp; sourceTree = "<group>"; };
+		47511AF2222F7A3A0014C632 /* PTSMemory.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PTSMemory.cpp; path = ../../Private/McRT/PTSMemory.cpp; sourceTree = "<group>"; };
+		47511AF5222F7A3F0014C632 /* PTSMemoryAllocator.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PTSMemoryAllocator.cpp; path = ../../Private/McRT/PTSMemoryAllocator.cpp; sourceTree = "<group>"; };
+		47511AF8222F7A440014C632 /* PTSTaskSchedulerImpl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = PTSTaskSchedulerImpl.cpp; path = ../../Private/McRT/PTSTaskSchedulerImpl.cpp; sourceTree = "<group>"; };
+		47511AFB222F7A4A0014C632 /* PTSTaskSchedulerImpl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSTaskSchedulerImpl.h; path = ../../Private/McRT/PTSTaskSchedulerImpl.h; sourceTree = "<group>"; };
+		47511AFE222F7BFD0014C632 /* PTSImportTableHook.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = PTSImportTableHook.h; path = ../../Public/McRT/PTSImportTableHook.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		47511AA8222F5BBA0014C632 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47511ABB222F5F9A0014C632 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		47511AA1222F5BBA0014C632 = {
+			isa = PBXGroup;
+			children = (
+				47511AE5222F797B0014C632 /* Private */,
+				47511AC8222F784F0014C632 /* Public */,
+				47511AAB222F5BBA0014C632 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		47511AAB222F5BBA0014C632 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */,
+				47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		47511AC8222F784F0014C632 /* Public */ = {
+			isa = PBXGroup;
+			children = (
+				47511ACD222F78A10014C632 /* System */,
+				47511AC9222F78810014C632 /* PTCommon.h */,
+			);
+			name = Public;
+			sourceTree = "<group>";
+		};
+		47511ACD222F78A10014C632 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				47511ADD222F78F20014C632 /* PTSCommon.h */,
+				47511ADA222F78EC0014C632 /* PTSConvUTF.h */,
+				47511AD7222F78E50014C632 /* PTSMemory.h */,
+				47511AFE222F7BFD0014C632 /* PTSImportTableHook.h */,
+				47511AD4222F78E00014C632 /* PTSMemoryAllocator.h */,
+				47511AD1222F78D50014C632 /* PTSTaskScheduler.h */,
+				47511ACE222F78C40014C632 /* PTSThread.h */,
+			);
+			name = System;
+			sourceTree = "<group>";
+		};
+		47511AE5222F797B0014C632 /* Private */ = {
+			isa = PBXGroup;
+			children = (
+				47511AE7222F79900014C632 /* System */,
+			);
+			name = Private;
+			sourceTree = "<group>";
+		};
+		47511AE7222F79900014C632 /* System */ = {
+			isa = PBXGroup;
+			children = (
+				47511AF5222F7A3F0014C632 /* PTSMemoryAllocator.cpp */,
+				47511AFB222F7A4A0014C632 /* PTSTaskSchedulerImpl.h */,
+				47511AF8222F7A440014C632 /* PTSTaskSchedulerImpl.cpp */,
+				47511AF2222F7A3A0014C632 /* PTSMemory.cpp */,
+				47511AEF222F7A2D0014C632 /* PTSConvUTF.cpp */,
+				47511AE8222F799C0014C632 /* Posix */,
+			);
+			name = System;
+			sourceTree = "<group>";
+		};
+		47511AE8222F799C0014C632 /* Posix */ = {
+			isa = PBXGroup;
+			children = (
+				47511AED222F7A230014C632 /* PTSMemoryAllocator.inl */,
+				47511AEE222F7A230014C632 /* PTSTaskSchedulerImpl.inl */,
+				47511AE9222F79A20014C632 /* Mach */,
+			);
+			name = Posix;
+			sourceTree = "<group>";
+		};
+		47511AE9222F79A20014C632 /* Mach */ = {
+			isa = PBXGroup;
+			children = (
+				47511AEA222F7A140014C632 /* PTSImportTableHook.cpp */,
+			);
+			name = Mach;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		47511AA6222F5BBA0014C632 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47511AD2222F78D50014C632 /* PTSTaskScheduler.h in Headers */,
+				47511AFF222F7BFD0014C632 /* PTSImportTableHook.h in Headers */,
+				47511ACF222F78C40014C632 /* PTSThread.h in Headers */,
+				47511ADB222F78EC0014C632 /* PTSConvUTF.h in Headers */,
+				47511AD8222F78E50014C632 /* PTSMemory.h in Headers */,
+				47511ACA222F78810014C632 /* PTCommon.h in Headers */,
+				47511AD5222F78E00014C632 /* PTSMemoryAllocator.h in Headers */,
+				47511ADE222F78F20014C632 /* PTSCommon.h in Headers */,
+				47511AFC222F7A4A0014C632 /* PTSTaskSchedulerImpl.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47511AB9222F5F9A0014C632 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47511AD3222F78D50014C632 /* PTSTaskScheduler.h in Headers */,
+				47511B00222F7BFD0014C632 /* PTSImportTableHook.h in Headers */,
+				47511AD0222F78C40014C632 /* PTSThread.h in Headers */,
+				47511ADC222F78EC0014C632 /* PTSConvUTF.h in Headers */,
+				47511AD9222F78E50014C632 /* PTSMemory.h in Headers */,
+				47511ACB222F78810014C632 /* PTCommon.h in Headers */,
+				47511AD6222F78E00014C632 /* PTSMemoryAllocator.h in Headers */,
+				47511ADF222F78F20014C632 /* PTSCommon.h in Headers */,
+				47511AFD222F7A4A0014C632 /* PTSTaskSchedulerImpl.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		47511AA9222F5BBA0014C632 /* PTMcRT_macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_macOS" */;
+			buildPhases = (
+				47511AA6222F5BBA0014C632 /* Headers */,
+				47511AA7222F5BBA0014C632 /* Sources */,
+				47511AA8222F5BBA0014C632 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PTMcRT_macOS;
+			productName = PTMcRT_PosixMach;
+			productReference = 47511AAA222F5BBA0014C632 /* libPTMcRT.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		47511AB8222F5F9A0014C632 /* PTMcRT_iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_iOS" */;
+			buildPhases = (
+				47511AB9222F5F9A0014C632 /* Headers */,
+				47511ABA222F5F9A0014C632 /* Sources */,
+				47511ABB222F5F9A0014C632 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PTMcRT_iOS;
+			productName = PTMcRT_PosixMach;
+			productReference = 47511ABF222F5F9A0014C632 /* libPTMcRT.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		47511AA2222F5BBA0014C632 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1010;
+				ORGANIZATIONNAME = linsh;
+				TargetAttributes = {
+					47511AA9222F5BBA0014C632 = {
+						CreatedOnToolsVersion = 10.1;
+					};
+				};
+			};
+			buildConfigurationList = 47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTMcRT_PosixMach" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 47511AA1222F5BBA0014C632;
+			productRefGroup = 47511AAB222F5BBA0014C632 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				47511AA9222F5BBA0014C632 /* PTMcRT_macOS */,
+				47511AB8222F5F9A0014C632 /* PTMcRT_iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		47511AA7222F5BBA0014C632 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47511AF9222F7A440014C632 /* PTSTaskSchedulerImpl.cpp in Sources */,
+				47511AF6222F7A3F0014C632 /* PTSMemoryAllocator.cpp in Sources */,
+				47511AEB222F7A140014C632 /* PTSImportTableHook.cpp in Sources */,
+				47511AF0222F7A2D0014C632 /* PTSConvUTF.cpp in Sources */,
+				47511AF3222F7A3B0014C632 /* PTSMemory.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		47511ABA222F5F9A0014C632 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				47511AFA222F7A440014C632 /* PTSTaskSchedulerImpl.cpp in Sources */,
+				47511AF7222F7A3F0014C632 /* PTSMemoryAllocator.cpp in Sources */,
+				47511AEC222F7A140014C632 /* PTSImportTableHook.cpp in Sources */,
+				47511AF1222F7A2D0014C632 /* PTSConvUTF.cpp in Sources */,
+				47511AF4222F7A3B0014C632 /* PTSMemory.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		47511AB3222F5BBA0014C632 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+					"PTPOSIX=1",
+					"PTPOSIXMACH=1",
+					"PTMCRTAPI=PTEXPORT",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden",
+				);
+				PRODUCT_NAME = PTMcRT;
+				SDKROOT = "";
+			};
+			name = Debug;
+		};
+		47511AB4222F5BBA0014C632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"NDEBUG=1",
+					"PTPOSIX=1",
+					"PTPOSIXMACH=1",
+					"PTMCRTAPI=PTEXPORT",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				OTHER_CFLAGS = (
+					"$(inherited)",
+					"-fvisibility=hidden",
+				);
+				PRODUCT_NAME = PTMcRT;
+				SDKROOT = "";
+			};
+			name = Release;
+		};
+		47511AB6222F5BBA0014C632 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V579Y4XX9F;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"PTPOSIXMACHMACOS=1",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		47511AB7222F5BBA0014C632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V579Y4XX9F;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"PTPOSIXMACHMACOS=1",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		47511ABD222F5F9A0014C632 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V579Y4XX9F;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"PTPOSIXMACHIOS=1",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		47511ABE222F5F9A0014C632 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = V579Y4XX9F;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"PTPOSIXMACHIOS=1",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				PRODUCT_NAME = "$(inherited)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		47511AA5222F5BBA0014C632 /* Build configuration list for PBXProject "PTMcRT_PosixMach" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47511AB3222F5BBA0014C632 /* Debug */,
+				47511AB4222F5BBA0014C632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		47511AB5222F5BBA0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47511AB6222F5BBA0014C632 /* Debug */,
+				47511AB7222F5BBA0014C632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		47511ABC222F5F9A0014C632 /* Build configuration list for PBXNativeTarget "PTMcRT_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				47511ABD222F5F9A0014C632 /* Debug */,
+				47511ABE222F5F9A0014C632 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 47511AA2222F5BBA0014C632 /* Project object */;
+}

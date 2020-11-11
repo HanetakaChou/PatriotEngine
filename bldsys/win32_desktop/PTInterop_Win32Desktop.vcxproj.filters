@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Private">
+      <UniqueIdentifier>{6fae0ff1-5a15-45e6-855b-98bfe18815c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Private\Interop">
+      <UniqueIdentifier>{9380c17a-6d18-4f46-bbb8-bbfaf494be6b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Private\Interop\PTInterop_FBXSDK.cpp">
+      <Filter>Private\Interop</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
