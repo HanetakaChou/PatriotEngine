@@ -22,7 +22,6 @@
 #include "pt_mcrt_common.h"
 
 #include <stddef.h>
-
 #include <stdint.h>
 
 inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t comp);

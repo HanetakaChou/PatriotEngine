@@ -57,6 +57,7 @@
 //CompileAndLink
 #define PT_CALL __stdcall
 #define PT_PTR __stdcall
+//#define PT_ATTR
 #define PT_IMPORT __declspec(dllimport)
 #define PT_EXPORT __declspec(dllexport)
 
@@ -91,6 +92,7 @@
 //CompileAndLink
 #define PT_CALL
 #define PT_PTR
+//#define PT_ATTR
 #define PT_IMPORT
 #define PT_EXPORT __attribute__((visibility("default")))
 

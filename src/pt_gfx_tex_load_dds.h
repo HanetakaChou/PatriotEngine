@@ -15,20 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_MALLOC_H
-#define _MCRT_MALLOC_H 1
+#ifndef _GFX_TEX_LOAD_DDS_H_
+#define _GFX_TEX_LOAD_DDS_H_ 1
 
 #include "pt_common.h"
-#include "pt_mcrt_common.h"
-
-#include <stddef.h>
-
-PT_MCRT_ATTR void PT_CALL *mcrt_malloc(size_t size);
-PT_MCRT_ATTR void PT_CALL *mcrt_calloc(size_t nobj, size_t size);
-PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
-PT_MCRT_ATTR void PT_CALL *mcrt_realloc(void *ptr, size_t size);
-PT_MCRT_ATTR void PT_CALL *mcrt_aligned_malloc(size_t size, size_t alignment);
-PT_MCRT_ATTR void PT_CALL *mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
-PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);
+#include "pt_gfx_common.h"
 
 #endif

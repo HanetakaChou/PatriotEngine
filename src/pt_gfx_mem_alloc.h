@@ -15,20 +15,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_MALLOC_H
-#define _MCRT_MALLOC_H 1
+#ifndef _GFX_MEM_ALLOC_H_
+#define _GFX_MEM_ALLOC_H_ 1
 
 #include "pt_common.h"
-#include "pt_mcrt_common.h"
+#include "pt_gfx_common.h"
 
-#include <stddef.h>
-
-PT_MCRT_ATTR void PT_CALL *mcrt_malloc(size_t size);
-PT_MCRT_ATTR void PT_CALL *mcrt_calloc(size_t nobj, size_t size);
-PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
-PT_MCRT_ATTR void PT_CALL *mcrt_realloc(void *ptr, size_t size);
-PT_MCRT_ATTR void PT_CALL *mcrt_aligned_malloc(size_t size, size_t alignment);
-PT_MCRT_ATTR void PT_CALL *mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
-PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);
+typedef enum GFX_MEM_ALLOC_USAGE
+{
+    GFX_MEM_ALLOC_USAGE_UNKNOWN,
+    GFX_MEM_ALLOC_USAGE_STAGING_BUFFER,
+    GFX_MEM_ALLOC_USAGE_CONSTANT_BUFFER,
+    //GFX_MEM_ALLOC_USAGE_DYNAMIC_CONSTANT_BUFFER,
+    //GFX_MEM_ALLOC_USAGE_IMMUTABLE_CONSTANT_BUFFER,
+    GFX_MEM_ALLOC_USAGE_VERTEX_INDEX_BUFFER,
+    //GFX_MEM_ALLOC_USAGE_VERTEX_BUFFER,
+    //GFX_MEM_ALLOC_USAGE_INDEX_BUFFER,
+    GFX_MEM_ALLOC_USAGE_RENDER_TARGET,
+    GFX_MEM_ALLOC_USAGE_DEPTH_STENCIL_DENY_SHADER_RESOURCE, //write depth to color buffer //to be consistant with MTL
+    GFX_MEM_ALLOC_USAGE_SHADER_RESOURCE
+} GFX_MEM_ALLOC_USAGE;
 
 #endif

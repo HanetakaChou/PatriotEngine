@@ -19,6 +19,7 @@
 #define _MCRT_THREAD_H_ 1
 
 #include "pt_common.h"
+#include "pt_mcrt_common.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,8 +31,11 @@ typedef pthread_key_t mcrt_native_tls_key;
 typedef pthread_mutex_t mcrt_mutex_t;
 typedef pthread_cond_t mcrt_cond_t;
 #elif defined(PT_WIN32)
+//https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers#faster-builds-with-smaller-header-files
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define NOCOMM
 #include <Windows.h>
 typedef HANDLE mcrt_native_thread_id;
 typedef DWORD mcrt_native_tls_key;
@@ -52,7 +56,7 @@ inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *n
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid);
 
 #if defined(PT_POSIX)
-inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(NTAPI *destructor)(void *));
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));
 #elif defined(PT_WIN32)
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(NTAPI *destructor)(void *));
 #else
