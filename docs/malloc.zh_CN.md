@@ -52,3 +52,8 @@ Object | Buffer
 2\.\[Hudson 2006\] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.   
 
 3\.\[Kukanov 2007\] Alexey Kukanov, Michael J.Voss. "The Foundations for Scalable Multi-core Software in Intel Threading Building Blocks." Intel Technology Journal, Volume11, Issue 4 2007.  
+
+\[Hebert 2016\] [Chris Hebert. "Vulkan Memory Management
+" NVIDIA GameWorks Blog 2016](https://developer.nvidia.com/vulkan-memory-management)
+
+\[Schott 2016\] [Mathias Schott. "What’s your Vulkan Memory Type?" NVIDIA GameWorks Blog 2016](https://developer.nvidia.com/what%E2%80%99s-your-vulkan-memory-type)
