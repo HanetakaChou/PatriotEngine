@@ -17,34 +17,10 @@
 
 #include <process.h>
 #include <assert.h>
-#include "pt_mcrt_malloc.h"
 
-typedef struct mcrtp_tiddata
+inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall*func)(void *), void *arg)
 {
-	void *(*mcrtp_initaddr)(void *);
-	void *mcrtp_initarg;
-} mcrtp_tiddata;
-
-static unsigned __stdcall mcrtp_threadstartex(void *ptd)
-{
-	void *(*initaddr)(void *) = static_cast<mcrtp_tiddata *>(ptd)->mcrtp_initaddr;
-	void *(*initarg)(void *) = static_cast<mcrtp_tiddata *>(ptd)->mcrtp_initarg;
-	mcrt_free(ptd);
-	assert(initaddr != NULL);
-
-	void *retcode = initaddr(initarg);
-
-	return static_cast<unsigned>(retcode);
-}
-
-inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
-{
-	mcrtp_tiddata *ptd = mcrt_aligned_malloc(sizeof(mcrtp_tiddata), alignof(mcrtp_tiddata));
-	assert(ptd != NULL);
-	ptd->mcrtp_tiddata = func;
-	ptd->mcrtp_initarg = arg;
-
-	HANDLE thdl = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0U, mcrtp_threadstartex, ptd, 0U, NULL));
+	HANDLE thdl = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0U, func, arg, 0U, NULL));
 	assert(thdl != NULL);
 
 	(*tid) = thdl;
@@ -80,8 +56,6 @@ inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *n
 	{
 		//Do Nothing
 	}
-
-	return true;
 }
 
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
@@ -94,7 +68,7 @@ inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
 	return ((res == WAIT_OBJECT_0) ? true : false);
 }
 
-inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *))
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (NTAPI *destructor)(void *))
 {
 	(*key) = FlsAlloc(destructor);
 	return (((*key) != TLS_OUT_OF_INDEXES) ? true : false);
@@ -106,13 +80,13 @@ inline void mcrt_native_tls_free(mcrt_native_tls_key key)
 	assert(res != FALSE);
 }
 
-inline bool mcrt_native_tls_set_value(mcrt_native_thread_id key, void *value)
+inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value)
 {
 	BOOL res = FlsSetValue(key, value);
 	return ((res != FALSE) ? true : false);
 }
 
-inline void *mcrt_native_tls_get_value(mcrt_native_thread_id key)
+inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 {
 	return (FlsGetValue(key));
 }
@@ -135,7 +109,7 @@ inline void mcrt_os_mutex_lock(mcrt_mutex_t *mutex)
 
 inline int mcrt_os_mutex_trylock(mcrt_mutex_t *mutex)
 {
-	BOOL res = TryEnterCriticalSection(&mutex->critical_section);
+	BOOL res = TryEnterCriticalSection(mutex);
 	return ((res != FALSE) ? 0 : -1);
 }
 

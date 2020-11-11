@@ -1,2 +1,3 @@
 .vs
+objs
 *.vcxproj.user
