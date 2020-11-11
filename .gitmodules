@@ -1,0 +1,9 @@
+[submodule "assets"]
+	path = assets
+	url = ../PatriotEngine_Assets.git
+[submodule "references"]
+	path = references
+	url = ../PatriotEngine_References.git
+[submodule "third_party"]
+	path = third_party
+	url = ../PatriotEngine_ThirdParty.git
