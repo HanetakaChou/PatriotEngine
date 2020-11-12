@@ -57,3 +57,6 @@ Object | Buffer
 
 \[Schott 2016\] [Mathias Schott. "What’s your Vulkan Memory Type?" NVIDIA GameWorks Blog 2016](https://developer.nvidia.com/what%E2%80%99s-your-vulkan-memory-type)
 
+[nvvk](https://github.com/nvpro-samples/shared_sources/blob/master/nvvk/README.md)   
+
+[vk_async_resources](https://github.com/nvpro-samples/vk_async_resources)
