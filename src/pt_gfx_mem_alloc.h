@@ -28,7 +28,7 @@ typedef enum GFX_MEM_ALLOC_USAGE
     GFX_MEM_ALLOC_USAGE_CONSTANT_BUFFER,
     //GFX_MEM_ALLOC_USAGE_DYNAMIC_CONSTANT_BUFFER,
     //GFX_MEM_ALLOC_USAGE_IMMUTABLE_CONSTANT_BUFFER,
-    GFX_MEM_ALLOC_USAGE_VERTEX_INDEX_BUFFER,
+    GFX_MEM_ALLOC_USAGE_VERTEX_INDEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
     //GFX_MEM_ALLOC_USAGE_VERTEX_BUFFER,
     //GFX_MEM_ALLOC_USAGE_INDEX_BUFFER,
     GFX_MEM_ALLOC_USAGE_RENDER_TARGET,
