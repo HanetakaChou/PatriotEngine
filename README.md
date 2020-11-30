@@ -41,11 +41,13 @@ The contents of this book is likely to be as follows:
 * 2\.可移植分发——[Bionic-based Linux](https://github.com/YuqiaoZhang/Bionic-based-Linux)  //[Bionic-based RenderDoc](https://github.com/YuqiaoZhang/Bionic-based-RenderDoc)  
 
 ### 正在解决：  
-* 1\.场景管理：对Pixar Hydra、NVIDIA SceniX、NvPro-Pipeline、Sony Alembic的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块和渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
-> * [Pixar Hydra](http://graphics.pixar.com/usd/downloads.html)   
+* 1\.场景管理/渲染框架：对Pixar Hydra、NVIDIA SceniX、NvPro-Pipeline、Sony Alembic的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块和渲染框架，尽可能在用法上统一Vulkan和Direct3D12   
+> * Pixar Hydra     
 \[Elkoura 2019\] [George Elkoura, Sebastian Grassia, Sunya Boonyatera, Alex Mohr, Pol Jeremias-Vila, Matt Kuruc. "A deep dive into universal scene description and hydra." SIGGRAPH 2019.](http://graphics.pixar.com/usd/files/Siggraph2019_Hydra.pdf)     
-> * \[O'Donnell 2017\] [Yuriy O'Donnell. "FrameGraph: Extensible Rendering Architecture in Frostbite." GDC 2017.](https://www.ea.com/frostbite/news/framegraph-extensible-rendering-architecture-in-frostbite)       
-> * [Intel TBB Flow Graph Designer](https://software.intel.com/content/www/us/en/develop/videos/flow-graph-designer-introduction.html)      
+> * FrameGraph    
+\[O'Donnell 2017\] [Yuriy O'Donnell. "FrameGraph: Extensible Rendering Architecture in Frostbite." GDC 2017.](https://www.ea.com/frostbite/news/framegraph-extensible-rendering-architecture-in-frostbite)       
+> * [Intel TBB](https://software.intel.com/content/www/us/en/develop/tools/threading-building-blocks.html)     
+[Flow Graph Designer](https://software.intel.com/content/www/us/en/develop/videos/flow-graph-designer-introduction.html)        
      
 * 2\.开发适用于Direct3D12/Vulkan/Metal的内存分配器  
 参考文献：  
