@@ -43,6 +43,8 @@ The contents of this book is likely to be as follows:
 
 ### 正在解决：  
 * **1\.学习微分几何(Differential Geometry)，尝试将球面度(Steradian)看作二维流形(2-Manifold)，从而更深刻地理解渲染中相关的公式，并尝试从微分几何的角度理解以下论文： /\*重点目标\*/**    
+> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
+\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
 > * LTC  
 \[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
 
