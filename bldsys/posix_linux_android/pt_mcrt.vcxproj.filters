@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\..\src\pt_mcrt_atomic.h" />
+    <ClInclude Include="..\..\src\pt_mcrt_common.h" />
+    <ClInclude Include="..\..\src\pt_mcrt_malloc.h" />
+    <ClInclude Include="..\..\src\pt_mcrt_mmap.h" />
+    <ClInclude Include="..\..\src\pt_mcrt_thread.h" />
+    <ClInclude Include="..\..\src\pt_common.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\pt_mcrt_atomic_posix.inl" />
+    <None Include="..\..\src\pt_mcrt_atomic_win32.inl" />
+    <None Include="..\..\src\pt_mcrt_thread.inl" />
+    <None Include="..\..\src\pt_mcrt_thread_posix.inl" />
+    <None Include="..\..\src\pt_mcrt_thread_win32.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\pt_mcrt_malloc.cpp" />
+  </ItemGroup>
+</Project>

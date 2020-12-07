@@ -35,23 +35,23 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Private\Launcher\PosixLinuxBionic\PTWindowImpl.h" />
-    <ClInclude Include="..\..\Public\PTCommon.h" />
-    <ClInclude Include="..\..\Public\Launcher\PTWCommon.h" />
-    <ClInclude Include="..\..\Public\Launcher\PTWWindow.h" />
+    <ClInclude Include="..\..\src\pt_common.h" />
+    <ClInclude Include="..\..\src\pt_wsi_common.h" />
+    <ClInclude Include="..\..\src\pt_wsi_window.h" />
+    <ClInclude Include="..\..\src\pt_wsi_window_posix_linux_android.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Private\Launcher\PosixLinuxBionic\PTWindowImpl.cpp" />
+    <ClCompile Include="..\..\src\pt_wsi_window_posix_linux_android.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{219e5d8b-2804-433b-af70-281efbd86b84}</ProjectGuid>
     <Keyword>Android</Keyword>
-    <RootNamespace>PTLauncher_PosixAndroid</RootNamespace>
+    <RootNamespace>pt_wsi</RootNamespace>
     <DefaultLanguage>en-US</DefaultLanguage>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
     <ApplicationType>Android</ApplicationType>
     <ApplicationTypeRevision>2.0</ApplicationTypeRevision>
-    <ProjectName>PTLauncher_PosixAndroid</ProjectName>
+    <ProjectName>pt_wsi</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -137,44 +137,44 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
-    <TargetName>libPTLauncher</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
-    <TargetName>libPTLauncher</TargetName>
-    <OutDir>$(SolutionDir)..\..\..\Binary\PosixLinuxBionic\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)..\..\..\Intermediate\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>libpt_wsi</TargetName>
+    <OutDir>$(SolutionDir)\..\..\bin\posix_linux_android\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)\objs\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <ClCompile>
