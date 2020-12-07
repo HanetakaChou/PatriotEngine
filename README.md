@@ -42,7 +42,7 @@ The contents of this book is likely to be as follows:
 * 3\.C++跨平台——[CXX-based-Mac](https://github.com/YuqiaoZhang/CXX-based-Mac/)    
 
 ### 正在解决：  
-* **1\.学习微分几何(Differential Geometry)，尝试将球面度(Steradian)看作二维流形(2-Manifold)，从而更深刻地理解渲染中相关的公式 /\*重点目标\*/**    
+* **1\.学习微分几何(Differential Geometry)，尝试将球面度(Steradian)看作二维流形(2-Manifold)，从而更深刻地理解渲染中相关的公式，并尝试从微分几何的角度理解以下论文： /\*重点目标\*/**    
 > * LTC  
 \[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
 
