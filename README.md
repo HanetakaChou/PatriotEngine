@@ -39,9 +39,14 @@ The contents of this book is likely to be as follows:
 ### 已解决：  
 * 1\.并行编程框架——[PatriotTBB](https://github.com/YuqiaoZhang/PatriotTBB)  
 * 2\.可移植分发——[Bionic-based Linux](https://github.com/YuqiaoZhang/Bionic-based-Linux)  //[Bionic-based RenderDoc](https://github.com/YuqiaoZhang/Bionic-based-RenderDoc)  
+* 3\.C++跨平台——[CXX-based-Mac](https://github.com/YuqiaoZhang/CXX-based-Mac/)    
 
 ### 正在解决：  
-* 1\.场景管理/渲染框架：对Pixar Hydra、NVIDIA SceniX、NvPro-Pipeline、Sony Alembic的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块和渲染框架，尽可能在用法上统一Vulkan和Direct3D12     
+* **1\.学习微分几何(Differential Geometry)，尝试将球面度(Steradian)看作二维流形(2-Manifold)，从而更深刻地理解渲染中相关的公式 /\*重点目标\*/**    
+> * LTC  
+\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
+
+* 2\.场景管理/渲染框架：对Pixar Hydra、NVIDIA SceniX、NvPro-Pipeline、Sony Alembic的源码进行剖析，并设计符合Vulkan和Direct3D12用法的场景管理模块和渲染框架，尽可能在用法上统一Vulkan和Direct3D12     
 参考文献：   
 > * Pixar Hydra     
 \[Elkoura 2019\] [George Elkoura, Sebastian Grassia, Sunya Boonyatera, Alex Mohr, Pol Jeremias-Vila, Matt Kuruc. "A deep dive into universal scene description and hydra." SIGGRAPH 2019.](http://graphics.pixar.com/usd/files/Siggraph2019_Hydra.pdf)     
@@ -50,7 +55,7 @@ The contents of this book is likely to be as follows:
 > * [Intel TBB](https://software.intel.com/content/www/us/en/develop/tools/threading-building-blocks.html)     
 [Flow Graph Designer](https://software.intel.com/content/www/us/en/develop/videos/flow-graph-designer-introduction.html)        
      
-* 2\.开发适用于Direct3D12/Vulkan/Metal的内存分配器  
+* 3\.开发适用于Direct3D12/Vulkan/Metal的内存分配器  
 参考文献：   
 > * [Intel TBB](https://www.threadingbuildingblocks.org/)  
 \[Hudson 2006\] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.  
@@ -59,9 +64,9 @@ The contents of this book is likely to be as follows:
 > * [D3D12 Memory Allocator](https://gpuopen.com/d3d12-memory-allocator-1-0-0/)  
 > * [\[Gelado 2019\] Isaac Gelado, Michael Garland. "Throughput-Oriented GPU Memory Allocation." PPOPP 2019.](https://research.nvidia.com/publication/2019-02_Throughput-oriented-GPU-memory)  
 
-* 3\.材质系统——[PatriotMaterialCompiler](https://github.com/YuqiaoZhang/PatriotMaterialCompiler)  
+* 4\.材质系统——[PatriotMaterialCompiler](https://github.com/YuqiaoZhang/PatriotMaterialCompiler)  
 
-* 4\.设计一套比较完整的实时全局光照解决方案  
+* 5\.设计一套比较完整的实时全局光照解决方案  
 参考文献：  
 > * 实时渲染  
 [\[Moller 2018\] Tomas Akenine Moller, Eric Haines, Naty Hoffman, Angelo Pesce, Michal Iwanicki, Sebastien Hillaire. "Real-Time Rendering, Fourth Edition." A K Peters 2018.](http://www.realtimerendering.com) / 10 Local Illumination  
