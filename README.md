@@ -12,20 +12,28 @@ The contents of this book is likely to be as follows:
 >        
 > ---    
 >     
-> [docs/gfx/SceneTree.zh_CN.md](docs/gfx/SceneTree.zh_CN.md)  
-> [docs/gfx/BVH.md](docs/gfx/BVH.md)     
-> [docs/gfx/BVH.zh_CN.md](docs/gfx/BVH.zh_CN.md)     
+> [docs/rendering_pipeline.md](docs/rendering_pipeline.md)      
+> [docs/gfx/RenderingPipeline.zh_CN.md](docs/gfx/RenderingPipeline.zh_CN.md)      
 >        
 > ---    
 >     
-> [docs/gfx/RenderingPipeline.md](docs/gfx/RenderingPipeline.md)      
-> [docs/gfx/RenderingPipeline.zh_CN.md](docs/gfx/RenderingPipeline.zh_CN.md)      
+> [docs/gfx/SceneTree.zh_CN.md](docs/gfx/SceneTree.zh_CN.md)  
+> [docs/gfx/BVH.md](docs/gfx/BVH.md)     
+> [docs/gfx/BVH.zh_CN.md](docs/gfx/BVH.zh_CN.md)     
 >        
 > ---    
 >      
 > [docs/McRT/Scalable-Allocator.zh_CN.md](docs/McRT/Scalable-Allocator.zh_CN.md)             
 > [docs/McRT/Task-Scheduler.zh_CN.md](docs/McRT/Task-Scheduler.zh_CN.md)        
 >     
+   
+### In Progress   
+* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.    
+Try to understand the following papers from the perspective of the 2-Manifold：    
+> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
+\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
+> * LTC  
+\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
       
 ---     
         
