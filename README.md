@@ -34,7 +34,11 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 \[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
 > * LTC  
 \[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
-      
+
+* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
+> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
+* The traditional Euclidean-Space method may replaced by the efficient 2-Manifold method in the next few years.     
+ 
 ---     
         
 ### 项目简介 
