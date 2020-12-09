@@ -37,7 +37,7 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 
 * To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
 > * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
-* The traditional Euclidean-Space method may replaced by the efficient 2-Manifold method in the next few years.     
+* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.     
  
 ---     
         
