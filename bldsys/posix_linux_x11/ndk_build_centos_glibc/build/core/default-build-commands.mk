@@ -86,6 +86,7 @@ endef
 # behavior, and ignores -rpath-link completely.
 define cmd-build-executable
 $(PRIVATE_CXX) \
+    -pie \
     -Wl,--gc-sections \
     -Wl,-z,nocopyreloc \
     --sysroot=$(call host-path,$(PRIVATE_SYSROOT_LINK)) \

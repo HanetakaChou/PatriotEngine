@@ -38,7 +38,7 @@ TOOLCHAIN_PREFIX := $(TOOLCHAIN_ROOT)/bin/$(TOOLCHAIN_NAME)-
 TARGET_CC := $(LLVM_TOOLCHAIN_PREFIX)clang$(HOST_EXEEXT)
 TARGET_CXX := $(LLVM_TOOLCHAIN_PREFIX)clang++$(HOST_EXEEXT)
 
-LLVM_TRIPLE := i686-none-linux-android
+LLVM_TRIPLE := i686-unknown-linux-gnu
 
 TARGET_CFLAGS := \
     -gcc-toolchain $(call host-path,$(TOOLCHAIN_ROOT)) \
