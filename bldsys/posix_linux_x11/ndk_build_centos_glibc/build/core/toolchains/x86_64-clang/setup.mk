@@ -41,23 +41,24 @@ TARGET_CXX := $(LLVM_TOOLCHAIN_PREFIX)clang++$(HOST_EXEEXT)
 LLVM_TRIPLE := x86_64-unknown-linux-gnu
 
 TARGET_CFLAGS := \
-    -gcc-toolchain $(call host-path,$(TOOLCHAIN_ROOT)) \
     -target $(LLVM_TRIPLE) \
     -ffunction-sections \
     -funwind-tables \
     -fstack-protector-strong \
+    -fPIE \
     -fPIC \
     -Wno-invalid-command-line-argument \
     -Wno-unused-command-line-argument \
     -no-canonical-prefixes \
+    -pthread \
 
 # Always enable debug info. We strip binaries when needed.
 TARGET_CFLAGS += -g
 
 TARGET_LDFLAGS += \
-    -gcc-toolchain $(call host-path,$(TOOLCHAIN_ROOT)) \
     -target $(LLVM_TRIPLE) \
     -no-canonical-prefixes \
+    -pthread \
 
 TARGET_x86_64_release_CFLAGS := \
     -O2 \

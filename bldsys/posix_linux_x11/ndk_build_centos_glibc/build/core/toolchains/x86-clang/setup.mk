@@ -41,7 +41,6 @@ TARGET_CXX := $(LLVM_TOOLCHAIN_PREFIX)clang++$(HOST_EXEEXT)
 LLVM_TRIPLE := i686-unknown-linux-gnu
 
 TARGET_CFLAGS := \
-    -gcc-toolchain $(call host-path,$(TOOLCHAIN_ROOT)) \
     -target $(LLVM_TRIPLE) \
     -ffunction-sections \
     -funwind-tables \

@@ -1704,7 +1704,7 @@ _OBJ:=$$(LOCAL_OBJS_DIR:%/=%)/$(2)
 _FLAGS := $$(call host-c-includes,$$(LOCAL_C_INCLUDES) $$(LOCAL_PATH)) \
           $$(LOCAL_ASMFLAGS) \
           $$(NDK_APP_ASMFLAGS) \
-          --sysroot $$(call host-path,$$(SYSROOT_INC)) \
+          - $$(call host-path,$$(SYSROOT_INC)) \
           $(SYSROOT_ARCH_INC_ARG) \
           $$(if $$(filter x86_64, $$(TARGET_ARCH_ABI)), -f elf64, -f elf32 -m x86)
 

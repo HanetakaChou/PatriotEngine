@@ -1,1 +1,0 @@
-/usr/lib/gcc/x86_64-redhat-linux/8

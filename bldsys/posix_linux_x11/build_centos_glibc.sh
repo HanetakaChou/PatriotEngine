@@ -72,7 +72,7 @@ OUT_BINS="libpt_mcrt.so"
 # build by ndk  
 rm -rf obj
 rm -rf libs
-ndk-build ${NDK_BUILD_ARGS}
+${MY_DIR}/ndk_build_centos_glibc/ndk-build V=1 VERBOSE=1 ${NDK_BUILD_ARGS}
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk

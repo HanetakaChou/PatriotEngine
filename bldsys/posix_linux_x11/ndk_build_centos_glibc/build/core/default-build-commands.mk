@@ -73,7 +73,6 @@ define cmd-build-shared-library
 $(PRIVATE_CXX) \
     -Wl,-soname,$(notdir $(LOCAL_BUILT_MODULE)) \
     -shared \
-    --sysroot=$(call host-path,$(PRIVATE_SYSROOT_LINK)) \
     $(PRIVATE_LINKER_OBJECTS_AND_LIBRARIES) \
     $(PRIVATE_LDFLAGS) \
     $(PRIVATE_LDLIBS) \
@@ -89,9 +88,6 @@ $(PRIVATE_CXX) \
     -pie \
     -Wl,--gc-sections \
     -Wl,-z,nocopyreloc \
-    --sysroot=$(call host-path,$(PRIVATE_SYSROOT_LINK)) \
-    -Wl,-rpath-link=$(call host-path,$(PRIVATE_SYSROOT_LINK)/usr/lib) \
-    -Wl,-rpath-link=$(call host-path,$(TARGET_OUT)) \
     $(PRIVATE_LINKER_OBJECTS_AND_LIBRARIES) \
     $(PRIVATE_LDFLAGS) \
     $(PRIVATE_LDLIBS) \
@@ -110,7 +106,7 @@ cmd-strip = $(PRIVATE_STRIP) --strip-unneeded $(call host-path,$1)
 # The command objcopy --add-gnu-debuglink= will be needed for Valgrind
 cmd-add-gnu-debuglink = $(PRIVATE_OBJCOPY) --add-gnu-debuglink=$(strip $(call host-path,$2)) $(call host-path,$1)
 
-TARGET_LIBGCC = -lgcc
+TARGET_LIBGCC = #-lgcc
 TARGET_LDLIBS := -lc -lm
 
 #
