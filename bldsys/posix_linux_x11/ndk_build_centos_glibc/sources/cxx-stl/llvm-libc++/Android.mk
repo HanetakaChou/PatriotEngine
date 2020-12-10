@@ -20,4 +20,3 @@ LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -static-libstdc++
 LOCAL_EXPORT_LDFLAGS := -static-libstdc++ -L$(LOCAL_PATH)/libs/$(TARGET_ARCH_ABI)
 include $(PREBUILT_SHARED_LIBRARY)
 
-$(call import-module, android/support)
