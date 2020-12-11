@@ -8,17 +8,17 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/../Binary/PosixLinuxX11/x86/Debug/PTLauncher.bundle", //should set PTLauncher.bundle in obj here instead of the one in libs
+            "program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_launcher", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": true,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
-            "targetArchitecture": "x86",
+            //"targetArchitecture": "x86",
             "MIMode": "gdb",
-            "miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
-            "miDebuggerArgs": "--init-command=${workspaceFolder}/Solution/PosixLinuxX11/libs/x86/gdb.setup",
-            "additionalSOLibSearchPath": "${workspaceFolder}/../Binary/PosixLinuxX11/x86/Debug",
+            //"miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            //"miDebuggerArgs": "--init-command=${workspaceFolder}/Solution/PosixLinuxX11/libs/x86/gdb.setup",
+            "additionalSOLibSearchPath": "${workspaceFolder}/bin/posix_linux_x11/x86/debug",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",
