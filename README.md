@@ -39,8 +39,17 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 > * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
 * The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.     
  
----     
+---    
+
+### Continuous build status   
+Build Type | Status | Github Workflow
+-----------| ------ | ---------
+**Ubuntu Glibc x64**  | ![Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x64/badge.svg)                             | [Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x64%22)
+
+
         
+---    
+
 ### 项目简介 
 本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
   
