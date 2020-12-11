@@ -2,16 +2,17 @@ name: C/C++ CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
 jobs:
   build:
-
     runs-on: ubuntu-16.04
 
     steps:
-    - uses: actions/checkout@v2
-    - name: build ubuntu glibc release x64
-      run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x64
+      - uses: actions/checkout@v2
+      - name: ./bldsys/posix_linux_x11/install ubuntu glibc dependencies
+        run: install_ubuntu_glibc_dependencies.sh
+      - name: build ubuntu glibc release x64
+        run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x64
