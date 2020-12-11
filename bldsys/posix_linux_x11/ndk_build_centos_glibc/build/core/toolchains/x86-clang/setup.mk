@@ -27,16 +27,8 @@
 # Override the toolchain prefix
 #
 
-LLVM_TOOLCHAIN_PREBUILT_ROOT := $(call get-toolchain-root,llvm)
-LLVM_TOOLCHAIN_PREFIX := $(LLVM_TOOLCHAIN_PREBUILT_ROOT)/bin/
-
-TOOLCHAIN_NAME := i686-linux-android
-BINUTILS_ROOT := $(call get-binutils-root,$(NDK_ROOT),$(TOOLCHAIN_NAME))
-TOOLCHAIN_ROOT := $(call get-toolchain-root,x86-4.9)
-TOOLCHAIN_PREFIX := $(TOOLCHAIN_ROOT)/bin/$(TOOLCHAIN_NAME)-
-
-TARGET_CC := $(LLVM_TOOLCHAIN_PREFIX)clang$(HOST_EXEEXT)
-TARGET_CXX := $(LLVM_TOOLCHAIN_PREFIX)clang++$(HOST_EXEEXT)
+TARGET_CC := clang$(HOST_EXEEXT)
+TARGET_CXX := clang++$(HOST_EXEEXT)
 
 LLVM_TRIPLE := i686-unknown-linux-gnu
 
@@ -45,19 +37,21 @@ TARGET_CFLAGS := \
     -ffunction-sections \
     -funwind-tables \
     -fstack-protector-strong \
+    -fPIE \
     -fPIC \
     -Wno-invalid-command-line-argument \
     -Wno-unused-command-line-argument \
-    -no-canonical-prefixes
+    -no-canonical-prefixes \
+    -pthread \
 
 # Always enable debug info. We strip binaries when needed.
 TARGET_CFLAGS += -g
 
 # Add and LDFLAGS for the target here
 TARGET_LDFLAGS += \
-    -gcc-toolchain $(call host-path,$(TOOLCHAIN_ROOT)) \
     -target $(LLVM_TRIPLE) \
-    -no-canonical-prefixes
+    -no-canonical-prefixes \
+    -pthread \
 
 TARGET_x86_release_CFLAGS := \
     -O2 \

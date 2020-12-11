@@ -1,5 +1,15 @@
 #!/bin/bash
 
+# yum install gcc  
+# yum install gcc-c++
+# yum install glibc-devel
+# yum install libstdc++-devel
+# yum install libstdc++-static
+
+# yum install glibc-devel.i686
+# yum install libstdc++-devel.i686
+# yum install libstdc++-static.i686
+
 if test \( $# -ne 2 \);
 then
     echo "Usage: build.sh config platform"

@@ -139,14 +139,6 @@ LOCAL_OBJECTS :=
 # list of generated object files from RS files, subset of LOCAL_OBJECTS
 LOCAL_RS_OBJECTS :=
 
-# always define ANDROID when building binaries
-#
-LOCAL_CFLAGS := -DANDROID $(LOCAL_CFLAGS)
-
-ifeq ($(APP_UNIFIED_HEADERS),true)
-    LOCAL_CFLAGS += -D__ANDROID_API__=$(TARGET_PLATFORM_LEVEL)
-endif
-
 #
 # Add the default system shared libraries to the build
 #
