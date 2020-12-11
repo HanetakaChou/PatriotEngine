@@ -30,10 +30,8 @@
 TARGET_CC := clang$(HOST_EXEEXT)
 TARGET_CXX := clang++$(HOST_EXEEXT)
 
-LLVM_TRIPLE := i686-unknown-linux-gnu
-
 TARGET_CFLAGS := \
-    -target $(LLVM_TRIPLE) \
+    -m32 \
     -ffunction-sections \
     -funwind-tables \
     -fstack-protector-strong \
@@ -49,7 +47,7 @@ TARGET_CFLAGS += -g
 
 # Add and LDFLAGS for the target here
 TARGET_LDFLAGS += \
-    -target $(LLVM_TRIPLE) \
+    -m32 \
     -no-canonical-prefixes \
     -pthread \
 

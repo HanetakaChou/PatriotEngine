@@ -38,10 +38,7 @@ TOOLCHAIN_PREFIX := $(TOOLCHAIN_ROOT)/bin/$(TOOLCHAIN_NAME)-
 TARGET_CC := clang$(HOST_EXEEXT)
 TARGET_CXX := clang++$(HOST_EXEEXT)
 
-LLVM_TRIPLE := x86_64-unknown-linux-gnu
-
 TARGET_CFLAGS := \
-    -target $(LLVM_TRIPLE) \
     -ffunction-sections \
     -funwind-tables \
     -fstack-protector-strong \
@@ -56,7 +53,6 @@ TARGET_CFLAGS := \
 TARGET_CFLAGS += -g
 
 TARGET_LDFLAGS += \
-    -target $(LLVM_TRIPLE) \
     -no-canonical-prefixes \
     -pthread \
 

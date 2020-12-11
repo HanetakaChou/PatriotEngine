@@ -1652,7 +1652,6 @@ _FLAGS := $$($$(my)CFLAGS) \
           $$(LOCAL_CONLYFLAGS) \
           $$(NDK_APP_CFLAGS) \
           $$(NDK_APP_CONLYFLAGS) \
-          --sysroot $$(call host-path,$$(SYSROOT_INC)) \
           $(SYSROOT_ARCH_INC_ARG) \
           -c \
 
@@ -1783,7 +1782,6 @@ _FLAGS := $$($$(my)CXXFLAGS) \
           $$(NDK_APP_CFLAGS) \
           $$(NDK_APP_CPPFLAGS) \
           $$(NDK_APP_CXXFLAGS) \
-          --sysroot $$(call host-path,$$(SYSROOT_INC)) \
           $(SYSROOT_ARCH_INC_ARG) \
           -c \
 
@@ -1832,7 +1830,6 @@ _CPP_FLAGS := $$($$(my)CXXFLAGS) \
           $$(NDK_APP_CFLAGS) \
           $$(NDK_APP_CPPFLAGS) \
           $$(NDK_APP_CXXFLAGS) \
-          --sysroot $$(call host-path,$$(SYSROOT_INC)) \
           $(SYSROOT_ARCH_INC_ARG) \
           -fno-rtti \
           -c \

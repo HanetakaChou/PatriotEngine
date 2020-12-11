@@ -11,7 +11,7 @@ LOCAL_MODULE := libpt_mcrt
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_MCRT_ATTR=PT_EXPORT
