@@ -42,15 +42,16 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 ---    
 
 ### Continuous build status    
-Build Type | Status | Github Workflow    
------------| ------ | ---------    
-**Ubuntu Glibc x64**  | ![Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x64/badge.svg) | [Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x64%22)    
-**Ubuntu Glibc x86**  | ![Ubuntu Glibc x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x86/badge.svg) | [Ubuntu Glibc x86](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x86%22)    
-
-
-        
----    
-
+Build Type | Status     
+-----------| ------     
+**Ubuntu 16.04 LTS Glibc Release x86** | [![Ubuntu 16.04 LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x86%22)    
+**Ubuntu 16.04 LTS Glibc Release x64** | [![Ubuntu 16.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x64%22)    
+**Ubuntu 16.04 LTS Glibc Debug x86** | [![Ubuntu 16.04 LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x86%22)    
+**Ubuntu 16.04 LTS Glibc Debug x64** | [![Ubuntu 16.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x64%22)    
+      
+      
+---      
+      
 ### 项目简介 
 本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
   
