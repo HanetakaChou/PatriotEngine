@@ -41,10 +41,11 @@ Try to understand the following papers from the perspective of the 2-Manifold:
  
 ---    
 
-### Continuous build status   
-Build Type | Status | Github Workflow
------------| ------ | ---------
-**Ubuntu Glibc x64**  | ![Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x64/badge.svg)                             | [Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x64%22)
+### Continuous build status    
+Build Type | Status | Github Workflow    
+-----------| ------ | ---------    
+**Ubuntu Glibc x64**  | ![Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x64/badge.svg) | [Ubuntu Glibc x64](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x64%22)    
+**Ubuntu Glibc x86**  | ![Ubuntu Glibc x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20Glibc%20x86/badge.svg) | [Ubuntu Glibc x86](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+Glibc+x86%22)    
 
 
         
