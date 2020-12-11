@@ -42,17 +42,25 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 ---    
 
 ### Continuous build status    
+    
+#### Glibc x86    
+      
 Build Type | Status     
 -----------| ------     
 **Ubuntu 18.04 LTS Glibc Release x86** | [![Ubuntu 18.04 LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Release+x86%22)    
-**Ubuntu 18.04 LTS Glibc Release x64** | [![Ubuntu 18.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Release+x64%22)    
 **Ubuntu 18.04 LTS Glibc Debug x86** | [![Ubuntu 18.04 LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Debug+x86%22)    
-**Ubuntu 18.04 LTS Glibc Debug x64** | [![Ubuntu 18.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Debug+x64%22)    
 **Ubuntu 16.04 LTS Glibc Release x86** | [![Ubuntu 16.04 LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x86%22)    
-**Ubuntu 16.04 LTS Glibc Release x64** | [![Ubuntu 16.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x64%22)    
 **Ubuntu 16.04 LTS Glibc Debug x86** | [![Ubuntu 16.04 LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x86%22)    
-**Ubuntu 16.04 LTS Glibc Debug x64** | [![Ubuntu 16.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x64%22)    
+    
+#### Glibc x64    
       
+Build Type | Status     
+-----------| ------        
+**Ubuntu 18.04 LTS Glibc Release x64** | [![Ubuntu 18.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Release+x64%22)    
+**Ubuntu 18.04 LTS Glibc Debug x64** | [![Ubuntu 18.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Debug+x64%22)    
+**Ubuntu 16.04 LTS Glibc Release x64** | [![Ubuntu 16.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x64%22)    
+**Ubuntu 16.04 LTS Glibc Debug x64** | [![Ubuntu 16.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x64%22)        
+
       
 ---      
       
