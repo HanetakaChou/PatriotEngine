@@ -1,0 +1,18 @@
+name: Ubuntu 18.04 LTS Glibc Debug x86
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: install ubuntu glibc dependencies
+        run: sudo ./bldsys/posix_linux_x11/install_ubuntu_glibc_dependencies.sh x86
+      - name: build ubuntu glibc debug
+        run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh debug x86
