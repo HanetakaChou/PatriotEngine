@@ -14,3 +14,15 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+#ifndef _MCRT_MEMCPY_H_
+#define _MCRT_MEMCPY_H_ 1
+
+#include "pt_common.h"
+#include "pt_mcrt_common.h"
+
+#include <stddef.h>
+
+PT_MCRT_ATTR bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
+
+#endif

@@ -11,7 +11,7 @@
             "preLaunchTask": "build-centos-glibc-debug-x86",
             "program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_launcher", //should set executable in obj here instead of the one in libs
             "args": [],
-            "stopAtEntry": true,
+            "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
             "externalConsole": false,
