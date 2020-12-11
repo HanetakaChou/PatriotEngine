@@ -16,6 +16,7 @@
  */
 
 #include <sys/time.h>
+#include <errno.h>
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {

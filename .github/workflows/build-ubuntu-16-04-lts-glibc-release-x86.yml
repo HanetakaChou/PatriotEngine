@@ -1,4 +1,4 @@
-name: Ubuntu Glibc x64
+name: Ubuntu 16.04 LTS Glibc Release x86
 
 on:
   push:
@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: install ubuntu glibc dependencies
-        run: sudo ./bldsys/posix_linux_x11/install_ubuntu_glibc_dependencies.sh x64
+        run: sudo ./bldsys/posix_linux_x11/install_ubuntu_glibc_dependencies.sh x86
       - name: build ubuntu glibc release
-        run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x64
+        run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x86

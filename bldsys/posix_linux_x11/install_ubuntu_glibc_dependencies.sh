@@ -32,6 +32,8 @@ then
     apt install gcc
     apt install g++
     apt install clang
+    apt install gdbserver
+    apt install chrpath
 
     dpkg --add-architecture i386
     apt-get update
@@ -45,6 +47,8 @@ then
     apt install gcc
     apt install g++
     apt install clang
+    apt install gdbserver
+    apt install chrpath
 fi
 
 
