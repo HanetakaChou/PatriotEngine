@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: ./bldsys/posix_linux_x11/install ubuntu glibc dependencies
-        run: install_ubuntu_glibc_dependencies.sh
+      - name: install ubuntu glibc dependencies
+        run: sudo ./bldsys/posix_linux_x11/install_ubuntu_glibc_dependencies.sh
       - name: build ubuntu glibc release x64
         run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x64
