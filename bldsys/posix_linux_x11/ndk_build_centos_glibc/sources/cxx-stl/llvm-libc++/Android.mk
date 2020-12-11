@@ -7,15 +7,15 @@ $(call ndk_log,Using prebuilt libc++ libraries)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := c++_static
-LOCAL_SRC_FILES := $(LOCAL_PATH)/libs/$(TARGET_ARCH_ABI)/libgcc_s$(TARGET_SONAME_EXTENSION)
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -static-libgcc -static-libstdc++ 
-LOCAL_EXPORT_LDFLAGS := -static-libgcc -static-libstdc++
+LOCAL_SRC_FILES := $(LOCAL_PATH)/libs/$(TARGET_ARCH_ABI)/libunwind$(TARGET_SONAME_EXTENSION)
+LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -rtlib=compiler-rt -unwindlib=libunwind -static-libstdc++ #-static-libgcc
+LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -static-libstdc++ #-static-libgcc
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := c++_shared
-LOCAL_SRC_FILES := $(LOCAL_PATH)/libs/$(TARGET_ARCH_ABI)/libgcc_s$(TARGET_SONAME_EXTENSION)
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -static-libgcc -static-libstdc++ 
-LOCAL_EXPORT_LDFLAGS := -static-libgcc -static-libstdc++
+LOCAL_SRC_FILES := $(LOCAL_PATH)/libs/$(TARGET_ARCH_ABI)/libunwind$(TARGET_SONAME_EXTENSION)
+LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -rtlib=compiler-rt -unwindlib=libunwind -static-libgcc -static-libstdc++ #-static-libgcc 
+LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -static-libstdc++ #-static-libgcc
 include $(PREBUILT_SHARED_LIBRARY)
 
