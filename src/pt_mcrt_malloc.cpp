@@ -17,3 +17,4 @@
 
 #include "pt_mcrt_thread.h"
 #include "pt_mcrt_atomic.h"
+#include "pt_mcrt_malloc.h"

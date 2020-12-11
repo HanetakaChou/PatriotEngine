@@ -66,8 +66,7 @@ else
     exit 1
 fi
 
-#OUT_BINS="PTLauncher.bundle libPTMcRT.so libPTApp.so"
-OUT_BINS="libpt_mcrt.so"
+OUT_BINS="pt_launcher libpt_mcrt.so"
 
 # build by ndk  
 rm -rf obj

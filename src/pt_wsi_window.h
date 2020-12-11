@@ -32,7 +32,7 @@ struct wsi_iwindow
 
     //ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     //MTKViewDelegate::drawInMTKView 
-    virtual void listen_draw_request(void (*draw_request_callback)(uintptr_t connection, uintptr_t window, void *user_data), void *user_data) = 0; //We may use the given window to recreate the swapchain.
+    virtual void listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data) = 0; //We may use the given window to recreate the swapchain.
 };
 
 #endif

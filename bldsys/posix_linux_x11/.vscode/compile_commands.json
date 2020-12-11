@@ -1,0 +1,12 @@
+[
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -DPT_MCRT_ATTR=PT_EXPORT ${workspaceFolder}/src/pt_mcrt_malloc.cpp -o ${workspaceFolder}/obj/pt_mcrt_malloc.o",
+        "file": "${workspaceFolder}/src/pt_mcrt_malloc.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -DPT_WSI_ATTR=PT_EXPORT ${workspaceFolder}/src/pt_wsi_window_posix_linux_x11.cpp -o ${workspaceFolder}/obj/pt_wsi_window_posix_linux_x11.o",
+        "file": "${workspaceFolder}/src/pt_wsi_window_posix_linux_x11.cpp"
+    }
+]

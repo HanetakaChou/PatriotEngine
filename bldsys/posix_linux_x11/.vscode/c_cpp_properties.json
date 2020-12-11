@@ -2,17 +2,7 @@
     "configurations": [
         {
             "name": "Linux",
-            "includePath": [
-                "${env:HOME}/.local/libexec/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include",
-                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include",
-                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include",
-                "${env:HOME}/.local/libexec/android-ndk-r14b/sources/android/support/include",
-                "/system/include"
-            ],
-            "defines": [
-                "__ANDROID__",
-                "ANDROID"
-            ]
+            "compilerPath": "${workspaceFolder}/.vscode/compile_commands.json"
         }
     ],
     "version": 4

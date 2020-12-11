@@ -7,6 +7,8 @@
 
 // libxkbcommon/tools/interactive-x11.c
 
+#include "pt_wsi_window_posix_linux_x11.h"
+
 int main(int argc, char **argv)
 {
     
