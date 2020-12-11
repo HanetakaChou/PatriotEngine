@@ -40,10 +40,13 @@ then
 
     apt install libc6-dev:i386
     apt install libstdc++-5-dev:i386
+    apt install libxcb1-dev:i386
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);
 then
     apt install libc6-dev
     apt install libstdc++-5-dev
+    apt install libxcb1-dev
+    
     apt install gcc
     apt install g++
     apt install clang
