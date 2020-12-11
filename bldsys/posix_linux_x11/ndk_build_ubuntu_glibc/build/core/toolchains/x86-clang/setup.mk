@@ -27,8 +27,16 @@
 # Override the toolchain prefix
 #
 
-TARGET_CC := /usr/bin/clang$(HOST_EXEEXT)
-TARGET_CXX := /usr/bin/clang++$(HOST_EXEEXT)
+LLVM_TOOLCHAIN_PREBUILT_ROOT := /usr
+LLVM_TOOLCHAIN_PREFIX := $(LLVM_TOOLCHAIN_PREBUILT_ROOT)/bin/
+
+TOOLCHAIN_NAME := i686-linux-android
+BINUTILS_ROOT := $(call get-binutils-root,$(NDK_ROOT),$(TOOLCHAIN_NAME))
+TOOLCHAIN_ROOT := $(call get-toolchain-root,x86-4.9)
+TOOLCHAIN_PREFIX := $(TOOLCHAIN_ROOT)/bin/$(TOOLCHAIN_NAME)-
+
+TARGET_CC := $(LLVM_TOOLCHAIN_PREFIX)clang$(HOST_EXEEXT)
+TARGET_CXX := $(LLVM_TOOLCHAIN_PREFIX)clang++$(HOST_EXEEXT)
 
 TARGET_CFLAGS := \
     -m32 \

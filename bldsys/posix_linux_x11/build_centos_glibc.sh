@@ -5,10 +5,16 @@
 # yum install glibc-devel
 # yum install libstdc++-devel
 # yum install libstdc++-static
+# yum install compiler-rt 
+# yum install libunwind-devel
+# yum install libcxx-devel
 
 # yum install glibc-devel.i686
 # yum install libstdc++-devel.i686
 # yum install libstdc++-static.i686
+# yum install compiler-rt.i686 
+# yum install libunwind-devel.i686
+# yum install libcxx-devel.i686
 
 if test \( $# -ne 2 \);
 then
