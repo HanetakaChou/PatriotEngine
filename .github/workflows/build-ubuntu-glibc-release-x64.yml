@@ -13,7 +13,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: apt install
-      run: sudo apt install libstdc++-5-dev
     - name: build ubuntu glibc release x64
       run: ./bldsys/posix_linux_x11/build_ubuntu_glibc.sh release x64
