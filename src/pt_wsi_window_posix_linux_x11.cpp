@@ -6,3 +6,8 @@
 // #define KEY_ESC 9
 
 // libxkbcommon/tools/interactive-x11.c
+
+int main(int argc, char **argv)
+{
+    
+}

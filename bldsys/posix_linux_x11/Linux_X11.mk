@@ -11,7 +11,7 @@ LOCAL_MODULE := libpt_mcrt
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	
-#LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_MCRT_ATTR=PT_EXPORT
@@ -28,3 +28,40 @@ LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter # fix m
 
 include $(BUILD_SHARED_LIBRARY)
 
+# pt_launcher
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_launcher
+
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_wsi_window_posix_linux_x11.cpp \
+
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPT_WSI_ATTR=PT_EXPORT
+
+LOCAL_CPPFLAGS += -std=c++11
+
+#LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/include/
+
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
+
+#LOCAL_C_INCLUDES += /system/include
+
+#ifeq (x86_64,$(TARGET_ARCH))
+#LOCAL_LDFLAGS += -L/system/lib64
+#endif
+
+#ifeq (x86,$(TARGET_ARCH))
+#LOCAL_LDFLAGS += -L/system/lib
+#endif
+
+LOCAL_LDLIBS += -lxcb
+
+#LOCAL_SHARED_LIBRARIES := libPTApp
+
+include $(BUILD_EXECUTABLE)
