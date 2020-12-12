@@ -18,6 +18,11 @@
 #ifndef _MCRT_MALLOC_H_
 #define _MCRT_MALLOC_H_ 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "pt_common.h"
 #include "pt_mcrt_common.h"
 
@@ -30,5 +35,9 @@ PT_MCRT_ATTR void *PT_CALL mcrt_realloc(void *ptr, size_t size);
 PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment);
 PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
 PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

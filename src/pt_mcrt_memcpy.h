@@ -18,11 +18,20 @@
 #ifndef _MCRT_MEMCPY_H_
 #define _MCRT_MEMCPY_H_ 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "pt_common.h"
 #include "pt_mcrt_common.h"
 
 #include <stddef.h>
 
 PT_MCRT_ATTR bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
