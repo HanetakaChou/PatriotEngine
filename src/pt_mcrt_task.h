@@ -30,7 +30,20 @@ extern "C"
     // VK_DEFINE_NON_DISPATCHABLE_HANDLE
     typedef struct mcrt_task_T *mcrt_task;
 
-    PT_MCRT_ATTR mcrt_task PT_CALL allocate_root(mcrt_task (*execute_callback)(void *user_data), void *user_data);
+    // The tbb task has no destructor! //It's designed to store the lightweight data.
+
+    PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_root(mcrt_task (*execute_callback)(char user_data[128]), void (*init_callback)(char user_data[128]));
+
+    // Continuation Passing
+    // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/continuation-passing.html
+    PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_continuation(mcrt_task self, mcrt_task (*execute_callback)(char user_data[128]), void (*init_callback)(char user_data[128]));
+
+    // Recycling
+    // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/recycling.html
+    PT_MCRT_ATTR void PT_CALL mcrt_task_recycle_as_child_of(mcrt_task self, mcrt_task successor);
+
+    // Scheduler Bypass
+    // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/scheduler-bypass.html
 
 #ifdef __cplusplus
 }

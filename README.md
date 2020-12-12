@@ -9,7 +9,11 @@ The contents of this book is likely to be as follows:
 >    
 > [docs/malloc.md](docs/malloc.md)  
 > [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
->        
+>
+> --- 
+>
+> [docs/task.zh_CN.md](docs/task.zh_CN.md)
+>       
 > ---    
 >     
 > [docs/rendering_pipeline.md](docs/rendering_pipeline.md)      
