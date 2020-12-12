@@ -28,6 +28,7 @@ LOCAL_MODULE := libpt_mcrt
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -43,6 +44,8 @@ endif
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
+
+LOCAL_SHARED_LIBRARIES := pt_tbbmalloc pt_irml pt_tbb
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -83,3 +86,54 @@ LOCAL_SHARED_LIBRARIES := libpt_mcrt
 #endif
 
 include $(BUILD_EXECUTABLE)
+
+# intel_tbb  
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_tbbmalloc
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+#--- 
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_irml
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+#--- 
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_tbb
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)

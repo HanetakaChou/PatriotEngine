@@ -18,3 +18,17 @@
 #include "pt_mcrt_thread.h"
 #include "pt_mcrt_atomic.h"
 #include "pt_mcrt_malloc.h"
+
+#include <tbb/scalable_allocator.h>
+
+PT_MCRT_ATTR void *PT_CALL mcrt_malloc(size_t size)
+{
+    return scalable_malloc(size);
+}
+
+PT_MCRT_ATTR void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
+PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
+PT_MCRT_ATTR void *PT_CALL mcrt_realloc(void *ptr, size_t size);
+PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment);
+PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
+PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);

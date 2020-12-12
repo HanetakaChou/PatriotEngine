@@ -58,6 +58,7 @@ TARGET_LDFLAGS += \
     -m32 \
     -no-canonical-prefixes \
     -pthread \
+    -fuse-ld=gold \
 
 TARGET_x86_release_CFLAGS := \
     -O2 \

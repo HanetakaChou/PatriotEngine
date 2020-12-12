@@ -44,6 +44,7 @@ TARGET_LDFLAGS := \
     -m32 \
     -no-canonical-prefixes \
     -pthread \
+    -fuse-ld=gold \
 
 TARGET_CFLAGS += -fstack-protector-strong
 

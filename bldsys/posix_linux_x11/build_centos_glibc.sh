@@ -99,7 +99,7 @@ else
     exit 1
 fi
 
-OUT_BINS="pt_launcher libpt_mcrt.so"
+OUT_BINS="pt_launcher libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so"
 
 # build by ndk  
 rm -rf obj

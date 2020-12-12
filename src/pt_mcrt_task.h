@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_MALLOC_H_
-#define _MCRT_MALLOC_H_ 1
+#ifndef _MCRT_TASK_H_
+#define _MCRT_TASK_H_ 1
 
 #ifdef __cplusplus
 extern "C"
@@ -26,15 +26,11 @@ extern "C"
 #include "pt_common.h"
 #include "pt_mcrt_common.h"
 
-#include <stddef.h>
+    // VK_DEFINE_HANDLE
+    // VK_DEFINE_NON_DISPATCHABLE_HANDLE
+    typedef struct mcrt_task_T *mcrt_task;
 
-    PT_MCRT_ATTR void *PT_CALL mcrt_malloc(size_t size);
-    PT_MCRT_ATTR void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
-    PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
-    PT_MCRT_ATTR void *PT_CALL mcrt_realloc(void *ptr, size_t size);
-    PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment);
-    PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
-    PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);
+    PT_MCRT_ATTR mcrt_task PT_CALL allocate_root(mcrt_task (*execute_callback)(void *user_data), void *user_data);
 
 #ifdef __cplusplus
 }
