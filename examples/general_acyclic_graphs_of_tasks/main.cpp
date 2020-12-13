@@ -137,9 +137,9 @@ class dag_task
         }
         else
         {
-            int old_ref_count = mcrt_task_decrement_ref_count(s) + 1;
+            int new_ref_count = mcrt_task_decrement_ref_count(s);
 
-            if (old_ref_count > 1)
+            if (new_ref_count > 0)
             {
                 return;
             }
