@@ -20,8 +20,8 @@
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_posix_linux_x11.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/general_acyclic_graphs_of_tasks",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_WSI_ATTR=PT_EXPORT -I${workspaceFolder}/src ${workspaceFolder}/examples/general_acyclic_graphs_of_tasks/main.cpp -o ${workspaceFolder}/obj/examples/general_acyclic_graphs_of_tasks/main.o",
-        "file": "${workspaceFolder}/examples/general_acyclic_graphs_of_tasks/main.cpp"
+        "directory": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_WSI_ATTR=PT_EXPORT -I${workspaceFolder}/src ${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks/main.cpp -o ${workspaceFolder}/obj/examples/mcrt/general_acyclic_graphs_of_tasks/main.o",
+        "file": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks/main.cpp"
     }
 ]
