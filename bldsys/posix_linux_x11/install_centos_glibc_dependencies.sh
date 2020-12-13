@@ -54,7 +54,6 @@ then
     yum install gcc  
     yum install gcc-c++
     yum install clang
-    yum install gdb-gdbserver
     yum install chrpath
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);
 then
@@ -68,6 +67,5 @@ then
     yum install gcc  
     yum install gcc-c++
     yum install clang
-    yum install gdb-gdbserver
     yum install chrpath
 fi
