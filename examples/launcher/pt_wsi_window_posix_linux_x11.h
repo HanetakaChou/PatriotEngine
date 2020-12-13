@@ -15,10 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pt_wsi_window.h"
+#include <pt_wsi_window.h>
 
 #include <xcb/xcb.h>
-#include "pt_mcrt_thread.h"
+#include <pt_mcrt_thread.h>
 #include <vector>
 
 class shell_x11 : wsi_iwindow

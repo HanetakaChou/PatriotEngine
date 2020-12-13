@@ -19,47 +19,87 @@
 
 #include <tbb/task.h>
 
-inline mcrt_task wrap(tbb::task *t) { return reinterpret_cast<mcrt_task>(t); }
+class mcrt_task_t;
 
-inline tbb::task *unwrap(mcrt_task t) { return reinterpret_cast<tbb::task *>(t); }
+inline mcrt_task wrap(class mcrt_task_t *t) { return reinterpret_cast<mcrt_task>(t); }
 
-class pt_mcrt_task : public tbb::task
+inline class mcrt_task_t *unwrap(mcrt_task t) { return reinterpret_cast<class mcrt_task_t *>(t); }
+
+class mcrt_task_t : public tbb::task
 {
-    mcrt_task (*m_execute_callback)(char user_data[]);
+    mcrt_task (*m_execute_callback)(mcrt_task_user_data_t *user_data);
 
-public:
-    char m_user_data[128];
+    mcrt_task_user_data_t m_user_data;
 
-private:
     tbb::task *execute() override
     {
-        mcrt_task t = m_execute_callback(m_user_data);
+        mcrt_task t = m_execute_callback(&m_user_data);
         return unwrap(t);
     }
 
 public:
-    inline pt_mcrt_task(mcrt_task (*execute_callback)(char user_data[])) : m_execute_callback(execute_callback) {}
+    inline mcrt_task_t(mcrt_task (*execute_callback)(mcrt_task_user_data_t *user_data)) : m_execute_callback(execute_callback) {}
+
+    inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
 
 // scheduler.h
 // quick_task_size
-static_assert(sizeof(pt_mcrt_task) <= 192UL, "sizeof(pt_mcrt_task) <= quick_task_size");
+static_assert(sizeof(mcrt_task_t) <= 192UL, "sizeof(mcrt_task_t) <= quick_task_size");
 
-PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_root(mcrt_task (*execute_callback)(char user_data[128]), void (*init_callback)(char user_data[128]))
+PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_root(mcrt_task (*execute_callback)(mcrt_task_user_data_t *user_data))
 {
-    pt_mcrt_task *t = new (tbb::task::allocate_root()) pt_mcrt_task(execute_callback);
-    init_callback(t->m_user_data);
+    mcrt_task_t *t = new (tbb::task::allocate_root()) mcrt_task_t(execute_callback);
     return wrap(t);
 }
 
-PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_continuation(mcrt_task self, mcrt_task (*execute_callback)(char user_data[128]), void (*init_callback)(char user_data[128]))
+PT_MCRT_ATTR mcrt_task PT_CALL mcrt_task_allocate_continuation(mcrt_task self, mcrt_task (*execute_callback)(mcrt_task_user_data_t *user_data))
 {
-    pt_mcrt_task *t = new (unwrap(self)->allocate_continuation()) pt_mcrt_task(execute_callback);
-    init_callback(t->m_user_data);
+    mcrt_task_t *t = new (unwrap(self)->allocate_continuation()) mcrt_task_t(execute_callback);
     return wrap(t);
+}
+
+PT_MCRT_ATTR mcrt_task_user_data_t *PT_CALL mcrt_task_user_data(mcrt_task self)
+{
+    return unwrap(self)->user_data();
+}
+
+PT_MCRT_ATTR void PT_CALL mcrt_task_destory(mcrt_task victim)
+{
+    return tbb::task::destroy(*unwrap(victim));
 }
 
 PT_MCRT_ATTR void PT_CALL mcrt_task_recycle_as_child_of(mcrt_task self, mcrt_task successor)
 {
     return unwrap(self)->recycle_as_child_of(*unwrap(successor));
+}
+
+PT_MCRT_ATTR int PT_CALL mcrt_task_ref_count(mcrt_task self)
+{
+    return unwrap(self)->ref_count();
+}
+
+PT_MCRT_ATTR void PT_CALL mcrt_task_set_ref_count(mcrt_task self, int count)
+{
+    return unwrap(self)->set_ref_count(count);
+}
+
+PT_MCRT_ATTR int PT_CALL mcrt_task_decrement_ref_count(mcrt_task self)
+{
+    return unwrap(self)->decrement_ref_count();
+}
+
+PT_MCRT_ATTR void PT_CALL mcrt_task_set_parent(mcrt_task self, mcrt_task parent)
+{
+    return unwrap(self)->set_parent(unwrap(parent));
+}
+
+PT_MCRT_ATTR void PT_CALL mcrt_task_spawn(mcrt_task t)
+{
+    return tbb::task::spawn(*unwrap(t));
+}
+
+PT_MCRT_ATTR void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task self, mcrt_task child)
+{
+    return unwrap(self)->spawn_and_wait_for_all(*unwrap(child));
 }

@@ -19,7 +19,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <X11/keysym.h>
-#include "pt_mcrt_memcpy.h"
+#include <pt_mcrt_memcpy.h>
 
 int main(int argc, char **argv)
 {

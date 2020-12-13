@@ -43,20 +43,73 @@ endif
 
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
-LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
+LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 
 LOCAL_SHARED_LIBRARIES := pt_tbbmalloc pt_irml pt_tbb
 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../src) 
+
 include $(BUILD_SHARED_LIBRARY)
 
-# pt_launcher
+# intel_tbb  
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_tbbmalloc
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+#--- 
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_irml
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+#--- 
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_tbb
+
+ifeq ($(TARGET_ARCH_ABI),x86)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
+endif
+ifeq ($(TARGET_ARCH_ABI),x86_64)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
+endif
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+
+include $(PREBUILT_SHARED_LIBRARY)
+
+# examples / pt_launcher
 
 include $(CLEAR_VARS)
 
 LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_wsi_window_posix_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_posix_linux_x11.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -66,8 +119,9 @@ LOCAL_CFLAGS += -DPT_WSI_ATTR=PT_EXPORT
 LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
-LOCAL_LDFLAGS += -Wl,-rpath,/XXXXXX # chrpath can only make path shorter
+LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 
 LOCAL_LDLIBS += -lxcb
 
@@ -87,53 +141,27 @@ LOCAL_SHARED_LIBRARIES := libpt_mcrt
 
 include $(BUILD_EXECUTABLE)
 
-# intel_tbb  
+# examples / general_acyclic_graphs_of_tasks
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := pt_tbbmalloc
+LOCAL_MODULE := pt_general_acyclic_graphs_of_tasks
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
-endif
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../examples/general_acyclic_graphs_of_tasks)/main.cpp \
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPT_WSI_ATTR=PT_EXPORT
 
-include $(PREBUILT_SHARED_LIBRARY)
+LOCAL_CPPFLAGS += -std=c++11
 
-#--- 
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 
-include $(CLEAR_VARS)
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 
-LOCAL_MODULE := pt_irml
+LOCAL_SHARED_LIBRARIES := libpt_mcrt
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
-endif
-
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
-
-include $(PREBUILT_SHARED_LIBRARY)
-
-#--- 
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := pt_tbb
-
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_release_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
-endif
-
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
-
-include $(PREBUILT_SHARED_LIBRARY)
+include $(BUILD_EXECUTABLE)

@@ -23,11 +23,11 @@ TBB同时支持spawn和enqueue两种策略，但是，在一般情况下，我�
 custom_scheduler.local_wait_for_all(parent, child) #src/tbb/custom_scheduler.h
     t = child #直接将child用于Scheduler Bypass，不过可能为NULL
     custom_scheduler.process_bypass_loop   
-    if(1 == parent.ref_count) return    
+    if(1 == parent.ref_count) { parent.ref_count = 0 return }    
     t = custom_scheduler.receive_or_steal_task  
     if(NULL == t) return
 ```   
-//注："if(1 == parent.ref_count) return"是唯一的判定wait的task的是否满足条件的代码，可以看出，Work-Stealing策略的根本缺陷在于，当wait的task的满足条件时，wait函数可能并不会立即返回，而是在执行其它的task（比如，假设第一次判定不成功，那么需要经历custom_scheduler.receive_or_steal_task和custom_scheduler.process_bypass_loop后，才会进行第二次判定）
+//注："if(1 == parent.ref_count) { parent.ref_count = 0 return }"是唯一的判定wait的task的是否满足条件的代码，可以看出，Work-Stealing策略的根本缺陷在于，当wait的task的满足条件时，wait函数可能并不会立即返回，而是在执行其它的task（比如，假设第一次判定不成功，那么需要经历custom_scheduler.receive_or_steal_task和custom_scheduler.process_bypass_loop后，才会进行第二次判定）
 
 To Do: **此处应有SVG图**    
 

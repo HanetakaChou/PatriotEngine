@@ -60,49 +60,27 @@ cd ${MY_DIR}
 
 if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
 then
-    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
 then
-    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
 then
-    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    INTERMEDIATE_DIR="${MY_DIR}/libs/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/release/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
 then
-    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
-    INTERMEDIATE_DIR="${MY_DIR}/libs/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/release/"
 else
     echo "Unsupported config \"$1\" and platform \"$2\"!"
     exit 1
 fi
 
-OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so pt_launcher pt_general_acyclic_graphs_of_tasks"
+TEST=$(${OUT_DIR}/pt_general_acyclic_graphs_of_tasks)
 
-# build by ndk  
-rm -rf obj
-rm -rf libs
-ndk-build ${NDK_BUILD_ARGS}
-
-# before execute change the rpath to \$ORIGIN    
-# fix me: define the $ORIGIN correctly in the Linux_X11.mk
-for i in ${OUT_BINS}
-do
-    chrpath -r '$ORIGIN' ${INTERMEDIATE_DIR}/${i} 
-done
-
-# mkdir the out dir if necessary
-mkdir -p ${OUT_DIR}
-
-# copy the unstriped so to out dir
-for i in ${OUT_BINS}
-do
-    rm -rf ${OUT_DIR}/${i}
-    cp -f ${INTERMEDIATE_DIR}/${i} ${OUT_DIR}/
-done
+if test "${TEST}"  ==  "15 + 20 = 35";
+then
+    echo "pt_general_acyclic_graphs_of_tasks passed with \"${TEST}\""
+else
+    echo "pt_general_acyclic_graphs_of_tasks failed with \"${TEST}\""
+    exit 1
+fi
