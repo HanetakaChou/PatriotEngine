@@ -15,24 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _WSI_COMMON_H_
-#define _WSI_COMMON_H_ 1
+#ifndef _GFX_IMAGING_H_
+#define _GFX_IMAGING_H_ 1
 
-#include "pt_common.h"
+#include "pt_gfx_common.h"
+#include "pt_wsi_window.h"
 
-#ifndef PT_WSI_ATTR
-#define PT_WSI_ATTR PT_IMPORT
-#endif
-
-struct wsi_iwindow
+struct gfx_iimaging
 {
-    //ANativeActivityCallbacks::onNativeWindowResized
-    //MTKViewDelegate::drawableSizeWillChange
-    virtual void listen_size_change(void (*size_change_callback)(void *connection, void *window, float width, float height, void *user_data), void *user_data) = 0;
-
-    //ANativeActivityCallbacks::onNativeWindowRedrawNeeded
-    //MTKViewDelegate::drawInMTKView
-    virtual void listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data) = 0; //We may use the given window to recreate the swapchain.
+    
 };
+
+PT_GFX_ATTR gfx_iimaging* PT_CALL gfx_image_synthesizer_init(struct wsi_iwindow *window);
 
 #endif

@@ -19,6 +19,7 @@
 
 #include <xcb/xcb.h>
 #include <pt_mcrt_thread.h>
+#include <pt_gfx_imaging.h>
 #include <vector>
 
 class shell_x11 : wsi_iwindow
@@ -37,6 +38,12 @@ class shell_x11 : wsi_iwindow
     mcrt_native_thread_id m_draw_request_thread;
     static void *draw_request_main(void *);
 
+    gfx_iimaging *m_imaging;
+    void (*m_size_change_callback)(void *connection, void *window, float width, float height, void *user_data);
+    void *m_size_change_callback_user_data;
+    void (*m_draw_request_callback)(void *connection, void *window, void *user_data);
+    void *m_draw_request_callback_user_data;
+
     bool m_loop;
 
     xcb_keycode_t m_min_keycode;
@@ -46,7 +53,7 @@ class shell_x11 : wsi_iwindow
     void sync_keysyms();
     xcb_keysym_t keycode_to_keysym(xcb_keycode_t keycode);
 
-    void listen_size_change(void (*size_change_callback)(float width, float height, void *user_data), void *user_data) override;
+    void listen_size_change(void (*size_change_callback)(void *connection, void *window, float width, float height, void *user_data), void *user_data) override;
     void listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data) override;
 
 public:

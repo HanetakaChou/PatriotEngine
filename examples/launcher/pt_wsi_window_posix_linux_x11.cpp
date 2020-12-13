@@ -120,6 +120,13 @@ void shell_x11::init()
     error_generic = xcb_request_check(m_connection, cookie_map_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
+    // member
+    m_size_change_callback = NULL;
+    m_size_change_callback_user_data = NULL;
+    m_draw_request_callback = NULL;
+    m_draw_request_callback_user_data = NULL;
+    m_loop = true;
+
     // draw_request_thread
     bool result = mcrt_native_thread_create(&m_draw_request_thread, draw_request_main, this);
     assert(result);
@@ -135,18 +142,30 @@ void *shell_x11::draw_request_main(void *arg)
 {
     shell_x11 *self = static_cast<shell_x11 *>(arg);
 
-    //check listen_size_change
-    //check listen_draw_request
+    self->m_imaging = gfx_image_synthesizer_init(self);
+    assert(self->m_size_change_callback != NULL);
+    assert(self->m_size_change_callback_user_data != NULL);
+    assert(self->m_draw_request_callback != NULL);
+    assert(self->m_draw_request_callback_user_data != NULL);
+
+    while (self->m_loop)
+    {
+        self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(self->m_window), self->m_draw_request_callback_user_data);
+    }
 
     return NULL;
 }
 
-void shell_x11::listen_size_change(void (*size_change_callback)(float width, float height, void *user_data), void *user_data)
+void shell_x11::listen_size_change(void (*size_change_callback)(void *connection, void *window, float width, float height, void *user_data), void *user_data)
 {
+    m_size_change_callback = size_change_callback;
+    m_size_change_callback_user_data = user_data;
 }
 
 void shell_x11::listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data)
 {
+    m_draw_request_callback = draw_request_callback;
+    m_draw_request_callback_user_data = user_data;
 }
 
 void shell_x11::sync_keysyms()
@@ -200,8 +219,6 @@ xcb_keysym_t shell_x11::keycode_to_keysym(xcb_keycode_t keycode)
 
 void shell_x11::run()
 {
-    m_loop = true;
-
     xcb_generic_event_t *event;
 
     while (m_loop && ((event = xcb_wait_for_event(m_connection)) != NULL))
@@ -237,6 +254,18 @@ void shell_x11::run()
                 }
                 break;
                 }
+            }
+        }
+        break;
+        case XCB_CONFIGURE_NOTIFY:
+        {
+            assert(XCB_CONFIGURE_NOTIFY == (event->response_type & (~uint8_t(0X80))));
+
+            xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
+
+            if (m_size_change_callback)
+            {
+                m_size_change_callback(m_connection, reinterpret_cast<void *>(m_window), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
             }
         }
         break;

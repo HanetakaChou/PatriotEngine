@@ -9,17 +9,17 @@
             "type": "cppdbg",
             "request": "launch",
             //"preLaunchTask": "build-centos-glibc-debug-x86",
-            //"program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_launcher", //should set executable in obj here instead of the one in libs
-            "program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_general_acyclic_graphs_of_tasks", //should set executable in obj here instead of the one in libs
+            "program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_launcher", //should set executable in obj here instead of the one in libs
+            //"program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_general_acyclic_graphs_of_tasks", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            //"environment": [
-            //    {
-            //        "name": "DISPLAY",
-            //        "value": "10.170.232.57:0.0"
-            //    }
-            //],
+            "environment": [
+                {
+                    "name": "DISPLAY",
+                    "value": "10.170.232.57:0.0"
+                }
+            ],
             "externalConsole": false,
             //"targetArchitecture": "x86",
             "MIMode": "gdb",

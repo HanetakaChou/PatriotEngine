@@ -15,24 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pt_mcrt_thread.h"
-#include "pt_mcrt_atomic.h"
-#include "pt_mcrt_malloc.h"
+#include "pt_gfx_imaging_vk.inl"
+#include <xcb/xcb.h>
 
-#include <tbb/scalable_allocator.h>
+static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
 
-PT_MCRT_ATTR void *PT_CALL mcrt_malloc(size_t size)
+void gfx_iimaging_vk::size_change_callback(void *_connection, void *_window, float width, float height)
 {
-    return scalable_malloc(size);
+    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
+    xcb_window_t window = reinterpret_cast<xcb_window_t>(_window);
 }
 
-PT_MCRT_ATTR void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
-PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
-PT_MCRT_ATTR void *PT_CALL mcrt_realloc(void *ptr, size_t size);
-PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment)
+void gfx_iimaging_vk::draw_request_callback(void *_connection, void *_window)
 {
-    return scalable_aligned_malloc(size, alignment);
+    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
+    xcb_window_t window = reinterpret_cast<xcb_window_t>(_window);
 }
-
-PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
-PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);

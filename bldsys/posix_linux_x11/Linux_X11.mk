@@ -102,6 +102,37 @@ LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/
 
 include $(PREBUILT_SHARED_LIBRARY)
 
+# libpt_gfx
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libpt_gfx
+
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk.cpp \
+  $(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk_wsi_posix_linux_x11.cpp \
+
+LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPT_GFX_ATTR=PT_EXPORT
+	
+LOCAL_CPPFLAGS += -std=c++11
+
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_CFLAGS += -mssse3
+endif
+
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
+
+LOCAL_SHARED_LIBRARIES := libpt_mcrt
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../src) 
+
+include $(BUILD_SHARED_LIBRARY)
+
 # examples / pt_launcher
 
 include $(CLEAR_VARS)
@@ -125,7 +156,7 @@ LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 
 LOCAL_LDLIBS += -lxcb
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx
 
 #LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../../ThirdParty/PosixLinuxX11/Bionic-Redistributable/include/
 
@@ -153,7 +184,6 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
-LOCAL_CFLAGS += -DPT_WSI_ATTR=PT_EXPORT
 
 LOCAL_CPPFLAGS += -std=c++11
 
