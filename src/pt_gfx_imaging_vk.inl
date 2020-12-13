@@ -22,6 +22,8 @@
 
 class gfx_iimaging_vk : public gfx_iimaging
 {
+    void destroy() override;
+
 public:
     void size_change_callback(void *connection, void *window, float width, float height);
     void draw_request_callback(void *connection, void *window);

@@ -307,7 +307,7 @@ void shell_x11::run()
 
 void shell_x11::destroy()
 {
-    // shutdown graphics related
+    m_imaging->destroy();
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_connection, m_window);
 

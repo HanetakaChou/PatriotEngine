@@ -27,8 +27,14 @@ PT_MCRT_ATTR void *PT_CALL mcrt_malloc(size_t size)
 }
 
 PT_MCRT_ATTR void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
-PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr);
+
+PT_MCRT_ATTR void PT_CALL mcrt_free(void *ptr)
+{
+    return scalable_free(ptr);
+}
+
 PT_MCRT_ATTR void *PT_CALL mcrt_realloc(void *ptr, size_t size);
+
 PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment)
 {
     return scalable_aligned_malloc(size, alignment);
