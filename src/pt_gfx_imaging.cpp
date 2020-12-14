@@ -15,22 +15,33 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _GFX_IMAGING_VK_INL_
-#define _GFX_IMAGING_VK_INL_ 1
-
+#include <stddef.h>
 #include "pt_gfx_imaging.h"
+#include "pt_gfx_imaging_d3d12.inl"
+#include "pt_gfx_imaging_mtl.inl"
+#include "pt_gfx_imaging_vk.inl"
 
-class gfx_iimaging_vk : public gfx_iimaging
+PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_imaging_init(struct wsi_iwindow *window)
 {
-    ~gfx_iimaging_vk();
+    gfx_iimaging *imaging;
 
-public:
-    bool init();
-    void destroy() override;
-    void size_change_callback(void *connection, void *window, float width, float height);
-    void draw_request_callback(void *connection, void *window);
-};
+    imaging = gfx_imaging_d3d12_init(window);
+    if (NULL != imaging)
+    {
+        return imaging;
+    }
 
-gfx_iimaging_vk *gfx_imaging_vk_init(struct wsi_iwindow *window);
+    imaging = gfx_imaging_mtl_init(window);
+    if (NULL != imaging)
+    {
+        return imaging;
+    }
 
-#endif
+    imaging = gfx_imaging_vk_init(window);
+    if (NULL != imaging)
+    {
+        return imaging;
+    }
+
+    return NULL;
+}

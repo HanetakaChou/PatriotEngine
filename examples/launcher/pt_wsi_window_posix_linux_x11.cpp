@@ -143,7 +143,7 @@ void *shell_x11::draw_request_main(void *arg)
 {
     shell_x11 *self = static_cast<shell_x11 *>(arg);
 
-    self->m_imaging = gfx_image_synthesizer_init(self);
+    self->m_imaging = gfx_imaging_init(self);
     assert(self->m_size_change_callback != NULL);
     assert(self->m_size_change_callback_user_data != NULL);
     assert(self->m_draw_request_callback != NULL);

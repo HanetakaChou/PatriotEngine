@@ -88,7 +88,7 @@ OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.
 # build by ndk  
 rm -rf obj
 rm -rf libs
-${MY_DIR}/ndk_build_glibc/ndk-build V=1 VERBOSE=1 ${NDK_BUILD_ARGS}
+${MY_DIR}/ndk_build_glibc/ndk-build ${NDK_BUILD_ARGS} #V=1 VERBOSE=1 
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk

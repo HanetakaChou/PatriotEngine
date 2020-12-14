@@ -19,7 +19,7 @@
 #include "pt_mcrt_malloc.h"
 #include <new>
 
-PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_image_synthesizer_init(struct wsi_iwindow *window)
+gfx_iimaging_vk *gfx_imaging_vk_init(struct wsi_iwindow *window)
 {
     gfx_iimaging_vk *imaging = new (mcrt_aligned_malloc(sizeof(gfx_iimaging_vk), alignof(gfx_iimaging_vk))) gfx_iimaging_vk();
     window->listen_size_change(
@@ -32,7 +32,21 @@ PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_image_synthesizer_init(struct wsi_iwindow 
             static_cast<gfx_iimaging_vk *>(user_data)->draw_request_callback(connection, window);
         },
         imaging);
-    return imaging;
+
+    if (imaging->init())
+    {
+        return imaging;
+    }
+    else
+    {
+        imaging->destroy();
+        return NULL;
+    }
+}
+
+bool gfx_iimaging_vk::init()
+{
+    return true;
 }
 
 gfx_iimaging_vk::~gfx_iimaging_vk()

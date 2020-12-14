@@ -17,7 +17,7 @@
             "environment": [
                 {
                     "name": "DISPLAY",
-                    "value": "10.170.232.57:0.0"
+                    "value": "10.170.232.63:0.0"
                 }
             ],
             "externalConsole": false,
