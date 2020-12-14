@@ -41,13 +41,15 @@ ifeq (x86,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mssse3
 endif
 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
+
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 
 LOCAL_SHARED_LIBRARIES := pt_tbbmalloc pt_irml pt_tbb
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../src) 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
 
@@ -113,7 +115,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_d3d12.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_mtl.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk_wsi_posix_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk_posix_linux_x11.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -126,13 +128,15 @@ ifeq (x86,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mssse3
 endif
 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
+
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../src) 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
 

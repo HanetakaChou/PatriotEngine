@@ -16,7 +16,7 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_imaging_d3d12.inl"
+#include "pt_gfx_imaging_d3d12.h"
 
 class gfx_iimaging_d3d12 *gfx_imaging_d3d12_init(struct wsi_iwindow *window)
 {

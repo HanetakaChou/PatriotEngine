@@ -15,16 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _GFX_IMAGING_MTL_INL_
-#define _GFX_IMAGING_MTL_INL_ 1
+#ifndef _GFX_IMAGING_VK_H_
+#define _GFX_IMAGING_VK_H_ 1
 
 #include "pt_gfx_imaging.h"
 
-class gfx_iimaging_mtl : public gfx_iimaging
+class gfx_iimaging_vk : public gfx_iimaging
 {
+    ~gfx_iimaging_vk();
+
+public:
+    bool init();
     void destroy() override;
+    void size_change_callback(void *connection, void *window, float width, float height);
+    void draw_request_callback(void *connection, void *window);
 };
 
-class gfx_iimaging_mtl *gfx_imaging_mtl_init(struct wsi_iwindow *window);
+gfx_iimaging_vk *gfx_imaging_vk_init(struct wsi_iwindow *window);
 
 #endif

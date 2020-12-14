@@ -16,10 +16,10 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_imaging.h"
-#include "pt_gfx_imaging_d3d12.inl"
-#include "pt_gfx_imaging_mtl.inl"
-#include "pt_gfx_imaging_vk.inl"
+#include <pt_gfx_imaging.h>
+#include "pt_gfx_imaging_d3d12.h"
+#include "pt_gfx_imaging_mtl.h"
+#include "pt_gfx_imaging_vk.h"
 
 PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_imaging_init(struct wsi_iwindow *window)
 {

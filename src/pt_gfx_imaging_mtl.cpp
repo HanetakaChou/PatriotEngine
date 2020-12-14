@@ -16,7 +16,7 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_imaging_mtl.inl"
+#include "pt_gfx_imaging_mtl.h"
 
 class gfx_iimaging_mtl *gfx_imaging_mtl_init(struct wsi_iwindow *window)
 {

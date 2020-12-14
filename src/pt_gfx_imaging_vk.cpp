@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pt_gfx_imaging_vk.inl"
+#include "pt_gfx_imaging_vk.h"
 #include "pt_mcrt_malloc.h"
 #include <new>
 

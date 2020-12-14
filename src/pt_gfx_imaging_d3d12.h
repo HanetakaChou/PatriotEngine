@@ -15,20 +15,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include "pt_gfx_imaging_vk.inl"
-#include <xcb/xcb.h>
+#ifndef _GFX_IMAGING_D3D12_H_
+#define _GFX_IMAGING_D3D12_H_ 1
 
-static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
+#include "pt_gfx_imaging.h"
 
-void gfx_iimaging_vk::size_change_callback(void *_connection, void *_window, float width, float height)
+class gfx_iimaging_d3d12 : public gfx_iimaging
 {
-    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-}
+    void destroy() override;
+};
 
-void gfx_iimaging_vk::draw_request_callback(void *_connection, void *_window)
-{
-    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-}
+class gfx_iimaging_d3d12 *gfx_imaging_d3d12_init(struct wsi_iwindow *window);
+
+#endif
