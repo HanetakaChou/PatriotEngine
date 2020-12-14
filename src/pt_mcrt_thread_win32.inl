@@ -91,6 +91,11 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 	return (FlsGetValue(key));
 }
 
+inline void mcrt_os_yield()
+{
+	SwitchToThread();
+}
+
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)
 {
 	BOOL res = InitializeCriticalSectionEx(mutex, 0, CRITICAL_SECTION_NO_DEBUG_INFO);

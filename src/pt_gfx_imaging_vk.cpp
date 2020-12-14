@@ -35,8 +35,13 @@ PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_image_synthesizer_init(struct wsi_iwindow 
     return imaging;
 }
 
-void gfx_iimaging::destroy()
+gfx_iimaging_vk::~gfx_iimaging_vk()
 {
-    this->~gfx_iimaging();
+    
+}
+
+void gfx_iimaging_vk::destroy()
+{
+    this->~gfx_iimaging_vk();
     mcrt_free(this);
 }

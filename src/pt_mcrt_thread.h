@@ -66,6 +66,8 @@ inline void mcrt_native_tls_free(mcrt_native_tls_key key);
 inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value);
 inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key);
 
+inline void mcrt_os_yield();
+
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex);
 inline void mcrt_os_mutex_destroy(mcrt_mutex_t *mutex);
 inline void mcrt_os_mutex_lock(mcrt_mutex_t *mutex);

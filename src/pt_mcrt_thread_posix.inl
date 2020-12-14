@@ -61,6 +61,12 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 	return (pthread_getspecific(key));
 }
 
+inline void mcrt_os_yield()
+{
+	int res = pthread_yield();
+	assert(res == 0);
+}
+
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)
 {
 	int res = pthread_mutex_init(mutex, NULL);

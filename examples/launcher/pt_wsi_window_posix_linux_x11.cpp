@@ -121,11 +121,12 @@ void shell_x11::init()
     assert(error_generic == NULL);
 
     // member
+    m_loop = true;
+    m_draw_request_thread_term = false;
     m_size_change_callback = NULL;
     m_size_change_callback_user_data = NULL;
     m_draw_request_callback = NULL;
     m_draw_request_callback_user_data = NULL;
-    m_loop = true;
 
     // draw_request_thread
     bool result = mcrt_native_thread_create(&m_draw_request_thread, draw_request_main, this);
@@ -152,6 +153,10 @@ void *shell_x11::draw_request_main(void *arg)
     {
         self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(self->m_window), self->m_draw_request_callback_user_data);
     }
+
+    self->m_imaging->destroy();
+
+    self->m_draw_request_thread_term = true;
 
     return NULL;
 }
@@ -307,7 +312,10 @@ void shell_x11::run()
 
 void shell_x11::destroy()
 {
-    m_imaging->destroy();
+    while(!m_draw_request_thread_term)
+    {
+        mcrt_os_yield();
+    }
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_connection, m_window);
 

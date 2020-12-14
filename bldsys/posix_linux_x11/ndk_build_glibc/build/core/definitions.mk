@@ -2110,7 +2110,7 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     gnustl_static,\
     cxx-stl/gnu-libstdc++,\
-    gnustl_static,\
+    pt_gnu_libstdcxx_static_fake,\
     ,\
     \
     )
@@ -2121,7 +2121,7 @@ $(call ndk-stl-register,\
     gnustl_shared,\
     cxx-stl/gnu-libstdc++,\
     ,\
-    gnustl_shared,\
+    pt_gnu_libstdcxx_shared_fake,\
     \
     )
 
@@ -2130,9 +2130,8 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     c++_static,\
     cxx-stl/llvm-libc++,\
-    c++_static libc++abi,\
-    ,\
-    -ldl\
+    pt_llvm_libcxx_static_fake,\
+    \
     )
 
 # Register the 'c++_shared' STL implementation
@@ -2140,7 +2139,7 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     c++_shared,\
     cxx-stl/llvm-libc++,\
-    c++_shared,\
+    pt_llvm_libcxx_shared_fake,\
     \
     )
 

@@ -35,16 +35,17 @@ class shell_x11 : wsi_iwindow
     xcb_atom_t m_atom_wm_protocols;
     xcb_atom_t m_atom_wm_delete_window;
 
+    bool m_loop;
+
     mcrt_native_thread_id m_draw_request_thread;
     static void *draw_request_main(void *);
+    bool m_draw_request_thread_term;
 
     gfx_iimaging *m_imaging;
     void (*m_size_change_callback)(void *connection, void *window, float width, float height, void *user_data);
     void *m_size_change_callback_user_data;
     void (*m_draw_request_callback)(void *connection, void *window, void *user_data);
     void *m_draw_request_callback_user_data;
-
-    bool m_loop;
 
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;

@@ -14,19 +14,3 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-#ifndef _GFX_IMAGING_VK_INL_
-#define _GFX_IMAGING_VK_INL_ 1
-
-#include "pt_gfx_imaging.h"
-
-class gfx_iimaging_vk : public gfx_iimaging
-{
-    ~gfx_iimaging_vk();
-    void destroy() override;
-public:
-    void size_change_callback(void *connection, void *window, float width, float height);
-    void draw_request_callback(void *connection, void *window);
-};
-
-#endif

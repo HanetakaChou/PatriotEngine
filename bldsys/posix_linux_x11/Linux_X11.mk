@@ -110,7 +110,7 @@ LOCAL_MODULE := libpt_gfx
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk.cpp \
-  $(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk_wsi_posix_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_imaging_vk_wsi_posix_linux_x11.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
