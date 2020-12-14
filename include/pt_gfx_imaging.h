@@ -18,6 +18,11 @@
 #ifndef _GFX_IMAGING_H_
 #define _GFX_IMAGING_H_ 1
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 #include "pt_gfx_common.h"
 #include "pt_wsi_window.h"
 
@@ -27,5 +32,9 @@ struct gfx_iimaging
 };
 
 PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_imaging_init(struct wsi_iwindow *window);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

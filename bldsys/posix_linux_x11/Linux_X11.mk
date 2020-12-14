@@ -46,6 +46,7 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_mcrt.def
 
 LOCAL_SHARED_LIBRARIES := pt_tbbmalloc pt_irml pt_tbb
 
@@ -133,6 +134,7 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_gfx.def
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt
 
@@ -157,9 +159,9 @@ LOCAL_CFLAGS += -DPT_WSI_ATTR=PT_EXPORT
 LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
-
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 
 LOCAL_LDLIBS += -lxcb
 
@@ -195,9 +197,9 @@ LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
-
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_general_acyclic_graphs_of_tasks.def
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt
 

@@ -1,0 +1,6 @@
+{
+    global:
+        gfx_imaging_init;
+    local:
+        *;
+};
