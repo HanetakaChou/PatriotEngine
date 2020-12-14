@@ -50,6 +50,7 @@ then
     yum install glibc-devel.i686
     yum install libstdc++-devel.i686
     yum install libstdc++-static.i686
+    yum install libxcb-devel.i686
 
     yum install gcc  
     yum install gcc-c++
@@ -63,7 +64,8 @@ then
     # yum install compiler-rt 
     # yum install libunwind-devel
     # yum install libcxx-devel
-    
+    yum install libxcb-devel
+
     yum install gcc  
     yum install gcc-c++
     yum install clang

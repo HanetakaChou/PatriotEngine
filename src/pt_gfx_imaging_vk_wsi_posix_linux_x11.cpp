@@ -15,6 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
 #include "pt_gfx_imaging_vk.inl"
 #include <xcb/xcb.h>
 
@@ -23,11 +24,11 @@ static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= s
 void gfx_iimaging_vk::size_change_callback(void *_connection, void *_window, float width, float height)
 {
     xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<xcb_window_t>(_window);
+    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
 void gfx_iimaging_vk::draw_request_callback(void *_connection, void *_window)
 {
     xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<xcb_window_t>(_window);
+    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }

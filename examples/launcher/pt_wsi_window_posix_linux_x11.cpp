@@ -151,7 +151,7 @@ void *shell_x11::draw_request_main(void *arg)
 
     while (self->m_loop)
     {
-        self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(self->m_window), self->m_draw_request_callback_user_data);
+        self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
     }
 
     self->m_imaging->destroy();
@@ -270,7 +270,7 @@ void shell_x11::run()
 
             if (m_size_change_callback)
             {
-                m_size_change_callback(m_connection, reinterpret_cast<void *>(m_window), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
+                m_size_change_callback(m_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
             }
         }
         break;
