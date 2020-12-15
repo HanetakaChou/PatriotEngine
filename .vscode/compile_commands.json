@@ -26,6 +26,11 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_common.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_common.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_common.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_vk.o",
         "file": "${workspaceFolder}/src/pt_gfx_texture_vk.cpp"
     },

@@ -23,16 +23,14 @@
 
 class gfx_connection_common : public gfx_iconnection
 {
-    typedef struct _input_stream_t_ *input_stream;
-
     //Maybe we can do the cpu side work in the calling thread?
     struct texture_read_request
     {
         gfx_itexture *m_texture;
         char const *m_initial_filename;
-        input_stream(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
-        intptr_t(PT_PTR *m_input_stream_read_callback)(input_stream input_stream, void *buf, size_t count);
-        void(PT_PTR *m_input_stream_destroy_callback)(input_stream input_stream);
+        void *(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
+        intptr_t(PT_PTR *m_input_stream_read_callback)(void *input_stream, void *buf, size_t count);
+        void(PT_PTR *m_input_stream_destroy_callback)(void *input_stream);
     };
 
     //\[Hudson 2006\] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.

@@ -18,63 +18,69 @@
 #ifndef _PT_GFX_CONNECTION_H_
 #define _PT_GFX_CONNECTION_H_ 1
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
+#include <stddef.h>
+#include <stdint.h>
 #include "pt_gfx_common.h"
 #include "pt_wsi_window.h"
 
-    //struct gfx_imesh;
-    //struct gfx_iterrain;
-    struct gfx_itexture;
+extern "C" PT_GFX_ATTR struct gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
 
-    //We can just treat the gfx server as the 3D version X11 server.
-    struct gfx_iconnection
-    {
-        //virtual struct gfx_imesh *create_mesh() = 0;
+//struct gfx_imesh;
+//struct gfx_iterrain;
+struct gfx_itexture;
 
-        virtual struct gfx_itexture *create_texture() = 0;
+//We can just treat the gfx server as the 3D version X11 server.
+struct gfx_iconnection
+{
+    //virtual struct gfx_imesh *create_mesh() = 0;
 
-        virtual void destroy() = 0;
-    };
+    virtual struct gfx_itexture *create_texture() = 0;
 
-    PT_GFX_ATTR gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
+    virtual void destroy() = 0;
+};
 
-    //gfx_imesh -> X Pixmap
-    //mesh_file -> X Bitmap
-    //https://www.x.org/releases/X11R7.7/doc/libxcb/tutorial/#pixmapst
+typedef struct _gfx_input_stream_t_ *gfx_input_stream;
 
-    struct gfx_imesh
-    {
-        virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
+enum
+{
+    PT_GFX_INPUT_STREAM_SEEK_SET = 0,
+    PT_GFX_INPUT_STREAM_SEEK_CUR = 1,
+    PT_GFX_INPUT_STREAM_SEEK_END = 2
+};
 
-        virtual bool put_material() = 0;
+//gfx_imesh -> X Pixmap
+//mesh_file -> X Bitmap
+//https://www.x.org/releases/X11R7.7/doc/libxcb/tutorial/#pixmapst
 
-        virtual bool put_texture() = 0; //MDL Library
+struct gfx_imesh
+{
+    virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
 
-        virtual void destroy() = 0;
-    };
+    virtual bool put_material() = 0;
 
-    struct gfx_imaterial
-    {
-        //MDL //OSL
-        virtual bool read_input_stream() = 0; //XReadBitmapFile
+    virtual bool put_texture() = 0; //MDL Library
 
-        virtual void destroy() = 0;
-    };
+    virtual void destroy() = 0;
+};
 
-    struct gfx_itexture
-    {
-        //DDS //PVR
-        virtual bool read_input_stream() = 0;
+struct gfx_imaterial
+{
+    //MDL //OSL
+    virtual bool read_input_stream() = 0; //XReadBitmapFile
 
-        virtual void destroy() = 0;
-    };
+    virtual void destroy() = 0;
+};
 
-#ifdef __cplusplus
-}
-#endif
+struct gfx_itexture
+{
+    //DDS //PVR
+    virtual bool read_input_stream(char const *initial_filename,
+                                   gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                                   intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
+                                   int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
+                                   void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream)) = 0;
+
+    virtual void destroy() = 0;
+};
 
 #endif

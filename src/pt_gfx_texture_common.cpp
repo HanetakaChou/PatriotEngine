@@ -16,22 +16,12 @@
  */
 
 #include <stddef.h>
-#include <new>
-#include <pt_mcrt_malloc.h>
-#include "pt_gfx_texture_vk.h"
+#include "pt_gfx_texture_common.h"
 
-bool gfx_texture_vk::read_input_stream(
-    char const *initial_filename,
-    gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
-    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream))
+bool gfx_texture_common::read_dds_input_stream(gfx_input_stream input_stream,
+                                               intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
+                                               int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
+                                               struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset)
 {
     return false;
-}
-
-void gfx_texture_vk::destroy()
-{
-    this->~gfx_texture_vk();
-    mcrt_free(this);
 }
