@@ -15,17 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_CONNECTION_D3D12_H_
-#define _PT_GFX_CONNECTION_D3D12_H_ 1
+#include <stddef.h>
+#include <new>
+#include <pt_mcrt_malloc.h>
+#include "pt_gfx_texture_vk.h"
 
-#include <pt_gfx_connection.h>
-#include "pt_gfx_connection_common.h"
-
-class gfx_connection_d3d12 : public gfx_connection_common
+bool gfx_texture_vk::read_input_stream()
 {
-    void destroy() override;
-};
+    return false;
+}
 
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
-
-#endif
+void gfx_texture_vk::destroy()
+{
+    this->~gfx_texture_vk();
+    mcrt_free(this);
+}

@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef _WSI_WINDOW_POSIX_LINUX_X11_H_
+#define _WSI_WINDOW_POSIX_LINUX_X11_H_ 1
+
 #include <pt_wsi_window.h>
 
 #include <xcb/xcb.h>
@@ -25,7 +28,7 @@
 class shell_x11 : wsi_iwindow
 {
 
-    xcb_connection_t *m_connection;
+    xcb_connection_t *m_xcb_connection;
 
     xcb_setup_t const *m_setup;
     xcb_screen_t *m_screen;
@@ -47,6 +50,9 @@ class shell_x11 : wsi_iwindow
     void (*m_draw_request_callback)(void *wsi_connection, void *window, void *user_data);
     void *m_draw_request_callback_user_data;
 
+    mcrt_native_thread_id m_app_thread;
+    static void *app_wrap_main(void *);
+
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;
     std::vector<xcb_keysym_t> m_keysym;
@@ -62,3 +68,5 @@ public:
     void run();
     void destroy();
 };
+
+#endif

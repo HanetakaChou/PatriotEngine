@@ -112,12 +112,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gfx
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_d3d12.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_mtl.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_posix_linux_x11.cpp \
-
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp   
+	
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
@@ -150,6 +151,7 @@ LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_posix_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_app_main.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8

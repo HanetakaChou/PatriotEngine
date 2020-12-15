@@ -15,17 +15,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_CONNECTION_D3D12_H_
-#define _PT_GFX_CONNECTION_D3D12_H_ 1
-
+#include <stddef.h>
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
+#include "pt_gfx_connection_d3d12.h"
+#include "pt_gfx_connection_mtl.h"
+#include "pt_gfx_connection_vk.h"
 
-class gfx_connection_d3d12 : public gfx_connection_common
+PT_GFX_ATTR gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window)
 {
-    void destroy() override;
-};
+    gfx_iconnection *connection;
 
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
+    connection = gfx_connection_d3d12_init(window);
+    if (NULL != connection)
+    {
+        return connection;
+    }
 
-#endif
+    connection = gfx_connection_mtl_init(window);
+    if (NULL != connection)
+    {
+        return connection;
+    }
+
+    connection = gfx_connection_vk_init(window);
+    if (NULL != connection)
+    {
+        return connection;
+    }
+
+    return NULL;
+}

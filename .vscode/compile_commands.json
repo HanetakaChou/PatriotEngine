@@ -1,8 +1,8 @@
 [
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection.o",
-        "file": "${workspaceFolder}/src/pt_gfx_connection.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection_common.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection_common.o",
+        "file": "${workspaceFolder}/src/pt_gfx_connection_common.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
@@ -26,6 +26,11 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "clang++ -c -xc++ -std=c++11 -DPT_MCRT_ATTR=PT_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_malloc.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_malloc.o",
         "file": "${workspaceFolder}/src/pt_mcrt_malloc.cpp"
     },
@@ -43,6 +48,11 @@
         "directory": "${workspaceFolder}/examples/launcher",
         "command": "clang++ -c -xc++ -std=c++11 -DPT_WSI_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_posix_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_posix_linux_x11.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_posix_linux_x11.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_WSI_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_app_main.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_app_main.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_app_main.cpp"
     },
     {
         "directory": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks",

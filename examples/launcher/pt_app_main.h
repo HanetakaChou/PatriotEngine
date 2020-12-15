@@ -15,17 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_CONNECTION_D3D12_H_
-#define _PT_GFX_CONNECTION_D3D12_H_ 1
+#ifndef _PT_APP_MAIN_H_
+#define _PT_APP_MAIN_H_ 1
 
+#include <pt_wsi_window.h>
 #include <pt_gfx_connection.h>
-#include "pt_gfx_connection_common.h"
 
-class gfx_connection_d3d12 : public gfx_connection_common
-{
-    void destroy() override;
-};
-
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
+void app_main(struct wsi_iwindow *window, struct gfx_iconnection *connection);
 
 #endif

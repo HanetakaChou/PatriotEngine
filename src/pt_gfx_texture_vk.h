@@ -15,17 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_CONNECTION_D3D12_H_
-#define _PT_GFX_CONNECTION_D3D12_H_ 1
+#ifndef _PT_GFX_TEXTURE_VK_H_
+#define _PT_GFX_TEXTURE_VK_H_ 1
 
-#include <pt_gfx_connection.h>
-#include "pt_gfx_connection_common.h"
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_gfx_texture_common.h"
+#include <vulkan/vulkan.h>
 
-class gfx_connection_d3d12 : public gfx_connection_common
+class gfx_texture_vk : public gfx_texture_common
 {
+    VkImage m_image;
+    bool read_input_stream() override;
     void destroy() override;
+public:
+    inline gfx_texture_vk() : m_image(VK_NULL_HANDLE) {}
 };
-
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
 
 #endif

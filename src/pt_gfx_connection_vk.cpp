@@ -15,21 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <stddef.h>
+#include <new>
 #include <pt_mcrt_malloc.h>
 #include "pt_gfx_connection_vk.h"
-#include <new>
+#include "pt_gfx_texture_vk.h"
 
-gfx_iconnection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
+gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
 {
-    gfx_iconnection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_iconnection_vk), alignof(gfx_iconnection_vk))) gfx_iconnection_vk();
+    gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
     window->listen_size_change(
         [](void *connection, void *window, float width, float height, void *user_data) -> void {
-            static_cast<gfx_iconnection_vk *>(user_data)->size_change_callback(connection, window, width, height);
+            static_cast<gfx_connection_vk *>(user_data)->size_change_callback(connection, window, width, height);
         },
         connection);
     window->listen_draw_request(
         [](void *connection, void *window, void *user_data) -> void {
-            static_cast<gfx_iconnection_vk *>(user_data)->draw_request_callback(connection, window);
+            static_cast<gfx_connection_vk *>(user_data)->draw_request_callback(connection, window);
         },
         connection);
 
@@ -39,23 +41,29 @@ gfx_iconnection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
     }
     else
     {
-        connection->destroy();
+        mcrt_free(connection);
         return NULL;
     }
 }
 
-bool gfx_iconnection_vk::init()
+bool gfx_connection_vk::init()
 {
     return true;
 }
 
-gfx_iconnection_vk::~gfx_iconnection_vk()
+struct gfx_itexture *gfx_connection_vk::create_texture()
 {
-    
+    gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
+    return texture;
 }
 
-void gfx_iconnection_vk::destroy()
+gfx_connection_vk::~gfx_connection_vk()
 {
-    this->~gfx_iconnection_vk();
+
+}
+
+void gfx_connection_vk::destroy()
+{
+    this->~gfx_connection_vk();
     mcrt_free(this);
 }

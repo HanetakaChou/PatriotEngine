@@ -60,6 +60,9 @@ then
     apt install libstdc++-5-dev:i386
     apt install libxcb1-dev:i386
     apt install libx11-dev:i386
+    apt install libvulkan1:i386
+    apt install mesa-vulkan-drivers:i386
+    apt install libvulkan-dev:i386
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);
 then
     apt install libc6-dev
@@ -67,7 +70,11 @@ then
     apt install libstdc++-5-dev
     apt install libxcb1-dev
     apt install libx11-dev
-    
+    apt install libvulkan1
+    apt install mesa-vulkan-drivers
+    # apt install vulkan-validationlayers
+    apt install libvulkan-dev
+
     apt install gcc
     apt install g++
     apt install clang

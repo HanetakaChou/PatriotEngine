@@ -15,33 +15,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#ifndef _PT_GFX_TEXTURE_COMMON_H_
+#define _PT_GFX_TEXTURE_COMMON_H_ 1
+
 #include <stddef.h>
+#include <stdint.h>
 #include <pt_gfx_connection.h>
-#include "pt_gfx_connection_d3d12.h"
-#include "pt_gfx_connection_mtl.h"
-#include "pt_gfx_connection_vk.h"
 
-PT_GFX_ATTR gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window)
+class gfx_texture_common : public gfx_itexture
 {
-    gfx_iconnection *connection;
+    //filename
+    //width
 
-    connection = gfx_connection_d3d12_init(window);
-    if (NULL != connection)
-    {
-        return connection;
-    }
+};
 
-    connection = gfx_connection_mtl_init(window);
-    if (NULL != connection)
-    {
-        return connection;
-    }
-
-    connection = gfx_connection_vk_init(window);
-    if (NULL != connection)
-    {
-        return connection;
-    }
-
-    return NULL;
-}
+#endif

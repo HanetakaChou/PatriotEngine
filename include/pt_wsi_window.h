@@ -15,10 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _WSI_COMMON_H_
-#define _WSI_COMMON_H_ 1
+#ifndef _PT_WSI_WINDOW_H_
+#define _PT_WSI_WINDOW_H_ 1
 
 #include "pt_common.h"
+#include "pt_wsi_common.h"
 
 #ifndef PT_WSI_ATTR
 #define PT_WSI_ATTR PT_IMPORT
@@ -26,6 +27,9 @@
 
 struct wsi_iwindow
 {
+    //for app_main
+    //listen_input_event();
+
     //ANativeActivityCallbacks::onNativeWindowResized
     //MTKViewDelegate::drawableSizeWillChange
     virtual void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data), void *user_data) = 0;

@@ -15,11 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pt_wsi_window_posix_linux_x11.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <X11/keysym.h>
 #include <pt_mcrt_memcpy.h>
+#include "pt_wsi_window_posix_linux_x11.h"
+#include "pt_app_main.h"
 
 int main(int argc, char **argv)
 {
@@ -33,10 +34,10 @@ int main(int argc, char **argv)
 void shell_x11::init()
 {
     int scr;
-    m_connection = xcb_connect(NULL, &scr);
-    assert(xcb_connection_has_error(m_connection) == 0);
+    m_xcb_connection = xcb_connect(NULL, &scr);
+    assert(xcb_connection_has_error(m_xcb_connection) == 0);
 
-    m_setup = xcb_get_setup(m_connection);
+    m_setup = xcb_get_setup(m_xcb_connection);
 
     xcb_screen_iterator_t iter = xcb_setup_roots_iterator(m_setup);
     for (int i = 0; i < scr; ++i)
@@ -46,7 +47,7 @@ void shell_x11::init()
     m_screen = iter.data;
 
     // CreateWindowExW
-    m_window = xcb_generate_id(m_connection);
+    m_window = xcb_generate_id(m_xcb_connection);
 
     uint32_t value_mask = XCB_CW_BACK_PIXEL | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
 
@@ -62,7 +63,7 @@ void shell_x11::init()
                                   XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                                   XCB_EVENT_MASK_FOCUS_CHANGE};
 
-    xcb_void_cookie_t cookie_create_window = xcb_create_window_checked(m_connection,
+    xcb_void_cookie_t cookie_create_window = xcb_create_window_checked(m_xcb_connection,
                                                                        m_screen->root_depth,
                                                                        m_window,
                                                                        m_screen->root, 0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels, 0,
@@ -76,48 +77,48 @@ void shell_x11::init()
     // Delete Window
     // https://www.x.org/releases/current/doc/xorg-docs/icccm/icccm.html
 
-    xcb_intern_atom_cookie_t cookie_net_wm_name = xcb_intern_atom(m_connection, 0, 12U, "_NET_WM_NAME");
-    xcb_intern_atom_cookie_t cookie_utf8_string = xcb_intern_atom(m_connection, 0, 11U, "UTF8_STRING");
-    xcb_intern_atom_cookie_t cookie_wm_protocols = xcb_intern_atom(m_connection, 0, 12U, "WM_PROTOCOLS");
-    xcb_intern_atom_cookie_t cookie_wm_delete_window = xcb_intern_atom(m_connection, 0, 16U, "WM_DELETE_WINDOW");
+    xcb_intern_atom_cookie_t cookie_net_wm_name = xcb_intern_atom(m_xcb_connection, 0, 12U, "_NET_WM_NAME");
+    xcb_intern_atom_cookie_t cookie_utf8_string = xcb_intern_atom(m_xcb_connection, 0, 11U, "UTF8_STRING");
+    xcb_intern_atom_cookie_t cookie_wm_protocols = xcb_intern_atom(m_xcb_connection, 0, 12U, "WM_PROTOCOLS");
+    xcb_intern_atom_cookie_t cookie_wm_delete_window = xcb_intern_atom(m_xcb_connection, 0, 16U, "WM_DELETE_WINDOW");
 
-    xcb_generic_error_t *error_generic = xcb_request_check(m_connection, cookie_create_window); //implicit xcb_flush
+    xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_create_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(m_connection, cookie_net_wm_name, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(m_xcb_connection, cookie_net_wm_name, &error_generic); //implicit xcb_flush
     assert(error_generic == NULL);
     xcb_atom_t atom_net_wm_name = reply_net_wm_name->atom;
     free(reply_net_wm_name);
 
-    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(m_connection, cookie_utf8_string, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(m_xcb_connection, cookie_utf8_string, &error_generic); //implicit xcb_flush
     assert(error_generic == NULL);
     xcb_atom_t atom_utf8_string = reply_utf8_string->atom;
     free(reply_utf8_string);
 
-    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(m_connection, cookie_wm_protocols, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_protocols, &error_generic); //implicit xcb_flush
     assert(error_generic == NULL);
     m_atom_wm_protocols = reply_wm_protocols->atom;
     free(reply_wm_protocols);
 
-    xcb_intern_atom_reply_t *reply_wm_delete_window = xcb_intern_atom_reply(m_connection, cookie_wm_delete_window, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_wm_delete_window = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_delete_window, &error_generic); //implicit xcb_flush
     assert(error_generic == NULL);
     m_atom_wm_delete_window = reply_wm_delete_window->atom;
     free(reply_wm_delete_window);
 
-    xcb_void_cookie_t cookie_change_property_net_wm_name = xcb_change_property_checked(m_connection, XCB_PROP_MODE_REPLACE, m_window, atom_net_wm_name, atom_utf8_string, 8U, 13U, "PatriotEngine");
+    xcb_void_cookie_t cookie_change_property_net_wm_name = xcb_change_property_checked(m_xcb_connection, XCB_PROP_MODE_REPLACE, m_window, atom_net_wm_name, atom_utf8_string, 8U, 13U, "PatriotEngine");
 
-    xcb_void_cookie_t cookie_change_property_wm_protocols = xcb_change_property_checked(m_connection, XCB_PROP_MODE_REPLACE, m_window, m_atom_wm_protocols, XCB_ATOM_ATOM, 32U, 1U, &m_atom_wm_delete_window);
+    xcb_void_cookie_t cookie_change_property_wm_protocols = xcb_change_property_checked(m_xcb_connection, XCB_PROP_MODE_REPLACE, m_window, m_atom_wm_protocols, XCB_ATOM_ATOM, 32U, 1U, &m_atom_wm_delete_window);
 
     // ShowWindow
-    xcb_void_cookie_t cookie_map_window = xcb_map_window_checked(m_connection, m_window);
+    xcb_void_cookie_t cookie_map_window = xcb_map_window_checked(m_xcb_connection, m_window);
 
-    error_generic = xcb_request_check(m_connection, cookie_change_property_net_wm_name); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_net_wm_name); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_connection, cookie_change_property_wm_protocols); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_wm_protocols); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_connection, cookie_map_window); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_map_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
     // member
@@ -149,14 +150,27 @@ void *shell_x11::draw_request_main(void *arg)
     assert(self->m_draw_request_callback != NULL);
     assert(self->m_draw_request_callback_user_data != NULL);
 
+    // app_thread
+    bool result = mcrt_native_thread_create(&self->m_app_thread, app_wrap_main, self);
+    assert(result);
+
     while (self->m_loop)
     {
-        self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
+        self->m_draw_request_callback(self->m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
     }
 
     self->m_gfx_connection->destroy();
 
     self->m_draw_request_thread_term = true;
+
+    return NULL;
+}
+
+void *shell_x11::app_wrap_main(void *arg)
+{
+    shell_x11 *self = static_cast<shell_x11 *>(arg);
+
+    app_main(self, self->m_gfx_connection);
 
     return NULL;
 }
@@ -178,10 +192,10 @@ void shell_x11::sync_keysyms()
     m_min_keycode = m_setup->min_keycode;
     m_max_keycode = m_setup->max_keycode;
 
-    xcb_get_keyboard_mapping_cookie_t cookie_get_keyboard_mapping = xcb_get_keyboard_mapping(m_connection, m_min_keycode, (m_max_keycode - m_min_keycode) + 1);
+    xcb_get_keyboard_mapping_cookie_t cookie_get_keyboard_mapping = xcb_get_keyboard_mapping(m_xcb_connection, m_min_keycode, (m_max_keycode - m_min_keycode) + 1);
 
     xcb_generic_error_t *error_generic;
-    xcb_get_keyboard_mapping_reply_t *reply_get_keyboard_mapping = xcb_get_keyboard_mapping_reply(m_connection, cookie_get_keyboard_mapping, &error_generic);
+    xcb_get_keyboard_mapping_reply_t *reply_get_keyboard_mapping = xcb_get_keyboard_mapping_reply(m_xcb_connection, cookie_get_keyboard_mapping, &error_generic);
     assert(error_generic == NULL);
 
     xcb_keysym_t *keysym_begin = xcb_get_keyboard_mapping_keysyms(reply_get_keyboard_mapping);
@@ -226,7 +240,7 @@ void shell_x11::run()
 {
     xcb_generic_event_t *event;
 
-    while (m_loop && ((event = xcb_wait_for_event(m_connection)) != NULL))
+    while (m_loop && ((event = xcb_wait_for_event(m_xcb_connection)) != NULL))
     {
 
         // The most significant bit(uint8_t(0X80)) in this code is set if the event was generated from a SendEvent request.
@@ -270,7 +284,7 @@ void shell_x11::run()
 
             if (m_size_change_callback)
             {
-                m_size_change_callback(m_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
+                m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
             }
         }
         break;
@@ -312,15 +326,15 @@ void shell_x11::run()
 
 void shell_x11::destroy()
 {
-    while(!m_draw_request_thread_term)
+    while (!m_draw_request_thread_term)
     {
         mcrt_os_yield();
     }
 
-    xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_connection, m_window);
+    xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
 
-    xcb_generic_error_t *error_generic = xcb_request_check(m_connection, cookie_destroy_window); //implicit xcb_flush
+    xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    xcb_disconnect(m_connection);
+    xcb_disconnect(m_xcb_connection);
 }

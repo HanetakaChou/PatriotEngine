@@ -21,13 +21,13 @@
 
 static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
 
-void gfx_iconnection_vk::size_change_callback(void *_wsi_connection, void *_window, float width, float height)
+void gfx_connection_vk::size_change_callback(void *_wsi_connection, void *_window, float width, float height)
 {
     xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(_wsi_connection);
     xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
-void gfx_iconnection_vk::draw_request_callback(void *_wsi_connection, void *_window)
+void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_window)
 {
     xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(_wsi_connection);
     xcb_window_t window = reinterpret_cast<uintptr_t>(_window);

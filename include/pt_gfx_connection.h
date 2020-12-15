@@ -26,29 +26,52 @@ extern "C"
 #include "pt_gfx_common.h"
 #include "pt_wsi_window.h"
 
-//struct gfx_imesh;
-//struct gfx_iterrain;
+    //struct gfx_imesh;
+    //struct gfx_iterrain;
+    struct gfx_itexture;
 
-//We can just treat the gfx server as the 3D version X11 server.
-struct gfx_iconnection
-{
-    //virtual gfx_imesh create_mesh() = 0;
+    //We can just treat the gfx server as the 3D version X11 server.
+    struct gfx_iconnection
+    {
+        //virtual struct gfx_imesh *create_mesh() = 0;
 
-    virtual void destroy() = 0;
-};
+        virtual struct gfx_itexture *create_texture() = 0;
 
-PT_GFX_ATTR gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
+        virtual void destroy() = 0;
+    };
 
-//gfx_imesh -> X Pixmap   
-//mesh_file -> X Bitmap  
-//https://www.x.org/releases/X11R7.7/doc/libxcb/tutorial/#pixmapst  
+    PT_GFX_ATTR gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
 
-struct gfx_imesh
-{
-    virtual bool put_mesh(/*inputstream*/) = 0; //xcb_put_image_checked
+    //gfx_imesh -> X Pixmap
+    //mesh_file -> X Bitmap
+    //https://www.x.org/releases/X11R7.7/doc/libxcb/tutorial/#pixmapst
 
-    virtual void destroy() = 0;
-};
+    struct gfx_imesh
+    {
+        virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
+
+        virtual bool put_material() = 0;
+
+        virtual bool put_texture() = 0; //MDL Library
+
+        virtual void destroy() = 0;
+    };
+
+    struct gfx_imaterial
+    {
+        //MDL //OSL
+        virtual bool read_input_stream() = 0; //XReadBitmapFile
+
+        virtual void destroy() = 0;
+    };
+
+    struct gfx_itexture
+    {
+        //DDS //PVR
+        virtual bool read_input_stream() = 0;
+
+        virtual void destroy() = 0;
+    };
 
 #ifdef __cplusplus
 }

@@ -14,12 +14,12 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                {
-                    "name": "DISPLAY",
-                    "value": "10.170.232.63:0.0"
-                }
-            ],
+            //"environment": [
+            //    {
+            //        "name": "DISPLAY",
+            //        "value": "10.170.232.63:0.0"
+            //    }
+            //],
             "externalConsole": false,
             //"targetArchitecture": "x86",
             "MIMode": "gdb",
