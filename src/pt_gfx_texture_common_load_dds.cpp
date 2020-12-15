@@ -257,7 +257,6 @@ struct DDS_HEADER_DXT10
 };
 
 //--------------------------------------------------------------------------------------
-
 static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf);
 
 static inline size_t BitsPerPixel(uint32_t fmt);
@@ -266,7 +265,7 @@ static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, siz
 
 static inline uint32_t dds_get_format_plane_count(uint32_t dds_format);
 
-static inline bool IsDepthStencil(uint32_t ddsformat);
+static inline bool dds_format_is_depth_stencil(uint32_t dds_format);
 
 struct internal_dds_header_t
 {
@@ -565,7 +564,7 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
         return false;
     }
 
-    if ((numberOfPlanes > 1) && IsDepthStencil(internal_dds_header.format))
+    if ((numberOfPlanes > 1) && dds_format_is_depth_stencil(internal_dds_header.format))
     {
         // DirectX 12 uses planes for stencil, DirectX 11 does not
         return false;
@@ -1553,9 +1552,9 @@ static inline uint32_t dds_get_format_plane_count(uint32_t dds_format)
     return dds_format_plane_count_info_table[dds_format];
 }
 
-static inline bool IsDepthStencil(uint32_t ddsformat)
+static inline bool dds_format_is_depth_stencil(uint32_t dds_format)
 {
-    switch (ddsformat)
+    switch (dds_format)
     {
     case DDS_DXGI_FORMAT_R32G8X24_TYPELESS:
     case DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT:

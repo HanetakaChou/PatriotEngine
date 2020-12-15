@@ -261,6 +261,20 @@ class gfx_texture_common : public gfx_itexture
         uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream stream, intptr_t(PT_PTR *stream_read)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *stream_seek)(gfx_input_stream input_stream, int64_t offset, int whence));
+
+    static inline uint32_t pvr_get_common_type(uint32_t height, uint32_t depth);
+
+    static inline uint32_t pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType);
+
+    static inline bool load_pvr_header_from_input_stream(
+        struct common_header_t *common_header, size_t *data_offset,
+        gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence));
+
+    static inline bool load_pvr_data_from_input_stream(
+        struct common_header_t const *common_header_for_validate, size_t const *data_offset_for_validate,
+        uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
+        uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+        gfx_input_stream stream, intptr_t(PT_PTR *stream_read)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *stream_seek)(gfx_input_stream input_stream, int64_t offset, int whence));
 };
 
 #endif
