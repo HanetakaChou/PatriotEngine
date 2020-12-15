@@ -21,11 +21,30 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_gfx_texture_common.h"
+#include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 
 class gfx_texture_vk : public gfx_texture_common
 {
     VkImage m_image;
+
+    gfx_connection_vk *m_gfx_connection;
+
+    struct specific_header_vk_t
+    {
+        bool isCubeCompatible;
+        VkImageType imageType;
+        VkFormat format;
+        VkExtent3D extent;
+        uint32_t mipLevels;
+        uint32_t arrayLayers;
+    };
+
+    static inline enum VkImageType common_to_vulkan_type_translate(uint32_t common_type);
+
+    static inline enum VkFormat common_to_vulkan_format_translate(uint32_t common_format);
+
+    static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 
     bool read_input_stream(
         char const *initial_filename,
@@ -37,7 +56,7 @@ class gfx_texture_vk : public gfx_texture_common
     void destroy() override;
 
 public:
-    inline gfx_texture_vk() : m_image(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk(gfx_connection_vk *gfx_connection) : m_image(VK_NULL_HANDLE), m_gfx_connection(gfx_connection) {}
 };
 
 #endif

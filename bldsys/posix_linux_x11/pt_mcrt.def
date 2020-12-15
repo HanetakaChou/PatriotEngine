@@ -31,6 +31,7 @@
         mcrt_malloc;
         mcrt_free;
         mcrt_aligned_malloc;
+        mcrt_aligned_realloc;
         mcrt_memcpy;
     local:
         *;

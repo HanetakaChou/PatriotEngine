@@ -441,12 +441,12 @@ static inline bool internal_load_dds_header_from_input_stream(
 }
 
 bool gfx_texture_common::load_dds_header_from_input_stream(
-    struct common_header_t *common_header, size_t *data_offset,
+    struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
 {
 
     assert(common_header != NULL);
-    assert(data_offset != NULL);
+    assert(common_data_offset != NULL);
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
@@ -465,7 +465,7 @@ bool gfx_texture_common::load_dds_header_from_input_stream(
         common_header->arrayLayers = internal_dds_header.arraySize;
         common_header->isCubeMap = internal_dds_header.isCubeMap;
 
-        (*data_offset) = dds_data_offset;
+        (*common_data_offset) = dds_data_offset;
 
         return true;
     }
@@ -476,7 +476,7 @@ bool gfx_texture_common::load_dds_header_from_input_stream(
 }
 
 bool gfx_texture_common::load_dds_data_from_input_stream(
-    struct common_header_t const *common_header_for_validate, size_t const *data_offset_for_validate,
+    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
@@ -499,7 +499,7 @@ bool gfx_texture_common::load_dds_data_from_input_stream(
         internal_dds_header.mipCount == common_header_for_validate->mipLevels &&
         internal_dds_header.arraySize == common_header_for_validate->arrayLayers //
     );
-    assert(dds_data_offset == (*data_offset_for_validate));
+    assert(dds_data_offset == (*common_data_offset_for_validate));
 
     //if (input_stream_seek_callback(input_stream, dds_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
     //{

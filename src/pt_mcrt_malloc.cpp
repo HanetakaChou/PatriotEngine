@@ -40,5 +40,9 @@ PT_MCRT_ATTR void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment)
     return scalable_aligned_malloc(size, alignment);
 }
 
-PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
+PT_MCRT_ATTR void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment)
+{
+    return scalable_aligned_realloc(ptr, size, alignment);
+}
+
 PT_MCRT_ATTR size_t PT_CALL mcrt_msize(void *ptr);

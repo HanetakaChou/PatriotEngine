@@ -449,7 +449,7 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream i
 }
 
 bool gfx_texture_common::load_pvr_header_from_input_stream(
-    struct common_header_t *common_header, size_t *data_offset,
+    struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
 {
     struct TextureLoader_PVRHeader pvr_texture_header;
@@ -471,7 +471,7 @@ bool gfx_texture_common::load_pvr_header_from_input_stream(
         assert(0 != pvr_texture_header.numFaces);
         common_header->isCubeMap = (pvr_texture_header.numFaces > 1);
 
-        (*data_offset) = pvr_texture_data_offset;
+        (*common_data_offset) = pvr_texture_data_offset;
 
         return true;
     }
@@ -484,7 +484,7 @@ bool gfx_texture_common::load_pvr_header_from_input_stream(
 }
 
 bool gfx_texture_common::load_pvr_data_from_input_stream(
-    struct common_header_t const *common_header_for_validate, size_t const *data_offset_for_validate,
+    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
@@ -506,7 +506,7 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
         internal_pvr_header.numMipMaps == common_header_for_validate->mipLevels &&
         internal_pvr_header.numFaces * internal_pvr_header.numSurfaces == common_header_for_validate->arrayLayers //
     );
-    assert(pvr_data_offset == (*data_offset_for_validate));
+    assert(pvr_data_offset == (*common_data_offset_for_validate));
 
     uint32_t numberOfPlanes = pvr_get_format_plane_count(internal_pvr_header.pixelFormat);
     if (numberOfPlanes == 0)
@@ -860,7 +860,6 @@ static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t 
     }
 }
 
-//--------------------------------------------------------------------------------------
 static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
 {
     if (0 == Pvr_GetPixelFormatPartHigh(pixelFormat))

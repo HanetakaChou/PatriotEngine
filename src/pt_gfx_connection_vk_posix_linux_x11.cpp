@@ -15,9 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#define VK_USE_PLATFORM_XCB_KHR
 #include <stdint.h>
 #include "pt_gfx_connection_vk.h"
 #include <xcb/xcb.h>
+#include <vulkan/vulkan.h>
 
 static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
 
@@ -31,4 +33,9 @@ void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_wind
 {
     xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(_wsi_connection);
     xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
+}
+
+char const *gfx_connection_vk::wsi_surface_extension_name()
+{
+    return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 }
