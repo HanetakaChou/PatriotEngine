@@ -15,20 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
-#include "pt_gfx_imaging_vk.h"
-#include <xcb/xcb.h>
+#ifndef _GFX_IMAGING_VK_H_
+#define _GFX_IMAGING_VK_H_ 1
 
-static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
+#include <pt_gfx_connection.h>
 
-void gfx_iimaging_vk::size_change_callback(void *_connection, void *_window, float width, float height)
+class gfx_iconnection_vk : public gfx_iconnection
 {
-    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-}
+    ~gfx_iconnection_vk();
 
-void gfx_iimaging_vk::draw_request_callback(void *_connection, void *_window)
-{
-    xcb_connection_t *connection = static_cast<xcb_connection_t *>(_connection);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-}
+public:
+    bool init();
+    void destroy() override;
+    void size_change_callback(void *wsi_connection, void *window, float width, float height);
+    void draw_request_callback(void *wsi_connection, void *window);
+};
+
+gfx_iconnection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);
+
+#endif

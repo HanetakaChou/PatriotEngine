@@ -15,16 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _GFX_IMAGING_MTL_H_
-#define _GFX_IMAGING_MTL_H_ 1
+#include <stddef.h>
+#include "pt_gfx_connection_mtl.h"
 
-#include "pt_gfx_imaging.h"
-
-class gfx_iimaging_mtl : public gfx_iimaging
+class gfx_iconnection_mtl *gfx_connection_mtl_init(struct wsi_iwindow *window)
 {
-    void destroy() override;
-};
+    return NULL;
+}
 
-class gfx_iimaging_mtl *gfx_imaging_mtl_init(struct wsi_iwindow *window);
+void gfx_iconnection_mtl::destroy()
+{
 
-#endif
+}

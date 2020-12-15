@@ -15,33 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stddef.h>
-#include <pt_gfx_imaging.h>
-#include "pt_gfx_imaging_d3d12.h"
-#include "pt_gfx_imaging_mtl.h"
-#include "pt_gfx_imaging_vk.h"
+#include <stdint.h>
+#include "pt_gfx_connection_vk.h"
+#include <xcb/xcb.h>
 
-PT_GFX_ATTR gfx_iimaging *PT_CALL gfx_imaging_init(struct wsi_iwindow *window)
+static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
+
+void gfx_iconnection_vk::size_change_callback(void *_wsi_connection, void *_window, float width, float height)
 {
-    gfx_iimaging *imaging;
+    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(_wsi_connection);
+    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
+}
 
-    imaging = gfx_imaging_d3d12_init(window);
-    if (NULL != imaging)
-    {
-        return imaging;
-    }
-
-    imaging = gfx_imaging_mtl_init(window);
-    if (NULL != imaging)
-    {
-        return imaging;
-    }
-
-    imaging = gfx_imaging_vk_init(window);
-    if (NULL != imaging)
-    {
-        return imaging;
-    }
-
-    return NULL;
+void gfx_iconnection_vk::draw_request_callback(void *_wsi_connection, void *_window)
+{
+    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(_wsi_connection);
+    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }

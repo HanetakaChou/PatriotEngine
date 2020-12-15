@@ -15,16 +15,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _GFX_IMAGING_D3D12_H_
-#define _GFX_IMAGING_D3D12_H_ 1
+#ifndef _PT_GFX_IMAGING_D3D12_H_
+#define _PT_GFX_IMAGING_D3D12_H_ 1
 
-#include "pt_gfx_imaging.h"
+#include <pt_gfx_connection.h>
 
-class gfx_iimaging_d3d12 : public gfx_iimaging
+class gfx_iconnection_d3d12 : public gfx_iconnection
 {
     void destroy() override;
 };
 
-class gfx_iimaging_d3d12 *gfx_imaging_d3d12_init(struct wsi_iwindow *window);
+class gfx_iconnection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
 
 #endif

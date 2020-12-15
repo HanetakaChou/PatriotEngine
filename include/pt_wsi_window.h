@@ -28,11 +28,11 @@ struct wsi_iwindow
 {
     //ANativeActivityCallbacks::onNativeWindowResized
     //MTKViewDelegate::drawableSizeWillChange
-    virtual void listen_size_change(void (*size_change_callback)(void *connection, void *window, float width, float height, void *user_data), void *user_data) = 0;
+    virtual void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data), void *user_data) = 0;
 
     //ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     //MTKViewDelegate::drawInMTKView
-    virtual void listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data) = 0; //We may use the given window to recreate the swapchain.
+    virtual void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *window, void *user_data), void *user_data) = 0; //We may use the given window to recreate the swapchain.
 };
 
 #endif

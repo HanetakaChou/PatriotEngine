@@ -143,7 +143,7 @@ void *shell_x11::draw_request_main(void *arg)
 {
     shell_x11 *self = static_cast<shell_x11 *>(arg);
 
-    self->m_imaging = gfx_imaging_init(self);
+    self->m_gfx_connection = gfx_connection_init(self);
     assert(self->m_size_change_callback != NULL);
     assert(self->m_size_change_callback_user_data != NULL);
     assert(self->m_draw_request_callback != NULL);
@@ -154,20 +154,20 @@ void *shell_x11::draw_request_main(void *arg)
         self->m_draw_request_callback(self->m_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
     }
 
-    self->m_imaging->destroy();
+    self->m_gfx_connection->destroy();
 
     self->m_draw_request_thread_term = true;
 
     return NULL;
 }
 
-void shell_x11::listen_size_change(void (*size_change_callback)(void *connection, void *window, float width, float height, void *user_data), void *user_data)
+void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data), void *user_data)
 {
     m_size_change_callback = size_change_callback;
     m_size_change_callback_user_data = user_data;
 }
 
-void shell_x11::listen_draw_request(void (*draw_request_callback)(void *connection, void *window, void *user_data), void *user_data)
+void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *window, void *user_data), void *user_data)
 {
     m_draw_request_callback = draw_request_callback;
     m_draw_request_callback_user_data = user_data;

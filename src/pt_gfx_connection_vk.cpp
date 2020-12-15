@@ -15,47 +15,47 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "pt_gfx_imaging_vk.h"
-#include "pt_mcrt_malloc.h"
+#include <pt_mcrt_malloc.h>
+#include "pt_gfx_connection_vk.h"
 #include <new>
 
-gfx_iimaging_vk *gfx_imaging_vk_init(struct wsi_iwindow *window)
+gfx_iconnection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
 {
-    gfx_iimaging_vk *imaging = new (mcrt_aligned_malloc(sizeof(gfx_iimaging_vk), alignof(gfx_iimaging_vk))) gfx_iimaging_vk();
+    gfx_iconnection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_iconnection_vk), alignof(gfx_iconnection_vk))) gfx_iconnection_vk();
     window->listen_size_change(
         [](void *connection, void *window, float width, float height, void *user_data) -> void {
-            static_cast<gfx_iimaging_vk *>(user_data)->size_change_callback(connection, window, width, height);
+            static_cast<gfx_iconnection_vk *>(user_data)->size_change_callback(connection, window, width, height);
         },
-        imaging);
+        connection);
     window->listen_draw_request(
         [](void *connection, void *window, void *user_data) -> void {
-            static_cast<gfx_iimaging_vk *>(user_data)->draw_request_callback(connection, window);
+            static_cast<gfx_iconnection_vk *>(user_data)->draw_request_callback(connection, window);
         },
-        imaging);
+        connection);
 
-    if (imaging->init())
+    if (connection->init())
     {
-        return imaging;
+        return connection;
     }
     else
     {
-        imaging->destroy();
+        connection->destroy();
         return NULL;
     }
 }
 
-bool gfx_iimaging_vk::init()
+bool gfx_iconnection_vk::init()
 {
     return true;
 }
 
-gfx_iimaging_vk::~gfx_iimaging_vk()
+gfx_iconnection_vk::~gfx_iconnection_vk()
 {
     
 }
 
-void gfx_iimaging_vk::destroy()
+void gfx_iconnection_vk::destroy()
 {
-    this->~gfx_iimaging_vk();
+    this->~gfx_iconnection_vk();
     mcrt_free(this);
 }

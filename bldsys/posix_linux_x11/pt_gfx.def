@@ -17,7 +17,7 @@
 
 {
     global:
-        gfx_imaging_init;
+        gfx_connection_init;
     local:
         *;
 };
