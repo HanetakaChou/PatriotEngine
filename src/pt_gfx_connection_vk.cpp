@@ -148,6 +148,10 @@ bool gfx_connection_vk::init()
     {
         return false;
     }
+    
+    //choose proper device
+
+    mcrt_free(physical_devices);
 
     return true;
 }
