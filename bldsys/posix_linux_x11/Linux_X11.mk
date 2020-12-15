@@ -61,13 +61,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := pt_tbbmalloc
 
 ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
 endif
 ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -78,13 +78,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := pt_irml
 
 ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
 endif
 ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -95,13 +95,13 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := pt_tbb
 
 ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
 endif
 ifeq ($(TARGET_ARCH_ABI),x86_64)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/lib/glibc_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/glibc_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
 
