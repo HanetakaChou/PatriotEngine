@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include <assert.h>
 #include "pt_gfx_texture_common.h"
+#include <algorithm>
 
 //--------------------------------------------------------------------------------------
 // Macros
@@ -263,11 +264,11 @@ static inline size_t BitsPerPixel(uint32_t fmt);
 
 static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows);
 
-static inline uint32_t _GetFormatPlaneCount(uint32_t dds_format);
+static inline uint32_t dds_get_format_plane_count(uint32_t dds_format);
 
 static inline bool IsDepthStencil(uint32_t ddsformat);
 
-struct TextureLoader_DDSHeader
+struct internal_dds_header_t
 {
     bool isCubeMap;
     uint32_t resDim;
@@ -279,14 +280,12 @@ struct TextureLoader_DDSHeader
     uint32_t arraySize;
 };
 
-//--------------------------------------------------------------------------------------
-
-static inline bool LoadTextureHeaderFromStream(
-    gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-    struct TextureLoader_DDSHeader *texture_header, size_t *texture_data_offset)
+static inline bool internal_load_dds_header_from_input_stream(
+    struct internal_dds_header_t *internal_dds_header, size_t *dds_data_offset,
+    gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
 {
-    assert(texture_header != NULL);
-    assert(texture_data_offset != NULL);
+    assert(internal_dds_header != NULL);
+    assert(dds_data_offset != NULL);
 
     if (input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
     {
@@ -331,21 +330,21 @@ static inline bool LoadTextureHeaderFromStream(
         d3d10ext = reinterpret_cast<struct DDS_HEADER_DXT10 const *>(ddsData + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)));
     }
 
-    (*texture_data_offset) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
+    (*dds_data_offset) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
 
-    texture_header->isCubeMap = false;
-    texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
-    texture_header->format = DDS_DXGI_FORMAT_UNKNOWN;
-    texture_header->width = header->dwWidth;
-    texture_header->height = header->dwHeight;
-    texture_header->depth = header->dwDepth;
-    texture_header->mipCount = (header->dwMipMapCount != 0) ? (header->dwMipMapCount) : 1;
-    texture_header->arraySize = 1;
+    internal_dds_header->isCubeMap = false;
+    internal_dds_header->resDim = DDS_DIMENSION_TEXTURE2D;
+    internal_dds_header->format = DDS_DXGI_FORMAT_UNKNOWN;
+    internal_dds_header->width = header->dwWidth;
+    internal_dds_header->height = header->dwHeight;
+    internal_dds_header->depth = header->dwDepth;
+    internal_dds_header->mipCount = (header->dwMipMapCount != 0) ? (header->dwMipMapCount) : 1;
+    internal_dds_header->arraySize = 1;
 
     if (d3d10ext != NULL)
     {
-        texture_header->arraySize = d3d10ext->arraySize;
-        if (texture_header->arraySize == 0)
+        internal_dds_header->arraySize = d3d10ext->arraySize;
+        if (internal_dds_header->arraySize == 0)
         {
             return false;
         }
@@ -364,41 +363,41 @@ static inline bool LoadTextureHeaderFromStream(
             }
         }
 
-        texture_header->format = d3d10ext->dxgiFormat;
+        internal_dds_header->format = d3d10ext->dxgiFormat;
 
         switch (d3d10ext->resourceDimension)
         {
         case DDS_DIMENSION_TEXTURE1D:
         {
-            texture_header->resDim = DDS_DIMENSION_TEXTURE1D;
+            internal_dds_header->resDim = DDS_DIMENSION_TEXTURE1D;
             // D3DX writes 1D textures with a fixed Height of 1
             if ((header->dwFlags & DDSD_HEIGHT) && header->dwHeight != 1)
             {
                 return false;
             }
-            texture_header->height = 1;
-            texture_header->depth = 1;
+            internal_dds_header->height = 1;
+            internal_dds_header->depth = 1;
         }
         break;
         case DDS_DIMENSION_TEXTURE2D:
         {
-            texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
+            internal_dds_header->resDim = DDS_DIMENSION_TEXTURE2D;
             if (d3d10ext->miscFlag & DDS_RESOURCE_MISC_TEXTURECUBE)
             {
-                texture_header->arraySize *= 6;
-                texture_header->isCubeMap = true;
+                internal_dds_header->arraySize *= 6;
+                internal_dds_header->isCubeMap = true;
             }
-            texture_header->depth = 1;
+            internal_dds_header->depth = 1;
         }
         break;
         case DDS_DIMENSION_TEXTURE3D:
         {
-            texture_header->resDim = DDS_DIMENSION_TEXTURE3D;
+            internal_dds_header->resDim = DDS_DIMENSION_TEXTURE3D;
             if (!(header->dwFlags & DDSD_DEPTH))
             {
                 return false;
             }
-            if (texture_header->arraySize > 1)
+            if (internal_dds_header->arraySize > 1)
             {
                 return false;
             }
@@ -410,12 +409,12 @@ static inline bool LoadTextureHeaderFromStream(
     }
     else
     {
-        texture_header->format = GetDXGIFormat(&header->ddspf);
+        internal_dds_header->format = GetDXGIFormat(&header->ddspf);
 
         if (!(header->dwFlags & DDSD_DEPTH))
         {
-            texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
-            texture_header->depth = 1;
+            internal_dds_header->resDim = DDS_DIMENSION_TEXTURE2D;
+            internal_dds_header->depth = 1;
 
             if (header->dwCaps2 & DDSCAPS2_CUBEMAP)
             {
@@ -425,51 +424,49 @@ static inline bool LoadTextureHeaderFromStream(
                     return false;
                 }
 
-                texture_header->arraySize = 6;
-                texture_header->isCubeMap = true;
+                internal_dds_header->arraySize = 6;
+                internal_dds_header->isCubeMap = true;
             }
         }
         else
         {
-            texture_header->resDim = DDS_DIMENSION_TEXTURE3D;
+            internal_dds_header->resDim = DDS_DIMENSION_TEXTURE3D;
 
             // Note there's no way for a legacy Direct3D 9 DDS to express a '1D' texture
         }
 
-        assert(BitsPerPixel(texture_header->format) != 0);
+        assert(BitsPerPixel(internal_dds_header->format) != 0);
     }
 
     return true;
 }
 
-//--------------------------------------------------------------------------------------
-
 inline bool gfx_texture_common::load_dds_header_from_input_stream(
-    struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset,
+    struct common_header_t *common_header, size_t *data_offset,
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
 {
 
-    assert(neutral_texture_header != NULL);
-    assert(neutral_header_offset != NULL);
+    assert(common_header != NULL);
+    assert(data_offset != NULL);
 
-    struct TextureLoader_DDSHeader dds_texture_header;
-    size_t dds_texture_data_offset;
-    if (LoadTextureHeaderFromStream(input_stream, input_stream_read_callback, input_stream_seek_callback, &dds_texture_header, &dds_texture_data_offset))
+    struct internal_dds_header_t internal_dds_header;
+    size_t dds_data_offset;
+    if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
-        neutral_texture_header->type = dds_get_common_type(dds_texture_header.resDim);
-        assert(TEXTURE_LOADER_TYPE_UNDEFINED != neutral_texture_header->type);
+        common_header->type = dds_get_common_type(internal_dds_header.resDim);
+        assert(COMMON_TYPE_UNDEFINED != common_header->type);
 
-        neutral_texture_header->format = dds_get_common_format(dds_texture_header.format);
-        assert(TEXTURE_LOADER_FORMAT_UNDEFINED != neutral_texture_header->format);
+        common_header->format = dds_get_common_format(internal_dds_header.format);
+        assert(COMMON_FORMAT_UNDEFINED != common_header->format);
 
-        neutral_texture_header->width = dds_texture_header.width;
-        neutral_texture_header->height = dds_texture_header.height;
-        neutral_texture_header->depth = dds_texture_header.depth;
-        neutral_texture_header->mipLevels = dds_texture_header.mipCount;
-        neutral_texture_header->arrayLayers = dds_texture_header.arraySize;
-        neutral_texture_header->isCubeMap = dds_texture_header.isCubeMap;
+        common_header->width = internal_dds_header.width;
+        common_header->height = internal_dds_header.height;
+        common_header->depth = internal_dds_header.depth;
+        common_header->mipLevels = internal_dds_header.mipCount;
+        common_header->arrayLayers = internal_dds_header.arraySize;
+        common_header->isCubeMap = internal_dds_header.isCubeMap;
 
-        (*neutral_header_offset) = dds_texture_data_offset;
+        (*data_offset) = dds_data_offset;
 
         return true;
     }
@@ -479,60 +476,59 @@ inline bool gfx_texture_common::load_dds_header_from_input_stream(
     }
 }
 
-//--------------------------------------------------------------------------------------
 inline bool gfx_texture_common::load_dds_data_from_input_stream(
-    struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate,
-    uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+    struct common_header_t const *common_header_for_validate, size_t const *data_offset_for_validate,
+    uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
     gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence))
 {
 
-    struct TextureLoader_DDSHeader texture_header;
-    size_t texture_data_offset;
-    if (!LoadTextureHeaderFromStream(input_stream, input_stream_read_callback, input_stream_seek_callback, &texture_header, &texture_data_offset))
+    struct internal_dds_header_t internal_dds_header;
+    size_t dds_data_offset;
+    if (!internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
     }
 
     assert(
-        texture_header.isCubeMap == neutral_texture_header_validate->isCubeMap &&
-        dds_get_common_type(texture_header.resDim) == neutral_texture_header_validate->type &&
-        dds_get_common_format(texture_header.format) == neutral_texture_header_validate->format &&
-        texture_header.width == neutral_texture_header_validate->width &&
-        texture_header.height == neutral_texture_header_validate->height &&
-        texture_header.depth == neutral_texture_header_validate->depth &&
-        texture_header.mipCount == neutral_texture_header_validate->mipLevels &&
-        texture_header.arraySize == neutral_texture_header_validate->arrayLayers //
+        internal_dds_header.isCubeMap == common_header_for_validate->isCubeMap &&
+        dds_get_common_type(internal_dds_header.resDim) == common_header_for_validate->type &&
+        dds_get_common_format(internal_dds_header.format) == common_header_for_validate->format &&
+        internal_dds_header.width == common_header_for_validate->width &&
+        internal_dds_header.height == common_header_for_validate->height &&
+        internal_dds_header.depth == common_header_for_validate->depth &&
+        internal_dds_header.mipCount == common_header_for_validate->mipLevels &&
+        internal_dds_header.arraySize == common_header_for_validate->arrayLayers //
     );
-    assert(texture_data_offset == (*neutral_header_offset_validate));
+    assert(dds_data_offset == (*data_offset_for_validate));
 
-    //if (input_stream_seek_callback(input_stream, texture_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    //if (input_stream_seek_callback(input_stream, dds_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
     //{
     //    return false;
     //}
 
     // Bound sizes (for security purposes we don't trust DDS file metadata larger than the D3D 11.x hardware requirements)
-    if (texture_header.mipCount > 15) //D3D11_REQ_MIP_LEVELS
+    if (internal_dds_header.mipCount > 15) //D3D11_REQ_MIP_LEVELS
     {
         return false;
     }
 
-    switch (texture_header.resDim)
+    switch (internal_dds_header.resDim)
     {
     case DDS_DIMENSION_TEXTURE1D:
-        if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-            (texture_header.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
+        if ((internal_dds_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+            (internal_dds_header.width > 16384))      //D3D11_REQ_TEXTURE1D_U_DIMENSION
         {
             return false;
         }
         break;
 
     case DDS_DIMENSION_TEXTURE2D:
-        if (!(texture_header.isCubeMap))
+        if (!(internal_dds_header.isCubeMap))
         {
-            if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_header.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
-                (texture_header.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+            if ((internal_dds_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (internal_dds_header.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
+                (internal_dds_header.height > 16384))     //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
             {
                 return false;
             }
@@ -540,9 +536,9 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
         else
         {
             // This is the right bound because we set arraySize to (NumCubes*6) above
-            if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
-                (texture_header.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
-                (texture_header.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
+            if ((internal_dds_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
+                (internal_dds_header.width > 16384) ||    //D3D11_REQ_TEXTURECUBE_DIMENSION
+                (internal_dds_header.height > 16384))     //D3D11_REQ_TEXTURECUBE_DIMENSION
             {
                 return false;
             }
@@ -550,10 +546,10 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
         break;
 
     case DDS_DIMENSION_TEXTURE3D:
-        if ((texture_header.arraySize > 1) ||
-            (texture_header.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_header.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
-            (texture_header.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+        if ((internal_dds_header.arraySize > 1) ||
+            (internal_dds_header.width > 2048) ||  //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (internal_dds_header.height > 2048) || //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
+            (internal_dds_header.depth > 2048))    //D3D11_REQ_TEXTURE3D_U_V_OR_W_DIMENSION
         {
             return false;
         }
@@ -563,45 +559,45 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
         return false;
     }
 
-    uint32_t numberOfPlanes = _GetFormatPlaneCount(texture_header.format);
+    uint32_t numberOfPlanes = dds_get_format_plane_count(internal_dds_header.format);
     if (0 == numberOfPlanes)
     {
         return false;
     }
 
-    if ((numberOfPlanes > 1) && IsDepthStencil(texture_header.format))
+    if ((numberOfPlanes > 1) && IsDepthStencil(internal_dds_header.format))
     {
         // DirectX 12 uses planes for stencil, DirectX 11 does not
         return false;
     }
 
-    size_t numberOfResources = numberOfPlanes * texture_header.mipCount * texture_header.arraySize;
+    size_t numberOfResources = numberOfPlanes * internal_dds_header.mipCount * internal_dds_header.arraySize;
 
     if (numberOfResources > 30720) //D3D12_REQ_SUBRESOURCES
     {
         return false;
     }
 
-    if (numberOfResources != NumSubresources)
+    if (numberOfResources != num_subresources)
     {
         return false;
     }
 
-    size_t inputSkipBytes = texture_data_offset;
+    size_t inputSkipBytes = dds_data_offset;
 
     // Create the texture
-    for (uint32_t arraySlice = 0; arraySlice < texture_header.arraySize; ++arraySlice)
+    for (uint32_t arraySlice = 0; arraySlice < internal_dds_header.arraySize; ++arraySlice)
     {
-        size_t w = texture_header.width;
-        size_t h = texture_header.height;
-        size_t d = texture_header.depth;
-        for (uint32_t mipSlice = 0; mipSlice < texture_header.mipCount; ++mipSlice)
+        size_t w = internal_dds_header.width;
+        size_t h = internal_dds_header.height;
+        size_t d = internal_dds_header.depth;
+        for (uint32_t mipSlice = 0; mipSlice < internal_dds_header.mipCount; ++mipSlice)
         {
 
             size_t NumBytes = 0;
             size_t RowBytes = 0;
             size_t NumRows = 0;
-            if (!GetSurfaceInfo(w, h, texture_header.format, &NumBytes, &RowBytes, &NumRows))
+            if (!GetSurfaceInfo(w, h, internal_dds_header.format, &NumBytes, &RowBytes, &NumRows))
             {
                 return false;
             }
@@ -623,34 +619,34 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
             for (uint32_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
             {
                 // MemcpySubresource d3dx12.h
-                uint32_t dstSubresource = calc_subresource_callback(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
-                assert(dstSubresource < NumSubresources);
+                uint32_t dstSubresource = calc_subresource_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
+                assert(dstSubresource < num_subresources);
 
-                assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
-                assert(inputNumRows == pDest[dstSubresource].outputNumRows);
-                assert(inputRowSize == pDest[dstSubresource].outputRowSize);
+                assert(inputNumSlices == memcpy_dest[dstSubresource].outputNumSlices);
+                assert(inputNumRows == memcpy_dest[dstSubresource].outputNumRows);
+                assert(inputRowSize == memcpy_dest[dstSubresource].outputRowSize);
 
-                if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
+                if (inputSliceSize == memcpy_dest[dstSubresource].outputSlicePitch && inputRowSize == memcpy_dest[dstSubresource].outputRowPitch)
                 {
                     int64_t offset_cur;
                     assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
 
-                    ptrdiff_t BytesRead = input_stream_read_callback(input_stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + memcpy_dest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
                     if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
                     {
                         return false;
                     }
                 }
-                else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
+                else if (inputRowSize == memcpy_dest[dstSubresource].outputRowPitch)
                 {
-                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+                    assert(inputSliceSize <= memcpy_dest[dstSubresource].outputSlicePitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
                         int64_t offset_cur;
                         assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
 
-                        ptrdiff_t BytesRead = input_stream_read_callback(input_stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                        ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z), inputSliceSize);
                         if (BytesRead == -1 || BytesRead < inputSliceSize)
                         {
                             return false;
@@ -659,8 +655,8 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
                 }
                 else
                 {
-                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
-                    assert(inputRowSize <= pDest[dstSubresource].outputRowPitch);
+                    assert(inputSliceSize <= memcpy_dest[dstSubresource].outputSlicePitch);
+                    assert(inputRowSize <= memcpy_dest[dstSubresource].outputRowPitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
@@ -669,7 +665,7 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
                             int64_t offset_cur;
                             assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
 
-                            ptrdiff_t BytesRead = input_stream_read_callback(input_stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                            ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z + memcpy_dest[dstSubresource].outputRowPitch * y), inputRowSize);
                             if (BytesRead == -1 || BytesRead < inputRowSize)
                             {
                                 return false;
@@ -704,7 +700,6 @@ inline bool gfx_texture_common::load_dds_data_from_input_stream(
     return true;
 }
 
-//--------------------------------------------------------------------------------------
 static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf)
 {
     if (ddpf->dwFlags & DDPF_RGB)
@@ -949,7 +944,6 @@ static inline uint32_t GetDXGIFormat(struct DDS_PIXELFORMAT const *ddpf)
 //--------------------------------------------------------------------------------------
 // Get surface information for a particular format
 //--------------------------------------------------------------------------------------
-#include <algorithm>
 static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows)
 {
     assert(outNumBytes != NULL);
@@ -1261,11 +1255,11 @@ static inline size_t BitsPerPixel(uint32_t fmt)
 inline uint32_t gfx_texture_common::dds_get_common_type(uint32_t dds_type)
 {
     static uint32_t const dds_to_common_type_map[] = {
-        TEXTURE_LOADER_TYPE_UNDEFINED,
-        TEXTURE_LOADER_TYPE_UNDEFINED,
-        TEXTURE_LOADER_TYPE_1D,
-        TEXTURE_LOADER_TYPE_2D,
-        TEXTURE_LOADER_TYPE_3D,
+        COMMON_TYPE_UNDEFINED,
+        COMMON_TYPE_UNDEFINED,
+        COMMON_TYPE_1D,
+        COMMON_TYPE_2D,
+        COMMON_TYPE_3D,
     };
     static_assert(DDS_DIMENSION_RANGE == (sizeof(dds_to_common_type_map) / sizeof(dds_to_common_type_map[0])), "DDS_DIMENSION_RANGE == (sizeof(dds_to_common_type_map) / sizeof(dds_to_common_type_map[0]))");
 
@@ -1276,139 +1270,139 @@ inline uint32_t gfx_texture_common::dds_get_common_type(uint32_t dds_type)
 inline uint32_t gfx_texture_common::dds_get_common_format(uint32_t dds_format)
 {
     static uint32_t const dds_to_common_format_map[] = {
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
-        TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
-        TEXTURE_LOADER_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
-        TEXTURE_LOADER_FORMAT_R32G32B32A32_UINT,        //DDS_DXGI_FORMAT_R32G32B32A32_UINT
-        TEXTURE_LOADER_FORMAT_R32G32B32A32_SINT,        //DDS_DXGI_FORMAT_R32G32B32A32_SINT
-        TEXTURE_LOADER_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_TYPELESS
-        TEXTURE_LOADER_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_FLOAT
-        TEXTURE_LOADER_FORMAT_R32G32B32_UINT,           //DDS_DXGI_FORMAT_R32G32B32_UINT
-        TEXTURE_LOADER_FORMAT_R32G32B32_SINT,           //DDS_DXGI_FORMAT_R32G32B32_SINT
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_FLOAT
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_UNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_UNORM
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_UINT,        //DDS_DXGI_FORMAT_R16G16B16A16_UINT
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_SNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_SNORM
-        TEXTURE_LOADER_FORMAT_R16G16B16A16_SINT,        //DDS_DXGI_FORMAT_R16G16B16A16_SINT
-        TEXTURE_LOADER_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_TYPELESS
-        TEXTURE_LOADER_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_FLOAT
-        TEXTURE_LOADER_FORMAT_R32G32_UINT,              //DDS_DXGI_FORMAT_R32G32_UINT
-        TEXTURE_LOADER_FORMAT_R32G32_SINT,              //DDS_DXGI_FORMAT_R32G32_SINT
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32G8X24_TYPELESS
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS
-        TEXTURE_LOADER_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10A2_UNORM
-        TEXTURE_LOADER_FORMAT_A2R10G10B10_UINT_PACK32,  //DDS_DXGI_FORMAT_R10G10B10A2_UINT
-        TEXTURE_LOADER_FORMAT_B10G11R11_UFLOAT_PACK32,  //DDS_DXGI_FORMAT_R11G11B10_FLOAT
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_UNORM
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_UINT,            //DDS_DXGI_FORMAT_R8G8B8A8_UINT
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_SNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_SNORM
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_SINT,            //DDS_DXGI_FORMAT_R8G8B8A8_SINT
-        TEXTURE_LOADER_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_TYPELESS
-        TEXTURE_LOADER_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_FLOAT
-        TEXTURE_LOADER_FORMAT_R16G16_UNORM,             //DDS_DXGI_FORMAT_R16G16_UNORM
-        TEXTURE_LOADER_FORMAT_R16G16_UINT,              //DDS_DXGI_FORMAT_R16G16_UINT
-        TEXTURE_LOADER_FORMAT_R16G16_SNORM,             //DDS_DXGI_FORMAT_R16G16_SNORM
-        TEXTURE_LOADER_FORMAT_R16G16_SINT,              //DDS_DXGI_FORMAT_R16G16_SINT
-        TEXTURE_LOADER_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_TYPELESS
-        TEXTURE_LOADER_FORMAT_D32_SFLOAT,               //DDS_DXGI_FORMAT_D32_FLOAT
-        TEXTURE_LOADER_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_FLOAT
-        TEXTURE_LOADER_FORMAT_R32_UINT,                 //DDS_DXGI_FORMAT_R32_UINT
-        TEXTURE_LOADER_FORMAT_R32_SINT,                 //DDS_DXGI_FORMAT_R32_SINT
-        TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24G8_TYPELESS
-        TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_D24_UNORM_S8_UINT
-        TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-        TEXTURE_LOADER_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT
-        TEXTURE_LOADER_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_TYPELESS
-        TEXTURE_LOADER_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_UNORM
-        TEXTURE_LOADER_FORMAT_R8G8_UINT,                //DDS_DXGI_FORMAT_R8G8_UINT
-        TEXTURE_LOADER_FORMAT_R8G8_SNORM,               //DDS_DXGI_FORMAT_R8G8_SNORM
-        TEXTURE_LOADER_FORMAT_R8G8_SINT,                //DDS_DXGI_FORMAT_R8G8_SINT
-        TEXTURE_LOADER_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_TYPELESS
-        TEXTURE_LOADER_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_FLOAT
-        TEXTURE_LOADER_FORMAT_D16_UNORM,                //DDS_DXGI_FORMAT_D16_UNORM
-        TEXTURE_LOADER_FORMAT_R16_UNORM,                //DDS_DXGI_FORMAT_R16_UNORM
-        TEXTURE_LOADER_FORMAT_R16_UINT,                 //DDS_DXGI_FORMAT_R16_UINT
-        TEXTURE_LOADER_FORMAT_R16_SNORM,                //DDS_DXGI_FORMAT_R16_SNORM
-        TEXTURE_LOADER_FORMAT_R16_SINT,                 //DDS_DXGI_FORMAT_R16_SINT
-        TEXTURE_LOADER_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_TYPELESS
-        TEXTURE_LOADER_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_UNORM
-        TEXTURE_LOADER_FORMAT_R8_UINT,                  //DDS_DXGI_FORMAT_R8_UINT
-        TEXTURE_LOADER_FORMAT_R8_SNORM,                 //DDS_DXGI_FORMAT_R8_SNORM
-        TEXTURE_LOADER_FORMAT_R8_SINT,                  //DDS_DXGI_FORMAT_R8_SINT
-        TEXTURE_LOADER_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_A8_UNORM
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R1_UNORM
-        TEXTURE_LOADER_FORMAT_E5B9G9R9_UFLOAT_PACK32,   //DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R8G8_B8G8_UNORM
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_G8R8_G8B8_UNORM
-        TEXTURE_LOADER_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_UNORM
-        TEXTURE_LOADER_FORMAT_BC1_RGBA_SRGB_BLOCK,      //DDS_DXGI_FORMAT_BC1_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_UNORM
-        TEXTURE_LOADER_FORMAT_BC2_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC2_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_UNORM
-        TEXTURE_LOADER_FORMAT_BC3_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC3_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_UNORM
-        TEXTURE_LOADER_FORMAT_BC4_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_SNORM
-        TEXTURE_LOADER_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_UNORM
-        TEXTURE_LOADER_FORMAT_BC5_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_SNORM
-        TEXTURE_LOADER_FORMAT_B5G6R5_UNORM_PACK16,      //DDS_DXGI_FORMAT_B5G6R5_UNORM
-        TEXTURE_LOADER_FORMAT_B5G5R5A1_UNORM_PACK16,    //DDS_DXGI_FORMAT_B5G5R5A1_UNORM
-        TEXTURE_LOADER_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_UNORM
-        TEXTURE_LOADER_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_UNORM
-        TEXTURE_LOADER_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM
-        TEXTURE_LOADER_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS
-        TEXTURE_LOADER_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_UF16
-        TEXTURE_LOADER_FORMAT_BC6H_SFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_SF16
-        TEXTURE_LOADER_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_TYPELESS
-        TEXTURE_LOADER_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_UNORM
-        TEXTURE_LOADER_FORMAT_BC7_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC7_UNORM_SRGB
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AYUV
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y410
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y416
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV12
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P010
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P016
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_420_OPAQUE
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_YUY2
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y210
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y216
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV11
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AI44
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_IA44
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P8
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_A8P8
-        TEXTURE_LOADER_FORMAT_B4G4R4A4_UNORM_PACK16,    //DDS_DXGI_FORMAT_B4G4R4A4_UNORM //115
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_116
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_117
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_118
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_119
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_120
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_121
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_122
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_123
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_124
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_125
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_126
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_127
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_128
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_129
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P208 //130
-        TEXTURE_LOADER_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V208
-        TEXTURE_LOADER_FORMAT_UNDEFINED                 //DDS_DXGI_FORMAT_V408
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
+        COMMON_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
+        COMMON_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
+        COMMON_FORMAT_R32G32B32A32_UINT,        //DDS_DXGI_FORMAT_R32G32B32A32_UINT
+        COMMON_FORMAT_R32G32B32A32_SINT,        //DDS_DXGI_FORMAT_R32G32B32A32_SINT
+        COMMON_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_TYPELESS
+        COMMON_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_FLOAT
+        COMMON_FORMAT_R32G32B32_UINT,           //DDS_DXGI_FORMAT_R32G32B32_UINT
+        COMMON_FORMAT_R32G32B32_SINT,           //DDS_DXGI_FORMAT_R32G32B32_SINT
+        COMMON_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS
+        COMMON_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_FLOAT
+        COMMON_FORMAT_R16G16B16A16_UNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_UNORM
+        COMMON_FORMAT_R16G16B16A16_UINT,        //DDS_DXGI_FORMAT_R16G16B16A16_UINT
+        COMMON_FORMAT_R16G16B16A16_SNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_SNORM
+        COMMON_FORMAT_R16G16B16A16_SINT,        //DDS_DXGI_FORMAT_R16G16B16A16_SINT
+        COMMON_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_TYPELESS
+        COMMON_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_FLOAT
+        COMMON_FORMAT_R32G32_UINT,              //DDS_DXGI_FORMAT_R32G32_UINT
+        COMMON_FORMAT_R32G32_SINT,              //DDS_DXGI_FORMAT_R32G32_SINT
+        COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32G8X24_TYPELESS
+        COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT
+        COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
+        COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
+        COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS
+        COMMON_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10A2_UNORM
+        COMMON_FORMAT_A2R10G10B10_UINT_PACK32,  //DDS_DXGI_FORMAT_R10G10B10A2_UINT
+        COMMON_FORMAT_B10G11R11_UFLOAT_PACK32,  //DDS_DXGI_FORMAT_R11G11B10_FLOAT
+        COMMON_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS
+        COMMON_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_UNORM
+        COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+        COMMON_FORMAT_R8G8B8A8_UINT,            //DDS_DXGI_FORMAT_R8G8B8A8_UINT
+        COMMON_FORMAT_R8G8B8A8_SNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_SNORM
+        COMMON_FORMAT_R8G8B8A8_SINT,            //DDS_DXGI_FORMAT_R8G8B8A8_SINT
+        COMMON_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_TYPELESS
+        COMMON_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_FLOAT
+        COMMON_FORMAT_R16G16_UNORM,             //DDS_DXGI_FORMAT_R16G16_UNORM
+        COMMON_FORMAT_R16G16_UINT,              //DDS_DXGI_FORMAT_R16G16_UINT
+        COMMON_FORMAT_R16G16_SNORM,             //DDS_DXGI_FORMAT_R16G16_SNORM
+        COMMON_FORMAT_R16G16_SINT,              //DDS_DXGI_FORMAT_R16G16_SINT
+        COMMON_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_TYPELESS
+        COMMON_FORMAT_D32_SFLOAT,               //DDS_DXGI_FORMAT_D32_FLOAT
+        COMMON_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_FLOAT
+        COMMON_FORMAT_R32_UINT,                 //DDS_DXGI_FORMAT_R32_UINT
+        COMMON_FORMAT_R32_SINT,                 //DDS_DXGI_FORMAT_R32_SINT
+        COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24G8_TYPELESS
+        COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_D24_UNORM_S8_UINT
+        COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+        COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT
+        COMMON_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_TYPELESS
+        COMMON_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_UNORM
+        COMMON_FORMAT_R8G8_UINT,                //DDS_DXGI_FORMAT_R8G8_UINT
+        COMMON_FORMAT_R8G8_SNORM,               //DDS_DXGI_FORMAT_R8G8_SNORM
+        COMMON_FORMAT_R8G8_SINT,                //DDS_DXGI_FORMAT_R8G8_SINT
+        COMMON_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_TYPELESS
+        COMMON_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_FLOAT
+        COMMON_FORMAT_D16_UNORM,                //DDS_DXGI_FORMAT_D16_UNORM
+        COMMON_FORMAT_R16_UNORM,                //DDS_DXGI_FORMAT_R16_UNORM
+        COMMON_FORMAT_R16_UINT,                 //DDS_DXGI_FORMAT_R16_UINT
+        COMMON_FORMAT_R16_SNORM,                //DDS_DXGI_FORMAT_R16_SNORM
+        COMMON_FORMAT_R16_SINT,                 //DDS_DXGI_FORMAT_R16_SINT
+        COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_TYPELESS
+        COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_UNORM
+        COMMON_FORMAT_R8_UINT,                  //DDS_DXGI_FORMAT_R8_UINT
+        COMMON_FORMAT_R8_SNORM,                 //DDS_DXGI_FORMAT_R8_SNORM
+        COMMON_FORMAT_R8_SINT,                  //DDS_DXGI_FORMAT_R8_SINT
+        COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_A8_UNORM
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R1_UNORM
+        COMMON_FORMAT_E5B9G9R9_UFLOAT_PACK32,   //DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R8G8_B8G8_UNORM
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_G8R8_G8B8_UNORM
+        COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_TYPELESS
+        COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_UNORM
+        COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK,      //DDS_DXGI_FORMAT_BC1_UNORM_SRGB
+        COMMON_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_TYPELESS
+        COMMON_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_UNORM
+        COMMON_FORMAT_BC2_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC2_UNORM_SRGB
+        COMMON_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_TYPELESS
+        COMMON_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_UNORM
+        COMMON_FORMAT_BC3_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC3_UNORM_SRGB
+        COMMON_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_TYPELESS
+        COMMON_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_UNORM
+        COMMON_FORMAT_BC4_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_SNORM
+        COMMON_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_TYPELESS
+        COMMON_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_UNORM
+        COMMON_FORMAT_BC5_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_SNORM
+        COMMON_FORMAT_B5G6R5_UNORM_PACK16,      //DDS_DXGI_FORMAT_B5G6R5_UNORM
+        COMMON_FORMAT_B5G5R5A1_UNORM_PACK16,    //DDS_DXGI_FORMAT_B5G5R5A1_UNORM
+        COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_UNORM
+        COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_UNORM
+        COMMON_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM
+        COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS
+        COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
+        COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS
+        COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
+        COMMON_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_TYPELESS
+        COMMON_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_UF16
+        COMMON_FORMAT_BC6H_SFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_SF16
+        COMMON_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_TYPELESS
+        COMMON_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_UNORM
+        COMMON_FORMAT_BC7_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC7_UNORM_SRGB
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AYUV
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y410
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y416
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV12
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P010
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P016
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_420_OPAQUE
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_YUY2
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y210
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y216
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV11
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AI44
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_IA44
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P8
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_A8P8
+        COMMON_FORMAT_B4G4R4A4_UNORM_PACK16,    //DDS_DXGI_FORMAT_B4G4R4A4_UNORM //115
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_116
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_117
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_118
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_119
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_120
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_121
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_122
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_123
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_124
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_125
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_126
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_127
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_128
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_129
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P208 //130
+        COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V208
+        COMMON_FORMAT_UNDEFINED                 //DDS_DXGI_FORMAT_V408
     };
     static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(dds_to_common_format_map) / sizeof(dds_to_common_format_map[0])), "DDS_DXGI_FORMAT_RANGE == (sizeof(dds_to_common_format_map) / sizeof(dds_to_common_format_map[0]))");
 
@@ -1416,7 +1410,7 @@ inline uint32_t gfx_texture_common::dds_get_common_format(uint32_t dds_format)
     return dds_to_common_format_map[dds_format];
 }
 
-static inline uint32_t _GetFormatPlaneCount(uint32_t dds_format)
+static inline uint32_t dds_get_format_plane_count(uint32_t dds_format)
 {
     static uint32_t const dds_format_plane_count_info_table[] = {
         0, //DDS_DXGI_FORMAT_UNKNOWN
