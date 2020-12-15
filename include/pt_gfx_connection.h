@@ -66,7 +66,7 @@ struct gfx_imesh
 struct gfx_imaterial
 {
     //MDL //OSL
-    virtual bool read_input_stream() = 0; //XReadBitmapFile
+    virtual bool read_input_stream() = 0; //XReadBitmapFile //XCreateBitmapFromData
 
     virtual void destroy() = 0;
 };

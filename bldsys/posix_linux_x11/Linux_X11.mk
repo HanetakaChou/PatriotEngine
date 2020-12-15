@@ -118,6 +118,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_posix_linux_x11.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp   
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc

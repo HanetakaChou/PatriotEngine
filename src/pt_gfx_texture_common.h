@@ -248,10 +248,21 @@ class gfx_texture_common : public gfx_itexture
         size_t outputNumSlices;
     };
 
-    static bool read_dds_input_stream(gfx_input_stream input_stream,
-                                      intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
-                                      int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-                                      struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset);
+    static inline uint32_t dds_get_common_type(uint32_t dds_type);
+
+    static inline uint32_t dds_get_common_format(uint32_t dds_format);
+
+    static inline bool load_dds_header_from_input_stream(
+        struct TextureLoader_NeutralHeader *neutral_texture_header, size_t *neutral_header_offset,
+        gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence));
+
+    static inline bool load_dds_data_from_input_stream(
+        struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate,
+        uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
+        uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+        gfx_input_stream stream, intptr_t(PT_PTR *stream_read)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *stream_seek)(gfx_input_stream input_stream, int64_t offset, int whence));
+
+    //static bool
 };
 
 #endif
