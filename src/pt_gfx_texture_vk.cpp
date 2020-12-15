@@ -27,6 +27,9 @@ bool gfx_texture_vk::read_input_stream(
     int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
     void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream))
 {
+    gfx_input_stream input_stream = input_stream_init_callback(initial_filename);
+
+    input_stream_destroy_callback(input_stream);
     return false;
 }
 
