@@ -46,6 +46,8 @@ void shell_x11::init()
     }
     m_screen = iter.data;
 
+    m_visual = m_screen->root_visual;
+
     // CreateWindowExW
     m_window = xcb_generate_id(m_xcb_connection);
 
@@ -68,7 +70,7 @@ void shell_x11::init()
                                                                        m_window,
                                                                        m_screen->root, 0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels, 0,
                                                                        XCB_WINDOW_CLASS_INPUT_OUTPUT,
-                                                                       m_screen->root_visual,
+                                                                       m_visual,
                                                                        value_mask, value_list);
 
     // Title
@@ -85,22 +87,22 @@ void shell_x11::init()
     xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_create_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(m_xcb_connection, cookie_net_wm_name, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(m_xcb_connection, cookie_net_wm_name, &error_generic);
     assert(error_generic == NULL);
     xcb_atom_t atom_net_wm_name = reply_net_wm_name->atom;
     free(reply_net_wm_name);
 
-    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(m_xcb_connection, cookie_utf8_string, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(m_xcb_connection, cookie_utf8_string, &error_generic);
     assert(error_generic == NULL);
     xcb_atom_t atom_utf8_string = reply_utf8_string->atom;
     free(reply_utf8_string);
 
-    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_protocols, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_protocols, &error_generic);
     assert(error_generic == NULL);
     m_atom_wm_protocols = reply_wm_protocols->atom;
     free(reply_wm_protocols);
 
-    xcb_intern_atom_reply_t *reply_wm_delete_window = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_delete_window, &error_generic); //implicit xcb_flush
+    xcb_intern_atom_reply_t *reply_wm_delete_window = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_delete_window, &error_generic);
     assert(error_generic == NULL);
     m_atom_wm_delete_window = reply_wm_delete_window->atom;
     free(reply_wm_delete_window);
@@ -112,13 +114,13 @@ void shell_x11::init()
     // ShowWindow
     xcb_void_cookie_t cookie_map_window = xcb_map_window_checked(m_xcb_connection, m_window);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_net_wm_name); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_net_wm_name);
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_wm_protocols); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_wm_protocols);
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_map_window); //implicit xcb_flush
+    error_generic = xcb_request_check(m_xcb_connection, cookie_map_window);
     assert(error_generic == NULL);
 
     // member
@@ -156,7 +158,7 @@ void *shell_x11::draw_request_main(void *arg)
 
     while (self->m_loop)
     {
-        self->m_draw_request_callback(self->m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
+        self->m_draw_request_callback(self->m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
     }
 
     self->m_gfx_connection->destroy();
@@ -175,13 +177,13 @@ void *shell_x11::app_wrap_main(void *arg)
     return NULL;
 }
 
-void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data), void *user_data)
+void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data)
 {
     m_size_change_callback = size_change_callback;
     m_size_change_callback_user_data = user_data;
 }
 
-void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *window, void *user_data), void *user_data)
+void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data)
 {
     m_draw_request_callback = draw_request_callback;
     m_draw_request_callback_user_data = user_data;
@@ -284,7 +286,7 @@ void shell_x11::run()
 
             if (m_size_change_callback)
             {
-                m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
+                m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
             }
         }
         break;

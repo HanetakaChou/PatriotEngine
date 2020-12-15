@@ -32,6 +32,7 @@ class shell_x11 : wsi_iwindow
 
     xcb_setup_t const *m_setup;
     xcb_screen_t *m_screen;
+    xcb_visualid_t m_visual;
 
     xcb_window_t m_window;
 
@@ -45,9 +46,9 @@ class shell_x11 : wsi_iwindow
     bool m_draw_request_thread_term;
 
     gfx_iconnection *m_gfx_connection;
-    void (*m_size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data);
+    void (*m_size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data);
     void *m_size_change_callback_user_data;
-    void (*m_draw_request_callback)(void *wsi_connection, void *window, void *user_data);
+    void (*m_draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data);
     void *m_draw_request_callback_user_data;
 
     mcrt_native_thread_id m_app_thread;
@@ -60,8 +61,8 @@ class shell_x11 : wsi_iwindow
     void sync_keysyms();
     xcb_keysym_t keycode_to_keysym(xcb_keycode_t keycode);
 
-    void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *window, float width, float height, void *user_data), void *user_data) override;
-    void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *window, void *user_data), void *user_data) override;
+    void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data) override;
+    void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data) override;
 
 public:
     void init();

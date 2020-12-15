@@ -29,14 +29,24 @@ class gfx_connection_vk : public gfx_connection_common
     VkInstance m_instance;
     VkPhysicalDevice m_physicalDevice;
     PFN_vkCreateInstance m_vkCreateInstance;
+    VkPhysicalDevice m_physical_device;
+    uint32_t m_queueGP_family_index;
+    uint32_t m_queueT_family_index;
+    VkQueue m_queueGP;
+    VkQueue m_queueT;
 #ifndef NDEBUG
     PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
     PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
 #endif
     PFN_vkEnumeratePhysicalDevices m_vkEnumeratePhysicalDevices;
-    PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatPropertie;
+    PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties;
+    PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties;
+    PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatProperties;
 
-    static char const *wsi_surface_extension_name();
+    void *m_wsi_connection;
+    void *m_visual;
+    static char const *platform_surface_extension_name();
+    bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
 
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
@@ -49,9 +59,10 @@ class gfx_connection_vk : public gfx_connection_common
     void destroy() override;
 
 public:
+    inline gfx_connection_vk() : m_wsi_connection(NULL), m_visual(reinterpret_cast<void *>(intptr_t(-1))) {}
     bool init();
-    void size_change_callback(void *wsi_connection, void *window, float width, float height);
-    void draw_request_callback(void *wsi_connection, void *window);
+    void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
+    void draw_request_callback(void *wsi_connection, void *visual, void *window);
 };
 
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);
