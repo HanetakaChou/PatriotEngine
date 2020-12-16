@@ -51,6 +51,8 @@ class gfx_connection_vk : public gfx_connection_common
     PFN_vkCreateDevice m_vkCreateDevice;
     PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
     PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
+    PFN_vkAllocateMemory m_vkAllocateMemory;
+    PFN_vkFreeMemory m_vkFreeMemory;
 
 #ifndef NDEBUG
     PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
@@ -63,7 +65,7 @@ class gfx_connection_vk : public gfx_connection_common
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
 
     static void *const m_invalid_wsi_connection; // = NULL;
-    static void *const m_invalid_visual; // = ((void *)-1);
+    static void *const m_invalid_visual;         // = ((void *)-1);
 
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
@@ -80,9 +82,16 @@ public:
     bool init();
     void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
     void draw_request_callback(void *wsi_connection, void *visual, void *window);
-    void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties);
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
+
+    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
+    // vkGetPhysicalDeviceFormatProperties
+    // vkAllocateMemory
+    // vkFreeMemory
+    void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties);
+    VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory);
+    void free_memory(VkDeviceMemory device_memory);
 };
 
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);

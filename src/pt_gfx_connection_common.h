@@ -23,6 +23,7 @@
 
 class gfx_connection_common : public gfx_iconnection
 {
+  
     //Maybe we can do the cpu side work in the calling thread?
     struct texture_read_request
     {
@@ -38,6 +39,7 @@ class gfx_connection_common : public gfx_iconnection
     //repatriatePublicFreeList
 
     texture_read_request *m_public_texture_read_request;
+
 };
 
 #endif

@@ -93,7 +93,7 @@ bool gfx_connection_vk::init()
         instance_create_info.enabledLayerCount = 0;
         instance_create_info.ppEnabledLayerNames = NULL;
         instance_create_info.enabledExtensionCount = 2;
-        instance_create_info.ppEnabledExtensionNames = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
+        instance_create_info.ppEnabledExtensionNames[2] = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
 #endif
 
         vk_res = m_vkCreateInstance(&instance_create_info, &m_allocator_callbacks, &m_instance);
@@ -352,6 +352,12 @@ bool gfx_connection_vk::init()
     m_vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(m_vkGetDeviceProcAddr(m_device, "vkGetDeviceQueue"));
     assert(NULL != m_vkGetDeviceQueue);
 
+    m_vkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(m_vkGetDeviceProcAddr(m_device, "vkAllocateMemory"));
+    assert(NULL != m_vkAllocateMemory);
+
+    m_vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(m_vkGetDeviceProcAddr(m_device, "vkFreeMemory"));
+    assert(NULL != m_vkFreeMemory);
+
     m_vkGetDeviceQueue(m_device, m_queue_GP_family_index, m_queue_GP_queue_index, &m_queue_GP);
 
     if (m_queue_T_family_index != m_queue_GP_family_index || m_queue_T_queue_index != m_queue_GP_queue_index)
@@ -371,6 +377,16 @@ bool gfx_connection_vk::init()
 void gfx_connection_vk::get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties)
 {
     return m_vkGetPhysicalDeviceFormatProperties(m_physical_device, format, out_format_properties);
+}
+
+VkResult gfx_connection_vk::allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory)
+{
+    return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory);
+}
+
+void gfx_connection_vk::free_memory(VkDeviceMemory device_memory)
+{
+    return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks);
 }
 
 VkBool32 gfx_connection_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)

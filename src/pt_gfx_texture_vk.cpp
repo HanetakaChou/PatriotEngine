@@ -76,16 +76,17 @@ bool gfx_texture_vk::read_input_stream(
 
         specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
 
-#if 1
-        //multi-thread issue
-        //try to move to gpu thread
-        struct VkFormatProperties physical_device_format_properties;
-        m_gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
-        if (0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+        // vkGetPhysicalDeviceFormatProperties
+        // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
         {
-            return false;
+            struct VkFormatProperties physical_device_format_properties;
+            m_gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
+            if (0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
+            {
+                return false;
+            }
         }
-#endif
+
         uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * specific_header_vk.arrayLayers * specific_header_vk.mipLevels;
 
         struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
@@ -94,6 +95,9 @@ bool gfx_texture_vk::read_input_stream(
         size_t total_size = get_copyable_footprints(&specific_header_vk,
                                                     m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
                                                     num_subresource, memcpy_dest, cmdcopy_dest);
+
+        // vkAllocateMemory
+        // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
         mcrt_free(memcpy_dest);
         mcrt_free(cmdcopy_dest);

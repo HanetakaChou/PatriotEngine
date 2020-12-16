@@ -304,7 +304,7 @@ void shell_x11::run()
                     // W
                     assert(XK_W == keysym || XK_w == keysym);
                     // Trigger Callback for Input
-                    int huhu = 0;
+                    // listen_input_event
                 }
                 break;
                 case XK_Shift_L:
