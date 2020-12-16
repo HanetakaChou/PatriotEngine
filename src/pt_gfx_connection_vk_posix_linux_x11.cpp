@@ -59,7 +59,7 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
 
     xcb_connection_t *wsi_connection = NULL;
     xcb_visualid_t visual = intptr_t(-1);
-    while ((NULL == (wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection))) || (intptr_t(-1) == (visual = reinterpret_cast<uintptr_t>(m_visual))))
+    while ((NULL == (wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection))) || (static_cast<xcb_visualid_t>(intptr_t(-1)) == (visual = reinterpret_cast<uintptr_t>(m_visual))))
     {
         mcrt_os_yield();
     }

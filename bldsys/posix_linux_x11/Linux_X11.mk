@@ -140,7 +140,7 @@ LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dta
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_gfx.def
 
-LOCAL_LDLIBS += -lvulkan
+LOCAL_LDLIBS += -lvulkan 
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt
 

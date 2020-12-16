@@ -30,18 +30,30 @@ class gfx_connection_vk : public gfx_connection_common
     VkPhysicalDevice m_physicalDevice;
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
-    uint32_t m_queueGP_family_index;
-    uint32_t m_queueT_family_index;
-    VkQueue m_queueGP;
-    VkQueue m_queueT;
-#ifndef NDEBUG
-    PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
-    PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
-#endif
+    uint32_t m_queue_GP_family_index;
+    uint32_t m_queue_T_family_index;
+    uint32_t m_queue_GP_queue_index;
+    uint32_t m_queue_T_queue_index;
+    bool m_queue_GP_diff_queue_T;
+    bool m_physical_device_feature_texture_compression_ASTC_LDR;
+    bool m_physical_device_feature_texture_compression_BC;
+    VkDevice m_device;
+    VkQueue m_queue_GP;
+    VkQueue m_queue_T;
+
     PFN_vkEnumeratePhysicalDevices m_vkEnumeratePhysicalDevices;
     PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties;
     PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties;
     PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatProperties;
+    PFN_vkGetPhysicalDeviceFeatures m_vkGetPhysicalDeviceFeatures;
+    PFN_vkCreateDevice m_vkCreateDevice;
+    PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
+    PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
+
+#ifndef NDEBUG
+    PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
+    PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
+#endif
 
     void *m_wsi_connection;
     void *m_visual;
