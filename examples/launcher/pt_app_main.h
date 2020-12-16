@@ -21,6 +21,18 @@
 #include <pt_wsi_window.h>
 #include <pt_gfx_connection.h>
 
-void app_main(struct wsi_iwindow *window, struct gfx_iconnection *connection);
+struct app_iwindow
+{
+    struct input_event_t
+    {
+        
+    };
+
+    virtual void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) = 0;
+
+    virtual void mark_app_running() = 0;
+};
+
+void app_main(struct app_iwindow *input, struct gfx_iconnection *connection);
 
 #endif

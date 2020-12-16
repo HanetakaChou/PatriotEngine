@@ -24,6 +24,9 @@
 #include <new>
 #include <algorithm>
 
+void *const gfx_connection_vk::m_invalid_wsi_connection = NULL;
+void *const gfx_connection_vk::m_invalid_visual = reinterpret_cast<void *>(static_cast<intptr_t>(-1));
+
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
 {
     gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();

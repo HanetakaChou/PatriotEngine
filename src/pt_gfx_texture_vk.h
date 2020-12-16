@@ -87,7 +87,7 @@ class gfx_texture_vk : public gfx_texture_common
         };
     };
 
-    static struct vulkan_format_info_t vulkan_format_info_table[VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1];
+    static struct vulkan_format_info_t const vulkan_format_info_table[VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1];
 
     static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 

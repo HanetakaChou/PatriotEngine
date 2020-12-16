@@ -27,8 +27,8 @@
 
 struct wsi_iwindow
 {
-    //for app_main
-    //listen_input_event();
+    //Some platforms (e.g. X11) may wait on the first size_change_callback //to retrieve the info required by the platform_physical_device_presentation_support
+    //We need to invoke size_change_callback on these plaforms in the listen_size_change to avoid dead-lock
 
     //ANativeActivityCallbacks::onNativeWindowResized
     //MTKViewDelegate::drawableSizeWillChange

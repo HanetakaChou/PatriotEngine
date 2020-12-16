@@ -38,6 +38,10 @@ inline int32_t mcrt_atomic_dec_i32(int32_t volatile *dest);
 inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest);
 inline int32_t mcrt_atomic_fetch_add_i32(int32_t volatile *dest, int32_t add);
 inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add);
+template <typename T>
+inline T mcrt_atomic_load(T volatile *src);
+template <typename T>
+inline void mcrt_atomic_store(T volatile *dst, T val);
 
 #if defined PT_POSIX
 #include "pt_mcrt_atomic_posix.inl"
@@ -46,5 +50,7 @@ inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add);
 #else
 #error Unknown Platform
 #endif
+
+#include "pt_mcrt_atomic.inl"
 
 #endif

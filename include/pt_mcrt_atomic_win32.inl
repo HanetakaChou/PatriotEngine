@@ -88,3 +88,48 @@ inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add)
 {
     return InterlockedExchangeAdd64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(add));
 }
+
+inline void mcrt_compiler_read_barrier()
+{
+	ReadBarrier();
+}
+
+inline void mcrt_compiler_write_barrier()
+{
+	WriteBarrier();
+}
+
+inline void mcrt_compiler_read_write_barrier()
+{
+	ReadWriteBarrier();
+}
+
+#if defined(PT_ARM) || defined(PT_ARM64)
+inline void mcrt_hardware_read_barrier()
+{
+	__dmb(_ARM_BARRIER_SY);
+}
+inline void mcrt_hardware_write_barrier()
+{
+	__dmb(_ARM_BARRIER_ST);
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+	__dmb(_ARM_BARRIER_SY);
+}
+#elif defined(PT_X86) || defined(PT_X64)
+inline void mcrt_hardware_read_barrier()
+{
+	_mm_mfence();
+}
+inline void mcrt_hardware_write_barrier()
+{
+	_mm_mfence();
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+	_mm_mfence();
+}
+#else
+#error Unknown Architecture
+#endif

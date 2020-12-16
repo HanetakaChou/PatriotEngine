@@ -23,6 +23,8 @@
 #include "pt_gfx_common.h"
 #include "pt_wsi_window.h"
 
+//Some platforms (e.g. X11) may wait on the first size_change_callback //to retrieve the info required by the platform_physical_device_presentation_support   
+//We need to invoke size_change_callback on these plaforms in the listen_size_change to avoid dead-lock
 extern "C" PT_GFX_ATTR struct gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
 
 //struct gfx_imesh;

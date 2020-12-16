@@ -91,9 +91,9 @@ bool gfx_texture_vk::read_input_stream(
         struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
         struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
 
-        get_copyable_footprints(&specific_header_vk,
-                                m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
-                                num_subresource, memcpy_dest, cmdcopy_dest);
+        size_t total_size = get_copyable_footprints(&specific_header_vk,
+                                                    m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                    num_subresource, memcpy_dest, cmdcopy_dest);
 
         mcrt_free(memcpy_dest);
         mcrt_free(cmdcopy_dest);
@@ -328,10 +328,10 @@ inline uint32_t gfx_texture_vk::calc_subresource(uint32_t mipLevel, uint32_t arr
     return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
 }
 
-    static inline size_t get_copyable_footprints(
-        struct specific_header_vk_t const *specific_header_vk,
-        VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
-        size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
+static inline size_t get_copyable_footprints(
+    struct specific_header_vk_t const *specific_header_vk,
+    VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
+    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
 
 inline size_t gfx_texture_vk::get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
@@ -692,7 +692,7 @@ inline uint32_t gfx_texture_vk::get_depth_stencil_format_pixel_bytes(VkFormat vk
 // LoadCompressedToNative
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
-struct gfx_texture_vk::vulkan_format_info_t gfx_texture_vk::vulkan_format_info_table[] = {
+struct gfx_texture_vk::vulkan_format_info_t const gfx_texture_vk::vulkan_format_info_table[] = {
     {0},                                       //VK_FORMAT_UNDEFINED
     {1, .rgba = {1}},                          //VK_FORMAT_R4G4_UNORM_PACK8
     {1, .rgba = {2}},                          //VK_FORMAT_R4G4B4A4_UNORM_PACK16

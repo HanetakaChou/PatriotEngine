@@ -62,6 +62,9 @@ class gfx_connection_vk : public gfx_connection_common
     static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
 
+    static void *const m_invalid_wsi_connection; // = NULL;
+    static void *const m_invalid_visual; // = ((void *)-1);
+
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
     VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
@@ -73,7 +76,7 @@ class gfx_connection_vk : public gfx_connection_common
     void destroy() override;
 
 public:
-    inline gfx_connection_vk() : m_wsi_connection(NULL), m_visual(reinterpret_cast<void *>(intptr_t(-1))) {}
+    inline gfx_connection_vk() : m_wsi_connection(m_invalid_wsi_connection), m_visual(m_invalid_visual) {}
     bool init();
     void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
     void draw_request_callback(void *wsi_connection, void *visual, void *window);

@@ -18,6 +18,7 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #include <stdint.h>
 #include <pt_mcrt_thread.h>
+#include <pt_mcrt_atomic.h>
 #include "pt_gfx_connection_vk.h"
 #include <xcb/xcb.h>
 #include <vulkan/vulkan.h>
@@ -26,8 +27,8 @@ static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= s
 
 void gfx_connection_vk::size_change_callback(void *_wsi_connection, void *_visual, void *_window, float width, float height)
 {
-    assert(m_wsi_connection == NULL || _wsi_connection == m_wsi_connection);
-    assert(m_visual == reinterpret_cast<void *>(intptr_t(-1)) || m_visual == _visual);
+    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
+    assert(m_visual == m_invalid_visual || m_visual == _visual);
     m_wsi_connection = _wsi_connection;
     m_visual = _visual;
 
@@ -38,8 +39,8 @@ void gfx_connection_vk::size_change_callback(void *_wsi_connection, void *_visua
 
 void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_visual, void *_window)
 {
-    assert(m_wsi_connection == NULL || _wsi_connection == m_wsi_connection);
-    assert(m_visual == reinterpret_cast<void *>(intptr_t(-1)) || m_visual == _visual);
+    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
+    assert(m_visual == m_invalid_visual || m_visual == _visual);
     m_wsi_connection = _wsi_connection;
     m_visual = _visual;
 
@@ -57,12 +58,13 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
 {
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_vkGetPhysicalDeviceXcbPresentationSupportKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
 
-    xcb_connection_t *wsi_connection = NULL;
-    xcb_visualid_t visual = intptr_t(-1);
-    while ((NULL == (wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection))) || (static_cast<xcb_visualid_t>(intptr_t(-1)) == (visual = reinterpret_cast<uintptr_t>(m_visual))))
+    while (m_invalid_wsi_connection == mcrt_atomic_load(&m_wsi_connection) || m_invalid_visual == mcrt_atomic_load(&m_visual))
     {
         mcrt_os_yield();
     }
+
+    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
+    xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
 
     VkBool32 res = m_vkGetPhysicalDeviceXcbPresentationSupportKHR(physical_device, queue_family_index, wsi_connection, visual);
 

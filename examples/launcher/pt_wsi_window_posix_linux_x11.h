@@ -18,14 +18,15 @@
 #ifndef _WSI_WINDOW_POSIX_LINUX_X11_H_
 #define _WSI_WINDOW_POSIX_LINUX_X11_H_ 1
 
+#include <stddef.h>
 #include <pt_wsi_window.h>
-
-#include <xcb/xcb.h>
 #include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
+#include <xcb/xcb.h>
+#include "pt_app_main.h"
 #include <vector>
 
-class shell_x11 : wsi_iwindow
+class shell_x11 : public wsi_iwindow, app_iwindow
 {
 
     xcb_connection_t *m_xcb_connection;
@@ -43,16 +44,20 @@ class shell_x11 : wsi_iwindow
 
     mcrt_native_thread_id m_draw_request_thread;
     static void *draw_request_main(void *);
-    bool m_draw_request_thread_term;
 
     gfx_iconnection *m_gfx_connection;
     void (*m_size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data);
     void *m_size_change_callback_user_data;
     void (*m_draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data);
     void *m_draw_request_callback_user_data;
+    bool m_draw_request_thread_running;
 
     mcrt_native_thread_id m_app_thread;
     static void *app_wrap_main(void *);
+    bool m_app_thread_running;
+
+    void (*m_input_event_callback)(struct input_event_t *input_event, void *user_data);
+    void *m_input_event_callback_user_data;
 
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;
@@ -63,6 +68,8 @@ class shell_x11 : wsi_iwindow
 
     void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data) override;
     void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data) override;
+    void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) override;
+    void mark_app_running() override;
 
 public:
     void init();

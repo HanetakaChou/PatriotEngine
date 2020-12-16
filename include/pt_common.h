@@ -42,10 +42,10 @@
 #endif
 
 //Architecture
-#if defined(_M_IX86)
-#define PT_X86 1
-#elif defined(_M_X64)
+#if defined(_M_X64)
 #define PT_X64 1
+#elif defined(_M_IX86)
+#define PT_X86 1
 #elif defined(_M_ARM64)
 #define PT_ARM64 1
 #elif defined(_M_ARM)
@@ -82,9 +82,9 @@
 
 //Architecture //Mach-O Support Universal Binary, We Must Depend On The Compiler Predefined Macros To Infer The Architecture.
 #if defined(__x86_64__)
-#define PT_X86 1 //Compiler May Define Both __x86_64__ and __i386__ Because Of Bugs.
+#define PT_X64 1 //Compiler May Define Both __x86_64__ and __i386__ Because Of Bugs.
 #elif defined(__i386__)
-#define PT_X64 1
+#define PT_X86 1
 #elif defined(__aarch64__)
 #define PT_ARM64 1
 #elif defined(__arm__)

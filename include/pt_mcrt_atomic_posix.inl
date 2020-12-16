@@ -107,3 +107,97 @@ inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add)
 {
     return __sync_fetch_and_add(dest, add);
 }
+
+inline void mcrt_compiler_read_barrier()
+{
+    __asm__ __volatile__(""
+                         :
+                         :
+                         : "memory");
+}
+
+inline void mcrt_compiler_write_barrier()
+{
+    __asm__ __volatile__(""
+                         :
+                         :
+                         : "memory");
+}
+
+inline void mcrt_compiler_read_write_barrier()
+{
+    __asm__ __volatile__(""
+                         :
+                         :
+                         : "memory");
+}
+
+#if defined(PT_ARM)
+inline void mcrt_hardware_read_barrier()
+{
+    __asm__ __volatile__("dmb sy"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_write_barrier()
+{
+    __asm__ __volatile__("dmb st"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+    __asm__ __volatile__("dmb sy"
+                         :
+                         :
+                         : "memory");
+}
+#elif defined(PT_ARM64)
+inline void mcrt_hardware_read_barrier()
+{
+    __asm__ __volatile__("dmb ld"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_write_barrier()
+{
+    __asm__ __volatile__("dmb st"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+    __asm__ __volatile__("dmb sy"
+                         :
+                         :
+                         : "memory");
+}
+#elif defined(PT_X86) || defined(PT_X64)
+inline void mcrt_hardware_read_barrier()
+{
+    __asm__ __volatile__("mfence"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_write_barrier()
+{
+    __asm__ __volatile__("mfence"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+    __asm__ __volatile__("mfence"
+                         :
+                         :
+                         : "memory");
+}
+#else
+#error Unknown Architecture
+#endif
