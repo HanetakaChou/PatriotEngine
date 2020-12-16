@@ -109,6 +109,9 @@ bool gfx_connection_vk::init()
     m_vkGetPhysicalDeviceFeatures = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceFeatures"));
     assert(NULL != m_vkGetPhysicalDeviceFeatures);
 
+    m_vkGetPhysicalDeviceFormatProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceFormatProperties"));
+    assert(NULL != m_vkGetPhysicalDeviceFormatProperties);
+
     m_vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(vkGetInstanceProcAddr(m_instance, "vkCreateDevice"));
     assert(NULL != m_vkCreateDevice);
 
@@ -359,6 +362,11 @@ bool gfx_connection_vk::init()
     }
 
     return true;
+}
+
+void gfx_connection_vk::get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties)
+{
+    return m_vkGetPhysicalDeviceFormatProperties(m_physical_device, format, out_format_properties);
 }
 
 VkBool32 gfx_connection_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)

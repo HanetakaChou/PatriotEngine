@@ -27,7 +27,6 @@ class gfx_connection_vk : public gfx_connection_common
     VkAllocationCallbacks m_allocator_callbacks;
 
     VkInstance m_instance;
-    VkPhysicalDevice m_physicalDevice;
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
     uint32_t m_queue_GP_family_index;
@@ -44,8 +43,8 @@ class gfx_connection_vk : public gfx_connection_common
     PFN_vkEnumeratePhysicalDevices m_vkEnumeratePhysicalDevices;
     PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties;
     PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties;
-    PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatProperties;
     PFN_vkGetPhysicalDeviceFeatures m_vkGetPhysicalDeviceFeatures;
+    PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatProperties;
     PFN_vkCreateDevice m_vkCreateDevice;
     PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
     PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
@@ -75,6 +74,7 @@ public:
     bool init();
     void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
     void draw_request_callback(void *wsi_connection, void *visual, void *window);
+    void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties);
 };
 
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);

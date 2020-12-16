@@ -46,6 +46,8 @@ class gfx_texture_vk : public gfx_texture_common
 
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 
+    uint32_t get_format_aspect_count(VkFormat vk_format);
+
     bool read_input_stream(
         char const *initial_filename,
         gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
