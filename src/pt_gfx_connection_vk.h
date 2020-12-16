@@ -29,16 +29,19 @@ class gfx_connection_vk : public gfx_connection_common
     VkInstance m_instance;
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
+    VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
+    VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
+    VkDeviceSize m_physical_device_limits_non_coherent_atom_size;
+    bool m_queue_GP_diff_queue_T;
     uint32_t m_queue_GP_family_index;
     uint32_t m_queue_T_family_index;
     uint32_t m_queue_GP_queue_index;
     uint32_t m_queue_T_queue_index;
-    bool m_queue_GP_diff_queue_T;
-    bool m_physical_device_feature_texture_compression_ASTC_LDR;
-    bool m_physical_device_feature_texture_compression_BC;
     VkDevice m_device;
     VkQueue m_queue_GP;
     VkQueue m_queue_T;
+    bool m_physical_device_feature_texture_compression_ASTC_LDR;
+    bool m_physical_device_feature_texture_compression_BC;
 
     PFN_vkEnumeratePhysicalDevices m_vkEnumeratePhysicalDevices;
     PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties;
@@ -75,6 +78,8 @@ public:
     void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
     void draw_request_callback(void *wsi_connection, void *visual, void *window);
     void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties);
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
 };
 
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);

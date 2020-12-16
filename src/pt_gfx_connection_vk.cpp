@@ -64,7 +64,7 @@ bool gfx_connection_vk::init()
         return false;
     }
 
-    VkResult res = VK_ERROR_UNKNOWN;
+    VkResult vk_res = VK_ERROR_UNKNOWN;
     {
         VkInstanceCreateInfo instance_create_info;
         instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -93,8 +93,8 @@ bool gfx_connection_vk::init()
         instance_create_info.ppEnabledExtensionNames = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
 #endif
 
-        res = m_vkCreateInstance(&instance_create_info, &m_allocator_callbacks, &m_instance);
-        assert(VK_SUCCESS == res);
+        vk_res = m_vkCreateInstance(&instance_create_info, &m_allocator_callbacks, &m_instance);
+        assert(VK_SUCCESS == vk_res);
     }
 
     m_vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vkGetInstanceProcAddr(m_instance, "vkEnumeratePhysicalDevices"));
@@ -135,22 +135,22 @@ bool gfx_connection_vk::init()
         };
         debug_report_callback_create_info.pUserData = this;
 
-        res = m_vkCreateDebugReportCallbackEXT(m_instance, &debug_report_callback_create_info, &m_allocator_callbacks, &m_debug_report_callback);
-        assert(VK_SUCCESS == res);
+        vk_res = m_vkCreateDebugReportCallbackEXT(m_instance, &debug_report_callback_create_info, &m_allocator_callbacks, &m_debug_report_callback);
+        assert(VK_SUCCESS == vk_res);
     }
 #endif
 
     m_physical_device = VK_NULL_HANDLE;
     {
         uint32_t physical_device_count;
-        res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count, NULL);
-        assert(VK_SUCCESS == res);
+        vk_res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count, NULL);
+        assert(VK_SUCCESS == vk_res);
 
         uint32_t physical_device_count_res;
         VkPhysicalDevice *physical_devices = static_cast<VkPhysicalDevice *>(mcrt_malloc(sizeof(VkPhysicalDevice) * physical_device_count));
-        res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count_res, physical_devices);
+        vk_res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count_res, physical_devices);
         assert(physical_device_count == physical_device_count_res);
-        assert(VK_SUCCESS == res);
+        assert(VK_SUCCESS == vk_res);
 
         //nvpro-samples/shared_sources/nvvk/context_vk.cpp
         //Context::initDevice
@@ -176,22 +176,20 @@ bool gfx_connection_vk::init()
             VkPhysicalDevice physical_device = physical_devices[physical_device_index];
 
             VkPhysicalDeviceType physical_device_type;
+            VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment;
+            VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
+            VkDeviceSize physical_device_limits_non_coherent_atom_size;
             {
                 struct VkPhysicalDeviceProperties physical_device_properties;
                 m_vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
                 physical_device_type = physical_device_properties.deviceType;
+                physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
+                physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
+                physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
             }
-            switch (physical_device_type)
-            {
-            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                score_iter += score_integrate_gpu;
-                break;
-            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                score_iter += score_discrete_gpu;
-                break;
-            default:
-                score_iter += score_no_gpu;
-            }
+            score_iter += ((VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_type) ? score_integrate_gpu : 0);
+            score_iter += ((VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == physical_device_type) ? score_discrete_gpu : 0);
+            score_iter += ((!(VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_type || VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == physical_device_type)) ? score_no_gpu : 0);
 
             uint32_t queue_GP_family_index = VK_QUEUE_FAMILY_IGNORED;
             uint32_t queue_T_family_index = VK_QUEUE_FAMILY_IGNORED;
@@ -275,6 +273,10 @@ bool gfx_connection_vk::init()
             {
                 score = score_iter;
                 m_physical_device = physical_device;
+                m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_limits_optimal_buffer_copy_offset_alignment;
+                m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
+                m_physical_device_limits_non_coherent_atom_size = physical_device_limits_non_coherent_atom_size;
+                m_queue_GP_diff_queue_T = queue_GP_diff_queue_T;
                 if (queue_GP_family_index != queue_T_family_index)
                 {
                     assert((queue_GP_count + queue_T_count) >= 2);
@@ -303,7 +305,6 @@ bool gfx_connection_vk::init()
                         m_queue_T_queue_index = 0;
                     }
                 }
-                m_queue_GP_diff_queue_T = queue_GP_diff_queue_T;
                 m_physical_device_feature_texture_compression_ASTC_LDR = physical_device_feature_texture_compression_ASTC_LDR;
                 m_physical_device_feature_texture_compression_BC = physical_device_feature_texture_compression_BC;
             }
@@ -335,8 +336,8 @@ bool gfx_connection_vk::init()
         enabled_features.textureCompressionASTC_LDR = m_physical_device_feature_texture_compression_ASTC_LDR;
         enabled_features.textureCompressionBC = m_physical_device_feature_texture_compression_BC;
         device_create_info.pEnabledFeatures = &enabled_features;
-        res = m_vkCreateDevice(m_physical_device, &device_create_info, &m_allocator_callbacks, &m_device);
-        assert(VK_SUCCESS == res);
+        vk_res = m_vkCreateDevice(m_physical_device, &device_create_info, &m_allocator_callbacks, &m_device);
+        assert(VK_SUCCESS == vk_res);
     }
 
     m_vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vkGetInstanceProcAddr(m_instance, "vkGetDeviceProcAddr"));

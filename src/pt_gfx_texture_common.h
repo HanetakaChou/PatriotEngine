@@ -239,7 +239,6 @@ protected:
         uint32_t arrayLayers;
     };
 
-private:
     struct load_memcpy_dest_t
     {
         size_t stagingOffset;
@@ -250,6 +249,7 @@ private:
         size_t outputNumSlices;
     };
 
+private:
     static inline uint32_t dds_get_common_type(uint32_t dds_type);
 
     static inline uint32_t dds_get_common_format(uint32_t dds_format);
@@ -286,7 +286,7 @@ protected:
 
     enum
     {
-       COMMON_FORMAT_RANGE_SIZE_PROTECTED = COMMON_FORMAT_RANGE_SIZE
+        COMMON_FORMAT_RANGE_SIZE_PROTECTED = COMMON_FORMAT_RANGE_SIZE
     };
 
     static bool
