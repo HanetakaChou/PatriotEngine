@@ -58,23 +58,19 @@ fi
 MY_DIR="$(dirname "$(readlink -f "${0}")")"
 cd ${MY_DIR}
 
-if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
-then
+if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \); then
     NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
     INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/debug/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
-then
+elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \); then
     NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
     INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/debug/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
-then
+elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \); then
     NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
     INTERMEDIATE_DIR="${MY_DIR}/libs/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/release/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
-then
+elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \); then
     NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Linux_X11.mk"
     INTERMEDIATE_DIR="${MY_DIR}/libs/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/release/"
@@ -88,7 +84,9 @@ OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.
 # build by ndk  
 rm -rf obj
 rm -rf libs
+
 ${MY_DIR}/ndk_build_glibc/ndk-build ${NDK_BUILD_ARGS} #V=1 VERBOSE=1 
+if [ $? -ne 0 ]; then exit; fi
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk

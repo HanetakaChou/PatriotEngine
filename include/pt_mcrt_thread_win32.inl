@@ -68,6 +68,11 @@ inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
 	return ((res == WAIT_OBJECT_0) ? true : false);
 }
 
+inline mcrt_native_thread_id mono_native_thread_id_get(void)
+{
+	return GetCurrentThread();
+}
+
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (NTAPI *destructor)(void *))
 {
 	(*key) = FlsAlloc(destructor);

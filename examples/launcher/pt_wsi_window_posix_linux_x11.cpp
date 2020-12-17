@@ -33,6 +33,8 @@ int main(int argc, char **argv)
 
 void shell_x11::init()
 {
+    m_wsi_window_thread_id = mcrt_native_thread_id();
+
     int scr;
     m_xcb_connection = xcb_connect(NULL, &scr);
     assert(xcb_connection_has_error(m_xcb_connection) == 0);
@@ -133,7 +135,7 @@ void shell_x11::init()
     m_draw_request_callback = NULL;
     m_draw_request_callback_user_data = NULL;
     mcrt_atomic_store(&m_draw_request_thread_running, false);
-    bool res_draw_request = mcrt_native_thread_create(&m_draw_request_thread, draw_request_main, this);
+    bool res_draw_request = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
     assert(res_draw_request);
     while (!mcrt_atomic_load(&m_draw_request_thread_running))
     {
@@ -148,13 +150,8 @@ void shell_x11::init()
     // app_thread
     m_input_event_callback = NULL;
     m_input_event_callback_user_data = NULL;
-    mcrt_atomic_store(&m_app_thread_running, false);
-    bool res_app = mcrt_native_thread_create(&m_app_thread, app_wrap_main, this);
-    assert(res_app);
-    while (!mcrt_atomic_load(&m_app_thread_running))
-    {
-        mcrt_os_yield();
-    }
+    m_app_has_destoryed = false;
+    app_init(static_cast<app_iwindow *>(this), this->m_gfx_connection);
     assert(m_input_event_callback != NULL);
 
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
@@ -186,28 +183,22 @@ void *shell_x11::draw_request_main(void *arg)
     return NULL;
 }
 
-void *shell_x11::app_wrap_main(void *arg)
-{
-    shell_x11 *self = static_cast<shell_x11 *>(arg);
-
-    app_main(static_cast<app_iwindow *>(self), self->m_gfx_connection);
-
-    mcrt_atomic_store(&self->m_app_thread_running, false);
-
-    return NULL;
-}
-
 void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data)
 {
+    assert(mcrt_native_thread_id() == m_draw_request_thread_id);
+
     assert(m_size_change_callback == NULL);
     assert(m_size_change_callback_user_data == NULL);
     m_size_change_callback = size_change_callback;
     m_size_change_callback_user_data = user_data;
+
     m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), 1, 1, m_size_change_callback_user_data);
 }
 
 void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data)
 {
+    assert(mcrt_native_thread_id() == m_draw_request_thread_id);
+
     assert(m_draw_request_callback == NULL);
     assert(m_draw_request_callback_user_data == NULL);
     m_draw_request_callback = draw_request_callback;
@@ -216,15 +207,19 @@ void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_conn
 
 void shell_x11::listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data)
 {
+    assert(mcrt_native_thread_id() == m_wsi_window_thread_id);
+
     assert(m_input_event_callback == NULL);
     assert(m_input_event_callback_user_data == NULL);
     m_input_event_callback = input_event_callback;
     m_input_event_callback_user_data = user_data;
 }
 
-void shell_x11::mark_app_running()
+void shell_x11::mark_app_has_destroyed()
 {
-    return mcrt_atomic_store(&m_app_thread_running, true);
+    //thread_id pending
+
+    mcrt_atomic_store(&m_app_has_destoryed, true);
 }
 
 void shell_x11::sync_keysyms()
@@ -301,10 +296,11 @@ void shell_x11::run()
                 case XK_W:
                 case XK_w:
                 {
-                    // W
                     assert(XK_W == keysym || XK_w == keysym);
-                    // Trigger Callback for Input
-                    // listen_input_event
+
+                    struct input_event_t input_event = {app_iwindow::input_event_t::MESSAGE_CODE_KEY_PRESS, app_iwindow::input_event_t::KEY_SYM_W, 0};
+                    assert(m_input_event_callback != NULL);
+                    m_input_event_callback(&input_event, m_input_event_callback_user_data);
                 }
                 break;
                 case XK_Shift_L:
@@ -349,6 +345,10 @@ void shell_x11::run()
             if (client_message->window == m_window && client_message->type == m_atom_wm_protocols && client_message->format == 32U && client_message->data.data32[0] == m_atom_wm_delete_window)
             {
                 m_loop = false;
+
+                struct input_event_t input_event = {app_iwindow::input_event_t::MESSAGE_CODE_QUIT, 0, 0};
+                assert(m_input_event_callback != NULL);
+                m_input_event_callback(&input_event, m_input_event_callback_user_data);
             }
         }
         break;
@@ -364,17 +364,16 @@ void shell_x11::run()
 
 void shell_x11::destroy()
 {
-    while (mcrt_atomic_load(&m_app_thread_running))
+    while (!mcrt_atomic_load(&m_app_has_destoryed))
     {
         mcrt_os_yield();
     }
-    mcrt_native_thread_join(m_app_thread);
 
+    mcrt_native_thread_join(m_draw_request_thread_id);
     while (mcrt_atomic_load(&m_draw_request_thread_running))
     {
         mcrt_os_yield();
     }
-    mcrt_native_thread_join(m_draw_request_thread);
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
 

@@ -23,11 +23,12 @@
 #include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
 #include <xcb/xcb.h>
-#include "pt_app_main.h"
+#include "pt_app.h"
 #include <vector>
 
 class shell_x11 : public wsi_iwindow, app_iwindow
 {
+    mcrt_native_thread_id m_wsi_window_thread_id;
 
     xcb_connection_t *m_xcb_connection;
 
@@ -42,7 +43,7 @@ class shell_x11 : public wsi_iwindow, app_iwindow
 
     bool m_loop;
 
-    mcrt_native_thread_id m_draw_request_thread;
+    mcrt_native_thread_id m_draw_request_thread_id;
     static void *draw_request_main(void *);
 
     gfx_iconnection *m_gfx_connection;
@@ -52,12 +53,9 @@ class shell_x11 : public wsi_iwindow, app_iwindow
     void *m_draw_request_callback_user_data;
     bool m_draw_request_thread_running;
 
-    mcrt_native_thread_id m_app_thread;
-    static void *app_wrap_main(void *);
-    bool m_app_thread_running;
-
     void (*m_input_event_callback)(struct input_event_t *input_event, void *user_data);
     void *m_input_event_callback_user_data;
+    bool m_app_has_destoryed;
 
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;
@@ -69,7 +67,7 @@ class shell_x11 : public wsi_iwindow, app_iwindow
     void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data) override;
     void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data) override;
     void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) override;
-    void mark_app_running() override;
+    void mark_app_has_destroyed() override;
 
 public:
     void init();
