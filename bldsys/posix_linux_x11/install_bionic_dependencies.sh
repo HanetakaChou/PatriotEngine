@@ -41,19 +41,19 @@ else
 fi
 rm -rf android-ndk-r14b-linux-x86_64.zip
 
-rm -rf bionic-7.1.2-39.zip
-if curl https://github.com/YuqiaoZhang/Bionic-based-Linux/raw/zip/bionic-7.1.2-39.zip -o bionic-7.1.2-39.zip; then
-    echo "curl bionic-7.1.2-39.zip passed"
+rm -rf 7.1.2-39.zip
+if curl https://github.com/YuqiaoZhang/Bionic-based-Linux/archive/7.1.2-39.zip -o 7.1.2-39.zip; then
+    echo "curl 7.1.2-39.zip passed"
 else
-    echo "curl bionic-7.1.2-39.zip failed"
+    echo "curl 7.1.2-39.zip failed"
     exit 1
 fi
 
 rm -rf /system
-if unzip bionic-7.1.2-39.zip -d / ; then
-    echo "unzip bionic-7.1.2-39.zip passed"
+if unzip 7.1.2-39.zip -d / ; then
+    echo "unzip 7.1.2-39.zip passed"
 else
-    echo "unzip bionic-7.1.2-39.zip failed"
+    echo "unzip 7.1.2-39.zip failed"
     exit 1
 fi
-rm -rf bionic-7.1.2-39.zip
+rm -rf 7.1.2-39.zip
