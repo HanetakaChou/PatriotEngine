@@ -92,8 +92,9 @@ bool gfx_connection_vk::init()
 #else
         instance_create_info.enabledLayerCount = 0;
         instance_create_info.ppEnabledLayerNames = NULL;
+        char const *enabled_extension_names[3] = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
         instance_create_info.enabledExtensionCount = 2;
-        instance_create_info.ppEnabledExtensionNames[2] = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
+        instance_create_info.ppEnabledExtensionNames[2] = enabled_extension_names;
 #endif
 
         vk_res = m_vkCreateInstance(&instance_create_info, &m_allocator_callbacks, &m_instance);
