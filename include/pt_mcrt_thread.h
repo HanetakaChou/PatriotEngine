@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_THREAD_H_
-#define _MCRT_THREAD_H_ 1
+#ifndef _PT_MCRT_THREAD_H_
+#define _PT_MCRT_THREAD_H_ 1
 
 #include "pt_common.h"
 #include "pt_mcrt_common.h"

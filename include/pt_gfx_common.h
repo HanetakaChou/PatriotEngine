@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _GFX_COMMON_H_
-#define _GFX_COMMON_H_ 1
+#ifndef _PT_GFX_COMMON_H_
+#define _PT_GFX_COMMON_H_ 1
 
 #include "pt_common.h"
 

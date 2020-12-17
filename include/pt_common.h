@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _COMMON_H_
-#define _COMMON_H_ 1
+#ifndef _PT_COMMON_H_
+#define _PT_COMMON_H_ 1
 
 #if defined(_MSC_VER) //Compiler
 //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros

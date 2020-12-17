@@ -128,7 +128,7 @@ inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(uint32_t
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0]))");
+    static_assert(PT_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "PT_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0]))");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
@@ -321,7 +321,7 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(uint32_t 
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0]))");
+    static_assert(PT_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "PT_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0]))");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];

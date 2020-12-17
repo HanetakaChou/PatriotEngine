@@ -20,9 +20,10 @@
 
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
+#include "pt_gfx_malloc_common.h"
 #include <vulkan/vulkan.h>
 
-class gfx_connection_vk : public gfx_connection_common
+class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
 {
     VkAllocationCallbacks m_allocator_callbacks;
 

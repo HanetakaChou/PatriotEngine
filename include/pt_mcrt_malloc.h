@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_MALLOC_H_
-#define _MCRT_MALLOC_H_ 1
+#ifndef _PT_MCRT_MALLOC_H_
+#define _PT_MCRT_MALLOC_H_ 1
 
 #ifdef __cplusplus
 extern "C"
