@@ -24,16 +24,16 @@
 MY_DIR="$(dirname "$(readlink -f "${0}")")"
 cd ${MY_DIR}
 
-rm -rf android-ndk-r14b-linux-x86_64.zip
-if curl https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip -o android-ndk-r14b-linux-x86_64.zip; then
+rm -rf ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip
+if curl -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip -o ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip; then
     echo "curl android-ndk-r14b-linux-x86_64.zip passed"
 else
     echo "curl android-ndk-r14b-linux-x86_64.zip failed"
     exit 1
 fi
 
-rm -rf android-ndk-r14b
-if unzip android-ndk-r14b-linux-x86_64.zip; then 
+rm -rf ${MY_DIR}/android-ndk-r14b
+if unzip ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip; then 
     echo "unzip android-ndk-r14b-linux-x86_64.zip passed"
 else
     echo "unzip android-ndk-r14b-linux-x86_64.zip failed"
@@ -41,19 +41,23 @@ else
 fi
 rm -rf android-ndk-r14b-linux-x86_64.zip
 
-rm -rf 7.1.2-39.zip
-if curl https://github.com/YuqiaoZhang/Bionic-based-Linux/archive/7.1.2-39.zip -o 7.1.2-39.zip; then
-    echo "curl 7.1.2-39.zip passed"
+rm -rf ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip
+if curl -L https://github.com/YuqiaoZhang/Bionic-based-Linux/archive/7.1.2-39.zip -o ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip; then
+    echo "curl Bionic-based-Linux-7.1.2-39.zip passed"
 else
-    echo "curl 7.1.2-39.zip failed"
+    echo "curl Bionic-based-Linux-7.1.2-39.zip failed"
     exit 1
 fi
 
-rm -rf /system
-if unzip 7.1.2-39.zip -d / ; then
-    echo "unzip 7.1.2-39.zip passed"
+rm -rf ${MY_DIR}/Bionic-based-Linux-7.1.2-39
+if unzip ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip; then
+    echo "unzip Bionic-based-Linux-7.1.2-39.zip passed"
 else
-    echo "unzip 7.1.2-39.zip failed"
+    echo "unzip Bionic-based-Linux-7.1.2-39.zip failed"
     exit 1
 fi
-rm -rf 7.1.2-39.zip
+rm -rf ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip
+
+rm -rf /system
+mv ${MY_DIR}/Bionic-based-Linux-7.1.2-39/system /
+rm -rf ${MY_DIR}/Bionic-based-Linux-7.1.2-39
