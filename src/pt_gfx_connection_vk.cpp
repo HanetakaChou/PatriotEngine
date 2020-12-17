@@ -67,7 +67,7 @@ bool gfx_connection_vk::init()
         return false;
     }
 
-    VkResult vk_res = VK_ERROR_UNKNOWN;
+    VkResult vk_res = VK_ERROR_INITIALIZATION_FAILED;
     {
         VkInstanceCreateInfo instance_create_info;
         instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -389,11 +389,13 @@ void gfx_connection_vk::free_memory(VkDeviceMemory device_memory)
     return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks);
 }
 
+#ifndef NDEBUG
 VkBool32 gfx_connection_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     printf("[%s] : %s", pLayerPrefix, pMessage);
     return VK_FALSE;
 }
+#endif
 
 struct gfx_itexture *gfx_connection_vk::create_texture()
 {

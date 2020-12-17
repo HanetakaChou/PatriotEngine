@@ -85,8 +85,12 @@ OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.
 rm -rf obj
 rm -rf libs
 
-${MY_DIR}/ndk_build_glibc/ndk-build ${NDK_BUILD_ARGS} #V=1 VERBOSE=1 
-if [ $? -ne 0 ]; then exit; fi
+if ${MY_DIR}/ndk_build_glibc/ndk-build ${NDK_BUILD_ARGS}; then #V=1 VERBOSE=1 
+    echo "ndk-build passed"
+else
+    echo "ndk-build failed"
+    exit 1
+fi
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk
