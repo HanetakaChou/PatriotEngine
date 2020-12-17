@@ -65,7 +65,21 @@ Build Type | Status
 **Ubuntu 16.04 LTS Glibc Release x64** | [![Ubuntu 16.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Release+x64%22)    
 **Ubuntu 16.04 LTS Glibc Debug x64** | [![Ubuntu 16.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2016.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+16.04+LTS+Glibc+Debug+x64%22)        
 
+#### Bionic x86    
       
+Build Type | Status     
+-----------| ------     
+**Bionic Release x86** | [![Bionic Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Bionic%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Bionic+Release+x86%22)    
+**Bionic Debug x86** | [![Bionic Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Bionic%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Bionic+Debug+x86%22)    
+    
+#### Bionic x64    
+      
+Build Type | Status     
+-----------| ------        
+**Bionic Release x64** | [![Bionic Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Bionic%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Bionic+Release+x64%22)    
+**Bionic Debug x64** | [![Bionic Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Bionic%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Bionic+Debug+x64%22)       
+      
+
 ---      
       
 ### 项目简介 
