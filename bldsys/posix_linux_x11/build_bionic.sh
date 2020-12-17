@@ -1,3 +1,4 @@
+ 
 #!/bin/bash
 
 #
@@ -59,19 +60,19 @@ MY_DIR="$(dirname "$(readlink -f "${0}")")"
 cd ${MY_DIR}
 
 if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \); then
-    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_glibc.mk"
+    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_bionic.mk"
     INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \); then
-    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_glibc.mk"
+    NDK_BUILD_ARGS="APP_DEBUG:=true APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_bionic.mk"
     INTERMEDIATE_DIR="${MY_DIR}/obj/local/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/debug/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \); then
-    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_glibc.mk"
+    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_bionic.mk"
     INTERMEDIATE_DIR="${MY_DIR}/libs/x86/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/release/"
 elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \); then
-    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_glibc.mk"
+    NDK_BUILD_ARGS="APP_DEBUG:=false APP_ABI:=x86_64 NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=linux_x11_bionic.mk"
     INTERMEDIATE_DIR="${MY_DIR}/libs/x86_64/"
     OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/release/"
 else
@@ -85,7 +86,7 @@ OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.
 rm -rf obj
 rm -rf libs
 
-if ${MY_DIR}/ndk_build_glibc/ndk-build ${NDK_BUILD_ARGS}; then #V=1 VERBOSE=1 
+if ${MY_DIR}/android-ndk-r14b/ndk-build ${NDK_BUILD_ARGS}; then #V=1 VERBOSE=1 
     echo "ndk-build passed"
 else
     echo "ndk-build failed"

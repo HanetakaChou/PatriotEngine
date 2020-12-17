@@ -19,6 +19,7 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/cdefs.h> //__BIONIC__
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
@@ -70,7 +71,11 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 
 inline void mcrt_os_yield()
 {
+#ifdef __BIONIC__
+	int res = sched_yield();
+#else
 	int res = pthread_yield();
+#endif
 	assert(res == 0);
 }
 
