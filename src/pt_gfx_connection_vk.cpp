@@ -180,6 +180,7 @@ bool gfx_connection_vk::init()
             VkPhysicalDevice physical_device = physical_devices[physical_device_index];
 
             VkPhysicalDeviceType physical_device_type;
+            VkDeviceSize physical_device_limits_min_uniform_buffer_offset_alignment;
             VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment;
             VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
             VkDeviceSize physical_device_limits_non_coherent_atom_size;
@@ -187,6 +188,7 @@ bool gfx_connection_vk::init()
                 struct VkPhysicalDeviceProperties physical_device_properties;
                 m_vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
                 physical_device_type = physical_device_properties.deviceType;
+                physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
                 physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
                 physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
                 physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
@@ -277,6 +279,7 @@ bool gfx_connection_vk::init()
             {
                 score = score_iter;
                 m_physical_device = physical_device;
+                m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_limits_min_uniform_buffer_offset_alignment;
                 m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_limits_optimal_buffer_copy_offset_alignment;
                 m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
                 m_physical_device_limits_non_coherent_atom_size = physical_device_limits_non_coherent_atom_size;
@@ -352,6 +355,12 @@ bool gfx_connection_vk::init()
 
     m_vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(m_vkGetDeviceProcAddr(m_device, "vkGetDeviceQueue"));
     assert(NULL != m_vkGetDeviceQueue);
+
+    m_vkGetBufferMemoryRequirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(m_vkGetDeviceProcAddr(m_device, "vkGetBufferMemoryRequirements"));
+    assert(NULL != m_vkGetBufferMemoryRequirements);
+
+    m_vkGetImageMemoryRequirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(m_vkGetDeviceProcAddr(m_device, "vkGetImageMemoryRequirements"));
+    assert(NULL != m_vkGetImageMemoryRequirements);
 
     m_vkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(m_vkGetDeviceProcAddr(m_device, "vkAllocateMemory"));
     assert(NULL != m_vkAllocateMemory);

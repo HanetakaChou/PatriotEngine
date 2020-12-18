@@ -30,6 +30,7 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     VkInstance m_instance;
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
+    VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
     VkDeviceSize m_physical_device_limits_non_coherent_atom_size;
@@ -52,6 +53,8 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     PFN_vkCreateDevice m_vkCreateDevice;
     PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
     PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
+    PFN_vkGetBufferMemoryRequirements m_vkGetBufferMemoryRequirements;
+    PFN_vkGetImageMemoryRequirements m_vkGetImageMemoryRequirements;
     PFN_vkAllocateMemory m_vkAllocateMemory;
     PFN_vkFreeMemory m_vkFreeMemory;
 

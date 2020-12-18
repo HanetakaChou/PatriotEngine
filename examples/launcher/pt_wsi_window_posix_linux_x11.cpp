@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
 void shell_x11::init()
 {
-    m_wsi_window_thread_id = mcrt_native_thread_id();
+    m_wsi_window_thread_id = mono_native_thread_id_get();
 
     int scr;
     m_xcb_connection = xcb_connect(NULL, &scr);
@@ -185,7 +185,7 @@ void *shell_x11::draw_request_main(void *arg)
 
 void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data)
 {
-    assert(mcrt_native_thread_id() == m_draw_request_thread_id);
+    assert(mono_native_thread_id_get() == m_draw_request_thread_id);
 
     assert(m_size_change_callback == NULL);
     assert(m_size_change_callback_user_data == NULL);
@@ -197,7 +197,7 @@ void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connec
 
 void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data)
 {
-    assert(mcrt_native_thread_id() == m_draw_request_thread_id);
+    assert(mono_native_thread_id_get() == m_draw_request_thread_id);
 
     assert(m_draw_request_callback == NULL);
     assert(m_draw_request_callback_user_data == NULL);
@@ -207,7 +207,7 @@ void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_conn
 
 void shell_x11::listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data)
 {
-    assert(mcrt_native_thread_id() == m_wsi_window_thread_id);
+    assert(mono_native_thread_id_get() == m_wsi_window_thread_id);
 
     assert(m_input_event_callback == NULL);
     assert(m_input_event_callback_user_data == NULL);
