@@ -31,12 +31,18 @@ extern "C" PT_GFX_ATTR struct gfx_iconnection *PT_CALL gfx_connection_init(struc
 //struct gfx_iterrain;
 struct gfx_itexture;
 
-//We can just treat the gfx server as the 3D version X11 server.
+//We may treat the gfx server as the 3D version X11 server.
 struct gfx_iconnection
 {
+    //init_asset_file_callback
+
     //virtual struct gfx_imesh *create_mesh() = 0;
 
     virtual struct gfx_itexture *create_texture() = 0;
+
+    //app can use these count to tweak the "create/destroy" strategy
+    //size_t request_count() = 0;
+    //size_t resident_count() = 0
 
     virtual void destroy() = 0;
 };
@@ -56,7 +62,12 @@ enum
 
 struct gfx_imesh
 {
-    virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
+    //virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
+    
+    //PMD GLTF
+    //vertex/index info //ignore others
+    //virual bool attach_asset_file() //associate with file //can change
+
 
     virtual bool put_material() = 0;
 
@@ -67,8 +78,12 @@ struct gfx_imesh
 
 struct gfx_imaterial
 {
-    //MDL //OSL
+    //MDL //OSL 
+    //virual bool attach_asset_file() //associate with file  
+
     virtual bool read_input_stream() = 0; //XReadBitmapFile //XCreateBitmapFromData
+
+    //is_resident
 
     virtual void destroy() = 0;
 };
@@ -76,6 +91,10 @@ struct gfx_imaterial
 struct gfx_itexture
 {
     //DDS //PVR
+    //virual bool attach_asset_file(asset_file_url) //associate with file //gfx automatic evict and resident  
+
+    //for debug purpose
+    //make_resident
     virtual bool read_input_stream(char const *initial_filename,
                                    gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
                                    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
