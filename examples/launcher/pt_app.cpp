@@ -7,7 +7,7 @@ void app_init(struct app_iwindow *window, struct gfx_iconnection *connection)
         [](struct app_iwindow::input_event_t *input_event, void *user_data) -> void {
             switch (input_event->message_code)
             {
-            case KEY_SYM_W:
+            case input_event_t::KEY_SYM_W:
             {
                 //camera move forward
             }

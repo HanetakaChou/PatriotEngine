@@ -14,34 +14,30 @@ The contents of this book is likely to be as follows:
 >
 > [docs/task.zh_CN.md](docs/task.zh_CN.md)
 >       
-> ---    
->     
-> [docs/rendering_pipeline.md](docs/rendering_pipeline.md)      
-> [docs/gfx/RenderingPipeline.zh_CN.md](docs/gfx/RenderingPipeline.zh_CN.md)      
->        
-> ---    
->     
-> [docs/gfx/SceneTree.zh_CN.md](docs/gfx/SceneTree.zh_CN.md)  
-> [docs/gfx/BVH.md](docs/gfx/BVH.md)     
-> [docs/gfx/BVH.zh_CN.md](docs/gfx/BVH.zh_CN.md)     
->        
-> ---    
->      
-> [docs/McRT/Scalable-Allocator.zh_CN.md](docs/McRT/Scalable-Allocator.zh_CN.md)             
-> [docs/McRT/Task-Scheduler.zh_CN.md](docs/McRT/Task-Scheduler.zh_CN.md)        
->     
    
-### In Progress    
-* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
-Try to understand the following papers from the perspective of the 2-Manifold:         
-> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
-\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
-> * LTC  
-\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
+### Core Interfaces   
+   
+---  
 
-* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
-> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
-* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.     
+### gfx_iconnection   
+  
+We may treat the image synthesis graphis engine as the 3D version X11 server.  
+The geometry(e.g. mesh, hair, terrain) / material / texture are analogous to the pixmap on X11 server.   
+The hierarchy of the scenetree / scenegraph are analogous to the relationship of "parent window" on X11 server.  
+   
+Since the memory allocation in Vulkan / Direct3D12 / Metal may fail, the user can't control whether the "content" of the mesh / hair / material / ... has been upload to the GPU. However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "request_count / resident_count".
+
+```  
+struct gfx_iconnection
+{   
+    create_mesh  
+    create_hair  
+    create_...  
+
+    request_count  
+    resident_count   
+};
+```   
  
 ---    
 
@@ -81,6 +77,20 @@ Build Type | Status
       
 
 ---      
+
+### In Progress    
+* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
+Try to understand the following papers from the perspective of the 2-Manifold:         
+> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
+\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
+> * LTC  
+\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
+
+* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
+> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
+* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.    
+    
+---   
       
 ### 项目简介 
 本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
