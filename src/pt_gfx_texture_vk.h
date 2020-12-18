@@ -51,9 +51,9 @@ class gfx_texture_vk : public gfx_texture_common
 
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 
-    static inline enum VkImageType common_to_vulkan_type_translate(uint32_t common_type);
+    static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type);
 
-    static inline enum VkFormat common_to_vulkan_format_translate(uint32_t common_format);
+    static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format);
 
     static inline uint32_t calc_subresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
 
@@ -88,6 +88,7 @@ class gfx_texture_vk : public gfx_texture_common
     };
 
     static struct vulkan_format_info_t const vulkan_format_info_table[VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1];
+    static_assert((VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])), "(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0]))");
 
     static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 

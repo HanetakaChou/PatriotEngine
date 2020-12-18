@@ -23,7 +23,7 @@
 
 class gfx_malloc_common
 {
-    enum //gfx_malloc_usage_t
+    enum gfx_malloc_usage_t //routed into memory index //may be the same index
     {
         PT_GFX_MALLOC_USAGE_UNKNOWN,
         PT_GFX_MALLOC_USAGE_STAGING_BUFFER,
@@ -35,8 +35,11 @@ class gfx_malloc_common
         //PT_GFX_MALLOC_USAGE_INDEX_BUFFER,
         PT_GFX_MALLOC_USAGE_RENDER_TARGET,
         PT_GFX_MALLOC_USAGE_DEPTH_STENCIL_DENY_SHADER_RESOURCE, //write depth to color buffer //to be consistant with MTL
-        PT_GFX_MALLOC_USAGE_SHADER_RESOURCE
+        PT_GFX_MALLOC_USAGE_SHADER_RESOURCE,
+        PT_GFX_MALLOC_USAGE_RANGE_SIZE
     };
+
+    //malloc_usage_to_memory_index
 };
 
 #endif

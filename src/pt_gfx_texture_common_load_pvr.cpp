@@ -457,10 +457,10 @@ bool gfx_texture_common::load_pvr_header_from_input_stream(
     if (internal_load_pvr_header_from_input_stream(input_stream, input_stream_read_callback, input_stream_seek_callback, &pvr_texture_header, &pvr_texture_data_offset))
     {
         common_header->type = pvr_get_common_type(pvr_texture_header.height, pvr_texture_header.depth);
-        assert(PT_COMMON_TYPE_UNDEFINED != common_header->type);
+        assert(PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED != common_header->type);
 
         common_header->format = pvr_get_common_format(pvr_texture_header.pixelFormat, pvr_texture_header.colorSpace, pvr_texture_header.channelType);
-        assert(PT_COMMON_FORMAT_UNDEFINED != common_header->format);
+        assert(PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED != common_header->format);
 
         common_header->width = pvr_texture_header.width;
         common_header->height = pvr_texture_header.height;
@@ -907,7 +907,7 @@ static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
     }
 }
 
-inline uint32_t gfx_texture_common::pvr_get_common_type(uint32_t height, uint32_t depth)
+inline enum gfx_texture_common::gfx_texture_common_type_t gfx_texture_common::pvr_get_common_type(uint32_t height, uint32_t depth)
 {
     assert(0 != height);
     assert(0 != depth);
@@ -916,590 +916,590 @@ inline uint32_t gfx_texture_common::pvr_get_common_type(uint32_t height, uint32_
     {
         if (height > 1)
         {
-            return PT_COMMON_TYPE_2D;
+            return PT_GFX_TEXTURE_COMMON_TYPE_2D;
         }
         else if (height == 1)
         {
-            return PT_COMMON_TYPE_1D;
+            return PT_GFX_TEXTURE_COMMON_TYPE_1D;
         }
         else
         {
-            return PT_COMMON_TYPE_UNDEFINED;
+            return PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED;
         }
     }
     else if (depth > 1)
     {
-        return PT_COMMON_TYPE_3D;
+        return PT_GFX_TEXTURE_COMMON_TYPE_3D;
     }
     else
     {
-        return PT_COMMON_TYPE_UNDEFINED;
+        return PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED;
     }
 }
 
-inline uint32_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
+inline enum gfx_texture_common::gfx_texture_common_format_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
 {
-    static uint32_t const pvr_compressed_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGB
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGBA
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGB
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGBA
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_2bpp
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_4bpp
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ETC1
-        {PT_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK, PT_COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT1
-        {PT_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK, PT_COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT2
-        {PT_COMMON_FORMAT_BC2_UNORM_BLOCK, PT_COMMON_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT3
-        {PT_COMMON_FORMAT_BC2_UNORM_BLOCK, PT_COMMON_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT4
-        {PT_COMMON_FORMAT_BC3_UNORM_BLOCK, PT_COMMON_FORMAT_BC3_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT5
-        {PT_COMMON_FORMAT_BC4_UNORM_BLOCK, PT_COMMON_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC4
-        {PT_COMMON_FORMAT_BC5_UNORM_BLOCK, PT_COMMON_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC5
-        {PT_COMMON_FORMAT_BC6H_SFLOAT_BLOCK, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_PixelTypeID_BC6
-        {PT_COMMON_FORMAT_BC7_UNORM_BLOCK, PT_COMMON_FORMAT_BC7_SRGB_BLOCK},                     //Pvr_PixelTypeID_BC7
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_UYVY
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_YUY2
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_BW1bpp
-        {PT_COMMON_FORMAT_E5B9G9R9_UFLOAT_PACK32, PT_COMMON_FORMAT_UNDEFINED},                   //Pvr_PixelTypeID_SharedExponentR9G9B9E5,
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_RGBG8888
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_GRGB8888
-        {PT_COMMON_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, PT_COMMON_FORMAT_ETC2_R8G8B8_SRGB_BLOCK},     //Pvr_PixelTypeID_ETC2_RGB
-        {PT_COMMON_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, PT_COMMON_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGBA
-        {PT_COMMON_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK, PT_COMMON_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGB_A1
-        {PT_COMMON_FORMAT_EAC_R11_UNORM_BLOCK, PT_COMMON_FORMAT_EAC_R11_SNORM_BLOCK},            //Pvr_PixelTypeID_EAC_R11
-        {PT_COMMON_FORMAT_EAC_R11G11_UNORM_BLOCK, PT_COMMON_FORMAT_EAC_R11G11_SNORM_BLOCK},      //Pvr_PixelTypeID_EAC_RG11
-        {PT_COMMON_FORMAT_ASTC_4x4_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_4x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_4x4
-        {PT_COMMON_FORMAT_ASTC_5x4_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_5x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x4
-        {PT_COMMON_FORMAT_ASTC_5x5_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_5x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x5
-        {PT_COMMON_FORMAT_ASTC_6x5_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_6x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x5
-        {PT_COMMON_FORMAT_ASTC_6x6_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_6x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x6
-        {PT_COMMON_FORMAT_ASTC_8x5_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_8x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x5
-        {PT_COMMON_FORMAT_ASTC_8x6_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_8x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x6
-        {PT_COMMON_FORMAT_ASTC_8x8_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_8x8_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x8
-        {PT_COMMON_FORMAT_ASTC_10x5_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_10x5_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x5
-        {PT_COMMON_FORMAT_ASTC_10x6_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_10x6_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x6
-        {PT_COMMON_FORMAT_ASTC_10x8_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_10x8_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x8
-        {PT_COMMON_FORMAT_ASTC_10x10_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_10x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_10x10
-        {PT_COMMON_FORMAT_ASTC_12x10_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_12x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x10
-        {PT_COMMON_FORMAT_ASTC_12x12_UNORM_BLOCK, PT_COMMON_FORMAT_ASTC_12x12_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x12
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_3x3x3
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x3x3
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x3
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x4
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x4x4
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x4
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x5
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x5x5
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x6x5
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}                                 //Pvr_PixelTypeID_ASTC_6x6x6
+    static enum gfx_texture_common_format_t const pvr_compressed_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGB
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGBA
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGB
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_4bpp_RGBA
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_2bpp
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCII_4bpp
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ETC1
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT1
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK},           //Pvr_PixelTypeID_DXT2
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC2_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT3
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC2_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC2_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC3_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC3_SRGB_BLOCK},                     //Pvr_PixelTypeID_DXT5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC4_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC5_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                          //Pvr_PixelTypeID_BC5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_SFLOAT_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_PixelTypeID_BC6
+        {PT_GFX_TEXTURE_COMMON_FORMAT_BC7_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_BC7_SRGB_BLOCK},                     //Pvr_PixelTypeID_BC7
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_UYVY
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_YUY2
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_BW1bpp
+        {PT_GFX_TEXTURE_COMMON_FORMAT_E5B9G9R9_UFLOAT_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                   //Pvr_PixelTypeID_SharedExponentR9G9B9E5,
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_RGBG8888
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_GRGB8888
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8_SRGB_BLOCK},     //Pvr_PixelTypeID_ETC2_RGB
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGBA
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK}, //Pvr_PixelTypeID_ETC2_RGB_A1
+        {PT_GFX_TEXTURE_COMMON_FORMAT_EAC_R11_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_EAC_R11_SNORM_BLOCK},            //Pvr_PixelTypeID_EAC_R11
+        {PT_GFX_TEXTURE_COMMON_FORMAT_EAC_R11G11_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_EAC_R11G11_SNORM_BLOCK},      //Pvr_PixelTypeID_EAC_RG11
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_4x4_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_4x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_4x4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_5x4_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_5x4_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_5x5_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_5x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_5x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_6x5_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_6x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_6x6_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_6x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_6x6
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x5_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x5_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x6_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x6_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x6
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x8_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_8x8_SRGB_BLOCK},           //Pvr_PixelTypeID_ASTC_8x8
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x5_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x5_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x6_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x6_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x6
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x8_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x8_SRGB_BLOCK},         //Pvr_PixelTypeID_ASTC_10x8
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x10_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_10x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_10x10
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_12x10_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_12x10_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x10
+        {PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_12x12_UNORM_BLOCK, PT_GFX_TEXTURE_COMMON_FORMAT_ASTC_12x12_SRGB_BLOCK},       //Pvr_PixelTypeID_ASTC_12x12
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_3x3x3
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x3x3
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x3
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_4x4x4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x4x4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x4
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_5x5x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x5x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_ASTC_6x6x5
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}                                 //Pvr_PixelTypeID_ASTC_6x6x6
     };
     static_assert(Pvr_PixelTypeID_NumCompressedPFs == (sizeof(pvr_compressed_to_common_format_map) / sizeof(pvr_compressed_to_common_format_map[0])), "Pvr_PixelTypeID_NumCompressedPFs == (sizeof(pvr_compressed_to_common_format_map) / sizeof(pvr_compressed_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_compressed_to_common_format_map[0]) / sizeof(pvr_compressed_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_compressed_to_common_format_map[0]) / sizeof(pvr_compressed_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_R8_UNORM, PT_COMMON_FORMAT_R8_SRGB},    //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_R8_SNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_R8_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_R8_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_R8_SRGB},    //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r8_to_common_format_map) / sizeof(pvr_r8_to_common_format_map[0])), "sizeof(pvr_r8_to_common_format_map) / sizeof(pvr_r8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8_to_common_format_map[0]) / sizeof(pvr_r8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8_to_common_format_map[0]) / sizeof(pvr_r8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r8g8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_R8G8_UNORM, PT_COMMON_FORMAT_R8G8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_R8G8_SNORM, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_R8G8_UINT, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_R8G8_SINT, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r8g8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8_to_common_format_map) / sizeof(pvr_r8g8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8_to_common_format_map) / sizeof(pvr_r8g8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8_to_common_format_map[0]) / sizeof(pvr_r8g8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8_to_common_format_map[0]) / sizeof(pvr_r8g8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r8g8b8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_R8G8B8_UNORM, PT_COMMON_FORMAT_R8G8B8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_R8G8B8_SNORM, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_R8G8B8_UINT, PT_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_R8G8B8_SINT, PT_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r8g8b8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8b8_to_common_format_map) / sizeof(pvr_r8g8b8_to_common_format_map[0])), "(Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8b8_to_common_format_map) / sizeof(pvr_r8g8b8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8b8_to_common_format_map[0]) / sizeof(pvr_r8g8b8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8b8_to_common_format_map[0]) / sizeof(pvr_r8g8b8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_b8g8r8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_B8G8R8_UNORM, PT_COMMON_FORMAT_B8G8R8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_B8G8R8_SNORM, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_B8G8R8_UINT, PT_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_B8G8R8_SINT, PT_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_b8g8r8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},    //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}       //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_b8g8r8_to_common_format_map) / sizeof(pvr_b8g8r8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_b8g8r8_to_common_format_map) / sizeof(pvr_b8g8r8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_b8g8r8_to_common_format_map[0]) / sizeof(pvr_b8g8r8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_b8g8r8_to_common_format_map[0]) / sizeof(pvr_b8g8r8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r8g8b8a8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_R8G8B8A8_UNORM, PT_COMMON_FORMAT_R8G8B8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_R8G8B8A8_SNORM, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_R8G8B8A8_UINT, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_R8G8B8A8_SINT, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r8g8b8a8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8b8a8_to_common_format_map) / sizeof(pvr_r8g8b8a8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r8g8b8a8_to_common_format_map) / sizeof(pvr_r8g8b8a8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8b8a8_to_common_format_map[0]) / sizeof(pvr_r8g8b8a8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r8g8b8a8_to_common_format_map[0]) / sizeof(pvr_r8g8b8a8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_b8g8r8a8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_B8G8R8A8_UNORM, PT_COMMON_FORMAT_B8G8R8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_B8G8R8A8_SNORM, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_B8G8R8A8_UINT, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_B8G8R8A8_SINT, PT_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_b8g8r8a8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_SRGB}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},      //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_b8g8r8a8_to_common_format_map) / sizeof(pvr_b8g8r8a8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_b8g8r8a8_to_common_format_map) / sizeof(pvr_b8g8r8a8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_b8g8r8a8_to_common_format_map[0]) / sizeof(pvr_b8g8r8a8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_b8g8r8a8_to_common_format_map[0]) / sizeof(pvr_b8g8r8a8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_a8b8g8r8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_A8B8G8R8_UNORM_PACK32, PT_COMMON_FORMAT_A8B8G8R8_SRGB_PACK32}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_A8B8G8R8_SNORM_PACK32, PT_COMMON_FORMAT_UNDEFINED},            //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_A8B8G8R8_UINT_PACK32, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_A8B8G8R8_SINT_PACK32, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}                         //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_a8b8g8r8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_A8B8G8R8_UNORM_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_A8B8G8R8_SRGB_PACK32}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_A8B8G8R8_SNORM_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},            //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_A8B8G8R8_UINT_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_A8B8G8R8_SINT_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                        //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}                         //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_a8b8g8r8_to_common_format_map) / sizeof(pvr_a8b8g8r8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_a8b8g8r8_to_common_format_map) / sizeof(pvr_a8b8g8r8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_a8b8g8r8_to_common_format_map[0]) / sizeof(pvr_a8b8g8r8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_a8b8g8r8_to_common_format_map[0]) / sizeof(pvr_a8b8g8r8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r16_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R16_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_R16_SNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R16_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R16_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R16_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r16_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r16_to_common_format_map) / sizeof(pvr_r16_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r16_to_common_format_map) / sizeof(pvr_r16_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16_to_common_format_map[0]) / sizeof(pvr_r16_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16_to_common_format_map[0]) / sizeof(pvr_r16_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r16g16_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R16G16_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_R16G16_SNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R16G16_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R16G16_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R16G16_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r16g16_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r16g16_to_common_format_map) / sizeof(pvr_r16g16_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r16g16_to_common_format_map) / sizeof(pvr_r16g16_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16_to_common_format_map[0]) / sizeof(pvr_r16g16_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16_to_common_format_map[0]) / sizeof(pvr_r16g16_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r16g16b16_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R16G16B16_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_R16G16B16_SNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R16G16B16_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R16G16B16_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R16G16B16_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r16g16b16_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r16g16b16_to_common_format_map) / sizeof(pvr_r16g16b16_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r16g16b16_to_common_format_map) / sizeof(pvr_r16g16b16_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16b16_to_common_format_map[0]) / sizeof(pvr_r16g16b16_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16b16_to_common_format_map[0]) / sizeof(pvr_r16g16b16_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r16g16b16a16_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R16G16B16A16_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_R16G16B16A16_SNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R16G16B16A16_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R16G16B16A16_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R16G16B16A16_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r16g16b16a16_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r16g16b16a16_to_common_format_map) / sizeof(pvr_r16g16b16a16_to_common_format_map[0])), "sizeof(pvr_r16g16b16a16_to_common_format_map) / sizeof(pvr_r16g16b16a16_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16b16a16_to_common_format_map[0]) / sizeof(pvr_r16g16b16a16_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r16g16b16a16_to_common_format_map[0]) / sizeof(pvr_r16g16b16a16_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r32_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R32_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R32_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R32_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r32_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r32_to_common_format_map) / sizeof(pvr_r32_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r32_to_common_format_map) / sizeof(pvr_r32_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32_to_common_format_map[0]) / sizeof(pvr_r32_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32_to_common_format_map[0]) / sizeof(pvr_r32_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r32g32_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R32G32_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R32G32_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R32G32_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r32g32_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},     //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}      //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32_to_common_format_map) / sizeof(pvr_r32g32_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32_to_common_format_map) / sizeof(pvr_r32g32_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32_to_common_format_map[0]) / sizeof(pvr_r32g32_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32_to_common_format_map[0]) / sizeof(pvr_r32g32_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r32g32b32_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R32G32B32_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R32G32B32_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R32G32B32_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r32g32b32_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},        //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}         //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32b32_to_common_format_map) / sizeof(pvr_r32g32b32_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32b32_to_common_format_map) / sizeof(pvr_r32g32b32_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32b32_to_common_format_map[0]) / sizeof(pvr_r32g32b32_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32b32_to_common_format_map[0]) / sizeof(pvr_r32g32b32_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r32g32b32a32_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R32G32B32A32_UINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_R32G32B32A32_SINT, PT_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R32G32B32A32_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r32g32b32a32_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_SINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},   //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32b32a32_to_common_format_map) / sizeof(pvr_r32g32b32a32_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r32g32b32a32_to_common_format_map) / sizeof(pvr_r32g32b32a32_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32b32a32_to_common_format_map[0]) / sizeof(pvr_r32g32b32a32_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r32g32b32a32_to_common_format_map[0]) / sizeof(pvr_r32g32b32a32_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r5g6b5_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R5G6B5_UNORM_PACK16, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r5g6b5_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R5G6B5_UNORM_PACK16, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r5g6b5_to_common_format_map) / sizeof(pvr_r5g6b5_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r5g6b5_to_common_format_map) / sizeof(pvr_r5g6b5_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r5g6b5_to_common_format_map[0]) / sizeof(pvr_r5g6b5_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r5g6b5_to_common_format_map[0]) / sizeof(pvr_r5g6b5_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r4g4b4a4_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_R4G4B4A4_UNORM_PACK16, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}              //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r4g4b4a4_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R4G4B4A4_UNORM_PACK16, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},             //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}              //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r4g4b4a4_to_common_format_map) / sizeof(pvr_r4g4b4a4_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r4g4b4a4_to_common_format_map) / sizeof(pvr_r4g4b4a4_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r4g4b4a4_to_common_format_map[0]) / sizeof(pvr_r4g4b4a4_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r4g4b4a4_to_common_format_map[0]) / sizeof(pvr_r4g4b4a4_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_r11g11r10_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_B10G11R11_UFLOAT_PACK32, PT_COMMON_FORMAT_UNDEFINED} //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_r11g11r10_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},              //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_B10G11R11_UFLOAT_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED} //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_r11g11r10_to_common_format_map) / sizeof(pvr_r11g11r10_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_r11g11r10_to_common_format_map) / sizeof(pvr_r11g11r10_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_r11g11r10_to_common_format_map[0]) / sizeof(pvr_r11g11r10_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_r11g11r10_to_common_format_map[0]) / sizeof(pvr_r11g11r10_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R8_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d8_to_common_format_map) / sizeof(pvr_d8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d8_to_common_format_map) / sizeof(pvr_d8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d8_to_common_format_map[0]) / sizeof(pvr_d8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d8_to_common_format_map[0]) / sizeof(pvr_d8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_s8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R8_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_s8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}  //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_s8_to_common_format_map) / sizeof(pvr_s8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_s8_to_common_format_map) / sizeof(pvr_s8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_s8_to_common_format_map[0]) / sizeof(pvr_s8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_s8_to_common_format_map[0]) / sizeof(pvr_s8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d16_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_R16_UNORM, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R16_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d16_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_UNORM, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R16_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d16_to_common_format_map) / sizeof(pvr_d16_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d16_to_common_format_map) / sizeof(pvr_d16_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d16_to_common_format_map[0]) / sizeof(pvr_d16_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d16_to_common_format_map[0]) / sizeof(pvr_d16_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d24_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_X8_D24_UNORM_PACK32, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d24_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},           //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_X8_D24_UNORM_PACK32, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}            //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d24_to_common_format_map) / sizeof(pvr_d24_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d24_to_common_format_map) / sizeof(pvr_d24_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d24_to_common_format_map[0]) / sizeof(pvr_d24_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d24_to_common_format_map[0]) / sizeof(pvr_d24_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d32_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_R32_SFLOAT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d32_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},  //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_R32_SFLOAT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}   //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d32_to_common_format_map) / sizeof(pvr_d32_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d32_to_common_format_map) / sizeof(pvr_d32_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d32_to_common_format_map[0]) / sizeof(pvr_d32_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d32_to_common_format_map[0]) / sizeof(pvr_d32_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d16s8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_D16_UNORM_S8_UINT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_D16_UNORM_S8_UINT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d16s8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_D16_UNORM_S8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_D16_UNORM_S8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d16s8_to_common_format_map) / sizeof(pvr_d16s8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d16s8_to_common_format_map) / sizeof(pvr_d16s8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d16s8_to_common_format_map[0]) / sizeof(pvr_d16s8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d16s8_to_common_format_map[0]) / sizeof(pvr_d16s8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d24s8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_D24_UNORM_S8_UINT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_D24_UNORM_S8_UINT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d24s8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},         //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}          //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d24s8_to_common_format_map) / sizeof(pvr_d24s8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d24s8_to_common_format_map) / sizeof(pvr_d24s8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d24s8_to_common_format_map[0]) / sizeof(pvr_d24s8_to_common_format_map[0][0])), "pPvr_ColorSpace_NumCSs == (sizeof(pvr_d24s8_to_common_format_map[0]) / sizeof(pvr_d24s8_to_common_format_map[0][0]))");
 
-    static uint32_t const pvr_d32s8_to_common_format_map[][2] = {
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByteNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByte
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
-        {PT_COMMON_FORMAT_D32_SFLOAT_S8_UINT, PT_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
-        {PT_COMMON_FORMAT_UNDEFINED, PT_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
+    static enum gfx_texture_common_format_t const pvr_d32s8_to_common_format_map[][2] = {
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByteNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedByte
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShortNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedShort
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedIntegerNorm
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_UnsignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},          //Pvr_ChannelType_SignedInteger
+        {PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}, //Pvr_ChannelType_SignedFloat
+        {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED}           //Pvr_ChannelType_UnsignedFloat
     };
     static_assert(Pvr_ChannelType_NumCTs == (sizeof(pvr_d32s8_to_common_format_map) / sizeof(pvr_d32s8_to_common_format_map[0])), "Pvr_ChannelType_NumCTs == (sizeof(pvr_d32s8_to_common_format_map) / sizeof(pvr_d32s8_to_common_format_map[0]))");
     static_assert(Pvr_ColorSpace_NumCSs == (sizeof(pvr_d32s8_to_common_format_map[0]) / sizeof(pvr_d32s8_to_common_format_map[0][0])), "Pvr_ColorSpace_NumCSs == (sizeof(pvr_d32s8_to_common_format_map[0]) / sizeof(pvr_d32s8_to_common_format_map[0][0]))");
 
-    uint32_t neutralFormat;
+    enum gfx_texture_common_format_t common_format;
 
     if (0 == Pvr_GetPixelFormatPartHigh(pixelFormat))
     {
         assert(pixelFormat < (sizeof(pvr_compressed_to_common_format_map) / sizeof(pvr_compressed_to_common_format_map[0])));
         assert(colorSpace < (sizeof(pvr_compressed_to_common_format_map[0]) / sizeof(pvr_compressed_to_common_format_map[0][0])));
-        neutralFormat = pvr_compressed_to_common_format_map[pixelFormat][colorSpace];
+        common_format = pvr_compressed_to_common_format_map[pixelFormat][colorSpace];
 
-        if (neutralFormat == PT_COMMON_FORMAT_BC6H_SFLOAT_BLOCK && channelType == Pvr_ChannelType_UnsignedFloat)
+        if (common_format == PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_SFLOAT_BLOCK && channelType == Pvr_ChannelType_UnsignedFloat)
         {
-            neutralFormat = PT_COMMON_FORMAT_BC6H_UFLOAT_BLOCK;
+            common_format = PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_UFLOAT_BLOCK;
         }
     }
     else
@@ -1511,56 +1511,56 @@ inline uint32_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, 
         {
             assert(channelType < (sizeof(pvr_r8_to_common_format_map) / sizeof(pvr_r8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r8_to_common_format_map[0]) / sizeof(pvr_r8_to_common_format_map[0][0])));
-            neutralFormat = pvr_r8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R8G8:
         {
             assert(channelType < (sizeof(pvr_r8g8_to_common_format_map) / sizeof(pvr_r8g8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r8g8_to_common_format_map[0]) / sizeof(pvr_r8g8_to_common_format_map[0][0])));
-            neutralFormat = pvr_r8g8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r8g8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R8G8B8:
         {
             assert(channelType < (sizeof(pvr_r8g8b8_to_common_format_map) / sizeof(pvr_r8g8b8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r8g8b8_to_common_format_map[0]) / sizeof(pvr_r8g8b8_to_common_format_map[0][0])));
-            neutralFormat = pvr_r8g8b8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r8g8b8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_B8G8R8:
         {
             assert(channelType < (sizeof(pvr_b8g8r8_to_common_format_map) / sizeof(pvr_b8g8r8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_b8g8r8_to_common_format_map[0]) / sizeof(pvr_b8g8r8_to_common_format_map[0][0])));
-            neutralFormat = pvr_b8g8r8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_b8g8r8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R8G8B8A8:
         {
             assert(channelType < (sizeof(pvr_r8g8b8a8_to_common_format_map) / sizeof(pvr_r8g8b8a8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r8g8b8a8_to_common_format_map[0]) / sizeof(pvr_r8g8b8a8_to_common_format_map[0][0])));
-            neutralFormat = pvr_r8g8b8a8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r8g8b8a8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_B8G8R8A8:
         {
             assert(channelType < (sizeof(pvr_b8g8r8a8_to_common_format_map) / sizeof(pvr_b8g8r8a8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_b8g8r8a8_to_common_format_map[0]) / sizeof(pvr_b8g8r8a8_to_common_format_map[0][0])));
-            neutralFormat = pvr_b8g8r8a8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_b8g8r8a8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_A8B8G8R8:
         {
             assert(channelType < (sizeof(pvr_a8b8g8r8_to_common_format_map) / sizeof(pvr_a8b8g8r8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_a8b8g8r8_to_common_format_map[0]) / sizeof(pvr_a8b8g8r8_to_common_format_map[0][0])));
-            neutralFormat = pvr_a8b8g8r8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_a8b8g8r8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R16:
         {
             assert(channelType < (sizeof(pvr_r16_to_common_format_map) / sizeof(pvr_r16_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r16_to_common_format_map[0]) / sizeof(pvr_r16_to_common_format_map[0][0])));
-            neutralFormat = pvr_r16_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r16_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R16G16:
@@ -1568,21 +1568,21 @@ inline uint32_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, 
         {
             assert(channelType < (sizeof(pvr_r16g16_to_common_format_map) / sizeof(pvr_r16g16_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r16g16_to_common_format_map[0]) / sizeof(pvr_r16g16_to_common_format_map[0][0])));
-            neutralFormat = pvr_r16g16_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r16g16_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R16G16B16:
         {
             assert(channelType < (sizeof(pvr_r16g16b16_to_common_format_map) / sizeof(pvr_r16g16b16_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r16g16b16_to_common_format_map[0]) / sizeof(pvr_r16g16b16_to_common_format_map[0][0])));
-            neutralFormat = pvr_r16g16b16_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r16g16b16_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R16G16B16A16:
         {
             assert(channelType < (sizeof(pvr_r16g16b16a16_to_common_format_map) / sizeof(pvr_r16g16b16a16_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r16g16b16a16_to_common_format_map[0]) / sizeof(pvr_r16g16b16a16_to_common_format_map[0][0])));
-            neutralFormat = pvr_r16g16b16a16_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r16g16b16a16_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R32:
@@ -1590,7 +1590,7 @@ inline uint32_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, 
         {
             assert(channelType < (sizeof(pvr_r32_to_common_format_map) / sizeof(pvr_r32_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r32_to_common_format_map[0]) / sizeof(pvr_r32_to_common_format_map[0][0])));
-            neutralFormat = pvr_r32_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r32_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R32G32:
@@ -1598,113 +1598,113 @@ inline uint32_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, 
         {
             assert(channelType < (sizeof(pvr_r32g32_to_common_format_map) / sizeof(pvr_r32g32_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r32g32_to_common_format_map[0]) / sizeof(pvr_r32g32_to_common_format_map[0][0])));
-            neutralFormat = pvr_r32g32_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r32g32_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R32G32B32:
         {
             assert(channelType < (sizeof(pvr_r32g32b32_to_common_format_map) / sizeof(pvr_r32g32b32_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r32g32b32_to_common_format_map[0]) / sizeof(pvr_r32g32b32_to_common_format_map[0][0])));
-            neutralFormat = pvr_r32g32b32_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r32g32b32_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R32G32B32A32:
         {
             assert(channelType < (sizeof(pvr_r32g32b32a32_to_common_format_map) / sizeof(pvr_r32g32b32a32_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r32g32b32a32_to_common_format_map[0]) / sizeof(pvr_r32g32b32a32_to_common_format_map[0][0])));
-            neutralFormat = pvr_r32g32b32a32_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r32g32b32a32_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R5G6B5:
         {
             assert(channelType < (sizeof(pvr_r5g6b5_to_common_format_map) / sizeof(pvr_r5g6b5_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r5g6b5_to_common_format_map[0]) / sizeof(pvr_r5g6b5_to_common_format_map[0][0])));
-            neutralFormat = pvr_r5g6b5_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r5g6b5_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R4G4B4A4:
         {
             assert(channelType < (sizeof(pvr_r5g6b5_to_common_format_map) / sizeof(pvr_r5g6b5_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r5g6b5_to_common_format_map[0]) / sizeof(pvr_r5g6b5_to_common_format_map[0][0])));
-            neutralFormat = pvr_r5g6b5_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r5g6b5_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R5G5B5A1:
         {
             assert(channelType < (sizeof(pvr_r4g4b4a4_to_common_format_map) / sizeof(pvr_r4g4b4a4_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r4g4b4a4_to_common_format_map[0]) / sizeof(pvr_r4g4b4a4_to_common_format_map[0][0])));
-            neutralFormat = pvr_r4g4b4a4_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r4g4b4a4_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_R11G11B10:
         {
             assert(channelType < (sizeof(pvr_r11g11r10_to_common_format_map) / sizeof(pvr_r11g11r10_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_r11g11r10_to_common_format_map[0]) / sizeof(pvr_r11g11r10_to_common_format_map[0][0])));
-            neutralFormat = pvr_r11g11r10_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_r11g11r10_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D8:
         {
             assert(channelType < (sizeof(pvr_d8_to_common_format_map) / sizeof(pvr_d8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d8_to_common_format_map[0]) / sizeof(pvr_d8_to_common_format_map[0][0])));
-            neutralFormat = pvr_d8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_S8:
         {
             assert(channelType < (sizeof(pvr_s8_to_common_format_map) / sizeof(pvr_s8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_s8_to_common_format_map[0]) / sizeof(pvr_s8_to_common_format_map[0][0])));
-            neutralFormat = pvr_s8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_s8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D16:
         {
             assert(channelType < (sizeof(pvr_d16_to_common_format_map) / sizeof(pvr_d16_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d16_to_common_format_map[0]) / sizeof(pvr_d16_to_common_format_map[0][0])));
-            neutralFormat = pvr_d16_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d16_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D24:
         {
             assert(channelType < (sizeof(pvr_d24_to_common_format_map) / sizeof(pvr_d24_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d24_to_common_format_map[0]) / sizeof(pvr_d24_to_common_format_map[0][0])));
-            neutralFormat = pvr_d24_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d24_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D32:
         {
             assert(channelType < (sizeof(pvr_d32_to_common_format_map) / sizeof(pvr_d32_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d32_to_common_format_map[0]) / sizeof(pvr_d32_to_common_format_map[0][0])));
-            neutralFormat = pvr_d32_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d32_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D16S8:
         {
             assert(channelType < (sizeof(pvr_d16s8_to_common_format_map) / sizeof(pvr_d16s8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d16s8_to_common_format_map[0]) / sizeof(pvr_d16s8_to_common_format_map[0][0])));
-            neutralFormat = pvr_d16s8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d16s8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D24S8:
         {
             assert(channelType < (sizeof(pvr_d24s8_to_common_format_map) / sizeof(pvr_d24s8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d24s8_to_common_format_map[0]) / sizeof(pvr_d24s8_to_common_format_map[0][0])));
-            neutralFormat = pvr_d24s8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d24s8_to_common_format_map[channelType][colorSpace];
         }
         break;
         case Pvr_PixelTypeChar_D32S8:
         {
             assert(channelType < (sizeof(pvr_d32s8_to_common_format_map) / sizeof(pvr_d32s8_to_common_format_map[0])));
             assert(colorSpace < (sizeof(pvr_d32s8_to_common_format_map[0]) / sizeof(pvr_d32s8_to_common_format_map[0][0])));
-            neutralFormat = pvr_d32s8_to_common_format_map[channelType][colorSpace];
+            common_format = pvr_d32s8_to_common_format_map[channelType][colorSpace];
         }
         break;
         default:
-            neutralFormat = PT_COMMON_TYPE_UNDEFINED;
+            common_format = PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED;
         }
     }
 
-    return neutralFormat;
+    return common_format;
 }
 
 static inline uint32_t pvr_get_format_plane_count(uint64_t pixelFormat)

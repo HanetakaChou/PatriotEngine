@@ -122,19 +122,19 @@ inline struct gfx_texture_vk::specific_header_vk_t gfx_texture_vk::common_to_spe
     return specific_header_vk;
 }
 
-inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(uint32_t common_type)
+inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type)
 {
     static enum VkImageType const common_to_vulkan_type_map[] = {
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(PT_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "PT_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0]))");
+    static_assert(PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0]))");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
 }
 
-inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(uint32_t common_format)
+inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format)
 {
     static enum VkFormat const common_to_vulkan_format_map[] = {
         VK_FORMAT_R4G4_UNORM_PACK8,
@@ -321,7 +321,7 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(uint32_t 
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(PT_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "PT_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0]))");
+    static_assert(PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0]))");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];
@@ -884,4 +884,3 @@ struct gfx_texture_vk::vulkan_format_info_t const gfx_texture_vk::vulkan_format_
     {3, .compressed = {12, 12, 1, (128 / 8)}}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
 };
 #pragma GCC diagnostic pop
-//static_assert((VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(gfx_texture_vk::vulkan_format_info_table) / sizeof(gfx_texture_vk::vulkan_format_info_table[0])), "(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0]))");

@@ -55,7 +55,7 @@ then
 fi
 
 # configure
-MY_DIR="$(dirname "$(readlink -f "${0}")")"
+MY_DIR="$(readlink -f "$(dirname "$0")")"
 cd ${MY_DIR}
 
 if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \); then

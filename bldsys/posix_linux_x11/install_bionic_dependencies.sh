@@ -21,7 +21,7 @@
 # apt install curl
 # apt install unzip
 
-MY_DIR="$(dirname "$(readlink -f "${0}")")"
+MY_DIR="$(readlink -f "$(dirname "$0")")"
 cd ${MY_DIR}
 
 rm -rf ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip
