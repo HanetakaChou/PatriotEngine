@@ -25,7 +25,7 @@ We may treat the image synthesis graphis engine as the 3D version X11 server.
 The geometry(e.g. mesh, hair, terrain) / material / texture are analogous to the pixmap on X11 server.   
 The hierarchy of the scenetree / scenegraph are analogous to the relationship of the "child-parent" window on X11 server.  
    
-Since the memory allocation in Vulkan / Direct3D12 / Metal may fail, the user can't control whether the "content" of the mesh / hair / material / ... has been upload to the GPU. However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "request_count / resident_count".
+Since the memory allocation in Vulkan / Direct3D12 / Metal may fail, the user can't control whether the "content" of the mesh / hair / material / ... is resident on the GPU. However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "request_count / resident_count".
 
 ```  
 struct gfx_iconnection
