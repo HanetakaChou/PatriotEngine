@@ -49,9 +49,25 @@ void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_visu
     xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
-char const *gfx_connection_vk::platform_surface_extension_name()
+char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)
 {
-    return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+    if (0 == index)
+    {
+        return VK_KHR_SURFACE_EXTENSION_NAME;
+    }
+    else if (1 == index)
+    {
+        return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+uint32_t gfx_connection_vk::platform_surface_extension_count()
+{
+    return 2;
 }
 
 bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
@@ -69,4 +85,21 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
     VkBool32 res = m_vkGetPhysicalDeviceXcbPresentationSupportKHR(physical_device, queue_family_index, wsi_connection, visual);
 
     return (VK_FALSE != res);
+}
+
+char const *gfx_connection_vk::platform_swapchain_extension_name(uint32_t index)
+{
+    if (0 == index)
+    {
+        return VK_KHR_SWAPCHAIN_EXTENSION_NAME;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+uint32_t gfx_connection_vk::platform_swapchain_extension_count()
+{
+    return 1;
 }

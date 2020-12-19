@@ -65,8 +65,11 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
 
     void *m_wsi_connection;
     void *m_visual;
-    static char const *platform_surface_extension_name();
+    static char const *platform_surface_extension_name(uint32_t index);
+    static uint32_t platform_surface_extension_count();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
+    static char const *platform_swapchain_extension_name(uint32_t index);
+    static uint32_t platform_swapchain_extension_count();
 
     static void *const m_invalid_wsi_connection; // = NULL;
     static void *const m_invalid_visual;         // = ((void *)-1);

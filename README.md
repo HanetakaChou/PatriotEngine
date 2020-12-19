@@ -22,11 +22,11 @@ The contents of this book is likely to be as follows:
 ### gfx_iconnection   
   
 We may treat the image synthesis graphics engine as the 3D version X11 server.  
-The geometry(e.g. mesh, hair, terrain) / material / texture are analogous to the pixmap on X11 server      
+The geometry(e.g. mesh, hair, terrain) / material / texture / light(e.g. directional light, punctual light, area light, light probe) are analogous to the pixmap on X11 server      
 and the hierarchy of the scenetree / scenegraph are analogous to the relationship of the "child-parent" window on X11 server.  
    
 The user can't control whether the "content" of the mesh / hair / material / ... is resident on the GPU since the memory allocation in Vulkan / Direct3D12 / Metal may fail.    
-However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "request_count / resident_count".
+However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "fail_count / request_count".
 
 ```  
 struct gfx_iconnection
@@ -40,8 +40,8 @@ struct gfx_iconnection
     create_...  
 
     //memory budget related
-    request_count  
-    resident_count   
+    fail_count  
+    request_count   
 };
 ```   
  

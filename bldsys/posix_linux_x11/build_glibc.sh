@@ -79,7 +79,7 @@ else
     exit 1
 fi
 
-OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.so pt_launcher pt_general_acyclic_graphs_of_tasks"
+OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.so pt_launcher libpt_gfx_wsi_bitmap.so pt_general_acyclic_graphs_of_tasks"
 
 # build by ndk  
 rm -rf obj

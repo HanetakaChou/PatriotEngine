@@ -89,14 +89,16 @@ bool gfx_connection_vk::init()
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"}; //VK_LAYER_LUNARG_standard_validation
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-        char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
-        instance_create_info.enabledExtensionCount = 3;
+        assert(platform_surface_extension_count() <= 2);
+        char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, platform_surface_extension_name(0), platform_surface_extension_name(1)};
+        instance_create_info.enabledExtensionCount = 1 + platform_surface_extension_count();
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #else
         instance_create_info.enabledLayerCount = 0;
         instance_create_info.ppEnabledLayerNames = NULL;
-        char const *enabled_extension_names[3] = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
-        instance_create_info.enabledExtensionCount = 2;
+        assert(platform_surface_extension_count() <= 2);
+        char const *enabled_extension_names[2] = {platform_surface_extension_name(0), platform_surface_extension_name(1)};
+        instance_create_info.enabledExtensionCount = platform_surface_extension_count();
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
@@ -338,8 +340,8 @@ bool gfx_connection_vk::init()
         device_create_info.pQueueCreateInfos = device_queue_create_infos;
         device_create_info.enabledLayerCount = 0U;
         device_create_info.ppEnabledLayerNames = NULL;
-        char const *enabled_extension_names[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
-        device_create_info.enabledExtensionCount = 1U;
+        char const *enabled_extension_names[1] = {platform_swapchain_extension_name(0)};
+        device_create_info.enabledExtensionCount = platform_swapchain_extension_count();
         device_create_info.ppEnabledExtensionNames = enabled_extension_names;
         VkPhysicalDeviceFeatures enabled_features = {}; //all members are set to VK_FALSE
         assert(VK_FALSE == 0);

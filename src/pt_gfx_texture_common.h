@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <string>
 
 class gfx_texture_common : public gfx_itexture
 {
@@ -248,8 +250,9 @@ protected:
     };
 
 private:
-    //filename
-    //width
+    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+    mcrt_string m_asset_filename;
 
     static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type);
 
@@ -290,8 +293,7 @@ protected:
         PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED = PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE
     };
 
-    static bool
-    load_header_from_input_stream(
+    static bool load_header_from_input_stream(
         struct common_header_t *common_header, size_t *common_data_offset,
         gfx_input_stream input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence));
 
