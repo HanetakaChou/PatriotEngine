@@ -79,3 +79,29 @@ The size member is identical for all VkImage objects created with the same combi
 Note
 This, however, does not imply that they interpret the contents of the bound memory identically with each other. That additional guarantee, however, can be explicitly requested using VK_IMAGE_CREATE_ALIAS_BIT.
 */
+
+// spec : VkPhysicalDeviceMemoryProperties
+// At least one heap must include VK_MEMORY_HEAP_DEVICE_LOCAL_BIT in VkMemoryHeap::flags.
+// There must be at least one memory type with both the VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT and VK_MEMORY_PROPERTY_HOST_COHERENT_BIT bits set in its propertyFlags. //for upload purpose
+// lower index implies greater performance or subset // prefer lower index
+
+// vertex buffer
+// index buffer
+// sample image
+// required = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT // the UMA driver may compress the buffer/texture to boost performance
+//
+
+// uniform buffer
+// required = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+// preferred = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT // AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
+
+// vmaCreateBuffer
+// VmaAllocator_T::AllocateMemory
+//  vmaFindMemoryTypeIndex // usage->requiredFlags/preferredFlags // vmaFindMemoryTypeIndexForBufferInfo/vmaFindMemoryTypeIndexForImageInfo not used by the library
+//  VmaAllocator_T::GetMemoryTypeMinAlignment //we don't need non coherent 
+
+// https://github.com/ValveSoftware/dxvk
+// DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp
+//  DxvkImage::DxvkImage            // src/dxvk/dxvk_image.cpp
+//   DxvkMemoryAllocator::alloc     // src/dxvk/dxvk_memory.cpp
+// 

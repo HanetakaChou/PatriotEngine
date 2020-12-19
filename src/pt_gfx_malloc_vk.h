@@ -26,7 +26,7 @@
 
 class gfx_malloc_common : public gfx_malloc_common
 {
-    uint32_t memory_index_elem[7];
+    uint32_t memory_index_elem[9];
     static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
 
     uint32_t malloc_usage_to_memory_index(enum gfx_malloc_usage_t malloc_usage);

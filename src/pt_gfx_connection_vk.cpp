@@ -161,12 +161,22 @@ bool gfx_connection_vk::init()
         assert(physical_device_count == physical_device_count_res);
         assert(VK_SUCCESS == vk_res);
 
+        // to do
+        // https://github.com/ValveSoftware/dxvk
+        // src/dxvk/dxvk_adapter.cpp
+        // DxvkAdapter::findQueueFamilies
+        // src/d3d11/d3d11_swapchain.cpp
+        // D3D11SwapChain::CreatePresenter
+
+        // src/dxvk/dxvk_device.h
+        // DxvkDevice::hasDedicatedTransferQueue
+
         //nvpro-samples/shared_sources/nvvk/context_vk.cpp
         //Context::initDevice
         //m_queueGCT
         //m_queueC
         //m_queue_T
-
+    
         int score = 0;
         int const score_integrate_gpu = 1000;
         int const score_discrete_gpu = 1500; //1000 + 1000 > 1500
@@ -185,6 +195,7 @@ bool gfx_connection_vk::init()
             VkPhysicalDevice physical_device = physical_devices[physical_device_index];
 
             VkPhysicalDeviceType physical_device_type;
+            VkDeviceSize physical_device_limits_buffer_image_granularity;
             VkDeviceSize physical_device_limits_min_uniform_buffer_offset_alignment;
             VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment;
             VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
@@ -193,6 +204,7 @@ bool gfx_connection_vk::init()
                 struct VkPhysicalDeviceProperties physical_device_properties;
                 m_vkGetPhysicalDeviceProperties(physical_device, &physical_device_properties);
                 physical_device_type = physical_device_properties.deviceType;
+                physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
                 physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
                 physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
                 physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
@@ -226,7 +238,6 @@ bool gfx_connection_vk::init()
                     {
                         int queue_GP_score_iter = 100;
                         queue_GP_score_iter += ((queue_family_properties.queueFlags & VK_QUEUE_COMPUTE_BIT) ? -1 : 0);
-                        //spec: either GRAPHICS or COMPUTE implies TRANSFER //make TRANSFER optional
 
                         if (queue_GP_score_iter > queue_GP_score)
                         {
@@ -236,7 +247,8 @@ bool gfx_connection_vk::init()
                         }
                     }
 
-                    if (queue_family_properties.queueFlags & VK_QUEUE_TRANSFER_BIT)
+                    //spec: either GRAPHICS or COMPUTE implies TRANSFER //make TRANSFER optional
+                    if (queue_family_properties.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT))
                     {
                         int queue_T_score_iter = 100;
                         queue_T_score_iter += ((queue_family_properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) ? -1 : 0);
@@ -284,6 +296,7 @@ bool gfx_connection_vk::init()
             {
                 score = score_iter;
                 m_physical_device = physical_device;
+                m_physical_device_limits_buffer_image_granularity = physical_device_limits_buffer_image_granularity;
                 m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_limits_min_uniform_buffer_offset_alignment;
                 m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_limits_optimal_buffer_copy_offset_alignment;
                 m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
@@ -387,21 +400,6 @@ bool gfx_connection_vk::init()
     }
 
     return true;
-}
-
-void gfx_connection_vk::get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties)
-{
-    return m_vkGetPhysicalDeviceFormatProperties(m_physical_device, format, out_format_properties);
-}
-
-VkResult gfx_connection_vk::allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory)
-{
-    return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory);
-}
-
-void gfx_connection_vk::free_memory(VkDeviceMemory device_memory)
-{
-    return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks);
 }
 
 #ifndef NDEBUG

@@ -30,10 +30,10 @@ class gfx_malloc_common
         PT_GFX_MALLOC_USAGE_CONSTANT_BUFFER,
         //PT_GFX_MALLOC_USAGE_DYNAMIC_CONSTANT_BUFFER,
         //PT_GFX_MALLOC_USAGE_IMMUTABLE_CONSTANT_BUFFER,
-        PT_GFX_MALLOC_USAGE_VERTEX_INDEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
-        //PT_GFX_MALLOC_USAGE_VERTEX_BUFFER,
-        //PT_GFX_MALLOC_USAGE_INDEX_BUFFER,
-        PT_GFX_MALLOC_USAGE_RENDER_TARGET,
+        PT_GFX_MALLOC_USAGE_VERTEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
+        PT_GFX_MALLOC_USAGE_INDEX_BUFFER,
+        PT_GFX_MALLOC_USAGE_RENDER_TARGET_AND_INPUT_ATTACHMENT,
+        PT_GFX_MALLOC_USAGE_RENDER_TARGET_AND_SHADER_RESOURCE,
         PT_GFX_MALLOC_USAGE_DEPTH_STENCIL_DENY_SHADER_RESOURCE, //write depth to color buffer //to be consistant with MTL
         PT_GFX_MALLOC_USAGE_SHADER_RESOURCE,
         PT_GFX_MALLOC_USAGE_RANGE_SIZE

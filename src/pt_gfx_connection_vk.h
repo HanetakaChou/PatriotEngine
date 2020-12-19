@@ -30,6 +30,8 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     VkInstance m_instance;
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
+    VkDeviceSize m_physical_device_limits_buffer_image_granularity;
+    //m_PhysicalDeviceProperties.limits.nonCoherentAtomSize
     VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
@@ -96,9 +98,13 @@ public:
     // vkGetPhysicalDeviceFormatProperties
     // vkAllocateMemory
     // vkFreeMemory
-    void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties);
-    VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory);
-    void free_memory(VkDeviceMemory device_memory);
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vkGetPhysicalDeviceFormatProperties(m_physical_device, format, out_format_properties); }
+
+    //uniform buffer
+    //assert(0==(pMemoryRequirements->alignment%m_physical_device_limits_min_uniform_buffer_offset_alignment))
+    inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *pMemoryRequirements) { return m_vkGetBufferMemoryRequirements(m_device, buffer, pMemoryRequirements); }
+    inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
+    inline void free_memory(VkDeviceMemory device_memory) { return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks); }
 };
 
 gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);
