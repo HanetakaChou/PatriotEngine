@@ -31,11 +31,10 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
     VkDeviceSize m_physical_device_limits_buffer_image_granularity;
-    //m_PhysicalDeviceProperties.limits.nonCoherentAtomSize
     VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
-    VkDeviceSize m_physical_device_limits_non_coherent_atom_size;
+    VkDeviceSize m_physical_device_limits_non_coherent_atom_size; //we don't need non-coherent (for readback?) 
     bool m_queue_GP_diff_queue_T;
     uint32_t m_queue_GP_family_index;
     uint32_t m_queue_T_family_index;
