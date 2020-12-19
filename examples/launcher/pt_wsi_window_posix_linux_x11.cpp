@@ -147,10 +147,10 @@ void shell_x11::init()
     assert(m_draw_request_callback != NULL);
     assert(m_draw_request_callback_user_data != NULL);
 
-    // app_thread
+    // app related
     m_input_event_callback = NULL;
     m_input_event_callback_user_data = NULL;
-    m_app_has_destoryed = false;
+    mcrt_atomic_store(&m_app_has_quit, false);
     app_init(static_cast<app_iwindow *>(this), this->m_gfx_connection);
     assert(m_input_event_callback != NULL);
 
@@ -213,13 +213,6 @@ void shell_x11::listen_input_event(void (*input_event_callback)(struct input_eve
     assert(m_input_event_callback_user_data == NULL);
     m_input_event_callback = input_event_callback;
     m_input_event_callback_user_data = user_data;
-}
-
-void shell_x11::mark_app_has_destroyed()
-{
-    //thread_id pending
-
-    mcrt_atomic_store(&m_app_has_destoryed, true);
 }
 
 void shell_x11::sync_keysyms()
@@ -346,9 +339,12 @@ void shell_x11::run()
             {
                 m_loop = false;
 
+                //mcrt_atomic_store(&m_app_has_quit, false);
                 struct input_event_t input_event = {app_iwindow::input_event_t::MESSAGE_CODE_QUIT, 0, 0};
                 assert(m_input_event_callback != NULL);
                 m_input_event_callback(&input_event, m_input_event_callback_user_data);
+
+                //move xcb_destroy_window_checked here?
             }
         }
         break;
@@ -362,9 +358,16 @@ void shell_x11::run()
     }
 }
 
+void shell_x11::mark_app_has_quit()
+{
+    //thread_id pending
+
+    mcrt_atomic_store(&m_app_has_quit, true);
+}
+
 void shell_x11::destroy()
 {
-    while (!mcrt_atomic_load(&m_app_has_destoryed))
+    while (!mcrt_atomic_load(&m_app_has_quit))
     {
         mcrt_os_yield();
     }

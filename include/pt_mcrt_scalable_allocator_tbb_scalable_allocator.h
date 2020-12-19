@@ -75,7 +75,7 @@ namespace mcrt
         //! Allocate space for n objects.
         pointer allocate(size_type n, const void * /*hint*/ = 0)
         {
-            pointer p = static_cast<pointer>(mcrt_malloc(n * sizeof(value_type)));
+            pointer p = static_cast<pointer>(mcrt_aligned_malloc(n * sizeof(value_type), alignof(value_type)));
             if (!p)
                 internal::throw_exception(std::bad_alloc());
             return p;

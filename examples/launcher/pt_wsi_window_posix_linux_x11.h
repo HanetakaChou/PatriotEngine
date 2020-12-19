@@ -55,7 +55,7 @@ class shell_x11 : public wsi_iwindow, app_iwindow
 
     void (*m_input_event_callback)(struct input_event_t *input_event, void *user_data);
     void *m_input_event_callback_user_data;
-    bool m_app_has_destoryed;
+    bool m_app_has_quit;
 
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;
@@ -67,7 +67,7 @@ class shell_x11 : public wsi_iwindow, app_iwindow
     void listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data) override;
     void listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data) override;
     void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) override;
-    void mark_app_has_destroyed() override;
+    void mark_app_has_quit() override;
 
 public:
     void init();

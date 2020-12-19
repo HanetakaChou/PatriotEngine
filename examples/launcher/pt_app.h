@@ -43,7 +43,7 @@ struct app_iwindow
 
     virtual void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) = 0;
 
-    virtual void mark_app_has_destroyed() = 0;
+    virtual void mark_app_has_quit() = 0;
 };
 
 void app_init(struct app_iwindow *input, struct gfx_iconnection *connection);

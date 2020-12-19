@@ -31,7 +31,7 @@
 #define __PT_MCRT_THROW(e) throw e
 #else /* !__PT_MCRT_USE_EXCEPTIONS */
 #define __PT_MCRT_THROW(e) mcrt::internal::suppress_unused_warning(e)
-#endif /* !TBB_USE_EXCEPTIONS */
+#endif /* !__PT_MCRT_USE_EXCEPTIONS */
 
 namespace mcrt
 {
