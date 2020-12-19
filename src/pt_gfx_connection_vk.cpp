@@ -83,6 +83,9 @@ bool gfx_connection_vk::init()
         application_info.apiVersion = VK_API_VERSION_1_0;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
+        //char const *enabled_layer_names[] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
+        //instance_create_info.enabledLayerCount = 5;
+        //instance_create_info.ppEnabledLayerNames = enabled_layer_names;
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"}; //VK_LAYER_LUNARG_standard_validation
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
@@ -150,7 +153,7 @@ bool gfx_connection_vk::init()
         vk_res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count, NULL);
         assert(VK_SUCCESS == vk_res);
 
-        uint32_t physical_device_count_res;
+        uint32_t physical_device_count_res = physical_device_count;
         VkPhysicalDevice *physical_devices = static_cast<VkPhysicalDevice *>(mcrt_malloc(sizeof(VkPhysicalDevice) * physical_device_count));
         vk_res = m_vkEnumeratePhysicalDevices(m_instance, &physical_device_count_res, physical_devices);
         assert(physical_device_count == physical_device_count_res);
@@ -207,7 +210,7 @@ bool gfx_connection_vk::init()
                 m_vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_property_count, NULL);
 
                 struct VkQueueFamilyProperties *queue_family_properties_array = static_cast<VkQueueFamilyProperties *>(mcrt_malloc(sizeof(VkQueueFamilyProperties) * queue_family_property_count));
-                uint32_t queue_family_property_count_res;
+                uint32_t queue_family_property_count_res = queue_family_property_count;
                 m_vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queue_family_property_count_res, queue_family_properties_array);
                 assert(queue_family_property_count_res == queue_family_property_count);
 

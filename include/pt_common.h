@@ -62,8 +62,8 @@
 #define PT_EXPORT __declspec(dllexport)
 
 //Likely
-#define PT_LIKELY(x)     (!!(x))
-#define PT_UNLIKELY(x)   (!!(x))
+#define PT_LIKELY(x) (!!(x))
+#define PT_UNLIKELY(x) (!!(x))
 
 #elif defined(__GNUC__)
 //https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -101,8 +101,8 @@
 #define PT_EXPORT __attribute__((visibility("default")))
 
 //Likely
-#define PT_LIKELY(x)     __builtin_expect(!!(x), 1)
-#define PT_UNLIKELY(x)   __builtin_expect(!!(x), 0)
+#define PT_LIKELY(x) __builtin_expect(!!(x), 1)
+#define PT_UNLIKELY(x) __builtin_expect(!!(x), 0)
 
 #else
 #error Unknown Compiler

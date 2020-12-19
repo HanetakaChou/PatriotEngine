@@ -42,7 +42,7 @@ endif
 
 LOCAL_EXPORT_LDLIBS:= -lxcb
 
-LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_libxcb_fake.cpp
+LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_xcb_fake.cpp
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -52,11 +52,11 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libpt_tbbmalloc
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
+ifeq (x86_64,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x64/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
+endif
+ifeq (x86,$(TARGET_ARCH))
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
 endif
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
@@ -69,11 +69,11 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libpt_irml
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
+ifeq (x86_64,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x64/libpt_irml$(TARGET_SONAME_EXTENSION)
+endif
+ifeq (x86,$(TARGET_ARCH))
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_irml$(TARGET_SONAME_EXTENSION)
 endif
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
@@ -86,11 +86,11 @@ include $(CLEAR_VARS)
 
 LOCAL_MODULE := libpt_tbb
 
-ifeq ($(TARGET_ARCH_ABI),x86)
-  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
-endif
-ifeq ($(TARGET_ARCH_ABI),x86_64)
+ifeq (x86_64,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x64/libpt_tbb$(TARGET_SONAME_EXTENSION)
+endif
+ifeq (x86,$(TARGET_ARCH))
+  LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_x86/libpt_tbb$(TARGET_SONAME_EXTENSION)
 endif
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
