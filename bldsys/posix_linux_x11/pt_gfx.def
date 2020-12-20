@@ -22,7 +22,7 @@
         gfx_connection_create_texture;
         gfx_connection_wsi_on_resized;
         gfx_connection_wsi_on_redraw_needed_acquire;
-        gfx_connection_wsi_on_redraw_needed_draw_and_release;
+        gfx_connection_wsi_on_redraw_needed_release;
         gfx_texture_read_input_stream;
     local:
         *;

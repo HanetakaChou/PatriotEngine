@@ -82,7 +82,7 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     class gfx_texture_common *create_texture() override;
     void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
-    void wsi_on_redraw_needed_draw_and_release() override;
+    void wsi_on_redraw_needed_release() override;
 
     ~gfx_connection_vk();
     void destroy() override;

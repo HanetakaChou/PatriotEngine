@@ -32,9 +32,9 @@ void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, 
 
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_draw_and_release()
+void gfx_connection_vk::wsi_on_redraw_needed_release()
 {
-    
+
 }
 
 char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)

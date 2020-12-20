@@ -163,9 +163,17 @@ void *shell_x11::draw_request_main(void *arg)
 
     while (self->m_loop)
     {
+        // usage
+        // on_redraw_needed
+        // app update scenetree //maybe in other thread //not depend on accurate time
+        // gfx acquire //sync and flatten scenetree //then frame throttling
+        // app update time-related (animation etc) //frame throttling make the time here less latency //scenetree modify will impact on the next frame
+        // gfx release //draw and present //draw //not sync scenetree
+
+        // update scenetree
         gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection, wrap_window(self->m_window), self->m_window_width, self->m_window_height);
         // update animation etc
-        gfx_connection_wsi_on_redraw_needed_draw_and_release(self->m_gfx_connection);
+        gfx_connection_wsi_on_redraw_needed_release(self->m_gfx_connection);
     }
 
     gfx_connection_destroy(self->m_gfx_connection);

@@ -73,9 +73,9 @@ PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref 
     return unwrap(gfx_connection)->wsi_on_redraw_needed_acquire(wsi_window, width, height);
 }
 
-PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_draw_and_release(gfx_connection_ref gfx_connection)
+PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->wsi_on_redraw_needed_draw_and_release();
+    return unwrap(gfx_connection)->wsi_on_redraw_needed_release();
 }
 
 PT_GFX_ATTR bool gfx_texture_read_input_stream(

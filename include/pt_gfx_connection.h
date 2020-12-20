@@ -55,18 +55,20 @@ extern "C"
     // MTKViewDelegate::drawableSizeWillChange
     PT_GFX_ATTR void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
 
-    // usage
-    // on_redraw_needed
-    // acquire //frame throttling
-    // update animation etc
-    // draw_and_release
-
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
-    // the gfx module may use the given window to recreate the swapchain
-    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height); //frame throttling
 
-    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_draw_and_release(gfx_connection_ref gfx_connection);
+    // usage
+    // on_redraw_needed
+    // app update scenetree //maybe in other thread //not depend on accurate time
+    // gfx acquire //sync and flatten scenetree //then frame throttling
+    // app update time-related (animation etc) //frame throttling make the time here less latency //scenetree modify will impact on the next frame
+    // gfx release //draw and present //draw //not sync scenetree
+
+    // the gfx module may use the given window to recreate the swapchain
+    // frame throttling
+    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height); 
+    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
     PT_GFX_ATTR bool gfx_texture_read_input_stream(
         gfx_texture_ref texture,

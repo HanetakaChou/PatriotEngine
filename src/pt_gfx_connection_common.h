@@ -50,7 +50,7 @@ public:
 
     virtual void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
 
-    virtual void wsi_on_redraw_needed_draw_and_release() = 0;
+    virtual void wsi_on_redraw_needed_release() = 0;
 };
 
 #endif

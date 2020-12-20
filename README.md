@@ -15,11 +15,11 @@ The contents of this book is likely to be as follows:
 > [docs/task.zh_CN.md](docs/task.zh_CN.md)
 >       
    
-### Core Interfaces   
-   
 ---  
 
-### gfx_iconnection   
+### Core Interfaces   
+   
+#### gfx_connection_ref   
   
 We may treat the image synthesis graphics engine as the 3D version X11 server.  
 The geometry(e.g. mesh, hair, terrain) / material / texture / light(e.g. directional light, punctual light, area light, light probe) are analogous to the pixmap on X11 server      
@@ -29,20 +29,34 @@ The user can't control whether the "content" of the mesh / hair / material / ...
 However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "fail_count / request_count".
 
 ```  
-struct gfx_iconnection
-{   
+    gfx_connection_init
+    gfx_connection_destroy
+
     //scenetree related
-    create_node  
+    gfx_connection_create_node  
 
-    //asset related
-    create_mesh  
-    create_hair  
-    create_...  
+    // asset related
+    gfx_connection_create_mesh
+    gfx_connection_create_hair
+    gfx_connection_create_texture
+    gfx_connection_create_light_probe
+    gfx_connection_create_...
 
-    //memory budget related
-    fail_count  
-    request_count   
-};
+    // memory budget related
+    gfx_connection_fail_count  
+    gfx_connection_request_count   
+
+    // wsi related
+    gfx_connection_wsi_on_resized
+
+    // usage
+    // app on_redraw_needed
+    // app update info which doesn't depend on accurate time ( scenetree etc ) //maybe update in other threads 
+    // app call gfx acquire //gfx sync and flatten scenetree //and then gfx frame throttling
+    // app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree modification here will impact on the next frame
+    // app call gfx release //gfx draw and present //gfx not sync scenetree here
+    gfx_connection_wsi_on_redraw_needed_acquire
+    gfx_connection_wsi_on_redraw_needed_release
 ```   
  
 ---    

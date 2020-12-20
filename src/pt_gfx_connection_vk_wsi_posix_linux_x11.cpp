@@ -51,7 +51,7 @@ void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, 
 #endif
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_draw_and_release()
+void gfx_connection_vk::wsi_on_redraw_needed_release()
 {
 }
 
