@@ -46,6 +46,16 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_common.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_common.o",
+        "file": "${workspaceFolder}/src/pt_gfx_malloc_common.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_GFX_ATTR=PT_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_malloc_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "clang++ -c -xc++ -std=c++11 -DPT_MCRT_ATTR=PT_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_malloc.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_malloc.o",
         "file": "${workspaceFolder}/src/pt_mcrt_malloc.cpp"
     },

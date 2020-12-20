@@ -28,7 +28,6 @@ typedef struct _wsi_window_t_ *wsi_window_ref;
 
 typedef struct _gfx_connection_t *gfx_connection_ref;
 
-
 typedef struct _gfx_input_stream_t_ *gfx_input_stream_ref;
 
 enum
@@ -38,7 +37,7 @@ enum
     PT_GFX_INPUT_STREAM_SEEK_END = 2
 };
 
-typedef struct _gfx_texture_t *gfx_texture_ref;
+typedef struct _gfx_texture_t_ *gfx_texture_ref;
 
 #ifdef __cplusplus
 extern "C"
@@ -59,15 +58,15 @@ extern "C"
     // MTKViewDelegate::drawInMTKView
 
     // usage
-    // [current thread] app on_redraw_needed //drawInMTKView //onNativeWindowRedrawNeeded 
-    // [arbitrary thread] app update info which doesn't depend on accurate time ( scenetree etc ) //app may update in other threads 
+    // [current thread] app on_redraw_needed //drawInMTKView //onNativeWindowRedrawNeeded
+    // [arbitrary thread] app update info which doesn't depend on accurate time ( scenetree etc ) //app may update in other threads
     // [current thread] app call gfx acquire //gfx sync ( from other threads ) and flatten scenetree //and then gfx frame throttling
     // [current thread] app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree update here (include update from other threads) is ignored in current frame and to impact on the next frame
     // [current thread] app call gfx release //gfx draw and present //gfx not sync scenetree here
 
     // the gfx module may use the given window to recreate the swapchain
     // frame throttling
-    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height); 
+    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
     PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
     PT_GFX_ATTR bool gfx_texture_read_input_stream(
@@ -77,6 +76,8 @@ extern "C"
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+
+    PT_GFX_ATTR void gfx_texture_destroy(gfx_texture_ref texture);
 
 #ifdef __cplusplus
 }

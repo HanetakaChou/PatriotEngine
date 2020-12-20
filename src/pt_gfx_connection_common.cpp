@@ -88,3 +88,8 @@ PT_GFX_ATTR bool gfx_texture_read_input_stream(
 {
     return unwrap(texture)->read_input_stream(initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
 }
+
+PT_GFX_ATTR void gfx_texture_destroy(gfx_texture_ref texture)
+{
+    return unwrap(texture)->destroy();
+}

@@ -34,6 +34,8 @@ However, the user may tweak the "create / destory" strategy of the mesh / hair /
 
     //scenetree related
     gfx_connection_create_node  
+    gfx_connection_create_selector //LOD etc  
+    gfx_connection_create_...
 
     // asset related
     gfx_connection_create_mesh

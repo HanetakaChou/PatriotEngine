@@ -21,6 +21,8 @@
 #if defined(_MSC_VER) //Compiler
 //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 
+#define PT_MSVC 1
+
 //Platform
 #define PT_WIN32 1
 
@@ -67,6 +69,8 @@
 
 #elif defined(__GNUC__)
 //https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+
+#define PT_GCC 1
 
 //Platform
 #define PT_POSIX 1

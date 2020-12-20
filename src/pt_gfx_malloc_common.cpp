@@ -34,9 +34,14 @@
 
 // A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator
 
-//VK_EXT_memory_budget
+// VK_EXT_memory_budget
+// VmaAllocator_T::GetBudget
+//  check m_OperationsSinceBudgetFetch
+// we are not alone ?
 
-
+// github
+// vulkaninfo "usable for"  
+//
 
 /*
 The implementation guarantees certain properties about the memory requirements returned by vkGetBufferMemoryRequirements2, vkGetImageMemoryRequirements2, vkGetBufferMemoryRequirements and vkGetImageMemoryRequirements:
@@ -95,10 +100,25 @@ This, however, does not imply that they interpret the contents of the bound memo
 // required = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 // preferred = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT // AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
 
-// vmaCreateBuffer
+// VmaAllocator_T::VmaAllocator_T
+//  vma_new VmaBlockVector //maxBlockCount->SIZE_MAX
+
+// vmaCreateBuffer //pass allocationcount //alloc multi buffer once 
 // VmaAllocator_T::AllocateMemory
-//  vmaFindMemoryTypeIndex // usage->requiredFlags/preferredFlags // vmaFindMemoryTypeIndexForBufferInfo/vmaFindMemoryTypeIndexForImageInfo not used by the library
+//  vmaFindMemoryTypeIndex // usage->requiredFlags/preferredFlags->memorytypeindex //count cost // vmaFindMemoryTypeIndexForBufferInfo/vmaFindMemoryTypeIndexForImageInfo not used by the library
 //  VmaAllocator_T::GetMemoryTypeMinAlignment //we don't need non coherent 
+//  VmaAllocator_T::AllocateMemoryOfType  
+//   memorytypeindex-> VmaBlockVector  
+//   VmaBlockVector::Allocate                    
+//    corruption detection ?
+//    VmaBlockVector::AllocatePage
+//     VmaAllocator_T::GetBudget->freeMemory(size)->canCreateNewBlock
+//     early reject //larger than maximum block size
+//     // can become lost //can make other lost // set by user?
+//     // m_Algorithm + VmaAllocationCreateInfo.flags & STRATEGY_MASK -> the algorithm
+//     VmaBlockVector::AllocateFromBlock //best fit
+
+// slob
 
 // https://github.com/ValveSoftware/dxvk
 // DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp

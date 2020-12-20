@@ -18,14 +18,19 @@
 #ifndef _PT_GFX_CONNECTION_VK_H_
 #define _PT_GFX_CONNECTION_VK_H_ 1
 
+#include <stddef.h>
+#include <stdint.h>
+#include <pt_common.h>
+#include <pt_gfx_common.h>
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
 #include "pt_gfx_malloc_common.h"
+#include "pt_gfx_malloc_vk.h"
 #include <vulkan/vulkan.h>
 
 class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
-class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
+class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
 {
     VkAllocationCallbacks m_allocator_callbacks;
 

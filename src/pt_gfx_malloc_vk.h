@@ -23,13 +23,22 @@
 #include "pt_common.h"
 #include "pt_gfx_common.h"
 #include "pt_gfx_malloc_common.h"
+#include <vulkan/vulkan.h>
 
-class gfx_malloc_common : public gfx_malloc_common
+class gfx_malloc_vk : public gfx_malloc_common
 {
+protected:
+    VkPhysicalDeviceMemoryProperties m_physical_device_memory_properties;
+
+private:
     uint32_t memory_index_elem[9];
     static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
 
-    uint32_t malloc_usage_to_memory_index(enum gfx_malloc_usage_t malloc_usage);
+    uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
+
+    uint32_t find_memory_type_index(uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags);
+
+    uint32_t find_memory_type_index(uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags, VkMemoryPropertyFlags preferred_property_flags);
 };
 
 #endif
