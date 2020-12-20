@@ -130,10 +130,6 @@ void shell_x11::init()
 
     // draw_request_thread
     m_gfx_connection = NULL;
-    m_size_change_callback = NULL;
-    m_size_change_callback_user_data = NULL;
-    m_draw_request_callback = NULL;
-    m_draw_request_callback_user_data = NULL;
     mcrt_atomic_store(&m_draw_request_thread_running, false);
     bool res_draw_request = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
     assert(res_draw_request);
@@ -142,10 +138,6 @@ void shell_x11::init()
         mcrt_os_yield();
     }
     assert(m_gfx_connection != NULL);
-    assert(m_size_change_callback != NULL);
-    assert(m_size_change_callback_user_data != NULL);
-    assert(m_draw_request_callback != NULL);
-    assert(m_draw_request_callback_user_data != NULL);
 
     // app related
     m_input_event_callback = NULL;
@@ -165,44 +157,20 @@ void *shell_x11::draw_request_main(void *arg)
 {
     shell_x11 *self = static_cast<shell_x11 *>(arg);
 
-    self->m_gfx_connection = gfx_connection_init(self);
+    self->m_gfx_connection = gfx_connection_init(wrap(self->m_xcb_connection), wrap_visual(self->m_visual));
     assert(self->m_gfx_connection != NULL);
-    assert(self->m_size_change_callback != NULL);
-    assert(self->m_size_change_callback_user_data != NULL);
-    assert(self->m_draw_request_callback != NULL);
-    assert(self->m_draw_request_callback_user_data != NULL);
     mcrt_atomic_store(&self->m_draw_request_thread_running, true);
 
     while (self->m_loop)
     {
-        self->m_draw_request_callback(self->m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(self->m_window)), self->m_draw_request_callback_user_data);
+        gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection, wrap_window(self->m_window), self->m_window_width, self->m_window_height);
+        // update animation etc
+        gfx_connection_wsi_on_redraw_needed_draw_and_release(self->m_gfx_connection);
     }
 
-    self->m_gfx_connection->destroy();
+    gfx_connection_destroy(self->m_gfx_connection);
     mcrt_atomic_store(&self->m_draw_request_thread_running, false);
     return NULL;
-}
-
-void shell_x11::listen_size_change(void (*size_change_callback)(void *wsi_connection, void *visual, void *window, float width, float height, void *user_data), void *user_data)
-{
-    assert(mono_native_thread_id_get() == m_draw_request_thread_id);
-
-    assert(m_size_change_callback == NULL);
-    assert(m_size_change_callback_user_data == NULL);
-    m_size_change_callback = size_change_callback;
-    m_size_change_callback_user_data = user_data;
-
-    m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), 1, 1, m_size_change_callback_user_data);
-}
-
-void shell_x11::listen_draw_request(void (*draw_request_callback)(void *wsi_connection, void *visual, void *window, void *user_data), void *user_data)
-{
-    assert(mono_native_thread_id_get() == m_draw_request_thread_id);
-
-    assert(m_draw_request_callback == NULL);
-    assert(m_draw_request_callback_user_data == NULL);
-    m_draw_request_callback = draw_request_callback;
-    m_draw_request_callback_user_data = user_data;
 }
 
 void shell_x11::listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data)
@@ -310,9 +278,7 @@ void shell_x11::run()
             assert(XCB_CONFIGURE_NOTIFY == (event->response_type & (~uint8_t(0X80))));
 
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-
-            assert(m_size_change_callback != NULL);
-            m_size_change_callback(m_xcb_connection, reinterpret_cast<void *>(static_cast<uintptr_t>(m_visual)), reinterpret_cast<void *>(static_cast<uintptr_t>(m_window)), configure_notify->width, configure_notify->height, m_size_change_callback_user_data);
+            gfx_connection_wsi_on_resized(m_gfx_connection, wrap_window(m_window), configure_notify->width, configure_notify->height);
         }
         break;
         case XCB_MAPPING_NOTIFY:

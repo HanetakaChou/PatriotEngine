@@ -21,11 +21,66 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_gfx_common.h"
-#include "pt_wsi_window.h"
 
-// Some platforms (e.g. X11) may wait on the first size_change_callback //to retrieve the info required by the platform_physical_device_presentation_support   
-// We need to invoke size_change_callback on these plaforms in the listen_size_change to avoid dead-lock
-extern "C" PT_GFX_ATTR struct gfx_iconnection *PT_CALL gfx_connection_init(struct wsi_iwindow *window);
+typedef struct _wsi_connection_t_ *wsi_connection_ref;
+typedef struct _wsi_visual_t_ *wsi_visual_ref;
+typedef struct _wsi_window_t_ *wsi_window_ref;
+
+typedef struct _gfx_connection_t *gfx_connection_ref;
+
+
+typedef struct _gfx_input_stream_t_ *gfx_input_stream_ref;
+
+enum
+{
+    PT_GFX_INPUT_STREAM_SEEK_SET = 0,
+    PT_GFX_INPUT_STREAM_SEEK_CUR = 1,
+    PT_GFX_INPUT_STREAM_SEEK_END = 2
+};
+
+typedef struct _gfx_texture_t *gfx_texture_ref;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+    PT_GFX_ATTR gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+
+    PT_GFX_ATTR void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
+
+    PT_GFX_ATTR gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
+
+    // ANativeActivityCallbacks::onNativeWindowResized
+    // MTKViewDelegate::drawableSizeWillChange
+    PT_GFX_ATTR void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
+
+    // usage
+    // on_redraw_needed
+    // acquire //frame throttling
+    // update animation etc
+    // draw_and_release
+
+    // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
+    // MTKViewDelegate::drawInMTKView
+    // the gfx module may use the given window to recreate the swapchain
+    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height); //frame throttling
+
+    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_draw_and_release(gfx_connection_ref gfx_connection);
+
+    PT_GFX_ATTR bool gfx_texture_read_input_stream(
+        gfx_texture_ref texture,
+        char const *initial_filename,
+        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+
+#ifdef __cplusplus
+}
+#endif
+
+#if 0
 
 //struct gfx_imesh;
 //struct gfx_iterrain;
@@ -34,7 +89,7 @@ struct gfx_itexture;
 // We may treat the gfx server as the 3D version X11 server.
 struct gfx_iconnection
 {
-    //init_asset_file_callback
+    //init_input_stream_callback
 
     //virtual struct gfx_imesh *create_mesh() = 0;
 
@@ -46,15 +101,19 @@ struct gfx_iconnection
     // ~~size_t resident_count() = 0~~
 
     virtual void destroy() = 0;
-};
 
-typedef struct _gfx_input_stream_t_ *gfx_input_stream;
+    // ANativeActivityCallbacks::onNativeWindowResized
+    // MTKViewDelegate::drawableSizeWillChange
+    virtual void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) = 0;
 
-enum
-{
-    PT_GFX_INPUT_STREAM_SEEK_SET = 0,
-    PT_GFX_INPUT_STREAM_SEEK_CUR = 1,
-    PT_GFX_INPUT_STREAM_SEEK_END = 2
+    // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
+    // MTKViewDelegate::drawInMTKView
+    // the gfx module may use the given window to recreate the swapchain
+    virtual void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
+
+    // update animation etc
+
+    virtual void wsi_on_redraw_needed_draw_and_release() = 0;
 };
 
 // gfx_imesh -> X Pixmap
@@ -64,11 +123,10 @@ enum
 struct gfx_imesh
 {
     //virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
-    
+
     // PMD GLTF
     // vertex/index info //ignore others
-    //virual bool attach_asset_file() //associate with file //can change
-
+    //virual bool attach_input_stream() //associate with file //can change
 
     virtual bool put_material() = 0;
 
@@ -79,8 +137,8 @@ struct gfx_imesh
 
 struct gfx_imaterial
 {
-    // MDL //OSL 
-    //virual bool attach_asset_file() //associate with file  
+    // MDL //OSL
+    //virual bool attach_input_stream() //associate with file
 
     virtual bool read_input_stream() = 0; //XReadBitmapFile //XCreateBitmapFromData
 
@@ -92,17 +150,18 @@ struct gfx_imaterial
 struct gfx_itexture
 {
     // DDS //PVR
-    //virual bool attach_asset_file(asset_file_url) //associate with file //gfx automatic evict and resident  
+    //virual bool attach_input_stream(asset_url) //associate with file //gfx automatic evict and resident
 
     // for debug purpose
     // make_resident
     virtual bool read_input_stream(char const *initial_filename,
-                                   gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                                   intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
-                                   int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-                                   void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream)) = 0;
+                                   gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                                   intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+                                   int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+                                   void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
 
     virtual void destroy() = 0;
 };
+#endif
 
 #endif

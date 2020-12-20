@@ -23,22 +23,23 @@
 #include <xcb/xcb.h>
 #include <vulkan/vulkan.h>
 
-static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
+inline xcb_connection_t *unwrap(wsi_connection_ref wsi_connection) { return reinterpret_cast<xcb_connection_t *>(wsi_connection); }
+inline xcb_visualid_t unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast<uintptr_t>(wsi_visual); }
 
-void gfx_connection_vk::size_change_callback(void *_wsi_connection, void *_visual, void *_window, float width, float height)
+//static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
+
+void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
 {
-    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
-    assert(m_visual == m_invalid_visual || m_visual == _visual);
-    m_wsi_connection = _wsi_connection;
-    m_visual = _visual;
+    //m_wsi_window = wsi_window;
 
-    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
+    //xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
+    //xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
+    //xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
-void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_visual, void *_window)
+void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
 {
+#if 0
     assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
     assert(m_visual == m_invalid_visual || m_visual == _visual);
     m_wsi_connection = _wsi_connection;
@@ -47,6 +48,11 @@ void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_visu
     xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
     xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
     xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
+#endif
+}
+
+void gfx_connection_vk::wsi_on_redraw_needed_draw_and_release()
+{
 }
 
 char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)
@@ -74,15 +80,10 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
 {
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_vkGetPhysicalDeviceXcbPresentationSupportKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
 
-    while (m_invalid_wsi_connection == mcrt_atomic_load(&m_wsi_connection) || m_invalid_visual == mcrt_atomic_load(&m_visual))
-    {
-        mcrt_os_yield();
-    }
+    xcb_connection_t *wsi_connection = unwrap(m_wsi_connection);
+    xcb_visualid_t wsi_visual = unwrap(m_wsi_visual);
 
-    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-
-    VkBool32 res = m_vkGetPhysicalDeviceXcbPresentationSupportKHR(physical_device, queue_family_index, wsi_connection, visual);
+    VkBool32 res = m_vkGetPhysicalDeviceXcbPresentationSupportKHR(physical_device, queue_family_index, wsi_connection, wsi_visual);
 
     return (VK_FALSE != res);
 }

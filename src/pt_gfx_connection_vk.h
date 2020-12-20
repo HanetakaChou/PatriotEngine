@@ -23,6 +23,8 @@
 #include "pt_gfx_malloc_common.h"
 #include <vulkan/vulkan.h>
 
+class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+
 class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
 {
     VkAllocationCallbacks m_allocator_callbacks;
@@ -34,7 +36,7 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
-    VkDeviceSize m_physical_device_limits_non_coherent_atom_size; //we don't need non-coherent (for readback?) 
+    VkDeviceSize m_physical_device_limits_non_coherent_atom_size; //we don't need non-coherent (for readback?)
     bool m_queue_GP_diff_queue_T;
     uint32_t m_queue_GP_family_index;
     uint32_t m_queue_T_family_index;
@@ -64,32 +66,30 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_common
     PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
 #endif
 
-    void *m_wsi_connection;
-    void *m_visual;
+    wsi_connection_ref m_wsi_connection;
+    wsi_visual_ref m_wsi_visual;
     static char const *platform_surface_extension_name(uint32_t index);
     static uint32_t platform_surface_extension_count();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
     static char const *platform_swapchain_extension_name(uint32_t index);
     static uint32_t platform_swapchain_extension_count();
 
-    static void *const m_invalid_wsi_connection; // = NULL;
-    static void *const m_invalid_visual;         // = ((void *)-1);
-
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
     VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 
-    struct gfx_itexture *create_texture() override;
+    class gfx_texture_common *create_texture() override;
+    void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
+    void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
+    void wsi_on_redraw_needed_draw_and_release() override;
 
     ~gfx_connection_vk();
     void destroy() override;
-
 public:
-    inline gfx_connection_vk() : m_wsi_connection(m_invalid_wsi_connection), m_visual(m_invalid_visual) {}
+    inline gfx_connection_vk(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual) : m_wsi_connection(wsi_connection), m_wsi_visual(wsi_visual) {}
     bool init();
-    void size_change_callback(void *wsi_connection, void *visual, void *window, float width, float height);
-    void draw_request_callback(void *wsi_connection, void *visual, void *window);
+
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
 
@@ -105,7 +105,5 @@ public:
     inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
     inline void free_memory(VkDeviceMemory device_memory) { return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks); }
 };
-
-gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window);
 
 #endif

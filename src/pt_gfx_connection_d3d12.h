@@ -21,11 +21,10 @@
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
 
+class gfx_connection_d3d12 *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+
 class gfx_connection_d3d12 : public gfx_connection_common
 {
-    void destroy() override;
 };
-
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window);
 
 #endif

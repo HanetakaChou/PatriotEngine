@@ -18,12 +18,7 @@
 #include <stddef.h>
 #include "pt_gfx_connection_d3d12.h"
 
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(struct wsi_iwindow *window)
+class gfx_connection_d3d12 *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     return NULL;
-}
-
-void gfx_connection_d3d12::destroy()
-{
-
 }

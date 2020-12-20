@@ -20,14 +20,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "pt_gfx_texture_common.h"
 
-class gfx_connection_common : public gfx_iconnection
+class gfx_connection_common
 {
-  
+
     //Maybe we can do the cpu side work in the calling thread?
     struct texture_read_request
     {
-        gfx_itexture *m_texture;
+        class gfx_texture_common *m_texture;
         char const *m_initial_filename;
         void *(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
         intptr_t(PT_PTR *m_input_stream_read_callback)(void *input_stream, void *buf, size_t count);
@@ -40,6 +41,16 @@ class gfx_connection_common : public gfx_iconnection
 
     texture_read_request *m_public_texture_read_request;
 
+public:
+    virtual void destroy() = 0;
+
+    virtual class gfx_texture_common *create_texture() = 0;
+
+    virtual void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) = 0;
+
+    virtual void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
+
+    virtual void wsi_on_redraw_needed_draw_and_release() = 0;
 };
 
 #endif

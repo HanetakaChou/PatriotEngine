@@ -21,24 +21,20 @@
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 
-void gfx_connection_vk::size_change_callback(void *_wsi_connection, void *_visual, void *_window, float width, float height)
+void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
 {
-    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
-    assert(m_visual == m_invalid_visual || m_visual == _visual);
-    m_wsi_connection = _wsi_connection;
-    m_visual = _visual;
-
     void *bitmap_data = static_cast<void *>(m_wsi_connection);
 }
 
-void gfx_connection_vk::draw_request_callback(void *_wsi_connection, void *_visual, void *_window)
+void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
 {
-    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
-    assert(m_visual == m_invalid_visual || m_visual == _visual);
-    m_wsi_connection = _wsi_connection;
-    m_visual = _visual;
-
     void *bitmap_data = static_cast<void *>(m_wsi_connection);
+
+}
+
+void gfx_connection_vk::wsi_on_redraw_needed_draw_and_release()
+{
+    
 }
 
 char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)
@@ -55,7 +51,6 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
 {
     return true;
 }
-
 
 char const *gfx_connection_vk::platform_swapchain_extension_name(uint32_t index)
 {

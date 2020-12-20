@@ -24,22 +24,9 @@
 #include <new>
 #include <algorithm>
 
-void *const gfx_connection_vk::m_invalid_wsi_connection = NULL;
-void *const gfx_connection_vk::m_invalid_visual = reinterpret_cast<void *>(static_cast<intptr_t>(-1));
-
-gfx_connection_vk *gfx_connection_vk_init(struct wsi_iwindow *window)
+class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
-    gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    window->listen_size_change(
-        [](void *wsi_connection, void *visual, void *window, float width, float height, void *user_data) -> void {
-            static_cast<gfx_connection_vk *>(user_data)->size_change_callback(wsi_connection, visual, window, width, height);
-        },
-        connection);
-    window->listen_draw_request(
-        [](void *wsi_connection, void *visual, void *window, void *user_data) -> void {
-            static_cast<gfx_connection_vk *>(user_data)->draw_request_callback(wsi_connection, visual, window);
-        },
-        connection);
+    class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk(wsi_connection, wsi_visual);
 
     if (connection->init())
     {
@@ -176,7 +163,7 @@ bool gfx_connection_vk::init()
         //m_queueGCT
         //m_queueC
         //m_queue_T
-    
+
         int score = 0;
         int const score_integrate_gpu = 1000;
         int const score_discrete_gpu = 1500; //1000 + 1000 > 1500
@@ -410,7 +397,7 @@ VkBool32 gfx_connection_vk::debug_report_callback(VkDebugReportFlagsEXT flags, V
 }
 #endif
 
-struct gfx_itexture *gfx_connection_vk::create_texture()
+class gfx_texture_common *gfx_connection_vk::create_texture()
 {
     gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk(this);
     return texture;

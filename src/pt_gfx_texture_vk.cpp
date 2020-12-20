@@ -37,24 +37,24 @@ void gfx_texture_vk::destroy()
 
 bool gfx_texture_vk::read_input_stream(
     char const *initial_filename,
-    gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
-    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream))
+    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
 {
-    gfx_input_stream input_stream;
+    gfx_input_stream_ref input_stream;
     {
         class gfx_input_stream_guard
         {
-            gfx_input_stream &m_input_stream;
-            void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream input_stream);
+            gfx_input_stream_ref &m_input_stream;
+            void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
 
         public:
             inline gfx_input_stream_guard(
-                gfx_input_stream &input_stream,
+                gfx_input_stream_ref &input_stream,
                 char const *initial_filename,
-                gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream))
+                gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
                 : m_input_stream(input_stream),
                   m_input_stream_destroy_callback(input_stream_destroy_callback)
             {

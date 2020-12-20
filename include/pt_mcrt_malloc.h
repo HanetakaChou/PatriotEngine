@@ -18,15 +18,14 @@
 #ifndef _PT_MCRT_MALLOC_H_
 #define _PT_MCRT_MALLOC_H_ 1
 
+#include <stddef.h>
+#include "pt_common.h"
+#include "pt_mcrt_common.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
-#include "pt_common.h"
-#include "pt_mcrt_common.h"
-
-#include <stddef.h>
 
     PT_MCRT_ATTR void *PT_CALL mcrt_malloc(size_t size);
     PT_MCRT_ATTR void *PT_CALL mcrt_calloc(size_t nobj, size_t size);

@@ -36,8 +36,8 @@ class dag_task
     int m_j;
     int m_value_top;
     int m_value_left;
-    mcrt_task m_successor_bottom;
-    mcrt_task m_successor_right;
+    mcrt_task_ref m_successor_bottom;
+    mcrt_task_ref m_successor_right;
 
     static int const value_uninit = 0xdeadbeef; //0xbaddcafe
 
@@ -46,7 +46,7 @@ class dag_task
         return reinterpret_cast<dag_task *>(user_data);
     }
 
-    static void init(mcrt_task_user_data_t *user_data, int i, int j, mcrt_task successor_bottom, mcrt_task successor_right)
+    static void init(mcrt_task_user_data_t *user_data, int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
     {
         dag_task *self = unwrap(user_data);
 
@@ -58,7 +58,7 @@ class dag_task
         self->m_successor_right = successor_right;
     }
 
-    static mcrt_task execute(mcrt_task_user_data_t *user_data)
+    static mcrt_task_ref execute(mcrt_task_user_data_t *user_data)
     {
         dag_task *self = unwrap(user_data);
 
@@ -113,7 +113,7 @@ class dag_task
         }
 
         // successor
-        mcrt_task bypass_slot = NULL;
+        mcrt_task_ref bypass_slot = NULL;
         if (NULL != self->m_successor_bottom)
         {
             tally_completion_of_predecessor(self->m_successor_bottom, &bypass_slot);
@@ -125,7 +125,7 @@ class dag_task
         return bypass_slot;
     }
 
-    static void tally_completion_of_predecessor(mcrt_task s, mcrt_task *out_bypass_slot)
+    static void tally_completion_of_predecessor(mcrt_task_ref s, mcrt_task_ref *out_bypass_slot)
     {
         // tally_completion_of_predecessor
         // SchedulerTraits::has_slow_atomic
@@ -158,9 +158,9 @@ class dag_task
     }
 
 public:
-    static mcrt_task allocate_root(int i, int j, mcrt_task successor_bottom, mcrt_task successor_right)
+    static mcrt_task_ref allocate_root(int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
     {
-        mcrt_task t = mcrt_task_allocate_root(execute);
+        mcrt_task_ref t = mcrt_task_allocate_root(execute);
         init(mcrt_task_user_data(t), i, j, successor_bottom, successor_right);
         return t;
     }
@@ -169,16 +169,16 @@ static_assert(sizeof(dag_task) <= sizeof(mcrt_task_user_data_t), "sizeof(dag_tas
 
 class dummy_task
 {
-    static mcrt_task execute(mcrt_task_user_data_t *user_data)
+    static mcrt_task_ref execute(mcrt_task_user_data_t *user_data)
     {
         assert(false); //Must never get here
         return NULL;
     }
 
 public:
-    static mcrt_task allocate_root()
+    static mcrt_task_ref allocate_root()
     {
-        mcrt_task t = mcrt_task_allocate_root(execute);
+        mcrt_task_ref t = mcrt_task_allocate_root(execute);
         return t;
     }
 };
@@ -188,14 +188,14 @@ int main(int argc, char **argv)
 {
     int const M = 4;
     int const N = 5;
-    mcrt_task x[M][N];
+    mcrt_task_ref x[M][N];
 
     for (int i = (M - 1); i >= 0; --i)
     {
         for (int j = (N - 1); j >= 0; --j)
         {
-            mcrt_task successor_bottom = ((i + 1) < M) ? x[i + 1][j] : NULL;
-            mcrt_task successor_right = ((j + 1) < N) ? x[i][j + 1] : NULL;
+            mcrt_task_ref successor_bottom = ((i + 1) < M) ? x[i + 1][j] : NULL;
+            mcrt_task_ref successor_right = ((j + 1) < N) ? x[i][j + 1] : NULL;
             x[i][j] = dag_task::allocate_root(i, j, successor_bottom, successor_right);
             int predecessor_top = (i > 0) ? 1 : 0;
             int predecessor_left = (j > 0) ? 1 : 0;
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
         }
     }
 
-    mcrt_task real_root = dummy_task::allocate_root();
+    mcrt_task_ref real_root = dummy_task::allocate_root();
     mcrt_task_set_parent(x[M - 1][N - 1], real_root);
     mcrt_task_set_ref_count(real_root, 2);
     mcrt_task_spawn_and_wait_for_all(real_root, x[0][0]);

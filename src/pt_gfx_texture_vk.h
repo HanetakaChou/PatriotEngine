@@ -34,10 +34,10 @@ class gfx_texture_vk : public gfx_texture_common
 
     bool read_input_stream(
         char const *initial_filename,
-        gfx_input_stream(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream input_stream, int64_t offset, int whence),
-        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream input_stream)) override;
+        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
     struct specific_header_vk_t
     {

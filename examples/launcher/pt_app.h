@@ -18,7 +18,6 @@
 #ifndef _PT_APP_MAIN_H_
 #define _PT_APP_MAIN_H_ 1
 
-#include <pt_wsi_window.h>
 #include <pt_gfx_connection.h>
 
 struct app_iwindow
@@ -46,6 +45,6 @@ struct app_iwindow
     virtual void mark_app_has_quit() = 0;
 };
 
-void app_init(struct app_iwindow *input, struct gfx_iconnection *connection);
+void app_init(struct app_iwindow *input, gfx_connection_ref gfx_connection);
 
 #endif
