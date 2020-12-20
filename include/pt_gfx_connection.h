@@ -59,11 +59,11 @@ extern "C"
     // MTKViewDelegate::drawInMTKView
 
     // usage
-    // on_redraw_needed
-    // app update scenetree //maybe in other thread //not depend on accurate time
-    // gfx acquire //sync and flatten scenetree //then frame throttling
-    // app update time-related (animation etc) //frame throttling make the time here less latency //scenetree modify will impact on the next frame
-    // gfx release //draw and present //draw //not sync scenetree
+    // [current thread] app on_redraw_needed //drawInMTKView //onNativeWindowRedrawNeeded 
+    // [arbitrary thread] app update info which doesn't depend on accurate time ( scenetree etc ) //app may update in other threads 
+    // [current thread] app call gfx acquire //gfx sync ( from other threads ) and flatten scenetree //and then gfx frame throttling
+    // [current thread] app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree update here (include update from other threads) is ignored in current frame and to impact on the next frame
+    // [current thread] app call gfx release //gfx draw and present //gfx not sync scenetree here
 
     // the gfx module may use the given window to recreate the swapchain
     // frame throttling

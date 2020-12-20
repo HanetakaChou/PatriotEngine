@@ -50,11 +50,11 @@ However, the user may tweak the "create / destory" strategy of the mesh / hair /
     gfx_connection_wsi_on_resized
 
     // usage
-    // app on_redraw_needed
-    // app update info which doesn't depend on accurate time ( scenetree etc ) //maybe update in other threads 
-    // app call gfx acquire //gfx sync and flatten scenetree //and then gfx frame throttling
-    // app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree modification here will impact on the next frame
-    // app call gfx release //gfx draw and present //gfx not sync scenetree here
+    // [current thread] app on_redraw_needed //drawInMTKView //onNativeWindowRedrawNeeded 
+    // [arbitrary thread] app update info which doesn't depend on accurate time ( scenetree etc ) //app may update in other threads 
+    // [current thread] app call gfx acquire //gfx sync ( from other threads ) and flatten scenetree //and then gfx frame throttling
+    // [current thread] app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree update here (include update from other threads) is ignored in current frame and to impact on the next frame
+    // [current thread] app call gfx release //gfx draw and present //gfx not sync scenetree here
     gfx_connection_wsi_on_redraw_needed_acquire
     gfx_connection_wsi_on_redraw_needed_release
 ```   
