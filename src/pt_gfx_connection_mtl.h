@@ -21,10 +21,10 @@
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
 
-class gfx_connection_mtl *gfx_connection_mtl_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
-
 class gfx_connection_mtl : public gfx_connection_common
 {
+public:
+    static class gfx_connection_mtl *init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 };
 
 #endif

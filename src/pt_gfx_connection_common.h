@@ -22,7 +22,6 @@
 #include <stdint.h>
 #include "pt_gfx_texture_common.h"
 
-
 class gfx_connection_proxy
 {
     //channel buffer
@@ -31,7 +30,7 @@ class gfx_connection_proxy
 class gfx_connection_common
 {
 
-    // proxy -> stub 
+    // proxy -> stub
     // https://docs.microsoft.com/en-us/windows/win32/com/proxy
     // https://docs.microsoft.com/en-us/windows/win32/com/stub
 
@@ -55,6 +54,8 @@ class gfx_connection_common
     texture_read_request *m_public_texture_read_request;
 
 public:
+    static class gfx_connection_common *init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+
     virtual void destroy() = 0;
 
     virtual class gfx_texture_common *create_texture() = 0;
