@@ -25,12 +25,12 @@
 #define PT_GCC 1
 
 //Platform
-#define PT_POSIX 1
-
 #if defined(__linux__)
+#define PT_POSIX 1
 #define PT_POSIX_LINUX 1
 #elif defined(__MACH__)
 //https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
+#define PT_POSIX 1
 #define PT_POSIX_MACH 1
 #else
 #error Unknown Platform
@@ -52,9 +52,8 @@
 //Module
 #define PT_CALL
 #define PT_PTR
-//#define PT_ATTR
-#define PT_IMPORT
-#define PT_EXPORT __attribute__((visibility("default")))
+#define PT_ATTR_IMPORT
+#define PT_ATTR_EXPORT __attribute__((visibility("default")))
 
 //Likely
 #define PT_LIKELY(x) __builtin_expect(!!(x), 1)
@@ -66,23 +65,14 @@
 #define PT_MSVC 1
 
 //Platform
+#if defined(_WINRT_DLL)
 #define PT_WIN32 1
-
-#if defined(WINAPI_FAMILY_APP) || defined(WINAPI_FAMILY_DESKTOP_APP)
-//Has Include <winapifamily.h>
-#if (WINAPI_FAMILY == WINAPI_FAMILY_DESKTOP_APP)
-#define PT_WIN32_DESKTOP 1
-#elif (WINAPI_FAMILY == WINAPI_FAMILY_APP)
 #define PT_WIN32_RUNTIME 1
-#endif
-#else
-//Has Not Include <winapifamily.h>
-#if defined(WINAPI_FAMILY)
-//WINAPI_FAMILY=WINAPI_FAMILY_APP
-#define PT_WIN32_RUNTIME 1
-#else
+#elif defined(_WIN32) || defined(_WIN64)
+#define PT_WIN32 1
 #define PT_WIN32_DESKTOP 1
-#endif
+#else
+#error Unknown Platform
 #endif
 
 //Architecture
@@ -101,9 +91,8 @@
 //Module
 #define PT_CALL __stdcall
 #define PT_PTR __stdcall
-//#define PT_ATTR
-#define PT_IMPORT __declspec(dllimport)
-#define PT_EXPORT __declspec(dllexport)
+#define PT_ATTR_IMPORT __declspec(dllimport)
+#define PT_ATTR_EXPORT __declspec(dllexport)
 
 //Likely
 #define PT_LIKELY(x) (!!(x))

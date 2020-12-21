@@ -20,8 +20,8 @@
 
 #include "pt_common.h"
 
-#ifndef PT_MCRT_ATTR
-#define PT_MCRT_ATTR PT_IMPORT
+#ifndef PT_ATTR_MCRT
+#define PT_ATTR_MCRT PT_ATTR_IMPORT
 #endif
 
 #endif

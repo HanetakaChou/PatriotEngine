@@ -20,8 +20,8 @@
 
 #include "pt_common.h"
 
-#ifndef PT_GFX_ATTR
-#define PT_GFX_ATTR PT_IMPORT
+#ifndef PT_ATTR_GFX
+#define PT_ATTR_GFX PT_ATTR_IMPORT
 #endif
 
 #endif

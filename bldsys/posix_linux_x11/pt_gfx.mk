@@ -30,7 +30,7 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
-LOCAL_CFLAGS += -DPT_GFX_ATTR=PT_EXPORT
+LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
 	
 LOCAL_CPPFLAGS += -std=c++11
 
@@ -65,7 +65,7 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
-LOCAL_CFLAGS += -DPT_GFX_ATTR=PT_EXPORT
+LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
 	
 LOCAL_CPPFLAGS += -std=c++11
 
@@ -108,7 +108,7 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
-LOCAL_CFLAGS += -DPT_GFX_ATTR=PT_EXPORT
+LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
 	
 LOCAL_CPPFLAGS += -std=c++11
 

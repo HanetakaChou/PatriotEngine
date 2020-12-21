@@ -28,7 +28,7 @@
 #else
 #endif
 
-PT_MCRT_ATTR bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
     rte_memcpy(dest, src, count);
     return true;

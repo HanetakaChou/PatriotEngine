@@ -44,15 +44,15 @@ extern "C"
 {
 #endif
 
-    PT_GFX_ATTR gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+    PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
-    PT_GFX_ATTR void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
 
-    PT_GFX_ATTR gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
-    PT_GFX_ATTR void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
 
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
@@ -66,10 +66,10 @@ extern "C"
 
     // the gfx module may use the given window to recreate the swapchain
     // frame throttling
-    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
-    PT_GFX_ATTR void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
+    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
-    PT_GFX_ATTR bool gfx_texture_read_input_stream(
+    PT_ATTR_GFX bool gfx_texture_read_input_stream(
         gfx_texture_ref texture,
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
@@ -77,7 +77,7 @@ extern "C"
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
 
-    PT_GFX_ATTR void gfx_texture_destroy(gfx_texture_ref texture);
+    PT_ATTR_GFX void gfx_texture_destroy(gfx_texture_ref texture);
 
 #ifdef __cplusplus
 }
