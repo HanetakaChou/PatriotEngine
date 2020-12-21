@@ -35,8 +35,13 @@ LOCAL_CFLAGS += -DPT_MCRT_ATTR=PT_EXPORT
 	
 LOCAL_CPPFLAGS += -std=c++11
 
+#-mavx2
+#-mssse3
+ifeq (x86_64,$(TARGET_ARCH))
+LOCAL_CFLAGS += -mavx512f 
+endif
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_CFLAGS += -mssse3
+LOCAL_CFLAGS += -mavx512f 
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)

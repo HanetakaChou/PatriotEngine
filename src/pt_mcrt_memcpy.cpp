@@ -15,12 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#include <pt_common.h>
+#include <pt_mcrt_common.h>
 #include <pt_mcrt_memcpy.h>
 
-#include <string.h>
+#if defined(PT_X64) || defined(PT_X86)
+#include "pt_mcrt_memcpy_dpdk_rte_eal_x86_rte_memcpy.h"
+#elif defined(PT_ARM64)
+#include "pt_mcrt_memcpy_dpdk_rte_eal_arm_rte_memcpy_64.h"
+#elif defined(PT_ARM)
+#include "pt_mcrt_memcpy_dpdk_rte_eal_arm_rte_memcpy_32.h"
+#else
+#endif
 
 PT_MCRT_ATTR bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    memcpy(dest, src, count);
+    rte_memcpy(dest, src, count);
     return true;
 }

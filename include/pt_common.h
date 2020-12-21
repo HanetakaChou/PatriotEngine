@@ -18,7 +18,49 @@
 #ifndef _PT_COMMON_H_
 #define _PT_COMMON_H_ 1
 
-#if defined(_MSC_VER) //Compiler
+#if defined(__GNUC__) 
+//https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+
+//Compiler
+#define PT_GCC 1
+
+//Platform
+#define PT_POSIX 1
+
+#if defined(__linux__)
+#define PT_POSIX_LINUX 1
+#elif defined(__MACH__)
+//https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
+#define PT_POSIX_MACH 1
+#else
+#error Unknown Platform
+#endif
+
+//Architecture //Mach-O Support Universal Binary, We Must Depend On The Compiler Predefined Macros To Infer The Architecture.
+#if defined(__x86_64__)
+#define PT_X64 1 //Compiler May Define Both __x86_64__ and __i386__ Because Of Bugs.
+#elif defined(__i386__)
+#define PT_X86 1
+#elif defined(__aarch64__)
+#define PT_ARM64 1
+#elif defined(__arm__)
+#define PT_ARM 1
+#else
+#error Unknown Architecture
+#endif
+
+//Module
+#define PT_CALL
+#define PT_PTR
+//#define PT_ATTR
+#define PT_IMPORT
+#define PT_EXPORT __attribute__((visibility("default")))
+
+//Likely
+#define PT_LIKELY(x) __builtin_expect(!!(x), 1)
+#define PT_UNLIKELY(x) __builtin_expect(!!(x), 0)
+
+#elif defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 
 #define PT_MSVC 1
@@ -66,47 +108,6 @@
 //Likely
 #define PT_LIKELY(x) (!!(x))
 #define PT_UNLIKELY(x) (!!(x))
-
-#elif defined(__GNUC__)
-//https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-
-#define PT_GCC 1
-
-//Platform
-#define PT_POSIX 1
-
-#if defined(__linux__)
-#define PT_POSIX_LINUX 1
-#elif defined(__MACH__)
-//https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
-#define PT_POSIX_MACH 1
-#else
-#error Unknown Platform
-#endif
-
-//Architecture //Mach-O Support Universal Binary, We Must Depend On The Compiler Predefined Macros To Infer The Architecture.
-#if defined(__x86_64__)
-#define PT_X64 1 //Compiler May Define Both __x86_64__ and __i386__ Because Of Bugs.
-#elif defined(__i386__)
-#define PT_X86 1
-#elif defined(__aarch64__)
-#define PT_ARM64 1
-#elif defined(__arm__)
-#define PT_ARM 1
-#else
-#error Unknown Architecture
-#endif
-
-//Module
-#define PT_CALL
-#define PT_PTR
-//#define PT_ATTR
-#define PT_IMPORT
-#define PT_EXPORT __attribute__((visibility("default")))
-
-//Likely
-#define PT_LIKELY(x) __builtin_expect(!!(x), 1)
-#define PT_UNLIKELY(x) __builtin_expect(!!(x), 0)
 
 #else
 #error Unknown Compiler

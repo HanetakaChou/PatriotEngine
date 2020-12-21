@@ -22,8 +22,21 @@
 #include <stdint.h>
 #include "pt_gfx_texture_common.h"
 
+
+class gfx_connection_proxy
+{
+    //channel buffer
+};
+
 class gfx_connection_common
 {
+
+    // proxy -> stub 
+    // https://docs.microsoft.com/en-us/windows/win32/com/proxy
+    // https://docs.microsoft.com/en-us/windows/win32/com/stub
+
+    // https://en.wikipedia.org/wiki/Distributed_object_communication
+    // proxy/stub -> skeleton
 
     //Maybe we can do the cpu side work in the calling thread?
     struct texture_read_request
