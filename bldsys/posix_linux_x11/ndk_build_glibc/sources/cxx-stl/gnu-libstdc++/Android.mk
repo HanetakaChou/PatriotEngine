@@ -18,16 +18,16 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := pt_gnu_libstdcxx_static_fake
-LOCAL_SRC_FILES := $(LOCAL_PATH)/gnu_libstdcxx_static_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -static-libgcc -static-libstdc++ 
+LOCAL_MODULE := libpt_gnu_stdcxx_static
+LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_gnu_stdcxx_fake.cpp
+LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
 LOCAL_EXPORT_LDFLAGS := -static-libgcc -static-libstdc++
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := pt_gnu_libstdcxx_shared_fake
-LOCAL_SRC_FILES := $(LOCAL_PATH)/gnu_libstdcxx_static_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0 -static-libgcc -static-libstdc++ 
+LOCAL_MODULE := libpt_gnu_stdcxx_shared
+LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_gnu_stdcxx_fake.cpp
+LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
 LOCAL_EXPORT_LDFLAGS := -static-libgcc -static-libstdc++
 include $(BUILD_STATIC_LIBRARY)
 

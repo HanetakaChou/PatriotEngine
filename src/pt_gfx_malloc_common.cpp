@@ -122,6 +122,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     VmaBlockVector::CalcMaxBlockSize // max existing block
 //     newBlockSize = 1/8 1/4 1/2 m_PreferredBlockSize
 //     VmaBlockVector::CreateBlock 
+//      VmaAllocator_T::AllocateVulkanMemory //estimate buget
 
 // slob
 
