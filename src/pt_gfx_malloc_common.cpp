@@ -116,7 +116,8 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     early reject //larger than maximum block size
 //     // can become lost //can make other lost // set by user?
 //     // m_Algorithm + VmaAllocationCreateInfo.flags & STRATEGY_MASK -> the algorithm
-//     VmaBlockVector::AllocateFromBlock //best fit
+//     VmaBlockVector::AllocateFromBlock //best fit //1. Search existing allocations. Try to allocate without making other allocations lost.
+//     VmaBlockVector::CreateBlock // 2. Try to create new block.
 
 // slob
 
