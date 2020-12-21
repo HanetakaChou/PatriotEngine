@@ -38,6 +38,9 @@
 // VmaAllocator_T::GetBudget
 //  check m_OperationsSinceBudgetFetch
 // we are not alone ?
+// VmaAllocator_T::AllocateVulkanMemory
+//  ++m_OperationsSinceBudgetFetch
+
 
 // github
 // vulkaninfo "usable for"  
@@ -122,7 +125,10 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     VmaBlockVector::CalcMaxBlockSize // max existing block
 //     newBlockSize = 1/8 1/4 1/2 m_PreferredBlockSize
 //     VmaBlockVector::CreateBlock 
-//      VmaAllocator_T::AllocateVulkanMemory //estimate buget
+//      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic) 
+//      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory
+//       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy
+//       VmaSuballocation
 
 // slob
 
