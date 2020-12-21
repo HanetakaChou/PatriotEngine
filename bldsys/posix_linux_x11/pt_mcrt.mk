@@ -25,8 +25,8 @@ LOCAL_MODULE := libpt_mcrt
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -35,13 +35,14 @@ LOCAL_CFLAGS += -DPT_MCRT_ATTR=PT_EXPORT
 	
 LOCAL_CPPFLAGS += -std=c++11
 
+#-mavx512f 
 #-mavx2
 #-mssse3
 ifeq (x86_64,$(TARGET_ARCH))
-LOCAL_CFLAGS += -mavx512f 
+LOCAL_CFLAGS += -mavx2 
 endif
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_CFLAGS += -mavx512f 
+LOCAL_CFLAGS += -mavx2 
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
@@ -56,3 +57,5 @@ LOCAL_SHARED_LIBRARIES := libpt_tbbmalloc libpt_irml libpt_tbb
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
+
+

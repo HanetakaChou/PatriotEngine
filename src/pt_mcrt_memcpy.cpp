@@ -20,11 +20,11 @@
 #include <pt_mcrt_memcpy.h>
 
 #if defined(PT_X64) || defined(PT_X86)
-#include "pt_mcrt_memcpy_dpdk_rte_eal_x86_rte_memcpy.h"
+#include "pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h"
 #elif defined(PT_ARM64)
-#include "pt_mcrt_memcpy_dpdk_rte_eal_arm_rte_memcpy_64.h"
+#include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
 #elif defined(PT_ARM)
-#include "pt_mcrt_memcpy_dpdk_rte_eal_arm_rte_memcpy_32.h"
+#include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h"
 #else
 #endif
 

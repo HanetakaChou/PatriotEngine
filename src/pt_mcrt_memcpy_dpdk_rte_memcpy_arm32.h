@@ -4,12 +4,12 @@
 
 /** @file lib/librte_eal/arm/include/rte_memcpy_32.h */
 
-#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_EAL_ARM_RTE_MEMCPY_32_H_
-#define _PT_MCRT_MEMCPY_DPDK_RTE_EAL_ARM_RTE_MEMCPY_32_H_ 1
+#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM32_H_
+#define _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM32_H_ 1
 
 #include <stdint.h>
 #include <arm_neon.h>
-#include "pt_mcrt_memcpy_dpdk_rte_eal_rte_common.h"
+#include "pt_mcrt_memcpy_dpdk_rte_common.h"
 
 static __rte_always_inline void rte_mov16(uint8_t *dst, const uint8_t *src)
 {

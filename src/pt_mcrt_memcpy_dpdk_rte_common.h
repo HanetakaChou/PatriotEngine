@@ -5,8 +5,8 @@
 
 /** @file lib/librte_eal/include/rte_common.h */
 
-#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_EAL_RTE_COMMON_H_
-#define _PT_MCRT_MEMCPY_DPDK_RTE_EAL_RTE_COMMON_H_ 1
+#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_COMMON_H_
+#define _PT_MCRT_MEMCPY_DPDK_RTE_COMMON_H_ 1
 
 #if defined(__GNUC__)
 
