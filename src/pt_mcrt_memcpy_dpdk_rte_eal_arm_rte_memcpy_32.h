@@ -8,18 +8,15 @@
 #define _PT_MCRT_MEMCPY_DPDK_RTE_EAL_ARM_RTE_MEMCPY_32_H_ 1
 
 #include <stdint.h>
-
-/* ARM NEON Intrinsics are used to copy data */
 #include <arm_neon.h>
+#include "pt_mcrt_memcpy_dpdk_rte_eal_rte_common.h"
 
-static inline void
-rte_mov16(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov16(uint8_t *dst, const uint8_t *src)
 {
     vst1q_u8(dst, vld1q_u8(src));
 }
 
-static inline void
-rte_mov32(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov32(uint8_t *dst, const uint8_t *src)
 {
     asm volatile(
         "vld1.8 {d0-d3}, [%0]\n\t"
@@ -29,8 +26,7 @@ rte_mov32(uint8_t *dst, const uint8_t *src)
         : "memory", "d0", "d1", "d2", "d3");
 }
 
-static inline void
-rte_mov48(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov48(uint8_t *dst, const uint8_t *src)
 {
     asm volatile(
         "vld1.8 {d0-d3}, [%0]!\n\t"
@@ -42,8 +38,7 @@ rte_mov48(uint8_t *dst, const uint8_t *src)
         : "memory", "d0", "d1", "d2", "d3", "d4", "d5");
 }
 
-static inline void
-rte_mov64(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov64(uint8_t *dst, const uint8_t *src)
 {
     asm volatile(
         "vld1.8 {d0-d3}, [%0]!\n\t"
@@ -55,8 +50,7 @@ rte_mov64(uint8_t *dst, const uint8_t *src)
         : "memory", "d0", "d1", "d2", "d3", "d4", "d5", "d6", "d7");
 }
 
-static inline void
-rte_mov128(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov128(uint8_t *dst, const uint8_t *src)
 {
     asm volatile("pld [%0, #64]"
                  :
@@ -76,8 +70,7 @@ rte_mov128(uint8_t *dst, const uint8_t *src)
           "d8", "d9", "d10", "d11", "d12", "d13", "d14", "d15");
 }
 
-static inline void
-rte_mov256(uint8_t *dst, const uint8_t *src)
+static __rte_always_inline void rte_mov256(uint8_t *dst, const uint8_t *src)
 {
     asm volatile("pld [%0,  #64]"
                  :
@@ -128,8 +121,7 @@ rte_mov256(uint8_t *dst, const uint8_t *src)
 #define rte_memcpy(dst, src, n) \
     __extension__({ (__builtin_constant_p(n)) ? memcpy((dst), (src), (n)) : rte_memcpy_func((dst), (src), (n)); })
 
-static inline void *
-rte_memcpy_func(void *dst, const void *src, size_t n)
+static __rte_always_inline void *rte_memcpy_func(void *dst, const void *src, size_t n)
 {
     void *ret = dst;
 

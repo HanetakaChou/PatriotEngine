@@ -7,8 +7,13 @@
 #ifndef _PT_MCRT_MEMCPY_DPDK_RTE_EAL_ARM_RTE_MEMCPY_64_H_
 #define _PT_MCRT_MEMCPY_DPDK_RTE_EAL_ARM_RTE_MEMCPY_64_H_ 1
 
+/** @file config/arm/meson.build */
 #define RTE_CACHE_LINE_SIZE 64
+#define RTE_ARM64_MEMCPY_ALIGNED_THRESHOLD 2048
+#define RTE_ARM64_MEMCPY_UNALIGNED_THRESHOLD 512
 
+#include <stdint.h>
+#include <arm_neon.h>
 #include "pt_mcrt_memcpy_dpdk_rte_eal_rte_common.h"
 
 /*
