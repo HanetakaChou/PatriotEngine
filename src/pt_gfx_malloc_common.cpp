@@ -123,12 +123,20 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     VmaBlockVector::AllocateFromBlock //best fit 
 //     2. Try to create new block.
 //     VmaBlockVector::CalcMaxBlockSize // max existing block
-//     newBlockSize = 1/8 1/4 1/2 m_PreferredBlockSize
+//     newBlockSize = m_PreferredBlockSize //if fail try 1/8 1/4 1/2 
 //     VmaBlockVector::CreateBlock 
 //      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic) 
-//      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory
-//       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy
-//       VmaSuballocation
+//      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory // VmaDeviceMemoryBlock::Map 在block的层级控制map
+//       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy //Block 1to1 BlockMetadata //maybe Block is more public while BlockMetadata is more internal
+//       whole_size -> VmaSuballocation (offset size) //VMA_SUBALLOCATION_TYPE: free(not in used) / buffer / image -> VmaIsBufferImageGranularityConflict
+//       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
+//     VmaBlockVector::AllocateFromBlock
+//      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request 
+//       m_SumFreeSize -> early return
+//       VmaBinaryFindFirstNotLess //can move the check bufferImageGranularity here
+//       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"  
+
+// VmaAllocator_T::FlushOrInvalidateAllocation
 
 // slob
 

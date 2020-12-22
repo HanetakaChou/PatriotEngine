@@ -27,14 +27,13 @@
 class gfx_connection_vk *gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk(wsi_connection, wsi_visual);
-
     if (connection->init())
     {
         return connection;
     }
     else
     {
-        mcrt_free(connection);
+        connection->destroy();
         return NULL;
     }
 }

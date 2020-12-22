@@ -57,10 +57,39 @@ class gfx_texture_vk : public gfx_texture_common
 
     static inline uint32_t calc_subresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
 
+    //https://source.winehq.org/git/vkd3d.git/
+    //libs/vkd3d/device.c
+    //d3d12_device_GetCopyableFootprints
+    //libs/vkd3d/utils.c
+    //vkd3d_formats
     static inline size_t get_copyable_footprints(
         struct specific_header_vk_t const *specific_header_vk,
         VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
         size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
+
+    struct vk_rgba_format_info_t
+    {
+        uint32_t pixel_bytes;
+    };
+    static struct vk_rgba_format_info_t const vk_rgba_format_info_table[(VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 - VK_FORMAT_R4G4_UNORM_PACK8) + 1];
+
+    struct vk_depth_stencil_format_info_t
+    {
+        uint32_t depth_bytes;
+        uint32_t stencil_bytes;
+    };
+    static struct vk_depth_stencil_format_info_t const vk_depth_stencil_format_info_table[(VK_FORMAT_D32_SFLOAT_S8_UINT - VK_FORMAT_D16_UNORM) + 1];
+    static_assert(VK_FORMAT_D16_UNORM == (VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 + 1), "VK_FORMAT_D16_UNORM == (VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 + 1)");
+
+    struct vk_compressed_format_info_t
+    {
+        uint32_t compressed_block_width;
+        uint32_t compressed_block_height;
+        uint32_t compressed_block_depth;
+        uint32_t compressed_block_size_in_bytes;
+    };
+    static struct vk_compressed_format_info_t const vk_compressed_format_info_table[(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_BC1_RGB_UNORM_BLOCK) + 1];
+    static_assert(VK_FORMAT_BC1_RGB_UNORM_BLOCK == (VK_FORMAT_D32_SFLOAT_S8_UINT + 1), "VK_FORMAT_BC1_RGB_UNORM_BLOCK == (VK_FORMAT_D32_SFLOAT_S8_UINT + 1)");
 
     struct vulkan_format_info_t
     {
@@ -86,9 +115,8 @@ class gfx_texture_vk : public gfx_texture_common
             } compressed;
         };
     };
-
-    static struct vulkan_format_info_t const vulkan_format_info_table[VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1];
-    static_assert((VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])), "(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0]))");
+    static struct vulkan_format_info_t const vulkan_format_info_table[(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED) + 1];
+    static_assert(((VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED) + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])), "(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0]))");
 
     static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 
