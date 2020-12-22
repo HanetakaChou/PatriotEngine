@@ -23,30 +23,16 @@
 
 if test \( $# -ne 1 \);
 then
-    echo "Usage: build.sh platform"
+    echo "Usage: build.sh arch"
     echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
-    echo ""
-    exit 1
-fi
-
-if test ! \( \( \( -n "$1" \) -a \( "$1" = "x86" \) \) -o \( \( -n "$1" \) -a \( "$1" = "x64" \) \) \);
-then
-    echo "The platform \"$1\" is not supported!"
-    echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
+    echo "Archs:"
+    echo "  x86     -   build with the x86 arch"
+    echo "  x64     -   build with the x64 arch"
     echo ""
     exit 1
 fi
 
-
-
-if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);
-then
+if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     yum install glibc-devel.i686
     yum install libstdc++-devel.i686
     yum install libstdc++-static.i686
@@ -58,8 +44,7 @@ then
     yum install gcc-c++
     yum install clang
     yum install chrpath
-elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);
-then
+elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     yum install glibc-devel
     yum install libstdc++-devel
     yum install libstdc++-static
@@ -76,4 +61,12 @@ then
     yum install gcc-c++
     yum install clang
     yum install chrpath
+else
+    echo "The arch \"$1\" is not supported!"
+    echo ""
+    echo "Archs:"
+    echo "  x86     -   build with the x86 arch"
+    echo "  x64     -   build with the x64 arch"
+    echo ""
+    exit 1
 fi

@@ -23,30 +23,16 @@
 
 if test \( $# -ne 1 \);
 then
-    echo "Usage: build.sh platform"
+    echo "Usage: build.sh arch"
     echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
-    echo ""
-    exit 1
-fi
-
-if test ! \( \( \( -n "$1" \) -a \( "$1" = "x86" \) \) -o \( \( -n "$1" \) -a \( "$1" = "x64" \) \) \);
-then
-    echo "The platform \"$1\" is not supported!"
-    echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
+    echo "Archs:"
+    echo "  x86     -   build with the x86 arch"
+    echo "  x64     -   build with the x64 arch"
     echo ""
     exit 1
 fi
 
-
-
-if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);
-then
+if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt install gcc
     apt install g++
     apt install clang
@@ -63,8 +49,7 @@ then
     apt install libvulkan1:i386
     apt install mesa-vulkan-drivers:i386
     apt install libvulkan-dev:i386
-elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);
-then
+elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
     apt install libgcc-5-dev
     apt install libstdc++-5-dev
@@ -79,6 +64,14 @@ then
     apt install g++
     apt install clang
     apt install chrpath
+else
+    echo "The arch \"$1\" is not supported!"
+    echo ""
+    echo "Archs:"
+    echo "  x86     -   build with the x86 arch"
+    echo "  x64     -   build with the x64 arch"
+    echo ""
+    exit 1
 fi
 
 
