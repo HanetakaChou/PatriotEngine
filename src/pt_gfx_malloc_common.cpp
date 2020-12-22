@@ -114,6 +114,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //   memorytypeindex-> VmaBlockVector  
 //   VmaBlockVector::Allocate                    
 //    corruption detection ?
+//    VmaMutexLockWrite lock //we may asset?
 //    VmaBlockVector::AllocatePage
 //     VmaAllocator_T::GetBudget->freeMemory(size)->canCreateNewBlock
 //     early reject //larger than maximum block size
@@ -126,7 +127,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     newBlockSize =  1/8 1/4 1/2 m_PreferredBlockSize //if fail try 1/2 1/4 1/8 
 //     VmaBlockVector::CreateBlock 
 //      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic) 
-//      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory // VmaDeviceMemoryBlock::Map 在block的层级控制map
+//      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory // VmaDeviceMemoryBlock::Map 在block的层级控制map //refcount
 //       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy //Block 1to1 BlockMetadata //maybe Block is more public while BlockMetadata is more internal
 //       whole_size -> VmaSuballocation (offset size) //VMA_SUBALLOCATION_TYPE: free(not in used) / buffer / image -> VmaIsBufferImageGranularityConflict
 //       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
@@ -151,6 +152,27 @@ This, however, does not imply that they interpret the contents of the bound memo
 //      VmaBlockMetadata_Generic::Validate()
 //      m_Budget.AddAllocation
 //      FillDebugPattern
+
+// VmaAllocation_T //public data structure //can be omitted?
+// VmaSuballocation internal data structure
+
+// vmaDestroyBuffer
+//  VmaAllocator_T::FreeMemory
+//   TouchAllocation //update m_LastUseFrameIndex
+//   retrieve blockvector //via pool
+//   VmaBlockVector::Free
+//     update budget
+//     //VmaMutexLockWrite lock //we may asset?
+//     VmaDeviceMemoryBlock::unmap //refcount
+//     VmaBlockMetadata_Generic::Free
+//      VmaBlockMetadata_Generic::FreeSuballocation
+//       UnregisterFreeSuballocation
+//       MergeFreeWithNext
+//       RegisterFreeSuballocation
+//     check empty
+//     remove block
+//     UpdateHasEmptyBlock
+//     IncrementallySortBlocks
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
