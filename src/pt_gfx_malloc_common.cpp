@@ -123,18 +123,34 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     VmaBlockVector::AllocateFromBlock //best fit 
 //     2. Try to create new block.
 //     VmaBlockVector::CalcMaxBlockSize // max existing block
-//     newBlockSize = m_PreferredBlockSize //if fail try 1/8 1/4 1/2 
+//     newBlockSize =  1/8 1/4 1/2 m_PreferredBlockSize //if fail try 1/2 1/4 1/8 
 //     VmaBlockVector::CreateBlock 
 //      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic) 
 //      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory // VmaDeviceMemoryBlock::Map 在block的层级控制map
 //       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy //Block 1to1 BlockMetadata //maybe Block is more public while BlockMetadata is more internal
 //       whole_size -> VmaSuballocation (offset size) //VMA_SUBALLOCATION_TYPE: free(not in used) / buffer / image -> VmaIsBufferImageGranularityConflict
 //       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
-//     VmaBlockVector::AllocateFromBlock
-//      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request 
+//     VmaBlockVector::AllocateFromBlock //VmaDeviceMemoryBlock 1-1 VmaBlockMetadata(_Generic)
+//      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request (offset sumFreeSize(the size of VmaSuballocation) item(the VmaSuballocation)) 
 //       m_SumFreeSize -> early return
 //       VmaBinaryFindFirstNotLess //can move the check bufferImageGranularity here
 //       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"  
+//       "canMakeOtherLost"
+//       new VmaAllocation_T (just alloc memory of VmaAllocation) //use VmaAllocationObjectAllocator/VmaPoolAllocator //may be replaced by tbbmalloc
+//       VmaAllocation_T::Ctor currentFrameIndex
+//       VmaBlockMetadata_Generic::Alloc //use VmaAllocationRequest and VmaAllocation_T to update data of VmaBlock // VmaSuballocation.hAllocation=VmaAllocation_T //not update VmaAllocation_T
+//        VmaBlockMetadata_Generic::UnregisterFreeSuballocation
+//         VmaVectorRemove //waste time? //shall we replace the vector(m_FreeSuballocationsBySize) by other containers?
+//        VmaBlockMetadata_Generic::RegisterFreeSuballocation(paddingEnd) //
+//         ValidateFreeSuballocationList //check the sort
+//         VmaVectorInsertSorted //sort
+//        VmaBlockMetadata_Generic::RegisterFreeSuballocation(paddingBegin) 
+//        update early out cache (m_SumFreeSize)
+//      VmaBlockVector::UpdateHasEmptyBlock
+//      VmaAllocation_T::InitBlockAllocation //update VmaAllocation_T //m_BlockAllocation / m_Dedicate
+//      VmaBlockMetadata_Generic::Validate()
+//      m_Budget.AddAllocation
+//      FillDebugPattern
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
