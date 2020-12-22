@@ -2,7 +2,7 @@
 #!/bin/bash
 
 #
-# Copyright (C) YuqiaoZhang(HanetakaYuminaga)
+# Copyright (C) YuqiaoZhang張羽喬(HanetakaYuminaga弓長羽高)
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published
