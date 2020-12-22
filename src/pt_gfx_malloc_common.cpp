@@ -170,9 +170,10 @@ This, however, does not imply that they interpret the contents of the bound memo
 //       MergeFreeWithNext
 //       RegisterFreeSuballocation
 //     check empty
-//     remove block
+//     remove block //VmaDeviceMemoryBlock::Destroy -> VmaAllocator_T::FreeVulkanMemory
 //     UpdateHasEmptyBlock
 //     IncrementallySortBlocks
+//  
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
