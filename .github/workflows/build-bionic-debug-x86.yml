@@ -15,6 +15,6 @@ jobs:
       - name: install bionic dependencies
         run: sudo ./bldsys/posix_linux_x11/install_bionic_dependencies.sh
       - name: build bionic debug
-        run: ./bldsys/posix_linux_x11/build_bionic.sh debug x86
+        run: ./bldsys/posix_linux_x11/build.sh debug bionic x86
       - name: test bionic debug
         run: ./bldsys/posix_linux_x11/run_test.sh debug x86

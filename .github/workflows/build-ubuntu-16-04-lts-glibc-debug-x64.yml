@@ -15,6 +15,6 @@ jobs:
       - name: install ubuntu glibc dependencies
         run: sudo ./bldsys/posix_linux_x11/install_ubuntu_glibc_dependencies.sh x64
       - name: build ubuntu glibc debug
-        run: ./bldsys/posix_linux_x11/build_glibc.sh debug x64
+        run: ./bldsys/posix_linux_x11/build.sh debug glibc x64
       - name: test ubuntu glibc debug
         run: ./bldsys/posix_linux_x11/run_test.sh debug x64

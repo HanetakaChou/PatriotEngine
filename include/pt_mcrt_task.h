@@ -18,17 +18,16 @@
 #ifndef _PT_MCRT_TASK_H_
 #define _PT_MCRT_TASK_H_ 1
 
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_common.h"
+#include "pt_mcrt_common.h"
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#include "pt_common.h"
-#include "pt_mcrt_common.h"
-#include <stdint.h>
-
-    // VK_DEFINE_HANDLE
-    // VK_DEFINE_NON_DISPATCHABLE_HANDLE
     typedef struct _mcrt_task_t_ *mcrt_task_ref;
 
     struct mcrt_task_user_data_t
