@@ -1,5 +1,5 @@
 /*
- * Copyright (C) YuqiaoZhang張羽喬(HanetakaYuminaga弓長羽高)
+ * Copyright (C) YuqiaoZhang(HanetakaYuminaga)
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published
