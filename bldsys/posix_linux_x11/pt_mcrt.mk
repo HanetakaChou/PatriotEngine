@@ -27,6 +27,9 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -36,13 +39,13 @@ LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
 LOCAL_CPPFLAGS += -std=c++11
 
 #-mavx512f 
-#-mavx2
+#-mavx
 #-mssse3
 ifeq (x86_64,$(TARGET_ARCH))
-LOCAL_CFLAGS += -mavx2 
+LOCAL_CFLAGS += -mavx512f 
 endif
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_CFLAGS += -mavx2 
+LOCAL_CFLAGS += -mavx512f 
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)

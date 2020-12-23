@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <intrin.h> 
+#include <intrin.h>
 
 inline int mcrt_intrin_popcount(uint32_t value)
 {
@@ -25,3 +25,19 @@ inline int mcrt_intrin_popcount(uint64_t value)
 {
     return __popcnt64(value);
 }
+
+#if defined(PT_X64) || defined(PT_X86)
+inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+{
+    //https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex
+    return __cpuidex(cpuinfo, function_id, subfunction_id);
+}
+#elif defined(PT_ARM64) || defined(PT_ARM)
+inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+{
+    assert(false);
+    return;
+}
+#else
+#error Unknown Architecture
+#endif

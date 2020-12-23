@@ -60,6 +60,7 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     // NVIDIA Driver 128 MB
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     //calc_prefer_block_size
-    //assert(size >= size_t(1024) * size_t(1024) * size_t(128));
+    //assert(size >= (1024ULL * 1024ULL * 128ULL));
 
+    return NULL;
 }

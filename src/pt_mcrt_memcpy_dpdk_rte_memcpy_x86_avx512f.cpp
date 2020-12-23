@@ -15,25 +15,16 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_MCRT_INTRIN_H_
-#define _PT_MCRT_INTRIN_H_ 1
+#include <pt_common.h>
+#include <pt_mcrt_common.h>
 
-#include <stddef.h>
-#include <stdint.h>
-#include "pt_common.h"
-#include "pt_mcrt_common.h"
+#if defined(PT_X64) || defined(PT_X86)
+#define __PT_MCRT_RTE_MEMCPY_AVX512F 1
+#include "pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h"
 
-inline int mcrt_intrin_popcount(uint32_t value);
-inline int mcrt_intrin_popcount(uint64_t value);
-
-inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id);
-
-#if defined PT_GCC
-#include "pt_mcrt_intrin_gcc.inl"
-#elif defined PT_MSVC
-#include "pt_mcrt_intrin_msvc.inl"
-#else
-#error Unknown Compiler
-#endif
+extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict src, size_t count)
+{
+    return rte_memcpy(dest, src, count);
+}
 
 #endif

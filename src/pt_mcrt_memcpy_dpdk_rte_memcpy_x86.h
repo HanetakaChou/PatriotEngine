@@ -32,7 +32,7 @@
  */
 static __rte_always_inline void *rte_memcpy(void *dst, const void *src, size_t n);
 
-#if defined __AVX512F__ /* AVX512 */
+#if defined __AVX512F__ && defined(__PT_MCRT_RTE_MEMCPY_AVX512F) /* AVX512 */
 
 #define ALIGNMENT_MASK 0x3F
 
@@ -279,12 +279,12 @@ static __rte_always_inline void *rte_memcpy_generic(void *dst, const void *src, 
     goto COPY_BLOCK_128_BACK63;
 }
 
-#elif defined __AVX2__ /* AVX2 */
+#elif defined __AVX__ && defined(__PT_MCRT_RTE_MEMCPY_AVX) /* AVX */
 
 #define ALIGNMENT_MASK 0x1F
 
 /**
- * AVX2 implementation below
+ * AVX implementation below
  */
 
 /**
@@ -481,12 +481,12 @@ static __rte_always_inline void *rte_memcpy_generic(void *dst, const void *src, 
     goto COPY_BLOCK_128_BACK31;
 }
 
-#else /* SSE & AVX */
+#elif defined(__SSSE3__) && defined(__PT_MCRT_RTE_MEMCPY_SSSE3) /* SSSE3 */
 
 #define ALIGNMENT_MASK 0x0F
 
 /**
- * SSE & AVX implementation below
+ * SSSE3 implementation below
  */
 
 /**
@@ -851,7 +851,8 @@ static __rte_always_inline void *rte_memcpy_generic(void *dst, const void *src, 
 	 */
     goto COPY_BLOCK_64_BACK15;
 }
-
+#else
+#error Unknown Intrinsics
 #endif
 
 static __rte_always_inline void *rte_memcpy_aligned(void *dst, const void *src, size_t n)
