@@ -29,7 +29,7 @@ Object | Buffer
 
 ## Gfx-Malloc of PatriotEngine   
 
-The gfx-malloc requests are separated into several categories.   
+The gfx-malloc requests are separated into several categories (6\.\[Microsoft\]).         
 
 Usage Type | Typical Example
 :-: | :-: 
@@ -43,7 +43,7 @@ DEPTH_STENCIL_ATTACHMENT | "DENY_SAMPLED_IMAGE" to improve performance
 SAMPLED_IMAGE | texture assets
 
 * UNIFORM_BUFFER    
-The gfx-malloc allocates a large block of memory directly from the Vulkan driver as the NVIDIA D3D11 Driver does \[Gruen 2015\].    
+The gfx-malloc allocates a large block of memory directly from the Vulkan driver as the NVIDIA D3D11 Driver does (3\.\[Gruen 2015\] 4\.\[Microsoft\] 5\.\[Microsoft\]).    
     
 * TRANSFER_SRC_BUFFER  
 The gfx-malloc allocates directly from the Vulkan driver as the UNIFORM_BUFFER.
@@ -62,8 +62,14 @@ The gfx-malloc allocates buffers for assets by the slab allocator as the SAMPLED
 
 
 ## Reference
-\[Bonwick 1994\] [Jeff Bonwick. "The Slab Allocator: An Object-Caching Kernel Memory Allocator." USENIX 1994](https://www.usenix.org/legacy/publications/library/proceedings/bos94/bonwick.html)  
-
-\[Gorman 2004\] [Mel Gorman. "Understanding The Linux Virtual Memory Manager." Prentice Hall 2004.](https://www.kernel.org/doc/gorman/html/understand)
-
-\[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
+1\.\[Bonwick 1994\] [Jeff Bonwick. "The Slab Allocator: An Object-Caching Kernel Memory Allocator." USENIX 1994](https://www.usenix.org/legacy/publications/library/proceedings/bos94/bonwick.html)     
+    
+2\.\[Gorman 2004\] [Mel Gorman. "Understanding The Linux Virtual Memory Manager." Prentice Hall 2004.](https://www.kernel.org/doc/gorman/html/understand)    
+    
+3\.\[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)    
+    
+4\.\[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)    
+    
+5\.\[Microsoft\] [Microsoft. "Resource allocation state." DirectX-Specs.](https://microsoft.github.io/DirectX-Specs/d3d/CPUEfficiency.html#resource-allocation-state)    
+         
+6\.\[Microsoft\] [Microsoft. "Memory Management Strategies" Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/memory-management-strategies)        
