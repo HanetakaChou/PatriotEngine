@@ -29,7 +29,6 @@ inline int mcrt_intrin_popcount(uint64_t value)
 #if defined(PT_X64) || defined(PT_X86)
 inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
 {
-    //https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex
     return __cpuidex(cpuinfo, function_id, subfunction_id);
 }
 #elif defined(PT_ARM64) || defined(PT_ARM)

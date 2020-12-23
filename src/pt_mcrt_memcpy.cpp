@@ -21,6 +21,7 @@
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_intrin.h>
 #if defined(PT_X64) || defined(PT_X86)
+static bool cpuid_done = false;
 static bool support_ssse3 = false;
 static bool support_avx = false;
 static bool support_avx512f = false;
@@ -38,12 +39,11 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
 PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
     rte_memcpy(dest, src, count);
-
     return true;
 }
 
 #if defined(PT_X64) || defined(PT_X86)
-static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restrict src, size_t count)
 {
     if (support_avx512f)
     {
@@ -63,11 +63,15 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
     }
 }
 
-static class mcrt_intrin_cpuidex_guard_t
+static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-public:
-    inline mcrt_intrin_cpuidex_guard_t()
+    if (PT_LIKELY(cpuid_done))
     {
+        rte_memcpy_helper(dest, src, count);
+    }
+    else
+    {
+        //https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex
         uint32_t f_1_ECX_ = 0;
         uint32_t f_7_EBX_ = 0;
         {
@@ -92,7 +96,8 @@ public:
         support_ssse3 = ((f_1_ECX_ & (1U << 9U)) ? true : false);
         support_avx = ((f_1_ECX_ & (1U << 28U)) ? true : false);
         support_avx512f = ((f_7_EBX_ & (1U << 16U)) ? true : false);
+        
+        return rte_memcpy_helper(dest, src, count);
     }
-    inline ~mcrt_intrin_cpuidex_guard_t() {}
-} mcrt_intrin_cpuidex_guard;
+}
 #endif
