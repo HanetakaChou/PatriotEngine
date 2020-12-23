@@ -76,12 +76,12 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_MCRT=PT_ATTR_EXPORT -mavx512f -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_MCRT=PT_ATTR_EXPORT -mavx -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o",
         "file": "${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_MCRT=PT_ATTR_EXPORT -mavx512f -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_MCRT=PT_ATTR_EXPORT -mssse3 -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o",
         "file": "${workspaceFolder}/src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp"
     },
     {

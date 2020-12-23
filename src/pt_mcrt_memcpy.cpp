@@ -21,10 +21,10 @@
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_intrin.h>
 #if defined(PT_X64) || defined(PT_X86)
-static bool cpuid_done = false;
-static bool support_ssse3 = false;
-static bool support_avx = false;
-static bool support_avx512f = false;
+static bool rte_memcpy_cpuid_done = false;
+static bool rte_memcpy_support_avx512f = false;
+static bool rte_memcpy_support_avx = false;
+static bool rte_memcpy_support_ssse3 = false;
 extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict src, size_t count);
 extern void *rte_memcpy_avx(void *__restrict dest, void const *__restrict src, size_t count);
 extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
@@ -45,15 +45,15 @@ PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restr
 #if defined(PT_X64) || defined(PT_X86)
 static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    if (support_avx512f)
+    if (rte_memcpy_support_avx512f)
     {
         return rte_memcpy_avx512f(dest, src, count);
     }
-    else if (support_avx)
+    else if (rte_memcpy_support_avx)
     {
         return rte_memcpy_avx(dest, src, count);
     }
-    else if (support_ssse3)
+    else if (rte_memcpy_support_ssse3)
     {
         return rte_memcpy_ssse3(dest, src, count);
     }
@@ -65,9 +65,9 @@ static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restr
 
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    if (PT_LIKELY(cpuid_done))
+    if (PT_LIKELY(rte_memcpy_cpuid_done))
     {
-        rte_memcpy_helper(dest, src, count);
+        return rte_memcpy_helper(dest, src, count);
     }
     else
     {
@@ -93,10 +93,10 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
                 f_7_EBX_ = data_7[1];
             }
         }
-        support_ssse3 = ((f_1_ECX_ & (1U << 9U)) ? true : false);
-        support_avx = ((f_1_ECX_ & (1U << 28U)) ? true : false);
-        support_avx512f = ((f_7_EBX_ & (1U << 16U)) ? true : false);
-        
+        rte_memcpy_support_avx512f = (((f_7_EBX_ & (1U << 16U)) != 0) ? true : false);
+        rte_memcpy_support_avx = (((f_1_ECX_ & (1U << 28U)) != 0) ? true : false);
+        rte_memcpy_support_ssse3 = (((f_1_ECX_ & (1U << 9U)) != 0) ? true : false);
+
         return rte_memcpy_helper(dest, src, count);
     }
 }
