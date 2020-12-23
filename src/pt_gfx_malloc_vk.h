@@ -39,6 +39,8 @@ private:
     uint32_t find_memory_type_index(uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags);
 
     uint32_t find_memory_type_index(uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags, VkMemoryPropertyFlags preferred_property_flags);
+
+    void *alloc_uniform_buffer(size_t size) override;
 };
 
 #endif

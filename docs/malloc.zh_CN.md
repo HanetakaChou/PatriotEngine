@@ -9,7 +9,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU Lesser General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>
 ```  
 
-### Slab分配器（Slab Allocator）  
+## Slab分配器（Slab Allocator）  
       
 根据 \[Bonwick 1994\] / 3. Slab Allocator Implementation 中的说法，Slab的命名源于SunOS中的源代码，并无特别的含义。 // 注：起初，在编写SunOS的源代码时，仅仅是出于“Slab”相对于“Object”或“Cache”而言更具有辨识度，才作此命名。   
    
@@ -37,7 +37,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 
 显然，这种借助哈希表的解决方案过于低效，让人很难接受。实际上，我们可以将Slab的控制块置于开始位置，从而确保了Slab中的Buffer一定不会对齐到页大小。然而，由于Large Object的内存直接向系统申请，Large Object一定对齐到页大小。因此，在释放内存时，我们可以根据被释放的地址是否对齐对页大小来区分Buffer和Large Object，避免了借助哈希表进行映射的过程，这也是TBB-Malloc（\[Kukanov 2007\]）的做法。
 
-### McRT-Malloc  
+## McRT-Malloc  
 
 显然，McRT-Malloc也属于分离存储，McRT-Malloc中的各数据结构与Slab分配器之间的关系如下：     
 
@@ -46,6 +46,8 @@ McRT-Malloc | Slab Allocator
 Bin | Cache  
 Block | Slab  
 Object | Buffer  
+
+## 参考文献
 
 1\.\[Bonwick 1994\] [Jeff Bonwick. "The Slab Allocator: An Object-Caching Kernel Memory Allocator." USENIX 1994](https://www.usenix.org/legacy/publications/library/proceedings/bos94/bonwick.html)  
 

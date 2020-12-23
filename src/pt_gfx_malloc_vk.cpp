@@ -52,3 +52,14 @@ uint32_t gfx_malloc_vk::find_memory_type_index(uint32_t memory_requirements_memo
         return find_memory_type_index(memory_requirements_memory_type_bits, required_property_flags);
     }
 }
+
+// Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
+
+void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
+{
+    // NVIDIA Driver 128 MB
+    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
+    //calc_prefer_block_size
+    //assert(size >= size_t(1024) * size_t(1024) * size_t(128));
+
+}

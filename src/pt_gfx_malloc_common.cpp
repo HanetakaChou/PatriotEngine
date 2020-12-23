@@ -104,6 +104,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 // preferred = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT // AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
 
 // VmaAllocator_T::VmaAllocator_T
+//  VmaAllocator_T::CalcPreferredBlockSize //VMA_SMALL_HEAP_MAX_SIZE 1024MB block 1024 / 8 = 128MB //VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE 256MB
 //  vma_new VmaBlockVector //maxBlockCount->SIZE_MAX
 
 // vmaCreateBuffer //pass allocationcount //alloc multi buffer once 
@@ -183,7 +184,17 @@ This, however, does not imply that they interpret the contents of the bound memo
 // [Rosenberg 2012] Dan Rosenberg. "A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator." Virtual Security Research 2012.
 
 // slab <-> slob_page
-// buf <-> slob_block
+// buf <-> slob_t <-> slob_block 
+
+// Note that SLOB pages contain blocks of varying sizes, which differentiates SLOB from a classic slab allocator.
+
+
+// https://www.kernel.org/doc/gorman/html/understand/understand011.html
+
+struct slob_block
+{
+
+};
 
 // https://github.com/ValveSoftware/dxvk
 // DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp

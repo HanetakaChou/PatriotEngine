@@ -18,6 +18,8 @@
 #ifndef _PT_GFX_MALLOC_COMMON_H_
 #define _PT_GFX_MALLOC_COMMON_H_ 1
 
+#include <stddef.h>
+#include <stdint.h>
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 
@@ -42,6 +44,10 @@ protected:
 
 private:
     //malloc_usage_to_memory_index
+
+public:
+    virtual void *alloc_uniform_buffer(size_t size) = 0;
+
 };
 
 #endif
