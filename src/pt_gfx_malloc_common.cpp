@@ -177,7 +177,13 @@ This, however, does not imply that they interpret the contents of the bound memo
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
-// slob
+// SLOB
+// kernel 3.5
+// https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/slob.c?h=v3.5&id=28a33cbc24e4256c143dce96c7d93bf423229f92
+// [Rosenberg 2012] Dan Rosenberg. "A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator." Virtual Security Research 2012.
+
+// slab <-> slob_page
+// buf <-> slob_block
 
 // https://github.com/ValveSoftware/dxvk
 // DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp
