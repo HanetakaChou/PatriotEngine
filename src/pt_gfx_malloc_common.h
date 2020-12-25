@@ -37,8 +37,8 @@ protected:
         PT_GFX_MALLOC_USAGE_UNIFORM_BUFFER,
         //PT_GFX_MALLOC_USAGE_DYNAMIC_CONSTANT_BUFFER, //bind /unbind //switch between diffirent constant buffer //cost
         //PT_GFX_MALLOC_USAGE_IMMUTABLE_CONSTANT_BUFFER,
-        PT_GFX_MALLOC_USAGE_VERTEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
-        PT_GFX_MALLOC_USAGE_INDEX_BUFFER,
+        PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_VERTEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
+        PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_INDEX_BUFFER,
         PT_GFX_MALLOC_USAGE_COLOR_ATTACHMENT_AND_INPUT_ATTACHMENT_AND_TRANSIENT_ATTACHMENT,
         PT_GFX_MALLOC_USAGE_COLOR_ATTACHMENT_AND_SAMPLED_IMAGE,
         PT_GFX_MALLOC_USAGE_DEPTH_STENCIL_ATTACHMENT, //DENY_SAMPLED_IMAGE //write depth to color buffer //to be consistant with MTL

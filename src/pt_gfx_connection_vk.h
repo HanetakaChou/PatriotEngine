@@ -57,6 +57,7 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
     PFN_vkCreateDevice m_vkCreateDevice;
     PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
     PFN_vkGetPhysicalDeviceFormatProperties m_vk_get_physical_device_format_properties;
+    PFN_vkCreateBuffer m_vk_create_buffer;
     PFN_vkCreateImage m_vk_create_image;
     PFN_vkAllocateMemory m_vkAllocateMemory;
     PFN_vkFreeMemory m_vkFreeMemory;
@@ -97,6 +98,7 @@ public:
     // vkFreeMemory
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, out_format_properties); }
 
+    inline VkResult create_buffer(VkBufferCreateInfo const *pCreateInfo, VkBuffer *pBuffer) { return m_vk_create_buffer(m_device, pCreateInfo, &m_allocator_callbacks, pBuffer); }
     inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_vk_create_image(m_device, pCreateInfo, &m_allocator_callbacks, pImage); }
 
     //uniform buffer

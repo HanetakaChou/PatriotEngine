@@ -366,6 +366,9 @@ bool gfx_connection_vk::init()
     m_vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(m_device, "vkGetDeviceQueue"));
     assert(NULL != m_vkGetDeviceQueue);
 
+    m_vk_create_buffer = reinterpret_cast<PFN_vkCreateBuffer>(vk_get_device_proc_addr(m_device, "vkCreateBuffer"));
+    assert(NULL != m_vk_create_buffer);
+
     m_vk_create_image = reinterpret_cast<PFN_vkCreateImage>(vk_get_device_proc_addr(m_device, "vkCreateImage"));
     assert(NULL != m_vk_create_image);
 
