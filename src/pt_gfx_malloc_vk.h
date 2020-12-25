@@ -29,6 +29,9 @@
 
 class gfx_malloc_vk : public gfx_malloc_common
 {
+    enum VkFormat m_format_depth;
+    enum VkFormat m_format_depth_stencil;
+
     uint32_t m_transfer_src_buffer_memory_index;
     uint32_t m_uniform_buffer_memory_index;
     uint32_t m_transfer_dst_and_vertex_buffer_memory_index;
@@ -36,6 +39,8 @@ class gfx_malloc_vk : public gfx_malloc_common
     uint32_t m_color_attachment_and_input_attachment_and_transient_attachment_memory_index;
     uint32_t m_color_attachment_and_sampled_image_memory_index;
     uint32_t m_transfer_dst_and_sampled_image_memory_index;
+    uint32_t m_depth_stencil_attachment_and_transient_attachment_memory_index;
+
     //uint32_t memory_index_elem[9];
     //static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
 

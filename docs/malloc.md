@@ -35,12 +35,12 @@ Usage Type | Typical Example
 :-: | :-: 
 TRANSFER_SRC_BUFFER | staging buffer   
 UNIFORM_BUFFER | MVP matrices \/ Animation Bone matrices   
-VERTEX_BUFFER | vertices of mesh assets  
-INDEX_BUFFER | indices of mesh assets  
+TRANSFER_DST_AND_VERTEX_BUFFER | vertices of mesh assets  
+TRANSFER_DST_AND_INDEX_BUFFER | indices of mesh assets  
 COLOR_ATTACHMENT_AND_INPUT_ATTACHMENT_AND_TRANSIENT_ATTACHMENT | G-Buffer   
 COLOR_ATTACHMENT_AND_SAMPLED_IMAGE | write depth to color attachment as the apple Metal sample does   
-DEPTH_STENCIL_ATTACHMENT | "DENY_SAMPLED_IMAGE" to improve performance  
-SAMPLED_IMAGE | texture assets
+DEPTH_STENCIL_ATTACHMENT_AND_TRANSIENT_ATTACHMENT | "DENY_SAMPLED_IMAGE" to improve performance  
+TRANSFER_DST_AND_SAMPLED_IMAGE | texture assets
 
 * UNIFORM_BUFFER    
 The gfx-malloc allocates a large block of memory directly from the Vulkan driver as the NVIDIA D3D11 Driver does (3\.\[Gruen 2015\] 4\.\[Microsoft\] 5\.\[Microsoft\]).    
@@ -53,11 +53,11 @@ COLOR_ATTACHMENT_AND_SAMPLED_IMAGE
 DEPTH_STENCIL_ATTACHMENT     
 The gfx-malloc prefers the dedicated memory(VK_KHR_dedicated_allocation / D3D12_HEAP_FLAG_ALLOW_DISPLAY) and falls back to allocate directly from the Vulkan driver.     
    
-* SAMPLED_IMAGE  
+* TRANSFER_DST_AND_SAMPLED_IMAGE  
 The gfx-malloc allocates images for assets by the slab allocator.   
    
-* VERTEX_BUFFER    
-INDEX_BUFFER   
+* TRANSFER_DST_AND_VERTEX_BUFFER    
+TRANSFER_DST_AND_INDEX_BUFFER   
 The gfx-malloc allocates buffers for assets by the slab allocator as the SAMPLED_IMAGE.
 
 

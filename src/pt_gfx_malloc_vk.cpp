@@ -295,6 +295,68 @@ bool gfx_malloc_vk::init(
     // combination of values for the format member, the tiling member, the VK_IMAGE_CREATE_SPARSE_BINDING_BIT bit of the flags member, and
     // the VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT of the usage member in the VkImageCreateInfo structure passed to vkCreateImage.
 
+    // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap34.html#features-required-format-support
+    // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT feature must be supported for at least one of
+    // VK_FORMAT_X8_D24_UNORM_PACK32 and VK_FORMAT_D32_SFLOAT, and must be supported for at least one of
+    // VK_FORMAT_D24_UNORM_S8_UINT and VK_FORMAT_D32_SFLOAT_S8_UINT.
+
+    m_format_depth = VK_FORMAT_UNDEFINED;
+    m_format_depth_stencil = VK_FORMAT_UNDEFINED;
+    m_depth_stencil_attachment_and_transient_attachment_memory_index = VK_MAX_MEMORY_TYPES;
+    {
+        struct VkFormatProperties format_properties;
+
+        m_format_depth = VK_FORMAT_D32_SFLOAT;
+        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth, &format_properties);
+        if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+        {
+            m_format_depth = VK_FORMAT_X8_D24_UNORM_PACK32;
+            static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth, &format_properties);
+            assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        }
+
+        m_format_depth_stencil = VK_FORMAT_D32_SFLOAT_S8_UINT;
+        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
+        if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
+        {
+            m_format_depth_stencil = VK_FORMAT_D24_UNORM_S8_UINT;
+            static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
+            assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        }
+
+        struct VkImageCreateInfo image_ci_depth_stencil_transient_tiling_optimal;
+        image_ci_depth_stencil_transient_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_ci_depth_stencil_transient_tiling_optimal.pNext = NULL;
+        image_ci_depth_stencil_transient_tiling_optimal.flags = 0U;
+        image_ci_depth_stencil_transient_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
+        image_ci_depth_stencil_transient_tiling_optimal.format = m_format_depth_stencil;
+        image_ci_depth_stencil_transient_tiling_optimal.extent.width = 8U;
+        image_ci_depth_stencil_transient_tiling_optimal.extent.height = 8U;
+        image_ci_depth_stencil_transient_tiling_optimal.extent.depth = 1U;
+        image_ci_depth_stencil_transient_tiling_optimal.mipLevels = 1U;
+        image_ci_depth_stencil_transient_tiling_optimal.arrayLayers = 1U;
+        image_ci_depth_stencil_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_ci_depth_stencil_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_ci_depth_stencil_transient_tiling_optimal.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+        image_ci_depth_stencil_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_ci_depth_stencil_transient_tiling_optimal.queueFamilyIndexCount = 0U;
+        image_ci_depth_stencil_transient_tiling_optimal.pQueueFamilyIndices = NULL;
+        image_ci_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+
+        VkImage dummy_img;
+        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_image(&image_ci_depth_stencil_transient_tiling_optimal, &dummy_img);
+        assert(VK_SUCCESS == vk_res);
+
+        struct VkMemoryRequirements mem_req;
+        vk_get_image_memory_requirements(device, dummy_img, &mem_req);
+        m_depth_stencil_attachment_and_transient_attachment_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
+    }
+    if (VK_MAX_MEMORY_TYPES == m_depth_stencil_attachment_and_transient_attachment_memory_index)
+    {
+        return false;
+    }
+    assert(m_depth_stencil_attachment_and_transient_attachment_memory_index < VK_MAX_MEMORY_TYPES);
+
     return true;
 }
 
