@@ -20,21 +20,35 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_common.h"
-#include "pt_gfx_common.h"
+#include <pt_common.h>
+#include <pt_gfx_common.h>
+#include <pt_mcrt_common.h>
 #include "pt_gfx_malloc_common.h"
 #include <vulkan/vulkan.h>
+#include <deque>
+
+//VmaBlocksOnSamePage
+//VmaIsBufferImageGranularityConflict
 
 class gfx_malloc_vk : public gfx_malloc_common
 {
-protected:
     VkPhysicalDeviceMemoryProperties m_physical_device_memory_properties;
 
-private:
-    uint32_t memory_index_elem[9];
-    static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
+    uint32_t m_uniform_buffer_memory_index;
 
-    uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
+    //uint32_t memory_index_elem[9];
+    //static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
+
+    class gfx_malloc_slob_page_vk_t : public gfx_malloc_slob_page_common_t
+    {
+        VkDeviceMemory m_page;
+    };
+
+    std::deque<gfx_malloc_slob_page_vk_t, mcrt::scalable_allocator<gfx_malloc_slob_page_vk_t>> m_free_slob_small;
+    std::deque<gfx_malloc_slob_page_vk_t, mcrt::scalable_allocator<gfx_malloc_slob_page_vk_t>> m_free_slob_medium;
+    std::deque<gfx_malloc_slob_page_vk_t, mcrt::scalable_allocator<gfx_malloc_slob_page_vk_t>> m_free_slob_large;
+
+    //uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
 
     uint32_t find_memory_type_index(uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags);
 

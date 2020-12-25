@@ -45,7 +45,7 @@ LOCAL_LDLIBS += -lvulkan
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_xcb
 
-LOCAL_STATIC_LIBRARIES := libpt_gfx_no_wsi
+LOCAL_STATIC_LIBRARIES := libpt_gfx_wsi_none
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
@@ -80,18 +80,18 @@ LOCAL_LDLIBS += -lvulkan
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_xcb
 
-LOCAL_STATIC_LIBRARIES := libpt_gfx_no_wsi
+LOCAL_STATIC_LIBRARIES := libpt_gfx_wsi_none
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
 
 
-# libpt_gfx_no_wsi
+# libpt_gfx_wsi_none
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_gfx_no_wsi
+LOCAL_MODULE := libpt_gfx_wsi_none
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \

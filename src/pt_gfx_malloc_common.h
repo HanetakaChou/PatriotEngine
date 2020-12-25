@@ -22,10 +22,14 @@
 #include <stdint.h>
 #include <pt_common.h>
 #include <pt_gfx_common.h>
+#include <pt_mcrt_common.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <deque>
 
 class gfx_malloc_common
 {
 protected:
+    /*
     enum gfx_malloc_usage_t //routed into memory index //may be the same index
     {
         PT_GFX_MALLOC_USAGE_UNKNOWN,
@@ -41,13 +45,25 @@ protected:
         PT_GFX_MALLOC_USAGE_SAMPLED_IMAGE,
         PT_GFX_MALLOC_USAGE_RANGE_SIZE
     };
+    */
 
+    class gfx_malloc_slob_block_t
+    {
+        uint64_t offset;
+        uint64_t size;
+    };
+
+    class gfx_malloc_slob_page_common_t
+    {
+        std::deque<gfx_malloc_slob_block_t, mcrt::scalable_allocator<gfx_malloc_slob_block_t>> m_free;
+    };
+
+    static void *slob_page_alloc(class gfx_malloc_slob_page_common_t *sp, uint64_t size, uint64_t align);
 private:
     //malloc_usage_to_memory_index
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
-
 };
 
 #endif

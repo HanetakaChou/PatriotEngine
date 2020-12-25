@@ -133,7 +133,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
 //     VmaBlockVector::AllocateFromBlock //VmaDeviceMemoryBlock 1-1 VmaBlockMetadata(_Generic)
 //      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request (offset sumFreeSize(the size of VmaSuballocation) item(the VmaSuballocation))
-//       m_SumFreeSize -> early return
+//       m_SumFreeSize -> early return 
 //       VmaBinaryFindFirstNotLess //can move the check bufferImageGranularity here
 //       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"
 //       "canMakeOtherLost"
@@ -177,6 +177,14 @@ This, however, does not imply that they interpret the contents of the bound memo
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
+// VmaAllocation_T/VmaSuballocation <-> slob_block/slob_t
+// VmaBlock/VmaBlockMetadata_Generic <-> slob_page
+
+// VmaBlockVector::AllocateFromBlock/VmaBlockMetadata_Generic::CreateAllocationRequest
+// m_SumFreeSize -> early return
+// slob_alloc /* check sp->units */ Note that the reported space in a SLOB page is not necessarily contiguous, so the allocation is not guaranteed to succeed.
+// slob_page_alloc
+
 // SLOB
 // kernel 3.5
 // https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/slob.c?h=v3.5&id=28a33cbc24e4256c143dce96c7d93bf423229f92
@@ -189,9 +197,8 @@ This, however, does not imply that they interpret the contents of the bound memo
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-struct slob_block
-{
-};
+
+
 
 class mcrt_multi_thread_check
 {
