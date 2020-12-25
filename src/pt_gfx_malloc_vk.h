@@ -31,6 +31,8 @@ class gfx_malloc_vk : public gfx_malloc_common
 {
     uint32_t m_transfer_src_buffer_memory_index;
     uint32_t m_uniform_buffer_memory_index;
+    uint32_t m_transfer_dst_and_vertex_buffer_memory_index;
+    uint32_t m_transfer_dst_and_index_buffer_memory_index;
     uint32_t m_color_attachment_and_input_attachment_and_transient_attachment_memory_index;
     uint32_t m_color_attachment_and_sampled_image_memory_index;
     uint32_t m_transfer_dst_and_sampled_image_memory_index;

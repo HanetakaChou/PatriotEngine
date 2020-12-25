@@ -115,6 +115,84 @@ bool gfx_malloc_vk::init(
     }
     assert(m_transfer_src_buffer_memory_index < VK_MAX_MEMORY_TYPES);
 
+    m_uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    {
+        struct VkBufferCreateInfo buffer_ci_uniform;
+        buffer_ci_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_ci_uniform.pNext = NULL;
+        buffer_ci_uniform.flags = 0U;
+        buffer_ci_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        buffer_ci_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_ci_uniform.queueFamilyIndexCount = 0U;
+        buffer_ci_uniform.pQueueFamilyIndices = NULL;
+
+        VkBuffer dummy_buf;
+        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_uniform, &dummy_buf);
+        assert(VK_SUCCESS == vk_res);
+
+        struct VkMemoryRequirements mem_req;
+        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
+        m_uniform_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    }
+    if (VK_MAX_MEMORY_TYPES == m_uniform_buffer_memory_index)
+    {
+        return false;
+    }
+    assert(m_uniform_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+
+    m_transfer_dst_and_vertex_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    {
+        struct VkBufferCreateInfo buffer_ci_transfer_dst_and_vertex_buffer;
+        buffer_ci_transfer_dst_and_vertex_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_ci_transfer_dst_and_vertex_buffer.pNext = NULL;
+        buffer_ci_transfer_dst_and_vertex_buffer.flags = 0U;
+        buffer_ci_transfer_dst_and_vertex_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        buffer_ci_transfer_dst_and_vertex_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_ci_transfer_dst_and_vertex_buffer.queueFamilyIndexCount = 0U;
+        buffer_ci_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
+
+        VkBuffer dummy_buf;
+        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_transfer_dst_and_vertex_buffer, &dummy_buf);
+        assert(VK_SUCCESS == vk_res);
+
+        struct VkMemoryRequirements mem_req;
+        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
+        m_transfer_dst_and_vertex_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    }
+    if (VK_MAX_MEMORY_TYPES == m_transfer_dst_and_vertex_buffer_memory_index)
+    {
+        return false;
+    }
+    assert(m_transfer_dst_and_vertex_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+
+    m_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    {
+        struct VkBufferCreateInfo buffer_ci_transfer_dst_and_index_buffer;
+        buffer_ci_transfer_dst_and_index_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_ci_transfer_dst_and_index_buffer.pNext = NULL;
+        buffer_ci_transfer_dst_and_index_buffer.flags = 0U;
+        buffer_ci_transfer_dst_and_index_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        buffer_ci_transfer_dst_and_index_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_ci_transfer_dst_and_index_buffer.queueFamilyIndexCount = 0U;
+        buffer_ci_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
+
+        VkBuffer dummy_buf;
+        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_transfer_dst_and_index_buffer, &dummy_buf);
+        assert(VK_SUCCESS == vk_res);
+
+        struct VkMemoryRequirements mem_req;
+        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
+        m_transfer_dst_and_index_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    }
+    if (VK_MAX_MEMORY_TYPES == m_transfer_dst_and_index_buffer_memory_index)
+    {
+        return false;
+    }
+    assert(m_transfer_dst_and_index_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a color format, the memoryTypeBits member is identical for all VkImage objects created with the
     // same combination of values for the tiling member, the VK_IMAGE_CREATE_SPARSE_BINDING_BIT bit of the flags member, and
@@ -145,7 +223,7 @@ bool gfx_malloc_vk::init(
         image_ci_regular_tiling_optimal.arrayLayers = 1U;
         image_ci_regular_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
         image_ci_regular_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_ci_regular_tiling_optimal.usage = 0U;
+        image_ci_regular_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
         image_ci_regular_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         image_ci_regular_tiling_optimal.queueFamilyIndexCount = 0U;
         image_ci_regular_tiling_optimal.pQueueFamilyIndices = NULL;
@@ -188,7 +266,7 @@ bool gfx_malloc_vk::init(
         image_ci_transient_tiling_optimal.arrayLayers = 1U;
         image_ci_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
         image_ci_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_ci_transient_tiling_optimal.usage = VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+        image_ci_transient_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
         image_ci_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         image_ci_transient_tiling_optimal.queueFamilyIndexCount = 0U;
         image_ci_transient_tiling_optimal.pQueueFamilyIndices = NULL;
