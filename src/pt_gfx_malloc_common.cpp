@@ -2,14 +2,14 @@
 #include "pt_gfx_malloc_common.h"
 
 // linux
-// https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB 
-// https://github.com/torvalds/linux/blob/master/mm/slub.c //CONFIG_SLUB   
+// https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB
+// https://github.com/torvalds/linux/blob/master/mm/slub.c //CONFIG_SLUB
 
-// slab 
-// [Bonwick 1994] Jeff Bonwick. "The Slab Allocator: An Object-Caching Kernel Memory Allocator." USENIX 1994    
+// slab
+// [Bonwick 1994] Jeff Bonwick. "The Slab Allocator: An Object-Caching Kernel Memory Allocator." USENIX 1994
 
-// tbbmalloc 
-// [Hudson 2006] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.   
+// tbbmalloc
+// [Hudson 2006] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.
 
 // __kmalloc //mm/slub.c
 //  __do_kmalloc
@@ -19,7 +19,7 @@
 //      ____cache_alloc
 //       get_valid_first_slab
 
-// linux::kmem_cache <-> slab::cache <-> tbbmalloc::bin 
+// linux::kmem_cache <-> slab::cache <-> tbbmalloc::bin
 // linux::kmem_cache_node //get_valid_first_slab
 // include/linux/slab_def.h
 // include/linux/slub_def.h
@@ -41,9 +41,8 @@
 // VmaAllocator_T::AllocateVulkanMemory
 //  ++m_OperationsSinceBudgetFetch
 
-
 // github
-// vulkaninfo "usable for"  
+// vulkaninfo "usable for"
 //
 
 /*
@@ -107,13 +106,13 @@ This, however, does not imply that they interpret the contents of the bound memo
 //  VmaAllocator_T::CalcPreferredBlockSize //VMA_SMALL_HEAP_MAX_SIZE 1024MB block 1024 / 8 = 128MB //VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE 256MB
 //  vma_new VmaBlockVector //maxBlockCount->SIZE_MAX
 
-// vmaCreateBuffer //pass allocationcount //alloc multi buffer once 
+// vmaCreateBuffer //pass allocationcount //alloc multi buffer once
 // VmaAllocator_T::AllocateMemory
 //  vmaFindMemoryTypeIndex // usage->requiredFlags/preferredFlags->memorytypeindex //count cost // vmaFindMemoryTypeIndexForBufferInfo/vmaFindMemoryTypeIndexForImageInfo not used by the library
-//  VmaAllocator_T::GetMemoryTypeMinAlignment //we don't need non coherent 
-//  VmaAllocator_T::AllocateMemoryOfType  
-//   memorytypeindex-> VmaBlockVector  
-//   VmaBlockVector::Allocate                    
+//  VmaAllocator_T::GetMemoryTypeMinAlignment //we don't need non coherent
+//  VmaAllocator_T::AllocateMemoryOfType
+//   memorytypeindex-> VmaBlockVector
+//   VmaBlockVector::Allocate
 //    corruption detection ?
 //    VmaMutexLockWrite lock //we may asset?
 //    VmaBlockVector::AllocatePage
@@ -122,21 +121,21 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     // can become lost //can make other lost // set by user?
 //     // m_Algorithm + VmaAllocationCreateInfo.flags & STRATEGY_MASK -> the algorithm
 //     1. Search existing allocations. Try to allocate without making other allocations lost.
-//     VmaBlockVector::AllocateFromBlock //best fit 
+//     VmaBlockVector::AllocateFromBlock //best fit
 //     2. Try to create new block.
 //     VmaBlockVector::CalcMaxBlockSize // max existing block
-//     newBlockSize =  1/8 1/4 1/2 m_PreferredBlockSize //if fail try 1/2 1/4 1/8 
-//     VmaBlockVector::CreateBlock 
-//      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic) 
+//     newBlockSize =  1/8 1/4 1/2 m_PreferredBlockSize //if fail try 1/2 1/4 1/8
+//     VmaBlockVector::CreateBlock
+//      VmaAllocator_T::AllocateVulkanMemory //estimate budget (atomic)
 //      VmaDeviceMemoryBlock::Init //VmaDeviceMemoryBlock.m_hMemory -> VkDeviceMemory // VmaDeviceMemoryBlock::Map 在block的层级控制map //refcount
 //       m_Algorithm(0)->VmaBlockMetadata_Generic //Linear/Buddy //Block 1to1 BlockMetadata //maybe Block is more public while BlockMetadata is more internal
 //       whole_size -> VmaSuballocation (offset size) //VMA_SUBALLOCATION_TYPE: free(not in used) / buffer / image -> VmaIsBufferImageGranularityConflict
 //       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
 //     VmaBlockVector::AllocateFromBlock //VmaDeviceMemoryBlock 1-1 VmaBlockMetadata(_Generic)
-//      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request (offset sumFreeSize(the size of VmaSuballocation) item(the VmaSuballocation)) 
+//      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request (offset sumFreeSize(the size of VmaSuballocation) item(the VmaSuballocation))
 //       m_SumFreeSize -> early return
 //       VmaBinaryFindFirstNotLess //can move the check bufferImageGranularity here
-//       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"  
+//       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"
 //       "canMakeOtherLost"
 //       new VmaAllocation_T (just alloc memory of VmaAllocation) //use VmaAllocationObjectAllocator/VmaPoolAllocator //may be replaced by tbbmalloc
 //       VmaAllocation_T::Ctor currentFrameIndex
@@ -146,7 +145,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //        VmaBlockMetadata_Generic::RegisterFreeSuballocation(paddingEnd) //
 //         ValidateFreeSuballocationList //check the sort
 //         VmaVectorInsertSorted //sort
-//        VmaBlockMetadata_Generic::RegisterFreeSuballocation(paddingBegin) 
+//        VmaBlockMetadata_Generic::RegisterFreeSuballocation(paddingBegin)
 //        update early out cache (m_SumFreeSize)
 //      VmaBlockVector::UpdateHasEmptyBlock
 //      VmaAllocation_T::InitBlockAllocation //update VmaAllocation_T //m_BlockAllocation / m_Dedicate
@@ -174,7 +173,7 @@ This, however, does not imply that they interpret the contents of the bound memo
 //     remove block //VmaDeviceMemoryBlock::Destroy -> VmaAllocator_T::FreeVulkanMemory
 //     UpdateHasEmptyBlock
 //     IncrementallySortBlocks
-//  
+//
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
 
@@ -184,20 +183,35 @@ This, however, does not imply that they interpret the contents of the bound memo
 // [Rosenberg 2012] Dan Rosenberg. "A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator." Virtual Security Research 2012.
 
 // slab <-> slob_page
-// buf <-> slob_t <-> slob_block 
+// buf <-> slob_t <-> slob_block
 
 // Note that SLOB pages contain blocks of varying sizes, which differentiates SLOB from a classic slab allocator.
-
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
 struct slob_block
 {
+};
 
+class mcrt_multi_thread_check
+{
+protected:
+    inline void check_read_write() {}
+    inline void check_read_only() {}
+
+public:
+    inline void mark_for_read() {}
+    inline void mark_for_write() {}
+    inline void unmark_for_read() {}
+    inline void unmark_for_write() {}
+};
+
+class slob_allocator : public mcrt_multi_thread_check
+{
 };
 
 // https://github.com/ValveSoftware/dxvk
 // DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp
 //  DxvkImage::DxvkImage            // src/dxvk/dxvk_image.cpp
 //   DxvkMemoryAllocator::alloc     // src/dxvk/dxvk_memory.cpp
-// 
+//
