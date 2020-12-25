@@ -47,14 +47,15 @@ bool gfx_connection_vk::init()
     m_allocator_callbacks.pfnInternalAllocation = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
     m_allocator_callbacks.pfnInternalFree = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
 
-    m_vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(vkGetInstanceProcAddr(NULL, "vkCreateInstance"));
-    if (NULL == m_vkCreateInstance)
-    {
-        return false;
-    }
+    VkResult vk_res;
 
-    VkResult vk_res = VK_ERROR_INITIALIZATION_FAILED;
+    PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = vkGetInstanceProcAddr;
+
+    m_instance = VK_NULL_HANDLE;
     {
+        PFN_vkCreateInstance vk_create_instance = reinterpret_cast<PFN_vkCreateInstance>(vkGetInstanceProcAddr(NULL, "vkCreateInstance"));
+        assert(NULL != vk_create_instance);
+
         VkInstanceCreateInfo instance_create_info;
         instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
         instance_create_info.pNext = NULL;
@@ -88,37 +89,35 @@ bool gfx_connection_vk::init()
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
-        vk_res = m_vkCreateInstance(&instance_create_info, &m_allocator_callbacks, &m_instance);
-        assert(VK_SUCCESS == vk_res);
+        vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &m_instance);
+        if (VK_SUCCESS != vk_res)
+        {
+            return false;
+        }
     }
 
-    m_vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vkGetInstanceProcAddr(m_instance, "vkEnumeratePhysicalDevices"));
+    vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetInstanceProcAddr"));
+    assert(NULL != vk_get_instance_proc_addr);
+
+    m_vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vk_get_instance_proc_addr(m_instance, "vkEnumeratePhysicalDevices"));
     assert(NULL != m_vkEnumeratePhysicalDevices);
 
-    m_vkGetPhysicalDeviceProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceProperties"));
+    m_vkGetPhysicalDeviceProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceProperties"));
     assert(NULL != m_vkGetPhysicalDeviceProperties);
 
-    m_vkGetPhysicalDeviceQueueFamilyProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceQueueFamilyProperties"));
+    m_vkGetPhysicalDeviceQueueFamilyProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceQueueFamilyProperties"));
     assert(NULL != m_vkGetPhysicalDeviceQueueFamilyProperties);
 
-    m_vkGetPhysicalDeviceFeatures = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceFeatures"));
+    m_vkGetPhysicalDeviceFeatures = reinterpret_cast<PFN_vkGetPhysicalDeviceFeatures>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceFeatures"));
     assert(NULL != m_vkGetPhysicalDeviceFeatures);
 
-    m_vkGetPhysicalDeviceFormatProperties = reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceFormatProperties"));
-    assert(NULL != m_vkGetPhysicalDeviceFormatProperties);
-
-    m_vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(vkGetInstanceProcAddr(m_instance, "vkCreateDevice"));
-    assert(NULL != m_vkCreateDevice);
+    m_vk_get_physical_device_format_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceFormatProperties"));
+    assert(NULL != m_vk_get_physical_device_format_properties);
 
 #ifndef NDEBUG
-    m_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT"));
-    assert(NULL != m_vkCreateDebugReportCallbackEXT);
+    PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT"));
+    assert(NULL != vk_create_debug_report_callback_ext);
 
-    m_vkDestroyDebugReportCallbackEXT = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT"));
-    assert(NULL != m_vkDestroyDebugReportCallbackEXT);
-#endif
-
-#ifndef NDEBUG
     m_debug_report_callback = VK_NULL_HANDLE;
     {
         VkDebugReportCallbackCreateInfoEXT debug_report_callback_create_info;
@@ -130,7 +129,7 @@ bool gfx_connection_vk::init()
         };
         debug_report_callback_create_info.pUserData = this;
 
-        vk_res = m_vkCreateDebugReportCallbackEXT(m_instance, &debug_report_callback_create_info, &m_allocator_callbacks, &m_debug_report_callback);
+        vk_res = vk_create_debug_report_callback_ext(m_instance, &debug_report_callback_create_info, &m_allocator_callbacks, &m_debug_report_callback);
         assert(VK_SUCCESS == vk_res);
     }
 #endif
@@ -326,6 +325,9 @@ bool gfx_connection_vk::init()
 
     m_device = VK_NULL_HANDLE;
     {
+        PFN_vkCreateDevice vk_create_device = reinterpret_cast<PFN_vkCreateDevice>(vkGetInstanceProcAddr(m_instance, "vkCreateDevice"));
+        assert(NULL != vk_create_device);
+
         struct VkDeviceCreateInfo device_create_info;
         device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         device_create_info.pNext = NULL;
@@ -347,29 +349,30 @@ bool gfx_connection_vk::init()
         enabled_features.textureCompressionASTC_LDR = m_physical_device_feature_texture_compression_ASTC_LDR;
         enabled_features.textureCompressionBC = m_physical_device_feature_texture_compression_BC;
         device_create_info.pEnabledFeatures = &enabled_features;
-        vk_res = m_vkCreateDevice(m_physical_device, &device_create_info, &m_allocator_callbacks, &m_device);
-        assert(VK_SUCCESS == vk_res);
+
+        vk_res = vk_create_device(m_physical_device, &device_create_info, &m_allocator_callbacks, &m_device);
+        if (VK_SUCCESS != vk_res)
+        {
+            return false;
+        }
     }
 
-    m_vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vkGetInstanceProcAddr(m_instance, "vkGetDeviceProcAddr"));
-    assert(NULL != m_vkGetDeviceProcAddr);
+    PFN_vkGetDeviceProcAddr vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetDeviceProcAddr"));
+    assert(NULL != vk_get_device_proc_addr);
 
-    m_vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(m_vkGetDeviceProcAddr(m_device, "vkGetDeviceProcAddr"));
-    assert(NULL != m_vkGetDeviceProcAddr);
+    vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_device_proc_addr(m_device, "vkGetDeviceProcAddr"));
+    assert(NULL != vk_get_device_proc_addr);
 
-    m_vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(m_vkGetDeviceProcAddr(m_device, "vkGetDeviceQueue"));
+    m_vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(m_device, "vkGetDeviceQueue"));
     assert(NULL != m_vkGetDeviceQueue);
 
-    m_vkGetBufferMemoryRequirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(m_vkGetDeviceProcAddr(m_device, "vkGetBufferMemoryRequirements"));
-    assert(NULL != m_vkGetBufferMemoryRequirements);
+    m_vk_create_image = reinterpret_cast<PFN_vkCreateImage>(vk_get_device_proc_addr(m_device, "vkCreateImage"));
+    assert(NULL != m_vk_create_image);
 
-    m_vkGetImageMemoryRequirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(m_vkGetDeviceProcAddr(m_device, "vkGetImageMemoryRequirements"));
-    assert(NULL != m_vkGetImageMemoryRequirements);
-
-    m_vkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(m_vkGetDeviceProcAddr(m_device, "vkAllocateMemory"));
+    m_vkAllocateMemory = reinterpret_cast<PFN_vkAllocateMemory>(vk_get_device_proc_addr(m_device, "vkAllocateMemory"));
     assert(NULL != m_vkAllocateMemory);
 
-    m_vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(m_vkGetDeviceProcAddr(m_device, "vkFreeMemory"));
+    m_vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(vk_get_device_proc_addr(m_device, "vkFreeMemory"));
     assert(NULL != m_vkFreeMemory);
 
     m_vkGetDeviceQueue(m_device, m_queue_GP_family_index, m_queue_GP_queue_index, &m_queue_GP);
@@ -383,6 +386,25 @@ bool gfx_connection_vk::init()
     {
         assert(!m_queue_GP_diff_queue_T);
         m_queue_T = m_queue_GP;
+    }
+
+    PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceMemoryProperties"));
+    assert(NULL != vk_get_physical_device_memory_properties);
+
+    PFN_vkGetBufferMemoryRequirements vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetBufferMemoryRequirements"));
+    assert(NULL != vk_get_buffer_memory_requirements);
+
+    PFN_vkGetImageMemoryRequirements vk_get_image_memory_requirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetImageMemoryRequirements"));
+    assert(NULL != vk_get_image_memory_requirements);
+
+    if (false == this->gfx_malloc_vk::init(
+                     m_physical_device,
+                     vk_get_physical_device_memory_properties,
+                     m_device,
+                     vk_get_buffer_memory_requirements,
+                     vk_get_image_memory_requirements))
+    {
+        return false;
     }
 
     return true;
@@ -405,7 +427,9 @@ class gfx_texture_common *gfx_connection_vk::create_texture()
 gfx_connection_vk::~gfx_connection_vk()
 {
 #ifndef NDEBUG
-    m_vkDestroyDebugReportCallbackEXT(m_instance, m_debug_report_callback, &m_allocator_callbacks);
+    PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT"));
+    assert(NULL != vk_destroy_debug_report_callback_ext);
+    vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, &m_allocator_callbacks);
 #endif
 }
 

@@ -102,8 +102,8 @@ OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.
 # build by ndk  
 cd ${MY_DIR}
 
-rm -rf obj
-rm -rf libs
+# rm -rf obj
+# rm -rf libs
 
 if ${NDK_BUILD_CMD_DIR}/ndk-build ${NDK_BUILD_ARGS}; then #V=1 VERBOSE=1 
     echo "ndk-build passed"

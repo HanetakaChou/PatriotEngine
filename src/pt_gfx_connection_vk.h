@@ -33,7 +33,6 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
     VkAllocationCallbacks m_allocator_callbacks;
 
     VkInstance m_instance;
-    PFN_vkCreateInstance m_vkCreateInstance;
     VkPhysicalDevice m_physical_device;
     VkDeviceSize m_physical_device_limits_buffer_image_granularity;
     VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment;
@@ -55,19 +54,12 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
     PFN_vkGetPhysicalDeviceProperties m_vkGetPhysicalDeviceProperties;
     PFN_vkGetPhysicalDeviceQueueFamilyProperties m_vkGetPhysicalDeviceQueueFamilyProperties;
     PFN_vkGetPhysicalDeviceFeatures m_vkGetPhysicalDeviceFeatures;
-    PFN_vkGetPhysicalDeviceFormatProperties m_vkGetPhysicalDeviceFormatProperties;
     PFN_vkCreateDevice m_vkCreateDevice;
-    PFN_vkGetDeviceProcAddr m_vkGetDeviceProcAddr;
     PFN_vkGetDeviceQueue m_vkGetDeviceQueue;
-    PFN_vkGetBufferMemoryRequirements m_vkGetBufferMemoryRequirements;
-    PFN_vkGetImageMemoryRequirements m_vkGetImageMemoryRequirements;
+    PFN_vkGetPhysicalDeviceFormatProperties m_vk_get_physical_device_format_properties;
+    PFN_vkCreateImage m_vk_create_image;
     PFN_vkAllocateMemory m_vkAllocateMemory;
     PFN_vkFreeMemory m_vkFreeMemory;
-
-#ifndef NDEBUG
-    PFN_vkCreateDebugReportCallbackEXT m_vkCreateDebugReportCallbackEXT;
-    PFN_vkDestroyDebugReportCallbackEXT m_vkDestroyDebugReportCallbackEXT;
-#endif
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -98,15 +90,18 @@ public:
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
 
-    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
+    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap4.html#fundamentals-threadingbehavior
     // vkGetPhysicalDeviceFormatProperties
+    // vkCreateImage
     // vkAllocateMemory
     // vkFreeMemory
-    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vkGetPhysicalDeviceFormatProperties(m_physical_device, format, out_format_properties); }
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, out_format_properties); }
+
+    inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_vk_create_image(m_device, pCreateInfo, &m_allocator_callbacks, pImage); }
 
     //uniform buffer
     //assert(0==(pMemoryRequirements->alignment%m_physical_device_limits_min_uniform_buffer_offset_alignment))
-    inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *pMemoryRequirements) { return m_vkGetBufferMemoryRequirements(m_device, buffer, pMemoryRequirements); }
+
     inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
     inline void free_memory(VkDeviceMemory device_memory) { return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks); }
 };
