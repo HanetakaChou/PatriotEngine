@@ -106,6 +106,7 @@ bool gfx_malloc_vk::init(
 
         struct VkMemoryRequirements mem_req;
         vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
         m_transfer_src_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_transfer_src_buffer_memory_index)
