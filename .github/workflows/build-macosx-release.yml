@@ -1,4 +1,4 @@
-name: MacOSX Release \[Universal Binary\]
+name: MacOSX Release (Universal Binary)
 
 on:
   push:
@@ -12,5 +12,5 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Build MacOSX Release \[Universal Binary\]
+      - name: Build MacOSX Release (Universal Binary)
         run: ./bldsys/posix_mach/build.sh release osx
