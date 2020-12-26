@@ -77,10 +77,15 @@ Build Type | Status
 **Ubuntu 18.04 LTS Glibc Debug x86** | [![Ubuntu 18.04 LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Debug+x86%22)      
 **Ubuntu 18.04 LTS Glibc Release x64** | [![Ubuntu 18.04 LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Release+x64%22)    
 **Ubuntu 18.04 LTS Glibc Debug x64** | [![Ubuntu 18.04 LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%2018.04%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+18.04+LTS+Glibc+Debug+x64%22)    
-
-#### Posix Mach MacOSX     
     
----      
+#### Posix Mach        
+     
+Build Type | Status      
+:-: | :-:      
+**MacOSX Release (Universal Binary)** | [![MacOSX Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Release+%28Universal+Binary%29%22)         
+**MacOSX Debug (Universal Binary)** | [![MacOSX Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Debug+%28Universal+Binary%29%22)     
+     
+---        
 
 ### In Progress    
 * 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
