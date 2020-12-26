@@ -1,0 +1,462 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 50;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
+		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
+		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
+		62D793C125974546001CC2AF /* Metal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C025974546001CC2AF /* Metal.tbd */; };
+		62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C62597454D001CC2AF /* MetalKit.tbd */; };
+		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
+		92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0788D2447818700F82881 /* UIKit.tbd */; };
+		92F078942447863B00F82881 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F078932447863B00F82881 /* libobjc.tbd */; };
+		92F0793324479F0600F82881 /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793224479F0600F82881 /* Foundation.tbd */; };
+		92F0793524479F1000F82881 /* Metal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793424479F1000F82881 /* Metal.tbd */; };
+		92F0793724479F1500F82881 /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793624479F1500F82881 /* MetalKit.tbd */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		62D793B425974516001CC2AF /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
+		62D793B825974525001CC2AF /* AppKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = AppKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/AppKit.tbd; sourceTree = DEVELOPER_DIR; };
+		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
+		62D793C025974546001CC2AF /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
+		62D793C62597454D001CC2AF /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
+		62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-MacOSX.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_window_posix_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_window_posix_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
+		92F078822447761900F82881 /* osx.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = osx.entitlements; sourceTree = SOURCE_ROOT; };
+		92F0788A24477E2200F82881 /* ios.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ios.plist; sourceTree = SOURCE_ROOT; };
+		92F0788D2447818700F82881 /* UIKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = UIKit.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/UIKit.framework/UIKit.tbd; sourceTree = DEVELOPER_DIR; };
+		92F078932447863B00F82881 /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
+		92F0793224479F0600F82881 /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
+		92F0793424479F1000F82881 /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
+		92F0793624479F1500F82881 /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
+		92F977F22439099100C5F3C5 /* osx.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = osx.plist; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		92983F152447725E003F48B6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				92F078942447863B00F82881 /* libobjc.tbd in Frameworks */,
+				92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */,
+				92F0793324479F0600F82881 /* Foundation.tbd in Frameworks */,
+				92F0793524479F1000F82881 /* Metal.tbd in Frameworks */,
+				92F0793724479F1500F82881 /* MetalKit.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F977E12439099000C5F3C5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */,
+				62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */,
+				62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */,
+				62D793C125974546001CC2AF /* Metal.tbd in Frameworks */,
+				62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		62D793E7259750A4001CC2AF /* bldsys */ = {
+			isa = PBXGroup;
+			children = (
+				92F977F22439099100C5F3C5 /* osx.plist */,
+				92F0788A24477E2200F82881 /* ios.plist */,
+				92F078822447761900F82881 /* osx.entitlements */,
+			);
+			name = bldsys;
+			sourceTree = "<group>";
+		};
+		62D7940D2597576F001CC2AF /* examples */ = {
+			isa = PBXGroup;
+			children = (
+				62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */,
+			);
+			name = examples;
+			sourceTree = "<group>";
+		};
+		9279CC2124390AE300DACBD7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				62D793C62597454D001CC2AF /* MetalKit.tbd */,
+				62D793C025974546001CC2AF /* Metal.tbd */,
+				62D793BC25974534001CC2AF /* Foundation.tbd */,
+				62D793B825974525001CC2AF /* AppKit.tbd */,
+				62D793B425974516001CC2AF /* libobjc.tbd */,
+				92F0793624479F1500F82881 /* MetalKit.tbd */,
+				92F0793424479F1000F82881 /* Metal.tbd */,
+				92F0793224479F0600F82881 /* Foundation.tbd */,
+				92F078932447863B00F82881 /* libobjc.tbd */,
+				92F0788D2447818700F82881 /* UIKit.tbd */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		92F977DB2439099000C5F3C5 = {
+			isa = PBXGroup;
+			children = (
+				62D7940D2597576F001CC2AF /* examples */,
+				62D793E7259750A4001CC2AF /* bldsys */,
+				9279CC2124390AE300DACBD7 /* Frameworks */,
+				62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */,
+				62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92983F2F2447725E003F48B6 /* Build configuration list for PBXNativeTarget "PatriotEngine-iPhoneOS" */;
+			buildPhases = (
+				92983F142447725E003F48B6 /* Sources */,
+				92983F152447725E003F48B6 /* Frameworks */,
+				92983F162447725E003F48B6 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PatriotEngine-iPhoneOS";
+			productName = CXXBasedMac;
+			productReference = 62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		92F977E32439099000C5F3C5 /* PatriotEngine-MacOSX */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "PatriotEngine-MacOSX" */;
+			buildPhases = (
+				92F977E02439099000C5F3C5 /* Sources */,
+				92F977E12439099000C5F3C5 /* Frameworks */,
+				92F977E22439099000C5F3C5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "PatriotEngine-MacOSX";
+			productName = CXXBasedMac;
+			productReference = 62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		92F977DC2439099000C5F3C5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1230;
+				ORGANIZATIONNAME = AdunZhang;
+				TargetAttributes = {
+					92983F172447725E003F48B6 = {
+						CreatedOnToolsVersion = 11.4;
+					};
+					92F977E32439099000C5F3C5 = {
+						CreatedOnToolsVersion = 11.4;
+					};
+				};
+			};
+			buildConfigurationList = 92F977DF2439099000C5F3C5 /* Build configuration list for PBXProject "PatriotEngine" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 92F977DB2439099000C5F3C5;
+			productRefGroup = 92F977DB2439099000C5F3C5;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				92F977E32439099000C5F3C5 /* PatriotEngine-MacOSX */,
+				92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		92983F162447725E003F48B6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F977E22439099000C5F3C5 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		92983F142447725E003F48B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		92F977E02439099000C5F3C5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		92983F302447725E003F48B6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6MJZWFY372;
+				INFOPLIST_FILE = ios.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-iPhoneOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		92983F312447725E003F48B6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				INFOPLIST_FILE = ios.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-iPhoneOS";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		92F977F62439099100C5F3C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+			};
+			name = Debug;
+		};
+		92F977F72439099100C5F3C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+			};
+			name = Release;
+		};
+		92F977F92439099100C5F3C5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = osx.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = osx.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Foundation.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-MacOSX";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		92F977FA2439099100C5F3C5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = osx.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = osx.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Foundation.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
+					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-MacOSX";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		92983F2F2447725E003F48B6 /* Build configuration list for PBXNativeTarget "PatriotEngine-iPhoneOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92983F302447725E003F48B6 /* Debug */,
+				92983F312447725E003F48B6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F977DF2439099000C5F3C5 /* Build configuration list for PBXProject "PatriotEngine" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F977F62439099100C5F3C5 /* Debug */,
+				92F977F72439099100C5F3C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "PatriotEngine-MacOSX" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				92F977F92439099100C5F3C5 /* Debug */,
+				92F977FA2439099100C5F3C5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 92F977DC2439099000C5F3C5 /* Project object */;
+}

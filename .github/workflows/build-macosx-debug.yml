@@ -1,0 +1,16 @@
+name: MacOSX Debug \[Universal Binary\]
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build MacOSX Debug \[Universal Binary\]
+        run: ./bldsys/posix_mach/build.sh debug osx

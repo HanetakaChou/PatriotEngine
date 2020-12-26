@@ -20,7 +20,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <sys/cdefs.h> //__BIONIC__
-#include <features.h> //__GLIBC__
+//#include <features.h> //__GLIBC__
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
@@ -30,8 +30,25 @@ inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(
 
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name)
 {
+#if defined(__linux__)
 	int res = pthread_setname_np(tid, name);
 	assert(res == 0);
+	return;
+#elif defined(__MACH__)
+	if (pthread_equal(pthread_self(), tid))
+	{
+		int res = pthread_setname_np(name);
+		assert(res == 0);
+		return;
+	}
+	else
+	{
+		assert(false);
+		return;
+	}
+#else
+#error Unknown Platform
+#endif
 }
 
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
@@ -72,14 +89,23 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 
 inline void mcrt_os_yield()
 {
+#if defined(__linux__)
 #if defined(__BIONIC__)
 	int res = sched_yield();
+	assert(res == 0);
+	return;
 #elif defined(__GLIBC__)
 	int res = pthread_yield();
+	assert(res == 0);
+	return;
 #else
 #error Unknown Platform
 #endif
-	assert(res == 0);
+#elif defined(__MACH__)
+	return pthread_yield_np();
+#else
+#error Unknown Platform
+#endif
 }
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)

@@ -101,8 +101,8 @@ public:
     friend void mcrt_os_event_reset(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
     friend int mcrt_os_event_wait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event);
     friend int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, uint32_t timeout_ms);
-    friend int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, size_t nevents, bool waitall);
-    friend int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+    friend int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall);
+    friend int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms);
 #endif
 } mcrt_event_t;
 
@@ -121,7 +121,7 @@ inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mut
 //                          If more than one event became signaled during the call, this is the array index of
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The function has failed.
-inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, size_t nevents, bool waitall);
+inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, int nevents, bool waitall);
 // Returns:
 //  If waitall is true:
 //       0 - The return value indicates that the state of all specified events is signaled.
@@ -131,7 +131,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *conditi
 //                          If more than one event became signaled during the call, this is the array index of
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
-inline int mcrt_os_event_timedwait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, size_t nevents, bool waitall, uint32_t timeout_ms);
+inline int mcrt_os_event_timedwait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms);
 
 #if defined PT_POSIX
 #include "pt_mcrt_thread_posix.inl"

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1010"
+   LastUpgradeVersion = "1230"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "47CE1B4D21FE4F00003A3B9F"
-               BuildableName = "libCMetal.dylib"
-               BlueprintName = "CMetal_macOS"
-               ReferencedContainer = "container:CMetal.xcodeproj">
+               BlueprintIdentifier = "92983F172447725E003F48B6"
+               BuildableName = "PatriotEngine-iPhoneOS.app"
+               BlueprintName = "PatriotEngine-iPhoneOS"
+               ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,11 +29,9 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
+      buildConfiguration = "Release"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -41,18 +39,20 @@
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
-      <MacroExpansion>
+      enableGPUFrameCaptureMode = "3"
+      enableGPUValidationMode = "1"
+      allowLocationSimulation = "YES"
+      GPUProfilerEnabled = "No">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "47CE1B4D21FE4F00003A3B9F"
-            BuildableName = "libCMetal.dylib"
-            BlueprintName = "CMetal_macOS"
-            ReferencedContainer = "container:CMetal.xcodeproj">
+            BlueprintIdentifier = "92983F172447725E003F48B6"
+            BuildableName = "PatriotEngine-iPhoneOS.app"
+            BlueprintName = "PatriotEngine-iPhoneOS"
+            ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -60,15 +60,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "47CE1B4D21FE4F00003A3B9F"
-            BuildableName = "libCMetal.dylib"
-            BlueprintName = "CMetal_macOS"
-            ReferencedContainer = "container:CMetal.xcodeproj">
+            BlueprintIdentifier = "92983F172447725E003F48B6"
+            BuildableName = "PatriotEngine-iPhoneOS.app"
+            BlueprintName = "PatriotEngine-iPhoneOS"
+            ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1010"
+   LastUpgradeVersion = "1230"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,10 +14,10 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-               BuildableName = "libPTMcRT.dylib"
-               BlueprintName = "PTMcRT_iOS"
-               ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
+               BlueprintIdentifier = "92F977E32439099000C5F3C5"
+               BuildableName = "PatriotEngine-MacOSX.app"
+               BlueprintName = "PatriotEngine-MacOSX"
+               ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -29,30 +29,30 @@
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
       </Testables>
-      <AdditionalOptions>
-      </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Debug"
-      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
-      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = ""
+      selectedLauncherIdentifier = "Xcode.IDEFoundation.Launcher.PosixSpawn"
       launchStyle = "0"
       useCustomWorkingDirectory = "NO"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
-      <MacroExpansion>
+      enableGPUFrameCaptureMode = "3"
+      enableGPUValidationMode = "1"
+      allowLocationSimulation = "YES"
+      GPUProfilerEnabled = "No">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-            BuildableName = "libPTMcRT.dylib"
-            BlueprintName = "PTMcRT_iOS"
-            ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
+            BlueprintIdentifier = "92F977E32439099000C5F3C5"
+            BuildableName = "PatriotEngine-MacOSX.app"
+            BlueprintName = "PatriotEngine-MacOSX"
+            ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
-      <AdditionalOptions>
-      </AdditionalOptions>
+      </BuildableProductRunnable>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -60,15 +60,16 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <MacroExpansion>
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "47511AB8222F5F9A0014C632"
-            BuildableName = "libPTMcRT.dylib"
-            BlueprintName = "PTMcRT_iOS"
-            ReferencedContainer = "container:PTMcRT_PosixMach.xcodeproj">
+            BlueprintIdentifier = "92F977E32439099000C5F3C5"
+            BuildableName = "PatriotEngine-MacOSX.app"
+            BlueprintName = "PatriotEngine-MacOSX"
+            ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
-      </MacroExpansion>
+      </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">

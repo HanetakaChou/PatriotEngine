@@ -157,7 +157,7 @@ inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mut
     return ((res == 0) ? 0 : -1);
 }
 
-inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, size_t nevents, bool waitall)
+inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -165,7 +165,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
     assert(nevents > 0);
 
 #ifndef NDEBUG
-    for (size_t i = 0; i < nevents; ++i)
+    for (int i = 0; i < nevents; ++i)
     {
         assert(events[i]->mcrtp_condition == condition);
         assert(events[i]->mcrtp_mutex == mutex);
@@ -177,12 +177,12 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest; //==-1
+        int lowest = -1;
         bool signalled;
         do
         {
             bool signalled_and = true;
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (!events[i]->mcrtp_state_signalled)
                 {
@@ -208,7 +208,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
 
         if ((res == 0) && signalled)
         {
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (!events[i]->mcrtp_manual_reset)
                 {
@@ -226,12 +226,12 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest; //==-1
+        int lowest = -1;
         bool signalled;
         do
         {
             bool signalled_or = false;
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (events[i]->mcrtp_state_signalled)
                 {
@@ -258,7 +258,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
         if ((res == 0) && signalled)
         {
             assert(lowest >= 0);
-            assert(static_cast<size_t>(lowest) < nevents);
+            assert(lowest < nevents);
             if (!events[lowest]->mcrtp_manual_reset)
             {
                 events[lowest]->mcrtp_state_signalled = false;
@@ -271,7 +271,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
     }
 }
 
-inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, size_t nevents, bool waitall, uint32_t timeout_ms)
+inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms)
 {
     assert(condition != NULL);
     assert(mutex != NULL);
@@ -279,7 +279,7 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
     assert(nevents > 0);
 
 #ifndef NDEBUG
-    for (size_t i = 0; i < nevents; ++i)
+    for (int i = 0; i < nevents; ++i)
     {
         assert(events[i]->mcrtp_condition == condition);
         assert(events[i]->mcrtp_mutex == mutex);
@@ -291,12 +291,12 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest; //==-1
+        int lowest = -1;
         bool signalled;
         do
         {
             bool signalled_and = true;
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (!events[i]->mcrtp_state_signalled)
                 {
@@ -322,7 +322,7 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
 
         if ((res == 0) && signalled)
         {
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (!events[i]->mcrtp_manual_reset)
                 {
@@ -340,12 +340,12 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest; //==-1
+        int lowest = -1;
         bool signalled;
         do
         {
             bool signalled_or = false;
-            for (size_t i = 0; i < nevents; ++i)
+            for (int i = 0; i < nevents; ++i)
             {
                 if (events[i]->mcrtp_state_signalled)
                 {

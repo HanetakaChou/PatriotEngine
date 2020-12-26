@@ -3,6 +3,8 @@
 <plist version="1.0">
 <dict>
 	<key>IDEWorkspaceSharedSettings_AutocreateContextsIfNeeded</key>
+	<true/>
+	<key>PreviewsEnabled</key>
 	<false/>
 </dict>
 </plist>
