@@ -16,6 +16,7 @@
  */
 
 #include <pt_common.h>
+#include <pt_mcrt_intrin.h>
 #include <pt_gfx_common.h>
 #include "pt_gfx_malloc_common.h"
 #include "pt_gfx_malloc_vk.h"
@@ -57,58 +58,6 @@ static inline uint32_t __internal_find_memory_type_index(struct VkPhysicalDevice
     {
         return __internal_find_memory_type_index(physical_device_memory_properties, memory_requirements_memory_type_bits, required_property_flags);
     }
-}
-
-static inline VkDeviceSize __internal_align_down(VkDeviceSize value, VkDeviceSize alignment)
-{
-    //
-    //  Copyright (c) 2005-2019 Intel Corporation
-    //
-    //  Licensed under the Apache License, Version 2.0 (the "License");
-    //  you may not use this file except in compliance with the License.
-    //  You may obtain a copy of the License at
-    //
-    //      http://www.apache.org/licenses/LICENSE-2.0
-    //
-    //  Unless required by applicable law or agreed to in writing, software
-    //  distributed under the License is distributed on an "AS IS" BASIS,
-    //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    //  See the License for the specific language governing permissions and
-    //  limitations under the License.
-    //
-
-    /** @file src/tbbmalloc/shared_utils.h */
-
-    // power-of-2 alignment
-    assert((alignment != 0ULL) && ((alignment & (alignment - 1ULL)) == 0ULL));
-
-    return ((value) & (~(alignment - 1ULL)));
-}
-
-static inline VkDeviceSize __internal_align_up(VkDeviceSize value, VkDeviceSize alignment)
-{
-    //
-    //  Copyright (c) 2005-2019 Intel Corporation
-    //
-    //  Licensed under the Apache License, Version 2.0 (the "License");
-    //  you may not use this file except in compliance with the License.
-    //  You may obtain a copy of the License at
-    //
-    //      http://www.apache.org/licenses/LICENSE-2.0
-    //
-    //  Unless required by applicable law or agreed to in writing, software
-    //  distributed under the License is distributed on an "AS IS" BASIS,
-    //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    //  See the License for the specific language governing permissions and
-    //  limitations under the License.
-    //
-
-    /** @file src/tbbmalloc/shared_utils.h */
-
-    // power-of-2 alignment
-    assert((alignment != 0ULL) && ((alignment & (alignment - 1ULL)) == 0ULL));
-
-    return (((value - 1ULL) | (alignment - 1ULL)) + 1ULL);
 }
 
 static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_index)
@@ -154,7 +103,7 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
 
     // VmaAllocator_T::CalcPreferredBlockSize
     bool is_small_heap = (heap_size <= VMA_SMALL_HEAP_MAX_SIZE);
-    VkDeviceSize preferred_block_size = __internal_align_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, 32ULL);
+    VkDeviceSize preferred_block_size = mcrt_intrin_align_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, static_cast<VkDeviceSize>(32));
     return preferred_block_size;
 }
 
