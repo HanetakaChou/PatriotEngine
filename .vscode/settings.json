@@ -17,6 +17,7 @@
         "memory": "cpp",
         "new": "cpp",
         "tuple": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "__locale": "cpp"
     }
 }

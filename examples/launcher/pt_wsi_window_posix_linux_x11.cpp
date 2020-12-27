@@ -70,7 +70,7 @@ void shell_x11::init()
     xcb_void_cookie_t cookie_create_window = xcb_create_window_checked(m_xcb_connection,
                                                                        m_screen->root_depth,
                                                                        m_window,
-                                                                       m_screen->root, 0, 0, m_screen->width_in_pixels, m_screen->height_in_pixels, 0,
+                                                                       m_screen->root, 0, 0, 1280, 720, 0,
                                                                        XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                                        m_visual,
                                                                        value_mask, value_list);
