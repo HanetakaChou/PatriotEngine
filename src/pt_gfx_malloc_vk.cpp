@@ -22,8 +22,9 @@
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 #include <assert.h>
+#include <new>
 
-static inline uint32_t internal_find_memory_type_index(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags)
+static inline uint32_t __internal_find_memory_type_index(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags)
 {
     uint32_t memory_type_count = physical_device_memory_properties->memoryTypeCount;
     assert(VK_MAX_MEMORY_TYPES >= memory_type_count);
@@ -43,10 +44,10 @@ static inline uint32_t internal_find_memory_type_index(struct VkPhysicalDeviceMe
     return VK_MAX_MEMORY_TYPES;
 }
 
-static inline uint32_t internal_find_memory_type_index(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags, VkMemoryPropertyFlags preferred_property_flags)
+static inline uint32_t __internal_find_memory_type_index(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags, VkMemoryPropertyFlags preferred_property_flags)
 {
     VkMemoryPropertyFlags optimal_property_flags = (required_property_flags | preferred_property_flags);
-    uint32_t memory_type_index = internal_find_memory_type_index(physical_device_memory_properties, memory_requirements_memory_type_bits, optimal_property_flags);
+    uint32_t memory_type_index = __internal_find_memory_type_index(physical_device_memory_properties, memory_requirements_memory_type_bits, optimal_property_flags);
     if (VK_MAX_MEMORY_TYPES != memory_type_index)
     {
         assert(VK_MAX_MEMORY_TYPES > memory_type_index);
@@ -54,8 +55,107 @@ static inline uint32_t internal_find_memory_type_index(struct VkPhysicalDeviceMe
     }
     else
     {
-        return internal_find_memory_type_index(physical_device_memory_properties, memory_requirements_memory_type_bits, required_property_flags);
+        return __internal_find_memory_type_index(physical_device_memory_properties, memory_requirements_memory_type_bits, required_property_flags);
     }
+}
+
+static inline VkDeviceSize __internal_align_down(VkDeviceSize value, VkDeviceSize alignment)
+{
+    //
+    //  Copyright (c) 2005-2019 Intel Corporation
+    //
+    //  Licensed under the Apache License, Version 2.0 (the "License");
+    //  you may not use this file except in compliance with the License.
+    //  You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    //  Unless required by applicable law or agreed to in writing, software
+    //  distributed under the License is distributed on an "AS IS" BASIS,
+    //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    //  See the License for the specific language governing permissions and
+    //  limitations under the License.
+    //
+
+    /** @file src/tbbmalloc/shared_utils.h */
+
+    // power-of-2 alignment
+    assert((alignment != 0ULL) && ((alignment & (alignment - 1ULL)) == 0ULL));
+
+    return ((value) & (~(alignment - 1ULL)));
+}
+
+static inline VkDeviceSize __internal_align_up(VkDeviceSize value, VkDeviceSize alignment)
+{
+    //
+    //  Copyright (c) 2005-2019 Intel Corporation
+    //
+    //  Licensed under the Apache License, Version 2.0 (the "License");
+    //  you may not use this file except in compliance with the License.
+    //  You may obtain a copy of the License at
+    //
+    //      http://www.apache.org/licenses/LICENSE-2.0
+    //
+    //  Unless required by applicable law or agreed to in writing, software
+    //  distributed under the License is distributed on an "AS IS" BASIS,
+    //  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    //  See the License for the specific language governing permissions and
+    //  limitations under the License.
+    //
+
+    /** @file src/tbbmalloc/shared_utils.h */
+
+    // power-of-2 alignment
+    assert((alignment != 0ULL) && ((alignment & (alignment - 1ULL)) == 0ULL));
+
+    return (((value - 1ULL) | (alignment - 1ULL)) + 1ULL);
+}
+
+static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_index)
+{
+    assert(VK_MAX_MEMORY_TYPES > memory_index);
+    assert(physical_device_memory_properties->memoryTypeCount > memory_index);
+    uint32_t heap_index = physical_device_memory_properties->memoryTypes[memory_index].heapIndex;
+    assert(VK_MAX_MEMORY_TYPES > heap_index);
+    assert(physical_device_memory_properties->memoryHeapCount > heap_index);
+    VkDeviceSize heap_size = physical_device_memory_properties->memoryHeaps[heap_index].size;
+
+    // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+
+    //
+    // Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved.
+    //
+    // Permission is hereby granted, free of charge, to any person obtaining a copy
+    // of this software and associated documentation files (the "Software"), to deal
+    // in the Software without restriction, including without limitation the rights
+    // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    // copies of the Software, and to permit persons to whom the Software is
+    // furnished to do so, subject to the following conditions:
+    //
+    // The above copyright notice and this permission notice shall be included in
+    // all copies or substantial portions of the Software.
+    //
+    // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+    // AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    // THE SOFTWARE.
+    //
+
+    /** @file src/vk_mem_alloc.inl **/
+
+    /// Default size of a block allocated as single VkDeviceMemory from a "large" heap.
+    static VkDeviceSize const VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE = (256ULL * 1024ULL * 1024ULL);
+
+    /// Maximum size of a memory heap in Vulkan to consider it "small".
+    static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
+
+    // VmaAllocator_T::CalcPreferredBlockSize
+    bool is_small_heap = (heap_size <= VMA_SMALL_HEAP_MAX_SIZE);
+    VkDeviceSize preferred_block_size = __internal_align_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, 32ULL);
+    return preferred_block_size;
 }
 
 bool gfx_malloc_vk::init(
@@ -65,6 +165,8 @@ bool gfx_malloc_vk::init(
     PFN_vkGetBufferMemoryRequirements vk_get_buffer_memory_requirements,
     PFN_vkGetImageMemoryRequirements vk_get_image_memory_requirements)
 {
+    m_gfx_api_vk = static_cast<class gfx_connection_vk *>(this);
+
     VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
     vk_get_physical_device_memory_properties(physical_device, &physical_device_memory_properties);
 
@@ -101,19 +203,19 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_src.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_transfer_src, &dummy_buf);
+        VkResult vk_res = m_gfx_api_vk->create_buffer(&buffer_ci_transfer_src, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
         //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
-        m_transfer_src_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        m_transfer_src_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_transfer_src_buffer_memory_index)
     {
         return false;
     }
-    assert(m_transfer_src_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > m_transfer_src_buffer_memory_index);
 
     m_uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
@@ -127,19 +229,19 @@ bool gfx_malloc_vk::init(
         buffer_ci_uniform.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_uniform, &dummy_buf);
+        VkResult vk_res = m_gfx_api_vk->create_buffer(&buffer_ci_uniform, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
         //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
-        m_uniform_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        m_uniform_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_uniform_buffer_memory_index)
     {
         return false;
     }
-    assert(m_uniform_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > m_uniform_buffer_memory_index);
 
     m_transfer_dst_and_vertex_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
@@ -153,19 +255,19 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_transfer_dst_and_vertex_buffer, &dummy_buf);
+        VkResult vk_res = m_gfx_api_vk->create_buffer(&buffer_ci_transfer_dst_and_vertex_buffer, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
         //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
-        m_transfer_dst_and_vertex_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        m_transfer_dst_and_vertex_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_transfer_dst_and_vertex_buffer_memory_index)
     {
         return false;
     }
-    assert(m_transfer_dst_and_vertex_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_vertex_buffer_memory_index);
 
     m_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
@@ -179,19 +281,19 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_buffer(&buffer_ci_transfer_dst_and_index_buffer, &dummy_buf);
+        VkResult vk_res = m_gfx_api_vk->create_buffer(&buffer_ci_transfer_dst_and_index_buffer, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
         //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
-        m_transfer_dst_and_index_buffer_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        m_transfer_dst_and_index_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_transfer_dst_and_index_buffer_memory_index)
     {
         return false;
     }
-    assert(m_transfer_dst_and_index_buffer_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_index_buffer_memory_index);
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a color format, the memoryTypeBits member is identical for all VkImage objects created with the
@@ -204,7 +306,7 @@ bool gfx_malloc_vk::init(
         enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
         struct VkFormatProperties format_properties;
-        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(color_format, &format_properties);
+        m_gfx_api_vk->get_physical_device_format_properties(color_format, &format_properties);
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
@@ -230,26 +332,26 @@ bool gfx_malloc_vk::init(
         image_ci_regular_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_image(&image_ci_regular_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_gfx_api_vk->create_image(&image_ci_regular_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_image_memory_requirements(device, dummy_img, &mem_req);
 
-        color_format_regular_optimal_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        color_format_regular_optimal_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == color_format_regular_optimal_memory_index)
     {
         return false;
     }
-    assert(color_format_regular_optimal_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > color_format_regular_optimal_memory_index);
 
     uint32_t color_format_transient_tiling_optimal_memory_index = VK_MAX_MEMORY_TYPES;
     {
         enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
         struct VkFormatProperties format_properties;
-        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(color_format, &format_properties);
+        m_gfx_api_vk->get_physical_device_format_properties(color_format, &format_properties);
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT); //INPUT_ATTACHMENT
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
 
@@ -273,22 +375,28 @@ bool gfx_malloc_vk::init(
         image_ci_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_image(&image_ci_transient_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_gfx_api_vk->create_image(&image_ci_transient_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_image_memory_requirements(device, dummy_img, &mem_req);
-        color_format_transient_tiling_optimal_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
+        color_format_transient_tiling_optimal_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == color_format_transient_tiling_optimal_memory_index)
     {
         return false;
     }
-    assert(color_format_transient_tiling_optimal_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > color_format_transient_tiling_optimal_memory_index);
 
     m_color_attachment_and_input_attachment_and_transient_attachment_memory_index = color_format_transient_tiling_optimal_memory_index;
     m_color_attachment_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
     m_transfer_dst_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
+    //m_transfer_dst_and_sampled_image_heap_index = physical_device_memory_properties.memoryTypes[m_transfer_dst_and_sampled_image_memory_index].heapIndex;
+    //assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_sampled_image_heap_index);
+    //m_transfer_dst_and_sampled_image_heap_size = physical_device_memory_properties.memoryHeaps[m_transfer_dst_and_sampled_image_heap_index].size;
+    m_transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_sampled_image_memory_index);
+    m_transfer_dst_and_sampled_image_slob_break1 = m_transfer_dst_and_sampled_image_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    m_transfer_dst_and_sampled_image_slob_break2 = m_transfer_dst_and_sampled_image_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
@@ -307,20 +415,20 @@ bool gfx_malloc_vk::init(
         struct VkFormatProperties format_properties;
 
         m_format_depth = VK_FORMAT_D32_SFLOAT;
-        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth, &format_properties);
+        m_gfx_api_vk->get_physical_device_format_properties(m_format_depth, &format_properties);
         if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
         {
             m_format_depth = VK_FORMAT_X8_D24_UNORM_PACK32;
-            static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth, &format_properties);
+            m_gfx_api_vk->get_physical_device_format_properties(m_format_depth, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
 
         m_format_depth_stencil = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
+        m_gfx_api_vk->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
         if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
         {
             m_format_depth_stencil = VK_FORMAT_D24_UNORM_S8_UINT;
-            static_cast<class gfx_connection_vk *>(this)->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
+            m_gfx_api_vk->get_physical_device_format_properties(m_format_depth_stencil, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
 
@@ -344,18 +452,18 @@ bool gfx_malloc_vk::init(
         image_ci_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = static_cast<class gfx_connection_vk *>(this)->create_image(&image_ci_depth_stencil_transient_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_gfx_api_vk->create_image(&image_ci_depth_stencil_transient_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
         vk_get_image_memory_requirements(device, dummy_img, &mem_req);
-        m_depth_stencil_attachment_and_transient_attachment_memory_index = internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
+        m_depth_stencil_attachment_and_transient_attachment_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_depth_stencil_attachment_and_transient_attachment_memory_index)
     {
         return false;
     }
-    assert(m_depth_stencil_attachment_and_transient_attachment_memory_index < VK_MAX_MEMORY_TYPES);
+    assert(VK_MAX_MEMORY_TYPES > m_depth_stencil_attachment_and_transient_attachment_memory_index);
 
     return true;
 }
@@ -366,8 +474,46 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
 {
     // NVIDIA Driver 128 MB
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
-    //calc_prefer_block_size
-    //assert(size >= (1024ULL * 1024ULL * 128ULL));
+    // VmaAllocator_T::CalcPreferredBlockSize
+    // assert(size >= (1024ULL * 1024ULL * 128ULL));
 
     return NULL;
+}
+
+class gfx_malloc_vk::gfx_malloc_slob_page_common_t *gfx_malloc_vk::slob_new_pages(gfx_malloc_usage_t malloc_usage)
+{
+    //routed into memory index //may be the same index
+    if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_VERTEX_BUFFER == malloc_usage)
+    {
+    }
+    else if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_INDEX_BUFFER == malloc_usage)
+    {
+    }
+    else if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_SAMPLED_IMAGE == malloc_usage)
+    {
+        VkResult res;
+        VkDeviceMemory device_memory;
+        {
+            VkMemoryAllocateInfo memory_allocate_info;
+            memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+            memory_allocate_info.pNext = NULL;
+            memory_allocate_info.allocationSize = m_transfer_dst_and_sampled_image_page_size;
+            memory_allocate_info.memoryTypeIndex = m_transfer_dst_and_sampled_image_memory_index;
+            res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
+        }
+        if (PT_LIKELY(res >= 0))
+        {
+            return (new (mcrt_aligned_malloc(sizeof(gfx_malloc_slob_page_vk_t), alignof(gfx_malloc_slob_page_vk_t))) gfx_malloc_slob_page_vk_t(m_transfer_dst_and_sampled_image_page_size, device_memory));
+        }
+        else
+        {
+            return NULL;
+        }
+    }
+    else
+    {
+        assert(false);
+        //alloc_uniform_buffer
+        return NULL;
+    }
 }

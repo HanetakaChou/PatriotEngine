@@ -87,7 +87,7 @@
 //       <m_Suballocations.index> m_FreeSuballocationsBySize //sort by size
 //     VmaBlockVector::AllocateFromBlock //VmaDeviceMemoryBlock 1-1 VmaBlockMetadata(_Generic)
 //      VmaBlockMetadata_Generic::CreateAllocationRequest //just produce -> request (offset sumFreeSize(the size of VmaSuballocation) item(the VmaSuballocation))
-//       m_SumFreeSize -> early return 
+//       m_SumFreeSize -> early return
 //       VmaBinaryFindFirstNotLess //can move the check bufferImageGranularity here
 //       VmaBlockMetadata_Generic::CheckAllocation -> check bufferImageGranularity //there may more than one suballoc in current page  //also used in "canMakeOtherLost"
 //       "canMakeOtherLost"
@@ -151,8 +151,31 @@
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-
-
+class gfx_malloc_common::gfx_malloc_slob_block_t gfx_malloc_common::slob_alloc(
+    uint64_t slob_break1,
+    uint64_t slob_break2,
+    class gfx_malloc_slob_page_common_t *list_head_free_slob_small,
+    class gfx_malloc_slob_page_common_t *list_head_free_slob_medium,
+    class gfx_malloc_slob_page_common_t *list_head_free_slob_large,
+    void (*lock_slob_lock_callback)(void),
+    void (*unlock_slob_lock_callback)(void),
+    uint64_t size,
+    uint64_t align)
+{
+    class gfx_malloc_slob_page_common_t *slob_list;
+    if (size < slob_break1)
+    {
+        slob_list = list_head_free_slob_small;
+    }
+    else if (size < slob_break2)
+    {
+        slob_list = list_head_free_slob_medium;
+    }
+    else
+    {
+        slob_list = list_head_free_slob_large;
+    }
+}
 
 class mcrt_multi_thread_check
 {
