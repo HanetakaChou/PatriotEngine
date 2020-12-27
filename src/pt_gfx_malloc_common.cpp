@@ -113,7 +113,7 @@ uint64_t gfx_malloc_common::slob_alloc(
     ret_b = slob_invalid_offset;
 
     slob_lock_list_head_callback();
-    slob_page_t::find(
+    slob_page_t::find_if_not(
         slob_list,
         [size, align, &ret_b, &ret_sp](class slob_page_t *sp) -> bool {
             uint64_t b = sp->alloc(size, align);

@@ -58,7 +58,7 @@ protected:
 
     public:
         template <typename _Predicate>
-        static inline void find(class slob_page_t *list_head, _Predicate __pred)
+        static inline void find_if_not(class slob_page_t *list_head, _Predicate __pred)
         {
             for (class slob_page_t *__it = list_head; __it != list_head; __it = __it->m_list_next)
             {
