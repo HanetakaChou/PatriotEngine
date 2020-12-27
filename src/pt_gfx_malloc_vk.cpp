@@ -480,40 +480,26 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     return NULL;
 }
 
-class gfx_malloc_vk::gfx_malloc_slob_page_common_t *gfx_malloc_vk::slob_new_pages(gfx_malloc_usage_t malloc_usage)
+class gfx_malloc_vk::slob_page_t *gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(class gfx_malloc_common *_self)
 {
-    //routed into memory index //may be the same index
-    if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_VERTEX_BUFFER == malloc_usage)
+    class gfx_malloc_vk *self = static_cast<class gfx_malloc_vk *>(_self);
+
+    VkResult res;
+    VkDeviceMemory device_memory;
     {
+        VkMemoryAllocateInfo memory_allocate_info;
+        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memory_allocate_info.pNext = NULL;
+        memory_allocate_info.allocationSize = self->m_transfer_dst_and_sampled_image_page_size;
+        memory_allocate_info.memoryTypeIndex = self->m_transfer_dst_and_sampled_image_memory_index;
+        res = self->m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
     }
-    else if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_INDEX_BUFFER == malloc_usage)
+    if (PT_LIKELY(res >= 0))
     {
-    }
-    else if (PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_SAMPLED_IMAGE == malloc_usage)
-    {
-        VkResult res;
-        VkDeviceMemory device_memory;
-        {
-            VkMemoryAllocateInfo memory_allocate_info;
-            memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-            memory_allocate_info.pNext = NULL;
-            memory_allocate_info.allocationSize = m_transfer_dst_and_sampled_image_page_size;
-            memory_allocate_info.memoryTypeIndex = m_transfer_dst_and_sampled_image_memory_index;
-            res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
-        }
-        if (PT_LIKELY(res >= 0))
-        {
-            return (new (mcrt_aligned_malloc(sizeof(gfx_malloc_slob_page_vk_t), alignof(gfx_malloc_slob_page_vk_t))) gfx_malloc_slob_page_vk_t(m_transfer_dst_and_sampled_image_page_size, device_memory));
-        }
-        else
-        {
-            return NULL;
-        }
+        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(self->m_transfer_dst_and_sampled_image_page_size, device_memory));
     }
     else
     {
-        assert(false);
-        //alloc_uniform_buffer
         return NULL;
     }
 }

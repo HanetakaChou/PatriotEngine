@@ -23,9 +23,9 @@
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
+#include <pt_mcrt_atomic.h>
 #include "pt_gfx_malloc_common.h"
 #include <vulkan/vulkan.h>
-#include <deque>
 
 class gfx_malloc_vk : public gfx_malloc_common
 {
@@ -65,39 +65,38 @@ class gfx_malloc_vk : public gfx_malloc_common
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
 
-    class gfx_malloc_slob_page_vk_t : public gfx_malloc_slob_page_common_t
+    class slob_page_vk_t : public slob_page_t
     {
         VkDeviceMemory m_page;
 
     public:
-        inline gfx_malloc_slob_page_vk_t(VkDeviceSize size, VkDeviceMemory page) : m_page(page)
+        inline slob_page_vk_t(VkDeviceSize size, VkDeviceMemory page) : slob_page_t(size), m_page(page)
         {
-            m_free.emplace_back(static_cast<uint64_t>(0ULL), static_cast<uint64_t>(size));
         }
     };
 
     VkDeviceSize m_transfer_dst_and_sampled_image_slob_break1; //(page_size * 256/*SLOB_BREAK1*/) / 4096
     VkDeviceSize m_transfer_dst_and_sampled_image_slob_break2; //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-    gfx_malloc_slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_small;
-    gfx_malloc_slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_medium;
-    gfx_malloc_slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_large;
+    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_small;
+    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_medium;
+    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_large;
 
 #ifndef NDEBUG
-    bool m_transfer_dst_and_sampled_image_slob_lock;
+    bool m_transfer_dst_and_sampled_image_slob_list_head_lock;
 #endif
-    inline void transfer_dst_and_sampled_image_lock_slob_lock()
+    inline void transfer_dst_and_sampled_image_slob_lock_list_head()
     {
-        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_lock) == false);
+        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_list_head_lock) == false);
 #ifndef NDEBUG
-        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_lock, true);
+        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_list_head_lock, true);
 #endif
     }
 
-    inline void transfer_dst_and_sampled_image_unlock_slob_lock()
+    inline void transfer_dst_and_sampled_image_slob_unlock_list_head()
     {
-        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_lock) == true);
+        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_list_head_lock) == true);
 #ifndef NDEBUG
-        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_lock, false);
+        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_list_head_lock, false);
 #endif
     }
     VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
@@ -107,7 +106,9 @@ class gfx_malloc_vk : public gfx_malloc_common
 
     //uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
 
-    class gfx_malloc_slob_page_common_t *slob_new_pages(gfx_malloc_usage_t malloc_usage) override;
+    //routed into memory index //may be the same index
+    //MT-safe???
+    static class slob_page_t *transfer_dst_and_sampled_image_slob_new_pages(class gfx_malloc_common *self);
 
     void *alloc_uniform_buffer(size_t size) override;
 

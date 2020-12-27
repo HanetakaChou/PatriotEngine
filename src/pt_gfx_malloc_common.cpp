@@ -56,6 +56,118 @@
 // required = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
 // preferred = VK_MEMORY_HEAP_DEVICE_LOCAL_BIT // AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
 
+// VmaAllocation_T/VmaSuballocation <-> slob_block/slob_t
+// VmaBlock/VmaBlockMetadata_Generic <-> slob_page
+
+// VmaBlockVector::AllocateFromBlock/VmaBlockMetadata_Generic::CreateAllocationRequest
+// m_SumFreeSize -> early return
+// slob_alloc /* check sp->units */ Note that the reported space in a SLOB page is not necessarily contiguous, so the allocation is not guaranteed to succeed.
+// slob_page_alloc
+
+// SLOB
+// kernel 3.5
+// https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/slob.c?h=v3.5&id=28a33cbc24e4256c143dce96c7d93bf423229f92
+// [Rosenberg 2012] Dan Rosenberg. "A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator." Virtual Security Research 2012.
+
+// slab <-> slob_page
+// buf <-> slob_t <-> slob_block
+
+// Note that SLOB pages contain blocks of varying sizes, which differentiates SLOB from a classic slab allocator.
+
+// https://www.kernel.org/doc/gorman/html/understand/understand011.html
+
+uint64_t const gfx_malloc_common::slob_invalid_offset = (~0ULL);
+
+uint64_t gfx_malloc_common::slob_alloc(
+    uint64_t slob_break1,
+    uint64_t slob_break2,
+    class slob_page_t *list_head_free_slob_small,
+    class slob_page_t *list_head_free_slob_medium,
+    class slob_page_t *list_head_free_slob_large,
+    void (*slob_lock_list_head_callback)(void),
+    void (*slob_unlock_list_head_callback)(void),
+    uint64_t size,
+    uint64_t align,
+    class slob_page_t const **out_slob_page,
+    class slob_page_t *(*slob_new_pages_callback)(class gfx_malloc_common *self),
+    class gfx_malloc_common *self)
+{
+    class slob_page_t *ret_sp;
+    uint64_t ret_b;
+
+    class slob_page_t *slob_list = NULL;
+    if (size < slob_break1)
+    {
+        slob_list = list_head_free_slob_small;
+    }
+    else if (size < slob_break2)
+    {
+        slob_list = list_head_free_slob_medium;
+    }
+    else
+    {
+        slob_list = list_head_free_slob_large;
+    }
+
+    ret_sp = NULL;
+    ret_b = slob_invalid_offset;
+
+    slob_lock_list_head_callback();
+    slob_page_t::find(
+        slob_list,
+        [size, align, &ret_b, &ret_sp](class slob_page_t *sp) -> bool {
+            uint64_t b = sp->alloc(size, align);
+            if (slob_invalid_offset == b)
+            {
+                return true;
+            }
+            else
+            {
+                //TODO
+                //remove
+                //addtotail
+
+                ret_sp = sp;
+                ret_b = b;
+                return false;
+            }
+        });
+    slob_unlock_list_head_callback();
+
+    if ((NULL != ret_sp) && (slob_invalid_offset != ret_b))
+    {
+        //Do Nothing
+    }
+    else
+    {
+        assert((NULL == ret_sp) && (slob_invalid_offset == ret_b));
+
+        //MT-safe: slob_new_pages_callback
+        class slob_page_t *sp = slob_new_pages_callback(self);
+
+        if (NULL != sp)
+        {
+            slob_lock_list_head_callback();
+            //add to list_head
+            uint64_t b = sp->alloc(size, align);
+            slob_unlock_list_head_callback();
+            if (slob_invalid_offset != b)
+            {
+                ret_sp = sp;
+                ret_b = b;
+            }
+            else
+            {
+                assert(false);
+                assert((NULL == ret_sp) && (slob_invalid_offset == ret_b));
+            }
+        }
+    }
+
+    (*out_slob_page) = ret_sp;
+    return ret_b;
+}
+
 // VmaAllocator_T::VmaAllocator_T
 //  VmaAllocator_T::CalcPreferredBlockSize //VMA_SMALL_HEAP_MAX_SIZE 1024MB block 1024 / 8 = 128MB //VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE 256MB
 //  vma_new VmaBlockVector //maxBlockCount->SIZE_MAX
@@ -130,69 +242,6 @@
 //
 
 // VmaAllocator_T::FlushOrInvalidateAllocation
-
-// VmaAllocation_T/VmaSuballocation <-> slob_block/slob_t
-// VmaBlock/VmaBlockMetadata_Generic <-> slob_page
-
-// VmaBlockVector::AllocateFromBlock/VmaBlockMetadata_Generic::CreateAllocationRequest
-// m_SumFreeSize -> early return
-// slob_alloc /* check sp->units */ Note that the reported space in a SLOB page is not necessarily contiguous, so the allocation is not guaranteed to succeed.
-// slob_page_alloc
-
-// SLOB
-// kernel 3.5
-// https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/mm/slob.c?h=v3.5&id=28a33cbc24e4256c143dce96c7d93bf423229f92
-// [Rosenberg 2012] Dan Rosenberg. "A Heap of Trouble: Breaking the Linux Kernel SLOB Allocator." Virtual Security Research 2012.
-
-// slab <-> slob_page
-// buf <-> slob_t <-> slob_block
-
-// Note that SLOB pages contain blocks of varying sizes, which differentiates SLOB from a classic slab allocator.
-
-// https://www.kernel.org/doc/gorman/html/understand/understand011.html
-
-class gfx_malloc_common::gfx_malloc_slob_block_t gfx_malloc_common::slob_alloc(
-    uint64_t slob_break1,
-    uint64_t slob_break2,
-    class gfx_malloc_slob_page_common_t *list_head_free_slob_small,
-    class gfx_malloc_slob_page_common_t *list_head_free_slob_medium,
-    class gfx_malloc_slob_page_common_t *list_head_free_slob_large,
-    void (*lock_slob_lock_callback)(void),
-    void (*unlock_slob_lock_callback)(void),
-    uint64_t size,
-    uint64_t align)
-{
-    class gfx_malloc_slob_page_common_t *slob_list;
-    if (size < slob_break1)
-    {
-        slob_list = list_head_free_slob_small;
-    }
-    else if (size < slob_break2)
-    {
-        slob_list = list_head_free_slob_medium;
-    }
-    else
-    {
-        slob_list = list_head_free_slob_large;
-    }
-}
-
-class mcrt_multi_thread_check
-{
-protected:
-    inline void check_read_write() {}
-    inline void check_read_only() {}
-
-public:
-    inline void mark_for_read() {}
-    inline void mark_for_write() {}
-    inline void unmark_for_read() {}
-    inline void unmark_for_write() {}
-};
-
-class slob_allocator : public mcrt_multi_thread_check
-{
-};
 
 // https://github.com/ValveSoftware/dxvk
 // DxvkDevice::createImage          // src/dxvk/dxvk_device.cpp

@@ -23,7 +23,6 @@
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
-#include <pt_mcrt_atomic.h>
 #include <pt_mcrt_scalable_allocator.h>
 #include <deque>
 #include <assert.h>
@@ -31,67 +30,67 @@
 class gfx_malloc_common
 {
 protected:
-    enum gfx_malloc_usage_t
-    {
-        PT_GFX_MALLOC_USAGE_UNKNOWN,
-        PT_GFX_MALLOC_USAGE_TRANSFER_SRC_BUFFER, //staging buffer
-        PT_GFX_MALLOC_USAGE_UNIFORM_BUFFER,
-        //PT_GFX_MALLOC_USAGE_DYNAMIC_CONSTANT_BUFFER, //switch between diffirent constant buffer //cost
-        //PT_GFX_MALLOC_USAGE_IMMUTABLE_CONSTANT_BUFFER,
-        PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_VERTEX_BUFFER, //Position Vertex Buffer + Varying Vertex Buffer //IDVS(Index Driven Vertex Shading) 1. Arm® Mali™ GPU Best Practices Developer Guide / 4.4 Attribute layout 2. Real-Time Rendering Fourth Edition / 23.10.1 Case Study: ARM Mali G71 Bifrost / Figure 23.22
-        PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_INDEX_BUFFER,
-        PT_GFX_MALLOC_USAGE_COLOR_ATTACHMENT_AND_INPUT_ATTACHMENT_AND_TRANSIENT_ATTACHMENT,
-        PT_GFX_MALLOC_USAGE_COLOR_ATTACHMENT_AND_SAMPLED_IMAGE,
-        PT_GFX_MALLOC_USAGE_DEPTH_STENCIL_ATTACHMENT_AND_TRANSIENT_ATTACHMENT, //DENY_SAMPLED_IMAGE //write depth to color buffer //to be consistant with MTL
-        PT_GFX_MALLOC_USAGE_TRANSFER_DST_AND_SAMPLED_IMAGE,
-        PT_GFX_MALLOC_USAGE_RANGE_SIZE
-    };
+    static uint64_t const slob_invalid_offset;
 
-    class gfx_malloc_slob_block_t
+    class slob_page_t
     {
-        uint64_t m_offset;
-        uint64_t m_size;
+        class slob_page_t *m_list_next;
+        class slob_page_t *m_list_prev;
 
-    public:
-        inline gfx_malloc_slob_block_t(uint64_t offset, uint64_t size) : m_offset(offset), m_size(size)
+        struct slob_block_t
         {
-        }
-    };
+            uint64_t offset;
+            uint64_t size;
+        };
 
-    class gfx_malloc_slob_page_common_t
-    {
-        class gfx_malloc_slob_page_common_t *m_list_next;
-        class gfx_malloc_slob_page_common_t *m_list_prev;
+        std::deque<slob_block_t, mcrt::scalable_allocator<slob_block_t>> m_free;
 
     protected:
-        std::deque<gfx_malloc_slob_block_t, mcrt::scalable_allocator<gfx_malloc_slob_block_t>> m_free;
-
-    public:
-        inline gfx_malloc_slob_page_common_t()
+        inline slob_page_t(uint64_t size)
         {
+            //slob_block_t
+            m_free.push_back(slob_block_t{0ULL, size});
+
             //init_list_head
             m_list_next = this;
             m_list_prev = this;
         }
+
+    public:
+        template <typename _Predicate>
+        static inline void find(class slob_page_t *list_head, _Predicate __pred)
+        {
+            for (class slob_page_t *__it = list_head; __it != list_head; __it = __it->m_list_next)
+            {
+                if (__pred(__it))
+                {
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+
+        uint64_t alloc(uint64_t size, uint64_t align);
     };
 
-    static struct gfx_malloc_slob_block_t slob_alloc(
+protected:
+    //slob_page_t::alloc not MT-safe //we put it in the scope of the list_head lock
+    //MT-safe: slob_new_pages_callback
+    static uint64_t slob_alloc(
         uint64_t slob_break1,
         uint64_t slob_break2,
-        class gfx_malloc_slob_page_common_t *list_head_free_slob_small,
-        class gfx_malloc_slob_page_common_t *list_head_free_slob_medium,
-        class gfx_malloc_slob_page_common_t *list_head_free_slob_large,
-        void (*lock_slob_lock_callback)(void),
-        void (*unlock_slob_lock_callback)(void),
+        class slob_page_t *list_head_free_slob_small,
+        class slob_page_t *list_head_free_slob_medium,
+        class slob_page_t *list_head_free_slob_large,
+        void (*slob_lock_list_head_callback)(void),
+        void (*slob_unlock_list_head_callback)(void),
         uint64_t size,
-        uint64_t align);
-
-    static struct gfx_malloc_slob_block_t slob_page_alloc(class gfx_malloc_slob_page_common_t *sp, uint64_t size, uint64_t align);
-
-    virtual class gfx_malloc_slob_page_common_t *slob_new_pages(gfx_malloc_usage_t malloc_usage) = 0;
-
-private:
-    //malloc_usage_to_memory_index
+        uint64_t align,
+        class slob_page_t const **out_slob_page,
+        class slob_page_t *(*slob_new_pages_callback)(class gfx_malloc_common *self),
+        class gfx_malloc_common *self);
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
