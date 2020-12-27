@@ -100,7 +100,72 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 * The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.    
     
 ---   
-      
+
+### Feature List
+- [ ] Scene  
+  - [ ] SceneGraph / SceneTree   
+  - [ ] Switch Algorithm //LOD ...   
+  - [ ] Culling Algorithm //Frustum Culling, Occlusion Culling ...    
+- [ ] Geometry  
+  - [ ] Mesh   
+  - [ ] Decal  
+  - [ ] Hair 
+  - [ ] Cloth    
+  - [ ] Ocean   
+  - [ ] Terrain    
+  - [ ] Grass  
+  - [ ] Tree
+- [ ] Participating Media   
+  - [ ] Volumetric Lighting/Fog/Cloud ...  
+- [ ] Color
+  - [ ] UHD Display    
+- [ ] Material   
+  - [ ] MDL Frontend   
+  - [ ] OSL Frontend  
+  - [ ] LLVM IR    
+  - [ ] GLSL Backend    
+  - [ ] MSL Backend       
+  - [ ] HLSL Backend   
+- [ ] Light //The first item of the Liouville–Neumann series of the Rendering Equation  
+  - [ ] Illumination //Tiled Shading, Clustered Shading ...    
+  - [ ] Shadow Map //CSM, PCF, VSM ...
+- [ ] Light Probe //The second item of the Liouville–Neumann series of the Rendering Equation  
+  - [ ] Spherical Function //SH, LTC, Spherical Wavelets ...
+  - [ ] IBL //Importance Sampling ...
+  - [ ] SSR  
+  - [ ] SSAO/HBAO/HBAO+/SSDO
+- [ ] Global Illumination //The Whole Rendering Equation
+  - [ ] Radiosity
+  - [ ] Ray Tracing //VXGI, RTX ...
+- [ ] PostProcess
+  - [ ] Color //UHD Display ...
+  - [ ] AA //FXAA, TAA ...
+  - [ ] Effect //DOF ...  
+    
+---   
+
+### Platform Support  
+- [ ] Vulkan  
+  - [ ] MemoryAllocator  
+  - [ ] TextureLoader  
+  - [ ] WSI  
+    - [ ] PosixLinuxX11  
+    - [ ] PosixLinuxAndroid  
+    - [ ] Win32Desktop  
+- [ ] Metal  
+  - [ ] MemoryAllocator  
+  - [ ] TextureLoader  
+  - [ ] WSI  
+    - [ ] PosixMachOSX  
+    - [ ] PosixMachIOS  
+- [ ] Direct3D12  
+  - [ ] MemoryAllocator  
+  - [ ] TextureLoader  
+  - [ ] WSI  
+    - [ ] Win32Desktop      
+    
+---    
+       
 ### 项目简介 
 本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
   
