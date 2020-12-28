@@ -128,7 +128,7 @@ bool gfx_texture_vk::read_input_stream(
         m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
 
         VkDeviceMemory device_memory;
-        uint64_t offset = m_gfx_connection->alloc_transfer_dst_and_sampled_image(&memory_requirements, &device_memory);
+        //uint64_t offset = m_gfx_connection->alloc_transfer_dst_and_sampled_image(&memory_requirements, &device_memory);
     }
 
     return true;

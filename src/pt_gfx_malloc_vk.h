@@ -65,22 +65,31 @@ class gfx_malloc_vk : public gfx_malloc_common
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
 
-    class slob_page_vk_t : public slob_page_t
+    class slob_page_vk : public slob_page
     {
-
     public:
         VkDeviceMemory m_page;
-
-        inline slob_page_vk_t(VkDeviceSize size, VkDeviceMemory page) : slob_page_t(size), m_page(page)
-        {
-        }
+        inline slob_page_vk(VkDeviceSize size, VkDeviceMemory page);
     };
 
-    VkDeviceSize m_transfer_dst_and_sampled_image_slob_break1; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    VkDeviceSize m_transfer_dst_and_sampled_image_slob_break2; //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_small;
-    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_medium;
-    slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_large;
+    class slob_vk : public slob
+    {
+        class gfx_connection_vk *m_gfx_api_vk;
+        VkDeviceSize m_page_size;
+        uint32_t m_memory_index;
+        class slob_page *new_pages() override;
+
+    public:
+        inline slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
+    };
+
+    slob_vk *m_transfer_dst_and_sampled_image_slob;
+
+    //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break1; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break2; //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_small;
+    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_medium;
+    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_large;
 
 #ifndef NDEBUG
     bool m_transfer_dst_and_sampled_image_slob_list_head_lock;
@@ -100,16 +109,15 @@ class gfx_malloc_vk : public gfx_malloc_common
         mcrt_atomic_store(&static_cast<class gfx_malloc_vk *>(self)->m_transfer_dst_and_sampled_image_slob_list_head_lock, false);
 #endif
     }
-    VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
+    //VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
     //VkDeviceSize m_transfer_dst_and_sampled_image_heap_size;
-    uint32_t m_transfer_dst_and_sampled_image_memory_index;
+    //uint32_t m_transfer_dst_and_sampled_image_memory_index;
     //uint32_t m_transfer_dst_and_sampled_image_heap_index;
 
     //uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
 
     //routed into memory index //may be the same index
     //MT-safe???
-    static class slob_page_t *transfer_dst_and_sampled_image_slob_new_pages(class gfx_malloc_common *self);
 
     void *alloc_uniform_buffer(size_t size) override;
 
@@ -121,12 +129,12 @@ protected:
 public:
     uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) override;
 
-    inline uint64_t alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, VkDeviceMemory *out_device_memory)
-    {
-        assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
-        static_assert(sizeof(void *) == sizeof(VkDeviceMemory), "");
-        return this->gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, reinterpret_cast<void **>(out_device_memory));
-    }
+    //inline uint64_t alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, VkDeviceMemory *out_device_memory)
+    //{
+    //    assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
+    //     static_assert(sizeof(void *) == sizeof(VkDeviceMemory), "");
+    //    return this->gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, reinterpret_cast<void **>(out_device_memory));
+    //}
 };
 
 #endif

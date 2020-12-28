@@ -336,20 +336,19 @@ bool gfx_malloc_vk::init(
 
     m_color_attachment_and_input_attachment_and_transient_attachment_memory_index = color_format_transient_tiling_optimal_memory_index;
     m_color_attachment_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
-    m_transfer_dst_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
+    uint32_t transfer_dst_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
     //m_transfer_dst_and_sampled_image_heap_index = physical_device_memory_properties.memoryTypes[m_transfer_dst_and_sampled_image_memory_index].heapIndex;
     //assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_sampled_image_heap_index);
     //m_transfer_dst_and_sampled_image_heap_size = physical_device_memory_properties.memoryHeaps[m_transfer_dst_and_sampled_image_heap_index].size;
-    m_transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_sampled_image_memory_index);
-    m_transfer_dst_and_sampled_image_slob_break1 = m_transfer_dst_and_sampled_image_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    m_transfer_dst_and_sampled_image_slob_break2 = m_transfer_dst_and_sampled_image_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-
-    m_transfer_dst_and_sampled_image_list_head_free_slob_small = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
-    m_transfer_dst_and_sampled_image_list_head_free_slob_small->list_head_init();
-    m_transfer_dst_and_sampled_image_list_head_free_slob_medium = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
-    m_transfer_dst_and_sampled_image_list_head_free_slob_medium->list_head_init();
-    m_transfer_dst_and_sampled_image_list_head_free_slob_large = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
-    m_transfer_dst_and_sampled_image_list_head_free_slob_large->list_head_init();
+    VkDeviceSize transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, transfer_dst_and_sampled_image_memory_index);
+    uint64_t transfer_dst_and_sampled_image_slob_break1 = transfer_dst_and_sampled_image_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    uint64_t transfer_dst_and_sampled_image_slob_break2 = transfer_dst_and_sampled_image_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+    m_transfer_dst_and_sampled_image_slob = new (mcrt_aligned_malloc(sizeof(slob_vk), alignof(slob_vk))) slob_vk(
+        transfer_dst_and_sampled_image_slob_break1,
+        transfer_dst_and_sampled_image_slob_break2,
+        transfer_dst_and_sampled_image_page_size,
+        transfer_dst_and_sampled_image_memory_index,
+        m_gfx_api_vk);
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
@@ -435,6 +434,7 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
 
 uint64_t gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory)
 {
+#if 0
     class slob_page_t const *slob_page;
 
     uint64_t offset = slob_alloc(
@@ -463,28 +463,38 @@ uint64_t gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(size_t size, size_t
         (*out_device_memory) = NULL;
         return MALLOC_OFFSET_INVALID;
     }
+#endif
 }
 
-class gfx_malloc_vk::slob_page_t *gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(class gfx_malloc_common *_self)
+inline gfx_malloc_vk::slob_page_vk::slob_page_vk(VkDeviceSize size, VkDeviceMemory page)
+    : slob_page(size), m_page(page)
 {
-    class gfx_malloc_vk *self = static_cast<class gfx_malloc_vk *>(_self);
+}
 
+inline gfx_malloc_vk::slob_vk::slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
+    : slob(slob_break1, slob_break2), m_page_size(page_size), m_memory_index(memory_index), m_gfx_api_vk(gfx_api_vk)
+{
+}
+
+class gfx_malloc_common::slob_page *gfx_malloc_vk::slob_vk::new_pages()
+{
     VkResult res;
     VkDeviceMemory device_memory;
     {
         VkMemoryAllocateInfo memory_allocate_info;
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = self->m_transfer_dst_and_sampled_image_page_size;
-        memory_allocate_info.memoryTypeIndex = self->m_transfer_dst_and_sampled_image_memory_index;
-        res = self->m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
+        memory_allocate_info.allocationSize = m_page_size;
+        memory_allocate_info.memoryTypeIndex = m_memory_index;
+        res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
     }
-    if (PT_LIKELY(res >= 0))
+    if (VK_SUCCESS == res)
     {
-        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(self->m_transfer_dst_and_sampled_image_page_size, device_memory));
+        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_page_size, device_memory));
     }
     else
     {
         return NULL;
     }
 }
+
