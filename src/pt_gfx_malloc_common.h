@@ -26,6 +26,7 @@
 #include <pt_mcrt_scalable_allocator.h>
 #include <forward_list>
 #include <assert.h>
+#include <new>
 
 class gfx_malloc_common
 {
@@ -34,20 +35,99 @@ protected:
 
     class slob_page_t
     {
+
+        class slob_block_t
+        {
+            //slob
+            uint64_t m_offset;
+            uint64_t m_size;
+
+            //forward_list
+            class slob_block_t *m_forward_list_next;
+
+            static class slob_block_t *const FORWARD_LIST_NEXT_UNINIT;
+
+            inline slob_block_t(uint64_t offset, uint64_t size)
+                : m_offset(offset), m_size(size)
+#ifndef NDEBUG
+                  ,
+                  m_forward_list_next(FORWARD_LIST_NEXT_UNINIT)
+#endif
+            {
+            }
+
+        public:
+            inline slob_block_t(class slob_block_t *forward_list_next)
+                : m_offset(0U), m_size(0U), m_forward_list_next(forward_list_next)
+            {
+                //forward_list_head_init
+            }
+
+            inline uint64_t offset() { return m_offset; }
+
+            inline uint64_t size() { return m_size; }
+
+            static inline class slob_block_t *alloc(uint64_t offset, uint64_t size)
+            {
+                return (new (mcrt_aligned_malloc(sizeof(class slob_block_t), alignof(class slob_block_t))) slob_block_t(offset, size));
+            }
+
+            static inline class slob_block_t *forward_list_iterator_next(class slob_block_t *it)
+            {
+                return it->m_forward_list_next;
+            }
+
+            static inline void forward_list_insert_after(class slob_block_t *pos, class slob_block_t *value)
+            {
+                class slob_block_t *it_new = value;
+                class slob_block_t *it_prev = pos;
+                class slob_block_t *it_next = pos->m_forward_list_next;
+                //insert "it_new" between the consecutive "it_prev" and "it_next"
+                assert(slob_block_t::FORWARD_LIST_NEXT_UNINIT == it_new->m_forward_list_next);
+                assert(it_prev->m_forward_list_next == it_next);
+                assert(it_new != it_prev && it_new != it_next);
+                it_new->m_forward_list_next = it_next;
+                it_prev->m_forward_list_next = it_new;
+            }
+        };
+
+        class slob_block_forward_list_t
+        {
+            class slob_block_t m_head;
+            static class slob_block_t *const FORWARD_LIST_NEXT_END;
+
+        public:
+            inline slob_block_forward_list_t()
+                : m_head(forward_list_end())
+            {
+
+                //m_head.forward_list_head_init();
+            }
+
+            inline class slob_block_t *forward_list_begin()
+            {
+                return slob_block_t::forward_list_iterator_next(&m_head);
+            }
+
+            inline class slob_block_t *forward_list_end()
+            {
+                return FORWARD_LIST_NEXT_END;
+            }
+
+            inline void forward_list_push_front(class slob_block_t *value)
+            {
+                return slob_block_t::forward_list_insert_after(&m_head, value);
+            }
+        };
+
+        uint64_t m_units;
+        slob_block_forward_list_t m_free;
+
         class slob_page_t *m_list_next;
         class slob_page_t *m_list_prev;
 
         static class slob_page_t *const LIST_NEXT_INVALID;
         static class slob_page_t *const LIST_PREV_INVALID;
-
-        struct slob_block_t
-        {
-            uint64_t offset;
-            uint64_t size;
-        };
-
-        uint64_t m_units;
-        std::forward_list<slob_block_t, mcrt::scalable_allocator<slob_block_t>> m_free;
 
     protected:
         inline slob_page_t(uint64_t size)
@@ -62,7 +142,8 @@ protected:
             m_units = size;
             if (size > 0U)
             {
-                m_free.push_front(slob_block_t{0ULL, size});
+                class slob_block_t *b = slob_block_t::alloc(0U, size);
+                m_free.forward_list_push_front(b);
             }
         }
 
@@ -92,15 +173,15 @@ protected:
 
         static inline void list_push_front(class slob_page_t *list_head, class slob_page_t *value)
         {
-            return list_insert(list_head, value);
+            return list_insert_after(list_head, value);
         }
 
         static inline void list_push_back(class slob_page_t *list_head, class slob_page_t *value)
         {
-            return list_insert(list_head->m_list_prev, value);
+            return list_insert_after(list_head->m_list_prev, value);
         }
 
-        static inline void list_insert(class slob_page_t *pos, class slob_page_t *value)
+        static inline void list_insert_after(class slob_page_t *pos, class slob_page_t *value)
         {
             class slob_page_t *it_new = value;
             class slob_page_t *it_prev = pos;

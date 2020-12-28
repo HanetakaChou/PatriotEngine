@@ -84,8 +84,10 @@ uint64_t const gfx_malloc_common::SLOB_OFFSET_INVALID = gfx_malloc_common::MALLO
 // https://www.kernel.org/doc/Documentation/arm/memory.txt
 // https://www.kernel.org/doc/Documentation/arm64/memory.txt
 // https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
-class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_NEXT_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(1);
-class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_PREV_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(2);
+class gfx_malloc_common::slob_page_t::slob_block_t *const gfx_malloc_common::slob_page_t::slob_block_t::FORWARD_LIST_NEXT_UNINIT = reinterpret_cast<class gfx_malloc_common::slob_page_t::slob_block_t *>(1);
+class gfx_malloc_common::slob_page_t::slob_block_t *const gfx_malloc_common::slob_page_t::slob_block_forward_list_t::FORWARD_LIST_NEXT_END = reinterpret_cast<class gfx_malloc_common::slob_page_t::slob_block_t *>(2);
+class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_NEXT_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(3);
+class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_PREV_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(4);
 
 uint64_t gfx_malloc_common::slob_alloc(
     uint64_t slob_break1,
@@ -196,11 +198,16 @@ inline uint64_t gfx_malloc_common::slob_page_t::size()
 
 inline uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t align)
 {
-    for (auto cur = m_free.begin(); cur != m_free.end(); cur = std::next(cur))
+    for (slob_block_t *cur = m_free.forward_list_begin(); cur != m_free.forward_list_end(); cur = slob_block_t::forward_list_iterator_next(cur))
     {
-        uint64_t avail = cur->size;
-        uint64_t aligned = mcrt_intrin_round_up(cur->offset, align);
-        uint64_t delta = aligned - cur->offset;
+        uint64_t avail = cur->size();
+        uint64_t aligned = mcrt_intrin_round_up(cur->offset(), align);
+        uint64_t delta = aligned - cur->offset();
+        if (avail > (size + delta))
+        {
+            slob_block_t *next = slob_block_t::forward_list_iterator_next(cur);
+
+        }
     }
 
     return SLOB_OFFSET_INVALID;
