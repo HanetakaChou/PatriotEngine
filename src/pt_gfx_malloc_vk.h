@@ -83,9 +83,11 @@ class gfx_malloc_vk : public gfx_malloc_common
 
     public:
         inline slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
+        inline uint32_t memory_index();
     };
 
     slob_vk *m_transfer_dst_and_sampled_image_slob;
+    class slob *transfer_dst_and_sampled_image_slob() override;
 
     //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break1; //(page_size * 256/*SLOB_BREAK1*/) / 4096
     //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break2; //(page_size * 1024/*SLOB_BREAK2*/) / 4096
@@ -109,10 +111,8 @@ protected:
         VkPhysicalDevice physical_device,
         PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties);
 
-    class slob *transfer_dst_and_sampled_image_slob() override;
-
 public:
-    inline class slob_page_vk *alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset);
+    VkDeviceMemory alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_slob);
 };
 
 #endif

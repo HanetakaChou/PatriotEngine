@@ -474,8 +474,26 @@ class gfx_malloc_common::slob_page *gfx_malloc_vk::slob_vk::new_pages()
     }
 }
 
-inline class gfx_malloc_vk::slob_page_vk *gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset)
+inline uint32_t gfx_malloc_vk::slob_vk::memory_index()
 {
-    //assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
-    return static_cast<class slob_page_vk *>(this->gfx_malloc_common::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
+    return m_memory_index;
+}
+
+VkDeviceMemory gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_slob)
+{
+    assert(((1U << m_transfer_dst_and_sampled_image_slob->memory_index()) & memory_requirements->memoryTypeBits) != 0);
+
+    class slob_page_vk *s = static_cast<class slob_page_vk *>(
+        this->gfx_malloc_common::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
+
+    if (NULL != s)
+    {
+        (*out_slob) = s;
+        return s->device_memory();
+    }
+    else
+    {
+        (*out_slob) = NULL;
+        return VK_NULL_HANDLE;
+    }
 }
