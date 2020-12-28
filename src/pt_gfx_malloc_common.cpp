@@ -1,4 +1,5 @@
 #include <pt_mcrt_intrin.h>
+#include <pt_mcrt_atomic.h>
 #include "pt_gfx_malloc_common.h"
 
 // linux
@@ -147,7 +148,36 @@ inline class list_node *list_node::next()
     return this->m_next;
 }
 
-inline slob_block::slob_block(uint64_t offset, uint64_t size) : m_offset(offset), m_size(size), m_list()
+inline list_head::list_head()
+{
+    m_head.list_head_node_init();
+    return;
+}
+
+inline class list_node *list_head::begin()
+{
+    return m_head.next();
+}
+
+inline class list_node *list_head::end()
+{
+    return &m_head;
+}
+
+inline void list_head::push_front(class list_node *value)
+{
+    return value->insert_after(&m_head);
+}
+
+inline void list_head::push_back(class list_node *value)
+{
+    return value->insert_after(m_head.prev());
+}
+
+uint64_t const SLOB_OFFSET_INVALID = (~0ULL);
+
+inline slob_block::slob_block(uint64_t offset, uint64_t size)
+    : m_offset(offset), m_size(size), m_list()
 {
 }
 
@@ -201,30 +231,244 @@ inline class slob_block *slob_block::container_of(class list_node *list)
     return reinterpret_cast<class slob_block *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_block, m_list)));
 }
 
-inline list_head::list_head()
+inline slob_page::slob_page(uint64_t size)
 {
-    m_head.list_head_node_init();
-    return;
+    m_units = size;
+    if (size > 0U)
+    {
+        class slob_block *b = slob_block::alloc(0U, size);
+        m_free.push_front(b->list());
+    }
 }
 
-inline class list_node *list_head::begin()
+inline uint64_t slob_page::size()
 {
-    return m_head.next();
+    return m_units;
 }
 
-inline class list_node *list_head::end()
+inline uint64_t slob_page::alloc(uint64_t size, uint64_t align, uint64_t *out_size)
 {
-    return &m_head;
+    for (class list_node *it_cur = m_free.begin(); it_cur != m_free.end(); it_cur = it_cur->next())
+    {
+        class slob_block *cur = slob_block::container_of(it_cur);
+        uint64_t avail = cur->size();
+        uint64_t aligned = mcrt_intrin_round_up(cur->offset(), align);
+        uint64_t delta = aligned - cur->offset();
+        //First-Fit
+        if (avail >= (size + delta))
+        {
+            // VmaBlockMetadata_Generic::CheckAllocation
+
+            // We seperate buffer and optimal-tiling-image
+            // We have no linear-tiling-image
+            // ---
+            // Buffer-Image Granularity
+            // ---
+            // VkPhysicalDeviceLimits::bufferImageGranularity
+            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap13.html#resources-bufferimagegranularity
+            // This restriction is only needed when a linear (BUFFER / IMAGE_TILING_LINEAR) resource and a non-linear (IMAGE_TILING_OPTIMAL) resource are adjacent in memory and will be used simultaneously.
+            // ---
+            // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+            // VmaBlocksOnSamePage
+            // VmaIsBufferImageGranularityConflict
+
+            // We maintain one list for free blocks while the [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) maintains two lists
+            // ---
+            // VmaBlockMetadata_Generic::m_Suballocations // the list for all blocks (free or non-free)
+            // VmaBlockMetadata_Generic::m_FreeSuballocationsBySize // the list for free blocks
+
+            // VmaBlockMetadata_Generic::Alloc
+            // VmaBlockMetadata_Generic::MergeFreeWithNext
+
+            // recycle
+            uint64_t cur_offset = cur->offset();
+            uint64_t cur_size = cur->size();
+
+            //merge with prev
+            if (delta > 0U)
+            {
+                class list_node *it_prev = it_cur->prev();
+                class slob_block *prev = (it_prev != m_free.end()) ? slob_block::container_of(it_prev) : NULL;
+                assert((NULL == prev) || ((prev->offset() + prev->size()) <= cur_offset));
+
+                if ((NULL != prev) && ((prev->offset() + prev->size()) == cur_offset))
+                {
+                    prev->merge_next(delta);
+                }
+                else
+                {
+                    assert(cur != NULL);
+                    cur->recycle_as(cur_offset, delta);
+                    cur = NULL; //offset or size has been changed
+                    //the it_cur remains valid
+                }
+            }
+
+            //merge with next
+            if (avail > (size + delta))
+            {
+                class list_node *it_next = it_cur->next();
+                class slob_block *next = (it_next != m_free.end()) ? slob_block::container_of(it_next) : NULL;
+                assert((NULL == next) || (cur_offset + cur_size <= next->offset()));
+
+                if ((NULL != next) && (cur_offset + cur_size == next->offset()))
+                {
+                    next->merge_prev(avail - (size + delta));
+                }
+                else if (NULL != cur)
+                {
+                    cur->recycle_as(cur_offset + (size + delta), avail - (size + delta));
+                    cur = NULL;
+                }
+                else
+                {
+                    class slob_block *b = slob_block::alloc(cur_offset + (size + delta), avail - (size + delta));
+                    b->list()->insert_after(it_cur);
+                }
+            }
+
+            if (NULL != cur)
+            {
+                //not recycled
+                cur->list()->erase();
+                cur->free();
+            }
+
+            (*out_size) = cur_size;
+            return cur_offset;
+        }
+    }
+
+    return SLOB_OFFSET_INVALID;
 }
 
-inline void list_head::push_front(class list_node *value)
+inline class list_node *slob_page::list()
 {
-    return value->insert_after(&m_head);
+    return &m_list;
 }
 
-inline void list_head::push_back(class list_node *value)
+inline class slob_page *slob_page::container_of(class list_node *list)
 {
-    return value->insert_after(m_head.prev());
+    return reinterpret_cast<class slob_page *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_page, m_list)));
+}
+
+inline void slob::lock()
+{
+    assert(mcrt_atomic_load(&m_slob_lock) == false);
+#ifndef NDEBUG
+    mcrt_atomic_store(&m_slob_lock, true);
+#endif
+}
+
+inline void slob::unlock()
+{
+    assert(mcrt_atomic_load(&m_slob_lock) == true);
+#ifndef NDEBUG
+    mcrt_atomic_store(&m_slob_lock, false);
+#endif
+}
+
+uint64_t slob::alloc(
+    uint64_t size,
+    uint64_t align,
+    uint64_t *out_size,
+    class slob_page **out_sp,
+    class slob_page *(*slob_new_pages_callback)(void *slob_new_pages_callback_data),
+    void *slob_new_pages_callback_data)
+{
+    class list_head *slob_list = NULL;
+    if (size < m_slob_break1)
+    {
+        slob_list = &m_free_slob_small;
+    }
+    else if (size < m_slob_break2)
+    {
+        slob_list = &m_free_slob_medium;
+    }
+    else
+    {
+        slob_list = &m_free_slob_large;
+    }
+
+    class slob_page *sp;
+    uint64_t b = SLOB_OFFSET_INVALID;
+    uint64_t b_s;
+
+    this->lock();
+    for (class list_node *it_sp = slob_list->begin(); it_sp != slob_list->end(); it_sp = it_sp->next())
+    {
+        class slob_page *sp = slob_page::container_of(it_sp);
+
+        if (sp->size() < size)
+        {
+            //PT_LIKELY
+            //Early reject
+            //Early return
+        }
+        else
+        {
+            // Note that the reported space in a SLOB page is not necessarily
+            // contiguous, so the allocation is not guaranteed to succeed.
+            b = sp->alloc(size, align, &b_s);
+
+            if (SLOB_OFFSET_INVALID == b)
+            {
+                //PT_LIKELY
+            }
+            else
+            {
+                // Improve fragment distribution and reduce our average
+                // search time by starting our next search here. (see
+                // Knuth vol 1, sec 2.5, pg 449)
+                it_sp->erase();
+                slob_list->push_back(it_sp);
+                break;
+            }
+        }
+    }
+    this->unlock();
+
+    if (SLOB_OFFSET_INVALID != b)
+    {
+        //PT_LIKELY
+    }
+    else
+    {
+        //The "slob_new_pages_callback" is MT-safe
+        sp = slob_new_pages_callback(slob_new_pages_callback_data);
+
+        if (NULL != sp)
+        {
+            this->lock();
+            slob_list->push_front(sp->list());
+            b = sp->alloc(size, align, &b_s);
+            this->unlock();
+
+            if (SLOB_OFFSET_INVALID != b)
+            {
+                //PT_LIKELY
+            }
+            else
+            {
+                //MALLOC BUG
+                assert(false);
+                assert(SLOB_OFFSET_INVALID == b);
+            }
+        }
+        else
+        {
+            //MALLOC FAIL
+            assert(SLOB_OFFSET_INVALID == b);
+            assert(NULL == sp);
+        }
+    }
+
+    assert(SLOB_OFFSET_INVALID == b || NULL != sp); //SLOB_OFFSET_INVALID != b ⇒ NULL != sp
+    assert(SLOB_OFFSET_INVALID != b || NULL == sp); //SLOB_OFFSET_INVALID == b ⇒ NULL == sp
+    (*out_size) = b_s;
+    (*out_sp) = sp;
+
+    return b;
 }
 
 gfx_malloc_common::slob_page_t::slob_page_t(uint64_t size)

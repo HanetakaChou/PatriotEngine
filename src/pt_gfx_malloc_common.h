@@ -43,6 +43,18 @@ public:
     inline class list_node *next();
 };
 
+class list_head
+{
+    list_node m_head;
+
+public:
+    inline list_head();
+    inline class list_node *begin();
+    inline class list_node *end();
+    inline void push_front(class list_node *value);
+    inline void push_back(class list_node *value);
+};
+
 class slob_block
 {
     uint64_t m_offset;
@@ -62,17 +74,48 @@ public:
     static inline class slob_block *container_of(class list_node *list);
 };
 
-class list_head
+class slob_page
 {
-    list_node m_head;
+    uint64_t m_units;
+    class list_head m_free;
+    class list_node m_list;
+
+protected:
+    inline slob_page(uint64_t size);
 
 public:
-    inline list_head();
-    inline class list_node *begin();
-    inline class list_node *end();
-    inline void push_front(class list_node *value);
-    inline void push_back(class list_node *value);
+    inline uint64_t size();
+    inline uint64_t alloc(uint64_t size, uint64_t align, uint64_t *out_size);
+    inline class list_node *list();
+    static inline class slob_page *container_of(class list_node *list);
 };
+
+class slob
+{
+    uint64_t m_slob_break1;
+    uint64_t m_slob_break2;
+
+    class list_head m_free_slob_small;
+    class list_head m_free_slob_medium;
+    class list_head m_free_slob_large;
+    
+#ifndef NDEBUG
+    bool m_slob_lock;
+#endif
+    inline void lock();
+    inline void unlock();
+
+public:
+    uint64_t alloc(
+        uint64_t size,
+        uint64_t align,
+        uint64_t *out_size,
+        class slob_page **out_sp,
+        class slob_page *(*slob_new_pages_callback)(void *slob_new_pages_callback_data),
+        void *slob_new_pages_callback_data);
+};
+
+extern uint64_t const SLOB_OFFSET_INVALID;
 
 class gfx_malloc_common
 {
