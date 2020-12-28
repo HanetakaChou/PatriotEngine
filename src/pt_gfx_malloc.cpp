@@ -1,6 +1,6 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_gfx_malloc_common.h"
+#include "pt_gfx_malloc.h"
 
 // linux
 // https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB
@@ -77,23 +77,23 @@
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-uint64_t const gfx_malloc_common::SLOB_OFFSET_INVALID = (~0ULL);
+uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
 
 // NULL-Pointer Assignment Partition
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
 // https://www.kernel.org/doc/Documentation/arm/memory.txt
 // https://www.kernel.org/doc/Documentation/arm64/memory.txt
 // https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
-class gfx_malloc_common::list_node *const gfx_malloc_common::list_node::LIST_NODE_NEXT_INVALID = reinterpret_cast<class gfx_malloc_common::list_node *>(1);
-class gfx_malloc_common::list_node *const gfx_malloc_common::list_node::LIST_NODE_PREV_INVALID = reinterpret_cast<class gfx_malloc_common::list_node *>(2);
+class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_NEXT_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(1);
+class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_PREV_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(2);
 
-inline gfx_malloc_common::list_node::list_node()
+inline gfx_malloc::list_node::list_node()
     : m_next(LIST_NODE_NEXT_INVALID),
       m_prev(LIST_NODE_PREV_INVALID)
 {
 }
 
-inline void gfx_malloc_common::list_node::list_head_node_init()
+inline void gfx_malloc::list_node::list_head_node_init()
 {
     assert(!this->is_in_list());
     this->m_next = this;
@@ -101,7 +101,7 @@ inline void gfx_malloc_common::list_node::list_head_node_init()
     return;
 }
 
-inline void gfx_malloc_common::list_node::insert_after(class list_node *pos)
+inline void gfx_malloc::list_node::insert_after(class list_node *pos)
 {
     class list_node *it_new = this;
     class list_node *it_prev = pos;
@@ -118,7 +118,7 @@ inline void gfx_malloc_common::list_node::insert_after(class list_node *pos)
     return;
 }
 
-inline void gfx_malloc_common::list_node::erase()
+inline void gfx_malloc::list_node::erase()
 {
     class list_node *it_prev = this->m_prev;
     class list_node *it_next = this->m_next;
@@ -132,105 +132,105 @@ inline void gfx_malloc_common::list_node::erase()
     return;
 }
 
-inline bool gfx_malloc_common::list_node::is_in_list()
+inline bool gfx_malloc::list_node::is_in_list()
 {
     return (LIST_NODE_NEXT_INVALID != this->m_next && LIST_NODE_PREV_INVALID != this->m_prev);
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::list_node::prev()
+inline class gfx_malloc::list_node *gfx_malloc::list_node::prev()
 {
     return this->m_prev;
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::list_node::next()
+inline class gfx_malloc::list_node *gfx_malloc::list_node::next()
 {
     return this->m_next;
 }
 
-inline gfx_malloc_common::list_head::list_head()
+inline gfx_malloc::list_head::list_head()
 {
     m_head.list_head_node_init();
     return;
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::list_head::begin()
+inline class gfx_malloc::list_node *gfx_malloc::list_head::begin()
 {
     return m_head.next();
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::list_head::end()
+inline class gfx_malloc::list_node *gfx_malloc::list_head::end()
 {
     return &m_head;
 }
 
-inline void gfx_malloc_common::list_head::push_front(class list_node *value)
+inline void gfx_malloc::list_head::push_front(class list_node *value)
 {
     return value->insert_after(&m_head);
 }
 
-inline void gfx_malloc_common::list_head::push_back(class list_node *value)
+inline void gfx_malloc::list_head::push_back(class list_node *value)
 {
     return value->insert_after(m_head.prev());
 }
 
 uint64_t const SLOB_OFFSET_INVALID = (~0ULL);
 
-inline gfx_malloc_common::slob_block::slob_block(uint64_t offset, uint64_t size)
+inline gfx_malloc::slob_block::slob_block(uint64_t offset, uint64_t size)
     : m_offset(offset), m_size(size), m_list()
 {
 }
 
-inline class gfx_malloc_common::slob_block *gfx_malloc_common::slob_block::alloc(uint64_t offset, uint64_t size)
+inline class gfx_malloc::slob_block *gfx_malloc::slob_block::alloc(uint64_t offset, uint64_t size)
 {
     return (new (mcrt_aligned_malloc(sizeof(struct slob_block), alignof(struct slob_block))) slob_block(offset, size));
 }
 
-inline void gfx_malloc_common::slob_block::recycle_as(uint64_t offset, uint64_t size)
+inline void gfx_malloc::slob_block::recycle_as(uint64_t offset, uint64_t size)
 {
     m_offset = offset;
     m_size = size;
 }
 
-inline void gfx_malloc_common::slob_block::free()
+inline void gfx_malloc::slob_block::free()
 {
     assert(!this->m_list.is_in_list());
     mcrt_free(this);
 }
 
-inline uint64_t gfx_malloc_common::slob_block::offset()
+inline uint64_t gfx_malloc::slob_block::offset()
 {
     return m_offset;
 }
 
-inline uint64_t gfx_malloc_common::slob_block::size()
+inline uint64_t gfx_malloc::slob_block::size()
 {
     return m_size;
 }
 
-inline void gfx_malloc_common::slob_block::merge_prev(uint64_t merge_count)
+inline void gfx_malloc::slob_block::merge_prev(uint64_t merge_count)
 {
     assert(m_offset >= merge_count);
     m_offset -= merge_count;
     return;
 }
 
-inline void gfx_malloc_common::slob_block::merge_next(uint64_t merge_count)
+inline void gfx_malloc::slob_block::merge_next(uint64_t merge_count)
 {
     m_size += merge_count;
     return;
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::slob_block::list()
+inline class gfx_malloc::list_node *gfx_malloc::slob_block::list()
 {
     return &m_list;
 }
 
-inline class gfx_malloc_common::slob_block *gfx_malloc_common::slob_block::container_of(class list_node *list)
+inline class gfx_malloc::slob_block *gfx_malloc::slob_block::container_of(class list_node *list)
 {
     return reinterpret_cast<class slob_block *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_block, m_list)));
 }
 
-gfx_malloc_common::slob_page::slob_page(uint64_t size)
+gfx_malloc::slob_page::slob_page(uint64_t size)
 {
     m_units = size;
     if (size > 0U)
@@ -240,12 +240,12 @@ gfx_malloc_common::slob_page::slob_page(uint64_t size)
     }
 }
 
-inline uint64_t gfx_malloc_common::slob_page::size()
+inline uint64_t gfx_malloc::slob_page::size()
 {
     return m_units;
 }
 
-inline uint64_t gfx_malloc_common::slob_page::alloc(uint64_t size, uint64_t align)
+inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
 {
     for (class list_node *it_cur = m_free.begin(); it_cur != m_free.end(); it_cur = it_cur->next())
     {
@@ -340,17 +340,17 @@ inline uint64_t gfx_malloc_common::slob_page::alloc(uint64_t size, uint64_t alig
     return SLOB_OFFSET_INVALID;
 }
 
-inline class gfx_malloc_common::list_node *gfx_malloc_common::slob_page::list()
+inline class gfx_malloc::list_node *gfx_malloc::slob_page::list()
 {
     return &m_list;
 }
 
-inline class gfx_malloc_common::slob_page *gfx_malloc_common::slob_page::container_of(class list_node *list)
+inline class gfx_malloc::slob_page *gfx_malloc::slob_page::container_of(class list_node *list)
 {
     return reinterpret_cast<class slob_page *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_page, m_list)));
 }
 
-inline void gfx_malloc_common::slob::lock()
+inline void gfx_malloc::slob::lock()
 {
     assert(mcrt_atomic_load(&m_slob_lock) == false);
 #ifndef NDEBUG
@@ -358,7 +358,7 @@ inline void gfx_malloc_common::slob::lock()
 #endif
 }
 
-inline void gfx_malloc_common::slob::unlock()
+inline void gfx_malloc::slob::unlock()
 {
     assert(mcrt_atomic_load(&m_slob_lock) == true);
 #ifndef NDEBUG
@@ -366,11 +366,11 @@ inline void gfx_malloc_common::slob::unlock()
 #endif
 }
 
-gfx_malloc_common::slob::slob(uint64_t slob_break1, uint64_t slob_break2) : m_slob_break1(slob_break1), m_slob_break2(slob_break2)
+gfx_malloc::slob::slob(uint64_t slob_break1, uint64_t slob_break2) : m_slob_break1(slob_break1), m_slob_break2(slob_break2)
 {
 }
 
-class gfx_malloc_common::slob_page *gfx_malloc_common::slob::alloc(
+class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     uint64_t size,
     uint64_t align,
     uint64_t *out_offset)
@@ -468,7 +468,7 @@ class gfx_malloc_common::slob_page *gfx_malloc_common::slob::alloc(
     return sp;
 }
 
-class gfx_malloc_common::slob_page *gfx_malloc_common::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset)
+class gfx_malloc::slob_page *gfx_malloc::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset)
 {
     class slob *s = transfer_dst_and_sampled_image_slob();
     return s->alloc(size, alignment, out_offset);

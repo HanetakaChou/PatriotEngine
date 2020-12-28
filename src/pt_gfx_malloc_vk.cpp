@@ -18,7 +18,7 @@
 #include <pt_common.h>
 #include <pt_mcrt_intrin.h>
 #include <pt_gfx_common.h>
-#include "pt_gfx_malloc_common.h"
+#include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
@@ -420,7 +420,7 @@ bool gfx_malloc_vk::init(
     return true;
 }
 
-class gfx_malloc_common::slob *gfx_malloc_vk::transfer_dst_and_sampled_image_slob()
+class gfx_malloc::slob *gfx_malloc_vk::transfer_dst_and_sampled_image_slob()
 {
     return m_transfer_dst_and_sampled_image_slob;
 }
@@ -452,7 +452,7 @@ inline gfx_malloc_vk::slob_vk::slob_vk(uint64_t slob_break1, uint64_t slob_break
 {
 }
 
-class gfx_malloc_common::slob_page *gfx_malloc_vk::slob_vk::new_pages()
+class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
 {
     VkResult res;
     VkDeviceMemory device_memory;
@@ -484,7 +484,7 @@ VkDeviceMemory gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(VkMemoryRequi
     assert(((1U << m_transfer_dst_and_sampled_image_slob->memory_index()) & memory_requirements->memoryTypeBits) != 0);
 
     class slob_page_vk *s = static_cast<class slob_page_vk *>(
-        this->gfx_malloc_common::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
+        this->gfx_malloc::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
 
     if (NULL != s)
     {

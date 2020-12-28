@@ -24,7 +24,7 @@
 #include <pt_gfx_common.h>
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
-#include "pt_gfx_malloc_common.h"
+#include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include <vulkan/vulkan.h>
 

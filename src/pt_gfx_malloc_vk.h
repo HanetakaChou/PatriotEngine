@@ -24,10 +24,10 @@
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_gfx_malloc_common.h"
+#include "pt_gfx_malloc.h"
 #include <vulkan/vulkan.h>
 
-class gfx_malloc_vk : public gfx_malloc_common
+class gfx_malloc_vk : public gfx_malloc
 {
     class gfx_connection_vk *m_gfx_api_vk;
 

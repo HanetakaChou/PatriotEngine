@@ -102,7 +102,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_common.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_vk.cpp \
 
 LOCAL_CFLAGS += -fdiagnostics-format=msvc

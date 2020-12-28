@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_MALLOC_COMMON_H_
-#define _PT_GFX_MALLOC_COMMON_H_ 1
+#ifndef _PT_GFX_MALLOC_H_
+#define _PT_GFX_MALLOC_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -28,7 +28,7 @@
 #include <assert.h>
 #include <new>
 
-class gfx_malloc_common
+class gfx_malloc
 {
     class list_node
     {
@@ -130,7 +130,7 @@ protected:
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
-    
+
     virtual class slob *transfer_dst_and_sampled_image_slob() = 0;
     class slob_page *alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset);
 };
