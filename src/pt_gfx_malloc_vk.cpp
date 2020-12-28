@@ -420,6 +420,11 @@ bool gfx_malloc_vk::init(
     return true;
 }
 
+class gfx_malloc_common::slob *gfx_malloc_vk::transfer_dst_and_sampled_image_slob()
+{
+    return m_transfer_dst_and_sampled_image_slob;
+}
+
 // Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
 
 void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
@@ -432,43 +437,14 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     return NULL;
 }
 
-uint64_t gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory)
-{
-#if 0
-    class slob_page_t const *slob_page;
-
-    uint64_t offset = slob_alloc(
-        m_transfer_dst_and_sampled_image_slob_break1,
-        m_transfer_dst_and_sampled_image_slob_break2,
-        m_transfer_dst_and_sampled_image_list_head_free_slob_small,
-        m_transfer_dst_and_sampled_image_list_head_free_slob_medium,
-        m_transfer_dst_and_sampled_image_list_head_free_slob_large,
-        size,
-        alignment,
-        &slob_page,
-        transfer_dst_and_sampled_image_slob_lock_list_head,
-        transfer_dst_and_sampled_image_slob_unlock_list_head,
-        transfer_dst_and_sampled_image_slob_new_pages,
-        this);
-
-    if (SLOB_OFFSET_INVALID != offset)
-    {
-        assert(NULL != slob_page);
-        (*out_device_memory) = static_cast<void *>(static_cast<class slob_page_vk_t const *>(slob_page)->m_page);
-        return offset;
-    }
-    else
-    {
-        assert(NULL == slob_page);
-        (*out_device_memory) = NULL;
-        return MALLOC_OFFSET_INVALID;
-    }
-#endif
-}
-
 inline gfx_malloc_vk::slob_page_vk::slob_page_vk(VkDeviceSize size, VkDeviceMemory page)
     : slob_page(size), m_page(page)
 {
+}
+
+inline VkDeviceMemory gfx_malloc_vk::slob_page_vk::device_memory()
+{
+    return m_page;
 }
 
 inline gfx_malloc_vk::slob_vk::slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
@@ -498,3 +474,8 @@ class gfx_malloc_common::slob_page *gfx_malloc_vk::slob_vk::new_pages()
     }
 }
 
+inline class gfx_malloc_vk::slob_page_vk *gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset)
+{
+    //assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
+    return static_cast<class slob_page_vk *>(this->gfx_malloc_common::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
+}

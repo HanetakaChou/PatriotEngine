@@ -91,7 +91,7 @@ protected:
 
     public:
         inline uint64_t size();
-        inline uint64_t alloc(uint64_t size, uint64_t align, uint64_t *out_size);
+        inline uint64_t alloc(uint64_t size, uint64_t align);
         inline class list_node *list();
         static inline class slob_page *container_of(class list_node *list);
     };
@@ -119,19 +119,20 @@ protected:
     public:
         //The "slob_page::alloc" is not MT-safe //we put it in the scope of the list_head lock
         //The "slob::new_pages" is MT-safe (internally synchronized)
-        uint64_t alloc(
+        class slob_page *alloc(
             uint64_t size,
             uint64_t align,
-            uint64_t *out_size,
-            class slob_page **out_sp);
+            uint64_t *out_offset);
+        //free (offset size) //like unmap
     };
 
     static uint64_t const SLOB_OFFSET_INVALID;
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
-
-    virtual uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) = 0; /*out_size*/
+    
+    virtual class slob *transfer_dst_and_sampled_image_slob() = 0;
+    class slob_page *alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset);
 };
 
 #endif

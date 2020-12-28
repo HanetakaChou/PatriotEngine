@@ -245,7 +245,7 @@ inline uint64_t gfx_malloc_common::slob_page::size()
     return m_units;
 }
 
-inline uint64_t gfx_malloc_common::slob_page::alloc(uint64_t size, uint64_t align, uint64_t *out_size)
+inline uint64_t gfx_malloc_common::slob_page::alloc(uint64_t size, uint64_t align)
 {
     for (class list_node *it_cur = m_free.begin(); it_cur != m_free.end(); it_cur = it_cur->next())
     {
@@ -333,7 +333,6 @@ inline uint64_t gfx_malloc_common::slob_page::alloc(uint64_t size, uint64_t alig
                 cur->free();
             }
 
-            (*out_size) = cur_size;
             return cur_offset;
         }
     }
@@ -369,14 +368,12 @@ inline void gfx_malloc_common::slob::unlock()
 
 gfx_malloc_common::slob::slob(uint64_t slob_break1, uint64_t slob_break2) : m_slob_break1(slob_break1), m_slob_break2(slob_break2)
 {
-
 }
 
-uint64_t gfx_malloc_common::slob::alloc(
+class gfx_malloc_common::slob_page *gfx_malloc_common::slob::alloc(
     uint64_t size,
     uint64_t align,
-    uint64_t *out_size,
-    class slob_page **out_sp)
+    uint64_t *out_offset)
 {
     class list_head *slob_list = NULL;
     if (size < m_slob_break1)
@@ -394,7 +391,6 @@ uint64_t gfx_malloc_common::slob::alloc(
 
     class slob_page *sp;
     uint64_t b = SLOB_OFFSET_INVALID;
-    uint64_t b_s;
 
     this->lock();
     for (class list_node *it_sp = slob_list->begin(); it_sp != slob_list->end(); it_sp = it_sp->next())
@@ -411,7 +407,7 @@ uint64_t gfx_malloc_common::slob::alloc(
         {
             // Note that the reported space in a SLOB page is not necessarily
             // contiguous, so the allocation is not guaranteed to succeed.
-            b = sp->alloc(size, align, &b_s);
+            b = sp->alloc(size, align);
 
             if (SLOB_OFFSET_INVALID == b)
             {
@@ -443,7 +439,7 @@ uint64_t gfx_malloc_common::slob::alloc(
         {
             this->lock();
             slob_list->push_front(sp->list());
-            b = sp->alloc(size, align, &b_s);
+            b = sp->alloc(size, align);
             this->unlock();
 
             if (SLOB_OFFSET_INVALID != b)
@@ -467,10 +463,15 @@ uint64_t gfx_malloc_common::slob::alloc(
 
     assert(SLOB_OFFSET_INVALID == b || NULL != sp); //SLOB_OFFSET_INVALID != b ⇒ NULL != sp
     assert(SLOB_OFFSET_INVALID != b || NULL == sp); //SLOB_OFFSET_INVALID == b ⇒ NULL == sp
-    (*out_size) = b_s;
-    (*out_sp) = sp;
+    (*out_offset) = b;
 
-    return b;
+    return sp;
+}
+
+class gfx_malloc_common::slob_page *gfx_malloc_common::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset)
+{
+    class slob *s = transfer_dst_and_sampled_image_slob();
+    return s->alloc(size, alignment, out_offset);
 }
 
 // wrap
