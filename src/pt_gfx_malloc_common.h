@@ -28,6 +28,52 @@
 #include <assert.h>
 #include <new>
 
+class list_node
+{
+    class list_node *m_next;
+    class list_node *m_prev;
+
+public:
+    inline list_node();
+    inline void list_head_node_init();
+    inline void insert_after(class list_node *pos);
+    inline void erase();
+    inline bool is_in_list();
+    inline class list_node *prev();
+    inline class list_node *next();
+};
+
+class slob_block
+{
+    uint64_t m_offset;
+    uint64_t m_size;
+    class list_node m_list;
+    inline slob_block(uint64_t offset, uint64_t size);
+
+public:
+    static inline class slob_block *alloc(uint64_t offset, uint64_t size);
+    inline void recycle_as(uint64_t offset, uint64_t size);
+    inline void free();
+    inline uint64_t offset();
+    inline uint64_t size();
+    inline void merge_prev(uint64_t merge_count);
+    inline void merge_next(uint64_t merge_count);
+    inline class list_node *list();
+    static inline class slob_block *container_of(class list_node *list);
+};
+
+class list_head
+{
+    list_node m_head;
+
+public:
+    inline list_head();
+    inline class list_node *begin();
+    inline class list_node *end();
+    inline void push_front(class list_node *value);
+    inline void push_back(class list_node *value);
+};
+
 class gfx_malloc_common
 {
 protected:
@@ -121,7 +167,7 @@ protected:
         };
 
         uint64_t m_units;
-        slob_block_forward_list_t m_free;
+        class list_head m_free;
 
         class slob_page_t *m_list_next;
         class slob_page_t *m_list_prev;
@@ -130,22 +176,7 @@ protected:
         static class slob_page_t *const LIST_PREV_INVALID;
 
     protected:
-        inline slob_page_t(uint64_t size)
-        {
-            //list
-#ifndef NDEBUG
-            m_list_next = LIST_NEXT_INVALID;
-            m_list_prev = LIST_PREV_INVALID;
-#endif
-
-            //slob
-            m_units = size;
-            if (size > 0U)
-            {
-                class slob_block_t *b = slob_block_t::alloc(0U, size);
-                m_free.forward_list_push_front(b);
-            }
-        }
+        slob_page_t(uint64_t size);
 
     public:
         inline void list_head_init()
@@ -239,7 +270,9 @@ protected:
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
 
-    virtual uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) = 0;
+    virtual uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) = 0; /*out_size*/
+
+    //virtual
 
     static uint64_t const MALLOC_OFFSET_INVALID;
 };
