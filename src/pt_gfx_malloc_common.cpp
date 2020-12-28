@@ -76,7 +76,8 @@
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-uint64_t const gfx_malloc_common::SLOB_OFFSET_INVALID = (~0ULL);
+uint64_t const gfx_malloc_common::MALLOC_OFFSET_INVALID = (~0ULL);
+uint64_t const gfx_malloc_common::SLOB_OFFSET_INVALID = gfx_malloc_common::MALLOC_OFFSET_INVALID;
 
 // NULL-Pointer Assignment Partition
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
@@ -92,11 +93,11 @@ uint64_t gfx_malloc_common::slob_alloc(
     class slob_page_t *list_head_free_slob_small,
     class slob_page_t *list_head_free_slob_medium,
     class slob_page_t *list_head_free_slob_large,
-    void (*slob_lock_list_head_callback)(void),
-    void (*slob_unlock_list_head_callback)(void),
     uint64_t size,
     uint64_t align,
     class slob_page_t const **out_slob_page,
+    void (*slob_lock_list_head_callback)(class gfx_malloc_common *self),
+    void (*slob_unlock_list_head_callback)(class gfx_malloc_common *self),
     class slob_page_t *(*slob_new_pages_callback)(class gfx_malloc_common *self),
     class gfx_malloc_common *self)
 {
@@ -117,7 +118,7 @@ uint64_t gfx_malloc_common::slob_alloc(
     class slob_page_t *sp;
     uint64_t b = SLOB_OFFSET_INVALID;
 
-    slob_lock_list_head_callback();
+    slob_lock_list_head_callback(self);
     for (sp = slob_page_t::list_begin(slob_list); sp != slob_page_t::list_end(slob_list); sp = slob_page_t::list_iterator_next(sp))
     {
         if (sp->size() < size)
@@ -144,7 +145,7 @@ uint64_t gfx_malloc_common::slob_alloc(
             }
         }
     }
-    slob_unlock_list_head_callback();
+    slob_unlock_list_head_callback(self);
 
     if (SLOB_OFFSET_INVALID != b)
     {
@@ -157,10 +158,10 @@ uint64_t gfx_malloc_common::slob_alloc(
 
         if (NULL != sp)
         {
-            slob_lock_list_head_callback();
+            slob_lock_list_head_callback(self);
             slob_page_t::list_push_front(slob_list, sp);
             b = sp->alloc(size, align);
-            slob_unlock_list_head_callback();
+            slob_unlock_list_head_callback(self);
 
             if (SLOB_OFFSET_INVALID != b)
             {
@@ -181,7 +182,8 @@ uint64_t gfx_malloc_common::slob_alloc(
         }
     }
 
-    assert(SLOB_OFFSET_INVALID != b || NULL == sp);
+    assert(SLOB_OFFSET_INVALID == b || NULL != sp); //SLOB_OFFSET_INVALID != b ⇒ NULL != sp
+    assert(SLOB_OFFSET_INVALID != b || NULL == sp); //SLOB_OFFSET_INVALID == b ⇒ NULL == sp
     (*out_slob_page) = sp;
 
     return b;
@@ -198,6 +200,7 @@ inline uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t al
     {
         uint64_t avail = cur->size;
         uint64_t aligned = mcrt_intrin_round_up(cur->offset, align);
+        uint64_t delta = aligned - cur->offset;
     }
 
     return SLOB_OFFSET_INVALID;

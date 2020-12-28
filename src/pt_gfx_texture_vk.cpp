@@ -101,6 +101,34 @@ bool gfx_texture_vk::read_input_stream(
 
         mcrt_free(memcpy_dest);
         mcrt_free(cmdcopy_dest);
+
+        m_image = VK_NULL_HANDLE;
+        {
+            VkImageCreateInfo create_info;
+            create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+            create_info.pNext = NULL;
+            create_info.flags = ((!specific_header_vk.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+            create_info.imageType = specific_header_vk.imageType;
+            create_info.format = specific_header_vk.format;
+            create_info.extent = specific_header_vk.extent;
+            create_info.mipLevels = specific_header_vk.mipLevels;
+            create_info.arrayLayers = specific_header_vk.arrayLayers;
+            create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+            create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+            create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            create_info.queueFamilyIndexCount = 0U;
+            create_info.pQueueFamilyIndices = NULL;
+            create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            VkResult res = m_gfx_connection->create_image(&create_info, &m_image);
+            assert(VK_SUCCESS == res);
+        }
+
+        VkMemoryRequirements memory_requirements;
+        m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
+
+        VkDeviceMemory device_memory;
+        uint64_t offset = m_gfx_connection->alloc_transfer_dst_and_sampled_image(&memory_requirements, &device_memory);
     }
 
     return true;

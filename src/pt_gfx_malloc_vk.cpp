@@ -109,10 +109,7 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
 
 bool gfx_malloc_vk::init(
     VkPhysicalDevice physical_device,
-    PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties,
-    VkDevice device,
-    PFN_vkGetBufferMemoryRequirements vk_get_buffer_memory_requirements,
-    PFN_vkGetImageMemoryRequirements vk_get_image_memory_requirements)
+    PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties)
 {
     m_gfx_api_vk = static_cast<class gfx_connection_vk *>(this);
 
@@ -156,7 +153,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        m_gfx_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
         //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
         m_transfer_src_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
@@ -182,7 +179,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        m_gfx_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
         //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
         m_uniform_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
@@ -208,7 +205,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        m_gfx_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
         //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
         m_transfer_dst_and_vertex_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
@@ -234,7 +231,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_buffer_memory_requirements(device, dummy_buf, &mem_req);
+        m_gfx_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
         //e.g. NOT HOST_VISIBLE : the UMA driver may compress the buffer/texture to boost performance
         m_transfer_dst_and_index_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
@@ -285,7 +282,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_image_memory_requirements(device, dummy_img, &mem_req);
+        m_gfx_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
 
         color_format_regular_optimal_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
     }
@@ -328,7 +325,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_image_memory_requirements(device, dummy_img, &mem_req);
+        m_gfx_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
         color_format_transient_tiling_optimal_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == color_format_transient_tiling_optimal_memory_index)
@@ -346,6 +343,13 @@ bool gfx_malloc_vk::init(
     m_transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_sampled_image_memory_index);
     m_transfer_dst_and_sampled_image_slob_break1 = m_transfer_dst_and_sampled_image_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
     m_transfer_dst_and_sampled_image_slob_break2 = m_transfer_dst_and_sampled_image_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+
+    m_transfer_dst_and_sampled_image_list_head_free_slob_small = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
+    m_transfer_dst_and_sampled_image_list_head_free_slob_small->list_head_init();
+    m_transfer_dst_and_sampled_image_list_head_free_slob_medium = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
+    m_transfer_dst_and_sampled_image_list_head_free_slob_medium->list_head_init();
+    m_transfer_dst_and_sampled_image_list_head_free_slob_large = new (mcrt_aligned_malloc(sizeof(slob_page_vk_t), alignof(slob_page_vk_t))) slob_page_vk_t(0U, VK_NULL_HANDLE);
+    m_transfer_dst_and_sampled_image_list_head_free_slob_large->list_head_init();
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
@@ -405,7 +409,7 @@ bool gfx_malloc_vk::init(
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
-        vk_get_image_memory_requirements(device, dummy_img, &mem_req);
+        m_gfx_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
         m_depth_stencil_attachment_and_transient_attachment_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == m_depth_stencil_attachment_and_transient_attachment_memory_index)
@@ -427,6 +431,38 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     // assert(size >= (1024ULL * 1024ULL * 128ULL));
 
     return NULL;
+}
+
+uint64_t gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory)
+{
+    class slob_page_t const *slob_page;
+
+    uint64_t offset = slob_alloc(
+        m_transfer_dst_and_sampled_image_slob_break1,
+        m_transfer_dst_and_sampled_image_slob_break2,
+        m_transfer_dst_and_sampled_image_list_head_free_slob_small,
+        m_transfer_dst_and_sampled_image_list_head_free_slob_medium,
+        m_transfer_dst_and_sampled_image_list_head_free_slob_large,
+        size,
+        alignment,
+        &slob_page,
+        transfer_dst_and_sampled_image_slob_lock_list_head,
+        transfer_dst_and_sampled_image_slob_unlock_list_head,
+        transfer_dst_and_sampled_image_slob_new_pages,
+        this);
+
+    if (SLOB_OFFSET_INVALID != offset)
+    {
+        assert(NULL != slob_page);
+        (*out_device_memory) = static_cast<void *>(static_cast<class slob_page_vk_t const *>(slob_page)->m_page);
+        return offset;
+    }
+    else
+    {
+        assert(NULL == slob_page);
+        (*out_device_memory) = NULL;
+        return MALLOC_OFFSET_INVALID;
+    }
 }
 
 class gfx_malloc_vk::slob_page_t *gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(class gfx_malloc_common *_self)

@@ -67,9 +67,10 @@ class gfx_malloc_vk : public gfx_malloc_common
 
     class slob_page_vk_t : public slob_page_t
     {
-        VkDeviceMemory m_page;
 
     public:
+        VkDeviceMemory m_page;
+
         inline slob_page_vk_t(VkDeviceSize size, VkDeviceMemory page) : slob_page_t(size), m_page(page)
         {
         }
@@ -84,19 +85,19 @@ class gfx_malloc_vk : public gfx_malloc_common
 #ifndef NDEBUG
     bool m_transfer_dst_and_sampled_image_slob_list_head_lock;
 #endif
-    inline void transfer_dst_and_sampled_image_slob_lock_list_head()
+    static inline void transfer_dst_and_sampled_image_slob_lock_list_head(class gfx_malloc_common *self)
     {
-        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_list_head_lock) == false);
+        assert(mcrt_atomic_load(&static_cast<class gfx_malloc_vk *>(self)->m_transfer_dst_and_sampled_image_slob_list_head_lock) == false);
 #ifndef NDEBUG
-        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_list_head_lock, true);
+        mcrt_atomic_store(&static_cast<class gfx_malloc_vk *>(self)->m_transfer_dst_and_sampled_image_slob_list_head_lock, true);
 #endif
     }
 
-    inline void transfer_dst_and_sampled_image_slob_unlock_list_head()
+    static inline void transfer_dst_and_sampled_image_slob_unlock_list_head(class gfx_malloc_common *self)
     {
-        assert(mcrt_atomic_load(&m_transfer_dst_and_sampled_image_slob_list_head_lock) == true);
+        assert(mcrt_atomic_load(&static_cast<class gfx_malloc_vk *>(self)->m_transfer_dst_and_sampled_image_slob_list_head_lock) == true);
 #ifndef NDEBUG
-        mcrt_atomic_store(&m_transfer_dst_and_sampled_image_slob_list_head_lock, false);
+        mcrt_atomic_store(&static_cast<class gfx_malloc_vk *>(self)->m_transfer_dst_and_sampled_image_slob_list_head_lock, false);
 #endif
     }
     VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
@@ -115,10 +116,17 @@ class gfx_malloc_vk : public gfx_malloc_common
 protected:
     bool init(
         VkPhysicalDevice physical_device,
-        PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties,
-        VkDevice device,
-        PFN_vkGetBufferMemoryRequirements vk_get_buffer_memory_requirements,
-        PFN_vkGetImageMemoryRequirements vk_get_image_memory_requirements);
+        PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties);
+
+public:
+    uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) override;
+
+    inline uint64_t alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, VkDeviceMemory *out_device_memory)
+    {
+        assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
+        static_assert(sizeof(void *) == sizeof(VkDeviceMemory), "");
+        return this->gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, reinterpret_cast<void **>(out_device_memory));
+    }
 };
 
 #endif

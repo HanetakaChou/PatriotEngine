@@ -59,6 +59,8 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
     PFN_vkGetPhysicalDeviceFormatProperties m_vk_get_physical_device_format_properties;
     PFN_vkCreateBuffer m_vk_create_buffer;
     PFN_vkCreateImage m_vk_create_image;
+    PFN_vkGetBufferMemoryRequirements m_vk_get_buffer_memory_requirements;
+    PFN_vkGetImageMemoryRequirements m_vk_get_image_memory_requirements;
     PFN_vkAllocateMemory m_vkAllocateMemory;
     PFN_vkFreeMemory m_vkFreeMemory;
 
@@ -87,7 +89,6 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
 
     //deque
 
-
     class gfx_texture_common *create_texture() override;
     void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
@@ -110,18 +111,20 @@ public:
     // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap4.html#fundamentals-threadingbehavior
     // vkGetPhysicalDeviceFormatProperties
     // vkCreateImage
+    // vkGetBufferMemoryRequirements
+    // vkGetImageMemoryRequirements
     // vkAllocateMemory
     // vkFreeMemory
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, out_format_properties); }
-
     inline VkResult create_buffer(VkBufferCreateInfo const *pCreateInfo, VkBuffer *pBuffer) { return m_vk_create_buffer(m_device, pCreateInfo, &m_allocator_callbacks, pBuffer); }
     inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_vk_create_image(m_device, pCreateInfo, &m_allocator_callbacks, pImage); }
+    inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return m_vk_get_buffer_memory_requirements(m_device, buffer, memory_requirements); }
+    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_vk_get_image_memory_requirements(m_device, image, memory_requirements); }
+    inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
+    inline void free_memory(VkDeviceMemory device_memory) { return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks); }
 
     //uniform buffer
     //assert(0==(pMemoryRequirements->alignment%m_physical_device_limits_min_uniform_buffer_offset_alignment))
-
-    inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vkAllocateMemory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
-    inline void free_memory(VkDeviceMemory device_memory) { return m_vkFreeMemory(m_device, device_memory, &m_allocator_callbacks); }
 };
 
 #endif

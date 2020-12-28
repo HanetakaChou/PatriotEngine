@@ -394,18 +394,15 @@ bool gfx_connection_vk::init()
     PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceMemoryProperties"));
     assert(NULL != vk_get_physical_device_memory_properties);
 
-    PFN_vkGetBufferMemoryRequirements vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetBufferMemoryRequirements"));
-    assert(NULL != vk_get_buffer_memory_requirements);
+    m_vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetBufferMemoryRequirements"));
+    assert(NULL != m_vk_get_buffer_memory_requirements);
 
-    PFN_vkGetImageMemoryRequirements vk_get_image_memory_requirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetImageMemoryRequirements"));
-    assert(NULL != vk_get_image_memory_requirements);
+    m_vk_get_image_memory_requirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetImageMemoryRequirements"));
+    assert(NULL != m_vk_get_image_memory_requirements);
 
     if (false == this->gfx_malloc_vk::init(
                      m_physical_device,
-                     vk_get_physical_device_memory_properties,
-                     m_device,
-                     vk_get_buffer_memory_requirements,
-                     vk_get_image_memory_requirements))
+                     vk_get_physical_device_memory_properties))
     {
         return false;
     }

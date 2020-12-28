@@ -60,16 +60,19 @@ protected:
 
             //slob
             m_units = size;
-            m_free.push_front(slob_block_t{0ULL, size});
+            if (size > 0U)
+            {
+                m_free.push_front(slob_block_t{0ULL, size});
+            }
         }
 
     public:
-        static inline void list_head_init(class slob_page_t *list_head)
+        inline void list_head_init()
         {
-            assert(LIST_NEXT_INVALID == list_head->m_list_next);
-            assert(LIST_PREV_INVALID == list_head->m_list_prev);
-            list_head->m_list_next = list_head;
-            list_head->m_list_prev = list_head;
+            assert(LIST_NEXT_INVALID == this->m_list_next);
+            assert(LIST_PREV_INVALID == this->m_list_prev);
+            this->m_list_next = this;
+            this->m_list_prev = this;
         }
 
         static inline class slob_page_t *list_begin(class slob_page_t *list_head)
@@ -144,16 +147,20 @@ protected:
         class slob_page_t *list_head_free_slob_small,
         class slob_page_t *list_head_free_slob_medium,
         class slob_page_t *list_head_free_slob_large,
-        void (*slob_lock_list_head_callback)(void),
-        void (*slob_unlock_list_head_callback)(void),
         uint64_t size,
         uint64_t align,
         class slob_page_t const **out_slob_page,
+        void (*slob_lock_list_head_callback)(class gfx_malloc_common *self),
+        void (*slob_unlock_list_head_callback)(class gfx_malloc_common *self),
         class slob_page_t *(*slob_new_pages_callback)(class gfx_malloc_common *self),
         class gfx_malloc_common *self);
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
+
+    virtual uint64_t alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, void **out_device_memory) = 0;
+
+    static uint64_t const MALLOC_OFFSET_INVALID;
 };
 
 #endif
