@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_THREAD_H_) && !defined(_PT_MCRT_THREAD_WIN32_INL_)
+#define _PT_MCRT_THREAD_WIN32_INL_ 1
+
 #include <process.h>
 #include <assert.h>
 
@@ -161,36 +164,6 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 	WakeAllConditionVariable(cond);
 }
 
-//
-// thread.cpp
-//
-//      Copyright (c) Microsoft Corporation. All rights reserved.
-//
-// The _beginthread(), _beginthreadex(), _endthread(), and _endthreadex().
-//
-// There are several key differences in behavior between _beginthread() and
-// _beginthreadex():
-//
-//  * _beginthreadex() takes three additional parameters, which are passed on to
-//    CreateThread():  a security descriptor for the new thread, the initial
-//    thread state (running or asleep), and an optional out parameter to which
-//    the thread id of the newly created thread will be stored.
-//
-//  * The procedure passed to _beginthread() must be __cdecl and has no return
-//    code.  The routine passed to _beginthreadex() must be __stdcall and must
-//    return a return code, which will be used as the thread exit code.
-//    Likewise, _endthread() takes no parameter and always returns a thread exit
-//    code of 0 if the thread exits without error, whereas _endthreadex() takes
-//    an exit code.
-//
-//  * _endthread() calls CloseHandle() on the handle returned from CreateThread().
-//    Note that this means that a caller should not use this handle, since it is
-//    possible that the thread will have terminated and the handle will have been
-//    closed by the time that _beginthread() returns.
-//
-//    _endthreadex() does not call CloseHandle() to close the handle:  the caller
-//    of _beginthreadex() is required to close the handle.
-//
-//  * _beginthread() returns -1 on failure.  _beginthreadex() returns zero on
-//    failure (just as CreateThread() does).
-//
+#else
+#error "Never use <pt_mcrt_thread_win32.inl> directly; include <pt_mcrt_intrin.h> instead."
+#endif

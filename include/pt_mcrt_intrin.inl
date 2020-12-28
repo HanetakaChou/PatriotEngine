@@ -15,10 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_INTRIN_H_) && !defined(_PT_MCRT_INTRIN_INL_)
+#define _PT_MCRT_INTRIN_INL_ 1
+
 #include <assert.h>
 
 template <typename T>
-inline T mcrt_intrin_align_down(T value, T alignment)
+inline T mcrt_intrin_round_down(T value, T alignment)
 {
     // power-of-2 alignment
     assert((alignment != static_cast<T>(0)) && ((alignment & (alignment - static_cast<T>(1))) == static_cast<T>(0)));
@@ -45,7 +48,7 @@ inline T mcrt_intrin_align_down(T value, T alignment)
 }
 
 template <typename T>
-inline T mcrt_intrin_align_up(T value, T alignment)
+inline T mcrt_intrin_round_up(T value, T alignment)
 {
 
     // power-of-2 alignment
@@ -71,3 +74,7 @@ inline T mcrt_intrin_align_up(T value, T alignment)
 
     return (((value - static_cast<T>(1)) | (alignment - static_cast<T>(1))) + static_cast<T>(1));
 }
+
+#else
+#error "Never use <pt_mcrt_intrin.inl> directly; include <pt_mcrt_intrin.h> instead."
+#endif

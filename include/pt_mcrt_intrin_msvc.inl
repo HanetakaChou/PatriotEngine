@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_INTRIN_H_) && !defined(_PT_MCRT_INTRIN_GCC_INL_)
+#define _PT_MCRT_INTRIN_GCC_INL_ 1
+
 #include <intrin.h>
 
 inline int mcrt_intrin_popcount(uint32_t value)
@@ -39,4 +42,8 @@ inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint3
 }
 #else
 #error Unknown Architecture
+#endif
+
+#else
+#error "Never use <pt_mcrt_intrin_msvc.inl> directly; include <pt_mcrt_intrin.h> instead."
 #endif

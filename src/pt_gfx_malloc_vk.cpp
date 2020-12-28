@@ -103,7 +103,7 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
 
     // VmaAllocator_T::CalcPreferredBlockSize
     bool is_small_heap = (heap_size <= VMA_SMALL_HEAP_MAX_SIZE);
-    VkDeviceSize preferred_block_size = mcrt_intrin_align_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, static_cast<VkDeviceSize>(32));
+    VkDeviceSize preferred_block_size = mcrt_intrin_round_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, static_cast<VkDeviceSize>(32));
     return preferred_block_size;
 }
 

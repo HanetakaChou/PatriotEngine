@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _MCRT_ATOMIC_H_
-#define _MCRT_ATOMIC_H_ 1
+#ifndef _PT_MCRT_ATOMIC_H_
+#define _PT_MCRT_ATOMIC_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>

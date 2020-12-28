@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_INTRIN_H_) && !defined(_PT_MCRT_INTRIN_GCC_INL_)
+#define _PT_MCRT_INTRIN_GCC_INL_ 1
+
 #if defined(PT_X64) || defined(PT_X86)
 #include <cpuid.h>
 #elif defined(PT_ARM64) || defined(PT_ARM)
@@ -57,4 +60,8 @@ inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint3
 }
 #else
 #error Unknown Architecture
+#endif
+
+#else
+#error "Never use <pt_mcrt_intrin_gcc.inl> directly; include <pt_mcrt_intrin.h> instead."
 #endif

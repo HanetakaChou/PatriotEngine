@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_THREAD_H_) && !defined(_PT_MCRT_THREAD_INL_)
+#define _PT_MCRT_THREAD_INL_ 1
+
 #include <assert.h>
 
 inline void mcrt_os_event_init(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, bool manual_reset, bool initial_state)
@@ -384,3 +387,7 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
         return ((res == 0) ? lowest : -1);
     }
 }
+
+#else
+#error "Never use <pt_mcrt_thread.inl> directly; include <pt_mcrt_intrin.h> instead."
+#endif

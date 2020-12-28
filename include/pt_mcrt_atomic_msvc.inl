@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_ATOMIC_H_) && !defined(_PT_MCRT_ATOMIC_MSVC_INL_)
+#define _PT_MCRT_ATOMIC_MSVC_INL_ 1
+
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
@@ -132,4 +135,8 @@ inline void mcrt_hardware_read_write_barrier()
 }
 #else
 #error Unknown Architecture
+#endif
+
+#else
+#error "Never use <pt_mcrt_atomic_msvc.inl> directly; include <pt_mcrt_intrin.h> instead."
 #endif

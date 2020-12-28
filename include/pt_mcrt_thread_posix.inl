@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_THREAD_H_) && !defined(_PT_MCRT_THREAD_POSIX_INL_)
+#define _PT_MCRT_THREAD_POSIX_INL_ 1
+
 #include <stddef.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -200,3 +203,7 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 	int res = pthread_cond_broadcast(cond);
 	assert(res == 0);
 }
+
+#else
+#error "Never use <pt_mcrt_thread_win32.inl> directly; include <pt_mcrt_thread_posix.h> instead."
+#endif

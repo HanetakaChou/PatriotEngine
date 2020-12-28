@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_ATOMIC_H_) && !defined(_PT_MCRT_ATOMIC_INL_)
+#define _PT_MCRT_ATOMIC_INL_ 1
+
 #if defined(PT_ARM) || defined(PT_ARM64)
 inline void mcrt_atomic_acquire_barrier()
 {
@@ -59,3 +62,7 @@ inline void mcrt_atomic_store(T volatile *dst, T val)
     mcrt_atomic_release_barrier();
     (*dst) = val;
 }
+
+#else
+#error "Never use <pt_mcrt_atomic.inl> directly; include <pt_mcrt_intrin.h> instead."
+#endif

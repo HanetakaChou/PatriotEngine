@@ -15,6 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+#if defined(_PT_MCRT_ATOMIC_H_) && !defined(_PT_MCRT_ATOMIC_GCC_INL_)
+#define _PT_MCRT_ATOMIC_GCC_INL_ 1
+
 inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t comp)
 {
     return __sync_val_compare_and_swap(dest, comp, exch);
@@ -200,4 +203,8 @@ inline void mcrt_hardware_read_write_barrier()
 }
 #else
 #error Unknown Architecture
+#endif
+
+#else
+#error "Never use <pt_mcrt_atomic_gcc.inl> directly; include <pt_mcrt_intrin.h> instead."
 #endif

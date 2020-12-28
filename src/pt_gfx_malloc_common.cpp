@@ -1,4 +1,4 @@
-
+#include <pt_mcrt_intrin.h>
 #include "pt_gfx_malloc_common.h"
 
 // linux
@@ -194,6 +194,12 @@ inline uint64_t gfx_malloc_common::slob_page_t::size()
 
 inline uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t align)
 {
+    for (auto cur = m_free.begin(); cur != m_free.end(); cur = std::next(cur))
+    {
+        uint64_t avail = cur->size;
+        uint64_t aligned = mcrt_intrin_round_up(cur->offset, align);
+    }
+
     return SLOB_OFFSET_INVALID;
 }
 

@@ -29,10 +29,10 @@ inline int mcrt_intrin_popcount(uint64_t value);
 inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id);
 
 template <typename T>
-inline T mcrt_intrin_align_down(T value, T alignment);
+inline T mcrt_intrin_round_down(T value, T alignment);
 
 template <typename T>
-inline T mcrt_intrin_align_up(T value, T alignment);
+inline T mcrt_intrin_round_up(T value, T alignment);
 
 #if defined PT_GCC
 #include "pt_mcrt_intrin_gcc.inl"
