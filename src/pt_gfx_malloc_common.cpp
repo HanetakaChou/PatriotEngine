@@ -76,7 +76,15 @@
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-uint64_t const gfx_malloc_common::slob_invalid_offset = (~0ULL);
+uint64_t const gfx_malloc_common::SLOB_OFFSET_INVALID = (~0ULL);
+
+// NULL-Pointer Assignment Partition
+// https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
+// https://www.kernel.org/doc/Documentation/arm/memory.txt
+// https://www.kernel.org/doc/Documentation/arm64/memory.txt
+// https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
+class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_NEXT_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(1);
+class gfx_malloc_common::slob_page_t *const gfx_malloc_common::slob_page_t::LIST_PREV_INVALID = reinterpret_cast<class gfx_malloc_common::slob_page_t *>(2);
 
 uint64_t gfx_malloc_common::slob_alloc(
     uint64_t slob_break1,
@@ -92,9 +100,6 @@ uint64_t gfx_malloc_common::slob_alloc(
     class slob_page_t *(*slob_new_pages_callback)(class gfx_malloc_common *self),
     class gfx_malloc_common *self)
 {
-    class slob_page_t *ret_sp;
-    uint64_t ret_b;
-
     class slob_page_t *slob_list = NULL;
     if (size < slob_break1)
     {
@@ -109,63 +114,70 @@ uint64_t gfx_malloc_common::slob_alloc(
         slob_list = list_head_free_slob_large;
     }
 
-    ret_sp = NULL;
-    ret_b = slob_invalid_offset;
+    class slob_page_t *sp;
+    uint64_t b = SLOB_OFFSET_INVALID;
 
     slob_lock_list_head_callback();
-    slob_page_t::find_if_not(
-        slob_list,
-        [size, align, &ret_b, &ret_sp](class slob_page_t *sp) -> bool {
-            uint64_t b = sp->alloc(size, align);
-            if (slob_invalid_offset == b)
-            {
-                return true;
-            }
-            else
-            {
-                //TODO
-                //remove
-                //addtotail
-
-                ret_sp = sp;
-                ret_b = b;
-                return false;
-            }
-        });
+    for (sp = slob_page_t::list_begin(slob_list); sp != slob_page_t::list_end(slob_list); sp = slob_page_t::list_iterator_next(sp))
+    {
+        b = sp->alloc(size, align);
+        if (SLOB_OFFSET_INVALID == b)
+        {
+            //PT_LIKELY
+        }
+        else
+        {
+            slob_page_t::list_erase(sp);
+            slob_page_t::list_push_back(slob_list, sp);
+            break;
+        }
+    }
     slob_unlock_list_head_callback();
 
-    if ((NULL != ret_sp) && (slob_invalid_offset != ret_b))
+    if (SLOB_OFFSET_INVALID != b)
     {
-        //Do Nothing
+        //PT_LIKELY
     }
     else
     {
-        assert((NULL == ret_sp) && (slob_invalid_offset == ret_b));
-
-        //MT-safe: slob_new_pages_callback
-        class slob_page_t *sp = slob_new_pages_callback(self);
+        //The "slob_new_pages_callback" is MT-safe
+        sp = slob_new_pages_callback(self);
 
         if (NULL != sp)
         {
             slob_lock_list_head_callback();
-            //add to list_head
-            uint64_t b = sp->alloc(size, align);
+            slob_page_t::list_push_front(slob_list, sp);
+            b = sp->alloc(size, align);
             slob_unlock_list_head_callback();
-            if (slob_invalid_offset != b)
+
+            if (SLOB_OFFSET_INVALID != b)
             {
-                ret_sp = sp;
-                ret_b = b;
+                //PT_LIKELY
             }
             else
             {
+                //MALLOC BUG
                 assert(false);
-                assert((NULL == ret_sp) && (slob_invalid_offset == ret_b));
+                assert(SLOB_OFFSET_INVALID == b);
             }
+        }
+        else
+        {
+            //MALLOC FAIL
+            assert(SLOB_OFFSET_INVALID == b);
+            assert(NULL == sp);
         }
     }
 
-    (*out_slob_page) = ret_sp;
-    return ret_b;
+    assert(SLOB_OFFSET_INVALID != b || NULL == sp);
+    (*out_slob_page) = sp;
+
+    return b;
+}
+
+uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t align)
+{
+    return SLOB_OFFSET_INVALID;
 }
 
 // VmaAllocator_T::VmaAllocator_T

@@ -24,18 +24,21 @@
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_scalable_allocator.h>
-#include <deque>
+#include <forward_list>
 #include <assert.h>
 
 class gfx_malloc_common
 {
 protected:
-    static uint64_t const slob_invalid_offset;
+    static uint64_t const SLOB_OFFSET_INVALID;
 
     class slob_page_t
     {
         class slob_page_t *m_list_next;
         class slob_page_t *m_list_prev;
+
+        static class slob_page_t *const LIST_NEXT_INVALID;
+        static class slob_page_t *const LIST_PREV_INVALID;
 
         struct slob_block_t
         {
@@ -43,33 +46,86 @@ protected:
             uint64_t size;
         };
 
-        std::deque<slob_block_t, mcrt::scalable_allocator<slob_block_t>> m_free;
+        std::forward_list<slob_block_t, mcrt::scalable_allocator<slob_block_t>> m_free;
 
     protected:
         inline slob_page_t(uint64_t size)
         {
-            //slob_block_t
-            m_free.push_back(slob_block_t{0ULL, size});
+            //list
+#ifndef NDEBUG
+            m_list_next = LIST_NEXT_INVALID;
+            m_list_prev = LIST_PREV_INVALID;
+#endif
 
-            //init_list_head
-            m_list_next = this;
-            m_list_prev = this;
+            //slob_block_t
+            m_free.push_front(slob_block_t{0ULL, size});
         }
 
     public:
-        template <typename _Predicate>
-        static inline void find_if_not(class slob_page_t *list_head, _Predicate __pred)
+        static inline void list_head_init(class slob_page_t *list_head)
         {
-            for (class slob_page_t *__it = list_head; __it != list_head; __it = __it->m_list_next)
-            {
-                if (__pred(__it))
-                {
-                }
-                else
-                {
-                    break;
-                }
-            }
+            assert(LIST_NEXT_INVALID == list_head->m_list_next);
+            assert(LIST_PREV_INVALID == list_head->m_list_prev);
+            list_head->m_list_next = list_head;
+            list_head->m_list_prev = list_head;
+        }
+
+        static inline class slob_page_t *list_begin(class slob_page_t *list_head)
+        {
+            return list_head->m_list_next;
+        }
+
+        static inline class slob_page_t *list_end(class slob_page_t *list_head)
+        {
+            return list_head;
+        }
+
+        static inline class slob_page_t *list_iterator_next(class slob_page_t *it)
+        {
+            return it->m_list_next;
+        }
+
+        static inline void list_push_front(class slob_page_t *list_head, class slob_page_t *value)
+        {
+            return list_insert(list_head, value);
+        }
+
+        static inline void list_push_back(class slob_page_t *list_head, class slob_page_t *value)
+        {
+            return list_insert(list_head->m_list_prev, value);
+        }
+
+        static inline void list_insert(class slob_page_t *pos, class slob_page_t *value)
+        {
+            class slob_page_t *it_new = value;
+            class slob_page_t *it_prev = pos;
+            class slob_page_t *it_next = pos->m_list_next;
+            //insert "it_new" between the consecutive "it_prev" and "it_next"
+            assert(LIST_NEXT_INVALID == it_new->m_list_next);
+            assert(LIST_PREV_INVALID == it_new->m_list_prev);
+            assert(it_next->m_list_prev == it_prev);
+            assert(it_prev->m_list_next == it_next);
+            assert(it_new != it_prev && it_new != it_next);
+            it_next->m_list_prev = it_new;
+            it_new->m_list_next = it_next;
+            it_new->m_list_prev = it_prev;
+            it_prev->m_list_next = it_new;
+        }
+
+        static inline void list_erase(class slob_page_t *pos)
+        {
+            class slob_page_t *it_prev = pos->m_list_prev;
+            class slob_page_t *it_next = pos->m_list_next;
+            assert(LIST_NEXT_INVALID != it_next);
+            assert(LIST_PREV_INVALID != it_prev);
+            assert(it_prev->m_list_next == pos);
+            assert(it_next->m_list_prev == pos);
+            it_next->m_list_prev = it_prev;
+            it_prev->m_list_next = it_next;
+#ifndef NDEBUG
+            pos->m_list_next = LIST_NEXT_INVALID;
+            pos->m_list_prev = LIST_PREV_INVALID;
+#endif
         }
 
         uint64_t alloc(uint64_t size, uint64_t align);

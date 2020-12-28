@@ -1,6 +1,7 @@
 #include "pt_app.h"
 #include "pt_gfx_connection_utils.h"
 
+
 void app_init(struct app_iwindow *window, gfx_connection_ref gfx_connection)
 {
     //may create thread here

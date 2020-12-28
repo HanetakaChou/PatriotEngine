@@ -75,6 +75,19 @@ class gfx_connection_vk : public gfx_connection_common, public gfx_malloc_vk
     VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 
+    struct async_resource_job_result
+    {
+        VkFence m_fence;
+        //m_vertexbuffers
+        //m_indexbuffers
+        //m_textures
+        uint64_t m_ringbuffer_begin;
+        uint64_t m_ringbuffer_end;
+    };
+
+    //deque
+
+
     class gfx_texture_common *create_texture() override;
     void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
@@ -90,6 +103,9 @@ public:
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
+
+    // Externally Synchronized Parameters
+    // The queue parameter in vkQueueSubmit
 
     // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap4.html#fundamentals-threadingbehavior
     // vkGetPhysicalDeviceFormatProperties
