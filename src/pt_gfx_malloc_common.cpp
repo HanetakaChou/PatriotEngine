@@ -120,16 +120,28 @@ uint64_t gfx_malloc_common::slob_alloc(
     slob_lock_list_head_callback();
     for (sp = slob_page_t::list_begin(slob_list); sp != slob_page_t::list_end(slob_list); sp = slob_page_t::list_iterator_next(sp))
     {
-        b = sp->alloc(size, align);
-        if (SLOB_OFFSET_INVALID == b)
+        if (sp->size() < size)
         {
             //PT_LIKELY
+            //Early reject
+            //Early return
         }
         else
         {
-            slob_page_t::list_erase(sp);
-            slob_page_t::list_push_back(slob_list, sp);
-            break;
+            // Note that the reported space in a SLOB page is not necessarily
+            // contiguous, so the allocation is not guaranteed to succeed.
+            b = sp->alloc(size, align);
+
+            if (SLOB_OFFSET_INVALID == b)
+            {
+                //PT_LIKELY
+            }
+            else
+            {
+                slob_page_t::list_erase(sp);
+                slob_page_t::list_push_back(slob_list, sp);
+                break;
+            }
         }
     }
     slob_unlock_list_head_callback();
@@ -175,7 +187,12 @@ uint64_t gfx_malloc_common::slob_alloc(
     return b;
 }
 
-uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t align)
+inline uint64_t gfx_malloc_common::slob_page_t::size()
+{
+    return m_units;
+}
+
+inline uint64_t gfx_malloc_common::slob_page_t::alloc(uint64_t size, uint64_t align)
 {
     return SLOB_OFFSET_INVALID;
 }

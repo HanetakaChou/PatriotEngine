@@ -46,6 +46,7 @@ protected:
             uint64_t size;
         };
 
+        uint64_t m_units;
         std::forward_list<slob_block_t, mcrt::scalable_allocator<slob_block_t>> m_free;
 
     protected:
@@ -57,7 +58,8 @@ protected:
             m_list_prev = LIST_PREV_INVALID;
 #endif
 
-            //slob_block_t
+            //slob
+            m_units = size;
             m_free.push_front(slob_block_t{0ULL, size});
         }
 
@@ -128,12 +130,14 @@ protected:
 #endif
         }
 
-        uint64_t alloc(uint64_t size, uint64_t align);
+        inline uint64_t size();
+
+        inline uint64_t alloc(uint64_t size, uint64_t align);
     };
 
 protected:
-    //slob_page_t::alloc not MT-safe //we put it in the scope of the list_head lock
-    //MT-safe: slob_new_pages_callback
+    //The "slob_page_t::alloc: is not MT-safe //we put it in the scope of the list_head lock
+    //The "slob_new_pages_callback" is MT-safe (internally synchronized)
     static uint64_t slob_alloc(
         uint64_t slob_break1,
         uint64_t slob_break2,
