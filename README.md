@@ -147,20 +147,50 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 ### Platform Support  
 - [ ] Vulkan  
   - [ ] MemoryAllocator  
+    - [ ] SLOB  
   - [ ] TextureLoader  
+    - [ ] DDS  
+    - [ ] PVR  
+    - [ ] KTX
+  - [ ] ModelLoader
+    - [ ] PMX
+    - [ ] GLTF
+    - [ ] ALEMBIC
+    - [ ] USD
+    - [ ] FBX
   - [ ] WSI  
     - [ ] PosixLinuxX11  
     - [ ] PosixLinuxAndroid  
     - [ ] Win32Desktop  
 - [ ] Metal  
   - [ ] MemoryAllocator  
+    - [ ] SLOB  
   - [ ] TextureLoader  
+    - [ ] DDS  
+    - [ ] PVR  
+    - [ ] KTX
+  - [ ] ModelLoader
+    - [ ] PMX
+    - [ ] GLTF
+    - [ ] ALEMBIC
+    - [ ] USD
+    - [ ] FBX
   - [ ] WSI  
     - [ ] PosixMachOSX  
     - [ ] PosixMachIOS  
 - [ ] Direct3D12  
   - [ ] MemoryAllocator  
+    - [ ] SLOB  
   - [ ] TextureLoader  
+    - [ ] DDS  
+    - [ ] PVR  
+    - [ ] KTX
+  - [ ] ModelLoader
+    - [ ] PMX
+    - [ ] GLTF
+    - [ ] ALEMBIC
+    - [ ] USD
+    - [ ] FBX
   - [ ] WSI  
     - [ ] Win32Desktop      
     
