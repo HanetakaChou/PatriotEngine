@@ -49,8 +49,28 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_transfer_dst_and_vertex_buffer_memory_index;
     uint32_t m_transfer_dst_and_index_buffer_memory_index;
 
-    //uint32_t memory_index_elem[9];
-    //static_assert(PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0])), "PT_GFX_MALLOC_USAGE_RANGE_SIZE == (sizeof(memory_index_elem) / sizeof(memory_index_elem[0]))");
+    VkDeviceMemory internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+
+    class slob_page_vk : public slob_page
+    {
+        VkDeviceMemory m_page;
+
+    public:
+        inline slob_page_vk(VkDeviceSize size, VkDeviceMemory page);
+        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+    };
+
+    class slob_vk : public slob
+    {
+        class gfx_connection_vk *m_gfx_api_vk;
+        uint32_t m_memory_index;
+        class slob_page *new_pages() override;
+
+    public:
+        inline slob_vk();
+        inline void init(uint64_t slob_page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
+        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+    };
 
     // We seperate buffer and optimal-tiling-image
     // We have no linear-tiling-image
@@ -64,55 +84,22 @@ class gfx_malloc_vk : public gfx_malloc
     // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
-
-    class slob_page_vk : public slob_page
-    {
-        VkDeviceMemory m_page;
-
-    public:
-        inline slob_page_vk(VkDeviceSize size, VkDeviceMemory page);
-        inline VkDeviceMemory device_memory();
-    };
-
-    class slob_vk : public slob
-    {
-        class gfx_connection_vk *m_gfx_api_vk;
-        VkDeviceSize m_page_size;
-        uint32_t m_memory_index;
-        class slob_page *new_pages() override;
-
-    public:
-        inline slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
-        inline uint32_t memory_index();
-    };
-
-    slob_vk *m_transfer_dst_and_sampled_image_slob;
-    class slob *transfer_dst_and_sampled_image_slob() override;
-
-    //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break1; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    //VkDeviceSize m_transfer_dst_and_sampled_image_slob_break2; //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_small;
-    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_medium;
-    //slob_page_vk_t *m_transfer_dst_and_sampled_image_list_head_free_slob_large;
-
-    //VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
-    //VkDeviceSize m_transfer_dst_and_sampled_image_heap_size;
-    //uint32_t m_transfer_dst_and_sampled_image_memory_index;
-    //uint32_t m_transfer_dst_and_sampled_image_heap_index;
-
-    //uint32_t malloc_usage_to_memory_type_index(enum gfx_malloc_usage_t malloc_usage);
-
-    //routed into memory index //may be the same index
+    slob_vk m_transfer_dst_and_sampled_image_slob;
 
     void *alloc_uniform_buffer(size_t size) override;
 
 protected:
+    gfx_malloc_vk();
+
     bool init(
         VkPhysicalDevice physical_device,
         PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties);
 
 public:
-    VkDeviceMemory alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_slob);
+    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page)
+    {
+        return internal_transfer_dst_and_sampled_image_alloc(memory_requirements, out_offset, out_gfx_malloc_page);
+    }
 };
 
 #endif

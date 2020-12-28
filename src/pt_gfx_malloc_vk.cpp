@@ -107,6 +107,10 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
     return preferred_block_size;
 }
 
+gfx_malloc_vk::gfx_malloc_vk()
+{
+}
+
 bool gfx_malloc_vk::init(
     VkPhysicalDevice physical_device,
     PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties)
@@ -337,18 +341,8 @@ bool gfx_malloc_vk::init(
     m_color_attachment_and_input_attachment_and_transient_attachment_memory_index = color_format_transient_tiling_optimal_memory_index;
     m_color_attachment_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
     uint32_t transfer_dst_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
-    //m_transfer_dst_and_sampled_image_heap_index = physical_device_memory_properties.memoryTypes[m_transfer_dst_and_sampled_image_memory_index].heapIndex;
-    //assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_sampled_image_heap_index);
-    //m_transfer_dst_and_sampled_image_heap_size = physical_device_memory_properties.memoryHeaps[m_transfer_dst_and_sampled_image_heap_index].size;
     VkDeviceSize transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, transfer_dst_and_sampled_image_memory_index);
-    uint64_t transfer_dst_and_sampled_image_slob_break1 = transfer_dst_and_sampled_image_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    uint64_t transfer_dst_and_sampled_image_slob_break2 = transfer_dst_and_sampled_image_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-    m_transfer_dst_and_sampled_image_slob = new (mcrt_aligned_malloc(sizeof(slob_vk), alignof(slob_vk))) slob_vk(
-        transfer_dst_and_sampled_image_slob_break1,
-        transfer_dst_and_sampled_image_slob_break2,
-        transfer_dst_and_sampled_image_page_size,
-        transfer_dst_and_sampled_image_memory_index,
-        m_gfx_api_vk);
+    m_transfer_dst_and_sampled_image_slob.init(transfer_dst_and_sampled_image_page_size, transfer_dst_and_sampled_image_memory_index, m_gfx_api_vk);
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
@@ -420,10 +414,6 @@ bool gfx_malloc_vk::init(
     return true;
 }
 
-class gfx_malloc::slob *gfx_malloc_vk::transfer_dst_and_sampled_image_slob()
-{
-    return m_transfer_dst_and_sampled_image_slob;
-}
 
 // Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
 
@@ -442,14 +432,16 @@ inline gfx_malloc_vk::slob_page_vk::slob_page_vk(VkDeviceSize size, VkDeviceMemo
 {
 }
 
-inline VkDeviceMemory gfx_malloc_vk::slob_page_vk::device_memory()
+inline gfx_malloc_vk::slob_vk::slob_vk()
+    : m_memory_index(VK_MAX_MEMORY_TYPES), m_gfx_api_vk(NULL)
 {
-    return m_page;
 }
 
-inline gfx_malloc_vk::slob_vk::slob_vk(uint64_t slob_break1, uint64_t slob_break2, VkDeviceSize page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
-    : slob(slob_break1, slob_break2), m_page_size(page_size), m_memory_index(memory_index), m_gfx_api_vk(gfx_api_vk)
+inline void gfx_malloc_vk::slob_vk::init(uint64_t slob_page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
 {
+    this->slob::init(slob_page_size);
+    m_memory_index = memory_index;
+    m_gfx_api_vk = gfx_api_vk;
 }
 
 class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
@@ -460,13 +452,13 @@ class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
         VkMemoryAllocateInfo memory_allocate_info;
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = m_page_size;
+        memory_allocate_info.allocationSize = m_slob_page_size;
         memory_allocate_info.memoryTypeIndex = m_memory_index;
         res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
     }
     if (VK_SUCCESS == res)
     {
-        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_page_size, device_memory));
+        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_slob_page_size, device_memory));
     }
     else
     {
@@ -474,26 +466,19 @@ class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
     }
 }
 
-inline uint32_t gfx_malloc_vk::slob_vk::memory_index()
+VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page)
 {
-    return m_memory_index;
-}
-
-VkDeviceMemory gfx_malloc_vk::alloc_transfer_dst_and_sampled_image(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_slob)
-{
-    assert(((1U << m_transfer_dst_and_sampled_image_slob->memory_index()) & memory_requirements->memoryTypeBits) != 0);
-
-    class slob_page_vk *s = static_cast<class slob_page_vk *>(
-        this->gfx_malloc::alloc_transfer_dst_and_sampled_image(memory_requirements->size, memory_requirements->alignment, out_offset));
-
-    if (NULL != s)
+    assert(((1U << m_transfer_dst_and_sampled_image_slob.m_memory_index) & memory_requirements->memoryTypeBits) != 0);
+    class slob_page *sp = m_transfer_dst_and_sampled_image_slob.alloc(memory_requirements->size, memory_requirements->alignment, out_offset);
+    class slob_page_vk *sp_vk = static_cast<class slob_page_vk *>(sp);
+    if (NULL != sp_vk)
     {
-        (*out_slob) = s;
-        return s->device_memory();
+        (*out_gfx_malloc_page) = sp_vk;
+        return sp_vk->m_page;
     }
     else
     {
-        (*out_slob) = NULL;
+        (*out_gfx_malloc_page) = NULL;
         return VK_NULL_HANDLE;
     }
 }

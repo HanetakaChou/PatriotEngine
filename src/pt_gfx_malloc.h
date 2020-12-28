@@ -82,6 +82,10 @@ class gfx_malloc
 protected:
     class slob_page
     {
+#ifndef NDEBUG
+        static uint64_t const SLOB_PAGE_MAGIC;
+        uint64_t m_magic;
+#endif
         uint64_t m_units;
         class list_head m_free;
         class list_node m_list;
@@ -92,12 +96,14 @@ protected:
     public:
         inline uint64_t size();
         inline uint64_t alloc(uint64_t size, uint64_t align);
+        inline void free(uint64_t offset, uint64_t size);
         inline class list_node *list();
         static inline class slob_page *container_of(class list_node *list);
     };
 
     class slob
     {
+        static uint64_t const SLOB_BREAK_INVALID;
         uint64_t m_slob_break1;
         uint64_t m_slob_break2;
 
@@ -114,7 +120,10 @@ protected:
         virtual class slob_page *new_pages() = 0;
 
     protected:
-        slob(uint64_t slob_break1, uint64_t slob_break2);
+        uint64_t m_slob_page_size;
+
+        slob();
+        void init(uint64_t slob_page_size);
 
     public:
         //The "slob_page::alloc" is not MT-safe //we put it in the scope of the list_head lock
@@ -124,15 +133,17 @@ protected:
             uint64_t align,
             uint64_t *out_offset);
         //free (offset size) //like unmap
+
+        static void free(
+            slob_page *sp,
+            uint64_t offset,
+            uint64_t size);
     };
 
     static uint64_t const SLOB_OFFSET_INVALID;
 
 public:
     virtual void *alloc_uniform_buffer(size_t size) = 0;
-
-    virtual class slob *transfer_dst_and_sampled_image_slob() = 0;
-    class slob_page *alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset);
 };
 
 #endif

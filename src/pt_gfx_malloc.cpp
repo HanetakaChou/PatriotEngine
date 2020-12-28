@@ -77,8 +77,6 @@
 
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
-uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
-
 // NULL-Pointer Assignment Partition
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
 // https://www.kernel.org/doc/Documentation/arm/memory.txt
@@ -86,6 +84,12 @@ uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
 // https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
 class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_NEXT_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(1);
 class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_PREV_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(2);
+
+uint64_t const gfx_malloc::slob_page::SLOB_PAGE_MAGIC = 0XbeefcaffeULL;
+
+uint64_t const gfx_malloc::slob::SLOB_BREAK_INVALID = (~0ULL);
+
+uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
 
 inline gfx_malloc::list_node::list_node()
     : m_next(LIST_NODE_NEXT_INVALID),
@@ -231,13 +235,15 @@ inline class gfx_malloc::slob_block *gfx_malloc::slob_block::container_of(class 
 }
 
 gfx_malloc::slob_page::slob_page(uint64_t size)
+    :
+#ifndef NDEBUG
+      m_magic(SLOB_PAGE_MAGIC),
+#endif
+      m_units(size)
 {
-    m_units = size;
-    if (size > 0U)
-    {
-        class slob_block *b = slob_block::alloc(0U, size);
-        m_free.push_front(b->list());
-    }
+    assert(size > 0U);
+    class slob_block *b = slob_block::alloc(0U, size);
+    m_free.push_front(b->list());
 }
 
 inline uint64_t gfx_malloc::slob_page::size()
@@ -333,11 +339,17 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
                 cur->free();
             }
 
+            m_units -= size;
             return cur_offset;
         }
     }
 
     return SLOB_OFFSET_INVALID;
+}
+
+inline void gfx_malloc::slob_page::free(uint64_t offset, uint64_t size)
+{
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
 }
 
 inline class gfx_malloc::list_node *gfx_malloc::slob_page::list()
@@ -366,8 +378,17 @@ inline void gfx_malloc::slob::unlock()
 #endif
 }
 
-gfx_malloc::slob::slob(uint64_t slob_break1, uint64_t slob_break2) : m_slob_break1(slob_break1), m_slob_break2(slob_break2)
+gfx_malloc::slob::slob() : m_slob_break1(SLOB_BREAK_INVALID), m_slob_break2(SLOB_BREAK_INVALID)
 {
+}
+
+void gfx_malloc::slob::init(uint64_t slob_page_size)
+{
+    assert(SLOB_BREAK_INVALID == m_slob_break1);
+    assert(SLOB_BREAK_INVALID == m_slob_break2);
+    m_slob_page_size = slob_page_size;
+    m_slob_break1 = slob_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    m_slob_break2 = slob_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
 }
 
 class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
@@ -375,6 +396,9 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     uint64_t align,
     uint64_t *out_offset)
 {
+    assert(SLOB_BREAK_INVALID != m_slob_break1);
+    assert(SLOB_BREAK_INVALID != m_slob_break2);
+
     class list_head *slob_list = NULL;
     if (size < m_slob_break1)
     {
@@ -384,9 +408,13 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     {
         slob_list = &m_free_slob_medium;
     }
-    else
+    else if (size < m_slob_page_size)
     {
         slob_list = &m_free_slob_large;
+    }
+    else
+    {
+        return NULL;
     }
 
     class slob_page *sp;
@@ -468,10 +496,12 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     return sp;
 }
 
-class gfx_malloc::slob_page *gfx_malloc::alloc_transfer_dst_and_sampled_image(size_t size, size_t alignment, uint64_t *out_offset)
+void gfx_malloc::slob::free(
+    slob_page *sp,
+    uint64_t offset,
+    uint64_t size)
 {
-    class slob *s = transfer_dst_and_sampled_image_slob();
-    return s->alloc(size, alignment, out_offset);
+    return sp->free(offset, size);
 }
 
 // wrap
