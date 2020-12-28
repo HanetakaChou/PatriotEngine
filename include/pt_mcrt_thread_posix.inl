@@ -205,5 +205,5 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 }
 
 #else
-#error "Never use <pt_mcrt_thread_win32.inl> directly; include <pt_mcrt_thread_posix.h> instead."
+#error "Never use <pt_mcrt_thread_posix.inl> directly; include <pt_mcrt_thread.h> instead."
 #endif

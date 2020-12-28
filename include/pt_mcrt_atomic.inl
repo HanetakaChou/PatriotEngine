@@ -64,5 +64,5 @@ inline void mcrt_atomic_store(T volatile *dst, T val)
 }
 
 #else
-#error "Never use <pt_mcrt_atomic.inl> directly; include <pt_mcrt_intrin.h> instead."
+#error "Never use <pt_mcrt_atomic.inl> directly; include <pt_mcrt_atomic.h> instead."
 #endif

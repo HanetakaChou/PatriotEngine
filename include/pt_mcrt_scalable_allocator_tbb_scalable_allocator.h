@@ -16,7 +16,7 @@
 
 /** @file include/tbb/scalable_allocator.h */
 
-#ifndef _PT_MCRT_SCALABLE_ALLOCATOR_TBB_SCALABLE_ALLOCATOR_H_
+#if defined(_PT_MCRT_SCALABLE_ALLOCATOR_H_) && !defined(_PT_MCRT_SCALABLE_ALLOCATOR_TBB_SCALABLE_ALLOCATOR_H_)
 #define _PT_MCRT_SCALABLE_ALLOCATOR_TBB_SCALABLE_ALLOCATOR_H_ 1
 
 #include <new>
@@ -140,4 +140,6 @@ namespace mcrt
     inline bool operator!=(const scalable_allocator<T> &, const scalable_allocator<U> &) { return false; }
 } // namespace mcrt
 
+#else
+#error "Never use <pt_mcrt_scalable_allocator_tbb_tbb_config.h> directly; include <pt_mcrt_scalable_allocator.h> instead."
 #endif

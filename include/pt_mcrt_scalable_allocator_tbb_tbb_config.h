@@ -16,7 +16,7 @@
 
 /** @file include/tbb/tbb_config.h */
 
-#ifndef _PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_CONFIG_H_
+#if defined(_PT_MCRT_SCALABLE_ALLOCATOR_H_) && !defined(_PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_CONFIG_H_)
 #define _PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_CONFIG_H_ 1
 
 #if defined(__GNUC__)
@@ -58,4 +58,6 @@
 
 #define __PT_MCRT_ALLOCATOR_CONSTRUCT_VARIADIC (__PT_MCRT_CPP11_VARIADIC_TEMPLATES_PRESENT && __PT_MCRT_CPP11_RVALUE_REF_PRESENT)
 
+#else
+#error "Never use <pt_mcrt_scalable_allocator_tbb_tbb_config.h> directly; include <pt_mcrt_scalable_allocator.h> instead."
 #endif

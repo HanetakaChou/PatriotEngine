@@ -206,5 +206,5 @@ inline void mcrt_hardware_read_write_barrier()
 #endif
 
 #else
-#error "Never use <pt_mcrt_atomic_gcc.inl> directly; include <pt_mcrt_intrin.h> instead."
+#error "Never use <pt_mcrt_atomic_gcc.inl> directly; include <pt_mcrt_atomic.h> instead."
 #endif

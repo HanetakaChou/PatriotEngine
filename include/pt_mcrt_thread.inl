@@ -389,5 +389,5 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
 }
 
 #else
-#error "Never use <pt_mcrt_thread.inl> directly; include <pt_mcrt_intrin.h> instead."
+#error "Never use <pt_mcrt_thread.inl> directly; include <pt_mcrt_thread.h> instead."
 #endif

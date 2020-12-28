@@ -16,7 +16,7 @@
 
 /** @file include/tbb/tbb_stddef.h */
 
-#ifndef _PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_STDDEF_H_
+#if defined(_PT_MCRT_SCALABLE_ALLOCATOR_H_) && !defined(_PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_STDDEF_H_)
 #define _PT_MCRT_SCALABLE_ALLOCATOR_TBB_TBB_STDDEF_H_ 1
 
 #if defined(__GNUC__)
@@ -60,4 +60,6 @@ namespace mcrt
     } // namespace internal
 } // namespace mcrt
 
+#else
+#error "Never use <pt_mcrt_scalable_allocator_tbb_tbb_stddef.h> directly; include <pt_mcrt_scalable_allocator.h> instead."
 #endif
