@@ -133,6 +133,7 @@ bool gfx_texture_vk::read_input_stream(
         VkDeviceMemory device_memory = m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &gfx_malloc_page, &offset, &size);
         //class gfx_malloc_vk::slob_page_vk *slob
         //VkDeviceMemory device_memory = slob->device_memory();
+        m_gfx_connection->transfer_dst_and_sampled_image_free(gfx_malloc_page, offset, size, device_memory);
     }
 
     return true;
