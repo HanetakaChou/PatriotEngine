@@ -24,7 +24,6 @@
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_scalable_allocator.h>
-#include <forward_list>
 #include <assert.h>
 #include <new>
 
@@ -44,14 +43,15 @@ class gfx_malloc
         inline void list_head_node_init();
         inline void insert_after(class list_node *pos);
         inline void erase();
+#ifndef NDEBUG
+        inline bool is_in_list();
+#endif
         inline class list_node *prev();
         inline class list_node *next();
 
     public:
         inline list_node();
-#ifndef NDEBUG
-        inline bool is_in_list();
-#endif
+
         friend class list_head;
     };
 

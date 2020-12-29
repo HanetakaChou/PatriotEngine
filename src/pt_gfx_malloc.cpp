@@ -237,7 +237,6 @@ inline void gfx_malloc::slob_block::recycle_as(uint64_t offset, uint64_t size)
 
 inline void gfx_malloc::slob_block::destroy()
 {
-    assert(!this->m_list.is_in_list());
     mcrt_free(this);
 }
 
@@ -331,9 +330,6 @@ gfx_malloc::slob_page::~slob_page()
          cur != this->m_free.end();
          cur = next)
     {
-#ifndef NDEBUG
-        slob_block_list_head::erase(cur);
-#endif
         cur->destroy();
     }
 }

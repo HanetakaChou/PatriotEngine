@@ -147,6 +147,7 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_ci_transfer_src.pNext = NULL;
         buffer_ci_transfer_src.flags = 0U;
+        buffer_ci_transfer_src.size = 8U;
         buffer_ci_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
         buffer_ci_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_ci_transfer_src.queueFamilyIndexCount = 0U;
@@ -173,6 +174,8 @@ bool gfx_malloc_vk::init(
         buffer_ci_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_ci_uniform.pNext = NULL;
         buffer_ci_uniform.flags = 0U;
+        buffer_ci_uniform.size = 8U;
+
         buffer_ci_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
         buffer_ci_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_ci_uniform.queueFamilyIndexCount = 0U;
@@ -199,6 +202,8 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_dst_and_vertex_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_ci_transfer_dst_and_vertex_buffer.pNext = NULL;
         buffer_ci_transfer_dst_and_vertex_buffer.flags = 0U;
+        buffer_ci_transfer_dst_and_vertex_buffer.size = 8U;
+
         buffer_ci_transfer_dst_and_vertex_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
         buffer_ci_transfer_dst_and_vertex_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_ci_transfer_dst_and_vertex_buffer.queueFamilyIndexCount = 0U;
@@ -225,6 +230,7 @@ bool gfx_malloc_vk::init(
         buffer_ci_transfer_dst_and_index_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
         buffer_ci_transfer_dst_and_index_buffer.pNext = NULL;
         buffer_ci_transfer_dst_and_index_buffer.flags = 0U;
+        buffer_ci_transfer_dst_and_index_buffer.size = 8U;
         buffer_ci_transfer_dst_and_index_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
         buffer_ci_transfer_dst_and_index_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
         buffer_ci_transfer_dst_and_index_buffer.queueFamilyIndexCount = 0U;
