@@ -128,8 +128,9 @@ bool gfx_texture_vk::read_input_stream(
         m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
 
         uint64_t offset;
+        uint64_t size;
         void *gfx_malloc_page;
-        VkDeviceMemory device_memory = m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &offset, &gfx_malloc_page);
+        VkDeviceMemory device_memory = m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &gfx_malloc_page, &offset, &size);
         //class gfx_malloc_vk::slob_page_vk *slob
         //VkDeviceMemory device_memory = slob->device_memory();
     }

@@ -74,9 +74,9 @@
 // buf <-> slob_t <-> slob_block
 
 // Note that SLOB pages contain blocks of varying sizes, which differentiates SLOB from a classic slab allocator.
-
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
+#ifndef NDEBUG
 // NULL-Pointer Assignment Partition
 // https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
 // https://www.kernel.org/doc/Documentation/arm/memory.txt
@@ -85,15 +85,17 @@
 class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_NEXT_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(1);
 class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_PREV_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(2);
 
-uint64_t const gfx_malloc::slob_page::SLOB_PAGE_MAGIC = 0XbeefcaffeULL;
-
+uint64_t const gfx_malloc::slob_page::SLOB_PAGE_MAGIC = 0X11BEEF11CAFFE11ULL;
 uint64_t const gfx_malloc::slob::SLOB_BREAK_INVALID = (~0ULL);
+#endif
 
 uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
 
 inline gfx_malloc::list_node::list_node()
+#ifndef NDEBUG
     : m_next(LIST_NODE_NEXT_INVALID),
       m_prev(LIST_NODE_PREV_INVALID)
+#endif
 {
 }
 
@@ -131,15 +133,19 @@ inline void gfx_malloc::list_node::erase()
     assert(it_next->m_prev == this);
     it_next->m_prev = it_prev;
     it_prev->m_next = it_next;
+#ifndef NDEBUG
     this->m_next = LIST_NODE_NEXT_INVALID;
     this->m_prev = LIST_NODE_PREV_INVALID;
+#endif
     return;
 }
 
+#ifndef NDEBUG
 inline bool gfx_malloc::list_node::is_in_list()
 {
     return (LIST_NODE_NEXT_INVALID != this->m_next && LIST_NODE_PREV_INVALID != this->m_prev);
 }
+#endif
 
 inline class gfx_malloc::list_node *gfx_malloc::list_node::prev()
 {
@@ -382,7 +388,11 @@ inline void gfx_malloc::slob::unlock()
 #endif
 }
 
-gfx_malloc::slob::slob() : m_slob_break1(SLOB_BREAK_INVALID), m_slob_break2(SLOB_BREAK_INVALID)
+gfx_malloc::slob::slob()
+#ifndef NDEBUG
+    : m_slob_break1(SLOB_BREAK_INVALID),
+      m_slob_break2(SLOB_BREAK_INVALID)
+#endif
 {
 }
 

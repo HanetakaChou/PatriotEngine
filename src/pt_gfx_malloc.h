@@ -32,9 +32,10 @@ class gfx_malloc
 {
     class list_node
     {
+#ifndef NDEBUG
         static class list_node *const LIST_NODE_NEXT_INVALID;
         static class list_node *const LIST_NODE_PREV_INVALID;
-
+#endif
         class list_node *m_next;
         class list_node *m_prev;
 
@@ -43,7 +44,9 @@ class gfx_malloc
         inline void list_head_node_init();
         inline void insert_after(class list_node *pos);
         inline void erase();
+#ifndef NDEBUG
         inline bool is_in_list();
+#endif
         inline class list_node *prev();
         inline class list_node *next();
     };
@@ -103,7 +106,9 @@ protected:
 
     class slob
     {
+#ifndef NDEBUG
         static uint64_t const SLOB_BREAK_INVALID;
+#endif
         uint64_t m_slob_break1;
         uint64_t m_slob_break2;
 

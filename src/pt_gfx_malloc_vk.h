@@ -49,7 +49,8 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_transfer_dst_and_vertex_buffer_memory_index;
     uint32_t m_transfer_dst_and_index_buffer_memory_index;
 
-    VkDeviceMemory internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+    VkDeviceMemory internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
+    void internal_transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 
     class slob_page_vk : public slob_page
     {
@@ -57,7 +58,8 @@ class gfx_malloc_vk : public gfx_malloc
 
     public:
         inline slob_page_vk(VkDeviceSize size, VkDeviceMemory page);
-        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
+        friend void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
     };
 
     class slob_vk : public slob
@@ -69,7 +71,8 @@ class gfx_malloc_vk : public gfx_malloc
     public:
         inline slob_vk();
         inline void init(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
-        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
+        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
+        friend void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
     };
 
     // We seperate buffer and optimal-tiling-image
@@ -96,9 +99,14 @@ protected:
         PFN_vkGetPhysicalDeviceMemoryProperties vk_get_physical_device_memory_properties);
 
 public:
-    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page)
+    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size)
     {
-        return internal_transfer_dst_and_sampled_image_alloc(memory_requirements, out_offset, out_gfx_malloc_page);
+        return internal_transfer_dst_and_sampled_image_alloc(memory_requirements, out_gfx_malloc_page, out_offset, out_size);
+    }
+
+    inline void transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
+    {
+        return internal_transfer_dst_and_sampled_image_free(memory_requirements, gfx_malloc_page, offset, size, device_memory);
     }
 };
 

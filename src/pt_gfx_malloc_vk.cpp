@@ -414,7 +414,6 @@ bool gfx_malloc_vk::init(
     return true;
 }
 
-
 // Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
 
 void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
@@ -466,7 +465,7 @@ class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
     }
 }
 
-VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page)
+VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size)
 {
     assert(((1U << m_transfer_dst_and_sampled_image_slob.m_memory_index) & memory_requirements->memoryTypeBits) != 0);
     class slob_page *sp = m_transfer_dst_and_sampled_image_slob.alloc(memory_requirements->size, memory_requirements->alignment, out_offset);
@@ -474,11 +473,19 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
     if (NULL != sp_vk)
     {
         (*out_gfx_malloc_page) = sp_vk;
+        (*out_size) = memory_requirements->size;
         return sp_vk->m_page;
     }
     else
     {
         (*out_gfx_malloc_page) = NULL;
+        (*out_size) = 0U;
         return VK_NULL_HANDLE;
     }
+}
+
+void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
+{
+    class slob_page_vk *sp_vk = static_cast<class slob_page_vk *>(gfx_malloc_page);
+    assert(device_memory == sp_vk->m_page);
 }
