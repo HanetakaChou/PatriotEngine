@@ -56,10 +56,10 @@ else
 fi
 
 if test \( \( -n "$2" \) -a \( "$2" = "bionic" \) \);then
-    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=linux_x11_bionic.mk"
+    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=build_bionic.mk"
     NDK_BUILD_CMD_DIR_PLATFORM="android-ndk-r14b"
 elif test \( \( -n "$2" \) -a \( "$2" = "glibc" \) \);then
-    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=linux_x11_glibc.mk"
+    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=build_glibc.mk"
     NDK_BUILD_CMD_DIR_PLATFORM="ndk_build_glibc"
 else
     echo "The platform \"$2\" is not supported!"

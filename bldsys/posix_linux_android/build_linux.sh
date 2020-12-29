@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Copyright (C) YuqiaoZhang(HanetakaYuminaga)
 # 
@@ -15,9 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# https://developer.android.com/ndk/guides/application_mk
+MY_DIR="$(readlink -f "$(dirname "$0")")"
 
-APP_PLATFORM := android-24
-APP_STL := c++_static
-NDK_TOOLCHAIN_VERSION := clang
-#NDK_TOOLCHAIN_VERSION := 4.9
+cd ${MY_DIR}
+${MY_DIR}/aapt2 package -f -M AndroidManifest.xml -I "$ANDROID_SDK_HOME/platforms/android-24/android.jar" -S res -F bin/$1-unaligned.apk bin/libs
+# jarsigner -verbose -keystore ${MY_DIR}/.android/debug.keystore -storepass android -keypass android  bin/$1-unaligned.apk androiddebugkey
+# zipalign -f 4 bin/$1-unaligned.apk bin/$1.apk
