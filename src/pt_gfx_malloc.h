@@ -40,14 +40,9 @@ class gfx_malloc
         class list_node *m_next;
         class list_node *m_prev;
 
-        inline void list_head_node_init();
-        inline void insert_after(class list_node *pos);
-        inline void erase();
 #ifndef NDEBUG
         inline bool is_in_list();
 #endif
-        inline class list_node *prev();
-        inline class list_node *next();
 
     public:
         inline list_node();
@@ -58,6 +53,8 @@ class gfx_malloc
     class list_head
     {
         list_node m_head;
+
+        static inline void list_head_node_init(class list_node *head);
 
     protected:
         inline list_head();
@@ -117,7 +114,7 @@ protected:
         uint64_t m_magic;
 #endif
         bool m_is_on_free_list;
-        uint64_t m_units;
+        uint64_t m_size;
         class slob_block_list_head m_free;
         class list_node m_list;
 
@@ -147,10 +144,10 @@ private:
         inline class slob_page *end();
         static inline class slob_page *prev(class slob_page *it);
         static inline class slob_page *next(class slob_page *it);
-        inline void push_front(class slob_page *value);
-        static inline void erase(class slob_page *value);
-        inline void move_head_after(class slob_page *pos);
         static inline bool is_on_free_list(class slob_page *value);
+        inline void set_on_free_list(class slob_page *value);
+        static inline void clear_on_free_list(class slob_page *value);
+        inline void move_head_after(class slob_page *pos);
     };
 
 protected:

@@ -99,47 +99,6 @@ inline gfx_malloc::list_node::list_node()
 {
 }
 
-inline void gfx_malloc::list_node::list_head_node_init()
-{
-    assert(!this->is_in_list());
-    this->m_next = this;
-    this->m_prev = this;
-    return;
-}
-
-inline void gfx_malloc::list_node::insert_after(class list_node *pos)
-{
-    class list_node *it_new = this;
-    class list_node *it_prev = pos;
-    class list_node *it_next = pos->m_next;
-    //insert "it_new" between the consecutive "it_prev" and "it_next"
-    assert(!this->is_in_list());
-    assert(it_next->m_prev == it_prev);
-    assert(it_prev->m_next == it_next);
-    assert(it_new != it_prev && it_new != it_next);
-    it_next->m_prev = it_new;
-    it_new->m_next = it_next;
-    it_new->m_prev = it_prev;
-    it_prev->m_next = it_new;
-    return;
-}
-
-inline void gfx_malloc::list_node::erase()
-{
-    class list_node *it_prev = this->m_prev;
-    class list_node *it_next = this->m_next;
-    assert(this->is_in_list());
-    assert(it_prev->m_next == this);
-    assert(it_next->m_prev == this);
-    it_next->m_prev = it_prev;
-    it_prev->m_next = it_next;
-#ifndef NDEBUG
-    this->m_next = LIST_NODE_NEXT_INVALID;
-    this->m_prev = LIST_NODE_PREV_INVALID;
-#endif
-    return;
-}
-
 #ifndef NDEBUG
 inline bool gfx_malloc::list_node::is_in_list()
 {
@@ -147,26 +106,23 @@ inline bool gfx_malloc::list_node::is_in_list()
 }
 #endif
 
-inline class gfx_malloc::list_node *gfx_malloc::list_node::prev()
+inline void gfx_malloc::list_head::list_head_node_init(class list_node *head)
 {
-    return this->m_prev;
-}
-
-inline class gfx_malloc::list_node *gfx_malloc::list_node::next()
-{
-    return this->m_next;
+    assert(!head->is_in_list());
+    head->m_next = head;
+    head->m_prev = head;
 }
 
 inline gfx_malloc::list_head::list_head()
 {
-    m_head.list_head_node_init();
+    list_head_node_init(&m_head);
     return;
 }
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::begin()
 {
     assert(m_head.is_in_list());
-    return m_head.next();
+    return m_head.m_next;
 }
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::end()
@@ -177,42 +133,63 @@ inline class gfx_malloc::list_node *gfx_malloc::list_head::end()
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::prev(class list_node *it)
 {
-    return it->prev();
+    return it->m_prev;
 }
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::next(class list_node *it)
 {
-    return it->next();
+    return it->m_next;
 }
 
 inline void gfx_malloc::list_head::insert_after(class list_node *pos, class list_node *value)
 {
-    value->insert_after(pos);
+    class list_node *it_new = value;
+    class list_node *it_prev = pos;
+    class list_node *it_next = pos->m_next;
+    //insert "it_new" between the consecutive "it_prev" and "it_next"
+    assert(!value->is_in_list());
+    assert(it_next->m_prev == it_prev);
+    assert(it_prev->m_next == it_next);
+    assert(it_new != it_prev && it_new != it_next);
+    it_next->m_prev = it_new;
+    it_new->m_next = it_next;
+    it_new->m_prev = it_prev;
+    it_prev->m_next = it_new;
     return;
 }
 
 inline void gfx_malloc::list_head::erase(class list_node *value)
 {
-    value->erase();
+    class list_node *it_prev = value->m_prev;
+    class list_node *it_next = value->m_next;
+    assert(value->is_in_list());
+    assert(it_prev->m_next == value);
+    assert(it_next->m_prev == value);
+    it_next->m_prev = it_prev;
+    it_prev->m_next = it_next;
+#ifndef NDEBUG
+    value->m_next = list_node::LIST_NODE_NEXT_INVALID;
+    value->m_prev = list_node::LIST_NODE_PREV_INVALID;
+#endif
     return;
 }
 
 inline void gfx_malloc::list_head::push_front(class list_node *value)
 {
     assert(m_head.is_in_list());
-    return value->insert_after(&m_head);
+    return insert_after(&m_head, value);
 }
 
 inline void gfx_malloc::list_head::push_back(class list_node *value)
 {
     assert(m_head.is_in_list());
-    return value->insert_after(m_head.prev());
+    return insert_after(m_head.m_prev, value);
 }
 
 inline void gfx_malloc::list_head::move_head_after(class list_node *pos)
 {
-    this->m_head.erase();
-    this->m_head.insert_after(pos);
+    erase(&this->m_head);
+    insert_after(pos, &this->m_head);
 }
 
 inline gfx_malloc::slob_block::slob_block(uint64_t offset, uint64_t size)
@@ -233,11 +210,13 @@ inline void gfx_malloc::slob_block::recycle_as(uint64_t offset, uint64_t size)
 {
     this->m_offset = offset;
     this->m_size = size;
+    return;
 }
 
 inline void gfx_malloc::slob_block::destroy()
 {
     mcrt_free(this);
+    return;
 }
 
 inline uint64_t gfx_malloc::slob_block::offset()
@@ -311,7 +290,7 @@ gfx_malloc::slob_page::slob_page(uint64_t page_size)
       m_magic(SLOB_PAGE_MAGIC),
 #endif
       m_is_on_free_list(false),
-      m_units(page_size)
+      m_size(page_size)
 {
     assert(page_size > 0U);
     class slob_block *b = slob_block::new_as(0U, page_size);
@@ -332,7 +311,7 @@ gfx_malloc::slob_page::~slob_page()
 inline uint64_t gfx_malloc::slob_page::size()
 {
     assert(SLOB_PAGE_MAGIC == this->m_magic);
-    return this->m_units;
+    return this->m_size;
 }
 
 #ifndef NDEBUG
@@ -467,11 +446,11 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
                 cur->destroy();
             }
 
-            this->m_units -= size;
-            if (0U == this->m_units)
+            this->m_size -= size;
+            if (0U == this->m_size)
             {
                 assert(this->m_free.begin() == this->m_free.end());
-                slob_page_list_head::erase(this);
+                slob_page_list_head::clear_on_free_list(this);
             }
             return cur_offset;
         }
@@ -553,7 +532,7 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob_page_list_head::next(class 
     return slob_page::container_of(list_head::next(&it->m_list));
 }
 
-inline void gfx_malloc::slob_page_list_head::push_front(class slob_page *value)
+inline void gfx_malloc::slob_page_list_head::set_on_free_list(class slob_page *value)
 {
     assert(!value->m_is_on_free_list);
     this->list_head::push_front(&value->m_list);
@@ -561,7 +540,7 @@ inline void gfx_malloc::slob_page_list_head::push_front(class slob_page *value)
     return;
 }
 
-inline void gfx_malloc::slob_page_list_head::erase(class slob_page *value)
+inline void gfx_malloc::slob_page_list_head::clear_on_free_list(class slob_page *value)
 {
     assert(value->m_is_on_free_list);
     list_head::erase(&value->m_list);
@@ -677,7 +656,7 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
             if (NULL != sp)
             {
                 this->lock();
-                slob_list->push_front(sp);
+                slob_list->set_on_free_list(sp);
                 b = sp->alloc(size, align);
                 this->unlock();
                 //MALLOC BUG
@@ -737,7 +716,7 @@ void gfx_malloc::slob::free(
                 slob_list = NULL;
             }
             assert(NULL != slob_list);
-            slob_list->push_front(sp);
+            slob_list->set_on_free_list(sp);
         }
         this->unlock();
         return;
@@ -748,7 +727,7 @@ void gfx_malloc::slob::free(
         this->lock();
         if (slob_page_list_head::is_on_free_list(sp))
         {
-            slob_page_list_head::erase(sp);
+            slob_page_list_head::clear_on_free_list(sp);
         }
         this->unlock();
         this->free_pages(sp);
