@@ -263,11 +263,6 @@ inline void gfx_malloc::slob_block::merge_next(uint64_t merge_count)
     return;
 }
 
-inline class gfx_malloc::list_node *gfx_malloc::slob_block::list()
-{
-    return &this->m_list;
-}
-
 inline class gfx_malloc::slob_block *gfx_malloc::slob_block::container_of(class list_node *list)
 {
     return reinterpret_cast<class slob_block *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_block, m_list)));

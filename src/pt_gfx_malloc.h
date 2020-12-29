@@ -81,6 +81,7 @@ class gfx_malloc
         class list_node m_list;
         inline slob_block(uint64_t offset, uint64_t size);
         inline ~slob_block();
+        static inline class slob_block *container_of(class list_node *list);
 
     public:
         static inline class slob_block *new_as(uint64_t offset, uint64_t size);
@@ -90,8 +91,6 @@ class gfx_malloc
         inline uint64_t size();
         inline void merge_prev(uint64_t merge_count);
         inline void merge_next(uint64_t merge_count);
-        inline class list_node *list();
-        static inline class slob_block *container_of(class list_node *list);
 
         friend class slob_block_list_head;
     };
