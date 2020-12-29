@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_POSIX_MACH_METAL_H_
-#define _PT_GFX_POSIX_MACH_METAL_H_ 1
+#ifndef _PT_GFX_API_MTL_H_
+#define _PT_GFX_API_MTL_H_ 1
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Headers/MTLDevice.h */
 typedef struct _MTLDevice_T_ *MTLDevice;
