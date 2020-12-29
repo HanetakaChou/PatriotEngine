@@ -68,7 +68,7 @@ class gfx_malloc_vk : public gfx_malloc
 
     public:
         inline slob_vk();
-        inline void init(uint64_t slob_page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
+        inline void init(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
         friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, uint64_t *out_offset, void **out_gfx_malloc_page);
     };
 

@@ -437,9 +437,9 @@ inline gfx_malloc_vk::slob_vk::slob_vk()
 {
 }
 
-inline void gfx_malloc_vk::slob_vk::init(uint64_t slob_page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
+inline void gfx_malloc_vk::slob_vk::init(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
 {
-    this->slob::init(slob_page_size);
+    this->slob::init(page_size);
     m_memory_index = memory_index;
     m_gfx_api_vk = gfx_api_vk;
 }
@@ -452,13 +452,13 @@ class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
         VkMemoryAllocateInfo memory_allocate_info;
         memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
         memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = m_slob_page_size;
+        memory_allocate_info.allocationSize = m_page_size;
         memory_allocate_info.memoryTypeIndex = m_memory_index;
         res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
     }
     if (VK_SUCCESS == res)
     {
-        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_slob_page_size, device_memory));
+        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_page_size, device_memory));
     }
     else
     {

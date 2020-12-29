@@ -253,7 +253,7 @@ inline uint64_t gfx_malloc::slob_page::size()
 
 inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
 {
-    for (class list_node *it_cur = m_free.begin(); it_cur != m_free.end(); it_cur = it_cur->next())
+    for (class list_node *it_cur = this->m_free.begin(); it_cur != this->m_free.end(); it_cur = it_cur->next())
     {
         class slob_block *cur = slob_block::container_of(it_cur);
         uint64_t avail = cur->size();
@@ -293,7 +293,7 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
             if (delta > 0U)
             {
                 class list_node *it_prev = it_cur->prev();
-                class slob_block *prev = (it_prev != m_free.end()) ? slob_block::container_of(it_prev) : NULL;
+                class slob_block *prev = (it_prev != this->m_free.end()) ? slob_block::container_of(it_prev) : NULL;
                 assert((NULL == prev) || ((prev->offset() + prev->size()) <= cur_offset));
 
                 if ((NULL != prev) && ((prev->offset() + prev->size()) == cur_offset))
@@ -313,7 +313,7 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
             if (avail > (size + delta))
             {
                 class list_node *it_next = it_cur->next();
-                class slob_block *next = (it_next != m_free.end()) ? slob_block::container_of(it_next) : NULL;
+                class slob_block *next = (it_next != this->m_free.end()) ? slob_block::container_of(it_next) : NULL;
                 assert((NULL == next) || (cur_offset + cur_size <= next->offset()));
 
                 if ((NULL != next) && (cur_offset + cur_size == next->offset()))
@@ -339,7 +339,11 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
                 cur->free();
             }
 
-            m_units -= size;
+            this->m_units -= size;
+            if (0U == this->m_units)
+            {
+                this->m_list.erase();
+            }
             return cur_offset;
         }
     }
@@ -382,13 +386,13 @@ gfx_malloc::slob::slob() : m_slob_break1(SLOB_BREAK_INVALID), m_slob_break2(SLOB
 {
 }
 
-void gfx_malloc::slob::init(uint64_t slob_page_size)
+void gfx_malloc::slob::init(uint64_t page_size)
 {
     assert(SLOB_BREAK_INVALID == m_slob_break1);
     assert(SLOB_BREAK_INVALID == m_slob_break2);
-    m_slob_page_size = slob_page_size;
-    m_slob_break1 = slob_page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    m_slob_break2 = slob_page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+    m_page_size = page_size;
+    m_slob_break1 = page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    m_slob_break2 = page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
 }
 
 class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
@@ -399,7 +403,7 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     assert(SLOB_BREAK_INVALID != m_slob_break1);
     assert(SLOB_BREAK_INVALID != m_slob_break2);
 
-    class list_head *slob_list = NULL;
+    class list_head *slob_list;
     if (size < m_slob_break1)
     {
         slob_list = &m_free_slob_small;
@@ -408,92 +412,99 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     {
         slob_list = &m_free_slob_medium;
     }
-    else if (size < m_slob_page_size)
+    else if (size < m_page_size)
     {
         slob_list = &m_free_slob_large;
     }
     else
     {
-        return NULL;
+        slob_list = NULL;
     }
 
-    class slob_page *sp;
-    uint64_t b = SLOB_OFFSET_INVALID;
-
-    this->lock();
-    for (class list_node *it_sp = slob_list->begin(); it_sp != slob_list->end(); it_sp = it_sp->next())
+    if (NULL != slob_list)
     {
-        class slob_page *sp = slob_page::container_of(it_sp);
+        class slob_page *sp;
+        uint64_t b = SLOB_OFFSET_INVALID;
 
-        if (sp->size() < size)
+        this->lock();
+        for (class list_node *it_sp = slob_list->begin(); it_sp != slob_list->end(); it_sp = it_sp->next())
         {
-            //PT_LIKELY
-            //Early reject
-            //Early return
-        }
-        else
-        {
-            // Note that the reported space in a SLOB page is not necessarily
-            // contiguous, so the allocation is not guaranteed to succeed.
-            b = sp->alloc(size, align);
+            class slob_page *sp = slob_page::container_of(it_sp);
 
-            if (SLOB_OFFSET_INVALID == b)
+            if (sp->size() < size)
             {
                 //PT_LIKELY
+                //Early reject
+                //Early return
             }
             else
             {
-                // Improve fragment distribution and reduce our average
-                // search time by starting our next search here. (see
-                // Knuth vol 1, sec 2.5, pg 449)
-                it_sp->erase();
-                slob_list->push_back(it_sp);
-                break;
+                // Note that the reported space in a SLOB page is not necessarily
+                // contiguous, so the allocation is not guaranteed to succeed.
+                b = sp->alloc(size, align);
+
+                if (SLOB_OFFSET_INVALID == b)
+                {
+                    //PT_LIKELY
+                }
+                else
+                {
+                    // Improve fragment distribution and reduce our average
+                    // search time by starting our next search here. (see
+                    // Knuth vol 1, sec 2.5, pg 449)
+                    it_sp->erase();
+                    slob_list->push_back(it_sp);
+                    break;
+                }
             }
         }
-    }
-    this->unlock();
+        this->unlock();
 
-    if (SLOB_OFFSET_INVALID != b)
-    {
-        //PT_LIKELY
+        if (SLOB_OFFSET_INVALID != b)
+        {
+            //PT_LIKELY
+        }
+        else
+        {
+            //The "slob::new_pages" is MT-safe (internally synchronized)
+            sp = this->new_pages();
+
+            if (NULL != sp)
+            {
+                this->lock();
+                slob_list->push_front(sp->list());
+                b = sp->alloc(size, align);
+                this->unlock();
+
+                if (SLOB_OFFSET_INVALID != b)
+                {
+                    //PT_LIKELY
+                }
+                else
+                {
+                    //MALLOC BUG
+                    assert(false);
+                    assert(SLOB_OFFSET_INVALID == b);
+                }
+            }
+            else
+            {
+                //MALLOC FAIL
+                assert(SLOB_OFFSET_INVALID == b);
+                assert(NULL == sp);
+            }
+        }
+
+        assert(SLOB_OFFSET_INVALID == b || NULL != sp); //SLOB_OFFSET_INVALID != b ⇒ NULL != sp
+        assert(SLOB_OFFSET_INVALID != b || NULL == sp); //SLOB_OFFSET_INVALID == b ⇒ NULL == sp
+        (*out_offset) = b;
+        return sp;
     }
     else
     {
-        //The "slob::new_pages" is MT-safe (internally synchronized)
-        sp = this->new_pages();
-
-        if (NULL != sp)
-        {
-            this->lock();
-            slob_list->push_front(sp->list());
-            b = sp->alloc(size, align);
-            this->unlock();
-
-            if (SLOB_OFFSET_INVALID != b)
-            {
-                //PT_LIKELY
-            }
-            else
-            {
-                //MALLOC BUG
-                assert(false);
-                assert(SLOB_OFFSET_INVALID == b);
-            }
-        }
-        else
-        {
-            //MALLOC FAIL
-            assert(SLOB_OFFSET_INVALID == b);
-            assert(NULL == sp);
-        }
+        (*out_offset) = SLOB_OFFSET_INVALID;
+        return NULL;
     }
-
-    assert(SLOB_OFFSET_INVALID == b || NULL != sp); //SLOB_OFFSET_INVALID != b ⇒ NULL != sp
-    assert(SLOB_OFFSET_INVALID != b || NULL == sp); //SLOB_OFFSET_INVALID == b ⇒ NULL == sp
-    (*out_offset) = b;
-
-    return sp;
 }
 
 void gfx_malloc::slob::free(

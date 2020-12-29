@@ -120,10 +120,10 @@ protected:
         virtual class slob_page *new_pages() = 0;
 
     protected:
-        uint64_t m_slob_page_size;
+        uint64_t m_page_size;
 
         slob();
-        void init(uint64_t slob_page_size);
+        void init(uint64_t page_size);
 
     public:
         //The "slob_page::alloc" is not MT-safe //we put it in the scope of the list_head lock
