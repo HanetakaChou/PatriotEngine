@@ -426,9 +426,43 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     return NULL;
 }
 
-inline gfx_malloc_vk::slob_page_vk::slob_page_vk(VkDeviceSize size, VkDeviceMemory page)
-    : slob_page(size), m_page(page)
+inline gfx_malloc_vk::slob_page_vk::slob_page_vk(VkDeviceSize page_size, VkDeviceMemory page)
+    : slob_page(page_size), m_page(page)
 {
+}
+
+inline gfx_malloc_vk::slob_page_vk::~slob_page_vk()
+{
+}
+
+class gfx_malloc_vk::slob_page_vk *gfx_malloc_vk::slob_page_vk::new_as(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk)
+{
+    VkResult res;
+    VkDeviceMemory device_memory;
+    {
+        VkMemoryAllocateInfo memory_allocate_info;
+        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        memory_allocate_info.pNext = NULL;
+        memory_allocate_info.allocationSize = page_size;
+        memory_allocate_info.memoryTypeIndex = memory_index;
+        res = gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
+    }
+    if (VK_SUCCESS == res)
+    {
+        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(page_size, device_memory));
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+inline void gfx_malloc_vk::slob_page_vk::destory(class gfx_connection_vk *gfx_api_vk)
+{
+    gfx_api_vk->free_memory(this->m_page);
+    this->~slob_page_vk();
+    mcrt_free(this);
+    return;
 }
 
 inline gfx_malloc_vk::slob_vk::slob_vk()
@@ -445,24 +479,15 @@ inline void gfx_malloc_vk::slob_vk::init(uint64_t page_size, uint32_t memory_ind
 
 class gfx_malloc::slob_page *gfx_malloc_vk::slob_vk::new_pages()
 {
-    VkResult res;
-    VkDeviceMemory device_memory;
-    {
-        VkMemoryAllocateInfo memory_allocate_info;
-        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = m_page_size;
-        memory_allocate_info.memoryTypeIndex = m_memory_index;
-        res = m_gfx_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
-    }
-    if (VK_SUCCESS == res)
-    {
-        return (new (mcrt_aligned_malloc(sizeof(slob_page_vk), alignof(slob_page_vk))) slob_page_vk(m_page_size, device_memory));
-    }
-    else
-    {
-        return NULL;
-    }
+    class slob_page_vk *sp_vk = slob_page_vk::new_as(this->m_page_size, this->m_memory_index, this->m_gfx_api_vk);
+    return sp_vk;
+}
+
+void gfx_malloc_vk::slob_vk::free_pages(class slob_page *sp)
+{
+    class slob_page_vk *sp_vk = static_cast<class slob_page_vk *>(sp);
+    sp_vk->destory(m_gfx_api_vk);
+    return;
 }
 
 VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size)
@@ -484,8 +509,9 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
     }
 }
 
-void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(VkMemoryRequirements const *memory_requirements, void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
+void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
 {
     class slob_page_vk *sp_vk = static_cast<class slob_page_vk *>(gfx_malloc_page);
     assert(device_memory == sp_vk->m_page);
+    m_transfer_dst_and_sampled_image_slob.free(sp_vk, offset, size);
 }
