@@ -61,6 +61,7 @@ class gfx_malloc
         inline class list_node *end();
         inline void push_front(class list_node *value);
         inline void push_back(class list_node *value);
+        inline class list_node *head();
     };
 
     class slob_block

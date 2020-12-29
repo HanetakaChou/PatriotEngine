@@ -165,25 +165,32 @@ inline gfx_malloc::list_head::list_head()
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::begin()
 {
+    assert(m_head.is_in_list());
     return m_head.next();
 }
 
 inline class gfx_malloc::list_node *gfx_malloc::list_head::end()
 {
+    assert(m_head.is_in_list());
     return &m_head;
 }
 
 inline void gfx_malloc::list_head::push_front(class list_node *value)
 {
+    assert(m_head.is_in_list());
     return value->insert_after(&m_head);
 }
 
 inline void gfx_malloc::list_head::push_back(class list_node *value)
 {
+    assert(m_head.is_in_list());
     return value->insert_after(m_head.prev());
 }
 
-uint64_t const SLOB_OFFSET_INVALID = (~0ULL);
+inline class gfx_malloc::list_node *gfx_malloc::list_head::head()
+{
+    return &m_head;
+}
 
 inline gfx_malloc::slob_block::slob_block(uint64_t offset, uint64_t size)
     : m_offset(offset), m_size(size), m_list()
@@ -452,18 +459,22 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
                 // Note that the reported space in a SLOB page is not necessarily
                 // contiguous, so the allocation is not guaranteed to succeed.
                 b = sp->alloc(size, align);
-
                 if (SLOB_OFFSET_INVALID == b)
                 {
                     //PT_LIKELY
                 }
                 else
                 {
-                    // Improve fragment distribution and reduce our average
-                    // search time by starting our next search here. (see
-                    // Knuth vol 1, sec 2.5, pg 449)
-                    it_sp->erase();
-                    slob_list->push_back(it_sp);
+                    // Finally, as an optimization, the appropriate linked list
+                    // of pages is cycled such that the next search will begin at the page used to
+                    // successfully service the most recent allocation.
+                    if (slob_list->begin() != it_sp)
+                    {
+                        assert(slob_list->head()->next() != it_sp);
+                        slob_list->head()->erase();
+                        slob_list->head()->insert_after(it_sp->prev());
+                        assert(slob_list->begin() == it_sp);
+                    }
                     break;
                 }
             }
@@ -478,24 +489,14 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
         {
             //The "slob::new_pages" is MT-safe (internally synchronized)
             sp = this->new_pages();
-
             if (NULL != sp)
             {
                 this->lock();
                 slob_list->push_front(sp->list());
                 b = sp->alloc(size, align);
                 this->unlock();
-
-                if (SLOB_OFFSET_INVALID != b)
-                {
-                    //PT_LIKELY
-                }
-                else
-                {
-                    //MALLOC BUG
-                    assert(false);
-                    assert(SLOB_OFFSET_INVALID == b);
-                }
+                //MALLOC BUG
+                assert(SLOB_OFFSET_INVALID != b);
             }
             else
             {
