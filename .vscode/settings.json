@@ -3,8 +3,5 @@
     "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
     "C_Cpp.default.cppStandard": "c++11",
     "C_Cpp.default.cStandard": "c99",
-    "C_Cpp.default.intelliSenseMode": "clang-x64",
-    "files.associations": {
-        "*.tcc": "cpp"
-    }
+    "C_Cpp.default.intelliSenseMode": "clang-x64"
 }

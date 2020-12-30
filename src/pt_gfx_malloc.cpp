@@ -1,6 +1,7 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_atomic.h>
 #include "pt_gfx_malloc.h"
+#include <algorithm>
 
 // linux
 // https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB
@@ -77,277 +78,117 @@
 // https://www.kernel.org/doc/gorman/html/understand/understand011.html
 
 #ifndef NDEBUG
-// NULL-Pointer Assignment Partition
-// https://docs.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/virtual-address-spaces
-// https://www.kernel.org/doc/Documentation/arm/memory.txt
-// https://www.kernel.org/doc/Documentation/arm64/memory.txt
-// https://www.kernel.org/doc/Documentation/x86/x86_64/mm.txt
-class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_NEXT_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(1);
-class gfx_malloc::list_node *const gfx_malloc::list_node::LIST_NODE_PREV_INVALID = reinterpret_cast<class gfx_malloc::list_node *>(2);
-
-uint64_t const gfx_malloc::slob_page::SLOB_PAGE_MAGIC = 0X11BEEF11CAFFE11ULL;
-uint64_t const gfx_malloc::slob::SLOB_BREAK_INVALID = (~0ULL);
+uint64_t const gfx_malloc::slob_page_stl::SLOB_PAGE_MAGIC = 0X11BEEF11CAFFE11ULL;
+uint64_t const gfx_malloc::slob_stl::SLOB_BREAK_POISON = (~0ULL);
+uint64_t const gfx_malloc::slob_stl::PAGE_SIZE_POISON = (~0ULL);
 #endif
-
 uint64_t const gfx_malloc::SLOB_OFFSET_INVALID = (~0ULL);
 
-inline gfx_malloc::list_node::list_node()
-#ifndef NDEBUG
-    : m_next(LIST_NODE_NEXT_INVALID),
-      m_prev(LIST_NODE_PREV_INVALID)
-#endif
+inline bool gfx_malloc::slob_block_stl::operator<(class slob_block_stl const &other) const
+{
+    return ((this->m_offset + this->m_size) <= other.m_offset);
+}
+
+inline gfx_malloc::slob_block_stl::slob_block_stl(uint64_t offset, uint64_t size)
+    : m_offset(offset),
+      m_size(size)
 {
 }
 
-#ifndef NDEBUG
-inline bool gfx_malloc::list_node::is_in_list()
+inline uint64_t gfx_malloc::slob_block_stl::offset() const
 {
-    return (LIST_NODE_NEXT_INVALID != this->m_next && LIST_NODE_PREV_INVALID != this->m_prev);
-}
-#endif
-
-inline void gfx_malloc::list_head::list_head_node_init(class list_node *head)
-{
-    assert(!head->is_in_list());
-    head->m_next = head;
-    head->m_prev = head;
+    return m_offset;
 }
 
-inline gfx_malloc::list_head::list_head()
+inline uint64_t gfx_malloc::slob_block_stl::size() const
 {
-    list_head_node_init(&m_head);
+    return m_size;
+}
+
+inline void gfx_malloc::slob_block_stl::merge_next(uint64_t size) const
+{
+    this->m_size += size;
     return;
 }
 
-inline class gfx_malloc::list_node *gfx_malloc::list_head::begin()
+inline void gfx_malloc::slob_block_stl::merge_prev(uint64_t size) const
 {
-    assert(m_head.is_in_list());
-    return m_head.m_next;
-}
-
-inline class gfx_malloc::list_node *gfx_malloc::list_head::end()
-{
-    assert(m_head.is_in_list());
-    return &m_head;
-}
-
-inline class gfx_malloc::list_node *gfx_malloc::list_head::prev(class list_node *it)
-{
-    return it->m_prev;
-}
-
-inline class gfx_malloc::list_node *gfx_malloc::list_head::next(class list_node *it)
-{
-    return it->m_next;
-}
-
-inline void gfx_malloc::list_head::insert_after(class list_node *pos, class list_node *value)
-{
-    class list_node *it_new = value;
-    class list_node *it_prev = pos;
-    class list_node *it_next = pos->m_next;
-    //insert "it_new" between the consecutive "it_prev" and "it_next"
-    assert(!value->is_in_list());
-    assert(it_next->m_prev == it_prev);
-    assert(it_prev->m_next == it_next);
-    assert(it_new != it_prev && it_new != it_next);
-    it_next->m_prev = it_new;
-    it_new->m_next = it_next;
-    it_new->m_prev = it_prev;
-    it_prev->m_next = it_new;
+    assert(size <= m_offset);
+    this->m_offset -= size;
     return;
 }
 
-inline void gfx_malloc::list_head::erase(class list_node *value)
-{
-    class list_node *it_prev = value->m_prev;
-    class list_node *it_next = value->m_next;
-    assert(value->is_in_list());
-    assert(it_prev->m_next == value);
-    assert(it_next->m_prev == value);
-    it_next->m_prev = it_prev;
-    it_prev->m_next = it_next;
-#ifndef NDEBUG
-    value->m_next = list_node::LIST_NODE_NEXT_INVALID;
-    value->m_prev = list_node::LIST_NODE_PREV_INVALID;
-#endif
-    return;
-}
-
-inline void gfx_malloc::list_head::push_front(class list_node *value)
-{
-    assert(m_head.is_in_list());
-    return insert_after(&m_head, value);
-}
-
-inline void gfx_malloc::list_head::push_back(class list_node *value)
-{
-    assert(m_head.is_in_list());
-    return insert_after(m_head.m_prev, value);
-}
-
-inline void gfx_malloc::list_head::move_head_after(class list_node *pos)
-{
-    erase(&this->m_head);
-    insert_after(pos, &this->m_head);
-}
-
-inline gfx_malloc::slob_block::slob_block(uint64_t offset, uint64_t size)
-    : m_offset(offset), m_size(size), m_list()
-{
-}
-
-inline gfx_malloc::slob_block::~slob_block()
-{
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block::new_as(uint64_t offset, uint64_t size)
-{
-    return (new (mcrt_aligned_malloc(sizeof(struct slob_block), alignof(struct slob_block))) slob_block(offset, size));
-}
-
-inline void gfx_malloc::slob_block::recycle_as(uint64_t offset, uint64_t size)
+inline void gfx_malloc::slob_block_stl::recycle_as(uint64_t offset, uint64_t size) const
 {
     this->m_offset = offset;
     this->m_size = size;
     return;
 }
 
-inline void gfx_malloc::slob_block::destroy()
-{
-    mcrt_free(this);
-    return;
-}
-
-inline uint64_t gfx_malloc::slob_block::offset()
-{
-    return this->m_offset;
-}
-
-inline uint64_t gfx_malloc::slob_block::size()
-{
-    return this->m_size;
-}
-
-inline void gfx_malloc::slob_block::merge_prev(uint64_t merge_count)
-{
-    assert(this->m_offset >= merge_count);
-    this->m_offset -= merge_count;
-    return;
-}
-
-inline void gfx_malloc::slob_block::merge_next(uint64_t merge_count)
-{
-    this->m_size += merge_count;
-    return;
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block::container_of(class list_node *list)
-{
-    return reinterpret_cast<class slob_block *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_block, m_list)));
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block_list_head::begin()
-{
-    return slob_block::container_of(this->list_head::begin());
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block_list_head::end()
-{
-    return slob_block::container_of(this->list_head::end());
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block_list_head::prev(class slob_block *it)
-{
-    return slob_block::container_of(list_head::prev(&it->m_list));
-}
-
-inline class gfx_malloc::slob_block *gfx_malloc::slob_block_list_head::next(class slob_block *it)
-{
-    return slob_block::container_of(list_head::next(&it->m_list));
-}
-
-inline void gfx_malloc::slob_block_list_head::push_front(class slob_block *value)
-{
-    this->list_head::push_front(&value->m_list);
-    return;
-}
-
-inline void gfx_malloc::slob_block_list_head::insert_after(class slob_block *pos, class slob_block *value)
-{
-    list_head::insert_after(&pos->m_list, &value->m_list);
-    return;
-}
-
-inline void gfx_malloc::slob_block_list_head::erase(class slob_block *value)
-{
-    return list_head::erase(&value->m_list);
-}
-
-gfx_malloc::slob_page::slob_page(uint64_t page_size)
+inline gfx_malloc::slob_page_stl::slob_page_stl(void *page_device_memory)
     :
 #ifndef NDEBUG
       m_magic(SLOB_PAGE_MAGIC),
 #endif
       m_is_on_free_list(false),
-      m_size(page_size)
+      m_page_device_memory(page_device_memory)
 {
-    assert(page_size > 0U);
-    class slob_block *b = slob_block::new_as(0U, page_size);
-    this->m_free.push_front(b);
 }
 
-gfx_malloc::slob_page::~slob_page()
+gfx_malloc::slob_page_stl::~slob_page_stl()
 {
-    assert(!m_is_on_free_list);
-    for (class slob_block *cur = this->m_free.begin(), *next = slob_block_list_head::next(cur);
-         cur != this->m_free.end();
-         cur = next)
-    {
-        cur->destroy();
-    }
+    assert(2U >= m_free.size());
+    assert(2U != m_free.size() || ((0U == this->m_free.begin()->offset()) && ((std::next(this->m_free.begin())->offset() + std::next(this->m_free.begin())->size()) == m_page_size)));
+    assert(1U != m_free.size() || (0U == this->m_free.begin()->offset()) || ((this->m_free.begin()->offset() + this->m_free.begin()->size()) == m_page_size));
 }
 
-inline uint64_t gfx_malloc::slob_page::size()
+inline uint64_t gfx_malloc::slob_page_stl::size()
 {
-    assert(SLOB_PAGE_MAGIC == this->m_magic);
-    return this->m_size;
+    return m_size;
 }
 
+inline void *gfx_malloc::slob_page_stl::page_device_memory()
+{
+    return m_page_device_memory;
+}
+
+inline void gfx_malloc::slob_page_stl::insert_block(typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator hint, uint64_t offset, uint64_t size)
+{
+    //https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
 #ifndef NDEBUG
-inline bool gfx_malloc::slob_page::is_last_free(uint64_t offset, uint64_t size, uint64_t page_size)
+    size_t sz_before = this->m_free.size();
+#endif
+    class slob_block_stl b(offset, size);
+    this->m_free.insert(hint, b);
+#ifndef NDEBUG
+    assert(this->m_free.size() == (sz_before + 1U));
+    assert(std::prev(hint)->offset() == offset && std::prev(hint)->size() == size);
+#endif
+}
+
+inline typename std::set<class gfx_malloc::slob_block_stl, std::less<class gfx_malloc::slob_block_stl>, mcrt::scalable_allocator<class gfx_malloc::slob_block_stl>>::iterator gfx_malloc::slob_page_stl::find_next_block(uint64_t offset, uint64_t size)
 {
-    uint64_t break1 = 0;
-    uint64_t break2 = offset + size;
-    for (class slob_block *cur = this->m_free.begin(); cur != this->m_free.end(); cur = slob_block_list_head::next(cur))
+    class slob_block_stl b(offset, size);
+    typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator it_next = this->m_free.lower_bound(b);
+    return it_next;
+}
+
+inline bool gfx_malloc::slob_page_stl::validate_free_list()
+{
+    uint64_t cal_size = 0U;
+    for (auto it_cur = this->m_free.begin(), it_next = std::next(it_cur); it_cur != this->m_free.end(); it_cur = it_next)
     {
-        if ((cur->offset() + cur->size()) <= offset)
+        if (!((m_free.end() == it_next) || ((it_cur->offset() + it_cur->size()) < it_next->offset())))
         {
-            if (cur->offset() != break1)
-            {
-                assert(false);
-                return false;
-            }
-            break1 += cur->size();
+            //We should merge when cur_offset + cur_size equals next_offset
+            assert(false);
+            return false;
         }
-        else if ((offset + size) <= cur->offset())
-        {
-            if (cur->offset() != break2)
-            {
-                assert(false);
-                return false;
-            }
-            break2 += cur->size();
-        }
+
+        cal_size += it_cur->size();
     }
 
-    if (break1 != offset)
-    {
-        assert(false);
-        return false;
-    }
-
-    if (break2 != page_size)
+    if (cal_size != m_size)
     {
         assert(false);
         return false;
@@ -355,15 +196,34 @@ inline bool gfx_malloc::slob_page::is_last_free(uint64_t offset, uint64_t size, 
 
     return true;
 }
-#endif
 
-inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
+inline bool gfx_malloc::slob_page_stl::validate_last_free(uint64_t offset, uint64_t size)
 {
-    for (class slob_block *cur = this->m_free.begin(); cur != this->m_free.end(); cur = slob_block_list_head::next(cur))
+    auto it_next = this->find_next_block(offset, size);
+    auto it_prev = (this->m_free.begin() != it_next) ? std::prev(it_next) : this->m_free.end();
+
+    if (!((this->m_free.end() == it_prev) || ((it_prev->offset() + it_prev->size()) == offset)))
     {
-        uint64_t avail = cur->size();
-        uint64_t aligned = mcrt_intrin_round_up(cur->offset(), align);
-        uint64_t delta = aligned - cur->offset();
+        assert(false);
+        return false;
+    }
+
+    if (!((this->m_free.end() == it_next) || (offset + size <= it_next->offset())))
+    {
+        assert(false);
+        return false;
+    }
+
+    return true;
+}
+
+inline uint64_t gfx_malloc::slob_page_stl::internal_alloc(uint64_t size, uint64_t align)
+{
+    for (auto it_cur = this->m_free.begin(), it_next = std::next(it_cur); it_cur != this->m_free.end(); it_cur = it_next)
+    {
+        uint64_t avail = it_cur->size();
+        uint64_t aligned = mcrt_intrin_round_up(it_cur->offset(), align);
+        uint64_t delta = aligned - it_cur->offset();
         //First-Fit
         if (avail >= (size + delta))
         {
@@ -391,67 +251,53 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
             // VmaBlockMetadata_Generic::MergeFreeWithNext
 
             // recycle
-            uint64_t cur_offset = cur->offset();
-            uint64_t cur_size = cur->size();
+            uint64_t cur_offset = it_cur->offset();
+            uint64_t cur_size = it_cur->size();
 
             //merge with prev
-#ifndef NDEBUG
-            class slob_block *next_before_recycle = slob_block_list_head::next(cur);
-#endif
-
             if (delta > 0U)
             {
-                class slob_block *prev = slob_block_list_head::prev(cur);
-                assert((this->m_free.end() == prev) || ((prev->offset() + prev->size()) <= cur_offset));
-                if ((this->m_free.end() != prev) && ((prev->offset() + prev->size()) == cur_offset))
+                auto it_prev = std::prev(it_cur);
+                assert((this->m_free.end() == it_prev) || ((it_prev->offset() + it_prev->size()) <= cur_offset));
+                if ((this->m_free.end() != it_prev) && ((it_prev->offset() + it_prev->size()) == cur_offset))
                 {
-                    prev->merge_next(delta);
+                    it_prev->merge_next(delta);
                 }
                 else
                 {
-                    assert(cur != NULL);
-                    cur->recycle_as(cur_offset, delta);
-                    cur = NULL; //offset or size has been changed
-                    //the it_cur remains valid
+                    assert(m_free.end() != it_cur);
+                    it_cur->recycle_as(cur_offset, delta);
+                    it_cur = m_free.end();
                 }
             }
 
             //merge with next
             if (avail > (size + delta))
             {
-                class slob_block *next = slob_block_list_head::next(cur);
-                assert(next_before_recycle == next);
-                assert((this->m_free.end() == next) || (cur_offset + cur_size <= next->offset()));
-
-                if ((this->m_free.end() != next) && (cur_offset + cur_size == next->offset()))
+                assert(std::next(it_cur) == it_next);
+                assert((this->m_free.end() == it_next) || (cur_offset + cur_size <= it_next->offset()));
+                if ((this->m_free.end() != it_next) && (cur_offset + cur_size == it_next->offset()))
                 {
-                    next->merge_prev(avail - (size + delta));
+                    it_next->merge_prev(avail - (size + delta));
                 }
-                else if (NULL != cur)
+                else if (m_free.end() != it_cur)
                 {
-                    cur->recycle_as(cur_offset + (size + delta), avail - (size + delta));
-                    cur = NULL;
+                    it_cur->recycle_as(cur_offset + (size + delta), avail - (size + delta));
+                    it_cur = m_free.end();
                 }
                 else
                 {
-                    class slob_block *b = slob_block::new_as(cur_offset + (size + delta), avail - (size + delta));
-                    slob_block_list_head::insert_after(cur, b);
+                    this->insert_block(it_next, cur_offset + (size + delta), avail - (size + delta));
                 }
             }
 
-            if (NULL != cur)
+            if (m_free.end() != it_cur)
             {
                 //not recycled
-                slob_block_list_head::erase(cur);
-                cur->destroy();
+                m_free.erase(it_cur);
             }
 
             this->m_size -= size;
-            if (0U == this->m_size)
-            {
-                assert(this->m_free.begin() == this->m_free.end());
-                slob_page_list_head::clear_on_free_list(this);
-            }
             return cur_offset;
         }
     }
@@ -459,107 +305,161 @@ inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)
     return SLOB_OFFSET_INVALID;
 }
 
-inline void gfx_malloc::slob_page::init_as_first_free(uint64_t offset, uint64_t size)
+inline void gfx_malloc::slob_page_stl::internal_free(uint64_t offset, uint64_t size)
 {
-    assert(!this->m_is_on_free_list);
-    assert(this->m_free.begin() == this->m_free.end());
-    class slob_block *b = slob_block::new_as(offset, size);
-    this->m_free.push_front(b);
-}
-
-inline void gfx_malloc::slob_page::free(uint64_t offset, uint64_t size)
-{
-    assert(SLOB_PAGE_MAGIC == this->m_magic);
     assert(size > 0U);
 
-    //TODO use index array to support random access and  binary search
-    for (class slob_block *cur = this->m_free.begin(), *next = slob_block_list_head::next(cur);
-         cur != this->m_free.end();
-         cur = next)
+    auto it_next = this->find_next_block(offset, size); //We use STL while the VulkanMemoryAllocator use index array to support random access and binary search
+    auto it_prev = (this->m_free.begin() != it_next) ? std::prev(it_next) : this->m_free.end();
+    assert((this->m_free.end() == it_prev) || ((it_prev->offset() + it_prev->size()) <= offset));
+    assert((this->m_free.end() == it_next) || (offset + size <= it_next->offset()));
+
+    bool merge_with_prev = ((this->m_free.end() != it_prev) && ((it_prev->offset() + it_prev->size()) == offset));
+    bool merge_with_next = ((this->m_free.end() != it_next) && (offset + size == it_next->offset()));
+
+    if ((!merge_with_prev) && (!merge_with_next))
     {
-        if (((cur->offset() + cur->size()) <= offset) && ((offset + size) <= next->offset()))
-        {
-            if (((cur->offset() + cur->size()) != offset) && ((offset + size) != next->offset()))
-            {
-                class slob_block *b = slob_block::new_as(offset, size);
-                slob_block_list_head::insert_after(cur, b);
-            }
-            else if ((offset + size) != next->offset())
-            {
-                cur->merge_next(size);
-            }
-            else if ((cur->offset() + cur->size()) <= offset)
-            {
-                next->merge_prev(size);
-            }
-            else
-            {
-                cur->merge_next(size);
-                assert((cur->offset() + cur->size()) <= next->offset());
-                cur->merge_next(next->size());
-                slob_block_list_head::erase(next);
-            }
-
-            break;
-        }
+        this->insert_block(it_next, offset, size);
     }
-
-    assert(false);
+    else if (!merge_with_next)
+    {
+        assert(merge_with_prev);
+        it_prev->merge_next(size);
+    }
+    else if (!merge_with_prev)
+    {
+        assert(merge_with_next);
+        it_next->merge_prev(size);
+    }
+    else
+    {
+        assert(merge_with_prev && merge_with_next);
+        it_prev->merge_next(size);
+        assert((it_prev->offset() + it_prev->size()) == it_next->offset());
+        it_prev->merge_next(it_next->size());
+        m_free.erase(it_next);
+    }
 }
 
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page::container_of(class list_node *list)
+inline uint64_t gfx_malloc::slob_page_stl::alloc(uint64_t size, uint64_t align)
 {
-    return reinterpret_cast<class slob_page *>(reinterpret_cast<uintptr_t>(list) - static_cast<uintptr_t>(offsetof(slob_page, m_list)));
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(this->validate_free_list());
+    uint64_t offset = this->internal_alloc(size, align);
+    assert(this->validate_free_list());
+    return offset;
 }
 
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page_list_head::begin()
+inline void gfx_malloc::slob_page_stl::free(uint64_t offset, uint64_t size)
 {
-    return slob_page::container_of(this->list_head::begin());
-}
-
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page_list_head::end()
-{
-    return slob_page::container_of(this->list_head::end());
-}
-
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page_list_head::prev(class slob_page *it)
-{
-    return slob_page::container_of(list_head::prev(&it->m_list));
-}
-
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page_list_head::next(class slob_page *it)
-{
-    return slob_page::container_of(list_head::next(&it->m_list));
-}
-
-inline void gfx_malloc::slob_page_list_head::set_on_free_list(class slob_page *value)
-{
-    assert(!value->m_is_on_free_list);
-    this->list_head::push_front(&value->m_list);
-    value->m_is_on_free_list = true;
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(this->validate_free_list());
+    this->internal_free(offset, size);
+    assert(this->validate_free_list());
     return;
 }
 
-inline void gfx_malloc::slob_page_list_head::clear_on_free_list(class slob_page *value)
+inline bool gfx_malloc::slob_page_stl::is_on_free_list()
 {
-    assert(value->m_is_on_free_list);
-    list_head::erase(&value->m_list);
-    value->m_is_on_free_list = false;
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(!m_is_on_free_list || ((&(*this->m_it_free_slob_list) == this) && (0U != this->m_free.size())));
+    assert(m_is_on_free_list || ((&(*this->m_it_full_slob_list) == this) && (0U == this->m_free.size())));
+    return m_is_on_free_list;
+}
+
+inline class gfx_malloc::slob_page_stl *gfx_malloc::slob_page_stl::init_on_free_list(
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *slob_list,
+    uint64_t page_size,
+    void *page_device_memory)
+{
+    slob_list->push_front(slob_page_stl{page_device_memory});
+    class slob_page_stl *sp = &(*slob_list->begin());
+    assert(page_device_memory == sp->m_page_device_memory);
+    sp->m_size = page_size;
+    sp->insert_block(sp->m_free.begin(), 0U, page_size);
+#ifndef NDEBUG
+    sp->m_page_size = page_size;
+#endif
+    assert(false == sp->m_is_on_free_list);
+    assert(0U != sp->m_free.size());
+    sp->m_is_on_free_list = true;
+    sp->m_it_free_slob_list = slob_list->begin();
+    assert(&(*sp->m_it_free_slob_list) == sp);
+
+    return sp;
+}
+
+inline void gfx_malloc::slob_page_stl::clear_on_free_list(
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list)
+{
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(true == this->m_is_on_free_list);
+    assert(&(*this->m_it_free_slob_list) == this);
+    assert(0U == this->m_free.size());
+    full_slob_list->splice(full_slob_list->begin(), (*free_slob_list), this->m_it_free_slob_list);
+    this->m_is_on_free_list = false;
+    this->m_it_full_slob_list = full_slob_list->begin();
+    assert(&(*this->m_it_full_slob_list) == this);
     return;
 }
 
-inline void gfx_malloc::slob_page_list_head::move_head_after(class slob_page *pos)
+inline void gfx_malloc::slob_page_stl::set_on_free_list(
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list)
 {
-    assert(pos->m_is_on_free_list);
-    return this->list_head::move_head_after(&pos->m_list);
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(false == this->m_is_on_free_list);
+    assert(&(*this->m_it_full_slob_list) == this);
+    assert(0U != this->m_free.size());
+    free_slob_list->splice(free_slob_list->begin(), (*full_slob_list), this->m_it_full_slob_list);
+    this->m_is_on_free_list = true;
+    this->m_it_free_slob_list = free_slob_list->begin();
+    assert(&(*this->m_it_free_slob_list) == this);
+    return;
 }
 
-inline bool gfx_malloc::slob_page_list_head::is_on_free_list(class slob_page *value)
+inline void gfx_malloc::slob_page_stl::destroy_on_free_list(
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+    std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list,
+    uint64_t offset, uint64_t size)
 {
-    return value->m_is_on_free_list;
+    assert(SLOB_PAGE_MAGIC == this->m_magic);
+    assert(this->validate_free_list());
+    assert(this->validate_last_free(offset, size));
+
+    if (this->m_is_on_free_list)
+    {
+        assert((&(*this->m_it_free_slob_list) == this) && (0U != this->m_free.size()));
+        free_slob_list->erase(this->m_it_free_slob_list);
+    }
+    else
+    {
+        assert((&(*this->m_it_full_slob_list) == this) && (0U == this->m_free.size()));
+        full_slob_list->erase(this->m_it_full_slob_list);
+    }
 }
 
-inline void gfx_malloc::slob::lock()
+inline gfx_malloc::slob_stl::slob_stl()
+#ifndef NDEBUG
+    : m_slob_break1(SLOB_BREAK_POISON),
+      m_slob_break2(SLOB_BREAK_POISON),
+      m_page_size(PAGE_SIZE_POISON)
+#endif
+{
+}
+
+inline void gfx_malloc::slob_stl::init(uint64_t page_size)
+{
+    assert(SLOB_BREAK_POISON == m_slob_break1);
+    assert(SLOB_BREAK_POISON == m_slob_break2);
+    assert(PAGE_SIZE_POISON == m_page_size);
+    m_page_size = page_size;
+    m_slob_break1 = page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
+    m_slob_break2 = page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+}
+
+inline void gfx_malloc::slob_stl::lock()
 {
     assert(mcrt_atomic_load(&m_slob_lock) == false);
 #ifndef NDEBUG
@@ -567,7 +467,7 @@ inline void gfx_malloc::slob::lock()
 #endif
 }
 
-inline void gfx_malloc::slob::unlock()
+inline void gfx_malloc::slob_stl::unlock()
 {
     assert(mcrt_atomic_load(&m_slob_lock) == true);
 #ifndef NDEBUG
@@ -575,32 +475,18 @@ inline void gfx_malloc::slob::unlock()
 #endif
 }
 
-gfx_malloc::slob::slob()
-#ifndef NDEBUG
-    : m_slob_break1(SLOB_BREAK_INVALID),
-      m_slob_break2(SLOB_BREAK_INVALID)
-#endif
-{
-}
-
-void gfx_malloc::slob::init(uint64_t page_size)
-{
-    assert(SLOB_BREAK_INVALID == m_slob_break1);
-    assert(SLOB_BREAK_INVALID == m_slob_break2);
-    m_page_size = page_size;
-    m_slob_break1 = page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
-    m_slob_break2 = page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
-}
-
-class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
+inline class gfx_malloc::slob_page_stl *gfx_malloc::slob_stl::alloc(
     uint64_t size,
     uint64_t align,
+    void *slob_new_pages_callback(void *),
+    void *slob_new_pages_callback_data,
     uint64_t *out_offset)
 {
-    assert(SLOB_BREAK_INVALID != m_slob_break1);
-    assert(SLOB_BREAK_INVALID != m_slob_break2);
+    assert(SLOB_BREAK_POISON != m_slob_break1);
+    assert(SLOB_BREAK_POISON != m_slob_break2);
+    assert(PAGE_SIZE_POISON != m_page_size);
 
-    class slob_page_list_head *slob_list;
+    std::list<class gfx_malloc::slob_page_stl, mcrt::scalable_allocator<class gfx_malloc::slob_page_stl>> *slob_list;
     if (size < m_slob_break1)
     {
         slob_list = &m_free_slob_small;
@@ -620,27 +506,35 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
 
     if (NULL != slob_list)
     {
-        class slob_page *sp;
+        class slob_page_stl *sp = NULL;
         uint64_t b = SLOB_OFFSET_INVALID;
 
         this->lock();
-        for (sp = slob_list->begin(); sp != slob_list->end(); sp = slob_page_list_head::next(sp))
+        for (auto it_sp = slob_list->begin(), it_next = std::next(it_sp); it_sp != slob_list->end(); it_sp = it_next)
         {
-            assert(sp->size() > 0U);
-            if (sp->size() >= size)
+            assert(it_sp->size() > 0U);
+            if (it_sp->size() >= size)
             {
                 // Note that the reported space in a SLOB page is not necessarily
                 // contiguous, so the allocation is not guaranteed to succeed.
-                b = sp->alloc(size, align);
+                b = it_sp->alloc(size, align);
+                if (0U == it_sp->size())
+                {
+                    it_sp->clear_on_free_list(slob_list, &m_full_slob);
+                }
+
                 if (SLOB_OFFSET_INVALID != b)
                 {
+                    sp = &(*it_sp);
+
                     // Finally, as an optimization, the appropriate linked list
                     // of pages is cycled such that the next search will begin at the page used to
                     // successfully service the most recent allocation.
-                    if (slob_list->begin() != sp)
+                    if (slob_list->begin() != it_sp)
                     {
-                        slob_list->move_head_after(slob_page_list_head::prev(sp));
-                        assert(slob_list->begin() == sp);
+                        //slob_list->move_head_after(slob_page_list_head::prev(sp)); //we can move the head node in STL
+                        slob_list->splice(slob_list->begin(), (*slob_list), it_sp);
+                        assert(&(*slob_list->begin()) == sp);
                     }
 
                     break;
@@ -651,16 +545,21 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
 
         if (SLOB_OFFSET_INVALID == b)
         {
-            //The "slob::new_pages" is MT-safe (internally synchronized)
-            sp = this->new_pages();
-            if (NULL != sp)
+            //The "slob_new_pages" is internally synchronized
+            void *page_device_memory = slob_new_pages_callback(slob_new_pages_callback_data);
+            if (NULL != page_device_memory)
             {
                 this->lock();
-                slob_list->set_on_free_list(sp);
-                b = sp->alloc(size, align);
+                auto it_sp = slob_page_stl::init_on_free_list(slob_list, m_page_size, page_device_memory);
+                b = it_sp->alloc(size, align);
+                if (0U == it_sp->size())
+                {
+                    it_sp->clear_on_free_list(slob_list, &m_full_slob);
+                }
                 this->unlock();
                 //MALLOC BUG
                 assert(SLOB_OFFSET_INVALID != b);
+                sp = &(*it_sp);
             }
             else
             {
@@ -682,23 +581,24 @@ class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
     }
 }
 
-void gfx_malloc::slob::free(
-    slob_page *sp,
+inline void gfx_malloc::slob_stl::free(
+    class slob_page_stl *sp,
     uint64_t offset,
-    uint64_t size)
+    uint64_t size,
+    void slob_free_pages_callback(void *, void *),
+    void *slob_free_pages_callback_data)
 {
     if ((sp->size() + size) < this->m_page_size)
     {
         this->lock();
-        if (slob_page_list_head::is_on_free_list(sp))
+        if (sp->is_on_free_list())
         {
             sp->free(offset, size);
         }
         else
         {
-            sp->init_as_first_free(offset, size);
-
-            class slob_page_list_head *slob_list;
+            sp->free(offset, size);
+            std::list<class gfx_malloc::slob_page_stl, mcrt::scalable_allocator<class gfx_malloc::slob_page_stl>> *slob_list;
             if (size < m_slob_break1)
             {
                 slob_list = &m_free_slob_small;
@@ -716,23 +616,73 @@ void gfx_malloc::slob::free(
                 slob_list = NULL;
             }
             assert(NULL != slob_list);
-            slob_list->set_on_free_list(sp);
+            sp->set_on_free_list(slob_list, &m_full_slob);
         }
         this->unlock();
         return;
     }
     else
     {
-        assert(sp->is_last_free(offset, size, this->m_page_size));
+        void *page_device_memory = sp->page_device_memory();
         this->lock();
-        if (slob_page_list_head::is_on_free_list(sp))
+        std::list<class gfx_malloc::slob_page_stl, mcrt::scalable_allocator<class gfx_malloc::slob_page_stl>> *slob_list;
+        if (size < m_slob_break1)
         {
-            slob_page_list_head::clear_on_free_list(sp);
+            slob_list = &m_free_slob_small;
         }
+        else if (size < m_slob_break2)
+        {
+            slob_list = &m_free_slob_medium;
+        }
+        else if (size < m_page_size)
+        {
+            slob_list = &m_free_slob_large;
+        }
+        else
+        {
+            slob_list = NULL;
+        }
+        assert(NULL != slob_list);
+        sp->destroy_on_free_list(slob_list, &m_full_slob, offset, size);
         this->unlock();
-        this->free_pages(sp);
+        slob_free_pages_callback(page_device_memory, slob_free_pages_callback_data);
         return;
     }
+}
+
+gfx_malloc::gfx_malloc()
+{
+}
+
+gfx_malloc::~gfx_malloc()
+{
+}
+
+void gfx_malloc::transfer_dst_and_sampled_image_init(uint64_t page_size)
+{
+    this->m_transfer_dst_and_sampled_image_slob.init(page_size);
+}
+
+void *gfx_malloc::transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_gfx_malloc_page, uint64_t *out_offset)
+{
+    class slob_page_stl *sp = this->m_transfer_dst_and_sampled_image_slob.alloc(size, align, slob_new_pages_callback, slob_new_pages_callback_data, out_offset);
+    if (NULL != sp)
+    {
+        (*out_gfx_malloc_page) = sp;
+        return sp->page_device_memory();
+    }
+    else
+    {
+        (*out_gfx_malloc_page) = NULL;
+        return NULL;
+    }
+}
+
+void gfx_malloc::transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_device_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data)
+{
+    class slob_page_stl *sp = static_cast<class slob_page_stl *>(gfx_malloc_page);
+    assert(page_device_memory == sp->page_device_memory());
+    return m_transfer_dst_and_sampled_image_slob.free(sp, offset, size, slob_free_pages_callback, slob_free_pages_callback_data);
 }
 
 // wrap

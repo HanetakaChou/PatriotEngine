@@ -24,144 +24,110 @@
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_scalable_allocator.h>
-#include <assert.h>
+#include <list>
+#include <set>
 #include <new>
+#include <assert.h>
 
 class gfx_malloc
 {
-    class list_head;
+    static uint64_t const SLOB_OFFSET_INVALID;
 
-    class list_node
+    class slob_block_stl
     {
-#ifndef NDEBUG
-        static class list_node *const LIST_NODE_NEXT_INVALID;
-        static class list_node *const LIST_NODE_PREV_INVALID;
-#endif
-        class list_node *m_next;
-        class list_node *m_prev;
-
-#ifndef NDEBUG
-        inline bool is_in_list();
-#endif
+        mutable uint64_t m_offset;
+        mutable uint64_t m_size;
 
     public:
-        inline list_node();
-
-        friend class list_head;
+        inline bool operator<(class slob_block_stl const &other) const;
+        inline slob_block_stl(uint64_t offset, uint64_t size);
+        inline uint64_t offset() const;
+        inline uint64_t size() const;
+        inline void merge_next(uint64_t size) const;
+        inline void merge_prev(uint64_t size) const;
+        inline void recycle_as(uint64_t offset, uint64_t size) const;
     };
 
-    class list_head
-    {
-        list_node m_head;
-
-        static inline void list_head_node_init(class list_node *head);
-
-    protected:
-        inline list_head();
-        inline class list_node *begin();
-        inline class list_node *end();
-        static inline class list_node *prev(class list_node *it);
-        static inline class list_node *next(class list_node *it);
-        static inline void insert_after(class list_node *pos, class list_node *value);
-        static inline void erase(class list_node *value);
-        inline void push_front(class list_node *value);
-        inline void push_back(class list_node *value);
-        inline void move_head_after(class list_node *pos);
-    };
-
-    class slob_block_list_head;
-
-    class slob_block
-    {
-        uint64_t m_offset;
-        uint64_t m_size;
-        class list_node m_list;
-        inline slob_block(uint64_t offset, uint64_t size);
-        inline ~slob_block();
-        static inline class slob_block *container_of(class list_node *list);
-
-    public:
-        static inline class slob_block *new_as(uint64_t offset, uint64_t size);
-        inline void recycle_as(uint64_t offset, uint64_t size);
-        inline void destroy();
-        inline uint64_t offset();
-        inline uint64_t size();
-        inline void merge_prev(uint64_t merge_count);
-        inline void merge_next(uint64_t merge_count);
-
-        friend class slob_block_list_head;
-    };
-
-    class slob_block_list_head : protected list_head
-    {
-    public:
-        inline class slob_block *begin();
-        inline class slob_block *end();
-        static inline class slob_block *prev(class slob_block *it);
-        static inline class slob_block *next(class slob_block *it);
-        inline void push_front(class slob_block *value);
-        static inline void insert_after(class slob_block *pos, class slob_block *value);
-        static inline void erase(class slob_block *value);
-    };
-
-    class slob_page_list_head;
-
-protected:
-    class slob_page
+    class slob_page_stl
     {
 #ifndef NDEBUG
         static uint64_t const SLOB_PAGE_MAGIC;
         uint64_t m_magic;
 #endif
+
         bool m_is_on_free_list;
+        typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator m_it_free_slob_list;
+        typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator m_it_full_slob_list;
+
         uint64_t m_size;
-        class slob_block_list_head m_free;
-        class list_node m_list;
+        std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>> m_free;
 
-        static inline class slob_page *container_of(class list_node *list);
+#ifndef NDEBUG
+        uint64_t m_page_size;
+#endif
 
-    protected:
-        slob_page(uint64_t page_size);
-        ~slob_page();
+        void *m_page_device_memory;
+
+        inline slob_page_stl(void *page_device_memory);
+
+        inline bool validate_free_list();
+
+        inline bool validate_last_free(uint64_t offset, uint64_t size);
+
+        inline uint64_t internal_alloc(uint64_t size, uint64_t align);
+
+        inline void internal_free(uint64_t offset, uint64_t size);
+
+        inline void insert_block(typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator hint, uint64_t offset, uint64_t size);
+
+        inline typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator find_next_block(uint64_t offset, uint64_t size);
 
     public:
+        inline ~slob_page_stl();
+
         inline uint64_t size();
-#ifndef NDEBUG
-        inline bool is_last_free(uint64_t offset, uint64_t size, uint64_t page_size);
-#endif
+
+        inline void *page_device_memory();
+
         inline uint64_t alloc(uint64_t size, uint64_t align);
-        inline void init_as_first_free(uint64_t offset, uint64_t size);
+
         inline void free(uint64_t offset, uint64_t size);
 
-        friend class slob_page_list_head;
+        inline bool is_on_free_list();
+
+        static inline class slob_page_stl *init_on_free_list(
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *slob_list,
+            uint64_t page_size,
+            void *page_device_memory);
+
+        inline void clear_on_free_list(
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list);
+
+        inline void set_on_free_list(
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list);
+
+        inline void destroy_on_free_list(
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
+            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list,
+            uint64_t offset, uint64_t size);
     };
 
 private:
-    class slob_page_list_head : protected list_head
-    {
-    public:
-        inline class slob_page *begin();
-        inline class slob_page *end();
-        static inline class slob_page *prev(class slob_page *it);
-        static inline class slob_page *next(class slob_page *it);
-        static inline bool is_on_free_list(class slob_page *value);
-        inline void set_on_free_list(class slob_page *value);
-        static inline void clear_on_free_list(class slob_page *value);
-        inline void move_head_after(class slob_page *pos);
-    };
-
-protected:
-    class slob
+    class slob_stl
     {
 #ifndef NDEBUG
-        static uint64_t const SLOB_BREAK_INVALID;
+        static uint64_t const SLOB_BREAK_POISON;
+        static uint64_t const PAGE_SIZE_POISON;
 #endif
         uint64_t m_slob_break1;
         uint64_t m_slob_break2;
 
-        class slob_page_list_head m_free_slob_small;
-        class slob_page_list_head m_free_slob_medium;
-        class slob_page_list_head m_free_slob_large;
+        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_small;
+        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_medium;
+        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_large;
+        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_full_slob;
 
 #ifndef NDEBUG
         bool m_slob_lock;
@@ -169,34 +135,46 @@ protected:
         inline void lock();
         inline void unlock();
 
-        virtual class slob_page *new_pages() = 0;
-        virtual void free_pages(class slob_page *sp) = 0;
+        inline void *new_pages() { return NULL; };
+        inline void free_pages(void *page_device_memory) {}
 
-    protected:
         uint64_t m_page_size;
 
-        slob();
-        void init(uint64_t page_size);
-
     public:
-        //The "slob_page::alloc" is not MT-safe //we put it in the scope of the list_head lock
-        //The "slob::new_pages" is MT-safe (internally synchronized)
-        class slob_page *alloc(
+        inline slob_stl();
+
+        inline void init(uint64_t page_size);
+
+        //The "slob_new_pages" is internally synchronized
+        inline class slob_page_stl *alloc(
             uint64_t size,
             uint64_t align,
+            void *slob_new_pages_callback(void *),
+            void *slob_new_pages_callback_data,
             uint64_t *out_offset);
-        //free (offset size) //like unmap
 
-        void free(
-            slob_page *sp,
+        //We pass size in //like unmap
+        inline void free(
+            class slob_page_stl *sp,
             uint64_t offset,
-            uint64_t size);
+            uint64_t size,
+            void slob_free_pages_callback(void *, void *),
+            void *slob_free_pages_callback_data);
     };
 
-    static uint64_t const SLOB_OFFSET_INVALID;
+    slob_stl m_transfer_dst_and_sampled_image_slob;
 
 public:
+    gfx_malloc();
+    ~gfx_malloc();
+
+    //using gfx_malloc_page_handle = typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator;
     virtual void *alloc_uniform_buffer(size_t size) = 0;
+
+protected:
+    void transfer_dst_and_sampled_image_init(uint64_t page_size);
+    void *transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_gfx_malloc_page, uint64_t *out_offset);
+    void transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_device_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
 };
 
 #endif

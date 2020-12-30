@@ -52,35 +52,6 @@ class gfx_malloc_vk : public gfx_malloc
     VkDeviceMemory internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
     void internal_transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 
-    class slob_page_vk : public slob_page
-    {
-        VkDeviceMemory m_page;
-
-        inline slob_page_vk(VkDeviceSize page_size, VkDeviceMemory page);
-        inline ~slob_page_vk();
-
-    public:
-        static class slob_page_vk *new_as(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
-        inline void destory(class gfx_connection_vk *gfx_api_vk);
-        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
-        friend void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
-    };
-
-    class slob_vk : public slob
-    {
-        class gfx_connection_vk *m_gfx_api_vk;
-        uint32_t m_memory_index;
-
-        class slob_page *new_pages() override;
-        void free_pages(class slob_page *sp) override;
-
-    public:
-        inline slob_vk();
-        inline void init(uint64_t page_size, uint32_t memory_index, class gfx_connection_vk *gfx_api_vk);
-
-        friend VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_gfx_malloc_page, uint64_t *out_offset, uint64_t *out_size);
-    };
-
     // We seperate buffer and optimal-tiling-image
     // We have no linear-tiling-image
     // ---
@@ -93,7 +64,11 @@ class gfx_malloc_vk : public gfx_malloc
     // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
-    slob_vk m_transfer_dst_and_sampled_image_slob;
+    uint32_t m_transfer_dst_and_sampled_image_page_size;
+    uint32_t m_transfer_dst_and_sampled_image_memory_index;
+
+    static void *transfer_dst_and_sampled_image_slob_new_pages(void *);
+    static void transfer_dst_and_sampled_image_slob_free_pages(void *, void *);
 
     void *alloc_uniform_buffer(size_t size) override;
 
