@@ -33,9 +33,18 @@ class gfx_malloc
     static uint64_t const SLOB_OFFSET_POISON;
 
     class slob_block;
+    class slob_block_list_comp;
     class slob_page;
-    typedef std::set<class slob_block, std::less<class slob_block>, mcrt::scalable_allocator<class slob_block>> slob_block_list;
-    typedef std::set<class slob_block, std::less<class slob_block>, mcrt::scalable_allocator<class slob_block>>::iterator slob_block_list_iter;
+
+    class slob_block_list_comp
+    {
+    public:
+        inline bool operator()(class slob_block const &lhs, class slob_block const &rhs) const;
+    };
+    static_assert(std::is_pod<slob_block_list_comp>::value, "");
+
+    typedef std::set<class slob_block, class slob_block_list_comp, mcrt::scalable_allocator<class slob_block>> slob_block_list;
+    typedef std::set<class slob_block, class slob_block_list_comp, mcrt::scalable_allocator<class slob_block>>::iterator slob_block_list_iter;
     typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>> slob_page_list;
     typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>>::iterator slob_page_list_iter;
     static inline slob_block_list_iter wrapped_prev(slob_block_list const &contain, slob_block_list_iter const &iter);
@@ -48,14 +57,16 @@ class gfx_malloc
         mutable uint64_t m_size;
 
     public:
-        inline bool operator<(class slob_block const &other) const;
-        inline slob_block(uint64_t offset, uint64_t size);
         inline uint64_t offset() const;
         inline uint64_t size() const;
         inline void merge_next(uint64_t size) const;
         inline void merge_prev(uint64_t size) const;
         inline void recycle_as(uint64_t offset, uint64_t size) const;
+        friend class slob_block_list_comp;
+        friend inline void gfx_malloc::wrapped_emplace_hint(slob_block_list &contain, slob_block_list_iter const &hint, uint64_t offset, uint64_t size);
+        friend inline slob_block_list_iter gfx_malloc::wrapped_lower_bound(slob_block_list const &contain, uint64_t offset, uint64_t size);
     };
+    static_assert(std::is_pod<slob_block>::value, "");
 
     class slob_page
     {

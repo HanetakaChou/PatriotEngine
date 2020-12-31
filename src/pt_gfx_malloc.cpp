@@ -81,6 +81,11 @@ uint64_t const gfx_malloc::slob::PAGE_SIZE_POISON = (~0ULL);
 #endif
 uint64_t const gfx_malloc::SLOB_OFFSET_POISON = (~0ULL);
 
+inline bool gfx_malloc::slob_block_list_comp::operator()(class slob_block const &lhs, class slob_block const &rhs) const
+{
+    return ((lhs.m_offset + lhs.m_size) <= rhs.m_offset);
+}
+
 inline gfx_malloc::slob_block_list_iter gfx_malloc::wrapped_prev(slob_block_list const &contain, slob_block_list_iter const &iter)
 {
     assert(contain.begin() != iter);
@@ -93,7 +98,10 @@ inline void gfx_malloc::wrapped_emplace_hint(slob_block_list &contain, slob_bloc
 #ifndef NDEBUG
     size_t sz_before = contain.size();
 #endif
-    contain.emplace_hint(hint, offset, size);
+    class slob_block block;
+    block.m_offset = offset;
+    block.m_size = size;
+    contain.insert(hint, std::move(block));
 #ifndef NDEBUG
     assert(contain.size() == (sz_before + 1U));
     assert(wrapped_prev(contain, hint)->offset() == offset);
@@ -104,19 +112,10 @@ inline void gfx_malloc::wrapped_emplace_hint(slob_block_list &contain, slob_bloc
 
 inline gfx_malloc::slob_block_list_iter gfx_malloc::wrapped_lower_bound(slob_block_list const &contain, uint64_t offset, uint64_t size)
 {
-    class slob_block block(offset, size);
+    class slob_block block;
+    block.m_offset = offset;
+    block.m_size = size;
     return contain.lower_bound(std::move(block));
-}
-
-inline bool gfx_malloc::slob_block::operator<(class slob_block const &other) const
-{
-    return ((this->m_offset + this->m_size) <= other.m_offset);
-}
-
-inline gfx_malloc::slob_block::slob_block(uint64_t offset, uint64_t size)
-    : m_offset(offset),
-      m_size(size)
-{
 }
 
 inline uint64_t gfx_malloc::slob_block::offset() const
