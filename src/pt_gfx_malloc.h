@@ -128,10 +128,10 @@ class gfx_malloc
         uint64_t m_slob_break1;
         uint64_t m_slob_break2;
 
-        slob_page_list m_free_slob_small;
-        slob_page_list m_free_slob_medium;
-        slob_page_list m_free_slob_large;
-        slob_page_list m_full_slob;
+        slob_page_list m_small_free_page_list;
+        slob_page_list m_medium_free_page_list;
+        slob_page_list m_large_free_page_list;
+        slob_page_list m_full_page_list;
 
 #ifndef NDEBUG
         bool m_slob_lock;
@@ -158,7 +158,7 @@ class gfx_malloc
 
         //We pass size in //like unmap
         inline void free(
-            class slob_page *sp,
+            class slob_page *page,
             uint64_t offset,
             uint64_t size,
             void slob_free_pages_callback(void *, void *),

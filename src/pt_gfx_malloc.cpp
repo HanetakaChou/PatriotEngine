@@ -61,7 +61,7 @@
 
 // VmaBlockVector::AllocateFromBlock/VmaBlockMetadata_Generic::CreateAllocationRequest
 // m_SumFreeSize -> early return
-// slob_alloc /* check sp->units */ Note that the reported space in a SLOB page is not necessarily contiguous, so the allocation is not guaranteed to succeed.
+// slob_alloc /* check page->units */ Note that the reported space in a SLOB page is not necessarily contiguous, so the allocation is not guaranteed to succeed.
 // slob_page_alloc
 
 // SLOB
@@ -471,18 +471,18 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob_page::init_on_page_free_lis
         page_size,
 #endif
         page_memory);
-    class slob_page *sp = &(*free_page_list->begin());
-    assert(page_memory == sp->m_page_memory);
-    wrapped_emplace_hint(sp->m_free_block_list, sp->m_free_block_list.begin(), 0U, page_size);
-    sp->m_sum_free_size = page_size;
+    class slob_page *page = &(*free_page_list->begin());
+    assert(page_memory == page->m_page_memory);
+    wrapped_emplace_hint(page->m_free_block_list, page->m_free_block_list.begin(), 0U, page_size);
+    page->m_sum_free_size = page_size;
 
-    sp->m_is_on_free_page_list = true;
-    sp->m_page_list = free_page_list;
-    sp->m_iter_page_list.m_iter = free_page_list->begin();
-    assert(true == sp->m_is_on_free_page_list);
-    assert(0U != sp->m_free_block_list.size());
-    assert(&(*sp->m_iter_page_list.m_iter) == sp);
-    return sp;
+    page->m_is_on_free_page_list = true;
+    page->m_page_list = free_page_list;
+    page->m_iter_page_list.m_iter = free_page_list->begin();
+    assert(true == page->m_is_on_free_page_list);
+    assert(0U != page->m_free_block_list.size());
+    assert(&(*page->m_iter_page_list.m_iter) == page);
+    return page;
 }
 
 inline void gfx_malloc::slob_page::clear_on_free_page_list(slob_page_list *full_page_list)
@@ -585,15 +585,15 @@ inline gfx_malloc::slob_page_list *gfx_malloc::slob::get_free_page_list(uint64_t
     slob_page_list *free_page_list;
     if (size < this->m_slob_break1)
     {
-        free_page_list = &this->m_free_slob_small;
+        free_page_list = &this->m_small_free_page_list;
     }
     else if (size < this->m_slob_break2)
     {
-        free_page_list = &this->m_free_slob_medium;
+        free_page_list = &this->m_medium_free_page_list;
     }
     else if (size < this->m_page_size)
     {
-        free_page_list = &this->m_free_slob_large;
+        free_page_list = &this->m_large_free_page_list;
     }
     else
     {
@@ -616,36 +616,36 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
         slob_page_list *free_page_list = get_free_page_list(size);
         assert(NULL != free_page_list);
 
-        class slob_page *sp = NULL;
-        uint64_t b = SLOB_OFFSET_POISON;
+        class slob_page *page = NULL;
+        uint64_t block = SLOB_OFFSET_POISON;
 
         this->lock();
-        for (slob_page_list_iter iter_sp = free_page_list->begin(), iter_next = std::next(iter_sp); iter_sp != free_page_list->end(); iter_sp = iter_next)
+        for (slob_page_list_iter iter_page = free_page_list->begin(), iter_next = std::next(iter_page); iter_page != free_page_list->end(); iter_page = iter_next)
         {
             // We "early return" by "sum_free_size"
-            assert(iter_sp->sum_free_size() > 0U);
-            if (iter_sp->sum_free_size() >= size)
+            assert(iter_page->sum_free_size() > 0U);
+            if (iter_page->sum_free_size() >= size)
             {
                 // Note that the reported space in a SLOB page is not necessarily
                 // contiguous, so the allocation is not guaranteed to succeed.
-                b = iter_sp->alloc(size, align);
-                if (0U == iter_sp->sum_free_size())
+                block = iter_page->alloc(size, align);
+                if (0U == iter_page->sum_free_size())
                 {
-                    iter_sp->clear_on_free_page_list(&this->m_full_slob);
+                    iter_page->clear_on_free_page_list(&this->m_full_page_list);
                 }
 
-                if (SLOB_OFFSET_POISON != b)
+                if (SLOB_OFFSET_POISON != block)
                 {
-                    sp = &(*iter_sp);
+                    page = &(*iter_page);
 
                     // Finally, as an optimization, the appropriate linked list
                     // of pages is cycled such that the next search will begin at the page used to
                     // successfully service the most recent allocation.
-                    if (free_page_list->begin() != iter_sp)
+                    if (free_page_list->begin() != iter_page)
                     {
                         //we can move the head node in STL
-                        free_page_list->splice(free_page_list->begin(), (*free_page_list), iter_sp);
-                        assert(&(*free_page_list->begin()) == sp);
+                        free_page_list->splice(free_page_list->begin(), (*free_page_list), iter_page);
+                        assert(&(*free_page_list->begin()) == page);
                     }
 
                     break;
@@ -654,7 +654,7 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
         }
         this->unlock();
 
-        if (SLOB_OFFSET_POISON == b)
+        if (SLOB_OFFSET_POISON == block)
         {
             //The "slob_new_pages" is internally synchronized
             void *page_memory = slob_new_pages_callback(slob_new_pages_callback_data);
@@ -662,25 +662,25 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
             {
                 this->lock();
                 auto iter_page = slob_page::init_on_page_free_list(free_page_list, this->m_page_size, page_memory);
-                b = iter_page->alloc(size, align);
+                block = iter_page->alloc(size, align);
                 assert(0U < iter_page->sum_free_size());
                 this->unlock();
                 //MALLOC BUG
-                assert(SLOB_OFFSET_POISON != b);
-                sp = &(*iter_page);
+                assert(SLOB_OFFSET_POISON != block);
+                page = &(*iter_page);
             }
             else
             {
                 //MALLOC FAIL
-                assert(SLOB_OFFSET_POISON == b);
-                assert(NULL == sp);
+                assert(SLOB_OFFSET_POISON == block);
+                assert(NULL == page);
             }
         }
 
-        assert(SLOB_OFFSET_POISON == b || NULL != sp); //SLOB_OFFSET_POISON != b ⇒ NULL != sp
-        assert(SLOB_OFFSET_POISON != b || NULL == sp); //SLOB_OFFSET_POISON == b ⇒ NULL == sp
-        (*out_offset) = b;
-        return sp;
+        assert(SLOB_OFFSET_POISON == block || NULL != page); //SLOB_OFFSET_POISON != block ⇒ NULL != page
+        assert(SLOB_OFFSET_POISON != block || NULL == page); //SLOB_OFFSET_POISON == block ⇒ NULL == page
+        (*out_offset) = block;
+        return page;
     }
     else
     {
@@ -690,33 +690,33 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
 }
 
 inline void gfx_malloc::slob::free(
-    class slob_page *sp,
+    class slob_page *page,
     uint64_t offset,
     uint64_t size,
     void slob_free_pages_callback(void *, void *),
     void *slob_free_pages_callback_data)
 {
     this->lock();
-    if ((sp->sum_free_size() + size) < this->m_page_size)
+    if ((page->sum_free_size() + size) < this->m_page_size)
     {
-        if (sp->is_on_free_list())
+        if (page->is_on_free_list())
         {
-            sp->free(offset, size);
+            page->free(offset, size);
         }
         else
         {
-            sp->free(offset, size);
+            page->free(offset, size);
             slob_page_list *free_page_list = get_free_page_list(size);
             assert(NULL != free_page_list);
-            sp->set_on_free_page_list(free_page_list);
+            page->set_on_free_page_list(free_page_list);
         }
         this->unlock();
         return;
     }
     else
     {
-        void *page_memory = sp->page_memory();
-        sp->destroy_on_free_page_list(offset, size);
+        void *page_memory = page->page_memory();
+        page->destroy_on_free_page_list(offset, size);
         this->unlock();
         slob_free_pages_callback(page_memory, slob_free_pages_callback_data);
         return;
@@ -738,11 +738,11 @@ void gfx_malloc::transfer_dst_and_sampled_image_init(uint64_t page_size)
 
 void *gfx_malloc::transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_gfx_malloc_page, uint64_t *out_offset)
 {
-    class slob_page *sp = this->m_transfer_dst_and_sampled_image_slob.alloc(size, align, slob_new_pages_callback, slob_new_pages_callback_data, out_offset);
-    if (NULL != sp)
+    class slob_page *page = this->m_transfer_dst_and_sampled_image_slob.alloc(size, align, slob_new_pages_callback, slob_new_pages_callback_data, out_offset);
+    if (NULL != page)
     {
-        (*out_gfx_malloc_page) = sp;
-        return sp->page_memory();
+        (*out_gfx_malloc_page) = page;
+        return page->page_memory();
     }
     else
     {
@@ -753,9 +753,9 @@ void *gfx_malloc::transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t a
 
 void gfx_malloc::transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data)
 {
-    class slob_page *sp = static_cast<class slob_page *>(gfx_malloc_page);
-    assert(page_memory == sp->page_memory());
-    return m_transfer_dst_and_sampled_image_slob.free(sp, offset, size, slob_free_pages_callback, slob_free_pages_callback_data);
+    class slob_page *page = static_cast<class slob_page *>(gfx_malloc_page);
+    assert(page_memory == page->page_memory());
+    return m_transfer_dst_and_sampled_image_slob.free(page, offset, size, slob_free_pages_callback, slob_free_pages_callback_data);
 }
 
 // wrap
