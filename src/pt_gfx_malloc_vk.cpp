@@ -469,15 +469,15 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
     assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
 
     void *sp;
-    void *page_device_memory = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(
+    void *page_memory = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(
         memory_requirements->size, memory_requirements->alignment,
         transfer_dst_and_sampled_image_slob_new_pages, this, &sp, out_offset);
 
-    if (NULL != page_device_memory)
+    if (NULL != page_memory)
     {
         (*out_gfx_malloc_page) = sp;
         (*out_size) = memory_requirements->size;
-        return static_cast<VkDeviceMemory>(page_device_memory);
+        return static_cast<VkDeviceMemory>(page_memory);
     }
     else
     {

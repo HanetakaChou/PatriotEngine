@@ -23,24 +23,33 @@
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
-#include <pt_mcrt_scalable_allocator.h>
 #include <list>
 #include <set>
-#include <new>
+#include <pt_mcrt_scalable_allocator.h>
 #include <assert.h>
 
 class gfx_malloc
 {
-    static uint64_t const SLOB_OFFSET_INVALID;
+    static uint64_t const SLOB_OFFSET_POISON;
 
-    class slob_block_stl
+    class slob_block;
+    class slob_page;
+    typedef std::set<class slob_block, std::less<class slob_block>, mcrt::scalable_allocator<class slob_block>> slob_block_list;
+    typedef std::set<class slob_block, std::less<class slob_block>, mcrt::scalable_allocator<class slob_block>>::iterator slob_block_list_iter;
+    typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>> slob_page_list;
+    typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>>::iterator slob_page_list_iter;
+    static inline slob_block_list_iter wrapped_prev(slob_block_list const &contain, slob_block_list_iter const &iter);
+    static inline void wrapped_emplace_hint(slob_block_list &contain, slob_block_list_iter const &hint, uint64_t offset, uint64_t size);
+    static inline slob_block_list_iter wrapped_lower_bound(slob_block_list const &contain, uint64_t offset, uint64_t size);
+
+    class slob_block
     {
         mutable uint64_t m_offset;
         mutable uint64_t m_size;
 
     public:
-        inline bool operator<(class slob_block_stl const &other) const;
-        inline slob_block_stl(uint64_t offset, uint64_t size);
+        inline bool operator<(class slob_block const &other) const;
+        inline slob_block(uint64_t offset, uint64_t size);
         inline uint64_t offset() const;
         inline uint64_t size() const;
         inline void merge_next(uint64_t size) const;
@@ -48,46 +57,52 @@ class gfx_malloc
         inline void recycle_as(uint64_t offset, uint64_t size) const;
     };
 
-    class slob_page_stl
+    class slob_page
     {
 #ifndef NDEBUG
         static uint64_t const SLOB_PAGE_MAGIC;
         uint64_t m_magic;
 #endif
+        // for early return/reject
+        uint64_t m_sum_free_size;
+        // block free list
+        slob_block_list m_free_block_list;
 
-        bool m_is_on_free_list;
-        typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator m_it_free_slob_list;
-        typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator m_it_full_slob_list;
-
-        uint64_t m_size;
-        std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>> m_free;
+        bool m_is_on_free_page_list;
+        slob_page_list *m_page_list;
+        // work around the "python stack overflow" bug for "libstdc++ Pretty-printers"
+        struct
+        {
+            slob_page_list_iter m_iter;
+        } m_iter_page_list;
 
 #ifndef NDEBUG
         uint64_t m_page_size;
 #endif
+        void *m_page_memory;
 
-        void *m_page_device_memory;
+#ifndef NDEBUG
+        inline bool validate_free_block_list();
 
-        inline slob_page_stl(void *page_device_memory);
-
-        inline bool validate_free_list();
-
-        inline bool validate_last_free(uint64_t offset, uint64_t size);
+        inline bool validate_is_last_free(uint64_t offset, uint64_t size);
+#endif
 
         inline uint64_t internal_alloc(uint64_t size, uint64_t align);
 
         inline void internal_free(uint64_t offset, uint64_t size);
 
-        inline void insert_block(typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator hint, uint64_t offset, uint64_t size);
-
-        inline typename std::set<class slob_block_stl, std::less<class slob_block_stl>, mcrt::scalable_allocator<class slob_block_stl>>::iterator find_next_block(uint64_t offset, uint64_t size);
-
     public:
-        inline ~slob_page_stl();
+        inline slob_page(
+#ifndef NDEBUG
+            uint64_t page_size,
+#endif
+            void *page_memory);
 
-        inline uint64_t size();
+        inline ~slob_page();
 
-        inline void *page_device_memory();
+        inline uint64_t sum_free_size();
+
+        inline void *page_memory();
 
         inline uint64_t alloc(uint64_t size, uint64_t align);
 
@@ -95,27 +110,16 @@ class gfx_malloc
 
         inline bool is_on_free_list();
 
-        static inline class slob_page_stl *init_on_free_list(
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *slob_list,
-            uint64_t page_size,
-            void *page_device_memory);
+        static inline class slob_page *init_on_page_free_list(slob_page_list *free_page_list, uint64_t page_size, void *page_memory);
 
-        inline void clear_on_free_list(
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list);
+        inline void clear_on_free_page_list(slob_page_list *full_page_list);
 
-        inline void set_on_free_list(
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list);
+        inline void set_on_free_page_list(slob_page_list *free_page_list);
 
-        inline void destroy_on_free_list(
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *free_slob_list,
-            std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> *full_slob_list,
-            uint64_t offset, uint64_t size);
+        inline void destroy_on_free_page_list(uint64_t offset, uint64_t size);
     };
 
-private:
-    class slob_stl
+    class slob
     {
 #ifndef NDEBUG
         static uint64_t const SLOB_BREAK_POISON;
@@ -124,10 +128,10 @@ private:
         uint64_t m_slob_break1;
         uint64_t m_slob_break2;
 
-        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_small;
-        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_medium;
-        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_free_slob_large;
-        std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>> m_full_slob;
+        slob_page_list m_free_slob_small;
+        slob_page_list m_free_slob_medium;
+        slob_page_list m_free_slob_large;
+        slob_page_list m_full_slob;
 
 #ifndef NDEBUG
         bool m_slob_lock;
@@ -135,18 +139,17 @@ private:
         inline void lock();
         inline void unlock();
 
-        inline void *new_pages() { return NULL; };
-        inline void free_pages(void *page_device_memory) {}
-
         uint64_t m_page_size;
 
+        inline slob_page_list *get_free_page_list(uint64_t size);
+
     public:
-        inline slob_stl();
+        inline slob();
 
         inline void init(uint64_t page_size);
 
         //The "slob_new_pages" is internally synchronized
-        inline class slob_page_stl *alloc(
+        inline class slob_page *alloc(
             uint64_t size,
             uint64_t align,
             void *slob_new_pages_callback(void *),
@@ -155,26 +158,38 @@ private:
 
         //We pass size in //like unmap
         inline void free(
-            class slob_page_stl *sp,
+            class slob_page *sp,
             uint64_t offset,
             uint64_t size,
             void slob_free_pages_callback(void *, void *),
             void *slob_free_pages_callback_data);
     };
 
-    slob_stl m_transfer_dst_and_sampled_image_slob;
+    // We seperate buffer and optimal-tiling-image
+    // We have no linear-tiling-image
+    // ---
+    // Buffer-Image Granularity
+    // ---
+    // VkPhysicalDeviceLimits::bufferImageGranularity
+    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap13.html#resources-bufferimagegranularity
+    // This restriction is only needed when a linear (BUFFER / IMAGE_TILING_LINEAR) resource and a non-linear (IMAGE_TILING_OPTIMAL) resource are adjacent in memory and will be used simultaneously.
+    // ---
+    // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
+    // VmaBlocksOnSamePage
+    // VmaIsBufferImageGranularityConflict
+    class slob m_transfer_dst_and_sampled_image_slob;
 
-public:
+protected:
     gfx_malloc();
     ~gfx_malloc();
 
-    //using gfx_malloc_page_handle = typename std::list<class slob_page_stl, mcrt::scalable_allocator<class slob_page_stl>>::iterator;
-    virtual void *alloc_uniform_buffer(size_t size) = 0;
-
-protected:
     void transfer_dst_and_sampled_image_init(uint64_t page_size);
     void *transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_gfx_malloc_page, uint64_t *out_offset);
-    void transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_device_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
+    void transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
+
+public:
+    //using gfx_malloc_page_handle = slob_page_list_iter;
+    virtual void *alloc_uniform_buffer(size_t size) = 0;
 };
 
 #endif

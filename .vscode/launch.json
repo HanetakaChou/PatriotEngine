@@ -38,13 +38,13 @@
             //"miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
             //"miDebuggerArgs": "--init-command=${workspaceFolder}/Solution/PosixLinuxX11/libs/x86/gdb.setup",
             "additionalSOLibSearchPath": "${workspaceFolder}/bin/posix_linux_x11/x64/debug",
-            //"setupCommands": [
-            //    {
-            //"description": "Enable pretty-printing for gdb",
-            //"text": "-enable-pretty-printing",
-            //"ignoreFailures": true
-            //     }
-            // ]
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": false //true
+                }
+            ]
         }
     ]
 }
