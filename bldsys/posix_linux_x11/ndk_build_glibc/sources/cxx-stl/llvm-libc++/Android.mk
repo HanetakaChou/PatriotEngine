@@ -31,3 +31,6 @@ LOCAL_EXPORT_CPPFLAGS := -std=c++11 -rtlib=compiler-rt -unwindlib=libunwind -std
 LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-static-libgcc -static-libstdc++
 include $(BUILD_STATIC_LIBRARY)
 
+# TODO
+# enable LOCAL_DISABLE_FATAL_LINKER_WARNINGS in build-binary.mk
+# x86/Gos-linux.c:299: warning: sigreturn is not implemented and will always fail

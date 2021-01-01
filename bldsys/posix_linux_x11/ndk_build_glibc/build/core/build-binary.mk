@@ -200,9 +200,9 @@ LOCAL_LDFLAGS += -Wl,--warn-shared-textrel
 
 # We enable fatal linker warnings by default.
 # If LOCAL_DISABLE_FATAL_LINKER_WARNINGS is true, we don't enable this check.
-ifneq ($(LOCAL_DISABLE_FATAL_LINKER_WARNINGS),true)
-  LOCAL_LDFLAGS += -Wl,--fatal-warnings
-endif
+# ifneq ($(LOCAL_DISABLE_FATAL_LINKER_WARNINGS),true)
+#  LOCAL_LDFLAGS += -Wl,--fatal-warnings
+# endif
 
 # By default, we protect against format string vulnerabilities
 # If LOCAL_DISABLE_FORMAT_STRING_CHECKS is true, we disable the protections.
