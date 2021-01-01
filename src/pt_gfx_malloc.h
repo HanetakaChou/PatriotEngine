@@ -195,8 +195,8 @@ protected:
     ~gfx_malloc();
 
     void transfer_dst_and_sampled_image_init(uint64_t page_size);
-    void *transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_gfx_malloc_page, uint64_t *out_offset);
-    void transfer_dst_and_sampled_image_free(void *gfx_malloc_page, uint64_t offset, uint64_t size, void *page_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
+    void *transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
+    void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, void *page_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
 
 public:
     //using gfx_malloc_page_handle = slob_page_list_iter;

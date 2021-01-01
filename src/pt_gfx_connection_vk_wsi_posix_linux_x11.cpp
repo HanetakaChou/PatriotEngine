@@ -15,11 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#define VK_USE_PLATFORM_XCB_KHR
+#define VK_USE_PLATFORM_XCB_KHR 1
+#include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_thread.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_gfx_connection_vk.h"
+#include "pt_gfx_api_vk.h"
 #include <xcb/xcb.h>
 #include <vulkan/vulkan.h>
 
@@ -28,7 +28,7 @@ inline xcb_visualid_t unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cas
 
 //static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
 
-void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
+void gfx_api_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
 {
     //m_wsi_window = wsi_window;
 
@@ -37,7 +37,7 @@ void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, f
     //xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
+void gfx_api_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
 {
 #if 0
     assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
@@ -51,11 +51,11 @@ void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, 
 #endif
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_release()
+void gfx_api_vk::wsi_on_redraw_needed_release()
 {
 }
 
-char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)
+char const *gfx_api_vk::platform_surface_extension_name(uint32_t index)
 {
     if (0 == index)
     {
@@ -71,12 +71,12 @@ char const *gfx_connection_vk::platform_surface_extension_name(uint32_t index)
     }
 }
 
-uint32_t gfx_connection_vk::platform_surface_extension_count()
+uint32_t gfx_api_vk::platform_surface_extension_count()
 {
     return 2;
 }
 
-bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
+bool gfx_api_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
 {
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_vkGetPhysicalDeviceXcbPresentationSupportKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
 
@@ -88,7 +88,7 @@ bool gfx_connection_vk::platform_physical_device_presentation_support(VkPhysical
     return (VK_FALSE != res);
 }
 
-char const *gfx_connection_vk::platform_swapchain_extension_name(uint32_t index)
+char const *gfx_api_vk::platform_swapchain_extension_name(uint32_t index)
 {
     if (0 == index)
     {
@@ -100,7 +100,7 @@ char const *gfx_connection_vk::platform_swapchain_extension_name(uint32_t index)
     }
 }
 
-uint32_t gfx_connection_vk::platform_swapchain_extension_count()
+uint32_t gfx_api_vk::platform_swapchain_extension_count()
 {
     return 1;
 }
