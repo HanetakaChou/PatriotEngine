@@ -157,9 +157,6 @@ inline gfx_malloc::slob_page::slob_page(
     :
 #ifndef NDEBUG
       m_magic(SLOB_PAGE_MAGIC),
-#endif
-      m_is_on_free_page_list(false),
-#ifndef NDEBUG
       m_page_size(page_size),
 #endif
       m_page_memory_handle(page_memory_handle)
@@ -451,7 +448,7 @@ inline void gfx_malloc::slob_page::free(uint64_t offset, uint64_t size)
     return;
 }
 
-inline bool gfx_malloc::slob_page::is_on_free_list()
+inline bool gfx_malloc::slob_page::is_on_free_page_list()
 {
     assert(SLOB_PAGE_MAGIC == this->m_magic);
 
@@ -461,7 +458,7 @@ inline bool gfx_malloc::slob_page::is_on_free_list()
     return m_is_on_free_page_list;
 }
 
-inline class gfx_malloc::slob_page *gfx_malloc::slob_page::init_on_page_free_list(
+inline class gfx_malloc::slob_page *gfx_malloc::slob_page::init_on_free_page_list(
     slob_page_list *free_page_list,
     uint64_t page_size,
     uint64_t page_memory_handle)
@@ -473,8 +470,8 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob_page::init_on_page_free_lis
         page_memory_handle);
     class slob_page *page = &(*free_page_list->begin());
     assert(page_memory_handle == page->m_page_memory_handle);
-    wrapped_emplace_hint(page->m_free_block_list, page->m_free_block_list.begin(), 0U, page_size);
     page->m_sum_free_size = page_size;
+    wrapped_emplace_hint(page->m_free_block_list, page->m_free_block_list.begin(), 0U, page_size);
 
     page->m_is_on_free_page_list = true;
     page->m_page_list = free_page_list;
@@ -661,7 +658,7 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
             if (PAGE_MEMORY_POISON != page_memory_handle)
             {
                 this->lock();
-                auto iter_page = slob_page::init_on_page_free_list(free_page_list, this->m_page_size, page_memory_handle);
+                auto iter_page = slob_page::init_on_free_page_list(free_page_list, this->m_page_size, page_memory_handle);
                 block = iter_page->alloc(size, align);
                 assert(0U < iter_page->sum_free_size());
                 this->unlock();
@@ -699,7 +696,7 @@ inline void gfx_malloc::slob::free(
     this->lock();
     if ((page->sum_free_size() + size) < this->m_page_size)
     {
-        if (page->is_on_free_list())
+        if (page->is_on_free_page_list())
         {
             page->free(offset, size);
         }

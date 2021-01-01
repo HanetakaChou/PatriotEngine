@@ -119,9 +119,9 @@ class gfx_malloc
 
         inline void free(uint64_t offset, uint64_t size);
 
-        inline bool is_on_free_list();
+        inline bool is_on_free_page_list();
 
-        static inline class slob_page *init_on_page_free_list(slob_page_list *free_page_list, uint64_t page_size, uint64_t page_memory_handle);
+        static inline class slob_page *init_on_free_page_list(slob_page_list *free_page_list, uint64_t page_size, uint64_t page_memory_handle);
 
         inline void clear_on_free_page_list(slob_page_list *full_page_list);
 
