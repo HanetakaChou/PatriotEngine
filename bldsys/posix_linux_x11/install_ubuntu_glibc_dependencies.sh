@@ -44,7 +44,7 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt-get update
 
     apt install libc6-dev:i386
-    # apt install libgcc-5-dev:i386
+    apt install libgcc-5-dev:i386 # the libunwind doesn't omit the libgcc
     # apt install libstdc++-5-dev:i386
     # apt install libclang-common-3.8-dev:i386
     # apt install libclang-common-6.0-dev:i386
@@ -63,7 +63,7 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
 
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
-    # apt install libgcc-5-dev
+    apt install libgcc-5-dev # the libunwind doesn't omit the libgcc
     # apt install libstdc++-5-dev
     # apt install libclang-common-3.8-dev
     # apt install libclang-common-6.0-dev
