@@ -48,6 +48,7 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     # apt install libstdc++-5-dev:i386
     # apt install libclang-common-3.8-dev:i386
     # apt install libclang-common-6.0-dev:i386
+    apt install liblzma-dev:i386
     apt install libunwind8:i386
     apt install libunwind-dev:i386
     apt install libc++abi1:i386
@@ -66,6 +67,7 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     # apt install libstdc++-5-dev
     # apt install libclang-common-3.8-dev
     # apt install libclang-common-6.0-dev
+    apt install liblzma-dev
     apt install libunwind8
     apt install libunwind-dev
     apt install libc++abi1
