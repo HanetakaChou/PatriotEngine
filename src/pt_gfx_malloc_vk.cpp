@@ -419,6 +419,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
     return true;
 }
 
+#if 0
 // Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
 
 void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
@@ -430,6 +431,7 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
 
     return NULL;
 }
+#endif
 
 static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
 

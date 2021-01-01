@@ -32,7 +32,7 @@ extern "C"
 
     struct mcrt_task_user_data_t
     {
-        alignas(void *) uint8_t m_user_data[128];
+        uint8_t m_user_data[128]; // use mcrt_intrin_round_up
     };
 
     // Scheduler Bypass

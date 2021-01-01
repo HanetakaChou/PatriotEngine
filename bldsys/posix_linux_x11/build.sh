@@ -97,7 +97,7 @@ NDK_BUILD_ARGS="${NDK_BUILD_ARG_CONFIG} ${NDK_BUILD_ARG_ARCH} NDK_PROJECT_PATH:=
 INT_DIR="$(realpath -m "${MY_DIR}/${INT_DIR_CONFIG}/${INT_DIR_ARCH}/")"
 OUT_DIR="$(realpath -m "${MY_DIR}/../../bin/posix_linux_x11/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/")"
 
-OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.so pt_launcher libpt_gfx_wsi_bitmap.so pt_general_acyclic_graphs_of_tasks"
+OUT_BINS="libpt_mcrt.so libpt_tbbmalloc.so libpt_irml.so libpt_tbb.so libpt_gfx.so pt_launcher libpt_gfx_wsi_bitmap.so pt_gfx_malloc_test pt_general_acyclic_graphs_of_tasks"
 
 # build by ndk  
 cd ${MY_DIR}

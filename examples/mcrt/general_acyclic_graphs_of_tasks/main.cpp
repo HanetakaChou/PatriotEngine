@@ -19,6 +19,7 @@
 
 #include <stddef.h>
 #include <pt_mcrt_task.h>
+#include <pt_mcrt_intrin.h>
 #include <assert.h>
 #include <stdio.h>
 
@@ -43,7 +44,8 @@ class dag_task
 
     static dag_task *unwrap(mcrt_task_user_data_t *user_data)
     {
-        return reinterpret_cast<dag_task *>(user_data);
+        static_assert((sizeof(dag_task) + alignof(dag_task)) <= sizeof(mcrt_task_user_data_t), "");
+        return reinterpret_cast<class dag_task *>(mcrt_intrin_round_up(reinterpret_cast<uintptr_t>(user_data), alignof(class dag_task)));
     }
 
     static void init(mcrt_task_user_data_t *user_data, int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
@@ -165,7 +167,6 @@ public:
         return t;
     }
 };
-static_assert(sizeof(dag_task) <= sizeof(mcrt_task_user_data_t), "sizeof(dag_task) <= sizeof(mcrt_task_user_data_t)");
 
 class dummy_task
 {
@@ -182,7 +183,6 @@ public:
         return t;
     }
 };
-static_assert(sizeof(dummy_task) <= sizeof(mcrt_task_user_data_t), "sizeof(dummy_task) <= sizeof(mcrt_task_user_data_t)");
 
 int main(int argc, char **argv)
 {
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
     mcrt_task_spawn_and_wait_for_all(real_root, x[0][0]);
     assert(0 == mcrt_task_ref_count(real_root));
 
-    // we can reuse the dummy task for next wait  
+    // we can reuse the dummy task for next wait
     mcrt_task_destory(real_root);
 
     return 0;
