@@ -63,8 +63,8 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_transfer_dst_and_sampled_image_page_size;
     uint32_t m_transfer_dst_and_sampled_image_memory_index;
 
-    static void *transfer_dst_and_sampled_image_slob_new_pages(void *);
-    static void transfer_dst_and_sampled_image_slob_free_pages(void *, void *);
+    static uint64_t transfer_dst_and_sampled_image_slob_new_pages(void *);
+    static void transfer_dst_and_sampled_image_slob_free_pages(uint64_t , void *);
 
     void *alloc_uniform_buffer(size_t size) override;
 

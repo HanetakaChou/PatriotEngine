@@ -90,7 +90,7 @@ class gfx_malloc
 #ifndef NDEBUG
         uint64_t m_page_size;
 #endif
-        void *m_page_memory;
+        uint64_t m_page_memory_handle; //handle
 
 #ifndef NDEBUG
         inline bool validate_free_block_list();
@@ -107,13 +107,13 @@ class gfx_malloc
 #ifndef NDEBUG
             uint64_t page_size,
 #endif
-            void *page_memory);
+            uint64_t page_memory_handle);
 
         inline ~slob_page();
 
         inline uint64_t sum_free_size();
 
-        inline void *page_memory();
+        inline uint64_t page_memory_handle();
 
         inline uint64_t alloc(uint64_t size, uint64_t align);
 
@@ -121,7 +121,7 @@ class gfx_malloc
 
         inline bool is_on_free_list();
 
-        static inline class slob_page *init_on_page_free_list(slob_page_list *free_page_list, uint64_t page_size, void *page_memory);
+        static inline class slob_page *init_on_page_free_list(slob_page_list *free_page_list, uint64_t page_size, uint64_t page_memory_handle);
 
         inline void clear_on_free_page_list(slob_page_list *full_page_list);
 
@@ -163,7 +163,7 @@ class gfx_malloc
         inline class slob_page *alloc(
             uint64_t size,
             uint64_t align,
-            void *slob_new_pages_callback(void *),
+            uint64_t slob_new_pages_callback(void *),
             void *slob_new_pages_callback_data,
             uint64_t *out_offset);
 
@@ -172,7 +172,7 @@ class gfx_malloc
             class slob_page *page,
             uint64_t offset,
             uint64_t size,
-            void slob_free_pages_callback(void *, void *),
+            void slob_free_pages_callback(uint64_t, void *),
             void *slob_free_pages_callback_data);
     };
 
@@ -194,9 +194,11 @@ protected:
     gfx_malloc();
     ~gfx_malloc();
 
+    static uint64_t const PAGE_MEMORY_POISON;
+
     void transfer_dst_and_sampled_image_init(uint64_t page_size);
-    void *transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void *slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
-    void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, void *page_memory, void slob_free_pages_callback(void *, void *), void *slob_free_pages_callback_data);
+    uint64_t transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
+    void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, uint64_t page_memory_handle, void slob_free_pages_callback(uint64_t, void *), void *slob_free_pages_callback_data);
 
 public:
     //using gfx_malloc_page_handle = slob_page_list_iter;

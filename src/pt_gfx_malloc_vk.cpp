@@ -431,9 +431,9 @@ void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
     return NULL;
 }
 
-static_assert(sizeof(VkDeviceMemory) == sizeof(void *), "");
+static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
 
-void *gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_self)
+uint64_t gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_self)
 {
     class gfx_malloc_vk *self = static_cast<class gfx_malloc_vk *>(_self);
 
@@ -449,18 +449,18 @@ void *gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_self)
     }
     if (VK_SUCCESS == res)
     {
-        return (void *)device_memory;
+        return (uint64_t)device_memory;
     }
     else
     {
-        return NULL;
+        return PAGE_MEMORY_POISON;
     }
 }
 
-void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(void *page_memory_device, void *_self)
+void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(uint64_t page_memory_handle, void *_self)
 {
     class gfx_malloc_vk *self = static_cast<class gfx_malloc_vk *>(_self);
-    self->m_api_vk->free_memory((VkDeviceMemory)page_memory_device);
+    self->m_api_vk->free_memory((VkDeviceMemory)page_memory_handle);
     return;
 }
 
@@ -468,16 +468,16 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
 {
     assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
 
-    void *sp;
-    void *page_memory = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(
+    void *page_handle;
+    uint64_t page_memory_handle = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(
         memory_requirements->size, memory_requirements->alignment,
-        transfer_dst_and_sampled_image_slob_new_pages, this, &sp, out_offset);
+        transfer_dst_and_sampled_image_slob_new_pages, this, &page_handle, out_offset);
 
-    if (NULL != page_memory)
+    if (PAGE_MEMORY_POISON != page_memory_handle)
     {
-        (*out_page_handle) = sp;
+        (*out_page_handle) = page_handle;
         (*out_size) = memory_requirements->size;
-        return ((VkDeviceMemory)page_memory);
+        return ((VkDeviceMemory)page_memory_handle);
     }
     else
     {
@@ -489,5 +489,5 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
 
 void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
 {
-    return this->gfx_malloc::transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory, transfer_dst_and_sampled_image_slob_free_pages, this);
+    return this->gfx_malloc::transfer_dst_and_sampled_image_free(page_handle, offset, size, (uint64_t)device_memory, transfer_dst_and_sampled_image_slob_free_pages, this);
 }
