@@ -190,6 +190,8 @@ class gfx_malloc
     // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
+    class slob m_transfer_dst_and_vertex_buffer_slob;
+    class slob m_transfer_dst_and_index_buffer_slob;
     class slob m_transfer_dst_and_sampled_image_slob;
 
 protected:
@@ -197,6 +199,17 @@ protected:
     ~gfx_malloc();
 
     static uint64_t const PAGE_MEMORY_HANDLE_POISON;
+
+    // We seperate the vertex buffer and index buffer interfaces.
+    // However, we may implement them by the same slob.
+
+    void transfer_dst_and_vertex_buffer_init(uint64_t page_size);
+    uint64_t transfer_dst_and_vertex_buffer_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
+    void transfer_dst_and_vertex_buffer_free(void *page_handle, uint64_t offset, uint64_t size, uint64_t page_memory_handle, void slob_free_pages_callback(uint64_t, void *), void *slob_free_pages_callback_data);
+
+    void transfer_dst_and_index_buffer_init(uint64_t page_size);
+    uint64_t transfer_dst_and_index_buffer_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
+    void transfer_dst_and_index_buffer_free(void *page_handle, uint64_t offset, uint64_t size, uint64_t page_memory_handle, void slob_free_pages_callback(uint64_t, void *), void *slob_free_pages_callback_data);
 
     void transfer_dst_and_sampled_image_init(uint64_t page_size);
     uint64_t transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);

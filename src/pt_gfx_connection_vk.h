@@ -43,6 +43,13 @@ class gfx_connection_vk : public gfx_connection_common
         uint64_t m_ringbuffer_end;
     };
 
+    // The unique uniform buffer.
+    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
+    // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
+    VkBuffer m_uniform_buffer;
+    uint64_t m_uniform_buffer_ring_buffer_begin;
+    uint64_t m_uniform_buffer_ring_buffer_end;
+
     class gfx_texture_common *create_texture() override;
     void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
