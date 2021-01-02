@@ -38,43 +38,38 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
 
     apt install libc6-dev:i386
     apt install libgcc-7-dev:i386 # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
-    apt install libstdc++-7-dev:i386
-    # apt install libclang-common-3.8-dev:i386
-    # apt install libclang-common-6.0-dev:i386
-    # apt install liblzma-dev:i386
-    # apt install libunwind8:i386
-    # apt install libunwind-dev:i386
-    # apt install libc++abi1:i386
-    # apt install libc++abi-dev:i386
-    # apt install libc++1:i386
-    # apt install libc++-dev:i386
+    # apt install libstdc++-7-dev:i386
+    apt install liblzma-dev:i386
+    apt install libunwind8:i386
+    apt install libunwind-dev:i386
+    apt install libc++abi1:i386
+    apt install libc++abi-dev:i386
+    apt install libc++1:i386
+    apt install libc++-dev:i386
     apt install libxcb1-dev:i386
     apt install libx11-dev:i386
     apt install libvulkan1:i386
     apt install mesa-vulkan-drivers:i386
     apt install libvulkan-dev:i386
 
-    apt install gcc-7:i386
-    apt install gcc:i386
-    apt install g++-7:i386
-    apt install g++:i386
-    # apt install clang-3.8:i386
+    # apt install gcc-7:i386
+    # apt install gcc:i386
+    # apt install g++-7:i386
+    # apt install g++:i386
     # apt install clang-6.0:i386
-    # apt install clang:i386
+    apt install clang:i386
     apt install chrpath:i386
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
     apt install libgcc-7-dev # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
-    apt install libstdc++-7-dev
-    # apt install libclang-common-3.8-dev
-    # apt install libclang-common-6.0-dev
-    # apt install liblzma-dev
-    # apt install libunwind8
-    # apt install libunwind-dev
-    # apt install libc++abi1
-    # apt install libc++abi-dev
-    # apt install libc++1
-    # apt install libc++-dev
+    # apt install libstdc++-7-dev
+    apt install liblzma-dev
+    apt install libunwind8
+    apt install libunwind-dev
+    apt install libc++abi1
+    apt install libc++abi-dev
+    apt install libc++1
+    apt install libc++-dev
     apt install libxcb1-dev
     apt install libx11-dev
     apt install libvulkan1
@@ -82,13 +77,12 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     # apt install vulkan-validationlayers
     apt install libvulkan-dev
 
-    apt install gcc-7
-    apt install gcc
-    apt install g++-7
-    apt install g++
-    # apt install clang-3.8
+    # apt install gcc-7
+    # apt install gcc
+    # apt install g++-7
+    # apt install g++
     # apt install clang-6.0
-    # apt install clang
+    apt install clang
     apt install chrpath
 else
     echo "The arch \"$1\" is not supported!"
