@@ -396,6 +396,7 @@ inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t al
 inline void gfx_malloc::slob_page::internal_free(uint64_t offset, uint64_t size)
 {
     assert(size > 0U);
+    this->m_sum_free_size += size;
 
     // We use the STL set to find the matching block while the [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) traverse the list to find the matching block
     // ---
