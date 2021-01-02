@@ -147,7 +147,8 @@ Try to understand the following papers from the perspective of the 2-Manifold:
 ### Platform Support  
 - [ ] Vulkan  
   - [ ] MemoryAllocator  
-    - [ ] SLOB  
+    - [x] SLOB  
+    - [ ] RingBuffer  
   - [ ] TextureLoader  
     - [ ] DDS  
     - [ ] PVR  
@@ -164,7 +165,8 @@ Try to understand the following papers from the perspective of the 2-Manifold:
     - [ ] Win32Desktop  
 - [ ] Metal  
   - [ ] MemoryAllocator  
-    - [ ] SLOB  
+    - [x] SLOB  
+    - [ ] RingBuffer  
   - [ ] TextureLoader  
     - [ ] DDS  
     - [ ] PVR  
@@ -180,7 +182,8 @@ Try to understand the following papers from the perspective of the 2-Manifold:
     - [ ] PosixMachIOS  
 - [ ] Direct3D12  
   - [ ] MemoryAllocator  
-    - [ ] SLOB  
+    - [x] SLOB  
+    - [ ] RingBuffer  
   - [ ] TextureLoader  
     - [ ] DDS  
     - [ ] PVR  
