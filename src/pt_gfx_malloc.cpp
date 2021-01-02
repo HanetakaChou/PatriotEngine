@@ -125,6 +125,12 @@ inline gfx_malloc::slob_block_list_iter gfx_malloc::wrapped_lower_bound(slob_blo
     return contain.lower_bound(std::move(block));
 }
 
+inline gfx_malloc::slob_page_list_iter gfx_malloc::wrapped_next(slob_page_list const &contain, slob_page_list_iter const &iter)
+{
+    assert(contain.end() != iter);
+    return std::next(iter);
+}
+
 inline uint64_t gfx_malloc::slob_block::offset() const
 {
     return m_offset;
@@ -250,7 +256,7 @@ inline bool gfx_malloc::slob_page::validate_is_last_free(uint64_t offset, uint64
             return false;
         }
 
-        slob_block_list_iter iter_second = std::next(iter_first);
+        slob_block_list_iter iter_second = wrapped_next(this->m_free_block_list, iter_first);
         if ((offset + size) != iter_second->offset())
         {
             assert(false);
@@ -637,7 +643,7 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
         uint64_t block = SLOB_OFFSET_POISON;
 
         this->lock();
-        for (slob_page_list_iter iter_page = free_page_list->begin(), iter_next = std::next(iter_page); iter_page != free_page_list->end(); iter_page = iter_next)
+        for (slob_page_list_iter iter_page = free_page_list->begin(); iter_page != free_page_list->end(); iter_page = wrapped_next(*free_page_list, iter_page))
         {
             // We "early return" by "sum_free_size"
             assert(iter_page->sum_free_size() > 0U);

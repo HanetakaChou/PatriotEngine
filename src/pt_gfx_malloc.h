@@ -51,6 +51,7 @@ class gfx_malloc
     static inline slob_block_list_iter wrapped_next(slob_block_list const &contain, slob_block_list_iter const &iter);
     static inline void wrapped_emplace_hint(slob_block_list &contain, slob_block_list_iter const &hint, uint64_t offset, uint64_t size);
     static inline slob_block_list_iter wrapped_lower_bound(slob_block_list const &contain, uint64_t offset, uint64_t size);
+    static inline slob_page_list_iter wrapped_next(slob_page_list const &contain, slob_page_list_iter const &iter);
 
     class slob_block
     {
