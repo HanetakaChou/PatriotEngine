@@ -93,6 +93,12 @@ inline gfx_malloc::slob_block_list_iter gfx_malloc::wrapped_prev(slob_block_list
     return std::prev(iter);
 }
 
+inline gfx_malloc::slob_block_list_iter gfx_malloc::wrapped_next(slob_block_list const &contain, slob_block_list_iter const &iter)
+{
+    assert(contain.end() != iter);
+    return std::next(iter);
+}
+
 inline void gfx_malloc::wrapped_emplace_hint(slob_block_list &contain, slob_block_list_iter const &hint, uint64_t offset, uint64_t size)
 {
     //https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
@@ -172,7 +178,7 @@ gfx_malloc::slob_page::~slob_page()
         slob_block_list_iter iter_first = this->m_free_block_list.begin();
         assert(0U == iter_first->offset());
 
-        slob_block_list_iter iter_second = std::next(iter_first);
+        slob_block_list_iter iter_second = wrapped_next(this->m_free_block_list, iter_first);
         assert(m_page_size != (iter_second->offset() + iter_second->offset()));
     }
     else if (1U == m_free_block_list.size())
@@ -202,9 +208,11 @@ inline bool gfx_malloc::slob_page::validate_free_block_list()
 {
     uint64_t validated_sum_free_size = 0U;
 
-    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next, iter_next = std::next(iter_cur))
+    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = (this->m_free_block_list.end() != iter_cur) ? wrapped_next(this->m_free_block_list, iter_cur) : slob_block_list_iter{};
+         this->m_free_block_list.end() != iter_cur;
+         iter_cur = iter_next, iter_next = (this->m_free_block_list.end() != iter_cur) ? wrapped_next(this->m_free_block_list, iter_cur) : slob_block_list_iter{})
     {
-        if (m_free_block_list.end() != iter_next)
+        if ((this->m_free_block_list.end() != iter_cur) && (this->m_free_block_list.end() != iter_next))
         {
             if ((iter_cur->offset() + iter_cur->size()) >= iter_next->offset())
             {
@@ -291,7 +299,9 @@ inline bool gfx_malloc::slob_page::validate_is_last_free(uint64_t offset, uint64
 
 inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t align)
 {
-    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next, iter_next = std::next(iter_cur))
+    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = (this->m_free_block_list.end() != iter_cur) ? wrapped_next(this->m_free_block_list, iter_cur) : slob_block_list_iter{};
+         this->m_free_block_list.end() != iter_cur;
+         iter_cur = iter_next, iter_next = (this->m_free_block_list.end() != iter_cur) ? wrapped_next(this->m_free_block_list, iter_cur) : slob_block_list_iter{})
     {
         uint64_t avail = iter_cur->size();
         uint64_t cur_offset = iter_cur->offset();
@@ -362,9 +372,9 @@ inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t al
             if (avail > size)
             {
                 // above "iter_cur := end"
-                // assert(std::next(iter_cur) == iter_next);
-                assert((this->m_free_block_list.end() == iter_next) || (cur_offset + avail <= iter_next->offset()));
-                if ((this->m_free_block_list.end() != iter_next) && (cur_offset + avail == iter_next->offset()))
+                // assert(wrapped_next(iter_cur) == iter_next);
+                assert((this->m_free_block_list.end() == iter_cur) || (this->m_free_block_list.end() == iter_next) || (cur_offset + avail <= iter_next->offset()));
+                if ((this->m_free_block_list.end() != iter_cur) && (this->m_free_block_list.end() != iter_next) && (cur_offset + avail == iter_next->offset()))
                 {
                     iter_next->merge_prev(avail - size);
                 }

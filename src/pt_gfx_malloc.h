@@ -48,6 +48,7 @@ class gfx_malloc
     typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>> slob_page_list;
     typedef std::list<class slob_page, mcrt::scalable_allocator<class slob_page>>::iterator slob_page_list_iter;
     static inline slob_block_list_iter wrapped_prev(slob_block_list const &contain, slob_block_list_iter const &iter);
+    static inline slob_block_list_iter wrapped_next(slob_block_list const &contain, slob_block_list_iter const &iter);
     static inline void wrapped_emplace_hint(slob_block_list &contain, slob_block_list_iter const &hint, uint64_t offset, uint64_t size);
     static inline slob_block_list_iter wrapped_lower_bound(slob_block_list const &contain, uint64_t offset, uint64_t size);
 
@@ -200,7 +201,7 @@ protected:
     uint64_t transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
     void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, uint64_t page_memory_handle, void slob_free_pages_callback(uint64_t, void *), void *slob_free_pages_callback_data);
 
-//public:
+    //public:
     //using gfx_malloc_page_handle = slob_page_list_iter;
     //virtual void *alloc_uniform_buffer(size_t size) = 0;
 };
