@@ -25,6 +25,7 @@
         mcrt_task_ref_count;
         mcrt_task_set_ref_count;
         mcrt_task_decrement_ref_count;
+        mcrt_task_parent;
         mcrt_task_set_parent;
         mcrt_task_spawn;
         mcrt_task_spawn_and_wait_for_all;

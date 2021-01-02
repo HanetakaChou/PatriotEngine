@@ -17,70 +17,57 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# configure
 if test \( $# -ne 2 \);
 then
-    echo "Usage: build.sh config platform"
+    echo "Usage: build.sh config arch"
     echo ""
     echo "Configs:"
-    echo "  debug   -   build with the debug configuration"
-    echo "  release -   build with the release configuration"
+    echo "  debug   -   test the debug configuration"
+    echo "  release -   test the release configuration"
     echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
+    echo "Archs:"
+    echo "  x86     -   test the x86 arch"
+    echo "  x64     -   test the x64 arch"
     echo ""
     exit 1
 fi
 
-if test ! \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -o \( \( -n "$1" \) -a \( "$1" = "release" \) \) \);
-then
+if test \( \( -n "$1" \) -a \( "$1" = "debug" \) \);then 
+    OUT_DIR_CONFIG="debug"
+elif test \( \( -n "$1" \) -a \( "$1" = "release" \) \);then
+    OUT_DIR_CONFIG="release"
+else
     echo "The config \"$1\" is not supported!"
     echo ""
     echo "Configs:"
-    echo "  debug   -   build with the debug configuration"
-    echo "  release -   build with the release configuration"
+    echo "  debug   -   test the debug configuration"
+    echo "  release -   test the release configuration"
     echo ""
     exit 1
 fi
 
-if test ! \( \( \( -n "$2" \) -a \( "$2" = "x86" \) \) -o \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
-then
-    echo "The platform \"$2\" is not supported!"
-    echo ""
-    echo "Platforms:"
-    echo "  x86     -   build with the x86 configuration"
-    echo "  x64     -   build with the x64 configuration"
-    echo ""
-    exit 1
-fi
-
-# configure
-MY_DIR="$(dirname "$(readlink -f "${0}")")"
-cd ${MY_DIR}
-
-if test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
-then
-    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/debug/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "debug" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
-then
-    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/debug/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x86" \) \) \);
-then
-    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x86/release/"
-elif test \( \( \( -n "$1" \) -a \( "$1" = "release" \) \) -a \( \( -n "$2" \) -a \( "$2" = "x64" \) \) \);
-then
-    OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/x64/release/"
+if test \( \( -n "$2" \) -a \( "$2" = "x86" \) \);then
+    OUT_DIR_ARCH="x86"
+elif test \( \( -n "$2" \) -a \( "$2" = "x64" \) \);then
+    OUT_DIR_ARCH="x64"
 else
-    echo "Unsupported config \"$1\" and platform \"$2\"!"
+    echo "The architecture \"$2\" is not supported!"
+    echo ""
+    echo "Archs:"
+    echo "  x86     -   test the x86 arch"
+    echo "  x64     -   test the x64 arch"
+    echo ""
     exit 1
 fi
 
-TEST=$(${OUT_DIR}/pt_general_acyclic_graphs_of_tasks)
+MY_DIR="$(readlink -f "$(dirname "$0")")"
+OUT_DIR="$(realpath -m "${MY_DIR}/../../bin/posix_linux_x11/")/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/"
 
-if test "${TEST}"  ==  "15 + 20 = 35";
-then
-    echo "pt_general_acyclic_graphs_of_tasks passed with \"${TEST}\""
+# run tests 
+if "${OUT_DIR}/pt_general_acyclic_graphs_of_tasks"; then
+    echo "pt_general_acyclic_graphs_of_tasks passed"
 else
-    echo "pt_general_acyclic_graphs_of_tasks failed with \"${TEST}\""
+    echo "pt_general_acyclic_graphs_of_tasks failed"
     exit 1
 fi

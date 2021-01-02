@@ -39,11 +39,11 @@ extern "C"
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/scheduler-bypass.html
 
     // The tbb task has no destructor! //It's designed to store the lightweight data.
-    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_user_data_t *user_data));
+    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self));
 
     // Continuation Passing
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/continuation-passing.html
-    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_user_data_t *user_data));
+    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_ref self));
 
     PT_ATTR_MCRT mcrt_task_user_data_t *PT_CALL mcrt_task_user_data(mcrt_task_ref t);
 
@@ -58,6 +58,8 @@ extern "C"
     PT_ATTR_MCRT void PT_CALL mcrt_task_set_ref_count(mcrt_task_ref self, int count);
 
     PT_ATTR_MCRT int PT_CALL mcrt_task_decrement_ref_count(mcrt_task_ref self);
+
+    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_parent(mcrt_task_ref self);
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_set_parent(mcrt_task_ref self, mcrt_task_ref parent);
 

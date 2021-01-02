@@ -70,7 +70,6 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
     VkDeviceSize heap_size = physical_device_memory_properties->memoryHeaps[heap_index].size;
 
     // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
-
     //
     // Copyright (c) 2017-2019 Advanced Micro Devices, Inc. All rights reserved.
     //
@@ -92,8 +91,10 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
     // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
     // THE SOFTWARE.
     //
-
+    //
     /** @file src/vk_mem_alloc.inl **/
+    //
+    // VmaAllocator_T::CalcPreferredBlockSize
 
     /// Default size of a block allocated as single VkDeviceMemory from a "large" heap.
     static VkDeviceSize const VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE = (256ULL * 1024ULL * 1024ULL);
@@ -101,7 +102,6 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
     /// Maximum size of a memory heap in Vulkan to consider it "small".
     static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
 
-    // VmaAllocator_T::CalcPreferredBlockSize
     bool is_small_heap = (heap_size <= VMA_SMALL_HEAP_MAX_SIZE);
     VkDeviceSize preferred_block_size = mcrt_intrin_round_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, static_cast<VkDeviceSize>(32));
     return preferred_block_size;

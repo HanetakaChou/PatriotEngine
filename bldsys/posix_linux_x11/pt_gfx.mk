@@ -137,7 +137,7 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
-LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_general_acyclic_graphs_of_tasks.def
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_gfx_malloc_test.def
 
 LOCAL_SHARED_LIBRARIES := libpt_mcrt
 

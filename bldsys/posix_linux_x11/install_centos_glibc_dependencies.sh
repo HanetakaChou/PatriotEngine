@@ -50,7 +50,12 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     yum install libstdc++-static
     # yum install compiler-rt 
     # yum install libunwind-devel
-    # yum install libcxx-devel
+    # yum install libcxxabi https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-10.0.1-1.fc32.x86_64.rpm
+    # yum install libcxxabi-static https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-static-10.0.1-1.fc32.x86_64.rpm
+    # yum install libcxxabi-devel https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-devel-10.0.1-1.fc32.x86_64.rpm
+    # yum install libcxx https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-10.0.1-1.fc32.x86_64.rpm
+    # yum install libcxx-static https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-static-10.0.1-1.fc32.x86_64.rpm
+    # yum install libcxx-devel https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-devel-10.0.1-1.fc32.x86_64.rpm
     yum install libxcb-devel
     yum install vulkan-loader
     yum install mesa-vulkan-drivers

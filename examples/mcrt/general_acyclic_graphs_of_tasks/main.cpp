@@ -42,7 +42,7 @@ class dag_task
 
     static int const value_uninit = 0xdeadbeef; //0xbaddcafe
 
-    static dag_task *unwrap(mcrt_task_user_data_t *user_data)
+    static class dag_task *unwrap(mcrt_task_user_data_t *user_data)
     {
         static_assert((sizeof(dag_task) + alignof(dag_task)) <= sizeof(mcrt_task_user_data_t), "");
         return reinterpret_cast<class dag_task *>(mcrt_intrin_round_up(reinterpret_cast<uintptr_t>(user_data), alignof(class dag_task)));
@@ -50,7 +50,7 @@ class dag_task
 
     static void init(mcrt_task_user_data_t *user_data, int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
     {
-        dag_task *self = unwrap(user_data);
+        class dag_task *self = unwrap(user_data);
 
         self->m_i = i;
         self->m_j = j;
@@ -60,9 +60,9 @@ class dag_task
         self->m_successor_right = successor_right;
     }
 
-    static mcrt_task_ref execute(mcrt_task_user_data_t *user_data)
+    static mcrt_task_ref execute(mcrt_task_ref _self)
     {
-        dag_task *self = unwrap(user_data);
+        class dag_task *self = unwrap(mcrt_task_user_data(_self));
 
         // execute
         if (self->m_successor_bottom != NULL || self->m_successor_right != NULL)
@@ -95,14 +95,14 @@ class dag_task
 
             if (NULL != self->m_successor_bottom)
             {
-                dag_task *successor_bottom = unwrap(mcrt_task_user_data(self->m_successor_bottom));
+                class dag_task *successor_bottom = unwrap(mcrt_task_user_data(self->m_successor_bottom));
 
                 assert(value_uninit == successor_bottom->m_value_top);
                 successor_bottom->m_value_top = self->m_value_left + self->m_value_top;
             }
             if (NULL != self->m_successor_right)
             {
-                dag_task *successor_right = unwrap(mcrt_task_user_data(self->m_successor_right));
+                class dag_task *successor_right = unwrap(mcrt_task_user_data(self->m_successor_right));
 
                 assert(value_uninit == successor_right->m_value_left);
                 successor_right->m_value_left = self->m_value_left + self->m_value_top;
@@ -111,7 +111,9 @@ class dag_task
         else
         {
             //we reach the end point
-            printf("%i + %i = %i\n", self->m_value_top, self->m_value_left, self->m_value_top + self->m_value_left);
+            class dag_task *real_root = unwrap(mcrt_task_user_data(mcrt_task_parent(_self)));
+            real_root->m_value_left = self->m_value_left;
+            real_root->m_value_top = self->m_value_top;
         }
 
         // successor
@@ -160,28 +162,15 @@ class dag_task
     }
 
 public:
-    static mcrt_task_ref allocate_root(int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
+    inline static mcrt_task_ref allocate_root(int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
     {
         mcrt_task_ref t = mcrt_task_allocate_root(execute);
         init(mcrt_task_user_data(t), i, j, successor_bottom, successor_right);
         return t;
     }
-};
 
-class dummy_task
-{
-    static mcrt_task_ref execute(mcrt_task_user_data_t *user_data)
-    {
-        assert(false); //Must never get here
-        return NULL;
-    }
-
-public:
-    static mcrt_task_ref allocate_root()
-    {
-        mcrt_task_ref t = mcrt_task_allocate_root(execute);
-        return t;
-    }
+    inline static int value_top(mcrt_task_ref self) { return unwrap(mcrt_task_user_data(self))->m_value_top; }
+    inline static int value_left(mcrt_task_ref self) { return unwrap(mcrt_task_user_data(self))->m_value_left; }
 };
 
 int main(int argc, char **argv)
@@ -203,14 +192,25 @@ int main(int argc, char **argv)
         }
     }
 
-    mcrt_task_ref real_root = dummy_task::allocate_root();
+    mcrt_task_ref real_root = dag_task::allocate_root(-1, -1, NULL, NULL);
     mcrt_task_set_parent(x[M - 1][N - 1], real_root);
     mcrt_task_set_ref_count(real_root, 2);
     mcrt_task_spawn_and_wait_for_all(real_root, x[0][0]);
     assert(0 == mcrt_task_ref_count(real_root));
 
-    // we can reuse the dummy task for next wait
+    int value_top = dag_task::value_top(real_root);
+    int value_left = dag_task::value_left(real_root);
+
+    // we can reuse the root task for next wait
     mcrt_task_destory(real_root);
 
-    return 0;
+    printf("%i + %i = %i\n", value_top, value_left, value_top + value_left);
+    if (15 == value_top && 20 == value_left)
+    {
+        return 0;
+    }
+    else
+    {
+        return 1;
+    }
 }

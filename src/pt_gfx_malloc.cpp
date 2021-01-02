@@ -201,7 +201,7 @@ inline bool gfx_malloc::slob_page::validate_free_block_list()
 {
     uint64_t validated_sum_free_size = 0U;
 
-    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next)
+    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next, iter_next = std::next(iter_cur))
     {
         if (m_free_block_list.end() != iter_next)
         {
@@ -290,11 +290,11 @@ inline bool gfx_malloc::slob_page::validate_is_last_free(uint64_t offset, uint64
 
 inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t align)
 {
-    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next)
+    for (slob_block_list_iter iter_cur = this->m_free_block_list.begin(), iter_next = std::next(iter_cur); iter_cur != this->m_free_block_list.end(); iter_cur = iter_next, iter_next = std::next(iter_cur))
     {
         uint64_t avail = iter_cur->size();
-        uint64_t aligned = mcrt_intrin_round_up(iter_cur->offset(), align);
-        uint64_t delta = aligned - iter_cur->offset();
+        uint64_t cur_offset = iter_cur->offset();
+        uint64_t delta = mcrt_intrin_round_up(cur_offset, align) - iter_cur->offset();
 
         // We use a simple first-fit algorithm while the [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator) uses the best-fit algorithm
         // ---
@@ -333,10 +333,9 @@ inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t al
             // VmaBlockMetadata_Generic::MergeFreeWithNext
 
             // recycle
-            uint64_t cur_offset = iter_cur->offset();
-            uint64_t cur_size = iter_cur->size();
+            // iter_cur
 
-            //merge with prev
+            // merge with prev
             if (delta > 0U)
             {
                 slob_block_list_iter iter_prev = (iter_cur != this->m_free_block_list.begin()) ? wrapped_prev(this->m_free_block_list, iter_cur) : std::move(slob_block_list_iter{});
@@ -351,35 +350,42 @@ inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t al
                     iter_cur->recycle_as(cur_offset, delta);
                     iter_cur = this->m_free_block_list.end();
                 }
+
+                cur_offset += delta;
+                avail -= delta;
+                delta = 0U;
             }
 
-            //merge with next
-            if (avail > (size + delta))
+            // merge with next
+            assert(0U == delta);
+            if (avail > size)
             {
-                assert(std::next(iter_cur) == iter_next);
-                assert((this->m_free_block_list.end() == iter_next) || (cur_offset + cur_size <= iter_next->offset()));
-                if ((this->m_free_block_list.end() != iter_next) && (cur_offset + cur_size == iter_next->offset()))
+                // above "iter_cur := end"
+                // assert(std::next(iter_cur) == iter_next);
+                assert((this->m_free_block_list.end() == iter_next) || (cur_offset + avail <= iter_next->offset()));
+                if ((this->m_free_block_list.end() != iter_next) && (cur_offset + avail == iter_next->offset()))
                 {
-                    iter_next->merge_prev(avail - (size + delta));
+                    iter_next->merge_prev(avail - size);
                 }
                 else if (m_free_block_list.end() != iter_cur)
                 {
-                    iter_cur->recycle_as(cur_offset + (size + delta), avail - (size + delta));
-                    iter_cur = m_free_block_list.end();
+                    iter_cur->recycle_as(cur_offset + size, avail - size);
+                    iter_cur = this->m_free_block_list.end();
                 }
                 else
                 {
-                    wrapped_emplace_hint(this->m_free_block_list, iter_next, cur_offset + (size + delta), avail - (size + delta));
+                    wrapped_emplace_hint(this->m_free_block_list, iter_next, cur_offset + size, avail - size);
                 }
             }
 
-            //not recycled
-            if (m_free_block_list.end() != iter_cur)
+            // not recycled
+            if (this->m_free_block_list.end() != iter_cur)
             {
-                m_free_block_list.erase(iter_cur);
+                this->m_free_block_list.erase(iter_cur);
             }
 
             this->m_sum_free_size -= size;
+            assert(0U == (cur_offset % align));
             return cur_offset;
         }
     }
@@ -426,6 +432,8 @@ inline void gfx_malloc::slob_page::internal_free(uint64_t offset, uint64_t size)
         iter_next->merge_prev(iter_prev->size());
         m_free_block_list.erase(iter_prev);
     }
+
+    return;
 }
 
 inline uint64_t gfx_malloc::slob_page::alloc(uint64_t size, uint64_t align)

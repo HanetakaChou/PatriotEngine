@@ -61,6 +61,11 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_test.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_test.o",
+        "file": "${workspaceFolder}/src/pt_gfx_malloc_test.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_vk.o",
         "file": "${workspaceFolder}/src/pt_gfx_malloc_vk.cpp"
     },

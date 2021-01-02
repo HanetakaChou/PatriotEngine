@@ -27,18 +27,18 @@ inline class mcrt_task_t *unwrap(mcrt_task_ref t) { return reinterpret_cast<clas
 
 class mcrt_task_t : public tbb::task
 {
-    mcrt_task_ref (*m_execute_callback)(mcrt_task_user_data_t *user_data);
+    mcrt_task_ref (*m_execute_callback)(mcrt_task_ref self);
 
     mcrt_task_user_data_t m_user_data;
 
     tbb::task *execute() override
     {
-        mcrt_task_ref t = m_execute_callback(&m_user_data);
+        mcrt_task_ref t = m_execute_callback(wrap(this));
         return unwrap(t);
     }
 
 public:
-    inline mcrt_task_t(mcrt_task_ref (*execute_callback)(mcrt_task_user_data_t *user_data)) : m_execute_callback(execute_callback) {}
+    inline mcrt_task_t(mcrt_task_ref (*execute_callback)(mcrt_task_ref self)) : m_execute_callback(execute_callback) {}
 
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
@@ -47,13 +47,13 @@ public:
 // quick_task_size
 static_assert(sizeof(mcrt_task_t) <= 192UL, "sizeof(mcrt_task_t) <= quick_task_size");
 
-PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_user_data_t *user_data))
+PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
     mcrt_task_t *t = new (tbb::task::allocate_root()) mcrt_task_t(execute_callback);
     return wrap(t);
 }
 
-PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_user_data_t *user_data))
+PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
     mcrt_task_t *t = new (unwrap(self)->allocate_continuation()) mcrt_task_t(execute_callback);
     return wrap(t);
@@ -87,6 +87,12 @@ PT_ATTR_MCRT void PT_CALL mcrt_task_set_ref_count(mcrt_task_ref self, int count)
 PT_ATTR_MCRT int PT_CALL mcrt_task_decrement_ref_count(mcrt_task_ref self)
 {
     return unwrap(self)->decrement_ref_count();
+}
+
+PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_parent(mcrt_task_ref self)
+{
+    mcrt_task_t *t = static_cast<mcrt_task_t *>(unwrap(self)->parent());
+    return wrap(t);
 }
 
 PT_ATTR_MCRT void PT_CALL mcrt_task_set_parent(mcrt_task_ref self, mcrt_task_ref parent)
