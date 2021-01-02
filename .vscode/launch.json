@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
+            "name": "(MacOSX) Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/PatriotEngine-MacOSX.app/Contents/MacOS/PatriotEngine-MacOSX",
@@ -17,7 +17,7 @@
             "MIMode": "lldb"
         },
         {
-            "name": "(gdb) Launch",
+            "name": "(Linux) Launch",
             "type": "cppdbg",
             "request": "launch",
             //"preLaunchTask": "build-centos-glibc-debug-x86", //x86 doesn't support validation layer
