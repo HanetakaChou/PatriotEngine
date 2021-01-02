@@ -139,6 +139,7 @@ inline void gfx_malloc::slob_block::merge_prev(uint64_t size) const
 {
     assert(size <= m_offset);
     this->m_offset -= size;
+    this->m_size += size;
     return;
 }
 
@@ -247,7 +248,7 @@ inline bool gfx_malloc::slob_page::validate_is_last_free(uint64_t offset, uint64
             assert(false);
             return false;
         }
-        if (m_page_size != (iter_second->offset() + iter_second->offset()))
+        if (m_page_size != (iter_second->offset() + iter_second->size()))
         {
             assert(false);
             return false;
