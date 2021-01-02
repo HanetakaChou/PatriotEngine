@@ -24,16 +24,18 @@
 #
 
 TOOLCHAIN_NAME   := x86_64-4.9
-TOOLCHAIN_PREFIX := $(TOOLCHAIN_PREBUILT_ROOT)/bin/x86_64-linux-android-
+TOOLCHAIN_PREFIX := $(TOOLCHAIN_PREBUILT_ROOT)/bin/
 
-TARGET_CC := gcc$(HOST_EXEEXT)
-TARGET_CXX := g++$(HOST_EXEEXT)
+TARGET_CC := $(TOOLCHAIN_PREFIX)/gcc$(HOST_EXEEXT)
+TARGET_CXX := $(TOOLCHAIN_PREFIX)/g++$(HOST_EXEEXT)
 
 TARGET_CFLAGS := \
     -ffunction-sections \
     -funwind-tables \
     -fstack-protector-strong \
     -no-canonical-prefixes \
+    -fPIE \
+    -fPIC \
     -pthread \
 
 # Always enable debug info. We strip binaries when needed.

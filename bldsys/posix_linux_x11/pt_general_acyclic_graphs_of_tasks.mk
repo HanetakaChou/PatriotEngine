@@ -26,7 +26,7 @@ LOCAL_MODULE := pt_general_acyclic_graphs_of_tasks
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../examples/mcrt/general_acyclic_graphs_of_tasks)/main.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 

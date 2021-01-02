@@ -27,7 +27,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_export.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_posix_linux_x11.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
@@ -62,7 +62,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_bitmap.cpp \
 
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
@@ -106,7 +106,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_vk.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
@@ -126,7 +126,7 @@ LOCAL_MODULE := pt_gfx_malloc_test
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_test.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 

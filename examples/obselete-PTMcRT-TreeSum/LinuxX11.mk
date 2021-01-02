@@ -10,7 +10,7 @@ LOCAL_MODULE := PTMcRT-TreeSum.bundle
 
 LOCAL_SRC_FILES:= $(LOCAL_PATH)/main.cpp
 	
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 

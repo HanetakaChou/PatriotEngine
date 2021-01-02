@@ -28,7 +28,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
@@ -59,7 +59,7 @@ LOCAL_MODULE := libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
@@ -86,7 +86,7 @@ LOCAL_MODULE := libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
@@ -113,7 +113,7 @@ LOCAL_MODULE := libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp \
 
-LOCAL_CFLAGS += -fdiagnostics-format=msvc
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT

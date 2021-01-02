@@ -108,9 +108,9 @@ endif
 #            HOST_TAG64 == HOST_TAG for 32-bit systems.
 # -----------------------------------------------------------------------------
 ifeq ($(NDK_NEW_TOOLCHAINS_LAYOUT),true)
-    host-toolchain-path = $1/$(HOST_TAG64)/$2
+    host-toolchain-path = /usr/
 else
-    host-toolchain-path = $1/$2/prebuilt/$(HOST_TAG64)
+    host-toolchain-path = /usr/
 endif
 
 # -----------------------------------------------------------------------------
@@ -126,7 +126,7 @@ get-toolchain-root = $(call host-toolchain-path,$(NDK_TOOLCHAINS_ROOT),$1)
 #            2: Toolchain name (no version number)
 # Returns  : Path to the given prebuilt binutils.
 # -----------------------------------------------------------------------------
-get-binutils-root = $1/binutils/$2
+get-binutils-root = /usr/bin/
 
 # -----------------------------------------------------------------------------
 # Function : get-gcclibs-path
