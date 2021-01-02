@@ -33,15 +33,6 @@ then
 fi
 
 if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
-    apt install gcc-7
-    apt install gcc
-    apt install g++-7
-    apt install g++
-    # apt install clang-3.8
-    # apt install clang-6.0
-    # apt install clang
-    apt install chrpath
-
     dpkg --add-architecture i386
     apt-get update
 
@@ -63,6 +54,14 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt install mesa-vulkan-drivers:i386
     apt install libvulkan-dev:i386
 
+    apt install gcc-7:i386
+    apt install gcc:i386
+    apt install g++-7:i386
+    apt install g++:i386
+    # apt install clang-3.8:i386
+    # apt install clang-6.0:i386
+    # apt install clang:i386
+    apt install chrpath:i386
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
     apt install libgcc-7-dev # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
