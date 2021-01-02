@@ -91,11 +91,11 @@ int main(int argc, char **argv)
 {
     // PerformMainTests
     // 0 = small, 1 = large, 2 = small and large
-    uint32_t const small_vs_large_count = 2U;
+    uint32_t const small_vs_large_count = 1U;
     // 0 = varying sizes min...max, 1 = set of constant sizes
     uint32_t const constant_sizes_count = 1U;
     // 0 = 100%, additional_operations = 0, 1 = 50%, 2 = 5%, 3 = 95% additional_operations = a lot
-    uint32_t const begin_bytes_to_allocate_count = 1U;
+    uint32_t const begin_bytes_to_allocate_count = 4U;
     for (uint32_t small_vs_large_index = 0U; small_vs_large_index < small_vs_large_count; ++small_vs_large_index)
     {
         for (uint32_t constant_sizes_index = 0U; constant_sizes_index < constant_sizes_count; ++constant_sizes_index)
@@ -114,9 +114,13 @@ int main(int argc, char **argv)
                 {
                     config_max_bytes_to_allocate = 4ULL * 1024 * 1024 * 1024; // 4 GB
                 }
-                else
+                else if (0U == small_vs_large_index)
                 {
                     config_max_bytes_to_allocate = 4ULL * 1024 * 1024;
+                }
+                else
+                {
+                    assert(false);
                 }
 
                 // Small
@@ -128,12 +132,16 @@ int main(int argc, char **argv)
                         config_allocation_sizes.push_back({4, 4, 32});
                     }
                     // Constant sizes
-                    else
+                    else if (1U == constant_sizes_index)
                     {
                         config_allocation_sizes.push_back({1, 4, 4});
                         config_allocation_sizes.push_back({1, 8, 8});
                         config_allocation_sizes.push_back({1, 16, 16});
                         config_allocation_sizes.push_back({1, 32, 32});
+                    }
+                    else
+                    {
+                        assert(false);
                     }
                 }
                 // Large
@@ -145,12 +153,16 @@ int main(int argc, char **argv)
                         config_allocation_sizes.push_back({4, 256, 2048});
                     }
                     // Constant sizes
-                    else
+                    else if (1U == constant_sizes_index)
                     {
                         config_allocation_sizes.push_back({1, 256, 256});
                         config_allocation_sizes.push_back({1, 512, 512});
                         config_allocation_sizes.push_back({1, 1024, 1024});
                         config_allocation_sizes.push_back({1, 2048, 2048});
+                    }
+                    else
+                    {
+                        assert(false);
                     }
                 }
 
@@ -158,6 +170,21 @@ int main(int argc, char **argv)
                 {
                     config_begin_bytes_to_allocate = config_max_bytes_to_allocate;
                     config_additional_operation_count = 0U;
+                }
+                else if (1U == begin_bytes_to_allocate_index)
+                {
+                    config_begin_bytes_to_allocate = config_max_bytes_to_allocate * 50 / 100;
+                    config_additional_operation_count = 1024;
+                }
+                else if (2U == begin_bytes_to_allocate_index)
+                {
+                    config_begin_bytes_to_allocate = config_max_bytes_to_allocate * 5 / 100;
+                    config_additional_operation_count = 1024;
+                }
+                else if (3U == begin_bytes_to_allocate_index)
+                {
+                    config_begin_bytes_to_allocate = config_max_bytes_to_allocate * 95 / 100;
+                    config_additional_operation_count = 1024;
                 }
                 else
                 {
@@ -192,6 +219,7 @@ int main(int argc, char **argv)
                 }
 
                 // ADDITIONAL ALLOCATIONS AND FREES
+                uint32_t do_nothing_operation_count = 0U;
                 for (size_t i = 0; i < config_additional_operation_count; ++i)
                 {
                     // true = allocate, false = free
@@ -200,7 +228,7 @@ int main(int argc, char **argv)
                     assert(0 == res1);
                     bool allocate = ((r1 % 2) != 0);
 
-                    if (allocate)
+                    if (allocate && (total_allocated_bytes < config_max_bytes_to_allocate))
                     {
                         uint32_t image_size_width;
                         uint32_t image_size_height;
@@ -217,7 +245,7 @@ int main(int argc, char **argv)
                         test_allocation_results.push_back({page_handle, offset, size, page_memory_handle});
                         total_allocated_bytes += size;
                     }
-                    else
+                    else if (!test_allocation_results.empty())
                     {
                         long int r2;
                         int res2 = lrand48_r(&rand_buf, &r2);
@@ -228,6 +256,10 @@ int main(int argc, char **argv)
                         malloc_test.transfer_dst_and_sampled_image_free(allocation_result.page_handle, allocation_result.offset, allocation_result.size, allocation_result.page_memory_handle);
                         std::swap(test_allocation_results[index_to_free], test_allocation_results.back());
                         test_allocation_results.pop_back();
+                    }
+                    else
+                    {
+                        ++do_nothing_operation_count;
                     }
                 }
 
