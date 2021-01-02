@@ -179,7 +179,7 @@ inline void mcrt_hardware_read_write_barrier()
                          :
                          : "memory");
 }
-#elif defined(PT_X86) || defined(PT_X64)
+#elif defined(PT_X86)
 inline void mcrt_hardware_read_barrier()
 {
     __asm__ __volatile__("mfence"
@@ -197,6 +197,28 @@ inline void mcrt_hardware_write_barrier()
 inline void mcrt_hardware_read_write_barrier()
 {
     __asm__ __volatile__("mfence"
+                         :
+                         :
+                         : "memory");
+}
+#elif defined(PT_X64)
+inline void mcrt_hardware_read_barrier()
+{
+    __asm__ __volatile__("mf"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_write_barrier()
+{
+    __asm__ __volatile__("mf"
+                         :
+                         :
+                         : "memory");
+}
+inline void mcrt_hardware_read_write_barrier()
+{
+    __asm__ __volatile__("mf"
                          :
                          :
                          : "memory");

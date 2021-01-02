@@ -568,6 +568,7 @@ inline gfx_malloc::slob::slob()
 #ifndef NDEBUG
     : m_slob_break1(SLOB_BREAK_POISON),
       m_slob_break2(SLOB_BREAK_POISON),
+      m_slob_lock(false),
       m_page_size(PAGE_SIZE_POISON)
 #endif
 {
