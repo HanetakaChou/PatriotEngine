@@ -80,7 +80,7 @@ uint64_t const gfx_malloc::slob::SLOB_BREAK_POISON = (~0ULL);
 uint64_t const gfx_malloc::slob::PAGE_SIZE_POISON = (~0ULL);
 #endif
 uint64_t const gfx_malloc::SLOB_OFFSET_POISON = (~0ULL);
-uint64_t const gfx_malloc::PAGE_MEMORY_POISON = (~0ULL);
+uint64_t const gfx_malloc::PAGE_MEMORY_HANDLE_POISON = (~0ULL);
 
 inline bool gfx_malloc::slob_block_list_comp::operator()(class slob_block const &lhs, class slob_block const &rhs) const
 {
@@ -681,7 +681,7 @@ inline class gfx_malloc::slob_page *gfx_malloc::slob::alloc(
         {
             //The "slob_new_pages" is internally synchronized
             uint64_t page_memory_handle = slob_new_pages_callback(slob_new_pages_callback_data);
-            if (PAGE_MEMORY_POISON != page_memory_handle)
+            if (PAGE_MEMORY_HANDLE_POISON != page_memory_handle)
             {
                 this->lock();
                 auto iter_page = slob_page::init_on_free_page_list(free_page_list, this->m_page_size, page_memory_handle);
@@ -766,13 +766,13 @@ uint64_t gfx_malloc::transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_
     {
         (*out_page_handle) = page;
         uint64_t page_memory_handle = page->page_memory_handle();
-        assert(PAGE_MEMORY_POISON != page_memory_handle);
+        assert(PAGE_MEMORY_HANDLE_POISON != page_memory_handle);
         return page_memory_handle;
     }
     else
     {
         (*out_page_handle) = NULL;
-        return PAGE_MEMORY_POISON;
+        return PAGE_MEMORY_HANDLE_POISON;
     }
 }
 

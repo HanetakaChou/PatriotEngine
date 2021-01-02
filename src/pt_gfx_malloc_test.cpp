@@ -340,7 +340,7 @@ inline gfx_malloc_test::gfx_malloc_test()
 inline uint64_t gfx_malloc_test::transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, void **out_page_handle, uint64_t *out_offset)
 {
     uint64_t page_memory_handle = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(size, align, transfer_dst_and_sampled_image_slob_new_pages, this, out_page_handle, out_offset);
-    assert(PAGE_MEMORY_POISON != page_memory_handle);
+    assert(PAGE_MEMORY_HANDLE_POISON != page_memory_handle);
     return page_memory_handle;
 }
 
@@ -354,7 +354,7 @@ uint64_t gfx_malloc_test::transfer_dst_and_sampled_image_slob_new_pages(void *_s
     class gfx_malloc_test *self = static_cast<class gfx_malloc_test *>(_self);
 
     uint64_t page_memory_handle = self->m_transfer_dst_and_sampled_image_page_memory_handle_counter;
-    assert(PAGE_MEMORY_POISON != page_memory_handle);
+    assert(PAGE_MEMORY_HANDLE_POISON != page_memory_handle);
     ++self->m_transfer_dst_and_sampled_image_page_memory_handle_counter;
     auto res = self->m_transfer_dst_and_sampled_image_page_dict.insert(page_memory_handle);
     assert(res.second);

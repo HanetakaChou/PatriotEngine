@@ -455,7 +455,7 @@ uint64_t gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_sel
     }
     else
     {
-        return PAGE_MEMORY_POISON;
+        return PAGE_MEMORY_HANDLE_POISON;
     }
 }
 
@@ -475,7 +475,7 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
         memory_requirements->size, memory_requirements->alignment,
         transfer_dst_and_sampled_image_slob_new_pages, this, &page_handle, out_offset);
 
-    if (PAGE_MEMORY_POISON != page_memory_handle)
+    if (PAGE_MEMORY_HANDLE_POISON != page_memory_handle)
     {
         (*out_page_handle) = page_handle;
         (*out_size) = memory_requirements->size;

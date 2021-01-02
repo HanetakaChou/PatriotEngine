@@ -196,7 +196,7 @@ protected:
     gfx_malloc();
     ~gfx_malloc();
 
-    static uint64_t const PAGE_MEMORY_POISON;
+    static uint64_t const PAGE_MEMORY_HANDLE_POISON;
 
     void transfer_dst_and_sampled_image_init(uint64_t page_size);
     uint64_t transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
