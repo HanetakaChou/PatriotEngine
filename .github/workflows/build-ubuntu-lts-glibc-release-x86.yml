@@ -17,4 +17,4 @@ jobs:
       - name: build ubuntu glibc release
         run: ./bldsys/posix_linux_x11/build.sh release glibc x86
       - name: test ubuntu glibc release
-        run: ./bldsys/posix_linux_x11/run_test.sh release x86
+        run: ./bldsys/posix_linux_x11/run_tests.sh release x86

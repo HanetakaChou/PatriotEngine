@@ -17,4 +17,4 @@ jobs:
       - name: build ubuntu glibc debug
         run: ./bldsys/posix_linux_x11/build.sh debug glibc x64
       - name: test ubuntu glibc debug
-        run: ./bldsys/posix_linux_x11/run_test.sh debug x64
+        run: ./bldsys/posix_linux_x11/run_tests.sh debug x64

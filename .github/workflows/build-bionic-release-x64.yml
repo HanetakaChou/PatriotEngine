@@ -17,4 +17,4 @@ jobs:
       - name: build bionic release
         run: ./bldsys/posix_linux_x11/build.sh release bionic x64
       - name: test bionic release
-        run: ./bldsys/posix_linux_x11/run_test.sh release x64
+        run: ./bldsys/posix_linux_x11/run_tests.sh release x64

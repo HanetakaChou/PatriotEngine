@@ -17,4 +17,4 @@ jobs:
       - name: build bionic debug
         run: ./bldsys/posix_linux_x11/build.sh debug bionic x64
       - name: test bionic debug
-        run: ./bldsys/posix_linux_x11/run_test.sh debug x64
+        run: ./bldsys/posix_linux_x11/run_tests.sh debug x64
