@@ -84,8 +84,8 @@ struct test_allocation_result
     uint64_t page_memory_handle;
 };
 
-static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_size, mcrt::scalable_allocator<struct allocation_size>> const &config_allocation_sizes, struct drand48_data &rand_buf, uint32_t &out_image_size_width, uint32_t &out_image_size_height);
-static inline void MainTest_Allocate(uint32_t image_size_width, uint32_t image_size_height, struct drand48_data &rand_buf, uint64_t &out_alignment, uint64_t &out_size);
+static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_size, mcrt::scalable_allocator<struct allocation_size>> const &config_allocation_sizes, unsigned &rand_buf, uint32_t &out_image_size_width, uint32_t &out_image_size_height);
+static inline void MainTest_Allocate(uint32_t image_size_width, uint32_t image_size_height, unsigned &rand_buf, uint64_t &out_alignment, uint64_t &out_size);
 
 int main(int argc, char **argv)
 {
@@ -192,8 +192,7 @@ int main(int argc, char **argv)
                 }
 
                 // MainTest
-                struct drand48_data rand_buf;
-                srand48_r(time(NULL), &rand_buf);
+                unsigned rand_buf = (unsigned)time(NULL);
 
                 std::vector<struct test_allocation_result, mcrt::scalable_allocator<struct test_allocation_result>> test_allocation_results;
 
@@ -223,9 +222,7 @@ int main(int argc, char **argv)
                 for (size_t i = 0; i < config_additional_operation_count; ++i)
                 {
                     // true = allocate, false = free
-                    long int r1;
-                    int res1 = lrand48_r(&rand_buf, &r1);
-                    assert(0 == res1);
+                    long int r1 = rand_r(&rand_buf);
                     bool allocate = ((r1 % 2) != 0);
 
                     if (allocate && (total_allocated_bytes < config_max_bytes_to_allocate))
@@ -247,9 +244,7 @@ int main(int argc, char **argv)
                     }
                     else if (!test_allocation_results.empty())
                     {
-                        long int r2;
-                        int res2 = lrand48_r(&rand_buf, &r2);
-                        assert(0 == res2);
+                        long int r2 = rand_r(&rand_buf);
                         size_t index_to_free = (r2 % test_allocation_results.size());
 
                         struct test_allocation_result const &allocation_result = test_allocation_results[index_to_free];
@@ -266,9 +261,7 @@ int main(int argc, char **argv)
                 // DEALLOCATION
                 while (!test_allocation_results.empty())
                 {
-                    long int r1;
-                    int res1 = lrand48_r(&rand_buf, &r1);
-                    assert(0 == res1);
+                    long int r1 = rand_r(&rand_buf);
                     size_t index_to_free = (r1 % test_allocation_results.size());
 
                     struct test_allocation_result const &allocation_result = test_allocation_results[index_to_free];
@@ -286,7 +279,7 @@ int main(int argc, char **argv)
     return 0;
 }
 
-static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_size, mcrt::scalable_allocator<struct allocation_size>> const &config_allocation_sizes, struct drand48_data &rand_buf, uint32_t &out_image_size_width, uint32_t &out_image_size_height)
+static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_size, mcrt::scalable_allocator<struct allocation_size>> const &config_allocation_sizes, unsigned &rand_buf, uint32_t &out_image_size_width, uint32_t &out_image_size_height)
 {
     uint32_t alloc_size_index = 0U;
     {
@@ -299,9 +292,7 @@ static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_
                 return sum + alloc_size.probability;
             });
 
-        long int r1;
-        int res1 = lrand48_r(&rand_buf, &r1);
-        assert(0 == res1);
+        long int r1 = rand_r(&rand_buf);
         r1 %= allocation_size_probability_sum;
         while (r1 >= config_allocation_sizes[alloc_size_index].probability)
         {
@@ -318,34 +309,24 @@ static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_
     }
     else
     {
-        long int r1;
-        int res1 = lrand48_r(&rand_buf, &r1);
-        assert(0 == res1);
+        long int r1 = rand_r(&rand_buf);
         out_image_size_width = alloc_size.image_size_min + (r1 % (alloc_size.image_size_max - alloc_size.image_size_min));
 
-        long int r2;
-        int res2 = lrand48_r(&rand_buf, &r2);
-        assert(0 == res2);
+        long int r2 = rand_r(&rand_buf);
         out_image_size_height = alloc_size.image_size_min + (r1 % (alloc_size.image_size_max - alloc_size.image_size_min));
     }
 }
 
-static inline void MainTest_Allocate(uint32_t image_size_width, uint32_t image_size_height, struct drand48_data &rand_buf, uint64_t &out_alignment, uint64_t &out_size)
+static inline void MainTest_Allocate(uint32_t image_size_width, uint32_t image_size_height, unsigned &rand_buf, uint64_t &out_alignment, uint64_t &out_size)
 {
 
     // simulate the "vkGetImageMemoryRequirements"
-    long int r1;
-    int res1 = lrand48_r(&rand_buf, &r1);
-    assert(0 == res1);
+    long int r1 = rand_r(&rand_buf);
     out_alignment = 1ULL << (8ULL + static_cast<uint64_t>(r1 % 6));
 
-    long int r2;
-    int res2 = lrand48_r(&rand_buf, &r2);
-    assert(0 == res2);
+    long int r2 = rand_r(&rand_buf);
 
-    long int r3;
-    int res3 = lrand48_r(&rand_buf, &r3);
-    assert(0 == res3);
+    long int r3 = rand_r(&rand_buf);
     out_size = (r2 % out_alignment) * (r3 % image_size_height) + 4ULL * image_size_width * image_size_height;
 }
 
