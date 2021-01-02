@@ -21,7 +21,7 @@
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_intrin.h>
 #include <assert.h>
-#include <stdio.h>
+//#include <stdio.h>
 
 // 1 -> 1 -> 1 -> 1 -> 1
 // |    |    |    |    |
@@ -204,7 +204,7 @@ int main(int argc, char **argv)
     // we can reuse the root task for next wait
     mcrt_task_destory(real_root);
 
-    printf("%i + %i = %i\n", value_top, value_left, value_top + value_left);
+    // printf("%i + %i = %i\n", value_top, value_left, value_top + value_left);
     if (15 == value_top && 20 == value_left)
     {
         return 0;

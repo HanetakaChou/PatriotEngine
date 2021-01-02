@@ -752,7 +752,6 @@ gfx_malloc::gfx_malloc()
 
 gfx_malloc::~gfx_malloc()
 {
-    int huhu = 0;
 }
 
 void gfx_malloc::transfer_dst_and_sampled_image_init(uint64_t page_size)

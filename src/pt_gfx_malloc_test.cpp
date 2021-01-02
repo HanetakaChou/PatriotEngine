@@ -91,7 +91,7 @@ int main(int argc, char **argv)
 {
     // PerformMainTests
     // 0 = small, 1 = large, 2 = small and large
-    uint32_t const small_vs_large_count = 1U;
+    uint32_t const small_vs_large_count = 3U;
     // 0 = varying sizes min...max, 1 = set of constant sizes
     uint32_t const constant_sizes_count = 1U;
     // 0 = 100%, additional_operations = 0, 1 = 50%, 2 = 5%, 3 = 95% additional_operations = a lot
@@ -277,7 +277,8 @@ int main(int argc, char **argv)
                     test_allocation_results.pop_back();
                 }
 
-                malloc_test.~gfx_malloc_test();
+                // implicit
+                // malloc_test.~gfx_malloc_test();
             }
         }
     }

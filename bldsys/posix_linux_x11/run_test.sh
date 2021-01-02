@@ -71,3 +71,10 @@ else
     echo "pt_general_acyclic_graphs_of_tasks failed"
     exit 1
 fi
+
+if "${OUT_DIR}/pt_gfx_malloc_test"; then
+    echo "pt_gfx_malloc_test passed"
+else
+    echo "pt_gfx_malloc_test failed"
+    exit 1
+fi
