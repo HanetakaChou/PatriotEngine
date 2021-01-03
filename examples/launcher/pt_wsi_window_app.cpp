@@ -6,7 +6,7 @@ static gfx_connection_ref my_gfx_connection = NULL;
 wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 {
     my_gfx_connection = gfx_connection;
-    return NULL;
+    return (wsi_window_app_ref)0xdeadbeef;
 }
 
 int wsi_window_app_main(wsi_window_app_ref wsi_window_app)

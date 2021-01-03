@@ -68,12 +68,20 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         application_info.apiVersion = VK_API_VERSION_1_0;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
+        constexpr uint32_t const MY_VK_HEADER_VERSION_COMPLETE = (VK_HEADER_VERSION_COMPLETE);
+        constexpr uint32_t const MY_VK_HEADER_VERSION_1_1_106 = (VK_MAKE_VERSION(1, 1, 106));
+#if (MY_VK_HEADER_VERSION_1_1_106 <= MY_VK_HEADER_VERSION_COMPLETE)
+        char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
+        instance_create_info.enabledLayerCount = 1;
+        instance_create_info.ppEnabledLayerNames = enabled_layer_names;
+#else
         //char const *enabled_layer_names[] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
         //instance_create_info.enabledLayerCount = 5;
         //instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-        char const *enabled_layer_names[1] = {"VK_LAYER_LUNARG_standard_validation"}; //VK_LAYER_LUNARG_standard_validation //VK_LAYER_KHRONOS_validation
+        char const *enabled_layer_names[1] = {"VK_LAYER_LUNARG_standard_validation"};
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
+#endif
         assert(platform_surface_extension_count() <= 2);
         char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, platform_surface_extension_name(0), platform_surface_extension_name(1)};
         instance_create_info.enabledExtensionCount = 1 + platform_surface_extension_count();
@@ -174,54 +182,53 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         PFN_vkGetPhysicalDeviceProperties vk_get_physical_device_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceProperties"));
         assert(NULL != vk_get_physical_device_properties);
 
-        m_physical_device = VK_NULL_HANDLE;
+        VkPhysicalDevice physical_device_integrated_gpu = VK_NULL_HANDLE;
+        VkDeviceSize physical_device_integrated_gpu_limits_buffer_image_granularity;
+        VkDeviceSize physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
+        VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
+        VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
+        VkDeviceSize physical_device_integrated_gpu_limits_non_coherent_atom_size;
+
+        for (int physical_device_index = 0; physical_device_index < physical_device_count; ++physical_device_index)
         {
-            VkPhysicalDevice physical_device_integrated_gpu = VK_NULL_HANDLE;
-            VkDeviceSize physical_device_integrated_gpu_limits_buffer_image_granularity;
-            VkDeviceSize physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
-            VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
-            VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
-            VkDeviceSize physical_device_integrated_gpu_limits_non_coherent_atom_size;
+            VkPhysicalDevice physical_device = physical_devices[physical_device_index];
 
-            for (int physical_device_index = 0; physical_device_index < physical_device_count; ++physical_device_index)
+            struct VkPhysicalDeviceProperties physical_device_properties;
+            vk_get_physical_device_properties(physical_device, &physical_device_properties);
+
+            // The lower index implies the user preference // e.g. VK_LAYER_MESA_device_select
+
+            if (VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == physical_device_properties.deviceType)
             {
-                VkPhysicalDevice physical_device = physical_devices[physical_device_index];
+                m_physical_device = physical_device;
+                m_physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
+                m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
+                m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
+                m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
+                m_physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
 
-                struct VkPhysicalDeviceProperties physical_device_properties;
-                vk_get_physical_device_properties(physical_device, &physical_device_properties);
-
-                // The lower index implies the user preference // e.g. VK_LAYER_MESA_device_select
-
-                if (VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == physical_device_properties.deviceType)
-                {
-                    m_physical_device = physical_device;
-                    m_physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
-                    m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
-                    m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
-                    m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
-                    m_physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
-
-                    // The lowest index for discrete GPU
-                    break;
-                }
-                else if ((VK_NULL_HANDLE != physical_device_integrated_gpu) && (VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_properties.deviceType))
-                {
-                    physical_device_integrated_gpu_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
-                    physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
-                    physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
-                    physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
-                    physical_device_integrated_gpu_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
-                }
+                // The lowest index for discrete GPU
+                break;
             }
-
-            if ((VK_NULL_HANDLE == m_physical_device) && (VK_NULL_HANDLE != physical_device_integrated_gpu))
+            else if ((VK_NULL_HANDLE == physical_device_integrated_gpu) && (VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_properties.deviceType))
             {
-                m_physical_device_limits_buffer_image_granularity = physical_device_integrated_gpu_limits_buffer_image_granularity;
-                m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
-                m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
-                m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
-                m_physical_device_limits_non_coherent_atom_size = physical_device_integrated_gpu_limits_non_coherent_atom_size;
+                physical_device_integrated_gpu = physical_device;
+                physical_device_integrated_gpu_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
+                physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
+                physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
+                physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
+                physical_device_integrated_gpu_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
             }
+        }
+
+        if ((VK_NULL_HANDLE == m_physical_device) && (VK_NULL_HANDLE != physical_device_integrated_gpu))
+        {
+            m_physical_device = physical_device_integrated_gpu;
+            m_physical_device_limits_buffer_image_granularity = physical_device_integrated_gpu_limits_buffer_image_granularity;
+            m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
+            m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
+            m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
+            m_physical_device_limits_non_coherent_atom_size = physical_device_integrated_gpu_limits_non_coherent_atom_size;
         }
     }
     if (VK_NULL_HANDLE == m_physical_device)
