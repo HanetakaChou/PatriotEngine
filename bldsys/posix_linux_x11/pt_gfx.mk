@@ -17,11 +17,11 @@
 
 LOCAL_PATH:= $(call my-dir)
 
-# libpt_gfx
+# libpt_gfx_wsi_window_x11
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_gfx
+LOCAL_MODULE := libpt_gfx_wsi_window_x11
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_export.cpp \

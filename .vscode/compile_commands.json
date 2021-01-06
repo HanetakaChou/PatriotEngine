@@ -101,13 +101,13 @@
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
-        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_posix_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_posix_linux_x11.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_posix_linux_x11.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_x11.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_x11.cpp"
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
-        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_app.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_app.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_app.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_app.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_app.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_app.cpp"
     },
     {
         "directory": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks",

@@ -15,36 +15,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_APP_MAIN_H_
-#define _PT_APP_MAIN_H_ 1
+#ifndef _PT_WSI_WINDOW_APP_H_
+#define _PT_WSI_WINDOW_APP_H_ 1
 
 #include <pt_gfx_connection.h>
 
-struct app_iwindow
+typedef struct _wsi_window_app_t_ *wsi_window_app_ref;
+
+wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection);
+
+struct wsi_window_app_event_t
 {
-    struct input_event_t
+    enum
     {
-        enum
-        {
-            MESSAGE_CODE_KEY_PRESS,
-            MESSAGE_CODE_QUIT
-        };
-
-        enum
-        {
-            KEY_SYM_W,
-        };
-
-        int32_t message_code;
-        int32_t message_data1;
-        int32_t message_data2;
+        MESSAGE_CODE_KEY_PRESS,
+        MESSAGE_CODE_QUIT
     };
 
-    virtual void listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data) = 0;
+    enum
+    {
+        KEY_SYM_W,
+    };
 
-    virtual void mark_app_has_quit() = 0;
+    int32_t message_code;
+    int32_t message_data1;
+    int32_t message_data2;
 };
 
-void app_init(struct app_iwindow *input, gfx_connection_ref gfx_connection);
+int wsi_window_app_main(wsi_window_app_ref wsi_window_app);
+
+void wsi_window_app_handle_event(wsi_window_app_ref wsi_window_app, struct wsi_window_app_event_t *wsi_window_app_event);
+
+void wsi_window_app_destroy(wsi_window_app_ref wsi_window_app);
 
 #endif

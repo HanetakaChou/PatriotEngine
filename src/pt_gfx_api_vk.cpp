@@ -71,7 +71,7 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         //char const *enabled_layer_names[] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
         //instance_create_info.enabledLayerCount = 5;
         //instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-        char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"}; //VK_LAYER_LUNARG_standard_validation
+        char const *enabled_layer_names[1] = {"VK_LAYER_LUNARG_standard_validation"}; //VK_LAYER_LUNARG_standard_validation //VK_LAYER_KHRONOS_validation
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
         assert(platform_surface_extension_count() <= 2);

@@ -17,15 +17,15 @@
 
 LOCAL_PATH:= $(call my-dir)
 
-# examples / pt_launcher
+# examples / pt_launcher_wsi_window_x11
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := pt_launcher
+LOCAL_MODULE := pt_launcher_wsi_window_x11
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_posix_linux_x11.cpp \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_app.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_app.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -38,6 +38,6 @@ LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dta
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx libpt_xcb
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx_wsi_window_x11 libpt_xcb
 
 include $(BUILD_EXECUTABLE)

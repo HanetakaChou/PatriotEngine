@@ -20,18 +20,18 @@
 #include <X11/keysym.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_wsi_window_posix_linux_x11.h"
+#include "pt_wsi_window_x11.h"
 
 int main(int argc, char **argv)
 {
-    shell_x11 shell;
-    shell.init();
-    shell.run();
-    shell.destroy();
+    wsi_window_x11 window_x11;
+    window_x11.init();
+    window_x11.run();
+    window_x11.destroy();
     return 0;
 }
 
-void shell_x11::init()
+void wsi_window_x11::init()
 {
     m_wsi_window_thread_id = mono_native_thread_id_get();
 
@@ -126,25 +126,29 @@ void shell_x11::init()
     assert(error_generic == NULL);
 
     // member
-    m_loop = true;
+    mcrt_atomic_store(&this->m_loop, true);
 
     // draw_request_thread
     m_gfx_connection = NULL;
     mcrt_atomic_store(&m_draw_request_thread_running, false);
-    bool res_draw_request = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
-    assert(res_draw_request);
+    bool res_draw_request_thread = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
+    assert(res_draw_request_thread);
     while (!mcrt_atomic_load(&m_draw_request_thread_running))
     {
         mcrt_os_yield();
     }
     assert(m_gfx_connection != NULL);
 
-    // app related
-    m_input_event_callback = NULL;
-    m_input_event_callback_user_data = NULL;
-    mcrt_atomic_store(&m_app_has_quit, false);
-    app_init(static_cast<app_iwindow *>(this), this->m_gfx_connection);
-    assert(m_input_event_callback != NULL);
+    // app_thread
+    m_wsi_window_app = NULL;
+    mcrt_atomic_store(&m_app_thread_running, false);
+    bool res_app_thread = mcrt_native_thread_create(&m_app_thread_id, app_main, this);
+    assert(res_app_thread);
+    while (!mcrt_atomic_load(&m_app_thread_running))
+    {
+        mcrt_os_yield();
+    }
+    assert(m_wsi_window_app != NULL);
 
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_alloc
@@ -153,15 +157,30 @@ void shell_x11::init()
     this->sync_keysyms();
 }
 
-void *shell_x11::draw_request_main(void *arg)
+inline wsi_connection_ref wsi_window_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
 {
-    shell_x11 *self = static_cast<shell_x11 *>(arg);
+    return reinterpret_cast<wsi_connection_ref>(wsi_connection);
+}
 
-    self->m_gfx_connection = gfx_connection_init(wrap(self->m_xcb_connection), wrap_visual(self->m_visual));
+inline wsi_visual_ref wsi_window_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
+{
+    return reinterpret_cast<wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
+}
+
+inline wsi_window_ref wsi_window_x11::wrap_wsi_window(xcb_window_t wsi_window)
+{
+    return reinterpret_cast<wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
+}
+
+void *wsi_window_x11::draw_request_main(void *arg)
+{
+    wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
+
+    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual));
     assert(self->m_gfx_connection != NULL);
     mcrt_atomic_store(&self->m_draw_request_thread_running, true);
 
-    while (self->m_loop)
+    while (mcrt_atomic_load(&self->m_loop))
     {
         // usage
         // on_redraw_needed
@@ -171,7 +190,7 @@ void *shell_x11::draw_request_main(void *arg)
         // gfx release //draw and present //draw //not sync scenetree
 
         // update scenetree
-        gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection, wrap_window(self->m_window), self->m_window_width, self->m_window_height);
+        gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection, wrap_wsi_window(self->m_window), self->m_window_width, self->m_window_height);
         // update animation etc
         gfx_connection_wsi_on_redraw_needed_release(self->m_gfx_connection);
     }
@@ -181,17 +200,24 @@ void *shell_x11::draw_request_main(void *arg)
     return NULL;
 }
 
-void shell_x11::listen_input_event(void (*input_event_callback)(struct input_event_t *input_event, void *user_data), void *user_data)
+void *wsi_window_x11::app_main(void *arg)
 {
-    assert(mono_native_thread_id_get() == m_wsi_window_thread_id);
+    wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    assert(m_input_event_callback == NULL);
-    assert(m_input_event_callback_user_data == NULL);
-    m_input_event_callback = input_event_callback;
-    m_input_event_callback_user_data = user_data;
+    self->m_wsi_window_app = wsi_window_app_init(self->m_gfx_connection);
+    assert(self->m_wsi_window_app != NULL);
+    mcrt_atomic_store(&self->m_app_thread_running, true);
+
+    int res = wsi_window_app_main(self->m_wsi_window_app);
+
+    mcrt_atomic_store(&self->m_loop, false);
+
+    //wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
+
+    return reinterpret_cast<void *>(static_cast<intptr_t>(res));
 }
 
-void shell_x11::sync_keysyms()
+void wsi_window_x11::sync_keysyms()
 {
     m_min_keycode = m_setup->min_keycode;
     m_max_keycode = m_setup->max_keycode;
@@ -224,7 +250,7 @@ void shell_x11::sync_keysyms()
     // libxkbcommon/tools/interactive-x11.c
 }
 
-xcb_keysym_t shell_x11::keycode_to_keysym(xcb_keycode_t keycode)
+xcb_keysym_t wsi_window_x11::keycode_to_keysym(xcb_keycode_t keycode)
 {
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_get_keysym
@@ -240,11 +266,11 @@ xcb_keysym_t shell_x11::keycode_to_keysym(xcb_keycode_t keycode)
     }
 }
 
-void shell_x11::run()
+void wsi_window_x11::run()
 {
     xcb_generic_event_t *event;
 
-    while (m_loop && ((event = xcb_wait_for_event(m_xcb_connection)) != NULL))
+    while (mcrt_atomic_load(&this->m_loop) && ((event = xcb_wait_for_event(m_xcb_connection)) != NULL))
     {
 
         // The most significant bit(uint8_t(0X80)) in this code is set if the event was generated from a SendEvent request.
@@ -267,9 +293,8 @@ void shell_x11::run()
                 {
                     assert(XK_W == keysym || XK_w == keysym);
 
-                    struct input_event_t input_event = {app_iwindow::input_event_t::MESSAGE_CODE_KEY_PRESS, app_iwindow::input_event_t::KEY_SYM_W, 0};
-                    assert(m_input_event_callback != NULL);
-                    m_input_event_callback(&input_event, m_input_event_callback_user_data);
+                    struct wsi_window_app_event_t wsi_window_app_event = {wsi_window_app_event_t::MESSAGE_CODE_KEY_PRESS, wsi_window_app_event_t::KEY_SYM_W, 0};
+                    wsi_window_app_handle_event(this->m_wsi_window_app, &wsi_window_app_event);
                 }
                 break;
                 case XK_Shift_L:
@@ -286,7 +311,7 @@ void shell_x11::run()
             assert(XCB_CONFIGURE_NOTIFY == (event->response_type & (~uint8_t(0X80))));
 
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-            gfx_connection_wsi_on_resized(m_gfx_connection, wrap_window(m_window), configure_notify->width, configure_notify->height);
+            gfx_connection_wsi_on_resized(m_gfx_connection, wrap_wsi_window(m_window), configure_notify->width, configure_notify->height);
         }
         break;
         case XCB_MAPPING_NOTIFY:
@@ -311,12 +336,11 @@ void shell_x11::run()
             // WM_DESTROY
             if (client_message->window == m_window && client_message->type == m_atom_wm_protocols && client_message->format == 32U && client_message->data.data32[0] == m_atom_wm_delete_window)
             {
-                m_loop = false;
+                mcrt_atomic_store(&this->m_loop, false);
 
                 //mcrt_atomic_store(&m_app_has_quit, false);
-                struct input_event_t input_event = {app_iwindow::input_event_t::MESSAGE_CODE_QUIT, 0, 0};
-                assert(m_input_event_callback != NULL);
-                m_input_event_callback(&input_event, m_input_event_callback_user_data);
+                struct wsi_window_app_event_t wsi_window_app_event = {wsi_window_app_event_t::MESSAGE_CODE_QUIT, 0, 0};
+                wsi_window_app_handle_event(this->m_wsi_window_app, &wsi_window_app_event);
 
                 //move xcb_destroy_window_checked here?
             }
@@ -332,19 +356,14 @@ void shell_x11::run()
     }
 }
 
-void shell_x11::mark_app_has_quit()
+void wsi_window_x11::destroy()
 {
-    //thread_id pending
-
-    mcrt_atomic_store(&m_app_has_quit, true);
-}
-
-void shell_x11::destroy()
-{
-    while (!mcrt_atomic_load(&m_app_has_quit))
+    mcrt_native_thread_join(m_app_thread_id);
+    while (!mcrt_atomic_load(&m_app_thread_running))
     {
         mcrt_os_yield();
     }
+    wsi_window_app_destroy(this->m_wsi_window_app);
 
     mcrt_native_thread_join(m_draw_request_thread_id);
     while (mcrt_atomic_load(&m_draw_request_thread_running))
