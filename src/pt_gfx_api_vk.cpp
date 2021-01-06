@@ -68,6 +68,7 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         application_info.apiVersion = VK_API_VERSION_1_0;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
+#if defined(VK_HEADER_VERSION_COMPLETE)
         constexpr uint32_t const MY_VK_HEADER_VERSION_COMPLETE = (VK_HEADER_VERSION_COMPLETE);
         constexpr uint32_t const MY_VK_HEADER_VERSION_1_1_106 = (VK_MAKE_VERSION(1, 1, 106));
 #if (MY_VK_HEADER_VERSION_1_1_106 <= MY_VK_HEADER_VERSION_COMPLETE)
@@ -75,11 +76,13 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
 #else
-        //char const *enabled_layer_names[] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
-        //instance_create_info.enabledLayerCount = 5;
-        //instance_create_info.ppEnabledLayerNames = enabled_layer_names;
         char const *enabled_layer_names[1] = {"VK_LAYER_LUNARG_standard_validation"};
         instance_create_info.enabledLayerCount = 1;
+        instance_create_info.ppEnabledLayerNames = enabled_layer_names;
+#endif
+#else
+        char const *enabled_layer_names[5] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
+        instance_create_info.enabledLayerCount = 5;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
 #endif
         assert(platform_surface_extension_count() <= 2);
