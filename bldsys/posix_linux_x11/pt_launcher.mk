@@ -41,3 +41,27 @@ LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx_wsi_window_x11 libpt_xcb
 
 include $(BUILD_EXECUTABLE)
+
+# examples / pt_launcher_wsi_bitmap
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := pt_launcher_wsi_bitmap
+
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_bitmap.cpp \
+
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+
+LOCAL_CPPFLAGS += -std=c++11
+
+LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
+LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
+LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
+
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx_wsi_bitmap
+
+include $(BUILD_EXECUTABLE)

@@ -110,6 +110,11 @@
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_app.cpp"
     },
     {
+        "directory": "${workspaceFolder}/examples/launcher",
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_bitmap.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_bitmap.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_bitmap.cpp"
+    },
+    {
         "directory": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks",
         "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks/main.cpp -o ${workspaceFolder}/obj/examples/mcrt/general_acyclic_graphs_of_tasks/main.o",
         "file": "${workspaceFolder}/examples/mcrt/general_acyclic_graphs_of_tasks/main.cpp"

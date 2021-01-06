@@ -21,7 +21,7 @@
             "type": "cppdbg",
             "request": "launch",
             //"preLaunchTask": "build-centos-glibc-debug-x86", //x86 doesn't support validation layer
-            "program": "${workspaceFolder}/bin/posix_linux_x11/x64/debug/pt_launcher_wsi_window_x11", //should set executable in obj here instead of the one in libs
+            "program": "${workspaceFolder}/bin/posix_linux_x11/x64/debug/pt_launcher_wsi_bitmap", //should set executable in obj here instead of the one in libs
             //"program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_general_acyclic_graphs_of_tasks", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,
