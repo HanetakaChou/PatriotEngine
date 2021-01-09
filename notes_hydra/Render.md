@@ -38,3 +38,34 @@ HdRprim
                 
 ---   
 HdChangeTracker
+
+
+---  
+Anim  
+  
+UsdSkelImagingSkeletonAdapter::Populate  
+  InsertSprim // register self as a SPRIM   
+
+HdSceneDelegate  
+  |  
+UsdImagingDelegate  
+   
+HdSprim    
+  |   
+HdExtComputation     
+  |   
+HdStExtComputation    
+   
+hdEngine::Execute    
+  HdRenderIndex::SyncAll   
+    SyncPrims //sprimIndex   
+      HdStExtComputation::Sync
+        UsdImagingDelegate::GetExtComputationInput    
+          UsdImagingDelegate::_UpdateSingleValue  //HdExtComputation::DirtySceneInput  
+            UsdSkelImagingSkeletonAdapter::UpdateForTime  
+              UsdSkelImagingSkeletonAdapter::_UpdateSkinningComputationForTime  
+              _ComputeSkinningTransforms //interpolate anime by time   
+
+
+_IsEnabledCPUComputations // skin by cpu (deprecated)  
+_IsEnabledAggregatorComputation // skin by compute shaer // not by vertex shader  
