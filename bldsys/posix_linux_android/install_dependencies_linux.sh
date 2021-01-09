@@ -41,7 +41,7 @@ else
     echo "extract aapt2-4.1.1-6503028-linux.jar failed"
     exit 1
 fi
-rm -rf aapt2-4.1.1-6503028-linux.jar
+rm -rf ${MY_DIR}/aapt2-4.1.1-6503028-linux.jar
 rm -rf ${MY_DIR}/META-INF
 rm -rf ${MY_DIR}/NOTICE
 

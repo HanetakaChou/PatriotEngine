@@ -1,1 +1,6 @@
-aapt2
+android-7.0
+android-10
+android-ndk-r14b
+bin
+libs
+obj
