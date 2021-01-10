@@ -28,7 +28,7 @@ REM Packaging
 
 MKDIR "%MY_DIR%/bin"
 
-"%MY_DIR%/android-10/aapt.exe" package -f --debug-mode -0 apk -M "%MY_DIR%/AndroidManifest.xml" -S "%MY_DIR%/res" -I "%MY_DIR%/android-7.0/android.jar" -F "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/debug/jni"    
+"%MY_DIR%/android-10/aapt.exe" package -f --debug-mode -0 apk -M "%MY_DIR%/AndroidManifest.xml" -S "%MY_DIR%/res" -I "%MY_DIR%/android-7.0/android.jar" -F "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/jni/debug"    
 
 REM https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manually-signing-the-apk#sign-the-apk
 java.exe -jar "%MY_DIR%/android-10/lib/apksigner.jar" sign -v --ks "%MY_DIR%/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk"
