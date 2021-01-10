@@ -1,0 +1,18 @@
+name: Android Debug (All APP_ABI) (Build On Windows)
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Android Dependencies (All APP_ABI) (On Windows)
+        run: sudo ./bldsys/posix_linux_android/install_dependencies_windows.bat
+      - name: Build Android Debug (All APP_ABI) (On Windows)
+        run: ./bldsys/posix_linux_android/build_windows.bat

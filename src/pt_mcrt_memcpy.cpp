@@ -30,9 +30,11 @@ extern void *rte_memcpy_avx(void *__restrict dest, void const *__restrict src, s
 extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
 #elif defined(PT_ARM64)
-#include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
-#elif defined(PT_ARM)
+#define rte_likely(x) PT_LIKELY((x))
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h"
+#undef rte_likely
+#elif defined(PT_ARM)
+#include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
 #else
 #endif
 

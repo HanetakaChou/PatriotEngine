@@ -21,7 +21,7 @@
 #if defined(PT_X64) || defined(PT_X86)
 #include <cpuid.h>
 #elif defined(PT_ARM64) || defined(PT_ARM)
-
+#include <assert.h>
 #else
 #error Unknown Architecture
 #endif

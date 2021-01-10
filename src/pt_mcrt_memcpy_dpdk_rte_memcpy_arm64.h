@@ -225,9 +225,9 @@ static __rte_always_inline void rte_memcpy_ge128(uint8_t *dst, const uint8_t *sr
         src += 128;
         dst += 128;
         n -= 128;
-    } while (likely(n >= 128));
+    } while (rte_likely(n >= 128));
 
-    if (likely(n))
+    if (rte_likely(n))
     {
         if (n <= 16)
             rte_mov16(dst - 16 + n, src - 16 + n);
@@ -273,9 +273,9 @@ static __rte_always_inline void rte_memcpy_ge64(uint8_t *dst, const uint8_t *src
         src += 64;
         dst += 64;
         n -= 64;
-    } while (likely(n >= 64));
+    } while (rte_likely(n >= 64));
 
-    if (likely(n))
+    if (rte_likely(n))
     {
         if (n <= 16)
             rte_mov16(dst - 16 + n, src - 16 + n);
@@ -303,7 +303,7 @@ static __rte_always_inline void *rte_memcpy(void *dst, const void *src, size_t n
     }
     __builtin_prefetch(src, 0, 0);
     __builtin_prefetch(dst, 1, 0);
-    if (likely(USE_RTE_MEMCPY(dst, src, n)))
+    if (rte_likely(USE_RTE_MEMCPY(dst, src, n)))
     {
         rte_memcpy_ge128((uint8_t *)dst, (const uint8_t *)src, n);
         return dst;
@@ -327,7 +327,7 @@ static __rte_always_inline void *rte_memcpy(void *dst, const void *src, size_t n
     }
     __builtin_prefetch(src, 0, 0);
     __builtin_prefetch(dst, 1, 0);
-    if (likely(USE_RTE_MEMCPY(dst, src, n)))
+    if (rte_likely(USE_RTE_MEMCPY(dst, src, n)))
     {
         rte_memcpy_ge64((uint8_t *)dst, (const uint8_t *)src, n);
         return dst;
