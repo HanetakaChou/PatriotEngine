@@ -68,6 +68,10 @@ else
 fi
 rm -rf "${MY_DIR}/build-tools_r29.0.3-linux.zip"
 
+rm -rf "${MY_DIR}/android-sdk/build-tools/29.0.3"
+mkdir -p "${MY_DIR}/android-sdk/build-tools/"
+mv -f "${MY_DIR}/android-10" "${MY_DIR}/android-sdk/build-tools/29.0.3"
+
 rm -rf  "${MY_DIR}/android-7.0"
 if unzip "${MY_DIR}/platform-24_r02.zip"; then 
     echo "unzip platform-24_r02.zip passed"
@@ -76,3 +80,7 @@ else
     exit 1
 fi
 rm -rf "${MY_DIR}/platform-24_r02.zip"
+
+rm -rf "${MY_DIR}/android-sdk/platforms/android-24"
+mkdir -p "${MY_DIR}/android-sdk/platforms/"
+mv -f "${MY_DIR}/android-7.0" "${MY_DIR}/android-sdk/platforms/android-24"
