@@ -13,8 +13,10 @@
 #define RTE_ARM64_MEMCPY_UNALIGNED_THRESHOLD 512
 
 #include <stdint.h>
-#include <arm_neon.h>
 #include "pt_mcrt_memcpy_dpdk_rte_common.h"
+
+#if defined(__ARM_NEON)
+#include <arm_neon.h>
 
 /*
  * The memory copy performance differs on different AArch64 micro-architectures.
@@ -178,6 +180,9 @@ rte_memcpy_lt16(uint8_t *dst, const uint8_t *src, size_t n)
         *dst = *src;
     }
 }
+#else
+#error Unknown Intrinsics
+#endif
 
 static __rte_always_inline void rte_memcpy_ge16_lt128(uint8_t *dst, const uint8_t *src, size_t n)
 {

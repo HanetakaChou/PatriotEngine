@@ -8,9 +8,10 @@
 #define _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM32_H_ 1
 
 #include <stdint.h>
-#include <arm_neon.h>
 #include "pt_mcrt_memcpy_dpdk_rte_common.h"
 
+#if defined(__ARM_NEON) && defined(__PT_MCRT_RTE_MEMCPY_ARM_NEON) 
+#include <arm_neon.h>
 static __rte_always_inline void rte_mov16(uint8_t *dst, const uint8_t *src)
 {
     vst1q_u8(dst, vld1q_u8(src));
@@ -117,6 +118,9 @@ static __rte_always_inline void rte_mov256(uint8_t *dst, const uint8_t *src)
           "d16", "d17", "d18", "d19", "d20", "d21", "d22", "d23",
           "d24", "d25", "d26", "d27", "d28", "d29", "d30", "d31");
 }
+#else
+#error Unknown Intrinsics
+#endif
 
 #define rte_memcpy(dst, src, n) \
     __extension__({ (__builtin_constant_p(n)) ? memcpy((dst), (src), (n)) : rte_memcpy_func((dst), (src), (n)); })

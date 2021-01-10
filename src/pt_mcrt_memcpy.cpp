@@ -34,8 +34,10 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h"
 #undef rte_likely
 #elif defined(PT_ARM)
-#include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
+extern void *rte_memcpy_arm_neon(void *__restrict dest, void const *__restrict src, size_t count);
+static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
 #else
+#error Unknown Architecture
 #endif
 
 PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
@@ -101,5 +103,10 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
 
         return rte_memcpy_helper(dest, src, count);
     }
+}
+#elif defined(PT_ARM)
+static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+{
+    return rte_memcpy_arm_neon(dest, src, count);
 }
 #endif

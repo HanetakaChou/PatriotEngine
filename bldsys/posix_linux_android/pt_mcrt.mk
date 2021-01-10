@@ -35,10 +35,6 @@ LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
 
 LOCAL_CPPFLAGS += -std=c++11
 
-ifeq (arm,$(TARGET_ARCH))
-LOCAL_ARM_NEON := true
-endif
-
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
 LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -48,7 +44,7 @@ LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_mcrt.def
 
 LOCAL_SHARED_LIBRARIES := libpt_tbbmalloc libpt_irml libpt_tbb
 
-LOCAL_STATIC_LIBRARIES := libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3
+LOCAL_STATIC_LIBRARIES := libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f libpt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3 libpt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
@@ -129,6 +125,30 @@ LOCAL_CFLAGS += -mssse3
 endif
 ifeq (x86,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mssse3 
+endif
+
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
+
+include $(BUILD_STATIC_LIBRARY)
+
+# -mavx512f / libpt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libpt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon
+
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp \
+
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+	
+LOCAL_CPPFLAGS += -std=c++11
+
+ifeq (arm,$(TARGET_ARCH))
+LOCAL_ARM_NEON := true
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
