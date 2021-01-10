@@ -28,23 +28,9 @@ cd ${MY_DIR}
 
 mkdir -p "${MY_DIR}/bin"
 
-# -crunch
-# "${MY_DIR}/android-10/aapt" crunch -v -S "${MY_DIR}/res" -C "${MY_DIR}/bin/res"
-
-# -package-resources
-#"${MY_DIR}/android-10/aapt" package --no-crunch -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml" -S "${MY_DIR}/bin/res" -I "${MY_DIR}/android-7.0/android.jar" -F "${MY_DIR}/bin/Android.Packaging.ap_" --generate-dependencies   
-
-# -apkbuilder
-# ANDROID_HOME/tools/ant/build.xml
-# ANDROID_HOME/tools/lib/ant-tasks.jar/ApkBuilderTask.class
-# java -classpath ANDROID_HOME/tools/lib/sdklib.jar com.android.sdklib.build.ApkBuilderMain
-
-"${MY_DIR}/android-10/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-7.0/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" --generate-dependencies "${MY_DIR}/jni/debug"    
-
-# jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore "${MY_DIR}/debug.keystore" -storepass android "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" androiddebugkey
+"${MY_DIR}/android-10/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-7.0/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/jni/debug"    
 
 # https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manually-signing-the-apk#sign-the-apk
 "${MY_DIR}/android-10/apksigner" sign -v --ks "${MY_DIR}/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk"
 
-# -do-debug
 "${MY_DIR}/android-10/zipalign" -f 4 "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/bin/Android.Packaging-debug.apk"

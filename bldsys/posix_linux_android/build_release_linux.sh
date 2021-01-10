@@ -28,8 +28,9 @@ cd ${MY_DIR}
 
 mkdir -p "${MY_DIR}/bin"
 
-"${MY_DIR}/android-10/aapt" package -f -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-7.0/android.jar" -F "${MY_DIR}/bin/Android.Packaging-release-unaligned.apk" --generate-dependencies "${MY_DIR}/jni/release"    
+"${MY_DIR}/android-10/aapt" package -f -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-7.0/android.jar" -F "${MY_DIR}/bin/Android.Packaging-release-unaligned.apk" "${MY_DIR}/jni/release"    
 
+# https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manually-signing-the-apk#sign-the-apk
 "${MY_DIR}/android-10/apksigner" sign -v --ks "${MY_DIR}/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "${MY_DIR}/bin/Android.Packaging-release-unaligned.apk"
 
 "${MY_DIR}/android-10/zipalign" -f 4 "${MY_DIR}/bin/Android.Packaging-release-unaligned.apk" "${MY_DIR}/bin/Android.Packaging-release.apk"
