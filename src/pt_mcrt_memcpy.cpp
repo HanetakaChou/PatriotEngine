@@ -15,26 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <pt_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_intrin.h>
 #if defined(PT_X64) || defined(PT_X86)
-static bool rte_memcpy_cpuid_done = false;
-static bool rte_memcpy_support_avx512f = false;
-static bool rte_memcpy_support_avx = false;
-static bool rte_memcpy_support_ssse3 = false;
-extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict src, size_t count);
-extern void *rte_memcpy_avx(void *__restrict dest, void const *__restrict src, size_t count);
-extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
 #elif defined(PT_ARM64)
+#include <string.h>
 #define rte_likely(x) PT_LIKELY((x))
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h"
 #undef rte_likely
 #elif defined(PT_ARM)
-extern void *rte_memcpy_arm_neon(void *__restrict dest, void const *__restrict src, size_t count);
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
 #else
 #error Unknown Architecture
@@ -47,6 +41,15 @@ PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restr
 }
 
 #if defined(PT_X64) || defined(PT_X86)
+#include <string.h>
+static bool rte_memcpy_cpuid_done = false;
+static bool rte_memcpy_support_avx512f = false;
+static bool rte_memcpy_support_avx = false;
+static bool rte_memcpy_support_ssse3 = false;
+extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict src, size_t count);
+extern void *rte_memcpy_avx(void *__restrict dest, void const *__restrict src, size_t count);
+extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
+
 static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restrict src, size_t count)
 {
     if (rte_memcpy_support_avx512f)
@@ -100,13 +103,66 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
         rte_memcpy_support_avx512f = (((f_7_EBX_ & (1U << 16U)) != 0) ? true : false);
         rte_memcpy_support_avx = (((f_1_ECX_ & (1U << 28U)) != 0) ? true : false);
         rte_memcpy_support_ssse3 = (((f_1_ECX_ & (1U << 9U)) != 0) ? true : false);
+        rte_memcpy_cpuid_done = true;
 
         return rte_memcpy_helper(dest, src, count);
     }
 }
+
 #elif defined(PT_ARM)
+
+#if defined(PT_POSIX)
+
+#if defined(PT_POSIX_LINUX)
+// https://android.googlesource.com/platform/ndk/+/master/sources/android/cpufeatures/cpu-features.c
+// ANDROID_CPU_ARM_FEATURE_NEON
+// https://android.googlesource.com/platform/bionic/+/master/libc/bionic/getauxval.cpp
+// __bionic_getauxval
+#include <asm/hwcap.h>
+#include <sys/auxv.h>
+#include <string.h>
+static bool rte_memcpy_getauxval_done = false;
+static bool rte_memcpy_support_arm_neon = false;
+extern void *rte_memcpy_arm_neon(void *__restrict dest, void const *__restrict src, size_t count);
+
+static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restrict src, size_t count)
+{
+    if (rte_memcpy_support_arm_neon)
+    {
+        return rte_memcpy_arm_neon(dest, src, count);
+    }
+    else
+    {
+        return memcpy(dest, src, count);
+    }
+}
+
+static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+{
+    if (PT_LIKELY(rte_memcpy_getauxval_done))
+    {
+        return rte_memcpy_helper(dest, src, count);
+    }
+    else
+    {
+        rte_memcpy_support_arm_neon = ((getauxval(AT_HWCAP) & HWCAP_NEON) != 0) ? true : false;
+        rte_memcpy_getauxval_done = true;
+        return rte_memcpy_helper(dest, src, count);
+    }
+}
+#elif defined(PT_POSIX_MACH)
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
     return rte_memcpy_arm_neon(dest, src, count);
 }
+#else
+#error Unknown Platform
+#endif
+
+#elif defined(PT_WIN32)
+#error To Be Done
+#else
+#error Unknown Platform
+#endif
+
 #endif

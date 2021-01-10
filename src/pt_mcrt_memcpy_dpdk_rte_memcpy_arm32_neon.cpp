@@ -19,6 +19,7 @@
 #include <pt_mcrt_common.h>
 
 #if defined(PT_ARM)
+#include <string.h>
 #define __PT_MCRT_RTE_MEMCPY_ARM_NEON 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
 
