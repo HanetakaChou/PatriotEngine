@@ -18,8 +18,6 @@ REM
 SET "MY_DIR=%~dp0"
 CD /d "%MY_DIR%"	 
 
-MKDIR "%MY_DIR%/bin"
-
 REM ndk-build
 
 call "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=jni/libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk
@@ -27,6 +25,8 @@ call "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=true NDK_PROJECT_PATH:
 ECHO ON
 
 REM Packaging
+
+MKDIR "%MY_DIR%/bin"
 
 REM -crunch
 REM "%MY_DIR%/android-10/aapt.exe" crunch -v -S "%MY_DIR%/res" -C "%MY_DIR%/bin/res"
@@ -47,4 +47,4 @@ REM https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manuall
 java.exe -jar "%MY_DIR%/android-10/lib/apksigner.jar" sign -v --ks "%MY_DIR%/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk"
 
 REM -do-debug
-"%MY_DIR%/android-10/zipalign.exe" -f 4 "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/bin/Android.Packaging.apk"
+"%MY_DIR%/android-10/zipalign.exe" -f 4 "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/bin/Android.Packaging-debug.apk"

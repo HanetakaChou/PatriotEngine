@@ -18,39 +18,61 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# https://developer.android.com/studio/command-line/aapt2
-# https://docs.oracle.com/javase/tutorial/deployment/jar/unpack.html
+# apt install curl
+# apt install unzip
 
 MY_DIR="$(readlink -f "$(dirname "$0")")"
 cd ${MY_DIR}
 
-rm -rf ${MY_DIR}/aapt2-4.1.1-6503028-linux.jar
-if curl -L https://dl.google.com/android/maven2/com/android/tools/build/aapt2/4.1.1-6503028/aapt2-4.1.1-6503028-linux.jar -o ${MY_DIR}/aapt2-4.1.1-6503028-linux.jar; then
-    echo "curl aapt2-4.1.1-6503028-linux.jar passed"
+rm -rf "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"
+if curl -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip -o "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"; then
+    echo "curl android-ndk-r14b-linux-x86_64.zip passed"
 else
-    echo "curl aapt2-4.1.1-6503028-linux.jar failed"
+    echo "curl android-ndk-r14b-linux-x86_64.zip failed"
     exit 1
 fi
 
-rm -rf ${MY_DIR}/META-INF
-rm -rf ${MY_DIR}/aapt2
-rm -rf ${MY_DIR}/NOTICE
-if jar xf ${MY_DIR}/aapt2-4.1.1-6503028-linux.jar; then 
-    echo "extract aapt2-4.1.1-6503028-linux.jar passed"
+# https://developer.android.com/studio/releases/build-tools
+rm -rf "${MY_DIR}/build-tools_r29.0.3-linux.zip"
+if curl -L https://dl.google.com/android/repository/build-tools_r29.0.3-linux.zip -o "${MY_DIR}/build-tools_r29.0.3-linux.zip"; then
+    echo "curl build-tools_r29.0.3-linux.zip passed"
 else
-    echo "extract aapt2-4.1.1-6503028-linux.jar failed"
-    exit 1
-fi
-rm -rf ${MY_DIR}/aapt2-4.1.1-6503028-linux.jar
-rm -rf ${MY_DIR}/META-INF
-rm -rf ${MY_DIR}/NOTICE
-
-if test -e ${MY_DIR}/aapt2; then
-    echo "${MY_DIR}/aapt2 exists"
-else
-    echo "${MY_DIR}/aapt2 doesn't exist"
+    echo "curl build-tools_r29.0.3-linux.zip failed"
     exit 1
 fi
 
+# https://developer.android.com/studio/releases/platform-tools
+rm -rf  "${MY_DIR}/platform-24_r02.zip"
+if curl -L https://dl.google.com/android/repository/platform-24_r02.zip -o "${MY_DIR}/platform-24_r02.zip"; then
+    echo "curl platform-24_r02.zip passed"
+else
+    echo "curl platform-24_r02.zip failed"
+    exit 1
+fi
 
+rm -rf "${MY_DIR}/android-ndk-r14b"
+if unzip "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"; then 
+    echo "unzip android-ndk-r14b-linux-x86_64.zip passed"
+else
+    echo "unzip android-ndk-r14b-linux-x86_64.zip failed"
+    exit 1
+fi
+rm -rf "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"
 
+rm -rf  "${MY_DIR}/android-10"
+if unzip "${MY_DIR}/build-tools_r29.0.3-linux.zip"; then 
+    echo "unzip build-tools_r29.0.3-linux.zip passed"
+else
+    echo "unzip build-tools_r29.0.3-linux.zip failed"
+    exit 1
+fi
+rm -rf "${MY_DIR}/build-tools_r29.0.3-linux.zip"
+
+rm -rf  "${MY_DIR}/android-7.0"
+if unzip "${MY_DIR}/platform-24_r02.zip"; then 
+    echo "unzip platform-24_r02.zip passed"
+else
+    echo "unzip platform-24_r02.zip failed"
+    exit 1
+fi
+rm -rf "${MY_DIR}/platform-24_r02.zip"
