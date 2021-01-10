@@ -49,6 +49,15 @@ else
     exit 1
 fi
 
+# https://developer.android.com/studio/releases/platform-tools
+rm -rf "${MY_DIR}/platform-tools_r29.0.6-linux.zip"
+if curl -L https://dl.google.com/android/repository/platform-tools_r29.0.6-linux.zip -o "${MY_DIR}/platform-tools_r29.0.6-linux.zip"; then
+    echo "curl platform-tools_r29.0.6-linux.zip passed"
+else
+    echo "curl platform-tools_r29.0.6-linux.zip failed"
+    exit 1
+fi
+
 rm -rf "${MY_DIR}/android-ndk-r14b"
 if unzip "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"; then 
     echo "unzip android-ndk-r14b-linux-x86_64.zip passed"
@@ -83,3 +92,16 @@ rm -rf "${MY_DIR}/platform-24_r02.zip"
 rm -rf "${MY_DIR}/android-sdk/platforms/android-24"
 mkdir -p "${MY_DIR}/android-sdk/platforms/"
 mv -f "${MY_DIR}/android-7.0" "${MY_DIR}/android-sdk/platforms/android-24"
+
+rm -rf  "${MY_DIR}/platform-tools"
+if unzip "${MY_DIR}/platform-tools_r29.0.6-linux.zip"; then 
+    echo "unzip platform-tools_r29.0.6-linux.zip passed"
+else
+    echo "unzip platform-tools_r29.0.6-linux.zip failed"
+    exit 1
+fi
+rm -rf "${MY_DIR}/platform-tools_r29.0.6-linux.zip"
+
+rm -rf "${MY_DIR}/android-sdk/platform-tools"
+mkdir -p "${MY_DIR}/android-sdk/"
+mv -f "${MY_DIR}/platform-tools" "${MY_DIR}/android-sdk/platform-tools"

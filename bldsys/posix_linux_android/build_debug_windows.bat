@@ -20,7 +20,7 @@ CD /d "%MY_DIR%"
 
 REM ndk-build
 
-CALL "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj/debug NDK_LIBS_OUT:=jni/debug/libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk
+CALL "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj/debug NDK_LIBS_OUT:=libs/debug/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk
 IF %ERRORLEVEL% NEQ 0 ( 
    EXIT 1
 )
@@ -31,7 +31,7 @@ REM Packaging
 
 MKDIR "%MY_DIR%/bin"
 
-"%MY_DIR%/android-sdk/build-tools/29.0.3/aapt.exe" package -f --debug-mode -0 apk -M "%MY_DIR%/AndroidManifest.xml" -S "%MY_DIR%/res" -I "%MY_DIR%/android-sdk/platforms/android-24/android.jar" -F "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/jni/debug"    
+"%MY_DIR%/android-sdk/build-tools/29.0.3/aapt.exe" package -f --debug-mode -0 apk -M "%MY_DIR%/AndroidManifest.xml" -S "%MY_DIR%/res" -I "%MY_DIR%/android-sdk/platforms/android-24/android.jar" -F "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk" "%MY_DIR%/libs/debug"    
 
 REM https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manually-signing-the-apk#sign-the-apk
 java.exe -jar "%MY_DIR%/android-sdk/build-tools/29.0.3/lib/apksigner.jar" sign -v --ks "%MY_DIR%/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "%MY_DIR%/bin/Android.Packaging-debug-unaligned.apk"
