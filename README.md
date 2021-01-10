@@ -81,9 +81,12 @@ Build Type | Status
 #### Posix Linux Android
   
 Build Type | Status     
-:-: | :-:       
+:-: | :-:     
+**Android Debug (All APP_ABI) (Build On Ubuntu LTS)** | [![Android Debug (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
+**Android Release (All APP_ABI) (Build On Ubuntu LTS)** | [![Android Release (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
 **Android Debug (All APP_ABI) (Build On Windows)** | [![Android Debug (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Windows%29%22)    
-        
+**Android Release (All APP_ABI) (Build On Windows)** | [![Android Release (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Windows%29%22)           
+
 #### Posix Mach        
      
 Build Type | Status      
