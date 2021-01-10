@@ -24,6 +24,8 @@ REM ndk-build
 
 call "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=jni/libs NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk
 
+ECHO ON
+
 REM Packaging
 
 REM -crunch
