@@ -27,10 +27,14 @@ DEL /f /q "%MY_DIR%/build-tools_r29.0.3-windows.zip"
 RMDIR /s /q "%MY_DIR%/build-tools_r29.0.3-windows.zip"
 "%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/build-tools_r29.0.3-windows.zip -o "%MY_DIR%/build-tools_r29.0.3-windows.zip"
 
-REM https://developer.android.com/studio/releases/platform-tools
 DEL /f /q "%MY_DIR%/platform-24_r02.zip"
 RMDIR /s /q "%MY_DIR%/platform-24_r02.zip"
 "%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/platform-24_r02.zip -o "%MY_DIR%/platform-24_r02.zip"
+
+REM https://developer.android.com/studio/releases/platform-tools
+DEL /f /q "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
+RMDIR /s /q "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
+"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/platform-tools_r29.0.6-windows.zip -o "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
 
 REM no unzip on windows
 REM https://docs.oracle.com/javase/tutorial/deployment/jar/unpack.html
@@ -60,6 +64,12 @@ RMDIR /s /q "%MY_DIR%/android-sdk/platforms/android-24"
 MKDIR "%MY_DIR%/android-sdk/platforms/"
 MOVE /y "%MY_DIR%/android-7.0" "%MY_DIR%/android-sdk/platforms/android-24"
 
-REM ANDROID_HOME/build-tools/29.0.3
-REM ANDROID_HOME/platforms/android-24
-REM platform-tools_r29.0.6-windows ANDROID_HOME/platform-tools
+DEL /f /q "%MY_DIR%/platform-tools"
+RMDIR /s /q "%MY_DIR%/platform-tools"
+jar.exe xf "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
+DEL /f /q "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
+
+DEL /f /q "%MY_DIR%/android-sdk/platform-tools"
+RMDIR /s /q "%MY_DIR%/android-sdk/platform-tools"
+MKDIR "%MY_DIR%/android-sdk/"
+MOVE /y "%MY_DIR%/platform-tools" "%MY_DIR%/android-sdk/platform-tools"

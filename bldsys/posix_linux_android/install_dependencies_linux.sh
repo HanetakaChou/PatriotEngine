@@ -41,7 +41,6 @@ else
     exit 1
 fi
 
-# https://developer.android.com/studio/releases/platform-tools
 rm -rf  "${MY_DIR}/platform-24_r02.zip"
 if curl -L https://dl.google.com/android/repository/platform-24_r02.zip -o "${MY_DIR}/platform-24_r02.zip"; then
     echo "curl platform-24_r02.zip passed"
