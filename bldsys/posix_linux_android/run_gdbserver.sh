@@ -28,6 +28,7 @@ cd ${MY_DIR}
 
 ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
+LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
 ARCH=arm64
 
 DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
@@ -85,10 +86,28 @@ fi
 # Kill the process and gdbserver if requested.
 KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}')
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
-    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}" # SIGKILL not support
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
+        echo "Killed ${KILL_PIDS}"
+    else
+        echo "Failed to kill ${KILL_PIDS}"
+        exit 1
+    fi  
 fi
 
 KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}')
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
-    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}" # SIGKILL not support
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
+        echo "Killed ${KILL_PIDS}"
+    else
+        echo "Failed to kill ${KILL_PIDS}"
+        exit 1
+    fi  
 fi
+
+COMPONENT_NAME="${PACKAGE_NAME}/${LAUNCH_ACTIVITY_NAME}"
+if "${ADB_CMD}" shell "am start -D ${COMPONENT_NAME}"; then 
+    echo "Launching activity ${COMPONENT_NAME}..."
+else
+    echo "Failed to start ${COMPONENT_NAME}"
+    exit 1
+fi 
