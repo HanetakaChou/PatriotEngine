@@ -37,9 +37,25 @@ mkdir -p "${MY_DIR}/bin"
 OUT_BINS="libpt_mcrt.so libpt_launcher_window_android.so"
 for i in ${OUT_BINS}
 do
-    #chrpath -r '$ORIGIN' ${INT_DIR}/${i}
+    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/arm64-v8a/${i}"
+    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/armeabi-v7a/${i}"
+    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86_64/${i}"
+    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86/${i}"
     cp -f "${MY_DIR}/obj/debug/local/arm64-v8a/${i}" "${MY_DIR}/libs/debug/lib/arm64-v8a/${i}"
+    cp -f "${MY_DIR}/obj/debug/local/armeabi-v7a/${i}" "${MY_DIR}/libs/debug/lib/armeabi-v7a/${i}"
+    cp -f "${MY_DIR}/obj/debug/local/x86_64/${i}" "${MY_DIR}/libs/debug/lib/x86_64/${i}"
+    cp -f "${MY_DIR}/obj/debug/local/x86/${i}" "${MY_DIR}/libs/debug/lib/x86/${i}"
 done
+
+# we upload the gdbserver manually in ndk-gdb.py
+rm -rf "${MY_DIR}/libs/debug/lib/arm64-v8a/gdb.setup"
+rm -rf "${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver"
+rm -rf "${MY_DIR}/libs/debug/lib/armeabi-v7a/gdb.setup"
+rm -rf "${MY_DIR}/libs/debug/lib/armeabi-v7a/gdbserver"
+rm -rf "${MY_DIR}/libs/debug/lib/x86_64/gdb.setup"
+rm -rf "${MY_DIR}/libs/debug/lib/x86_64/gdbserver"
+rm -rf "${MY_DIR}/libs/debug/lib/x86/gdb.setup"
+rm -rf "${MY_DIR}/libs/debug/lib/x86/gdbserver"
 
 "${MY_DIR}/android-sdk/build-tools/29.0.3/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-sdk/platforms/android-24/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/libs/debug"    
 

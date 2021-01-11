@@ -28,7 +28,7 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *pActivity, v
 	static bool bIsProcessCreate = true;
 	if (bIsProcessCreate)
 	{
-		// 
+		//
 		bIsProcessCreate = false;
 	}
 
@@ -67,7 +67,7 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *
 			while (AInputQueue_getEvent(input_queue, &input_event) >= 0)
 			{
 				//The app will be "No response" if we don't call AInputQueue_finishEvent and pass the non-zero value for all events which is not pre-dispatched.
-				if (0==AInputQueue_preDispatchEvent(input_queue, input_event))
+				if (0 == AInputQueue_preDispatchEvent(input_queue, input_event))
 				{
 					AInputEvent_getType(input_event);
 

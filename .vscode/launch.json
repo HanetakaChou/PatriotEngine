@@ -40,7 +40,7 @@
             "name": "(Linux Android) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/system/bin/app_process64", //should set executable in obj here instead of the one in libs
+            "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/app_process64", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bldsys/posix_linux_android",
@@ -50,7 +50,7 @@
             "targetArchitecture": "arm64",
             "MIMode": "gdb",
             "miDebuggerPath": "${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb",
-            "miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
+            //"miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
             "additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
             "setupCommands": [
                 {

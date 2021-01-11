@@ -26,12 +26,12 @@ cd ${MY_DIR}
 # android-ndk-r14b/python-packages/gdbrunner/__init__.py
 # gdbrunner.get_run_as_cmd
 
-ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
 LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
 ARCH=arm64
 DELAY=0.25s
 PORT=5039
+ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
 OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
 
 DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
@@ -57,7 +57,7 @@ if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/de
 else
     # We need to upload our gdbserver
     echo "App gdbserver not found at ${APP_GDBSERVER_PATH}, uploading."
-    LOCAL_PATH="${MY_DIR}/android-ndk-r14b/prebuilt/android-${ARCH}/gdbserver/gdbserver"
+    LOCAL_PATH="${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver"
     REMOTE_PATH="/data/local/tmp/${ARCH}-gdbserver"
     "${ADB_CMD}" push "${LOCAL_PATH}" "${REMOTE_PATH}"
 
@@ -112,6 +112,9 @@ if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     fi  
 fi
 
+# wait the kill since we don't have SIGKILL
+sleep ${DELAY} 
+
 # Launch the application if needed, and get its pid
 COMPONENT_NAME="${PACKAGE_NAME}/${LAUNCH_ACTIVITY_NAME}"
 if "${ADB_CMD}" shell "am start ${COMPONENT_NAME}"; then # -D # wait java
@@ -121,7 +124,8 @@ else
     exit 1
 fi 
 
-sleep ${DELAY} # wait the activity to launch
+# wait the activity to launch
+sleep ${DELAY} 
 
 PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
 LEN_PIDS=0
@@ -141,16 +145,15 @@ if test 1 -lt ${LEN_PIDS}; then
 fi
 PID=${PIDS}
 
-# Pull the linker, zygote, and notable system libraries
-mkdir -p "${OUT_DIR}/system/bin"
-mkdir -p "${OUT_DIR}/system/lib64"
-REQUIRED_FILES="/system/bin/app_process64 /system/lib64/libc.so /system/lib64/libm.so /system/lib64/libdl.so"
-for REQUIRED_FILE in ${REQUIRED_FILES}
-do
-    LOCAL_PATH="${OUT_DIR}/${REQUIRED_FILE}"
-    echo "Pulling "${REQUIRED_FILE}" to "${LOCAL_PATH}""
-    "${ADB_CMD}" pull "${REQUIRED_FILE}" "${LOCAL_PATH}"
-done
+# Pull the zygote
+ZYGOTE_REMOTE_PATH="/system/bin/app_process64"
+ZYGOTE_LOCAL_PATH="${OUT_DIR}/app_process64"
+if "${ADB_CMD}" pull "${ZYGOTE_REMOTE_PATH}" "${ZYGOTE_LOCAL_PATH}"; then
+    echo "Pulling "${ZYGOTE_REMOTE_PATH}" to "${ZYGOTE_LOCAL_PATH}""
+else
+    echo "Failed to pull "${ZYGOTE_REMOTE_PATH}" to "${ZYGOTE_LOCAL_PATH}""
+    exit 1
+fi
 
 # Start gdbserver.
 DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
