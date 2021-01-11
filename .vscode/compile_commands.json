@@ -111,6 +111,11 @@
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
+        "command": "clang++ -c -xc++ -std=c++11 -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_android.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_android.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_android.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
         "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_bitmap.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_bitmap.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_bitmap.cpp"
     },

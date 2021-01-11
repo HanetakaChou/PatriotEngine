@@ -33,10 +33,13 @@ fi
 
 mkdir -p "${MY_DIR}/bin"
 
-# help vscode find symbol
-# rm -rf "${MY_DIR}/libs/debug"
-# mkdir -p "${MY_DIR}/libs/debug"
-# cp -rf "${MY_DIR}/obj/debug/local" "${MY_DIR}/libs/debug/lib"
+# help vscode find the symbol
+OUT_BINS="libpt_mcrt.so libpt_launcher_window_android.so"
+for i in ${OUT_BINS}
+do
+    #chrpath -r '$ORIGIN' ${INT_DIR}/${i}
+    cp -f "${MY_DIR}/obj/debug/local/arm64-v8a/${i}" "${MY_DIR}/libs/debug/lib/arm64-v8a/${i}"
+done
 
 "${MY_DIR}/android-sdk/build-tools/29.0.3/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-sdk/platforms/android-24/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/libs/debug"    
 

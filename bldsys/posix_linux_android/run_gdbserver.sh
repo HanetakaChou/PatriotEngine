@@ -32,6 +32,7 @@ LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
 ARCH=arm64
 DELAY=0.25s
 PORT=5039
+OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
 
 DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
 if test -z ${DATA_DIR}; then
@@ -50,7 +51,7 @@ else
 fi
 APP_DATA_DIR="${DATA_DIR}"
 
-APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/gdbserver"
+APP_GDBSERVER_PATH="${APP_DATA_DIR}/${ARCH}-gdbserver"
 if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/dev/null 2>/dev/null"; then
     echo "Found app gdbserver: ${APP_GDBSERVER_PATH}"
 else
@@ -62,24 +63,22 @@ else
 
     # Copy gdbserver into the data directory on M+, because selinux prevents
     # execution of binaries directly from /data/local/tmp.
-    DESTINATION="${APP_DATA_DIR}/${ARCH}-gdbserver"
+    DESTINATION="${APP_GDBSERVER_PATH}"
+    
     echo "Copying gdbserver to ${DESTINATION}."
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"; then
-        # "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" stat "${DESTINATION}""
         echo "Uploaded gdbserver to ${DESTINATION}"
     else
         echo "Failed to chmod gdbserver at ${DESTINATION}."
         exit 1
     fi
-    REMOTE_PATH="${DESTINATION}"
-    APP_GDBSERVER_PATH="${REMOTE_PATH}"
-fi
 
-# custom
-if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_GDBSERVER_PATH}""; then
-    echo "Made ${APP_GDBSERVER_PATH} executable"
-else
-    echo "Failed to make ${APP_GDBSERVER_PATH} executable"
+    # Make gdbserver executable
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_GDBSERVER_PATH}""; then
+        echo "Made ${APP_GDBSERVER_PATH} executable"
+    else
+        echo "Failed to make ${APP_GDBSERVER_PATH} executable"
+    fi
 fi
 
 if "${ADB_CMD}" shell "ls /system/bin/readlink 1>/dev/null 2>/dev/null"; then
@@ -143,6 +142,15 @@ fi
 PID=${PIDS}
 
 # Pull the linker, zygote, and notable system libraries
+mkdir -p "${OUT_DIR}/system/bin"
+mkdir -p "${OUT_DIR}/system/lib64"
+REQUIRED_FILES="/system/bin/app_process64 /system/lib64/libc.so /system/lib64/libm.so /system/lib64/libdl.so"
+for REQUIRED_FILE in ${REQUIRED_FILES}
+do
+    LOCAL_PATH="${OUT_DIR}/${REQUIRED_FILE}"
+    echo "Pulling "${REQUIRED_FILE}" to "${LOCAL_PATH}""
+    "${ADB_CMD}" pull "${REQUIRED_FILE}" "${LOCAL_PATH}"
+done
 
 # Start gdbserver.
 DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
