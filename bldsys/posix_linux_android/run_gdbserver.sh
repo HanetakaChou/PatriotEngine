@@ -49,7 +49,7 @@ fi
 APP_DATA_DIR="${DATA_DIR}"
 
 APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/gdbserver"
-if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" '2>/dev/null'"; then
+if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/dev/null 2>/dev/null"; then
     echo "Found app gdbserver: ${APP_GDBSERVER_PATH}"
 else
     # We need to upload our gdbserver
@@ -84,7 +84,7 @@ else
 fi
 
 # Kill the process and gdbserver if requested.
-KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}')
+KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}' | xargs) 
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
         echo "Killed ${KILL_PIDS}"
@@ -94,7 +94,7 @@ if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     fi  
 fi
 
-KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}')
+KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
         echo "Killed ${KILL_PIDS}"
@@ -104,6 +104,7 @@ if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     fi  
 fi
 
+# Launch the application if needed, and get its pid
 COMPONENT_NAME="${PACKAGE_NAME}/${LAUNCH_ACTIVITY_NAME}"
 if "${ADB_CMD}" shell "am start -D ${COMPONENT_NAME}"; then 
     echo "Launching activity ${COMPONENT_NAME}..."
@@ -111,3 +112,10 @@ else
     echo "Failed to start ${COMPONENT_NAME}"
     exit 1
 fi 
+
+PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
+for PID in ${PIDS}
+do
+    echo ${PID}
+done
+
