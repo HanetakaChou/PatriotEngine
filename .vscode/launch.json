@@ -35,6 +35,7 @@
                 }
             ]
         },
+        //https://android.googlesource.com/platform/development/+/master/scripts/gdbclient.py/generate_vscode_gdb_script
         {
             "name": "(Linux Android) Launch",
             "type": "cppdbg",
