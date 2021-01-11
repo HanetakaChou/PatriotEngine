@@ -28,11 +28,12 @@ cd ${MY_DIR}
 
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
 LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
+ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
+GDBSERVER_CMD="${MY_DIR}/bin/arm64-v8a/gdbserver"
+OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
 ARCH=arm64
 DELAY=0.25s
 PORT=5039
-ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
-OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
 
 DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
 if test -z ${DATA_DIR}; then
@@ -57,7 +58,7 @@ if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/de
     echo "Found app gdbserver: ${APP_GDBSERVER_PATH}"
 else
     # We need to upload our gdbserver
-    LOCAL_PATH="${MY_DIR}/android-ndk-r14b/prebuilt/android-${ARCH}/gdbserver/gdbserver"
+    LOCAL_PATH="${GDBSERVER_CMD}"
     REMOTE_PATH="/data/local/tmp/${APP_GDBSERVER_PATH}"
     if "${ADB_CMD}" push "${LOCAL_PATH}" "${REMOTE_PATH}"; then
         echo "App gdbserver not found at ${APP_GDBSERVER_PATH}, uploaded to ${REMOTE_PATH}."

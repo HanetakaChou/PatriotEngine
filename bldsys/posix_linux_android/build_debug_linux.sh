@@ -49,7 +49,11 @@ done
 
 # we upload the gdbserver manually in ndk-gdb.py
 rm -rf "${MY_DIR}/libs/debug/lib/arm64-v8a/gdb.setup"
-rm -rf "${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver"
+
+# used by ndk_gdbserver_linux.sh
+mkdir -p "${MY_DIR}/bin/arm64-v8a"
+mv -f "${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver" "${MY_DIR}/bin/arm64-v8a/gdbserver"
+
 rm -rf "${MY_DIR}/libs/debug/lib/armeabi-v7a/gdb.setup"
 rm -rf "${MY_DIR}/libs/debug/lib/armeabi-v7a/gdbserver"
 rm -rf "${MY_DIR}/libs/debug/lib/x86_64/gdb.setup"

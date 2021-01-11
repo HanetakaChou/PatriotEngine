@@ -41,7 +41,11 @@ FOR %%i in (%OUT_BINS%) do (
 
 REM we upload the gdbserver manually in ndk-gdb.py
 DEL /f /q "%MY_DIR%\libs\debug\lib\arm64-v8a\gdb.setup"
-DEL /f /q "%MY_DIR%\libs\debug\lib\arm64-v8a\gdbserver"
+
+REM used by ndk_gdbserver_windows.m
+MKDIR "%MY_DIR%/bin/arm64-v8a"
+MOVE -y "%MY_DIR%\libs\debug\lib\arm64-v8a\gdbserver" "%MY_DIR%/bin/arm64-v8a/gdbserver" 
+
 DEL /f /q "%MY_DIR%\libs\debug\lib\armeabi-v7a\gdb.setup"
 DEL /f /q "%MY_DIR%\libs\debug\lib\armeabi-v7a\gdbserver"
 DEL /f /q "%MY_DIR%\libs\debug\lib\x86_64\gdb.setup"
@@ -49,7 +53,7 @@ DEL /f /q "%MY_DIR%\libs\debug\lib\x86_64\gdbserver"
 DEL /f /q "%MY_DIR%\libs\debug\lib\x86\gdb.setup"
 DEL /f /q "%MY_DIR%\libs\debug\lib\x86\gdbserver"
 RMDIR /s /q "%MY_DIR%\libs\debug\lib\arm64-v8a\gdb.setup" 2>NUL
-RMDIR /s /q "%MY_DIR%\libs\debug\lib\arm64-v8a\gdbserver" 2>NUL
+RMDIR /s /q "%MY_DIR%\libs\debug\lib\arm64-v8a\gdbserver" 2>NUL 
 RMDIR /s /q "%MY_DIR%\libs\debug\lib\armeabi-v7a\gdb.setup" 2>NUL
 RMDIR /s /q "%MY_DIR%\libs\debug\lib\armeabi-v7a\gdbserver" 2>NUL
 RMDIR /s /q "%MY_DIR%\libs\debug\lib\x86_64\gdb.setup" 2>NUL
