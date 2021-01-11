@@ -48,36 +48,47 @@ if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${DATA_DIR}""; then #
     echo "Found application data directory: ${DATA_DIR}"
 else
     echo "Failed to make application data directory world executable"
+    exit 1
 fi
 APP_DATA_DIR="${DATA_DIR}"
 
-APP_GDBSERVER_PATH="${APP_DATA_DIR}/${ARCH}-gdbserver"
+APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/${ARCH}/gdbserver"
 if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/dev/null 2>/dev/null"; then
     echo "Found app gdbserver: ${APP_GDBSERVER_PATH}"
 else
     # We need to upload our gdbserver
-    echo "App gdbserver not found at ${APP_GDBSERVER_PATH}, uploading."
-    LOCAL_PATH="${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver"
-    REMOTE_PATH="/data/local/tmp/${ARCH}-gdbserver"
-    "${ADB_CMD}" push "${LOCAL_PATH}" "${REMOTE_PATH}"
+    LOCAL_PATH="${MY_DIR}/android-ndk-r14b/prebuilt/android-${ARCH}/gdbserver/gdbserver"
+    REMOTE_PATH="/data/local/tmp/${APP_GDBSERVER_PATH}"
+    if "${ADB_CMD}" push "${LOCAL_PATH}" "${REMOTE_PATH}"; then
+        echo "App gdbserver not found at ${APP_GDBSERVER_PATH}, uploaded to ${REMOTE_PATH}."
+    else
+        echo "Failed to upload gdbserver to ${REMOTE_PATH}."
+        exit 1
+    fi
 
     # Copy gdbserver into the data directory on M+, because selinux prevents
     # execution of binaries directly from /data/local/tmp.
     DESTINATION="${APP_GDBSERVER_PATH}"
     
-    echo "Copying gdbserver to ${DESTINATION}."
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" mkdir -p "$(dirname "${DESTINATION}")""; then
+        echo "Mkdir "$(dirname "${DESTINATION}")"."
+    else
+        echo "Failed to mkdir "$(dirname "${DESTINATION}")"."
+        exit 1
+    fi
+
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"; then
+        echo "Copied gdbserver to ${DESTINATION}."
+    else
+        echo "Failed to copy gdbserver to ${DESTINATION}."
+        exit 1
+    fi
+
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${DESTINATION}""; then
         echo "Uploaded gdbserver to ${DESTINATION}"
     else
         echo "Failed to chmod gdbserver at ${DESTINATION}."
         exit 1
-    fi
-
-    # Make gdbserver executable
-    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_GDBSERVER_PATH}""; then
-        echo "Made ${APP_GDBSERVER_PATH} executable"
-    else
-        echo "Failed to make ${APP_GDBSERVER_PATH} executable"
     fi
 fi
 
@@ -115,6 +126,18 @@ fi
 # wait the kill since we don't have SIGKILL
 sleep ${DELAY} 
 
+PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
+LEN_PIDS=0
+for PID in ${PIDS}
+do
+   LEN_PIDS=$((LEN_PIDS+1))
+done
+
+if test '!' '(' 0 -eq ${LEN_PIDS} ')'; then
+    echo "Failed to kill running process "${PACKAGE_NAME}"" # you may increase the delay
+    exit 1
+fi
+
 # Launch the application if needed, and get its pid
 COMPONENT_NAME="${PACKAGE_NAME}/${LAUNCH_ACTIVITY_NAME}"
 if "${ADB_CMD}" shell "am start ${COMPONENT_NAME}"; then # -D # wait java
@@ -149,15 +172,12 @@ PID=${PIDS}
 ZYGOTE_REMOTE_PATH="/system/bin/app_process64"
 ZYGOTE_LOCAL_PATH="${OUT_DIR}/app_process64"
 if "${ADB_CMD}" pull "${ZYGOTE_REMOTE_PATH}" "${ZYGOTE_LOCAL_PATH}"; then
-    echo "Pulling "${ZYGOTE_REMOTE_PATH}" to "${ZYGOTE_LOCAL_PATH}""
+    echo "Pulled "${ZYGOTE_REMOTE_PATH}" to "${ZYGOTE_LOCAL_PATH}""
 else
     echo "Failed to pull "${ZYGOTE_REMOTE_PATH}" to "${ZYGOTE_LOCAL_PATH}""
     exit 1
 fi
 
-# Start gdbserver.
-DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
-echo "Starting gdbserver..."
 #
 # Start gdbserver in the background and forward necessary ports.
 #
@@ -174,11 +194,16 @@ echo "Starting gdbserver..."
 #   Returns:
 #       Popen handle to the `adb shell` process gdbserver was started with.
 #
-GDBSERVER_REMOTE_PATH=${APP_GDBSERVER_PATH}
-TARGET_PID=${PID}
+DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
 
-# ${GDBSERVER_REMOTE_PATH }--once
-"${ADB_CMD}" forward "tcp:${PORT}" "localfilesystem:${DEBUG_SOCKET}"
+if "${ADB_CMD}" forward "tcp:${PORT}" "localfilesystem:${DEBUG_SOCKET}"; then
+    echo "Starting gdbserver..."
+else
+    echo "Failed to forward "tcp:${PORT}" "localfilesystem:${DEBUG_SOCKET}"."
+    exit 1
+fi
 trap ""${ADB_CMD}" forward --remove "tcp:${PORT}"" EXIT
 
+GDBSERVER_REMOTE_PATH=${APP_GDBSERVER_PATH}
+TARGET_PID=${PID}
 "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ${GDBSERVER_REMOTE_PATH} --once +"${DEBUG_SOCKET}" --attach ${TARGET_PID}"
