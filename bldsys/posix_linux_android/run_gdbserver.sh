@@ -45,7 +45,7 @@ if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${DATA_DIR}""; then #
 else
     echo "Failed to make application data directory world executable"
 fi
-APP_DATA_DIR=${DATA_DIR}
+APP_DATA_DIR="${DATA_DIR}"
 
 APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/gdbserver"
 if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" '2>/dev/null'"; then
@@ -61,5 +61,15 @@ else
     # execution of binaries directly from /data/local/tmp.
     DESTINATION="${APP_DATA_DIR}/${ARCH}-gdbserver"
     echo "Copying gdbserver to ${DESTINATION}."
-    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"; then
+        # "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" stat "${DESTINATION}""
+        echo "Uploaded gdbserver to ${DESTINATION}"
+    else
+        echo "Failed to chmod gdbserver at ${DESTINATION}."
+        exit 1
+    fi
+    REMOTE_PATH="${DESTINATION}"
+    APP_GDBSERVER_PATH="${REMOTE_PATH}"
 fi
+
+echo ${APP_GDBSERVER_PATH}
