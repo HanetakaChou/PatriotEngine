@@ -30,7 +30,7 @@ ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
 ARCH=arm64
 
-DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c pwd '2>/dev/null'" | xargs)"
+DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
 if test -z ${DATA_DIR}; then
     echo "Could not find application's data directory. Are you sure that the application is installed and debuggable?"
     exit 1
@@ -72,9 +72,23 @@ else
     APP_GDBSERVER_PATH="${REMOTE_PATH}"
 fi
 
-PS_REALPATH=$("${ADB_CMD}" shell "readlink /system/bin/ps")
-if test "${PS_REALPATH}" = "toolbox"; then
-    PS_SCRIPT="ps"
+if "${ADB_CMD}" shell "ls /system/bin/readlink 1>/dev/null 2>/dev/null"; then
+    if test "$("${ADB_CMD}" shell "readlink /system/bin/ps")" = "toolbox"; then
+        PS_SCRIPT="ps"
+    else
+        PS_SCRIPT="ps -w"
+    fi
 else
-    PS_SCRIPT="ps -w"
+    PS_SCRIPT="ps"
+fi
+
+# Kill the process and gdbserver if requested.
+KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}')
+if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
+    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}" # SIGKILL not support
+fi
+
+KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}')
+if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
+    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}" # SIGKILL not support
 fi
