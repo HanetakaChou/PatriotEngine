@@ -19,6 +19,8 @@ LOCAL_PATH:= $(call my-dir)
 
 include $(LOCAL_PATH)/pt_mcrt.mk
 
+include $(LOCAL_PATH)/pt_launcher.mk
+
 # intel_tbb / libpt_tbbmalloc 
 
 include $(CLEAR_VARS)
