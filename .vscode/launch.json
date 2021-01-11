@@ -43,18 +43,12 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                //{
-                //"name": "DISPLAY",
-                //"value": "" //NVIDIA driver
-                //"value": ":0.0"
-                //}
-            ],
+            "environment": [],
             "externalConsole": false,
             "miDebuggerServerAddress": "localhost:5039", //Use gdbserver
-            //"targetArchitecture": "arm64",
+            "targetArchitecture": "arm64",
             "MIMode": "gdb",
-            //"miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            "miDebuggerPath": "${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb",
             "miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
             "additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
             "setupCommands": [
