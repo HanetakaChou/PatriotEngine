@@ -59,7 +59,7 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 static void ANativeActivity_onDestroy(ANativeActivity *native_activity)
 {
 	assert(native_activity == wsi_window_andoird_native_activity);
-	wsi_window_andoird_native_activity == NULL;
+	wsi_window_andoird_native_activity = NULL;
 }
 
 static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue)

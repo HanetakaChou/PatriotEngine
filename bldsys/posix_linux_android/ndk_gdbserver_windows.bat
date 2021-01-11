@@ -1,3 +1,4 @@
+ECHO OFF
 REM
 REM Copyright (C) YuqiaoZhang(HanetakaYuminaga)
 REM 
@@ -18,19 +19,24 @@ REM
 SET "MY_DIR=%~dp0"
 CD /d "%MY_DIR%"
 
-ECHO OFF
 REM https://developer.android.com/studio/debug#debug-types
 REM android-ndk-r14b/prebuilt/windows-x86_64/bin/ndk-gdb.py
 REM android-ndk-r14b/python-packages/gdbrunner/__init__.py
 REM gdbrunner.get_run_as_cmd
-ECHO ON
+
+REM The windows batch is too ??? we use the octave script
 
 REM CALL "%MY_DIR%/android-sdk/platform-tools/adb.exe" shell am start -a android.intent.action.MAIN -c android-intent.category.LAUNCH -n YuqiaoZhang.HanetakaYuminaga.PatriotEngine/android.app.NativeActivity
 
-SET PACKAGE_NAME=com.Android1
-
-FOR /f "delims=" %%a in ('"%MY_DIR%/android-sdk/platform-tools/adb.exe" shell run-as %PACKAGE_NAME% /system/bin/sh -c pwd') DO ( SET APP_DATA_DIR=%%a )
-ECHO %APP_DATA_DIR%
+SET PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
+SET "ADB_CMD=%MY_DIR%/android-sdk/platform-tools/adb.exe"
+SET "ECHO_CMD=%MY_DIR%/android-ndk-r14b/prebuilt/windows-x86_64/bin/echo.exe"
+REM "%ADB_CMD%" shell "run-as "%PACKAGE_NAME%" sh -c 'pwd' 2>/dev/null"
+REM FOR /f "tokens=* USEBACKQ" %%a in (`"%ADB_CMD%" shell "run-as "%PACKAGE_NAME%" sh -c 'pwd' 2>/dev/null"`) do ( SET APP_DATA_DIR=%%a )
+REM ECHO "%ECHO_CMD%" %APP_DATA_DIR%1
+FOR /f "delims=" %%a in (' "%MY_DIR%/android-sdk/platform-tools/adb.exe" shell "run-as %PACKAGE_NAME% /system/bin/sh -c pwd" ') DO ( SET APP_DATA_DIR=%%a )
+ "%ECHO_CMD%" %APP_DATA_DIR%1
+REM ECHO %APP_DATA_DIR%
 REM awk to trim string
 
-"%MY_DIR%/android-sdk/platform-tools/adb.exe" shell run-as %PACKAGE_NAME% "/system/bin/chmod" "a+x" "%APP_DATA_DIR%"
+REM "%MY_DIR%/android-sdk/platform-tools/adb.exe" shell run-as %PACKAGE_NAME% "/system/bin/chmod" "a+x" "%APP_DATA_DIR%"
