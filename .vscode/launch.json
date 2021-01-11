@@ -51,7 +51,7 @@
             "MIMode": "gdb",
             "miDebuggerPath": "${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb",
             //"miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
-            "additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
+            //"additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
             "setupCommands": [
                 {
                     "description": "Enable pretty-printing for gdb",

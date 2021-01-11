@@ -20,39 +20,52 @@
 #include <android/native_activity.h>
 #include <assert.h>
 
-static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *input_queue);
-static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *, AInputQueue *input_queue);
+static void ANativeActivity_onDestroy(ANativeActivity *native_activity);
+static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue);
+static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue);
+static ANativeActivity *wsi_window_andoird_native_activity = NULL;
 
-extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *pActivity, void *, size_t)
+extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *, size_t)
 {
-	static bool bIsProcessCreate = true;
-	if (bIsProcessCreate)
+	static bool app_process_on_create = true;
+	if (app_process_on_create)
 	{
 		//
-		bIsProcessCreate = false;
+
+		app_process_on_create = false;
 	}
 
-	pActivity->callbacks->onStart = NULL;
-	pActivity->callbacks->onResume = NULL;
-	pActivity->callbacks->onSaveInstanceState = NULL;
-	pActivity->callbacks->onPause = NULL;
-	pActivity->callbacks->onStop = NULL;
-	pActivity->callbacks->onDestroy = NULL;
+	native_activity->callbacks->onStart = NULL;
+	native_activity->callbacks->onResume = NULL;
+	native_activity->callbacks->onSaveInstanceState = NULL;
+	native_activity->callbacks->onPause = NULL;
+	native_activity->callbacks->onStop = NULL;
+	native_activity->callbacks->onDestroy = ANativeActivity_onDestroy;
 
-	pActivity->callbacks->onWindowFocusChanged = NULL;
-	pActivity->callbacks->onNativeWindowCreated = NULL;
-	pActivity->callbacks->onNativeWindowResized = NULL;
-	pActivity->callbacks->onNativeWindowRedrawNeeded = NULL;
-	pActivity->callbacks->onNativeWindowDestroyed = NULL;
-	pActivity->callbacks->onInputQueueCreated = ANativeActivity_onInputQueueCreated;
-	pActivity->callbacks->onInputQueueDestroyed = ANativeActivity_onInputQueueDestroyed;
-	pActivity->callbacks->onContentRectChanged = NULL;
-	pActivity->callbacks->onConfigurationChanged = NULL;
-	pActivity->callbacks->onLowMemory = NULL;
+	native_activity->callbacks->onWindowFocusChanged = NULL;
+	native_activity->callbacks->onNativeWindowCreated = NULL;
+	native_activity->callbacks->onNativeWindowResized = NULL;
+	native_activity->callbacks->onNativeWindowRedrawNeeded = NULL;
+	native_activity->callbacks->onNativeWindowDestroyed = NULL;
+	native_activity->callbacks->onInputQueueCreated = ANativeActivity_onInputQueueCreated;
+	native_activity->callbacks->onInputQueueDestroyed = ANativeActivity_onInputQueueDestroyed;
+	native_activity->callbacks->onContentRectChanged = NULL;
+	native_activity->callbacks->onConfigurationChanged = NULL;
+	native_activity->callbacks->onLowMemory = NULL;
+
+	wsi_window_andoird_native_activity = native_activity;
 }
 
-static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *input_queue)
+static void ANativeActivity_onDestroy(ANativeActivity *native_activity)
 {
+	assert(native_activity == wsi_window_andoird_native_activity);
+	wsi_window_andoird_native_activity == NULL;
+}
+
+static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue)
+{
+	assert(native_activity == wsi_window_andoird_native_activity);
+
 	ALooper *looper = ALooper_forThread();
 	assert(looper != NULL);
 
@@ -69,22 +82,45 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *, AInputQueue *
 				//The app will be "No response" if we don't call AInputQueue_finishEvent and pass the non-zero value for all events which is not pre-dispatched.
 				if (0 == AInputQueue_preDispatchEvent(input_queue, input_event))
 				{
-					AInputEvent_getType(input_event);
+					int handled = 0;
 
-					//EventInputCallback
+					int32_t type = AInputEvent_getType(input_event);
+					switch (type)
+					{
+					case AINPUT_EVENT_TYPE_KEY:
+					{
+						int32_t key_code = AKeyEvent_getKeyCode(input_event);
+						switch (key_code)
+						{
+						case AKEYCODE_HOME:
+						{
+							assert(NULL != wsi_window_andoird_native_activity);
+							ANativeActivity_finish(wsi_window_andoird_native_activity);
+							handled = 1;
+						}
+						break;
+						default:
+							break;
+						}
+					}
+					break;
+					default:
+						break;
+					}
 
-					AInputQueue_finishEvent(input_queue, input_event, 1);
+					AInputQueue_finishEvent(input_queue, input_event, handled);
 				}
 			}
-
 			return 1;
 		},
 		input_queue);
 }
 
-static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *, AInputQueue *input_queue)
+static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue)
 {
-	ALooper *looper = ::ALooper_forThread();
+	assert(native_activity == wsi_window_andoird_native_activity);
+
+	ALooper *looper = ALooper_forThread();
 	assert(looper != NULL);
 
 	AInputQueue_detachLooper(input_queue);
