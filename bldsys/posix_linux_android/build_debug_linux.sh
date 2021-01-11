@@ -33,10 +33,13 @@ fi
 
 mkdir -p "${MY_DIR}/bin"
 
+# help vscode find symbol
+rm -rf "${MY_DIR}/libs/debug"
+cp -rf "${MY_DIR}/obj/debug/local" "${MY_DIR}/libs/debug"
+
 "${MY_DIR}/android-sdk/build-tools/29.0.3/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-sdk/platforms/android-24/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/libs/debug"    
 
 "${MY_DIR}/android-sdk/build-tools/29.0.3/zipalign" -f 4 "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/bin/Android.Packaging-debug.apk"
 
 # https://docs.microsoft.com/en-us/xamarin/android/deploy-test/signing/manually-signing-the-apk#sign-the-apk
 "${MY_DIR}/android-sdk/build-tools/29.0.3/apksigner" sign -v --ks "${MY_DIR}/debug.keystore" --ks-pass pass:android --ks-key-alias androiddebugkey "${MY_DIR}/bin/Android.Packaging-debug.apk"
-
