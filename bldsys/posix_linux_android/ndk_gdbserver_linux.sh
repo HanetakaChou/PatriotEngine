@@ -103,7 +103,7 @@ else
     PS_SCRIPT="ps"
 fi
 
-# Kill the process and gdbserver if requested.
+# Kill the gdbserver if requested.
 KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}' | xargs) 
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
@@ -114,6 +114,7 @@ if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     fi  
 fi
 
+# Kill the process if requested.
 KILL_PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
 if test '!' '(' '-z' "${KILL_PIDS}" ')'; then
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" kill ${KILL_PIDS}"; then # SIGKILL not support
@@ -127,7 +128,7 @@ fi
 # wait the kill since we don't have SIGKILL
 sleep ${DELAY} 
 
-PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${PACKAGE_NAME}" | awk '{print $2}' | xargs) 
+PIDS=$("${ADB_CMD}" shell ${PS_SCRIPT} | grep "${APP_GDBSERVER_PATH}" | awk '{print $2}' | xargs) 
 LEN_PIDS=0
 for PID in ${PIDS}
 do
@@ -135,7 +136,7 @@ do
 done
 
 if test '!' '(' 0 -eq ${LEN_PIDS} ')'; then
-    echo "Failed to kill running process "${PACKAGE_NAME}"" # you may increase the delay
+    echo "Failed to kill "${APP_GDBSERVER_PATH}"" # we may increase the delay
     exit 1
 fi
 

@@ -23,9 +23,11 @@ MY_DIR=fileparts(mfilename("fullpathext"))
 % gdbrunner.get_run_as_cmd
 
 PACKAGE_NAME="YuqiaoZhang.HanetakaYuminaga.PatriotEngine"
+LAUNCH_ACTIVITY_NAME="android.app.NativeActivity"
 ADB_CMD=cstrcat(MY_DIR,"/android-sdk/platform-tools/adb")
 GDBSERVER_CMD=cstrcat(MY_DIR,"/bin/arm64-v8a/gdbserver")
 ARCH="arm64"
+DELAY=0.25
 
 CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " sh -c \'pwd\' 2>/dev/null\"")
 [CMD_STATUS, DATA_DIR]=system(CMD)
@@ -110,14 +112,62 @@ else
   PS_SCRIPT="ps"
 endif
 
-# Kill the process and gdbserver if requested.
+% Kill the gdbserver if requested.
 CMD=cstrcat(ADB_CMD," shell sh -c \'", PS_SCRIPT, " | grep ", APP_GDBSERVER_PATH," | awk \'\"\'\"\'{print $2}\'\"\'\"\' | xargs\'") 
 [CMD_STATUS, KILL_PIDS]=system(CMD)
 KILL_PIDS=strtrim(KILL_PIDS);
 KILL_PIDS=strsplit(KILL_PIDS)
-if 1==numel(KILL_PIDS) && isempty(KILL_PIDS{1})
+if !(1==numel(KILL_PIDS) && isempty(KILL_PIDS{1}))
   for k = 1:numel(KILL_PIDS)
-    CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " kill ", KILL_PIDS{k},"\"")
+    CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " kill ", KILL_PIDS{k},"\"") % SIGKILL not support
     CMD_STATUS=system(CMD)
+    if 0 == CMD_STATUS
+       disp(cstrcat("Killed ", KILL_PIDS{k}, "."))
+    else
+       disp(cstrcat("Failed to kill ", KILL_PIDS{k}, "."))
+       exit 1
+    endif
   endfor
 endif
+
+% Kill the process if requested.
+CMD=cstrcat(ADB_CMD," shell sh -c \'", PS_SCRIPT, " | grep ", PACKAGE_NAME," | awk \'\"\'\"\'{print $2}\'\"\'\"\' | xargs\'") 
+[CMD_STATUS, KILL_PIDS]=system(CMD)
+KILL_PIDS=strtrim(KILL_PIDS);
+KILL_PIDS=strsplit(KILL_PIDS)
+if !(1==numel(KILL_PIDS) && isempty(KILL_PIDS{1}))
+  for k = 1:numel(KILL_PIDS)
+    CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " kill ", KILL_PIDS{k},"\"") % SIGKILL not support
+    CMD_STATUS=system(CMD)
+    if 0 == CMD_STATUS
+       disp(cstrcat("Killed ", KILL_PIDS{k}, "."))
+    else
+       disp(cstrcat("Failed to kill ", KILL_PIDS{k}, "."))
+       exit 1
+    endif
+  endfor
+endif
+
+% wait the kill since we don't have SIGKILL
+pause(DELAY)
+
+CMD=cstrcat(ADB_CMD," shell sh -c \'", PS_SCRIPT, " | grep ", APP_GDBSERVER_PATH," | awk \'\"\'\"\'{print $2}\'\"\'\"\' | xargs\'") 
+[CMD_STATUS, KILL_PIDS]=system(CMD)
+KILL_PIDS=strtrim(KILL_PIDS);
+KILL_PIDS=strsplit(KILL_PIDS)
+if !(1==numel(KILL_PIDS) && isempty(KILL_PIDS{1}))
+  disp(cstrcat("Failed to kill running process ", APP_GDBSERVER_PATH, ".")) # we may increase the delay
+  exit 1
+endif
+
+% Launch the application if needed, and get its pid
+COMPONENT_NAME=cstrcat(PACKAGE_NAME,'/', LAUNCH_ACTIVITY_NAME)
+CMD=cstrcat(ADB_CMD," shell \"am start ",COMPONENT_NAME, " 2>&1\"") % -D % wait java
+[CMD_STATUS, CMD_OUTPUT]=system(CMD)
+CMD_OUTPUT=strtrim(CMD_OUTPUT)
+if 0 == CMD_STATUS && isempty(strfind(CMD_OUTPUT,"Error"))
+  disp(cstrcat("Launching activity ", COMPONENT_NAME, "..."))
+else
+  disp(cstrcat("Failed to start ", COMPONENT_NAME))
+  exit 1
+endif 
