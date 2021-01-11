@@ -72,4 +72,9 @@ else
     APP_GDBSERVER_PATH="${REMOTE_PATH}"
 fi
 
-echo ${APP_GDBSERVER_PATH}
+PS_REALPATH=$("${ADB_CMD}" shell "readlink /system/bin/ps")
+if test "${PS_REALPATH}" = "toolbox"; then
+    PS_SCRIPT="ps"
+else
+    PS_SCRIPT="ps -w"
+fi
