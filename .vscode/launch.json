@@ -5,19 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(MacOSX) Launch",
-            "type": "cppdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/PatriotEngine-MacOSX.app/Contents/MacOS/PatriotEngine-MacOSX",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "externalConsole": false,
-            "MIMode": "lldb"
-        },
-        {
-            "name": "(Linux) Launch",
+            "name": "(Linux X11) Launch",
             "type": "cppdbg",
             "request": "launch",
             //"preLaunchTask": "build-centos-glibc-debug-x86", //x86 doesn't support validation layer
@@ -46,6 +34,48 @@
                     "ignoreFailures": false //true
                 }
             ]
-        }
+        },
+        {
+            "name": "(Linux Android) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/libpt_launcher_window_android.so", //should set executable in obj here instead of the one in libs
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                //{
+                //"name": "DISPLAY",
+                //"value": "" //NVIDIA driver
+                //"value": ":0.0"
+                //}
+            ],
+            "externalConsole": false,
+            "miDebuggerServerAddress": "localhost:5039", //Use gdbserver
+            //"targetArchitecture": "arm64",
+            "MIMode": "gdb",
+            //"miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            "miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
+            "additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": false //true
+                }
+            ]
+        },
+        {
+            "name": "(MacOSX) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/PatriotEngine-MacOSX.app/Contents/MacOS/PatriotEngine-MacOSX",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
     ]
 }
