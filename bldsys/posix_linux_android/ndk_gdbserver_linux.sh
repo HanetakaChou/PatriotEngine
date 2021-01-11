@@ -1,5 +1,4 @@
- 
-#!/bin/bash
+ #!/bin/bash
 
 #
 # Copyright (C) YuqiaoZhang(HanetakaYuminaga)
