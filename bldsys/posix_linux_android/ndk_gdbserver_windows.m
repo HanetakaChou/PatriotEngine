@@ -24,10 +24,12 @@ MY_DIR=fileparts(mfilename("fullpathext"))
 
 PACKAGE_NAME="YuqiaoZhang.HanetakaYuminaga.PatriotEngine"
 LAUNCH_ACTIVITY_NAME="android.app.NativeActivity"
-ADB_CMD=cstrcat(MY_DIR,"/android-sdk/platform-tools/adb")
-GDBSERVER_CMD=cstrcat(MY_DIR,"/bin/arm64-v8a/gdbserver")
+global ADB_CMD=cstrcat(MY_DIR, "/android-sdk/platform-tools/adb")
+GDBSERVER_CMD=cstrcat(MY_DIR, "/bin/arm64-v8a/gdbserver")
+OUT_DIR=cstrcat(MY_DIR, "/obj/debug/local/arm64-v8a")
 ARCH="arm64"
 DELAY=0.25
+global PORT="5039"
 
 CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " sh -c \'pwd\' 2>/dev/null\"")
 [CMD_STATUS, DATA_DIR]=system(CMD)
@@ -171,3 +173,69 @@ else
   disp(cstrcat("Failed to start ", COMPONENT_NAME))
   exit 1
 endif 
+
+% wait the activity to launch
+pause(DELAY)
+
+CMD=cstrcat(ADB_CMD," shell sh -c \'", PS_SCRIPT, " | grep ", PACKAGE_NAME," | awk \'\"\'\"\'{print $2}\'\"\'\"\' | xargs\'") 
+[CMD_STATUS, PIDS]=system(CMD)
+PIDS=strtrim(PIDS);
+PIDS=strsplit(PIDS)
+if 1==numel(PIDS) 
+  if !isempty(PIDS{1})
+    PID=PIDS{1}
+  else
+    disp(cstrcat("Failed to find running process ", PACKAGE_NAME, "."))    
+    exit 1
+  endif
+else
+  disp(cstrcat("Multiple running processes named ", PACKAGE_NAME, "."))    
+  exit 1
+endif
+
+% Pull the zygote
+ZYGOTE_REMOTE_PATH="/system/bin/app_process64"
+ZYGOTE_LOCAL_PATH=cstrcat(OUT_DIR, "/app_process64")
+CMD=cstrcat(ADB_CMD," pull ", ZYGOTE_REMOTE_PATH, " ", ZYGOTE_LOCAL_PATH)
+CMD_STATUS=system(CMD)
+if 0 == CMD_STATUS
+    disp(cstrcat("Pulled ", ZYGOTE_REMOTE_PATH, " to ", ZYGOTE_LOCAL_PATH))    
+else
+    disp(cstrcat("Failed to pulled ", ZYGOTE_REMOTE_PATH, " to ", ZYGOTE_LOCAL_PATH))    
+    exit 1
+endif
+
+%
+% Start gdbserver in the background and forward necessary ports.
+%
+% Args:
+%   device: ADB device to start gdbserver on.
+%   gdbserver_local_path: Host path to push gdbserver from, can be None.
+%   gdbserver_remote_path: Device path to push gdbserver to.
+%   target_pid: PID of device process to attach to.
+%   run_cmd: Command to run on the device.
+%   debug_socket: Device path to place gdbserver unix domain socket.
+%   port: Host port to forward the debug_socket to.
+%   user: Device user to run gdbserver as.
+%
+%   Returns:
+%       Popen handle to the `adb shell` process gdbserver was started with.
+%
+DEBUG_SOCKET=cstrcat(APP_DATA_DIR,"/debug_socket")
+
+CMD=cstrcat(ADB_CMD," forward tcp:", PORT, " localfilesystem:", DEBUG_SOCKET)
+CMD_STATUS=system(CMD)
+if 0 == CMD_STATUS
+    disp("Starting gdbserver...")
+else
+    disp(cstrcat("Failed to forward tcp:", PORT," localfilesystem:", DEBUG_SOCKET, "."))
+    exit 1
+endif
+
+GDBSERVER_REMOTE_PATH=APP_GDBSERVER_PATH
+TARGET_PID=PID
+CMD=cstrcat(ADB_CMD," shell \"run-as ", PACKAGE_NAME, " ", GDBSERVER_REMOTE_PATH, " --once +", DEBUG_SOCKET, " --attach ", TARGET_PID, "\"")
+CMD_STATUS=system(CMD)
+
+CMD=cstrcat(ADB_CMD," forward --remove tcp:", PORT)
+CMD_STATUS=system(CMD)
