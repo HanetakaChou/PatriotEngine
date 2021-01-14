@@ -114,7 +114,7 @@ fi
 
 # before execute change the rpath to \$ORIGIN    
 # fix me: define the $ORIGIN correctly in the Linux_X11.mk
-for i in ${OUT_BINS}
+for i in "${OUT_BINS[@]}"
 do
     chrpath -r '$ORIGIN' ${INT_DIR}/${i} 
 done
@@ -123,7 +123,7 @@ done
 mkdir -p ${OUT_DIR}
 
 # copy the unstriped so to out dir
-for i in ${OUT_BINS}
+for i in "${OUT_BINS[@]}"
 do
     rm -rf ${OUT_DIR}/${i}
     cp -f ${INT_DIR}/${i} ${OUT_DIR}/

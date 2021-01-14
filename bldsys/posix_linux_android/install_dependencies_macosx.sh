@@ -55,7 +55,7 @@ else
 fi
 
 rm -rf "${MY_DIR}/android-ndk-r14b"
-if unzip "${MY_DIR}/android-ndk-r14b-darwin-x86_64.zip"; then 
+if unzip "${MY_DIR}/android-ndk-r14b-darwin-x86_64.zip" -d "${MY_DIR}/"; then 
     echo "unzip android-ndk-r14b-darwin-x86_64.zip passed"
 else
     echo "unzip android-ndk-r14b-darwin-x86_64.zip failed"
