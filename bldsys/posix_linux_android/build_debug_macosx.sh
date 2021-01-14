@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 #
 # Copyright (C) YuqiaoZhang(HanetakaYuminaga)
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-MY_DIR="$(readlink -f "$(dirname "$0")")"
+MY_DIR="$(dirname "$0")"
 cd ${MY_DIR}
 
 # ndk-build
@@ -37,10 +37,10 @@ mkdir -p "${MY_DIR}/bin"
 OUT_BINS=("libpt_mcrt.so" "libpt_launcher_window_android.so")
 for i in "${OUT_BINS[@]}"
 do
-    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/arm64-v8a/${i}"
-    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/armeabi-v7a/${i}"
-    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86_64/${i}"
-    chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86/${i}"
+    # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/arm64-v8a/${i}"
+    # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/armeabi-v7a/${i}"
+    # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86_64/${i}"
+    # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/x86/${i}"
     cp -f "${MY_DIR}/obj/debug/local/arm64-v8a/${i}" "${MY_DIR}/libs/debug/lib/arm64-v8a/${i}"
     cp -f "${MY_DIR}/obj/debug/local/armeabi-v7a/${i}" "${MY_DIR}/libs/debug/lib/armeabi-v7a/${i}"
     cp -f "${MY_DIR}/obj/debug/local/x86_64/${i}" "${MY_DIR}/libs/debug/lib/x86_64/${i}"
@@ -50,7 +50,7 @@ done
 # we upload the gdbserver manually in ndk-gdb.py
 rm -rf "${MY_DIR}/libs/debug/lib/arm64-v8a/gdb.setup"
 
-# used by ndk_gdbserver_linux.sh
+# used by ndk_gdbserver_macosx.sh
 mkdir -p "${MY_DIR}/bin/arm64-v8a"
 mv -f "${MY_DIR}/libs/debug/lib/arm64-v8a/gdbserver" "${MY_DIR}/bin/arm64-v8a/gdbserver"
 
