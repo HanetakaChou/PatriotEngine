@@ -64,7 +64,7 @@ fi
 rm -rf "${MY_DIR}/android-ndk-r14b-darwin-x86_64.zip"
 
 rm -rf  "${MY_DIR}/android-10"
-if unzip "${MY_DIR}/build-tools_r29.0.3-macosx.zip"; then 
+if unzip "${MY_DIR}/build-tools_r29.0.3-macosx.zip" -d "${MY_DIR}/"; then 
     echo "unzip build-tools_r29.0.3-macosx.zip passed"
 else
     echo "unzip build-tools_r29.0.3-macosx.zip failed"
@@ -82,7 +82,7 @@ else
 fi
 
 rm -rf  "${MY_DIR}/android-7.0"
-if unzip "${MY_DIR}/platform-24_r02.zip"; then 
+if unzip "${MY_DIR}/platform-24_r02.zip" -d "${MY_DIR}/"; then 
     echo "unzip platform-24_r02.zip passed"
 else
     echo "unzip platform-24_r02.zip failed"
@@ -100,7 +100,7 @@ else
 fi
 
 rm -rf  "${MY_DIR}/platform-tools"
-if unzip "${MY_DIR}/platform-tools_r29.0.6-darwin.zip"; then 
+if unzip "${MY_DIR}/platform-tools_r29.0.6-darwin.zip" -d "${MY_DIR}/"; then 
     echo "unzip platform-tools_r29.0.6-darwin.zip passed"
 else
     echo "unzip platform-tools_r29.0.6-darwin.zip failed"
@@ -116,5 +116,3 @@ else
     echo "mv platform-tools_r29.0.6-darwin.zip failed"
     exit 1
 fi
-
-exit 0
