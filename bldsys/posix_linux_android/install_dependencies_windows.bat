@@ -21,21 +21,21 @@ CD /d "%MY_DIR%"
 
 DEL /f /q "%MY_DIR%/android-ndk-r14b-windows-x86_64.zip" 2>NUL
 RMDIR /s /q "%MY_DIR%/android-ndk-r14b-windows-x86_64.zip" 2>NUL
-"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/android-ndk-r14b-windows-x86_64.zip -o "%MY_DIR%/android-ndk-r14b-windows-x86_64.zip"
+"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -o "%MY_DIR%/android-ndk-r14b-windows-x86_64.zip" -L https://dl.google.com/android/repository/android-ndk-r14b-windows-x86_64.zip
 
 REM https://developer.android.com/studio/releases/build-tools
 DEL /f /q "%MY_DIR%/build-tools_r29.0.3-windows.zip" 2>NUL
 RMDIR /s /q "%MY_DIR%/build-tools_r29.0.3-windows.zip" 2>NUL
-"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/build-tools_r29.0.3-windows.zip -o "%MY_DIR%/build-tools_r29.0.3-windows.zip"
+"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -o "%MY_DIR%/build-tools_r29.0.3-windows.zip" -L https://dl.google.com/android/repository/build-tools_r29.0.3-windows.zip
 
 DEL /f /q "%MY_DIR%/platform-24_r02.zip" 2>NUL
 RMDIR /s /q "%MY_DIR%/platform-24_r02.zip" 2>NUL
-"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/platform-24_r02.zip -o "%MY_DIR%/platform-24_r02.zip"
+"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -o "%MY_DIR%/platform-24_r02.zip" -L https://dl.google.com/android/repository/platform-24_r02.zip
 
 REM https://developer.android.com/studio/releases/platform-tools
 DEL /f /q "%MY_DIR%/platform-tools_r29.0.6-windows.zip" 2>NUL
 RMDIR /s /q "%MY_DIR%/platform-tools_r29.0.6-windows.zip" 2>NUL
-"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -L https://dl.google.com/android/repository/platform-tools_r29.0.6-windows.zip -o "%MY_DIR%/platform-tools_r29.0.6-windows.zip"
+"%MY_DIR%/../../third_party/libs/curl/bin/win32_x64/curl.exe" -o "%MY_DIR%/platform-tools_r29.0.6-windows.zip" -L https://dl.google.com/android/repository/platform-tools_r29.0.6-windows.zip
 
 REM no unzip on windows
 REM https://docs.oracle.com/javase/tutorial/deployment/jar/unpack.html

@@ -1,4 +1,4 @@
-#!/bin/zsh
+#!/bin/bash
 
 #
 # Copyright (C) YuqiaoZhang(HanetakaYuminaga)

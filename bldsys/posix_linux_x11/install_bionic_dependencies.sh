@@ -25,7 +25,7 @@ MY_DIR="$(readlink -f "$(dirname "$0")")"
 cd ${MY_DIR}
 
 rm -rf ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip
-if curl -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip -o ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip; then
+if curl -o ${MY_DIR}/android-ndk-r14b-linux-x86_64.zip -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip; then
     echo "curl android-ndk-r14b-linux-x86_64.zip passed"
 else
     echo "curl android-ndk-r14b-linux-x86_64.zip failed"
@@ -42,7 +42,7 @@ fi
 rm -rf android-ndk-r14b-linux-x86_64.zip
 
 rm -rf ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip
-if curl -L https://github.com/YuqiaoZhang/Bionic-based-Linux/archive/7.1.2-39.zip -o ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip; then
+if curl -o ${MY_DIR}/Bionic-based-Linux-7.1.2-39.zip -L https://github.com/YuqiaoZhang/Bionic-based-Linux/archive/7.1.2-39.zip; then
     echo "curl Bionic-based-Linux-7.1.2-39.zip passed"
 else
     echo "curl Bionic-based-Linux-7.1.2-39.zip failed"

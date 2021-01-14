@@ -25,7 +25,7 @@ MY_DIR="$(readlink -f "$(dirname "$0")")"
 cd ${MY_DIR}
 
 rm -rf "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"
-if curl -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip -o "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip"; then
+if curl -o "${MY_DIR}/android-ndk-r14b-linux-x86_64.zip" -L https://dl.google.com/android/repository/android-ndk-r14b-linux-x86_64.zip; then
     echo "curl android-ndk-r14b-linux-x86_64.zip passed"
 else
     echo "curl android-ndk-r14b-linux-x86_64.zip failed"
@@ -34,7 +34,7 @@ fi
 
 # https://developer.android.com/studio/releases/build-tools
 rm -rf "${MY_DIR}/build-tools_r29.0.3-linux.zip"
-if curl -L https://dl.google.com/android/repository/build-tools_r29.0.3-linux.zip -o "${MY_DIR}/build-tools_r29.0.3-linux.zip"; then
+if curl -o "${MY_DIR}/build-tools_r29.0.3-linux.zip" -L https://dl.google.com/android/repository/build-tools_r29.0.3-linux.zip; then
     echo "curl build-tools_r29.0.3-linux.zip passed"
 else
     echo "curl build-tools_r29.0.3-linux.zip failed"
@@ -42,7 +42,7 @@ else
 fi
 
 rm -rf  "${MY_DIR}/platform-24_r02.zip"
-if curl -L https://dl.google.com/android/repository/platform-24_r02.zip -o "${MY_DIR}/platform-24_r02.zip"; then
+if curl -o "${MY_DIR}/platform-24_r02.zip" -L https://dl.google.com/android/repository/platform-24_r02.zip; then
     echo "curl platform-24_r02.zip passed"
 else
     echo "curl platform-24_r02.zip failed"
@@ -51,7 +51,7 @@ fi
 
 # https://developer.android.com/studio/releases/platform-tools
 rm -rf "${MY_DIR}/platform-tools_r29.0.6-linux.zip"
-if curl -L https://dl.google.com/android/repository/platform-tools_r29.0.6-linux.zip -o "${MY_DIR}/platform-tools_r29.0.6-linux.zip"; then
+if curl -o "${MY_DIR}/platform-tools_r29.0.6-linux.zip" -L https://dl.google.com/android/repository/platform-tools_r29.0.6-linux.zip; then
     echo "curl platform-tools_r29.0.6-linux.zip passed"
 else
     echo "curl platform-tools_r29.0.6-linux.zip failed"
