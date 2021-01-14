@@ -17,8 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-MY_DIR="$(dirname "$0")"
-cd ${MY_DIR}
+MY_DIR="$(dirname "$0")"  
+cd ${MY_DIR}  
+pwd  
 
 rm -rf "${MY_DIR}/android-ndk-r14b-darwin-x86_64.zip"
 if curl -o "${MY_DIR}/android-ndk-r14b-darwin-x86_64.zip" --create-dirs -L https://dl.google.com/android/repository/android-ndk-r14b-darwin-x86_64.zip; then
