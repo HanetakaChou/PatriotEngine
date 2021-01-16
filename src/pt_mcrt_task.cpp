@@ -19,6 +19,8 @@
 
 #include <tbb/task.h>
 
+#include "pt_mcrt_scalable_allocator_tbb_scheduler.h"
+
 class mcrt_task_t;
 
 inline mcrt_task_ref wrap(class mcrt_task_t *t) { return reinterpret_cast<mcrt_task_ref>(t); }
@@ -43,9 +45,7 @@ public:
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
 
-// scheduler.h
-// quick_task_size
-static_assert(sizeof(mcrt_task_t) <= 192UL, "sizeof(mcrt_task_t) <= quick_task_size");
+static_assert(sizeof(mcrt_task_t) <= mcrt::internal::generic_scheduler::quick_task_size, "");
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
