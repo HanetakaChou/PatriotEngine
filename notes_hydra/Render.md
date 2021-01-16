@@ -1,50 +1,46 @@
-Python  
+### Hydra Execute
 
---- 
-USD  
+**hdEngine::Execute** Main Entry Point
+```cxx
+--- Python ---  
+StageView::_getRenderer  
+  UsdImagingGL.Engine
+StageView::renderSinglePass  
+  Render  
+  
+wrapEngine  
+  def UsdImagingGL.Engine.Render = UsdImagingGLEngine::Render  
+     
+--- USD ---  
 UsdImagingGLEngine::Render
 UsdImagingGLEngine::RenderBatch
 UsdImagingGLEngine::_Execute  
-
----  
-Hydra  
-hdEngine::Execute  
-HdxRenderTask::Execute  
-HdRenderPass::Execute  
-HdSt_RenderPass::_Execute 
-  HdSt_RenderPass::_Cull //CPU Culling
-  HdStCommandBuffer::PrepareDraw //GPU Culling
-  HdStCommandBuffer::ExecuteDraw //Draw
-
-     
----    
    
-HdBprim     
-//buffer prim     
-//managing a blob of data that is used to communicate between the scene delegate and render    
-//HdStTexture HdStRenderBuffer HdStField   
-\[pxr/imaging/lib/hd/bprim.h\]     
-   
-HdSprim    
-//state prim    
-//managing state for non-drawable scene entity     
-//HdCamera HdStLight HdStMaterial HdStDrawTarget HdStExtComputation      
-\[pxr/imaging/lib/hd/sprim.h\]   
-    
-HdRprim   
-//the render engine state for a given rprim from the scene graph       
-//HdStMesh HdStBasisCurves HdStPoints HdStVolume       
-\[pxr/imaging/lib/hd/rprim.h\]          
-                
----   
-HdChangeTracker
+--- Hydra ---  
+HdEngine::Execute // **Main Entry Point**
+  HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex 
+    WorkParallelForN   
+      parallel_for    
+   HdTask::Prepare // Phase 2: Hydra Engine Execute
+   HdChangeTracker
+
+  HdRenderPass::
+    HdxRenderTask::Execute  
+      HdRenderPass::Execute  
+        HdSt_RenderPass::_Execute 
+          HdSt_RenderPass::_Cull // CPU Culling
+          HdStCommandBuffer::PrepareDraw // GPU Culling
+          HdStCommandBuffer::ExecuteDraw // Draw
+```  
 
 
----  
-Anim  
+
+
+  
+#### Anim  
   
 UsdSkelImagingSkeletonAdapter::Populate  
-  InsertSprim // register self as a SPRIM   
+  InsertSprim // bind self with a SPRIM(HdStExtComputation) by id(SdfPath)    
 
 HdSceneDelegate  
   |  
@@ -64,8 +60,34 @@ hdEngine::Execute
           UsdImagingDelegate::_UpdateSingleValue  //HdExtComputation::DirtySceneInput  
             UsdSkelImagingSkeletonAdapter::UpdateForTime  
               UsdSkelImagingSkeletonAdapter::_UpdateSkinningComputationForTime  
-              _ComputeSkinningTransforms //interpolate anime by time   
-
-
+              _ComputeSkinningTransforms //interpolate anime by time  
+                            
 _IsEnabledCPUComputations // skin by cpu (deprecated)  
 _IsEnabledAggregatorComputation // skin by compute shaer // not by vertex shader  
+
+### Hydra Primitives    
+   
+HdBprim //B(uffer) Prim(itive)     
+\[pxr/imaging/lib/hd/bprim.h\]       
+\[pxr/imaging/lib/hdSt/renderDelegate.cpp\]  
+```c++
+HdStRenderDelegate::CreateBprim  
+  HdStTexture HdStRenderBuffer HdStField  
+```  
+   
+HdSprim //S(tate) Prim(itive)     
+\[pxr/imaging/lib/hd/sprim.h\]    
+\[pxr/imaging/lib/hdSt/renderDelegate.cpp\]  
+```C++
+HdStRenderDelegate::CreateSprim  
+  HdCamera HdStLight HdStMaterial HdStDrawTarget HdStExtComputation  
+```  
+
+HdRprim //R(enderable) Prim(itive)  
+\[pxr/imaging/lib/hd/rprim.h\]   
+\[pxr/imaging/lib/hdSt/renderDelegate.cpp\]  
+```c++
+HdStRenderDelegate::CreateRprim
+  HdStMesh HdStBasisCurves HdStPoints HdStVolume       
+```
+                   
