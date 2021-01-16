@@ -18,11 +18,17 @@ UsdImagingGLEngine::_Execute
    
 --- Hydra ---  
 HdEngine::Execute // **Main Entry Point**
-  HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex 
+  HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex // Pulls data from the scene graph
     WorkParallelForN   
-      parallel_for    
-   HdTask::Prepare // Phase 2: Hydra Engine Execute
-   HdChangeTracker
+      parallel_for // No Dependencies    
+
+  for task : tasks 
+    HdTask::Prepare // Phase 2: Prepare all tasks // Opportunity to resolve prim dependencies since sync has run for all prims // Dependencies -> Not parallel ? 
+   
+  HdStRenderDelegate::CommitResources // Phase 3: Commit resources // Opportunity to submit to the GPU for instance  
+
+  for task : tasks 
+    HdTask::Execute // Phase 4: Execute all tasks // Rendering
 
   HdRenderPass::
     HdxRenderTask::Execute  
@@ -31,6 +37,8 @@ HdEngine::Execute // **Main Entry Point**
           HdSt_RenderPass::_Cull // CPU Culling
           HdStCommandBuffer::PrepareDraw // GPU Culling
           HdStCommandBuffer::ExecuteDraw // Draw
+
+       
 ```  
 
 
