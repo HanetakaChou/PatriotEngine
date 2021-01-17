@@ -13,8 +13,11 @@ wrapEngine
      
 --- USD ---  
 UsdImagingGLEngine::Render
-UsdImagingGLEngine::RenderBatch
-UsdImagingGLEngine::_Execute  
+  UsdImagingGLEngine::PrepareBatch
+    UsdImagingDelegate::SetTime
+  UsdImagingGLEngine::RenderBatch
+    HdxTaskController::GetRenderingTasks // HdxTaskController::_CreateRenderGraph // A Tiny Sample 2: Create your task graph
+    UsdImagingGLEngine::_Execute  
    
 --- Hydra ---  
 HdEngine::Execute // **Main Entry Point**
@@ -28,24 +31,29 @@ HdEngine::Execute // **Main Entry Point**
   HdStRenderDelegate::CommitResources // Phase 3: Commit resources // Opportunity to submit to the GPU for instance  
 
   for task : tasks 
-    HdTask::Execute // Phase 4: Execute all tasks // Rendering
-
-  HdRenderPass::
-    HdxRenderTask::Execute  
-      HdRenderPass::Execute  
-        HdSt_RenderPass::_Execute 
-          HdSt_RenderPass::_Cull // CPU Culling
-          HdStCommandBuffer::PrepareDraw // GPU Culling
-          HdStCommandBuffer::ExecuteDraw // Draw
-
-       
+    HdTask::Execute // Phase 4: Execute all tasks // Rendering    
 ```  
 
+VtArray // copy-on-write support  
+
+UsdImagingIndexProxy // Async insert remove 
+
+#### HdTask(HdxRenderTask) 
+// may use job instead of task to distingushed from the intel tbb task
+
+```cxx
+HdxRenderTask::Execute // Phase 2: Prepare all tasks
 
 
-
+HdxRenderTask::Execute  
+  HdRenderPass::Execute  
+    HdSt_RenderPass::_Execute 
+      HdSt_RenderPass::_Cull // CPU Culling
+      HdStCommandBuffer::PrepareDraw // GPU Culling
+      HdStCommandBuffer::ExecuteDraw // Draw
+```
   
-#### Anim  
+#### Animation HdSprim(HdStExtComputation)  
   
 UsdSkelImagingSkeletonAdapter::Populate  
   InsertSprim // bind self with a SPRIM(HdStExtComputation) by id(SdfPath)    
@@ -71,7 +79,7 @@ hdEngine::Execute
               _ComputeSkinningTransforms //interpolate anime by time  
                             
 _IsEnabledCPUComputations // skin by cpu (deprecated)  
-_IsEnabledAggregatorComputation // skin by compute shaer // not by vertex shader  
+_IsEnabledAggregatorComputation // skin by compute shader // not by vertex shader  
 
 ### Hydra Primitives    
    
