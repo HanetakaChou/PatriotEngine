@@ -67,6 +67,13 @@ HdSt_CodeGen::_GenerateConstantPrimvar //pxr/imaging/lib/hdSt/shaders/mesh.glslf
 topological dimension  
 per-primitive, per-face, per-vertex  
 
+HdStMesh::_UpdateDrawItem // dirtyBits  
+```cxx
+/* TOPOLOGY */
+// XXX: _PopulateTopology should be split into two phase
+//      for scene dirtybits and for repr dirtybits.
+```
+
 ### HdMesh(HdRprim)  
 implement the following virtual functions // happen multithreaded "_SyncRPrims::Sync"   
 HdMesh::Sync  
