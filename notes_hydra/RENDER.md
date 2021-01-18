@@ -14,6 +14,7 @@ wrapEngine
 --- USD ---  
 UsdImagingGLEngine::Render
   UsdImagingGLEngine::PrepareBatch
+    UsdImagingDelegate::Populate //  Tiny Sample 3: Scene graph population
     UsdImagingDelegate::SetTime
   UsdImagingGLEngine::RenderBatch
     HdxTaskController::GetRenderingTasks // HdxTaskController::_CreateRenderGraph // A Tiny Sample 2: Create your task graph
@@ -22,10 +23,14 @@ UsdImagingGLEngine::Render
 --- Hydra ---  
 HdEngine::Execute // **Main Entry Point**
   HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex // Pulls data from the scene graph
+    _bprimIndex.SyncPrims
+    _sprimIndex.SyncPrims
     for task : tasks
       HdTask::Sync // UsdImagingDelegate allow multithreaded 
     WorkParallelForN   
       parallel_for // No Dependencies    
+    WorkParallelForN // Parallel Rprim Sync // HdOptionTokens->parallelRprimSync  
+      _SyncRPrims::Sync
 
   for task : tasks 
     HdTask::Prepare // Phase 2: Prepare all tasks // Opportunity to resolve prim dependencies since sync has run for all prims // Dependencies -> Not parallel ? 
@@ -49,11 +54,14 @@ GetPrimvarDescriptors
 //pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
 HdSt_CodeGen::_GenerateConstantPrimvar //pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
   
-#### Proxy
-
-UsdImagingIndexProxy // Async insert remove 
-
-Although HdRenderIndex also has "insert / remove" methods, only unit tests use these methods.   
+topological dimension  
+per-primitive, per-face, per-vertex  
+  
+#### Proxy  
+  
+UsdImagingIndexProxy // Async insert remove  
+  
+Although HdRenderIndex also has "insert / remove" methods, only unit tests use these methods.  
 
 HdRenderIndex->GetChangeTracker->HdChangeTracker  
 
@@ -91,7 +99,7 @@ HdStExtComputation
    
 hdEngine::Execute    
   HdRenderIndex::SyncAll   
-    SyncPrims //sprimIndex   
+    _sprimIndex.SyncPrims //sprimIndex   
       HdStExtComputation::Sync
         UsdImagingDelegate::GetExtComputationInput    
           UsdImagingDelegate::_UpdateSingleValue  //HdExtComputation::DirtySceneInput  
