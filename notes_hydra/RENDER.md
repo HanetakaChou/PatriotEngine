@@ -43,6 +43,10 @@ HdEngine::Execute // **Main Entry Point**
 
 VtArray // copy-on-write support  
 
+hd // no impl
+hdst // OpenGL impl
+hdEmbree // Embree impl
+
 
 #### UsdImagingDelegate(HdSceneDelegate)   
 implement the following virtual functions // can be called from multithreading code “HdMesh::Sync”     
