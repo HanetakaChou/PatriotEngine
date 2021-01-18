@@ -31,7 +31,7 @@ HdEngine::Execute // **Main Entry Point**
       parallel_for // No Dependencies    
     WorkParallelForN // Parallel Rprim Sync // HdOptionTokens->parallelRprimSync  
       _SyncRPrims::Sync
-
+        HdRprim::Sync // happen multithreaded
   for task : tasks 
     HdTask::Prepare // Phase 2: Prepare all tasks // Opportunity to resolve prim dependencies since sync has run for all prims // Dependencies -> Not parallel ? 
    
@@ -45,17 +45,32 @@ VtArray // copy-on-write support
 
 
 #### UsdImagingDelegate(HdSceneDelegate)   
-implement the following functions // can be called from multithreading code    
-GetMeshTopology  
-GetTransform  
-Get  
-GetPrimvarDescriptors  
+implement the following virtual functions // can be called from multithreading code “HdMesh::Sync”     
+UsdImagingDelegate::GetMeshTopology  
+UsdImagingDelegate::GetTransform  
+UsdImagingDelegate::Get  
+UsdImagingDelegate::GetPrimvarDescriptors  
+
+```cxx
+_SyncRPrims::Sync
+  HdStMesh::Sync  
+    HdStMesh::_UpdateRepr
+      HdStMesh::_UpdateDrawItem
+        HdStMesh::_PopulateTopology
+          HdMesh::GetMeshTopology
+            UsdImagingDelegate::GetMeshTopology
+```
 
 //pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
 HdSt_CodeGen::_GenerateConstantPrimvar //pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
   
 topological dimension  
 per-primitive, per-face, per-vertex  
+
+### HdMesh(HdRprim)  
+implement the following virtual functions // happen multithreaded "_SyncRPrims::Sync"   
+HdMesh::Sync  
+HdMesh::GetInitialDirtyBitsMask  
   
 #### Proxy  
   
