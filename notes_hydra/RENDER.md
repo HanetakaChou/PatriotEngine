@@ -22,6 +22,8 @@ UsdImagingGLEngine::Render
 --- Hydra ---  
 HdEngine::Execute // **Main Entry Point**
   HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex // Pulls data from the scene graph
+    for task : tasks
+      HdTask::Sync // UsdImagingDelegate allow multithreaded 
     WorkParallelForN   
       parallel_for // No Dependencies    
 
@@ -32,14 +34,33 @@ HdEngine::Execute // **Main Entry Point**
 
   for task : tasks 
     HdTask::Execute // Phase 4: Execute all tasks // Rendering    
-```  
+```
 
 VtArray // copy-on-write support  
 
+
+#### UsdImagingDelegate(HdSceneDelegate)   
+implement the following functions // can be called from multithreading code    
+GetMeshTopology  
+GetTransform  
+Get  
+GetPrimvarDescriptors  
+
+//pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
+HdSt_CodeGen::_GenerateConstantPrimvar //pxr/imaging/lib/hdSt/shaders/mesh.glslfx  
+  
+#### Proxy
+
 UsdImagingIndexProxy // Async insert remove 
 
+Although HdRenderIndex also has "insert / remove" methods, only unit tests use these methods.   
+
+HdRenderIndex->GetChangeTracker->HdChangeTracker  
+
+HdChangeTracker::MarkRprimDirty //Mark Dirty manually  
+
 #### HdTask(HdxRenderTask) 
-// may use job instead of task to distingushed from the intel tbb task
+// may use job instead of task to distinguished from the intel tbb task
 
 ```cxx
 HdxRenderTask::Execute // Phase 2: Prepare all tasks
