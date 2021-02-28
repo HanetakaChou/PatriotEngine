@@ -1,0 +1,92 @@
+LIBRARY
+	EXPORTS
+		eglGetError
+		eglGetDisplay
+		eglInitialize
+		eglChooseConfig
+		eglGetConfigs
+		eglGetConfigAttrib
+		eglCreateWindowSurface
+		eglCreateContext
+		eglMakeCurrent
+		eglSwapInterval
+		eglSwapBuffers
+		eglGetProcAddress
+
+		glDebugMessageControlKHR
+		glDebugMessageCallbackKHR
+
+		glGenBuffers
+		glGenTextures
+
+		glBindBuffer
+		glActiveTexture
+		glBindTexture
+
+		glBufferData
+		glTexBufferOES
+		glTexStorage2D
+		glTexStorage3D
+		glTexStorage2DMultisample
+		glCompressedTexImage3DOES
+
+		glBufferSubData
+		glTexSubImage2D
+		glTexSubImage3D
+
+		glGenSamplers
+		glSamplerParameteri
+		glSamplerParameterfv
+
+		glGenFramebuffers
+		glBindFramebuffer
+		glFramebufferTexture2D
+		glDrawBuffers
+		glCheckFramebufferStatus
+
+		glCreateShader
+		glShaderSource
+		glCompileShader
+		glGetShaderiv
+		glGetShaderInfoLog
+
+		glCreateProgram
+		glAttachShader
+		glLinkProgram
+		glGetProgramiv
+		glGetProgramInfoLog
+
+		glGenVertexArrays
+		glBindVertexArray
+		glVertexAttribFormat
+		glEnableVertexAttribArray
+		glVertexAttribBinding
+
+		glEnable
+		glDisable
+		glUseProgram
+		glBindBufferBase
+		glBindSampler
+		glBindImageTexture
+		glClipControlEXT
+		glViewportArrayvOES
+		glPolygonOffsetClampEXT
+		glPolygonModeNV
+		glFrontFace
+		glCullFace
+		glBindVertexBuffer
+		glPatchParameteriOES
+		glReadBuffer
+		glDrawArrays
+		glDrawElements
+		glDrawElementsInstanced
+		glDepthFunc
+		glBlendFuncSeparateiOES
+		glBlendEquationSeparateiOES
+
+		glClearBufferfv
+		glBlitFramebuffer
+
+		glDispatchCompute
+
+		glCopyImageSubDataOES

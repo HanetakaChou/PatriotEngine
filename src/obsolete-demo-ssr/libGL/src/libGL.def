@@ -1,0 +1,77 @@
+LIBRARY
+	EXPORTS
+		wglDescribePixelFormat
+		wglSetPixelFormat
+		wglSwapIntervalEXT
+		wglSwapBuffers
+
+		wglCreateContextAttribsARB
+		wglMakeContextCurrentARB
+
+		glDebugMessageCallback
+		glDebugMessageControl
+
+		glGenBuffers
+		glBindBuffer
+		glBufferStorage
+		glBufferSubData
+
+		glGenTextures
+		glActiveTexture
+		glBindTexture
+		glTexStorage2D
+		glTexStorage2DMultisample
+		glTexSubImage2D
+
+		glGenSamplers
+		glSamplerParameteri
+		glSamplerParameterfv
+		glBindSampler
+
+		glGenFramebuffers
+		glBindFramebuffer
+		glFramebufferTexture2D
+		glDrawBuffers
+		glCheckFramebufferStatus
+
+		glCreateShader
+		glShaderBinary
+		glSpecializeShader
+		glShaderSource
+		glCompileShader
+		glGetShaderiv
+		glGetShaderInfoLog
+
+		glCreateProgram
+		glAttachShader
+		glLinkProgram
+		glGetProgramiv
+		glGetProgramInfoLog
+
+		glUseProgram
+
+		glBindBufferBase
+
+		glGenVertexArrays
+		glBindVertexArray
+		glVertexAttribFormat
+		glEnableVertexAttribArray
+		glVertexAttribBinding
+		glBindVertexBuffer
+
+		glPrimitiveRestartIndex
+
+		glClipControl
+		glViewportArrayv
+
+		glPolygonOffsetClamp
+
+		glEnable
+		glDisable
+
+		glClearBufferfv
+
+		glBlitFramebuffer
+
+		glDrawArrays
+		glDrawElements
