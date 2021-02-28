@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Terrain.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SkyBox.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Grass.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="Water.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Render">
+      <UniqueIdentifier>{b605af8d-89f1-4b40-8d3e-cdb145f0bdcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window">
+      <UniqueIdentifier>{0b30f12e-9395-433d-8b23-ec33ac02c0fd}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="RenderMain.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="..\WindowMain.cpp">
+      <Filter>Window</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyBox.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Grass.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="Water.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

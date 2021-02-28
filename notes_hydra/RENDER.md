@@ -22,10 +22,10 @@ UsdImagingGLEngine::Render
    
 --- Hydra ---  
 HdEngine::Execute // **Main Entry Point**
-  HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex // Pulls data from the scene graph
-    _bprimIndex.SyncPrims
-    _sprimIndex.SyncPrims
-    for task : tasks
+  HdRenderIndex::SyncAll // Phase 1: Sync RenderIndex // Pulls data from the scene graph  
+    _bprimIndex.SyncPrims  
+    _sprimIndex.SyncPrims  
+    for task : tasks  
       HdTask::Sync // UsdImagingDelegate allow multithreaded 
     WorkParallelForN   
       parallel_for // No Dependencies    
