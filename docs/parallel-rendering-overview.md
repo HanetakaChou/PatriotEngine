@@ -25,6 +25,9 @@ The pipeline parallel pattern can't reduce latency and may even increase latency
 
 We can comprehend from the fact that the "APP/CULL stage" competes for the CPU resources with the "DRAW stage". The pipeline parallel pattern is hostile to the "DRAW stage" which demands CPU resources for DRAW-CALL issuing, state binding and other operations.  
 
+In addition, in my view, it's horrible to mix the logic-module and the updating operations (skeleton animating, particle animating, et cetera) in the rendering-module in the "APP stage" since the frequency of the operations varies significantly between the two modules. The frequency of the updating operations in the rendering-module is 60 FPS while the frequency of the logic-module is much lower.
+
+
 ## Reference
 \[1\] Real-Time Rendering Fourth Edition / Chapter 19 Acceleration Algorithms / 19.1 Spatial Data Structures / 19.1.5 Scene Graphs  
 \[2\] [SIGGRAPH 2019 / A deep dive into universal scene description and hydra](http://graphics.pixar.com/usd/files/Siggraph2019_Hydra.pdf)  
