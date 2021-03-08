@@ -14,7 +14,10 @@ The contents of this book is likely to be as follows:
 >
 > [docs/task.zh_CN.md](docs/task.zh_CN.md)
 >       
-   
+> ---
+> 
+> [docs/parallel-rendering-overview.md](docs/parallel-rendering-overview.md)
+>    
 ---  
 
 ### Core Interfaces   
