@@ -11,7 +11,7 @@ In Pixar-Hydra, the phase "1. Sync RenderIndex"(\[2\]) handles the synchronisati
 
 Some crafts such as COW(Copy-on-write) can be used when the logic-module writes into the scenegraph.
 
-## The drawback of the UE4 strategy  
+## The drawbacks of the UE4 strategy  
 
 We assume that "the renderer ran in the Render Thread, and commands for that thread were enqueued by the Game Thread to be run later in the frame"(\[3\]) in UE4.  
 
