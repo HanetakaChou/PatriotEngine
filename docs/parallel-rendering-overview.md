@@ -1,13 +1,13 @@
 # Parallel Rendering Overview
 
 ## Introduction  
-In general, the rendering-module reads from the scenegraph(\[1\]) while the logic-module writes into the scenegraph. It's the scenegraph where the race condition occurs.  
+In general, the rendering-module reads from the scenegraph(\[1\]) while the logic-module writes into the scenegraph. It's the scenegraph where occurs the race condition.  
 
 ## Our parallel strategy
 
-Since there occurs the race condition, the synchronisation should be used to avoid the race condition.  
+Since there occurs the race condition, the synchronization should be used to avoid the race condition.  
 
-In Pixar-Hydra, the phase "1. Sync RenderIndex"(\[2\]) handles the synchronisation.  
+In Pixar-Hydra, the phase "1. Sync RenderIndex"(\[2\]) handles the synchronization.  
 
 Some crafts such as COW(Copy-on-write) can be used when the logic-module writes into the scenegraph.
 
@@ -17,7 +17,7 @@ We assume that "the renderer ran in the Render Thread, and commands for that thr
 
 The UE4 strategy is esstentially the pipeline parallel pattern(\[4\], \[5\]).  
 
-The "APP/CULL stage" is analogous to the "Game Thread" while the "DRAW stage" is analogous to the "Render Thread".  
+The "APP/CULL stage" is analogous to the "Game Thread" and the "DRAW stage" is analogous to the "Render Thread".  
 
 The race condition can be handled since the "APP stage" annexes the logic-module which writes into the scenegraph.
 
