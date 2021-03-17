@@ -12,6 +12,7 @@ The contents of this book is likely to be as follows:
 >
 > --- 
 >
+> [docs/tbb.md](docs/tbb.md)  
 > [docs/task.zh_CN.md](docs/task.zh_CN.md)
 >       
 > ---
