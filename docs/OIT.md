@@ -9,189 +9,188 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 You should have received a copy of the GNU Lesser General Public License along with this program.  If not, see <https://www.gnu.org/licenses/>
 ```  
   
-## Alpha通道  
-> Porter在1984年提出了Alpha通道（1.[Porter 1984]），目前在实时渲染中已被广泛地用于模拟物体的透明效果。  
+## Alpha Channel  
+Porter proposed "Alpha channel"(1.[Porter 1984]) in 1984 which is widely established in real-time rendering to simulate the transparent effect.  
 
-> 我们约定对应到同一个像素（Pixel）$[ C_{Final} \, A_{Final} ]$的一系列片元（Fragment）的颜色、Alpha、深度为三元组$[ C_i A_i Z_i ]$，如图：  
->   
->![](./OIT-1.png)   
->   
-> 那么该像素最终的颜色$C_{Final} = {\displaystyle{\sum_{i = 0}^n}} ( ( {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} 1 - A_j )  A_i C_i )$。  
-//其中：$\operatorname{V} ( Z_i ) = {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} 1 - A_j$又被称为可见性函数（原因会在之后解释）。  
-因此，以上等式又可以写作：$C_{Final} = {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i C_i )$。  
+We assume that one "pixel" corresponds to a series of "fragments" which can be treated as the triples \[ $C_i$ $A_i$ $Z_i$ \] (C-Color A-Alpha Z-Depth), as shown in the following figure:  
+![](OIT-1.png)  
+Then the final color of the pixel can be calculated as $\displaystyle C_{\displaystyle Final} = \sum_{\displaystyle i = 0}^{\displaystyle n} (\prod_{\displaystyle Z_j Nearer Z_i}(1 - A_j) A_i C_i)$.  
 
-> 值得注意的是，在物理含义上， Alpha模拟的是局部覆盖（Partial Coverage）而非透射率（Transmittance）。  
->   
-> Alpha的含义是片元覆盖的面积占像素面积的比例（这也是我们用标量float而非向量RGB来表示Alpha的原因；这种情况在一些文献中被称作波长无关的（Wavelength-Independent））。比如，我们透过一条蓝色的真丝围巾观察一块红色的砖，我们看到砖的颜色大体为蓝色和红色“**相加**”； 真丝围巾的纤维本身是不透明的，只是真丝围巾的纤维之间存在着间隙，我们通过这些间隙看到了红色的砖，即真丝围巾“局部覆盖”了砖。  
->   
-> 而透射率是波长相关的（Wavelengh-Dependent）；比如，我们透过一块蓝色的塑料薄膜观察一块红色的砖，我们看到的砖的颜色大体为黑色（即蓝色和红色“**相乘**”）；红色的砖只反射红色的光，而蓝色的塑料薄膜只允许蓝色的光通过，红色的砖的反射光全部会被蓝色的塑料薄膜吸收，即呈现出黑色。//参考文献：[《科学七年级下册》（ISBN: 9787553603162）/第2章对环境的感觉/第4节光的颜色/物体的颜色]，如图：  
->   
-> ![](./OIT-3.png)   
->   
-> 如果需要模拟透射率相关的效果，那么我们应当使用参与介质（Participating Media）（2.[Yusor 2013]、3.[Hoobler 2016]）相关的技术。  
+The $\displaystyle \operatorname{V} ( Z_i ) = \prod_{\displaystyle Z_j Nearer Z_i} 1 - A_j$ is also called the visibility function which will be explained later.  
+Then the above equation can also be written as $\displaystyle C_{\displaystyle Final} = \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$.    
+
+Note that the physical meaning of the Alpha is the "partial coverage" rather than the "transmittance".  
+
+The Alpha stands for the ratio of the area covered by the fragments to the area covered by the pixel. That's why we use the scalar "float" instead of the vector "RGB" to represent the Alpha. This circumstance is also called the "Wavelength Independent" in some literatures.  
+For example, when we observe a red brick through a blue silk scarf, the color of the brick appears to be the "addition" of the blue and red. The fibers of silk scarf are intrinsically opaque but there exist gaps between the fibers. We see the brick through the gaps. Namely, the silk scarf "partially covers" the brick.
+
+However, the transmittance is "Wavelengh Dependent". If we observe a red brick through a blue plastic film, the color of the brick appears to be black (the "Multiplication" of the blue and red). The red brick only reflects the red light while the blue plastic film only allows blue light to pass through. All the reflected light of the red brick is absorbed by the blue plastic film and then the red brick appears to be black.  
+
+You can do the above two experiments by yourself.  
+
+If we demand the transmittance effect, the techniques related to the "Participating Media"(2.[Yusor 2013]、3.[Hoobler 2016]) should be used.  
+
+By the physical meaning of the Alpha, we can comprehend the visibility function $\displaystyle \operatorname{V} ( Z_i )$ evidently since a fragment can only be (partially) covered by the fragments nearer than it.  
+Some literatures treat the visibility function $\displaystyle \operatorname{V} ( Z_i )$ as the "transmittance". Technically, that's wrong. 
+
+## Ordered Transparency  
+In real time rendering, the classic method is to sort the transparent geometries and use the "Over/Under Operation"(1\.[Porter 1984]、4\. [Dunn 2014]) to calculate the final color $C_{Final}$ recursively:  
+> 1\.OpaquePass  
+draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.  
   
-> 根据Alpha的含义，不难理解可见性函数$\operatorname{V} ( Z_i ) = {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} 1 - A_j$的原因。  
-因为只有比当前片元“更近”（Nearer）的片元才会局部覆盖当前片元。（一些文献中将可见性函数$\operatorname{V} ( Z_i )$称作透射率$\operatorname{T} ( Z_i )$，在严格意义上是错误的。）  
- 
-## 顺序性透明  
-> 在实时渲染中，比较经典的做法是将几何体排序后用Over/Under操作（1\.[Porter 1984]、4\. [Dunn 2014]）以递归的方式求解$C_{Final}$：  
->> 1\.OpaquePass 绘制不透明物体，得到BackgroundColor和BackgroundDepth。  
->> 2\.TransparencyPass 将BackgroundDepth用于深度测试（关闭深度写入）将透明物体从后往前/从前往后排序后用Over/Under操作以递归的方式求解$C_{Final}$。  
-
-> Over操作  
->> 将片元从后往前排序允许用Over操作以递归的方式求解$C_{Final}$  
+> 2\.TransparencyPass  
+use the BackgroundDepth for depth test (without depth write), sort the geometries from back to front/from front to back and use Over/Under Operation to calculate recursively.  
+>  
+> Over Operation  
+sort the fragments from back to front to use the Over Operation  
 $C_{Final\_0}=BackgroundColor$  
-$C_{Final\_n}=( A_nC_n)+\lparen1-A_n) C_{Final\_n-1}$ 
-  
-> Under操作
->> 将片元从前往后排序允许用Under操作以递归的方式求解$C_{Final}$  
+$C_{Final\_n}=(A_nC_n)+(1-A_n) C_{Final\_n-1}$  
+>  
+> Under Operation  
+sort the fragments from front to back to use the Under Operation  
 $C_{Final\_0}=0$  
 $A_{Total\_0}=1$  
 $C_{Final\_n}=A_{Total\_n-1}( A_nC_n)+C_{Final\_n-1}$  
-$A_{Total\_n}=A_{Total\_n-1}( 1-A_n)$ //注：我们观察到，在Under操作中，$A_{Total}$即可见性函数$\operatorname{V} ( Z_i )$  
-OpaquePass得到的图像将在最后以A = 1, C = BackgroundColor的形式合成上去  
+$A_{Total\_n}=A_{Total\_n-1}( 1-A_n)$   
+Note that the $A_{Total}$ in Under Operation is exactly the visibility function $\operatorname{V} ( Z_i )$ above.   
+At last, the result image of the OpaquePass is treated as the fragments with "A=1 C=BackgroundColor" and added to the final color by the Under Operation.
   
-> 可以用数学归纳法证明，Over操作和Under操作是等价的，都可以基于${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i C_i )$正确地求出$C_{Final}$  
+By the mathematical induction, we can prove that the Over Operation and the Under Operation are equivalent. Both can estimate the final color $C_{Final}$ correctly by $\displaystyle \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$.  
+
+Technically, the correctness of the Over/Under Operation can only be guaranteed by sorting the "fragments" from back to front/from front to back. However, in real time rendering, the sorting is based on the geometries not the fragments. If there exists interlacing inside the geometry, the order of the fragments will not follow and thus we have to explore the OIT(Order Independent Transparency) algorithm to settle this problem.
+
+Note that keeping the geometries orderly also prohibits the batching of the geometries with the same material and thus results in extra state changing which is hostile to the performance.
   
-> 在严格意义上，只有将**片元**从后往前/从前往后排序，才能保证Over/Under操作的正确性。然而在实时渲染中，排序的粒度是基于**物体**而非基于**片元**；如果物体内部存在穿插，那么片元的顺序将不符合从后往前/从前往后，从而导致Over/Under操作的结果存在错误。因此，人们不得不探索OIT算法来解决这个问题。  
-  
-> //注：实际上，从前往后/从后往前的顺序还会导致相同材质的物体无法合批，从而导致状态切换过多，对性能造成不利影响。  
-  
-## 深度剥离（Depth Peeling）
-> 深度剥离（5.[Everitt 2001]）是一种比较古老的在实时渲染中被实际应用的OIT算法。  
+## Depth Peeling  
+Depth Peeling(5.[Everitt 2001]) is an archaic method which might be used in real time rendering.  
   
 ### Render Pass  
->> 1\.OpaquePass  
-绘制不透明物体，得到BackgroundColor和BackgroundDepth。  
+>1\.OpaquePass  
+draw opaque geometries and have the BackgroundColor and the BackgroundDepth.  
+
+>2\.NearestLayerPass //GeometryPass  
+initial the depth with the BackgroundDepth //by copy command  
+with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them, having the NearestLayerColor and the NearestLayerDepth  
+added the NearestLayerDepth to the final color $C_{Final}$ by Under Operation  
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+
+>3\.SecondNearestLayerPass //GeometryPass
+initial the depth with the BackgroundDepth //by copy command  
+with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the NearestLayerDepth to the SampledTextureUnit and draw them with discarding the fragments NearerOrEqual than the NearestLayerDepth explicitly in the fragment shader, having the SecondNearestLayerColor and the SecondNearestLayerDepth  
+added the SecondNearestLayerColor to the final color $C_{Final}$ by Under Operation  
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+
+>4\.ThirdNearestLayerPass //GeometryPass
+initial the depth with the BackgroundDepth //by copy command  
+with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the SecondNearestLayerDepth to the SampledTextureUnit and ...  
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+
+>The subsequent operations are similar to the above, omitted... //we can peel N layers by N geometry passes. The application can choose the proper N according to the requirements.
+
+>N+2\.CompositePass //FullScreenTrianglePass  
+At last, the BackgroundColor by OpaquePass is added to the final color by the Under Operation.  
+
+Technically, it's legal to peel the layers from far to near and add them to the final color by the Over Operation.  
+However, if the number of the geometry passes N is too low to peel all layers, the farthest/nearest layers will be ignored when we use the Under/Over Operation.  
+Evidently, the visibility function $\displaystyle \operatorname{V} ( Z_i )$ is monotonically decreasing. It follows that the farthest layers generally contribute little to the final color and introduce little error if they are ignored. That's why we prefer the Under Operation to the Over Operation.
   
->> 2\.NearestLayerPass //GeometryPass  
-将Depth初始化为BackgroundDepth   
-开启深度测试（NearerOrEqual）和深度写入  
-将透明物体按<材质,从前往后>排序后绘制得到NearestLayerColor和NearestLayerDepth  
-并用Under操作将NearestLayerColor合成到$C_{Final}$    
+### Conclusion  
+Evidently, the depth peeling has a fatal disadvantage that the number of the geometry passes is too high and the performance is too low and thus the depth peeling has never been popular since proposed decades ago.  
 
->> 3\.SecondNearestLayerPass //GeometryPass  
-将Depth初始化为BackgroundDepth  
-开启深度测试（NearerOrEqual）和深度写入  
-将NearestLayerDepth绑定到片元着色器的纹理单元 并在片元着色器中显式Discard掉Depth NearerOrEqual NearestLayerDepth的片元  
-将透明物体按<材质,从前往后>排序后绘制得到SecondNearestLayerColor和SecondNearestLayerDepth  
-并用Under操作将SecondNearestLayerColor合成到$C_{Final}$   
-  
->> 4\.ThirdNearestLayerPass //GeometryPass  
-将Depth初始化为BackgroundDepth  
-开启深度测试（NearerOrEqual）和深度写入  
-将SecondNearestLayerDepth绑定到片元着色器的纹理单元 //之后的操作同上，从略...  
+## Stochastic Transparency  
+The estimation of the visibility function $\displaystyle \operatorname{V} ( Z_i )$ depends on the order of the fragments. This results in that the estimation of the final color $\displaystyle C_{\displaystyle Final} = \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$ depends on the order.  
+By this fact, Enderton proposed "stochastic transparency"(6.[Enderton 2010]) in 2010 which is based on the the principles of statistics and uses MSAA hardware to random sampling to estimate the visibility function $\operatorname{V} ( Z_i )$ order independently.  
 
->> 以此类推... // N个Pass可以剥离得到N个最近的层，应用程序可以根据自身的需求选择Pass的个数   
-  
->> N+2\.CompositePass //FullScreenTrianglePass  
-最后用Under操作将OpaquePass得到的BackgroundColor合成到$C_{Final}$  
+### Stochastic Depth  
+With the MSAA on, we assume the relationship among the "pixel", "fragment" and "sample" as the following figure:  
+![](OIT-2.png)  
+one pixel corresponds to several samples (for example, in the above figure, one pixel corresponds to 4 samples, namely, 4X MSAA) and at the same time one pixel corresponds to a series of fragments.  
+However, the same sample corresponding to the same pixel can only be occupied by one fragment of these fragments corresponding to the same pixel(The storage is limited, which can hold only one fragment. That's evident).  
 
-> //注：深度剥离本身并不依赖于片元的顺序，之所以将透明物体从前往后排序是为了充分发挥硬件的EarlyDepthTest来提升性能   
+At the same time, we assume that:  
+$Z_j$ denotes one fragment of the fragments$Z_0$ $Z_1$ $Z_2$ ... $Z_n$ corresponding to the same pixel.  
+$Z_s$ denotes the fragment which occupies the sample in the final result depth image(the StochasticDepth in the implement). As we have explained above, by the limit of the storage, the sample can only be occupied by one fragment.  
+$Z_i$ denotes the fragment which is being discussed(which can be considered as the fragment being executed by the fragment shader in the implement).
 
-> 在理论上，深度剥离也可以从远到近剥离各层，并用Over操作合成到$C_{Final}$。  
-但是，在Under操作中，如果应用程序选择的Pass个数过低，不能剥离得到所有的层，那么最远处的若干层会被忽略。  
-显然，可见性函数$\operatorname{V} ( Z_i )$是单调递减的。因此，最远处的若干层对$C_{Final}$的贡献是较低的，被忽略后造成的误差也相对较低。这就是深度剥离采用Under操作而非Over操作的原因。  
-  
-### 综合评价  
-> 显然，深度剥离有一个显著的缺陷——Pass个数过多——在效率上存在着比较严重的问题；因此在被提出以后的数十年间并没有流行起来。  
-     
-## 随机透明（Stochastic Transparency）  
-> 可见性函数$\operatorname{V} ( Z_i ) =  {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} ( 1 - A_j )$的求解依赖于片元的顺序，导致了$C_{Final} = {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i )  A_i C_i )$的求解依赖于片元的顺序。基于这个事实，Enderton在2010年提出了随机透明：随机透明基于概率论的原理，利用硬件的MSAA特性进行随机抽样，给出了一种顺序无关地求解可见性函数$\operatorname{V} ( Z_i )$的方式，以达到以顺序无关的方式求解$C_{Final}$的目的（6.[Enderton 2010]）。  
-    
-### 随机深度（Stochastic Depth）  
-> 在开启MSAA的情况下，我们约定像素（Pixel）、片元（Fragment）和采样点（Sample）的对应关系如图：  
-> 
-> ![](./OIT-2.png)  
->
-> 一个像素对应于若干个采样点（比如，演示图中一个像素对应于4个采样点，即4X MSAA）；同时，一个像素也对应于若干个片元。  
-但是，同一像素中的同一采样点最终只可能被该像素对应的一系列片元中的某一个片元占据（由于存储空间的限制，只能存储一个片元，这是显然的）  
->   
-> 并且，在接下来的讨论中，我们约定：  
-$Z_j$指对应于同一像素的一系列片元$Z_0$ $Z_1$ $Z_2$ ... $Z_n$中任意的某一个片元  
-$Z_s$指在最终生成的Depth图像（在具体实现中即StochasticDepth）中存储的片元（由于存储空间的限制，只能存储一个片元，图像中的任意一个采样点最终只可能被该像素对应的一系列片元$Z_0$ $Z_1$ $Z_2$ ... $Z_n$中的某一个片元占据）  
-$Z_i$指当前讨论的片元（在具体实现中，可以认为是当前片元着色器执行的片元）  
+In addition, we assume that:  
+By setting the value of gl_SampleMask/SV_Coverage, we ensure that the probability of each sample be occupied by the fragment \[ $C_i$ $A_i$ $Z_i$ \] is $A_i$.  
+With depth test and depth write, we ensure that the nearer fragment must overwrite the farther fragment and the sample is occupied by the nearest fragment.  
+The probabilities of different fragments are uncorrelated.  
 
-> 我们设：   
-通过设置gl_SampleMask/SV_Coverage的值，使片元$[C_i A_i Z_i]$在生成采样点$[ Z_i ]$时，每个采样点被覆盖的概率为$A_i$  
-开启深度测试和深度写入，使较近的片元生成的采样点一定覆盖较远的片元生成的采样点  
-不同片元生成采样点时，每个采样点被覆盖的概率相互独立（Uncorrelated）  
+We claim that for each sample \[ $C_s$ $A_s$ $Z_s$ \] in the final result depth image, for each fragment \[ $C_i$ $A_i$ $Z_i$ \] among the fragments corresponding to the same pixel, the probability of "$Z_i$ is Near-or-Equal than $Z_s$" is exactly the visibility function $\displaystyle \operatorname{V} ( Z_i ) = \prod_{\displaystyle Z_j Nearer Z_i} 1 - A_j$.  
 
-> 首先，我们有：对最终生成的Depth图像中的任意采样点$[C_s A_s Z_s]$，对该采样点所属的像素对应的一系列片元中的任意片元$[C_i A_i Z_i]$，满足$Z_i \operatorname{NearerOrEqual} Z_s$的概率即为可见性函数$\operatorname{V} ( Z_i ) = {\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} 1 - A_j$。  
->> 
->> 证明：    
->> 
->> 由于“较近的片元生成的采样点一定覆盖较远的片元生成的采样点“，对任意片元$[C_i A_i Z_i]$，如果满足$Z_i \operatorname{NearerOrEqual} Z_s$，那么表明最终生成的Depth图像中的采样点被片元$[ C_i A_i Z_i ]$或被比片元$[ C_i A_i Z_i ]$更远的片元占据，即最终生成的Depth图像中的采样点**不被**比片元$[C_i A_i Z_i]$更近的任意片元$[C_j A_j Z_j]$占据  
->>   
->> 由于最终生成的Depth图像中的采样点**不被**片元$[C_j A_j Z_j]$占据的概率为1 - $A_j$，且概率之间相互独立，根据乘法原理，最终的概率为各概率相乘，即${\displaystyle\prod_{z_j \operatorname{Nearer} Z_i}} （ 1 - A_j ）$。  
+Proof:  
+Since "the nearer fragment must overwrite the farther fragment", if "$Z_i$ is Near-or-Equal than $Z_s$", then we have that the sample in the final result depth image is occupied by \[ $C_i$ $A_i$ $Z_i$ \] or the farther fragments corresponding to the same pixel.  
+Namely, the sample is not be occupied by the nearer fragments corresponding to the same pixel.  
+Evidently, the probability of "the sample is not be occupied by one fragment $Z_j$ among these nearer fragments" is $1 - A_j$.  
+Since "the probabilities of different fragments are uncorrelated", by the multiplication principle, the probability of "the sample is not be occupied by the nearer fragments corresponding to the same pixel" is $\displaystyle \prod_{\displaystyle Z_j Nearer Z_i} 1 - A_j$ which is exactly the visibility function $\displaystyle \operatorname{V} ( Z_i )$.  
 
-> 我们设，在MSAA中，1个像素对应的采样点个数为S，满足$Z_i \operatorname{NearerOrEqual} Z_s$的采样点的个数为$\operatorname{Count} ( Z_i )$，$\operatorname{SV}( Z_i ) = \frac{ \operatorname{Count} ( Z_i ) }{S}$   
+Besides, we assume that:  
+One pixel corresponds to S samples, namely, S-X MSAA.  
 
-> 显然，$\operatorname{SV} ( Z_i )$的数学期望为$\operatorname{V} ( Z_i )$。  
-由于$\operatorname{Count} ( Z_i )$可以通过纹理采样得到，可以用$\operatorname{SV} ( Z_i )$估计可见性函数$\operatorname{V} ( Z_i )$。 //注：在OpenGL中，需要启用ARB_texture_multisample扩展才能用texelFetch对sampler2DMS进行采样   
-//“估计”的严格证明需要用到数理统计的相关知识，从略。  
-  
-### Alpha校正（Alpha Correction）  
-> 可以用数学归纳法证明：${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) = 1 - {\displaystyle{\prod_{i = 0}^n}} ( 1 - A_i )$。  
->> 
->> 1\.基本情况：  
->> 
->> 当n=0时  
->> 
->> 左边 = ${\displaystyle{\sum_{i = 0}^0}} ( \operatorname{V} ( Z_i ) A_i )$  
->>  = $\operatorname{V} ( Z_0 ) A_0$  
->> = $1 \cdot A_0$  
->> = $A_0$  
->> 
->> 右边 = $1 - {\displaystyle{\prod_{i = 0}^0}} ( 1 - A_i )$  
->> = $1 - ( 1 - A_0 )$  
->> = $A_0$  
->> 
->> 左边 = 右边 等式成立  
->> 命题得证  
->> 
->> 2\.归纳步进：
->> 
->> 设当n=k时命题成立，下面证明当n=k+1时命题也成立  
->> 左边 = ${\displaystyle{\sum_{i = 0}^{k + 1}}} ( \operatorname{V} ( Z_i ) A_i )$  
->> = ${\displaystyle{\sum_{i = 0}^k}} ( \operatorname{V} ( Z_i ) A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
->> = $1 - {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
->> = $1 - {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i ) + ( {\displaystyle{\prod_{i=0}^k}} ( 1 - A_i ) ) \cdot A_{k+1}$   
->> = $1 - ( {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i )) \cdot ( 1 - A_{k+1} )$  
->> = $1 - {\displaystyle{\prod_{i = 0}^{k + 1}}} ( 1 - A_i )$   
->> 
->> 右边 = $1 - {\displaystyle{\prod_{i = 0}^{k + 1}}} ( 1 - A_i )$ 
->> 
->> 左边 = 右边 等式成立  
->> 命题得证  
+We claim that if the count of the samples such that "$Z_i$ is Near-or-Equal than $Z_s$" is $\operatorname{Count} ( Z_i )$, let $\displaystyle \operatorname{SV}( Z_i ) = \frac{ \operatorname{Count} ( Z_i ) }{S}$, we have that the expected value of the $\displaystyle \operatorname{SV}( Z_i )$ is the visibility function $\displaystyle \operatorname{V} ( Z_i )$.  
 
-> 显然，${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )$的数学期望为${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i )$。  
->   
-> 由于${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) = 1 - {\displaystyle{\prod_{i = 0}^n}} ( 1 - A_i )$，即${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )$的数学期望为
-$1-\prod_i ( 1-A_i )$。  
-  
-> Alpha校正可以认为是对$\operatorname{SV} ( Z_i )$进行归一化（Normalize）：  
->>
->> 即假定$\frac{\operatorname{SV} ( Z_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )} = \frac{\operatorname{V} ( Z_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) }$，从而得到${\operatorname{V} ( Z_i )} = {\operatorname{SV} ( Z_i )}{\frac{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) }{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ） A_i ）}} = { \operatorname{SV}( Z_i )}{\frac{1 - {\displaystyle{\prod_{i = 0}^n}} ( 1-A_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )}}$。  
+Proof:
+Evidently, this is immediate from the above proposition.  
+
+Since we can get the value of $\operatorname{Count} ( Z_i )$ by sampling texture, we can use $\displaystyle \operatorname{SV}( Z_i )$ to estimate the visibility function $\displaystyle \operatorname{V} ( Z_i )$.  
+Note that the extension "ARB_texture_multisample" should be enabled to use texelFetch on sampler2DMS in OpenGL.  
+We should use the knowledge of statistics to prove why we can estimate and thus the proof is omitted. 
+
+### Alpha Correction  
+
+We claim that ${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) = 1 - {\displaystyle{\prod_{i = 0}^n}} ( 1 - A_i )$.  
+
+Proof:  
+Prove by the mathematical induction.  
+1\.basis:  
+when n=0:  
+left = ${\displaystyle{\sum_{i = 0}^0}} ( \operatorname{V} ( Z_i ) A_i )$  
+= $\operatorname{V} ( Z_0 ) A_0$  
+= $1 \cdot A_0$  
+= $A_0$  
+right = $1 - {\displaystyle{\prod_{i = 0}^0}} ( 1 - A_i )$  
+= $1 - ( 1 - A_0 )$  
+= $A_0$  
+left = right the equation holds  
+2\.inductive step:
+we assume that the proposition holds for n=k.  
+when n=k+1:  
+left = ${\displaystyle{\sum_{i = 0}^{k + 1}}} ( \operatorname{V} ( Z_i ) A_i )$  
+= ${\displaystyle{\sum_{i = 0}^k}} ( \operatorname{V} ( Z_i ) A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
+= $1 - {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i ) + \operatorname{V} ( Z_{k+1} ) A_{k+1}$  
+= $1 - {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i ) + ( {\displaystyle{\prod_{i=0}^k}} ( 1 - A_i ) ) \cdot A_{k+1}$   
+= $1 - ( {\displaystyle{\prod_{i = 0}^k}} ( 1 - A_i )) \cdot ( 1 - A_{k+1} )$  
+= $1 - {\displaystyle{\prod_{i = 0}^{k + 1}}} ( 1 - A_i )$   
+right = $1 - {\displaystyle{\prod_{i = 0}^{k + 1}}} ( 1 - A_i )$  
+left = right the equation holds  
+
+Evidently, the expected value of ${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )$ is ${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i )$.  
+Since ${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) = 1 - {\displaystyle{\prod_{i = 0}^n}} ( 1 - A_i )$, we have that the expected value of ${\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )$ is $1-\prod_i ( 1-A_i )$.  
+
+The Alpha correction can be considered as the normalizing of the $\operatorname{SV} ( Z_i )$.  
+This means that we assume that $\frac{\operatorname{SV} ( Z_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )} = \frac{\operatorname{V} ( Z_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) }$ and we have that ${\operatorname{V} ( Z_i )} = {\operatorname{SV} ( Z_i )}{\frac{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{V} ( Z_i ) A_i ) }{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ） A_i ）}} = { \operatorname{SV}( Z_i )}{\frac{1 - {\displaystyle{\prod_{i = 0}^n}} ( 1-A_i )}{ {\displaystyle{\sum_{i = 0}^n}} ( \operatorname{SV} ( Z_i ) A_i )}}$.  
   
 ### Render Pass  
->> 1\.OpaquePass  
->>> 绘制不透明物体，得到BackgroundColor和BackgroundDepth  
->>
->> 2\.StochasticDepthPass //GeometryPass  
->>> 将Depth初始化为BackgroundDepth  
->>> 开启MSAA  
->>> 开启深度测试（NearerOrEqual）和深度写入  
->>> 用伪随机函数基于片元$[ C_i A_i Z_i ]$的$A_i$生成gl_SampleMask/SV_Coverage的值   
->>> 将透明物体按<材质,从前往后>排序后绘制得到StochasticDepth //注：随机透明本身并不依赖于片元的顺序，之所以从前往后排序是为了充分发挥硬件的EarlyDepthTest来提升性能  
->>>> 值得注意的是：  
->>>> 1\.StochasticDepthPass开启的MSAA是用于随机抽样的，随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA  
->>>> 如果应用程序有空间性反走样（Spatial AntiAliasing）的需求，那么可以在除StochasticDepthPass以外的Pass开启MSAA（当然，也可以使用其它的空间性反走样算法（比如：FXAA））  
->>>> 除StochasticDepthPass以外的Pass用于空间反走样的MSAA和StochasticDepthPass用于随机抽样的MSAA并没有任何关系（比如：允许在用于空间反走样的MSAA是4X的同时，用于随机抽>>> 样的MSAA为8X）       
->>>> 2\.为了确保采样点被片元覆盖的概率相互独立，必须用伪随机函数基于片元$[ C_i A_i Z_i ]$的$A_i$生成gl_SampleMask/SV_Coverage的值，而不得使用硬件的AlphaToCoverage特性。  
->>>> 3\.在AccumulatePass中计算$\operatorname{SV}( Z_i)$为着色点的深度；为了保持一致，应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth（在默认情况下，采样点而非着色点的深度会被写入到最终生成的Depth图像中）。  
->>>> 4\.由于硬件的限制，MSAA最多为8X，即1个片元对应的采样点的个数最多为8；在论文原文中，作者提出可以使用多个Pass来模拟更多的采样点（6.[Enderton 2010]），但是出于效率的原因，实际应用中往往只使用1个Pass。  
->>
+> 1\.OpaquePass  
+draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.
+
+> 2\.StochasticDepthPass //GeometryPass  
+initial the depth with the BackgroundDepth //by copy command  
+with MSAA, with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them with setting the pseudo random value of gl_SampleMask/SV_Coverage by the $A_i$ of \[ $C_i$ $A_i$ $Z_i$ \], having the StochasticDepth  
+//Note that the stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.  
+Attention that:  
+1\.Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA.  
+If the application demands the effect of "Spatial AntiAliasing", the application can turn on MASS in other passes(Evidently, the application use arbitrary algorithms(for example, the FAXX) in other passes).  
+These's no relationship between the MSAA used for random sampling (in StochasticDepthPass) and the MSAA used for spatial antialiasing (in other passes). For example, we can use 8X MASS in StochasticDepthPass while use 4X MSAA in other passes.  
+2\.To ensure the uncorrelation among fragments, we must use pseudo random value rather than the "AlphaToCoverage".  
+3\.The depth value used in AccumulatePass is the value of the shading position not the value of the sampling position. To be consistant, we prefer to write the depth (value of the shading position) to gl_FragDepth/SV_Depth in the fragment shader.  
+4\.By the limit of the hardware, the maximum sample count of MSAA is 8X MSAA. The author (6.[Enderton 2010]) proposed that we can use multiple passes to simulate more sample counts. Due to the performance issue, we only use one pass.  
+
+
+
+
+
 >> 3\.AccumulateAndTotalAlphaPass //GeometryPass  
 >>> 将Depth初始化为BackgroundDepth   
 >>> 开启深度测试关闭深度写入   
@@ -590,7 +589,7 @@ TransparentColor = ${\begin{cases} {\displaystyle\sum_{i = 0}^n} {  ( \operatorn
 [https://developer.arm.com/solutions/graphics/developer-guides/mali-gpu-best-practices](https://developer.arm.com/solutions/graphics/developer-guides/mali-gpu-best-practices)  
 11\.\[Carpenter 1984\] Loren Carpenter. "The A-buffer, an Antialiased Hidden Surface Method." SIGGRAPH 1984.  
 [https://dl.acm.org/citation.cfm?id=80858](https://dl.acm.org/citation.cfm?id=80858)  
-12\.\[Bavoil 2007\] Louis Bavoil, Steven Callahan, Aaron Lefohn, Joao Comba, Claudio Silva. "Multi-Fragment Effects on the GPU using the k-Buffer." I3D 2007.  
+12\.\[Bavoil 2007\] Louis Bavoil, Steven Callahan, Aaron Lefohn, Joao Comba, Claudio Silva. "Multi-fragment Effects on the GPU using the k-Buffer." I3D 2007.  
 [https://i3dsymposium.github.io/2007/papers.html](https://i3dsymposium.github.io/2007/papers.html)  
 13\.\[Ragan-Kelley 2011\] Jonathan Ragan-Kelley, Jaakko Lehtinen, Jiawen Chen, Michael Doggett, Frédo Durand. "Decoupled Sampling for Graphics Pipelines." ACM TOG 2011.  
 [http://people.csail.mit.edu/jrk/decoupledsampling/ds.pdf](http://people.csail.mit.edu/jrk/decoupledsampling/ds.pdf)  
