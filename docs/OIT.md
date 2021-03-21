@@ -178,57 +178,54 @@ draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.
 > 2\.StochasticDepthPass //GeometryPass  
 initial the depth with the BackgroundDepth //by copy command  
 with MSAA, with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them with setting the pseudo random value of gl_SampleMask/SV_Coverage by the $A_i$ of \[ $C_i$ $A_i$ $Z_i$ \], having the StochasticDepth  
-//Note that the stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.  
-Attention that:  
-1\.Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA.  
+Note that:  
+2-1\.The stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.  
+2-2\.Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA.  
 If the application demands the effect of "Spatial AntiAliasing", the application can turn on MASS in other passes(Evidently, the application use arbitrary algorithms(for example, the FAXX) in other passes).  
 These's no relationship between the MSAA used for random sampling (in StochasticDepthPass) and the MSAA used for spatial antialiasing (in other passes). For example, we can use 8X MASS in StochasticDepthPass while use 4X MSAA in other passes.  
-2\.To ensure the uncorrelation among fragments, we must use pseudo random value rather than the "AlphaToCoverage".  
-3\.The depth value used in AccumulatePass is the value of the shading position not the value of the sampling position. To be consistant, we prefer to write the depth (value of the shading position) to gl_FragDepth/SV_Depth in the fragment shader.  
-4\.By the limit of the hardware, the maximum sample count of MSAA is 8X MSAA. The author (6.[Enderton 2010]) proposed that we can use multiple passes to simulate more sample counts. Due to the performance issue, we only use one pass.  
+2-3\.To ensure the uncorrelation among fragments, we must use pseudo random value rather than the "AlphaToCoverage" hardware feature.  
+2-4\.The depth value used in AccumulatePass is the value of the shading position not the value of the sampling position. To be consistant, we prefer to write the depth (value of the shading position) to gl_FragDepth/SV_Depth in the fragment shader.  
+2-5\.By the limit of the hardware, the maximum sample count of MSAA is 8X MSAA. The author (6.[Enderton 2010]) proposed that we can use multiple passes to simulate more sample counts. Due to the performance issue, we only use one pass.  
 
+> 3\.AccumulateAndTotalAlphaPass //GeometryPass  
+initial the depth with the BackgroundDepth //by copy command  
+with depth test without depth write, with MRT and SeparateBlend/IndependentBlend, sort the transparent geometries by \[material\], bind the StochasticDepth to the SampledTextureUnit and draw them with estimate $\operatorname{SV} ( Z_i )$ by sampling the texture in fragment shader, having the StochasticColor, CorrectAlphaTotal and StochasticTotalAlpha  
+Note that:  
+3-1\.Since the depth write is turned off, the order of the geometries doesn't impact on the performance and thus we sort the geometries only by the material.  
+3-2\.We have that "StochasticColor = ${\displaystyle\sum_{i = 0}^n} \operatorname{SV} ( Z_i )  A_i C_i$", "CorrectAlphaTotal = $1 - {\displaystyle\prod_{i = 0}^n} ( 1 - A_i )$" and "StochasticTotalAlpha = ${\displaystyle\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )$".  
+3-3\.The relationship between the AlphaTotal and the TotalAlpha is TotalAlpha = 1 – AlphaTotal. The term "TotalAlpha" is from the stochastic transparency(6.[Enderton 2010]) while the term "AlphaTotal" is from the Under Operation(1.[Porter 1984]、4. [Dunn 2014]).  
+3-4\.The StochasticTotalAlpha is only used when the Alpha correction is turned on. This means that we can reduce one RT if we don't turn on the Alpha correction.  
+3-5\.The author(6.[Enderton 2010]) use two separate passes AccumulatePass(which calculates the StochasticColor and the StochasticTotalAlpha) and TotalAlphaPass(which calculates CorrectAlphaTotal). However, we can totally merge them into a single pass. Maybe the SeparateBlend/IndependentBlend was not supported by the hardware when the author published the paper.
 
-
-
-
->> 3\.AccumulateAndTotalAlphaPass //GeometryPass  
->>> 将Depth初始化为BackgroundDepth   
->>> 开启深度测试关闭深度写入   
->>> 将StochasticDepth绑定到片元着色器的纹理单元并在片元着色器采样纹理得到$\operatorname{SV} ( Z_i )$  
->>> 开启MRT和SeparateBlend/IndependentBlend  
->>> 
->>> 将透明物体按材质排序后绘制得到：StochasticColor = ${\displaystyle\sum_{i = 0}^n} \operatorname{SV} ( Z_i )  A_i C_i$、CorrectAlphaTotal = $1 - {\displaystyle\prod_{i = 0}^n} ( 1 - A_i )$、StochasticTotalAlpha = ${\displaystyle\sum_{i = 0}^n} ( \operatorname{SV} ( Z_i ) A_i )$   
->>> 注：  
->>> 由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序  
->>> AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal //术语”TotalAlpha”来自随机透明（6.[Enderton 2010]） //术语”AlphaTotal”来自Under操作（1.>> [Porter 1984]、4. [Dunn 2014]）  
->>> StochasticTotalAlpha只有在启用Alpha校正时才会被用到（理论上，在没有启用Alpha校正时，可以省1个RT）  
->>>   
->>> 注：
->>> 在论文原文中，AccumulatePass（计算StochasticColor和StochasticTotalAlpha）和TotalAlphaPass（计算CorrectAlphaTotal）是2个分离的Pass（6.[Enderton 2010]）  
->>> 但是，在实际中，完全可以将它们合并到同一个Pass   
->>> 这种情况的出现可能是由于SeparateBlend/IndependentBlend在论文发表时并没有被硬件广泛支持   
- 
->> 4\.CompositePass //FullScreenTrianglePass  
->>> 没有启用Alpha校正时，透明物体对$C_{Final}$的总贡献 TransparentColor = ${\displaystyle\sum_{i = 0}^n} \operatorname{SV} ( Z_i )  A_i C_i$ = StochasticColor    
->>>   
->>> 在启用Alpha校正时，透明物体对$C_{Final}$的总贡献   
+>4\.CompositePass //FullScreenTrianglePass  
+Without the Alpha correction, the total contribution of the transparent geometries:  
+TransparentColor = $\displaystyle { \sum_{i = 0}^n} \operatorname{SV} ( Z_i )  A_i C_i$ = StochasticColor  
+With the Alpha correction, the total contribution of the transparent geometries:  
 TransparentColor = ${\begin{cases} {\displaystyle\sum_{i = 0}^n} {  ( \operatorname{SV} ( Z_i ) \frac{1- {\displaystyle\prod_{i = 0}^n} ( 1 - A_i ) }{ {\displaystyle\sum_{i = 0}^n} ( \operatorname{SV}( Z_i ) A_i )} ) A_i C_i  } &{if \; {\displaystyle\sum_{i = 0}^n} {\operatorname{SV}( Z_i ) A_i)} > 0} \\0 &{if \; {\displaystyle\sum_{i = 0}^n} \operatorname{SV}( Z_i ) A_i = 0} \end{cases}}$   
 = ${\begin{cases} {({\displaystyle\sum_{i = 0}^n}{\operatorname{SV}( Z_i )} A_i C_i)}{\frac{1 - {\displaystyle\prod_{i = 0}^n}( 1 - A_i )}{{\displaystyle\sum_{i = 0}^n}(\operatorname{SV}( Z_i ) A_i)}} &{if\;{\displaystyle\sum_{i = 0}^n} ( \operatorname{SV}( Z_i ) A_i ) > 0} \\0 &{if\;{\displaystyle\sum_{i = 0}^n}{({\operatorname{SV}( Z_i)}A_i)}=0} \end{cases}}$  
 = ${\begin{cases} \text{StochasticColor} \frac{ 1 - \text{CorrectAlphaTotal}}{\text{StochasticTotalAlpha}} &{if\;{\displaystyle\sum_{i = 0}^n}{({\operatorname{SV}( Z_i )}A_i)} > 0} \\0 &{if\;{\displaystyle\sum_{i = 0}^n} ( \operatorname{SV}( Z_i ) A_i ) = 0} \end{cases}}$   
-//注：显然，不透明物体的StochasticTotalAlpha为0；但是，由于采样点是随机生成的，透明物体的StochasticTotalAlpha也可能为0  
->>>   
->>> 随后，基于CorrectAlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}$ = TransparentColor + CorrectAlphaTotal × BackgroundColor ） //注：可以在片元着色器中输出TransparentColor和CorrectAlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
+Note that the StochasticTotalAlpha of opaque geometries is evidently zero. However, due to the random sampling, the StochasticTotalAlpha of the transparent geometries can be zero as well.  
+
+> Then, add the TransparentColor to the final color $\displaystyle C_{Final}$ by the Over Operation:  
+$\displaystyle C_{Final}$ = TransparentColor + CorrectAlphaTotal × BackgroundColor)  
+Note that the BackgroundColor has been added to the color buffer. We can output the TransparentColor and CorrectAlphaTotal in the fragment shader and use the Alpha blend hardware feature to implement the Over Operation.  
 
 ### Tile/On-Chip Memory  
-> 随机透明在本质上是比较适合移动GPU的。  
->  
-> 在传统的桌面GPU上，随机透明的性能瓶颈在于MSAA，1个片元对应于S个采样点的MSAA会使带宽的开销增加S倍。  
->  
-> 但是，在移动GPU上，这个问题得到了有效的解决，可以将开启MSAA的图像保存在Tile/On-Chip Memory中，并在RenderPass结束后丢弃，并不会与主存进行通信，从而将带宽开销降低到几乎为零。  
-次世代的API允许应用程序显式地对此进行设置：使用VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT(Vulkan) / MTLStorageModeMemoryless(Metal)可以将图像的存储模式显式地设置为Tile/On-Chip Memory（在RenderPass结束后丢弃，并不会写回主存）；不过在片元着色器（Fragment Shader）中，使用该存储模式的图像不再被允许用传统的TextureUnit来读取，而必须用Subpass Input(Vulkan) / \[color(m)\]Attribute(Metal)来读取。  
-传统的API并不允许将图像的存储模式显式地设置为Tile/On-Chip Memory，但是可以用FrameBufferFetch(OpenGL) / PixelLocalStorage(OpenGL)进行暗示（16.[Bjorge 2014] ）。  
-  
+The stochastic transparency is intrinsically suitable to mobile GPU.  
+
+In the traditional desktop GPU, the performance bottleneck is the MSAA. Since one pixel corresponds to S samples, the bandwidth is increased by S times.  
+
+However, in the mobile GPU, this problem has been solved effectively. We can keep the MSAA image in the Tile/On-Chip Memory and discard the MSAA image when the renderpass ends without writing to the main memory. This means that the bandwidth can be decreased to almost zero.  
+
+The Vulkan/Metal API allows the application to set this configuration explicitly:  
+Use the "VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT"/"MTLStorageModeMemoryless" to set the storage mode of the image to the Tile/On-Chip Memory explicitly.  
+And the images with this storage mode prohibit to be read by the traditional sampled texture unit in the fragment shader and must be read by the "Subpass Input"/"\[color(m)\]Attribute".
+
+The OpenGL API doesn't allow the application to set this configuration explicitly but we can use "FrameBufferFetch"/"PixelLocalStorage"(16.[Bjorge 2014]) to indicate our purpose.  
+
 #### Vulkan   
+
+In vulkan, one "RenderPass" consists of several "SubPass"
   
 > 在Vulkan中，1个RenderPass由若干个SubPass组成，RenderPass中的不同Attachment的MSAA设置并不要求相同，但是同一SubPass引用的所有ColorAttachment和DepthStencilAttachment的MSAA设置应当相同（即与调用DrawCall时所绑定的PipelineState中的MultisampleState相同）。  
 >     
