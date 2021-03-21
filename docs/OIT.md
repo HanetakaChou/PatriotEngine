@@ -55,7 +55,7 @@ $A_{Total\_n}=A_{Total\_n-1}( 1-A_n)$
 Note that the $A_{Total}$ in Under Operation is exactly the visibility function $\operatorname{V} ( Z_i )$ above.   
 At last, the result image of the OpaquePass is treated as the fragments with "A=1 C=BackgroundColor" and added to the final color by the Under Operation.
   
-By the mathematical induction, we can prove that the Over Operation and the Under Operation are equivalent. Both can estimate the final color $C_{Final}$ correctly by $\displaystyle \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$.  
+By the mathematical induction, we can prove that the Over Operation and the Under Operation are equivalent. Both can calculate the final color $C_{Final}$ correctly by $\displaystyle \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$.  
 
 Technically, the correctness of the Over/Under Operation can only be guaranteed by sorting the "fragments" from back to front/from front to back. However, in real time rendering, the sorting is based on the geometries not the fragments. If there exists interlacing inside the geometry, the order of the fragments will not follow and thus we have to explore the OIT(Order Independent Transparency) algorithm to settle this problem.
 
@@ -69,19 +69,19 @@ Depth Peeling(5.[Everitt 2001]) is an archaic method which might be used in real
 draw opaque geometries and have the BackgroundColor and the BackgroundDepth.  
 
 >2\.NearestLayerPass //GeometryPass  
-initial the depth with the BackgroundDepth //by copy command  
+copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them, having the NearestLayerColor and the NearestLayerDepth  
-added the NearestLayerDepth to the final color $C_{Final}$ by Under Operation  
+add the NearestLayerDepth to the final color $C_{Final}$ by Under Operation  
 //Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
 
 >3\.SecondNearestLayerPass //GeometryPass
-initial the depth with the BackgroundDepth //by copy command  
+copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the NearestLayerDepth to the SampledTextureUnit and draw them with discarding the fragments NearerOrEqual than the NearestLayerDepth explicitly in the fragment shader, having the SecondNearestLayerColor and the SecondNearestLayerDepth  
-added the SecondNearestLayerColor to the final color $C_{Final}$ by Under Operation  
+add the SecondNearestLayerColor to the final color $C_{Final}$ by Under Operation  
 //Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
 
 >4\.ThirdNearestLayerPass //GeometryPass
-initial the depth with the BackgroundDepth //by copy command  
+copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the SecondNearestLayerDepth to the SampledTextureUnit and ...  
 //Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
 
@@ -153,7 +153,7 @@ right = $1 - {\displaystyle{\prod_{i = 0}^0}} ( 1 - A_i )$
 = $1 - ( 1 - A_0 )$  
 = $A_0$  
 left = right the equation holds  
-2\.inductive step:
+2\.inductive step:  
 we assume that the proposition holds for n=k.  
 when n=k+1:  
 left = ${\displaystyle{\sum_{i = 0}^{k + 1}}} ( \operatorname{V} ( Z_i ) A_i )$  
@@ -176,7 +176,7 @@ This means that we assume that $\frac{\operatorname{SV} ( Z_i )}{ {\displaystyle
 draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.
 
 > 2\.StochasticDepthPass //GeometryPass  
-initial the depth with the BackgroundDepth //by copy command  
+copy the BackgroundDepth to initialize the depth buffer  
 with MSAA, with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them with setting the pseudo random value of gl_SampleMask/SV_Coverage by the $A_i$ of \[ $C_i$ $A_i$ $Z_i$ \], having the StochasticDepth  
 Note that:  
 2-1\.The stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.  
@@ -188,7 +188,7 @@ These's no relationship between the MSAA used for random sampling (in Stochastic
 2-5\.By the limit of the hardware, the maximum sample count of MSAA is 8X MSAA. The author (6.[Enderton 2010]) proposed that we can use multiple passes to simulate more sample counts. Due to the performance issue, we only use one pass.  
 
 > 3\.AccumulateAndTotalAlphaPass //GeometryPass  
-initial the depth with the BackgroundDepth //by copy command  
+copy the BackgroundDepth to initialize the depth buffer  
 with depth test without depth write, with MRT and SeparateBlend/IndependentBlend, sort the transparent geometries by \[material\], bind the StochasticDepth to the SampledTextureUnit and draw them with estimate $\operatorname{SV} ( Z_i )$ by sampling the texture in fragment shader, having the StochasticColor, CorrectAlphaTotal and StochasticTotalAlpha  
 Note that:  
 3-1\.Since the depth write is turned off, the order of the geometries doesn't impact on the performance and thus we sort the geometries only by the material.  
@@ -225,50 +225,63 @@ The OpenGL API doesn't allow the application to set this configuration explicitl
 
 #### Vulkan   
 
-In vulkan, one "RenderPass" consists of several "SubPass"
-  
-> 在Vulkan中，1个RenderPass由若干个SubPass组成，RenderPass中的不同Attachment的MSAA设置并不要求相同，但是同一SubPass引用的所有ColorAttachment和DepthStencilAttachment的MSAA设置应当相同（即与调用DrawCall时所绑定的PipelineState中的MultisampleState相同）。  
->     
-> 随机透明可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
-  
-```  
-    RenderPass:  
-        Attachment:  
-            0.FinalColor
-            1.BackGroupDepth
-            2.StochasticDepth (MSAA)
-            3.StochasticColor
-            4.CorrectAlphaTotal
-            5.StochasticTotalAlpha
-        SubPass:  
-            0.OpaquePass:
-                ColorAttachment: 0.FinalColor //BackGroupColor->FinalColor
-                DepthStencilAttachment: 1.BackGroupDepth  
-            1.Z_CopyPass_Mentioned_In_StochasticDepthPass_Above_Z: //Rasterization MSAA
-                InputAttachment: 1.BackGroupDepth
-                ColorAttachment: 2.StochasticDepth (MSAA)  
-            2.StochasticDepthPass: //Rasterization MSAA
-                DepthStencilAttachment: 2.StochasticDepth (MSAA)  
-            3.AccumulateAndTotalAlphaPass:
-                InputAttachment: 2.StochasticDepth (MSAA)
-                ColorAttachment: 3.StochasticColor 4.CorrectAlphaTotal 5.StochasticTotalAlpha
-                DepthStencilAttachment: 1.BackGroupDepth  
-            4.CompositePass:
-                InputAttachment: 3.StochasticColor 4.CorrectAlphaTotal  5.StochasticTotalAlpha
-                ColorAttachment: 0.FinalColor  //TransparentColor+CorrectAlphaTotal×BackgroundColor->FinalColor //用硬件的AlphaBlend阶段实现Over操作  
-        Dependency:
-            0.SrcSubPass:0 -> DstSubPass:1
-                //DepthStencilAttachment->InputAttachment: 1.BackGroupDepth
-            1.SrcSubPass:1 -> DstSubPass:2
-                //ColorAttachment->DepthStencilAttachment: 2.StochasticDepth (MSAA)
-            2.SrcSubPass:2 -> DstSubPass:3
-                //DepthStencilAttachment->InputAttachment: 2.StochasticDepth (MSAA)
-            3.SrcSubPass:3 -> DstSubPass:4
-                //ColorAttachment->ColorAttachment: 0.FinalColor //SubPassDependencyChain: 0->1->2->3->4
-                //ColorAttachment->InputAttachment: 3.StochasticColor
-                //ColorAttachment->InputAttachment: 4.CorrectAlphaTotal
-                //ColorAttachment->InputAttachment: 5.StochasticTotalAlpha  
-```  
+In Vulkan, one "RenderPass" consists of several "SubPass". The MSAA simple count of different attachments of the same RenderPass may not be the same. However, the MSAA sample count of the attachments refered by the same SubPass must be the same and the MSAA sample count is also expected to be the same as the count in MultisampleState of the PipelineState when issuing DrawCall.
+
+The stochastic transparency can be implemented in one RenderPass as the following: //We suppose the application doesn't turn on the MSAA for "Spatial AntiAliasing".  
+```
+RenderPass  
+    Attachments  
+        0.FinalColor
+        1.BackgroundDepth  
+        2.StochasticDepth (MSAA)
+        3.StochasticColor
+        4.CorrectAlphaTotal
+        5.StochasticTotalAlpha
+    SubPasses
+        0.OpaquePass
+            ColorAttachments
+                0.FinalColor //BackgroundColor->FinalColor
+            DepthStencilAttachment
+                1.BackgroundDepth
+        1.CopyPass //Mentioned in StochasticDepthPass //Rasterization MSAA
+            InputAttachments
+                1.BackGroupDepth
+            ColorAttachments
+                2.StochasticDepth (MSAA)
+        2.StochasticDepthPass //Rasterization MSAA
+            DepthStencilAttachments
+                2.StochasticDepth (MSAA)  
+        3.AccumulateAndTotalAlphaPass
+            InputAttachments
+                2.StochasticDepth (MSAA)
+            ColorAttachments
+                3.StochasticColor
+                4.CorrectAlphaTotal
+                5.StochasticTotalAlpha
+            DepthStencilAttachments
+                1.BackGroupDepth
+        4.CompositePass
+            InputAttachments
+                3.StochasticColor
+                4.CorrectAlphaTotal
+                5.StochasticTotalAlpha
+            ColorAttachments
+                0.FinalColor  //TransparentColor
+                (+=(CorrectAlphaTotal×BackgroundColor))->FinalColor //implement the Over Operation by the Alpha blend hardware feature
+    Dependency:
+        0.SrcSubPass:0->DstSubPass:1
+            //DepthStencilAttachment->InputAttachment: 1.BackGroupDepth
+        1.SrcSubPass:1->DstSubPass:2
+            //ColorAttachment->DepthStencilAttachment: 2.StochasticDepth (MSAA)
+        2.SrcSubPass:2->DstSubPass:3
+            //DepthStencilAttachment->InputAttachment: 2.StochasticDepth (MSAA)
+        3.SrcSubPass:3->DstSubPass:4
+            //ColorAttachment->ColorAttachment: 0.FinalColor
+            //ColorAttachment->InputAttachment: 3.StochasticColor
+            //ColorAttachment->InputAttachment: 4.CorrectAlphaTotal
+            //ColorAttachment->InputAttachment: 5.StochasticTotalAlpha
+    //SubPassDependencyChain: 0->1->2->3->4  
+```
   
 #### Metal  
 
@@ -561,7 +574,7 @@ In vulkan, one "RenderPass" consists of several "SubPass"
 ### Demo  
 > Demo地址：[https://gitee.com/YuqiaoZhang/WeightedBlendedOIT](https://gitee.com/YuqiaoZhang/WeightedBlendedOIT) / [https://github.com/YuqiaoZhang/WeightedBlendedOIT](https://github.com/YuqiaoZhang/WeightedBlendedOIT)。该Demo改编自NVIDIA GameWorks Vulkan and OpenGL Samples中的Weighted Blended Order-independent Transparency（24\.\[NVIDIA\]）。加权融合是所有OIT算法中最简单的，我也并没有对Demo作任何实质性的修改。  
   
-## 参考文献  
+## Reference  
 1\.\[Porter 1984\] Thomas Porter, Tom Duff. "Compositing Digital Images." SIGGRAPH 1984.  
 [https://keithp.com/~keithp/porterduff/p253-porter.pdf](https://keithp.com/~keithp/porterduff/p253-porter.pdf)  
 2\.\[Yusor 2013\] Egor Yusor. "Practical Implementation of Light Scattering Effects Using Epipolar Sampling and 1D Min/Max Binary Trees." GDC 2013.  
