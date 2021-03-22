@@ -287,58 +287,19 @@ RenderPass
   
 #### Metal  
 
-> Metal在API层面并没有InputAttachment的概念，而是通过\[color(m)\]Attribute允许在片元着色器中读取ColorAttachment。  
-但是，这样的设计存在着限制：\[color(m)\]Attribute只允许读取ColorAttachment，而不允许读取DepthAttachment，需要增加1个额外的ColorAttachment并将Depth写入到该ColorAttachment中（17.[Apple]）。  
-该限制的原因，可能与“D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE“中的说明（18\.\[Microsoft\]）有一定关联，即在Apple的GPU上，不允许读取DepthAttachment可以减少带宽开销。  
-> 
-> 并且，在Metal中开启MSAA时，通过\[color(m)\]Attribute读取ColorAttachment会导致片元着色器对每个采样点执行一次，得到ColorAttachment在该采样点处的值，从而导致无法求解$\operatorname{SV}( Z_i )$（因为在片元着色器的一次执行中，我们无法得到所有采样点的数据，而只能得到某一个采样点的数据）。  
-因此，硬件的MSAA不可用，我们只能尝试用多个ColorAttachment来模拟MSAA，考虑到ColorAttachment的存在着个数上限（A7->4个 A8,A9,A10,A11->8个）和大小上限（A7->128位 A8,A9,A10->256位 A11->512位），最多可以模拟20X MSAA。  
-由于没有开启硬件的MSAA，硬件的深度测试不可用（DepthAttachment中只有1个采样点），只能在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入，硬件会保证该RMW操作的原子性（下文在介绍K-Buffer时会对**可编程融合**的具体细节进行介绍）。  
->  
-> //注：Metal中不存在SubPass的概念，因此缺少某种将DepthAttachment转换成InputAttachment的屏障（Barrier）机制。  
->  
-> 随机透明在Metal中也可以在1个RenderPass中实现，具体如下： //假设应用程序并没有开启MSAA用于空间反走样  
+In Metal, there is no such thing like InputAttachment. We instead use the \[color(m)\]Attribute in fragment shader to read the ColorAttachment.  
+However, this design introduces the limit that the \[color(m)\]Attribute only permits us to read the ColorAttachment in the fragment shader and We have no method to read the DepthAttachment. We have to use an extra ColorAttachment to store the Depth(17\.\[Apple\]) although this may allow us to save the bandwidth by writing the lower precise depth to the ColorAttachment and discarding the DepthAttachment.
+This limit may be related to the explanation of the "D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE"(18\.\[Microsoft\]). This means that for Apple's GPU, the performance may be improved by prohibiting reading the DepthAttachment.
+
+Besides, there is no equivalent of "subpassInputMS" in Metal. While turning on the MSAA in Metal, the fragment shader is excuted isolatedly for each sample, we can only use the \[color(m)\]Attribute to read the value of one sample not all samples in the pixel and thus we can calculate the $\operatorname{SV}( Z_i )$.  
+
+However, we may simulate the "subpassInputMS" by multiple ColorAttachments without MSAA. Since we turn off the MSAA, there exists only one sample in the DepthAttachment and thus we can't perform MSAA depth test by the hardware feature. This means that we have to simulate the depth test by programmable blending which will be explained later in the K-Buffer.  
+
+Evidently, the simulation is expected to be hostile to the performance and I don't suggest using this method in Metal.
   
-```  
-    RenderPassDescriptor:
-        ColorAttachment:
-            0.FinalColor //Load:Clear //Store:Store //Format:R10G10B10A2_UNORM //HDR10
-            1.StochasticDepth0123 //Load:Clear //Store:DontCare //Format:R16G16B16A16_FLOAT
-            2.StochasticDepth4567 //Load:Clear //Store:DontCare //Format:R16G16B16A16_FLOAT
-            3.StochasticDepth89AB //Load:Clear //Store:DontCare //Format:R16G16B16A16_FLOAT
-            4.StochasticDepthCDEF //Load:Clear //Store:DontCare //Format:R16G16B16A16_FLOAT
-            5.StochasticColor //Load:Clear //Store:DontCare //Format:R10G10B10A2_UNORM //HDR10
-            6.CorrectAlphaTotal	 //Load:Clear //Store:DontCare //Format:R8_UNORM
-            7.StochasticTotalAlpha //Load:Clear //Store:DontCare //Format:R16_FLOAT //R8的精度不够
-            //注：可以将[color(6)]和[color(7)]合并到同一个ColorAttachment后，再增加一个StochasticDepthGHIJ，即可模拟20X MSAA。    
-        DepthAttachment:
-            Depth //Load:Clear //Store:DontCare  
-    RenderCommandEncoder:
-        0.OpaquePass:
-            BackgroundColor->Color[0]
-            BackgroundDepth->Depth
-        1.StochasticDepthPass:
-            //复用Depth中的BackgroundDepth，开启深度测试，关闭深度写入；同时开启[[early_fragment_tests]]，使用硬件的深度测试剔除掉比“Background”更远的片元
-            ...->SampleMask
-            Read: color[1]/color[2]/color[3]/color[4]->16X MSAA
-            Modify: ...
-            Write: 16X MSAA->color[1]/color[2]/color[3]/color[4]
-        2.AccumulateAndTotalAlphaPass:
-            //复用Depth中的BackgroundDepth
-            color[1]/color[2]/color[3]/color[4]->SV(Zi)
-            ...->Color[5]
-            ...->Color[6]
-            ...->Color[7]
-        3.CompositePass:
-            Color[5]->...
-            Color[6]->...
-            Color[7]->...
-            ...->TransparentColor
-            ...->CorrectAlphaTotal
-            Color[0]->BackgroundColor
-            TransparentColor+CorrectAlphaTotal*BackgroundColor->Color[0]  
-```  
-  
+### Conclusion  
+Since MSAA is efficient on mobile GPU, the stochastic transparency is intrinsically suitable to mobile GPU.  
+
 ### 综合评价  
   
 > 由于移动GPU上的MSAA是高效的，随机透明在本质上是比较适合移动GPU的。  
