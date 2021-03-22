@@ -288,10 +288,10 @@ RenderPass
 #### Metal  
 
 In Metal, there is no such thing like InputAttachment. We instead use the \[color(m)\]Attribute in fragment shader to read the ColorAttachment.  
-However, this design introduces the limit that the \[color(m)\]Attribute only permits us to read the ColorAttachment in the fragment shader and We have no method to read the DepthAttachment. We have to use an extra ColorAttachment to store the Depth(17\.\[Apple\]) although this may allow us to save the bandwidth by writing the lower precise depth to the ColorAttachment and discarding the DepthAttachment.
+However, this design introduces the limit that the \[color(m)\]Attribute only permits us to read the ColorAttachment in the fragment shader and we have no method to read the DepthAttachment. We have to use an extra ColorAttachment to store the Depth(17\.\[Apple\]) although this may allow us to save the bandwidth by writing the lower precise depth to the ColorAttachment and discarding the DepthAttachment.
 This limit may be related to the explanation of the "D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE"(18\.\[Microsoft\]). This means that for Apple's GPU, the performance may be improved by prohibiting reading the DepthAttachment.
 
-Besides, there is no equivalent of "subpassInputMS" in Metal. While turning on the MSAA in Metal, the fragment shader is excuted isolatedly for each sample, we can only use the \[color(m)\]Attribute to read the value of one sample not all samples in the pixel and thus we can calculate the $\operatorname{SV}( Z_i )$.  
+Besides, there is no equivalent of "subpassInputMS" in Metal. While turning on the MSAA in Metal, the fragment shader is excuted isolatedly for each sample, we can only use the \[color(m)\]Attribute to read the value of one sample not all samples in the pixel and thus we can't calculate the $\operatorname{SV}( Z_i )$.  
 
 However, we may simulate the "subpassInputMS" by multiple ColorAttachments without MSAA. Since we turn off the MSAA, there exists only one sample in the DepthAttachment and thus we can't perform MSAA depth test by the hardware feature. This means that we have to simulate the depth test by programmable blending which will be explained later in the K-Buffer.  
 
@@ -331,51 +331,51 @@ In the pass in which we generate the K-Buffer, the following RMW operation is pe
 
 For the current hardware, we can immediately implement the RMW operation by the UAV/StorageImage. However, things are far from simple. In general, the RMW operations performed on the fragments corresponding to the same pixel should be mutually exclusive to ensure the correctness.  
   
-> 在API层面，对应于同一像素的不同片元之间的同步发生在Alpha融合阶段，也就是说，这些片元在片元着色器阶段是并行执行的。  
->   
-> 在桌面GPU（Sort-Last Fragment）上，对应于同一像素的不同片元的RMW操作的“**竞态条件**（Race Condition）”显得尤其显著。  
-> 不妨回忆，在顺序性透明中，我们将物体从前往后/从前往后排序，并依次调用Draw Call，这意味应用程序调用Draw Call的顺序隐含着某种依赖关系。但是，GPU的设计者往往希望尽可能地提升并行度以充分挖掘GPU的性能；在实际中，GPU仍并行地处理这些Draw Call，只不过会在某个同步点进行同步，使最终结果满足应用程序所期望的依赖关系。  
-> 在桌面GPU上，这个同步点发生在片元着色器之后Alpha融合之前的Reorder Buffer中（13.[Ragan-Kelley 2011]），也就是说，即使在Draw Call顺序上存在着依赖关系的片元，在GPU中也是并行处理的（即存在**竞态条件**），更不用说在同一个Draw Call中（即在应用层不存在任何期望的依赖关系）的片元。  
->  
-> 在移动GPU（Tile-Based Sort-Middle）上，由于没有Reorder Buffer的存在，对应于同一像素的不同片元是串行执行的（13.[Ragan-Kelley 2011]）。这也是移动GPU并不需要Depth PrePass（10.[Harris 2019]）的原因，GPU会在EarlyDepthTest阶段确定最终覆盖像素的片元，并只为该片元执行片元着色器；由于在大多数情况下（比如绘制不透明物体），最终覆盖像素的片元只有一个，串行执行并不会对性能有太大的影响。这也解释了移动GPU排斥Discard（10.[Harris 2019]）的原因，Discard会导致GPU无法在EarlyDepthTest阶段确定最终覆盖像素的片元，可能会导致GPU为对应于同一像素的多个片元执行片元着色器，然而在移动GPU上，这些片元着色器是串行执行的，在效率上低于桌面GPU（并行执行）。  
-> 但是，由于片元着色器阶段在API层面被看作是并行执行的，而且GPU硬件的内部实现是不公开的，应用程序还是不应当作出“对应于同一像素的不同片元在访问StorageImage(OpenGL/Vulkan) / UAV(Direct3D)时的RMW操作不存在**竞态条件**”的假定。还是有很多其它潜在的因素可能会对此造成影响，比如：执行依赖并不代表内存依赖，由于StorageImage(OpenGL/Vulkan) / UAV(Direct3D)并不保存在Tile/On-Chip Memory中，考虑到缓存机制的存在，虽然，对应于同一像素的不同片元是串行执行的，但是，之前的片元对StorageImage(OpenGL/Vulkan) / UAV(Direct3D)的写入并不一定会对之后的片元可见（即之前的片元写入到了缓存，而之后的片元从主存中读取；至少在API层面完全允许GPU的设计者这么做）。 //个人认为还是有必要通过实验来确定    
-  
-> Bavoil在2007年提出K-Buffer时，同时提出了两种硬件上的设计——片元调度（Fragment Schedule）和可编程融合（Programmable Blending）——来解决对应于同一像素的不同片元的RMW操作存在**竞态条件**的问题（12.[Bavoil 2007]）。目前，这两种设计都已经在实际中被硬件广泛支持。  
-  
-### 片元调度（Fragment Scheduling）  
-> 片元调度对应于目前的RasterOrderView(Direct3D) / FragmentShaderInterlock(OpenGL/Vulkan) / RasterOrderGroup(Metal)（14.[D 2015]、15.[D 2017]），往往适用于桌面GPU。  
->    
-> 使用片元调度实现K-Buffer的片元着色器的代码大致如下：  
-    
+Although the API guarantees the order and dependency of different draw calls, the GPU designers always tend to full explore the parallelism to improve the performance. In general, the GPU may still execute these draw calls in parallel and merely synchronize at some point.  
+
+The API doesn't guarantee the order or dependency of the executions of the fragments (corresponding to the same pixel) inside the same draw call. Evidently, the executions can be considered to be parallel since the GPU is intrinsically parallel.  
+
+The desktop GPU is "Sort-Last Fragment"(13.[Ragan-Kelley 2011]). The parallelism of the fragments is expected to be high since the synchronization occurs at the "Reorder Buffer"(13.[Ragan-Kelley 2011]) which is after the fragment shader and just before the Alpha blend.
+
+The mobile GPU is "Tile-Based Sort-Middle"(13.[Ragan-Kelley 2011]). The executions of the fragments corresponding to the same pixel inside the same draw call can be considered to be serial(13.[Ragan-Kelley 2011]) since there doesn't exist the "Reorder Buffer". However, we shouldn't rely on this since the API doesn't guarantee that.  
+
+Bavoil proposed two hardware proposals the "Fragment Scheduling" and the "Programmable Blending" to solve this problem in 2007(12.[Bavoil 2007]). Both two proposals have been widely supported by the hardware in reality.  
+
+### Fragment Scheduling  
+
+The fragment Scheduling corresponds to the RasterOrderView/FragmentShaderInterlock/RasterOrderGroup(14.[D 2015], 15.[D 2017]) at present which is generally suitable to the desktop GPU.  
+
+The pseudo code to implement the K-Buffer by the fragment Scheduling is generally as the following:   
 ```  
-        Do Shade //这部分代码并不需要互斥
+    calcalte lighting and shading ... //this part of code doesn't need to be mutually exclusive
                                                 
-    //Enter Critical Section //进入临界区
-    #if RasterOrderView(Direct3D)
-        Read From ROV
-    #elif FragmentShaderInterlock(OpenGL/Vulkan)
+    //enter the critical section
+    #if RasterOrderView //Direct3D
+        read from ROV
+    #elif FragmentShaderInterlock //OpenGL/Vulkan
         beginInvocationInterlockARB
-    #elif RasterOrderGroup(Metal)
-        Read From ROG
+    #elif RasterOrderGroup //Metal
+        read from ROG
     #endif
 
-        Do K-Buffer RMW //这部分代码处于临界区保护内
+    perform the RMW operation on the K-Buffer ... // this part of code is inside the protection of the "critical section"
 
-    //Leave Critical Section //离开临界区
-    #if RasterOrderView(Direct3D)
-        Write To ROV
-    #elif FragmentShaderInterlock(OpenGL/Vulkan)
+    //leave the critical section
+    #if RasterOrderView //Direct3D)
+        write o ROV
+    #elif FragmentShaderInterlock //OpenGL/Vulkan)
         endInvocationInterlockARB
-    #elif RasterOrderGroup(Metal)
-         Write To ROG
+    #elif RasterOrderGroup //Metal
+        write to ROG
     #endif
 ```  
-   
+In theory, the content  
 > //注：在理论上，对ROV/ROG读写的内容并不重要，读写ROV/ROG只是为了进入/离开临界区（从这一点上，OpenGL/Vulkan的设计更为优雅）；“Do K-Buffer RMW”已经处于临界区的保护之中，不再有读写ROV/ROG的必要，K-Buffer的存储只需要使用常规的UAV(Direct3D) / StorageImage(OpenGL/Vulkan)即可（14.[D 2017]）。  
    
-### 可编程融合（Programmable Blending）  
-> 可编程融合对应于目前的FrameBufferFetch(OpenGL) / \[color(m)\]Attribute(Metal)（16.[Bjorge 2014]、17.[Apple]），往往适用于移动GPU。  
->  
+### Programmable Blending  
+
+The programmable blending corresponds to the FrameBufferFetch/\[color(m)\]Attribute(16.[Bjorge 2014], 17.[Apple]）at present which is generally suitable to the mobile GPU.  
+
 > 可编程融合允许在片元着色器中读取ColorAttachment，对ColorAttachment进行RMW操作，硬件会保证对应于同一像素的不同片元对同一ColorAttachment的RMW操作的**互斥**性。我们只需要开启MRT，就可以基于可编程融合实现K-Buffer。比如，在OIT算法中，我们需要实现1个像素对应于4个片元[C A Z]构成的K-Buffer，相关的片元着色器代码（基于Metal）大致如下：  
     
 ```  
@@ -426,7 +426,7 @@ For the current hardware, we can immediately implement the RMW operation by the 
     }
 ```  
    
-### MLAB（Mult Layer Alpha Blending，多层Alpha融合）  
+### MLAB(Mult Layer Alpha Blending)  
 > Salvi分别在2010年、2011年、2014年提出的OIT算法全都是基于K-Buffer实现的（19\.\[Salvi 2010\]、20\.\[Salvi 2011\]、21\.\[Salvi 2014\]），我们选取最新的（即2014年）的MLAB进行介绍。  
     
 #### K-Buffer  
