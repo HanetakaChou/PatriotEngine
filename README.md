@@ -1,9 +1,9 @@
 ﻿### Project Description     
-PatriotEngine is the source code of the book "Developing A Graphics Rendering Engine With Vulkan/Metal/Direct3D12" which is being written.   
+PatriotEngine aims to be a state-of-the-art real-time image synthesis engine and I believe that more and more programmers tend to develop their own engines without being restricted to Unity or UE4. 
 
 Although there is no official standard of the **Graphics Rendering** Engine at present, the functionality of the **Graphics Rendering** Engine has steadily stabilized with the evolution of the **Graphics Rendering** Engine in the past few decades and thus has formed the de facto standard.   
 
-It's widely establish that "Program = Data Structure + Algorithm" and this book will elaborate the **Graphics Rendering** Engine from two aspects: Scene (Data Structure) and Rendering Pipeline (Algorithm). 
+It's widely establish that "Program = Data Structure + Algorithm" and this engine will elaborate the **Graphics Rendering** Engine from two aspects: Scene (Data Structure) and Rendering Pipeline (Algorithm). 
 
 The contents of this book is likely to be as follows:   
 >    
@@ -17,8 +17,9 @@ The contents of this book is likely to be as follows:
 >       
 > ---
 > 
-> [docs/parallel-rendering-overview.md](docs/parallel-rendering-overview.md)
->    
+> [docs/parallel-rendering-overview.md](docs/parallel-rendering-overview.md)  
+> [docs/OIT.md](docs/OIT.md)  
+>   
 ---  
 
 ### Core Interfaces   
