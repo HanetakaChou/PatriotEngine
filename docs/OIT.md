@@ -318,7 +318,7 @@ The demo was originally the "StochasticTransparency" of the "NVIDIA SDK11 Sample
 
 ## K-Buffer  
 
-Carpenter proposed the "A-Buffer"(11.[Carpenter 1984]) in the same year when porter proposed the Alpha channel. In the A-Buffer, each pixel corresponds to a list in which all fragments correspond to this pixel are stored. After sorting the fragments in the list by the depth, evidently we can use Over/Under operation to calculate the final color $\displaystyle C_{Final}$.  
+Carpenter proposed the "A-Buffer"(11.[Carpenter 1984]) in the same year when Porter proposed the Alpha channel. In the A-Buffer, each pixel corresponds to a list in which all fragments correspond to this pixel are stored. After sorting the fragments in the list by the depth, evidently we can use Over/Under operation to calculate the final color $\displaystyle C_{Final}$.  
 Although A-Buffer can be implemented by UAV/StorageImage and atomic operations at present, the implementation is very tedious and inelegant. Besides, the performance of the list is low since the address of the list is not continuous and thus unfriendly to the cache. Thus there is almost no implementation in reality.
 
 Bavoil improved the A-Buffer and proposed K-Buffer(12.[Bavoil 2007]) in 2007. In K-Buffer, we limit the number of the fragments corresponding to each pixel to no more than K. With this limit, the K-Buffer can be implemented more elegantly and efficiently.
