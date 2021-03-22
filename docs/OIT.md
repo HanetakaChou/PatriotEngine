@@ -324,12 +324,12 @@ Although A-Buffer can be implemented by UAV/StorageImage and atomic operations a
 Bavoil improved the A-Buffer and proposed K-Buffer(12.[Bavoil 2007]) in 2007. In K-Buffer, we limit the number of the fragments corresponding to each pixel to no more than K. With this limit, the K-Buffer can be implemented more elegantly and efficiently.
   
 ### RMW(Read Modify Write) Operation  
-> 在生成K-Buffer的Pass中，在每个片元生成时会进行以下RMW（Read Modify Write，读取-修改-写入）操作：  
-> 1.Read：读取当前片元所对应的像素所对应的K个片元。  
-> 2.Modify：结合当前片元，对读取得到的K个片元进行修改。 //在OIT算法中，一般是将当前片元插入到这K个片元中得到K+1个片元，并找出两个“最接近”的片元进行融合，再次得到K个片元  
-> 3.Write：将修改后的K个片元写入当前片元所对应的像素。  
-     
-> 对目前的硬件而言，只要在片元着色器中访问StorageImage(OpenGL/Vulkan) / UAV(Direct3D)，就可以做到每个像素对应于K个片元并且在每个片元生成时对这K个片元进行RMW操作。但是，事情远远没有这么简单，一般而言，对应于同一像素的不同片元的RMW操作必须“**互斥**”才能保证最终结果的正确性。  
+In the pass in which we generate the K-Buffer, the following RMW operation is performed on each fragment:  
+1\.Read: read the (at most K) fragments corresponding to the same pixel from K-Buffer  
+2\.Modify: use the information of the current fragment and modified the (at most K) fragments which have been read from the K-Buffer  
+3\.Write: write the (at most K) fragments which have been modified to the K-Buffer  
+
+For the current hardware, we can immediately implement the RMW operation by the UAV/StorageImage. However, things are far from simple. In general, the RMW operations performed on the fragments corresponding to the same pixel should be mutually exclusive to ensure the correctness.  
   
 > 在API层面，对应于同一像素的不同片元之间的同步发生在Alpha融合阶段，也就是说，这些片元在片元着色器阶段是并行执行的。  
 >   
