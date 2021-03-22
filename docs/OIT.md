@@ -10,7 +10,7 @@ You should have received a copy of the GNU Lesser General Public License along w
 ```  
   
 ## Alpha Channel  
-Porter proposed "Alpha channel"(1.[Porter 1984]) in 1984 which is widely established in real-time rendering to simulate the transparent effect.  
+Porter proposed the "Alpha channel"(1.[Porter 1984]) in 1984 which is widely established in real-time rendering to simulate the transparent effect.  
 
 We assume that one "pixel" corresponds to a series of "fragments" which can be treated as the triples \[ $C_i$ $A_i$ $Z_i$ \] (C-Color A-Alpha Z-Depth), as shown in the following figure:  
 ![](OIT-1.png)  
@@ -99,7 +99,7 @@ Evidently, the depth peeling has a fatal disadvantage that the number of the geo
 
 ## Stochastic Transparency  
 The estimation of the visibility function $\displaystyle \operatorname{V} ( Z_i )$ depends on the order of the fragments. This results in that the estimation of the final color $\displaystyle C_{\displaystyle Final} = \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$ depends on the order.  
-By this fact, Enderton proposed "stochastic transparency"(6.[Enderton 2010]) in 2010 which is based on the the principles of statistics and uses MSAA hardware to random sampling to estimate the visibility function $\operatorname{V} ( Z_i )$ order independently.  
+By this fact, Enderton proposed the "stochastic transparency"(6.[Enderton 2010]) in 2010 which is based on the the principles of statistics and uses MSAA hardware to random sampling to estimate the visibility function $\operatorname{V} ( Z_i )$ order independently.  
 
 ### Stochastic Depth  
 With the MSAA on, we assume the relationship among the "pixel", "fragment" and "sample" as the following figure:  
@@ -109,8 +109,8 @@ However, the same sample corresponding to the same pixel can only be occupied by
 
 At the same time, we assume that:  
 $Z_j$ denotes one fragment of the fragments$Z_0$ $Z_1$ $Z_2$ ... $Z_n$ corresponding to the same pixel.  
-$Z_s$ denotes the fragment which occupies the sample in the final result depth image(the StochasticDepth in the implement). As we have explained above, by the limit of the storage, the sample can only be occupied by one fragment.  
-$Z_i$ denotes the fragment which is being discussed(which can be considered as the fragment being executed by the fragment shader in the implement).
+$Z_s$ denotes the fragment which occupies the sample in the final result depth image(the StochasticDepth in the implementation). As we have explained above, by the limit of the storage, the sample can only be occupied by one fragment.  
+$Z_i$ denotes the fragment which is being discussed(which can be considered as the fragment being executed by the fragment shader in the implementation).
 
 In addition, we assume that:  
 By setting the value of gl_SampleMask/SV_Coverage, we ensure that the probability of each sample be occupied by the fragment \[ $C_i$ $A_i$ $Z_i$ \] is $A_i$.  
@@ -309,7 +309,7 @@ The stochastic transparency introduces error by itself due to the random samplin
     
 ### Demo  
 
-The github address[https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)
+The github address [https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)
 
 The demo was originally the "StochasticTransparency" of the "NVIDIA SDK11 Samples"(9.[Bavoil 2011]). However, there are three fatal problems in the original code provide by the NVIDIA:  
 1\."Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA." The original code provided by the NVIDIA turns on the MSAA in all passes and thus the frame rate of the stochastic transparency is unexpectedly lower than the depth peeling. I turn off all the unnecessary MSAA and the frame rate increases from 670 to 1170 while the frame rate of deep peeling is 1070.  
@@ -317,11 +317,13 @@ The demo was originally the "StochasticTransparency" of the "NVIDIA SDK11 Sample
 3\."The depth value used in AccumulatePass is the value of the shading position not the value of the sampling position. To be consistant, we prefer to write the depth (value of the shading position) to gl_FragDepth/SV_Depth in the fragment shader." The original code provided by the NVIDIA doesn't do this. However, the Alpha correction fixes the error well and there's little impaction on the effect.  
 
 ## K-Buffer  
-> 在Porter提出Alpha通道的同一年，Carpenter提出了A-Buffer：在A-Buffer中，每个像素对应于一个链表，存放对应到该像素的所有片元；基于深度对链表中的片元排序后，用Over/Under操作即可得到$C_{Final}$（11.[Carpenter 1984]）。虽然，目前的硬件在理论上已经可以通过UAV(Direct3D)和原子操作实现A-Buffer，但是，由于实现的过程极其繁琐（编程是一门艺术，A-Buffer的实现极不优雅）且效率低下（主要是链表的地址不连续导致缓存命中率下降），几乎不存在A-Buffer的实际应用。  
->
-> 在2007年，Bavoil在A-Buffer的基础上进行了改进，将每个像素对应的片元个数限定为K个，提出了更具有实用价值的K-Buffer（12.[Bavoil 2007]）。  
+
+Carpenter proposed the "A-Buffer"(11.[Carpenter 1984]) in the same year when porter proposed the Alpha channel. In the A-Buffer, each pixel corresponds to a list in which all fragments correspond to this pixel are stored. After sorting the fragments in the list by the depth, evidently we can use Over/Under operation to calculate the final color $\displaystyle C_{Final}$.  
+Although A-Buffer can be implemented by UAV/StorageImage and atomic operations at present, the implementation is very tedious and inelegant. Besides, the performance of the list is low since the address of the list is not continuous and thus unfriendly to the cache. Thus there is almost no implementation in reality.
+
+Bavoil improved the A-Buffer and proposed K-Buffer(12.[Bavoil 2007]) in 2007. In K-Buffer, we limit the number of the fragments corresponding to each pixel to no more than K. With this limit, the K-Buffer can be implemented more elegantly and efficiently.
   
-### RMW操作  
+### RMW(Read Modify Write) Operation  
 > 在生成K-Buffer的Pass中，在每个片元生成时会进行以下RMW（Read Modify Write，读取-修改-写入）操作：  
 > 1.Read：读取当前片元所对应的像素所对应的K个片元。  
 > 2.Modify：结合当前片元，对读取得到的K个片元进行修改。 //在OIT算法中，一般是将当前片元插入到这K个片元中得到K+1个片元，并找出两个“最接近”的片元进行融合，再次得到K个片元  
