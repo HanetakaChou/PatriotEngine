@@ -298,27 +298,24 @@ However, we may simulate the "subpassInputMS" by multiple ColorAttachments witho
 Evidently, the simulation is expected to be hostile to the performance and I don't suggest using this method in Metal.
   
 ### Conclusion  
-Since MSAA is efficient on mobile GPU, the stochastic transparency is intrinsically suitable to mobile GPU.  
+Since MSAA is efficient on mobile GPU, the stochastic transparency is intrinsically suitable to mobile GPU. We can use the modern Vulkan API to fully explore the advantages of the mobile GPU.  
 
-### 综合评价  
-  
-> 由于移动GPU上的MSAA是高效的，随机透明在本质上是比较适合移动GPU的。  
-我们可以使用次世代API充分挖掘移动GPU的相关优势。  
->  
-> 但是，由于Metal在设计上的限制，导致我们不得不在片元着色器中基于**可编程融合**以软件的方式模拟MSAA的深度测试和深度写入；不过，Metal却又允许我们在一个几何体Pass中模拟最多20X的MSAA（在桌面GPU上，需要用多个Pass才能模拟8X以上MSAA）。  
-//当然，在Metal上像桌面GPU那样使用多个RenderPass绘制并不会产生这些问题；但是，很有可能会导致开启MSAA的图像被从Tile/On-Chip Memory中写回主存，产生大量的带宽开销   
->  
-> 显然，顶点着色器没有ColorAttachment，并且不会读写Tile/On-Chip Memory，因此，顶点着色器并不会受益于Tile/On-Chip Memory，移动GPU擅长片元处理而不擅长几何处理（10.[Harris 2019]）。  
-随机透明的一个缺陷在于：随机透明需要2个几何体Pass（StochasticDepthPass和AccumulateAndTotalAlphaPass），这可能会使几何处理成为性能的瓶颈。  
->   
-> 随机透明的误差在于随机抽样本身；不过，Alpha校正可以在很好地消除随机抽样产生的噪声，在效果上并不会产生太大的影响。  
+However, due to the limit by the design of the Metal, I don't suggest using the stochastic transparency in Metal.  
+
+Evidently, the vertex shader doesn't read or write the ColorAttachment and thus doesn't benifit from the Tile/On-Chip Memory of the mobile GPU. The mobile GPU prefers the fragment processing to the vertex processing(10.[Harris 2019]).  
+The stochastic transparency still need to be improved since we still have two geometry passes(StochasticDepthPass and AccumulateAndTotalAlphaPass) which may cause the vertex processing to be the performance bottleneck.  
+
+The stochastic transparency introduces error by itself due to the random sampling while the Alpha correction eliminates the noise effectively and thus the noise impacts little. 
     
 ### Demo  
-> Demo地址：[https://gitee.com/YuqiaoZhang/StochasticTransparency](https://gitee.com/YuqiaoZhang/StochasticTransparency) / [https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)。该Demo改编自NVIDIA SDK11 Samples中的StochasticTransparency（9.[Bavoil 2011]），在NVIDIA提供的原始代码中，存在着3个比较严重的问题：  
->> 1\.我在前文中指出：“随机透明本身并不要求除StochasticDepthPass以外的Pass开启MSAA”； 在NVIDIA提供的原始代码中，所有Pass都使用了相同的MSAA设置，导致随机透明的帧率反而低于深度剥离（个人测试的结果是：修正该问题后，帧率从670提升至1170（用于对比的深度剥离为1070））。  
->> 2\.我在前文中指出：“论文原文中的2个分离的Pass（AccumulatePass和TotalAlphaPass）应当合并到同一个Pass”；NVIDIA提供的原始代码并没有这么做（个人测试的结果是：修正该问题后，帧率从1170提升至1370）。  
->> 3\.我在前文中指出：“在AccumulatePass中计算$\operatorname{SV}( Z_i )$时，$Z_i$为着色点的深度；为了保持一致，在StochasticDepthPass中应当在片元着色器中将着色点的深度写入到gl_FragDepth/SV_Depth”；NVIDIA提供的原始代码并没有这么做，导致在求解$\operatorname{SV}( Z_i )$时，$Z_i$ Equal $Z_s$几乎不可能成立，产生较大的误差；不过Alpha校正可以很好地修正这个误差，在效果上并没有产生太大的影响。  
-  
+
+The github address[https://github.com/YuqiaoZhang/StochasticTransparency](https://github.com/YuqiaoZhang/StochasticTransparency)
+
+The demo was originally the "StochasticTransparency" of the "NVIDIA SDK11 Samples"(9.[Bavoil 2011]). However, there are three fatal problems in the original code provide by the NVIDIA:  
+1\."Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA." The original code provided by the NVIDIA turns on the MSAA in all passes and thus the frame rate of the stochastic transparency is unexpectedly lower than the depth peeling. I turn off all the unnecessary MSAA and the frame rate increases from 670 to 1170 while the frame rate of deep peeling is 1070.  
+2\."The author use two separate passes AccumulatePass and TotalAlphaPass. However, we can totally merge them into a single pass." The original code provided by the NVIDIA follows the author and use two separate passes. I merge the separate passes and the frame rate increases from 1170 to 1370.  
+3\."The depth value used in AccumulatePass is the value of the shading position not the value of the sampling position. To be consistant, we prefer to write the depth (value of the shading position) to gl_FragDepth/SV_Depth in the fragment shader." The original code provided by the NVIDIA doesn't do this. However, the Alpha correction fixes the error well and there's little impaction on the effect.  
+
 ## K-Buffer  
 > 在Porter提出Alpha通道的同一年，Carpenter提出了A-Buffer：在A-Buffer中，每个像素对应于一个链表，存放对应到该像素的所有片元；基于深度对链表中的片元排序后，用Over/Under操作即可得到$C_{Final}$（11.[Carpenter 1984]）。虽然，目前的硬件在理论上已经可以通过UAV(Direct3D)和原子操作实现A-Buffer，但是，由于实现的过程极其繁琐（编程是一门艺术，A-Buffer的实现极不优雅）且效率低下（主要是链表的地址不连续导致缓存命中率下降），几乎不存在A-Buffer的实际应用。  
 >
