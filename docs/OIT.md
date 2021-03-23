@@ -343,13 +343,13 @@ Bavoil proposed two hardware proposals the "Fragment Scheduling" and the "Progra
 
 ### Fragment Scheduling  
 
-The fragment Scheduling corresponds to the RasterOrderView/FragmentShaderInterlock/RasterOrderGroup(14.[D 2015], 15.[D 2017]) at present which is generally suitable to the desktop GPU.  
+The fragment scheduling corresponds to the RasterOrderView/FragmentShaderInterlock/RasterOrderGroup(14.[D 2015], 15.[D 2017]) at present which is generally suitable to the desktop GPU.  
 
-The pseudo code to implement the K-Buffer by the fragment Scheduling is generally as the following:   
+The pseudo code to implement the K-Buffer by the fragment scheduling is generally as the following:   
 ```  
-    calcalte lighting and shading ... //this part of code doesn't need to be mutually exclusive
+    calcalte lighting and shading ... //This part of code doesn't need to be mutually exclusive
                                                 
-    //enter the critical section
+    //Enter the critical section
     #if RasterOrderView //Direct3D
         read from ROV
     #elif FragmentShaderInterlock //OpenGL/Vulkan
@@ -358,30 +358,30 @@ The pseudo code to implement the K-Buffer by the fragment Scheduling is generall
         read from ROG
     #endif
 
-    perform the RMW operation on the K-Buffer ... // this part of code is inside the protection of the "critical section"
+    perform the RMW operation on the K-Buffer ... //This part of code is within the protection of the critical section
 
-    //leave the critical section
+    //Leave the critical section
     #if RasterOrderView //Direct3D)
-        write o ROV
+        write to ROV
     #elif FragmentShaderInterlock //OpenGL/Vulkan)
         endInvocationInterlockARB
     #elif RasterOrderGroup //Metal
         write to ROG
     #endif
 ```  
-In theory, the content  
-> //注：在理论上，对ROV/ROG读写的内容并不重要，读写ROV/ROG只是为了进入/离开临界区（从这一点上，OpenGL/Vulkan的设计更为优雅）；“Do K-Buffer RMW”已经处于临界区的保护之中，不再有读写ROV/ROG的必要，K-Buffer的存储只需要使用常规的UAV(Direct3D) / StorageImage(OpenGL/Vulkan)即可（14.[D 2017]）。  
-   
+In theory, the contents which we read from or write to the ROV/ROG is not important since we merely read or write to enter/leave the critical section. Thus the proposal of "FragmentShaderInterlock" is more elegant.  We don't have to read from or write to the ROV/ROG when we perform the RMW operation on the K-Buffer and the regular UAV/StorageImage(14.[D 2017]) can be used since the related code has been within the protection of the critical section.  
+
 ### Programmable Blending  
 
 The programmable blending corresponds to the FrameBufferFetch/\[color(m)\]Attribute(16.[Bjorge 2014], 17.[Apple]）at present which is generally suitable to the mobile GPU.  
 
-> 可编程融合允许在片元着色器中读取ColorAttachment，对ColorAttachment进行RMW操作，硬件会保证对应于同一像素的不同片元对同一ColorAttachment的RMW操作的**互斥**性。我们只需要开启MRT，就可以基于可编程融合实现K-Buffer。比如，在OIT算法中，我们需要实现1个像素对应于4个片元[C A Z]构成的K-Buffer，相关的片元着色器代码（基于Metal）大致如下：  
-    
+The programmable blending allows the fragment shader to read the ColorAttachment and perform RMW operation on the ColorAttachment. The hardware guarantees the mutual exclusion of the fragments corresponding to the same pixel automatically.  
+
+We can enable the MRT and implement the K-Buffer by programmable blending. We assume that one pixel corresponds to four [C A Z] fragments in the K-Buffer and the related Metal code is generally as the following:    
 ```  
     struct KBuffer_ColorAttachment  
     {
-        //一般[[color(0)]]是用于存放CFinal的
+        //In general, [[color(0)]] is used to store the CFinal
         half4 C0A0[[color(1)]]; //R8G8B8A8_UNORM
         half4 C1A1[[color(2)]]; //R8G8B8A8_UNORM
         half4 C2A2[[color(3)]]; //R8G8B8A8_UNORM
@@ -397,13 +397,14 @@ The programmable blending corresponds to the FrameBufferFetch/\[color(m)\]Attrib
 
     fragment KBuffer_ColorAttachment KBufferPass_FragmentMain(..., KBuffer_ColorAttachment kbuffer_in)
     {
-        CA = Shade(...) //这部分代码并不需要互斥
-        Z = ... //一般即position.z
+        CA = CalcalteLighting_And_Shading(...) //This part of code doesn't need to be mutually exclusive
+        Z = ... //In general, "Z" denotes position.z
 
         KBuffer_Local kbuffer_local;
 
-        //KBuffer Read操作
-        kbuffer_local.Z[0] = kbuffer_in.Z0123.r; //对ColorAttachment的Read操作会进入临界区
+        //Read K-Buffer
+        //We enter the critical section automatically when we read the ColorAttachment 
+        kbuffer_local.Z[0] = kbuffer_in.Z0123.r; 
         kbuffer_local.Z[1] = kbuffer_in.Z0123.g;
         kbuffer_local.Z[2] = kbuffer_in.Z0123.b;
         kbuffer_local.Z[3] = kbuffer_in.Z0123.a;
@@ -412,22 +413,23 @@ The programmable blending corresponds to the FrameBufferFetch/\[color(m)\]Attrib
         kbuffer_local.CA[2] = kbuffer_in.C2A2;
         kbuffer_local.CA[3] = kbuffer_in.C3A3;
         
-        //KBuffer Modify操作
-        ... //根据应用程序的具体需求 //这部分代码处于临界区保护内
+        //Modify K-Buffer 
+        ...(The concrete code depends on the requirements of the application) //This part of code is within the protection of the critical section
         
-        //KBuffer Write操作
+        //Write K-Buffer 
         KBuffer_ColorAttachment kbuffer_out;
         kbuffer_out.C0A0 = kbuffer_local.CA[0];
         kbuffer_out.C1A1 = kbuffer_local.CA[1];
         kbuffer_out.C2A2 = kbuffer_local.CA[2];
         kbuffer_out.C3A3 = kbuffer_local.CA[3];
-        kbuffer_out.Z0123 = half4(kbuffer_local.Z[0], kbuffer_local.Z[1], kbuffer_local.Z[2], kbuffer_local.Z[3]); //对ColorAttachment的Write操作会离开临界区
+        kbuffer_out.Z0123 = half4(kbuffer_local.Z[0], kbuffer_local.Z[1], kbuffer_local.Z[2], kbuffer_local.Z[3]); 
+        //We leave the critical section automatically after we write the ColorAttachment
         return kbuffer_out;
     }
 ```  
    
 ### MLAB(Mult Layer Alpha Blending)  
-> Salvi分别在2010年、2011年、2014年提出的OIT算法全都是基于K-Buffer实现的（19\.\[Salvi 2010\]、20\.\[Salvi 2011\]、21\.\[Salvi 2014\]），我们选取最新的（即2014年）的MLAB进行介绍。  
+Salvi proposed three algorithms which are all based on the K-Buffer in 2010, 2011 and 2014(19\.\[Salvi 2010\], 20\.\[Salvi 2011\], 21\.\[Salvi 2014\]) and we intend to explain the lastest one which is called the MLAB proposed in 2014.  
     
 #### K-Buffer  
 > MLAB将K-Buffer中片元的格式定义为$[ A_i C_i \, | \, 1 - A_i \, | \, Z_i ]$。  
