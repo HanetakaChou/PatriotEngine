@@ -551,14 +551,19 @@ The normalization  means that we assume that $\frac{\operatorname{W}(EyeSpaceZ_i
 draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.  
 
 > 2\.AccumulateAndTotalAlphaPass //GeometryPass
+initilize the depth with the BackgroundDepth  
+with depth test without depth write, sort the transparent geometries by \[material\] and draw them, having WeightedColor=$\displaystyle \sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}$, CorrectAlphaTotal=$1-\prod_i( 1-A_i)$ and WeightedTotalAlpha=$\sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}$  
+Note that:  
+1\.Since the depth write is turned off, the order of the geometries doesn't impact on the performance and thus we sort the geometries only by the material.  
+2\.The relationship between the AlphaTotal and the TotalAlpha is TotalAlpha = 1 – AlphaTotal as stated in the stochastic transparency.  
 
->> 2.AccumulateAndTotalAlphaPass //GeometryPass  
->>> 将Depth初始化为BackgroundDepth 开启深度测试关闭深度写入 将透明物体按材质排序后绘制得到$WeightedColor=\sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}$、$CorrectAlphaTotal=1-\prod_i( 1-A_i)$、$WeightedTotalAlpha=\sum_i{({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}$ //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序；AlphaTotal和TotalAlpha之间的关系为：TotalAlpha = 1 – AlphaTotal，术语”TotalAlpha”来自随机透明（6.[Enderton 2010]），术语”AlphaTotal”来自Under操作（1\.\[Porter 1984\]、4\.\[Dunn 2014\]）  
->>   
->> 3.CompositePass //FullScreenTrianglePass  
->>> 透明物体对$C_{Final}$的总贡献为：$TransparentColor=\sum_i{({({\operatorname{W}( EyeSpaceZ_i,A_i)}\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)})}A_iC_i)}={(\sum_i{\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}}=WeightedColor\frac{1-CorrectAlphaTotal}{WeightedTotalAlpha}$  
->>>   
->>> 随后，基于CorrectAlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}=TransparentColor+CorrectAlphaTotal×BackgroundColor$） //注：可以在片元着色器中输出TransparentColor和CorrectAlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
+> 3\.CompositePass //FullScreenTrianglePass  
+The total contribution of the transparent geometries:  
+TransparentColor=$\displaystyle \sum_i{({({\operatorname{W}( EyeSpaceZ_i,A_i)}\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)})}A_iC_i)}={(\sum_i{\operatorname{W}( EyeSpaceZ_i,A_i)}A_iC_i)}{\frac{1-\prod_i( 1-A_i)}{\sum_i({\operatorname{W}( EyeSpaceZ_i,A_i)}A_i)}}=WeightedColor\frac{1-CorrectAlphaTotal}{WeightedTotalAlpha}$  
+
+> Then, add the TransparentColor to the final color $\displaystyle C_{Final}$ by the Over Operation:  
+$\displaystyle C_{Final}$ = TransparentColor + CorrectAlphaTotal × BackgroundColor)  
+Note that the BackgroundColor has been added to the color buffer. We can output the TransparentColor and CorrectAlphaTotal in the fragment shader and use the Alpha blend hardware feature to implement the Over Operation.  
   
 ### Conclusion  
 The weighted blending uses the predefined weighted function$\displaystyle \operatorname{W}( EyeSpaceZ_i, A_i)$ to simulate the visibility function $\operatorname{V} ( Z_i )$, omitting the calculation of the visibility function.  
