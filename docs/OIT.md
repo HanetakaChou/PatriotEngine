@@ -437,7 +437,7 @@ The algorithm is generally as the following:
 1\.Initializes the fragments in the K-Buffer to the "empty fragment" which is "$\displaystyle C_i$=0 $\displaystyle A_i$=0 $Z_i$=farthest". //In reality, since the $\displaystyle Z_i$ is in the range from 0 to 1, we only need to ensure that the value of $\displaystyle Z_i$ is farther than all possible values.  
 2\.When we generate the K-Buffer, the modify operation performed on the K-Buffer is to sort the fragments from near to far based on the $\displaystyle Z_i$ and insert the current fragment (which the fragment shader is executing) into the proper position based on the $\displaystyle Z_i$.  
 Evidently we have K+1 fragments at present. Then the modify operation will merge the two farthest fragments into one fragment based on the rule of Under operation such that \[ $\displaystyle A_i C_i$ | $\displaystyle 1 - A_i$ | $\displaystyle Z_i$ \] + [ $\displaystyle A_{i+1} C_{i+1}$ | $\displaystyle 1 - A_{i+1}$ | $\displaystyle Z_{i+1}$ \] = \[ $\displaystyle A_i C_i + ( 1 - A_i ) A_{i+1} C_{i+1}$ | $\displaystyle ( 1 - A_i ) ( 1 - A_{i+1} )$ | $\displaystyle Z_i$ \] and thus we have K fragments again.  
-Evidently, if we insert another fragment nearer than the fragment merged by two fragments, there exists error. By Salvi, the error intruduced by the two farthest fragments is the lowest since the visibility function $\displaystyle \operatorname{V} ( Z_i )$ is monotonically decreasing and the farthest fragments generally contribute introduce the lowest error.  
+Evidently, if we insert another fragment nearer than the fragment merged by two fragments, there exists error. By Salvi, the error intruduced by the two farthest fragments is the lowest since the visibility function $\displaystyle \operatorname{V} ( Z_i )$ is monotonically decreasing and the farthest fragments generally introduce the lowest error.  
 3\.Based on the generated K-Buffer, we calculate the total contribution of the transparent geometries to the final color $\displaystyle C_{Final}$ by the K fragments.
    
 #### Render Pass
@@ -477,11 +477,13 @@ The MLAB can be implemented in one renderPass as the following: //We assume that
     RenderPassDescriptor:
         ColorAttachment:
             0.FinalColor //Load:Clear //Store:Store //Format:R10G10B10A2_UNORM  //HDR10
-            1.AC0_1SubA0 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R16G16B16A16_FLOAT
-            2.AC1_1SubA1 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM //PixelStorage的大小存在着上限（A7->128位 A8,A9,A10->256位 A11->512位）；由于可见性函数单调递减，较远的片元贡献较低，优先考虑降低精度
-            3.AC2_1SubA2 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM
-            4.AC3_1SubA3 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM
-            5.Z0123 //Load:Clear //ClearValue:[ 无限远 无限远 无限远 无限远 ] //Store:DontCare //Format:R16G16B16A16_FLOAT
+            1.xyz:A0*C0 w:1-A0 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R16G16B16A16_FLOAT  
+            //The size of the PixelStorage is limited(A7-128bit A8\A9\A10-256bit A11-512bit)  
+            //Since the visibility function is monotonically decreasing and the farther fragments generally contribute introduce the lowest error, we prefer to reduce the precision of the farther fragments.
+            2.xyz:A1*C1 w:1-A1 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM 
+            3.xyz:A2*C2 w:1-A2 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM
+            4.xyz:A3*C3 w:1-A3 //Load:Clear //ClearValue:[ 0 0 0 1 ] //Store:DontCare //Format:R8G8B8A8_UNORM
+            5.Z0123 //Load:Clear //ClearValue:[ farthest farthest farthest farthest ] //Store:DontCare //Format:R16G16B16A16_FLOAT
         DepthAttachment:
             Depth //Load:Clear //Store:DontCare
     RenderCommandEncoder:
@@ -492,7 +494,7 @@ The MLAB can be implemented in one renderPass as the following: //We assume that
             Read: Color[1]/Color[2]/Color[3]/Color[4]/Color[5]->4个Fragment
             Modify: ...
             Write: 4个Fragment->Color[1]/Color[2]/Color[3]/Color[4]/Color[5]
-            //复用Depth中的BackgroundDepth
+            //reuse the BackgroundDepth
         3.CompositePass:
             Color[1]/Color[2]/Color[3]/Color[4]/Color[5]->...
             ...->TransparentColor
@@ -501,13 +503,19 @@ The MLAB can be implemented in one renderPass as the following: //We assume that
             TransparentColor+AlphaTotal*BackgroundColor->Color[0]
 ```
   
-### 综合评价  
-> 由于移动GPU上的K-Buffer是高效的，MLAB在本质上是比较适合移动GPU的。我们可以使用次世代API充分挖掘移动GPU的相关优势。但是，由于Vulkan尚未支持FrameBufferFetch，目前无法用Vulkan基于可编程融合实现K-Buffer（不过，OpenGL支持FrameBufferFetch，可以考虑用OpenGL基于可编程融合实现K-Buffer，只是OpenGL无法显式地控制将K-Buffer保存在Tile/On-Chip Memory中）。  
->  
-> 相对于随机透明而言，MLAB有一个明显的优势：只需要一个几何体Pass（KBufferPass），这对不擅长几何处理（10.[Harris 2019] ）的移动GPU而言是一个不错的福音。但是，K-Buffer的RWM操作必须“**互斥**”，对桌面GPU而言，会导致GPU无法并行处理对应于同一像素的片元，从而引入额外的开销，开销的大小取决于场景的深度复杂度（Depth Complexity）。（由于移动GPU本身就是串行处理的（13.[Ragan-Kelley 2011]），并不引入**额外**的开销）  
->  
-> 当新插入的片元在两个被融合的片元之间时，K-Buffer会产生误差；不过，由于可见性函数$\operatorname{V}( Z_i )$是单调递减的，较远的片元的$\operatorname{V}( Z_i )$的值较低，融合最远的2个片元可以有效地降低误差，在效果上并不会产生太大的影响。  
-  
+### Conclusion  
+Since the K-Buffer is efficient on mobile GPU, the MLAB is intrinsically suitable to mobile GPU. We can use the modern Metal API to fully explore the advantages of the mobile GPU.  
+
+However, since the "FrameBufferFetch" is not supported by Vulkan, I don't suggest using the MLAB in Metal.  
+
+Compared to the stochastic transparency, there is only one geometry pass in MLAB. This is beneficial to the mobile GPU since the vertex processing is not efficient on the mobile GPU.  
+
+Besides, for the mobile GPU, the executions of the fragments corresponding to the same pixel inside the same draw call is intrinsically serial(13.[Ragan-Kelley 2011]) and thus the mutual exclusion can be considered to introduce little overhead.  
+However, for the desktop GPU, mutual exclusion of the RMW operation limits the parallelism of the fragments and introduces extra overhead which is related to the "Depth Complexity" of the scene.  
+
+When we insert another fragment nearer than the fragment merged by two fragments, we introduce error.  
+However, since the visibility function $\displaystyle \operatorname{V} ( Z_i )$ is monotonically decreasing, the farthest fragments generally  introduce little error and thus the error impacts little.  
+
 ### Demo  
 > Demo地址：[https://gitee.com/YuqiaoZhang/MultiLayerAlphaBlending](https://gitee.com/YuqiaoZhang/MultiLayerAlphaBlending) / [https://github.com/YuqiaoZhang/MultiLayerAlphaBlending](https://github.com/YuqiaoZhang/MultiLayerAlphaBlending)。该Demo改编自Metal Sample Code中的Order Independent Transparency with Imageblocks（22\.\[Imbrogno 2017\]）。在Apple提供的原始代码中，用到了A11 GPU（iPhone 8以后）中才具有的特性Imageblock；但是，PixelLocalStorage(OpenGL) / Imageblock(Metal)的本质是允许自定义FrameBuffer中像素的格式（16\.\[Bjorge 2014\]、22\.\[Imbrogno 2017\]），这与K-Buffer的本质（为RMW操作构造临界区）并没有任何关系；于是我对Demo进行了修改，使用\[color(m)\]Attribute实现了相关的功能，在iPhone 6（A8 GPU）上顺利运行，**粉碎了Apple企图忽悠我换iPhone新机型的阴谋**！  
 >     
