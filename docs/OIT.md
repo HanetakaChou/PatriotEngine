@@ -39,15 +39,15 @@ In real time rendering, the classic method is to sort the transparent geometries
 draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.  
   
 > 2\.TransparencyPass  
-use the BackgroundDepth for depth test (without depth write), sort the geometries from back to front/from front to back and use Over/Under Operation to calculate recursively.  
+use the BackgroundDepth for depth test (without depth write), sort the geometries from far to near/from near to far and use Over/Under Operation to calculate recursively.  
 >  
 > Over Operation  
-sort the fragments from back to front to use the Over Operation  
+sort the fragments from far to near to use the Over Operation  
 $C_{Final\_0}=BackgroundColor$  
 $C_{Final\_n}=(A_nC_n)+(1-A_n) C_{Final\_n-1}$  
 >  
 > Under Operation  
-sort the fragments from front to back to use the Under Operation  
+sort the fragments from near to far to use the Under Operation  
 $C_{Final\_0}=0$  
 $A_{Total\_0}=1$  
 $C_{Final\_n}=A_{Total\_n-1}( A_nC_n)+C_{Final\_n-1}$  
@@ -57,7 +57,7 @@ At last, the result image of the OpaquePass is treated as the fragments with "A=
   
 By the mathematical induction, we can prove that the Over Operation and the Under Operation are equivalent. Both can calculate the final color $C_{Final}$ correctly by $\displaystyle \sum_{\displaystyle i = 0}^{\displaystyle n} \operatorname{V} ( Z_i ) A_i C_i$.  
 
-Technically, the correctness of the Over/Under Operation can only be guaranteed by sorting the "fragments" from back to front/from front to back. However, in real time rendering, the sorting is based on the geometries not the fragments. If there exists interlacing inside the geometry, the order of the fragments will not follow and thus we have to explore the OIT(Order Independent Transparency) algorithm to settle this problem.
+Technically, the correctness of the Over/Under Operation can only be guaranteed by sorting the "fragments" from far to near/from near to far. However, in real time rendering, the sorting is based on the geometries not the fragments. If there exists interlacing inside the geometry, the order of the fragments will not follow and thus we have to explore the OIT(Order Independent Transparency) algorithm to settle this problem.
 
 Note that keeping the geometries orderly also prohibits the batching of the geometries with the same material and thus results in extra state changing which is hostile to the performance.
   
@@ -72,18 +72,18 @@ draw opaque geometries and have the BackgroundColor and the BackgroundDepth.
 copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them, having the NearestLayerColor and the NearestLayerDepth  
 add the NearestLayerDepth to the final color $C_{Final}$ by Under Operation  
-//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from near to far is merely to improve the performance by the EarlyDepthTest.
 
 >3\.SecondNearestLayerPass //GeometryPass
 copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the NearestLayerDepth to the SampledTextureUnit and draw them with discarding the fragments NearerOrEqual than the NearestLayerDepth explicitly in the fragment shader, having the SecondNearestLayerColor and the SecondNearestLayerDepth  
 add the SecondNearestLayerColor to the final color $C_{Final}$ by Under Operation  
-//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from near to far is merely to improve the performance by the EarlyDepthTest.
 
 >4\.ThirdNearestLayerPass //GeometryPass
 copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\], bind the SecondNearestLayerDepth to the SampledTextureUnit and ...  
-//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.
+//Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from near to far is merely to improve the performance by the EarlyDepthTest.
 
 >The subsequent operations are similar to the above, omitted... //we can peel N layers by N geometry passes. The application can choose the proper N according to the requirements.
 
@@ -181,7 +181,7 @@ draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.
 copy the BackgroundDepth to initialize the depth buffer  
 with MSAA, with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them with setting the pseudo random value of gl_SampleMask/SV_Coverage by the $A_i$ of \[ $C_i$ $A_i$ $Z_i$ \], having the StochasticDepth  
 Note that:  
-2-1\.The stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from front to back is merely to improve the performance by the EarlyDepthTest.  
+2-1\.The stochastic transparency doesn't depend on the order of the fragments and we sort the geometries from near to far is merely to improve the performance by the EarlyDepthTest.  
 2-2\.Turning on MSAA in StochasticDepthPass is to random sample and the stochastic transparency intrinsically doesn't demand other passes to turn on the MSAA.  
 If the application demands the effect of "Spatial AntiAliasing", the application can turn on MASS in other passes(Evidently, the application use arbitrary algorithms(for example, the FAXX) in other passes).  
 These's no relationship between the MSAA used for random sampling (in StochasticDepthPass) and the MSAA used for spatial antialiasing (in other passes). For example, we can use 8X MASS in StochasticDepthPass while use 4X MSAA in other passes.  
@@ -229,7 +229,7 @@ The OpenGL API doesn't allow the application to set this configuration explicitl
 
 In Vulkan, one "RenderPass" consists of several "SubPass". The MSAA simple count of different attachments of the same RenderPass may not be the same. However, the MSAA sample count of the attachments refered by the same SubPass must be the same and the MSAA sample count is also expected to be the same as the count in MultisampleState of the PipelineState when issuing DrawCall.
 
-The stochastic transparency can be implemented in one RenderPass as the following: //We suppose the application doesn't turn on the MSAA for "Spatial AntiAliasing".  
+The stochastic transparency can be implemented in one renderPass as the following: //We suppose the application doesn't turn on the MSAA for "Spatial AntiAliasing".  
 ```
 RenderPass  
     Attachments  
@@ -324,7 +324,7 @@ Although A-Buffer can be implemented by UAV/StorageImage and atomic operations a
 Bavoil improved the A-Buffer and proposed K-Buffer(12.[Bavoil 2007]) in 2007. In K-Buffer, we limit the number of the fragments corresponding to each pixel to no more than K. With this limit, the K-Buffer can be implemented more elegantly and efficiently.
   
 ### RMW(Read Modify Write) Operation  
-In the pass in which we generate the K-Buffer, the following RMW operation is performed on each fragment:  
+In the renderpass in which we generate the K-Buffer, the following RMW operation is performed on each fragment:  
 1\.Read: read the (at most K) fragments corresponding to the same pixel from K-Buffer  
 2\.Modify: use the information of the current fragment and modified the (at most K) fragments which have been read from the K-Buffer  
 3\.Write: write the (at most K) fragments which have been modified to the K-Buffer  
@@ -432,38 +432,47 @@ We can enable the MRT and implement the K-Buffer by programmable blending. We as
 Salvi proposed three algorithms which are all based on the K-Buffer in 2010, 2011 and 2014(19\.\[Salvi 2010\], 20\.\[Salvi 2011\], 21\.\[Salvi 2014\]) and we intend to explain the lastest one which is called the MLAB proposed in 2014.  
     
 #### K-Buffer  
-> MLAB将K-Buffer中片元的格式定义为$[ A_i C_i \, | \, 1 - A_i \, | \, Z_i ]$。  
-> 1\.首先将K-Buffer中的片元全部初始化为$C_i$ = 0, $A_i$ = 0, $Z_i$ = 无限远（即[0 1 无限远]）的“空片元”。 //在实际实现中，由于$Z_i$的取值在0到1之间，只需要保证比$Z_i$所有可能的取值都远即可。  
-> 2\.在片元生成时，K-Buffer的Modify操作会根据$Z_i$从近到远排序，将当前片元插入到合适的位置，得到K+1个片元；再基于Under操作的规则，将最远的2个片元融合（$[ A_i C_i \, | \, 1 - A_i \, | \, Z_i ]$和$[ A_{i+1} C_{i+1} \, | \, 1 - A_{i+1} \, | \, Z_{i+1} ]$融合后得到$[ A_i C_i + ( 1 - A_i ) A_{i+1} C_{i+1} \, | \, ( 1 - A_i ) ( 1 - A_{i+1} ) \, | \, Z_i ]$ //注：这个融合规则兼容初始化产生的“空片元”），再次得到K个片元。 //当之后插入的片元在两个被融合的片元之间时，会产生误差；根据Salvi的说法，融合最远的2个片元的误差是最小的，这可能与较远的片元对$C_{Final}$的贡献较低有一定关系（可见性函数$\operatorname{V}( Z_i )$是单调递减的，较远的片元的$\operatorname{V}( Z_i )$的值较低）。  
-> 3\.最后，使用Under操作，基于K-Buffer中的K个片元，求出透明物体对$C_{Final}$的总贡献。  
+In MLAB, the format of the fragments in K-Buffer is \[ $\displaystyle A_i C_i$ | $\displaystyle 1 - A_i$ | $\displaystyle Z_i$ \].  
+The algorithm is generally as the following:  
+1\.Initializes the fragments in the K-Buffer to the "empty fragment" which is "$\displaystyle C_i$=0 $\displaystyle A_i$=0 $Z_i$=farthest". //In reality, since the $\displaystyle Z_i$ is in the range from 0 to 1, we only need to ensure that the value of $\displaystyle Z_i$ is farther than all possible values.  
+2\.When we generate the K-Buffer, the modify operation performed on the K-Buffer is to sort the fragments from near to far based on the $\displaystyle Z_i$ and insert the current fragment (which the fragment shader is executing) into the proper position based on the $\displaystyle Z_i$.  
+Evidently we have K+1 fragments at present. Then the modify operation will merge the two farthest fragments into one fragment based on the rule of Under operation such that \[ $\displaystyle A_i C_i$ | $\displaystyle 1 - A_i$ | $\displaystyle Z_i$ \] + [ $\displaystyle A_{i+1} C_{i+1}$ | $\displaystyle 1 - A_{i+1}$ | $\displaystyle Z_{i+1}$ \] = \[ $\displaystyle A_i C_i + ( 1 - A_i ) A_{i+1} C_{i+1}$ | $\displaystyle ( 1 - A_i ) ( 1 - A_{i+1} )$ | $\displaystyle Z_i$ \] and thus we have K fragments again.  
+Evidently, if we insert another fragment nearer than the fragment merged by two fragments, there exists error. By Salvi, the error intruduced by the two farthest fragments is the lowest since the visibility function $\displaystyle \operatorname{V} ( Z_i )$ is monotonically decreasing and the farthest fragments generally contribute introduce the lowest error.  
+3\.Based on the generated K-Buffer, we calculate the total contribution of the transparent geometries to the final color $\displaystyle C_{Final}$ by the K fragments.
    
 #### Render Pass
-> MLAB涉及到的RenderPass如下：  
->> 1.OpaquePass  
->>> 绘制不透明物体，得到BackgroundColor和BackgroundDepth   
->>
->> 2.KBufferPass //GeometryPass  
->>> 复用OpaquePass得到的BackgroundDepth  
->>> 开启深度测试关闭深度写入  
->>> 用Clear操作将K-Buffer中的片元全部初始化[0 1 无限远]   
->>> 将透明物体按材质排序后绘制得到K-Buffer //注：由于关闭深度写入，透明物体的前后顺序不再对绘制的性能产生影响，只按材质排序  
->>  
->> 3.CompositePass //FullScreenTrianglePass  
->>> 用Under操作，基于K-Buffer中的K个片元，求出透明物体对$C_{Final}$的总贡献TransparentColor和AlphaTotal  
->>>  
->>> 随后，基于AlphaTotal用Over操作将TransparentColor合成到$C_{Final}$（目前的$C_{Final}$中已有OpaquePass得到的BackgroundColor，$C_{Final}$ = TransparentColor + AlphaTotal × BackgroundColor） //注：可以在片元着色器中输出TransparentColor和AlphaTotal，用硬件的AlphaBlend阶段实现Over操作  
-   
-### Tile/On-Chip Memory  
-> K-Buffer在本质上是比较适合移动GPU的。  
-> 在传统的桌面GPU上，K-Buffer会使带宽的开销增加K倍。  
-> 同样地，在移动GPU上，我们也可以用次世代API将K-Buffer保存在Tile/On-Chip Memory中，不与主存进行通信，从而将带宽开销降低到几乎为零。  
-   
-#### Vulkan  
-> 由于Vulkan尚未支持FrameBufferFetch，目前无法用Vulkan基于可编程融合实现K-Buffer（当然，可以用Vulkan基于片元调度实现K-Buffer，只是片元调度并不适用于移动GPU；不过，OpenGL支持FrameBufferFetch，可以考虑用OpenGL基于可编程融合实现K-Buffer，只是OpenGL无法显式地控制将K-Buffer保存在Tile/On-Chip Memory中）。
-  
-#### Metal
-> MLAB在Metal中可以在1个RenderPass中实现，具体如下： //假设K-Buffer中的K值为4  
+> 1\.OpaquePass  
+draw the opaque geometries and have the BackgroundColor and the BackgroundDepth.  
 
+> 2\.KBufferPass //GeometryPass  
+reuse the BackgroundDepth by the OpaquePass  
+use clear load_op to initilize the fragments in the K-Buffer to the "empty fragment" \[ 0 0 farthest\]  
+with depth test without depth write, sort the transparent geometries by \[material\] and draw them to generate the K-Buffer  
+Note that since the depth write is turned off, the order of the geometries doesn't impact on the performance and thus we sort the geometries only by the material.  
+
+> 3\.CompositePass //FullScreenTrianglePass  
+Based on the generated K-Buffer, use the Under operation to calculate the total contribution of the transparent geometries to the final color $\displaystyle C_{Final}$: TransparentColor and AlphaTotal  
+
+> Then, add the TransparentColor to the final color $\displaystyle C_{Final}$ by the Over Operation:  
+$\displaystyle C_{Final}$ = TransparentColor + CorrectAlphaTotal × BackgroundColor)  
+Note that the BackgroundColor has been added to the color buffer. We can output the TransparentColor and CorrectAlphaTotal in the fragment shader and use the Alpha blend hardware feature to implement the Over Operation.  
+
+### Tile/On-Chip Memory  
+The K-Buffer is intrinsically suitable to mobile GPU.  
+
+In the traditional desktop GPU, the bandwidth is increased by K times due to the K-Buffer.  
+
+However, in the mobile GPU, we can keep the K-Buffer in the Tile/On-Chip Memory and discard the K-Buffer when the renderpass ends without writing to the main memory. This means that the bandwidth can be decreased to almost zero.  
+
+#### Vulkan  
+
+Since the Vulkan doesn't support the "FrameBufferFetch", we can't implement the K-Buffer by programmable blending in Vulkan.  
+Although we can implement the K-Buffer by fragment scheduling, the fragment scheduling is not suitable to the mobile GPU.  
+However, the FrameBufferFetch is supported by OpenGL and we can implement the by programmable blending in OpenGL.  
+
+#### Metal  
+
+The MLAB can be implemented in one renderPass as the following: //We assume that the K of K-Buffer equals four.  
 ```
     RenderPassDescriptor:
         ColorAttachment:
