@@ -331,7 +331,7 @@ In the renderpass in which we generate the K-Buffer, the following RMW operation
 
 For the current hardware, we can immediately implement the RMW operation by the UAV/StorageImage. However, things are far from simple. In general, the RMW operations performed on the fragments corresponding to the same pixel should be mutually exclusive to ensure the correctness.  
   
-Although the API guarantees the order and dependency of different draw calls, the GPU designers always tend to full explore the parallelism to improve the performance. In general, the GPU may still execute these draw calls in parallel and merely synchronize at some point.  
+Although the API guarantees the order and dependency of different draw calls, the GPU designers always tend to full explore the parallelism to improve the performance. In general, the GPU may still execute these draw calls in parallel and merely synchronize at some points.  
 
 The API doesn't guarantee the order or dependency of the executions of the fragments (corresponding to the same pixel) inside the same draw call. Evidently, the executions can be considered to be parallel since the GPU is intrinsically parallel.  
 
@@ -339,7 +339,7 @@ The desktop GPU is "Sort-Last Fragment"(13.[Ragan-Kelley 2011]). The parallelism
 
 The mobile GPU is "Tile-Based Sort-Middle"(13.[Ragan-Kelley 2011]). The executions of the fragments corresponding to the same pixel inside the same draw call can be considered to be serial(13.[Ragan-Kelley 2011]) since there doesn't exist the "Reorder Buffer". However, we shouldn't rely on this since the API doesn't guarantee that.  
 
-Bavoil proposed two hardware proposals the "Fragment Scheduling" and the "Programmable Blending" to solve this problem in 2007(12.[Bavoil 2007]). Both two proposals have been widely supported by the hardware in reality.  
+Bavoil proposed two hardware proposals the "Fragment Scheduling" and the "Programmable Blending" to solve this problem in 2007(12.[Bavoil 2007]). Both two proposals have been widely supported by the hardware in reality at present.  
 
 ### Fragment Scheduling  
 
@@ -506,7 +506,7 @@ The MLAB can be implemented in one renderPass as the following: //We assume that
 ### Conclusion  
 Since the K-Buffer is efficient on mobile GPU, the MLAB is intrinsically suitable to mobile GPU. We can use the modern Metal API to fully explore the advantages of the mobile GPU.  
 
-However, since the "FrameBufferFetch" is not supported by Vulkan, I don't suggest using the MLAB in Metal.  
+However, since the "FrameBufferFetch" is not supported by Vulkan, I don't suggest using the MLAB in Vulkan.  
 
 Compared to the stochastic transparency, there is only one geometry pass in MLAB. This is beneficial to the mobile GPU since the vertex processing is not efficient on the mobile GPU.  
 
