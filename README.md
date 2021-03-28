@@ -5,7 +5,7 @@ Although there is no official standard of the **Graphics Rendering** Engine at p
 
 It's widely establish that "Program = Data Structure + Algorithm" and this engine will elaborate the **Graphics Rendering** Engine from two aspects: Scene (Data Structure) and Rendering Pipeline (Algorithm). 
 
-The contents of this book is likely to be as follows:   
+The contents of this engine is likely to be as follows:   
 >    
 > [docs/malloc.md](docs/malloc.md)  
 > [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
@@ -212,13 +212,3 @@ Try to understand the following papers from the perspective of the 2-Manifold:
     - [ ] FBX
   - [ ] WSI  
     - [ ] Win32Desktop      
-    
----    
-       
-### 项目简介 
-本项目作为图书《开发一个图形渲染引擎》[Document/目录.md]的配套源代码发布  
-  
-虽然**图形渲染**（Graphics Rendering）引擎在目前并没有标准定义，但是，与软件工程中很多其它领域的情况一样——比如LLVM框架已经成为了编译器领域事实上的标准——随着图形渲染技术在几十年间的发展，图形渲染引擎的功能不断趋于稳定，目前正是对图形渲染引擎未成文的事实上的标准进行一次系统性总结的最佳时机。  
-
-我们知道“程序=数据结构+算法”，图形渲染引擎可以认为由**场景**（Scene）和**渲染流程**（Rendering Pipeline)两部分组成。场景即程序中的数据结构部分，描述了我们输入到渲染流程的数据；而渲染流程即程序中的算法部分，对输入的场景进行处理，最终输出图像（Image）的过程（在一些文献中，**图形渲染**（Graphics Rendering）又被称为**图像合成**（Image Synthesis））。本书将会从场景和渲染流程两个方面对图形渲染引擎进行阐述。  
-    
