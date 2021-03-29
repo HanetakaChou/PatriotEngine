@@ -71,7 +71,7 @@ draw opaque geometries and have the BackgroundColor and the BackgroundDepth.
 >2\.NearestLayerPass //GeometryPass  
 copy the BackgroundDepth to initialize the depth buffer  
 with depth test(NearerOrEqual) and depth write, sort the transparent geometries by \[material, front-to-back\] and draw them, having the NearestLayerColor and the NearestLayerDepth  
-add the NearestLayerDepth to the final color $C_{Final}$ by Under Operation  
+add the NearestLayerColor to the final color $C_{Final}$ by Under Operation  
 //Note that the depth peeling doesn't depend on the order of the fragments and we sort the geometries from near to far is merely to improve the performance by the EarlyDepthTest.
 
 >3\.SecondNearestLayerPass //GeometryPass
