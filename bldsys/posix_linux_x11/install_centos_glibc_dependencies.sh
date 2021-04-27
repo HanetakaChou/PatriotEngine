@@ -40,22 +40,34 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     yum install vulkan-loader.i686
     yum install mesa-vulkan-drivers.i686
 
+    yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/i686/libunwind-1.3.1-7.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/i686/libunwind-devel-1.3.1-7.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-devel-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-static-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-devel-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-static-10.0.1-1.fc32.i686.rpm
+
     yum install gcc  
     yum install gcc-c++
+    yum install https://kojipkgs.fedoraproject.org//packages/compiler-rt/10.0.1/1.fc32/i686/compiler-rt-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/compiler-rt/10.0.1/1.fc32/x86_64/compiler-rt-10.0.1-1.fc32.x86_64.rpm
     yum install clang
     yum install chrpath
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     yum install glibc-devel
     yum install libstdc++-devel
     yum install libstdc++-static
-    # yum install compiler-rt 
-    # yum install libunwind-devel
-    # yum install libcxxabi https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-10.0.1-1.fc32.x86_64.rpm
-    # yum install libcxxabi-static https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-static-10.0.1-1.fc32.x86_64.rpm
-    # yum install libcxxabi-devel https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-devel-10.0.1-1.fc32.x86_64.rpm
-    # yum install libcxx https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-10.0.1-1.fc32.x86_64.rpm
-    # yum install libcxx-static https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-static-10.0.1-1.fc32.x86_64.rpm
-    # yum install libcxx-devel https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-devel-10.0.1-1.fc32.x86_64.rpm
+
+    yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/x86_64/libunwind-1.3.1-7.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/x86_64/libunwind-devel-1.3.1-7.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-10.0.1-1.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-static-10.0.1-1.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-devel-10.0.1-1.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-10.0.1-1.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-static-10.0.1-1.fc32.x86_64.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-devel-10.0.1-1.fc32.x86_64.rpm
     yum install libxcb-devel
     yum install vulkan-loader
     yum install mesa-vulkan-drivers
@@ -64,6 +76,8 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
 
     yum install gcc  
     yum install gcc-c++
+    yum install https://kojipkgs.fedoraproject.org//packages/compiler-rt/10.0.1/1.fc32/i686/compiler-rt-10.0.1-1.fc32.i686.rpm
+    yum install https://kojipkgs.fedoraproject.org//packages/compiler-rt/10.0.1/1.fc32/x86_64/compiler-rt-10.0.1-1.fc32.x86_64.rpm
     yum install clang
     yum install chrpath
 else

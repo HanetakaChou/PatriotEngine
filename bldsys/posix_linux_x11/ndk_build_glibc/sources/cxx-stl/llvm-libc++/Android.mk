@@ -21,7 +21,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_llvm_cxx_static
 LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
 LOCAL_EXPORT_CPPFLAGS := -std=c++11 -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++ #-D_GLIBCXX_USE_CXX11_ABI=1 
-LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++
+LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
