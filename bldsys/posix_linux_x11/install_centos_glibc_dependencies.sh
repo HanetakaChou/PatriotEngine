@@ -44,10 +44,10 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/i686/libunwind-devel-1.3.1-7.fc32.i686.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-10.0.1-1.fc32.i686.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-devel-10.0.1-1.fc32.i686.rpm
-    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-static-10.0.1-1.fc32.i686.rpm
+    #yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/i686/libcxxabi-static-10.0.1-1.fc32.i686.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-10.0.1-1.fc32.i686.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-devel-10.0.1-1.fc32.i686.rpm
-    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-static-10.0.1-1.fc32.i686.rpm
+    #yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/i686/libcxx-static-10.0.1-1.fc32.i686.rpm
 
     yum install gcc  
     yum install gcc-c++
