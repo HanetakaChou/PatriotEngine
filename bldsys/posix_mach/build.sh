@@ -64,7 +64,7 @@ fi
 # Arch
 # Mach-O support universal binary
 
-MY_DIR="$(dirname "$0")"
+MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 
 # build by xcode  
 cd ${MY_DIR}

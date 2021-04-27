@@ -89,13 +89,13 @@ else
     exit 1
 fi
 
-MY_DIR="$(readlink -f "$(dirname "$0")")"
+MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 
-NDK_BUILD_CMD_DIR="$(realpath -m "${MY_DIR}/${NDK_BUILD_CMD_DIR_PLATFORM}/")"
+NDK_BUILD_CMD_DIR="${MY_DIR}/${NDK_BUILD_CMD_DIR_PLATFORM}/"
 NDK_BUILD_ARGS="${NDK_BUILD_ARG_CONFIG} ${NDK_BUILD_ARG_ARCH} NDK_PROJECT_PATH:=null NDK_OUT:=obj NDK_LIBS_OUT:=libs NDK_APPLICATION_MK:=Application.mk ${NDK_BUILD_ARG_PLATFORM}"
 
-INT_DIR="$(realpath -m "${MY_DIR}/${INT_DIR_CONFIG}/${INT_DIR_ARCH}/")"
-OUT_DIR="$(realpath -m "${MY_DIR}/../../bin/posix_linux_x11/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/")"
+INT_DIR="${MY_DIR}/${INT_DIR_CONFIG}/${INT_DIR_ARCH}/"
+OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/"
 
 OUT_BINS=("libpt_mcrt.so" "libpt_tbbmalloc.so" "libpt_irml.so" "libpt_tbb.so" "libpt_gfx_wsi_window_x11.so" "pt_launcher_wsi_window_x11" "libpt_gfx_wsi_bitmap.so" "pt_launcher_wsi_bitmap" "pt_gfx_malloc_test" "pt_general_acyclic_graphs_of_tasks")
 

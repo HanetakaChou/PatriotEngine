@@ -61,8 +61,8 @@ else
     exit 1
 fi
 
-MY_DIR="$(readlink -f "$(dirname "$0")")"
-OUT_DIR="$(realpath -m "${MY_DIR}/../../bin/posix_linux_x11/")/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/"
+MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
+OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/"
 
 # run tests 
 if "${OUT_DIR}/pt_general_acyclic_graphs_of_tasks"; then
