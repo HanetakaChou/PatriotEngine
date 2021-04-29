@@ -63,10 +63,10 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/x86_64/libunwind-1.3.1-7.fc32.x86_64.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libunwind/1.3.1/7.fc32/x86_64/libunwind-devel-1.3.1-7.fc32.x86_64.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-10.0.1-1.fc32.x86_64.rpm
-    yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-static-10.0.1-1.fc32.x86_64.rpm
+    #yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-static-10.0.1-1.fc32.x86_64.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxxabi/10.0.1/1.fc32/x86_64/libcxxabi-devel-10.0.1-1.fc32.x86_64.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-10.0.1-1.fc32.x86_64.rpm
-    yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-static-10.0.1-1.fc32.x86_64.rpm
+    #yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-static-10.0.1-1.fc32.x86_64.rpm
     yum install https://kojipkgs.fedoraproject.org//packages/libcxx/10.0.1/1.fc32/x86_64/libcxx-devel-10.0.1-1.fc32.x86_64.rpm
     yum install libxcb-devel
     yum install vulkan-loader
