@@ -19,7 +19,9 @@ The contents of this engine is likely to be as follows:
 > 
 > [docs/parallel-rendering-overview.md](docs/parallel-rendering-overview.md)  
 > [docs/OIT.md](docs/OIT.md)  
->   
+> [docs/Grass.md](docs/Grass.md)     
+> [docs/Volumetric-Rendering.md](docs/Volumetric-Rendering.md)     
+>
 ---  
 
 ### Core Interfaces   
