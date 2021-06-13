@@ -27,18 +27,6 @@
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h */
 typedef struct _NSApplication_T_ *NSApplication;
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication();
-    PT_ATTR_APPLE_SDK void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
-    PT_ATTR_APPLE_SDK int NSApplication_Main(int argc, char const *argv[]);
-#ifdef __cplusplus
-}
-#endif
-
 typedef struct _Class_NSApplicationDelegate_T_ *Class_NSApplicationDelegate;
 typedef struct _NSApplicationDelegate_T_ *NSApplicationDelegate;
 typedef struct _NSApplicationDelegate_applicationDidFinishLaunching__T_ *NSApplicationDelegate_applicationDidFinishLaunching_;
@@ -49,6 +37,9 @@ typedef struct _NSApplicationDelegate_applicationShouldTerminateAfterLastWindowC
 extern "C"
 {
 #endif
+    PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication();
+    PT_ATTR_APPLE_SDK void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
+    PT_ATTR_APPLE_SDK int NSApplication_Main(int argc, char const *argv[]);
     PT_ATTR_APPLE_SDK Class_NSApplicationDelegate NSApplicationDelegate_allocateClass(
         char const *class_name,
         void (*_I_NSApplicationDelegate_applicationDidFinishLaunching_)(NSApplicationDelegate, NSApplicationDelegate_applicationDidFinishLaunching_, void *aNotification),

@@ -46,10 +46,21 @@ typedef struct _NSObject_T_ *NSObject;
 extern "C"
 {
 #endif
-PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObject class_ns_object, char const *ivarname);
-PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject);
-PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject);
-PT_ATTR_APPLE_SDK void NSObject_release(NSObject);
+    PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObject class_ns_object, char const *ivarname);
+    PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject);
+    PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject);
+    PT_ATTR_APPLE_SDK void NSObject_release(NSObject);
+#ifdef __cplusplus
+}
+#endif
+
+typedef struct _NSArray_T_ *NSArray;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NSUInteger idx);
 #ifdef __cplusplus
 }
 #endif

@@ -25,17 +25,6 @@
 #include "pt_apple_sdk_posix_mach_metal.h"
 
 typedef struct _MTKView_T_ *MTKView;
-
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-    PT_ATTR_APPLE_SDK MTKView MTKView_alloc();
-    PT_ATTR_APPLE_SDK MTKView MTKView_initWithFrame(MTKView mtk_view, CGRect frameRect, MTLDevice device);
-#ifdef __cplusplus
-}
-#endif
-
 typedef struct _Class_MTKViewDelegate_T_ *Class_MTKViewDelegate;
 typedef struct _MTKViewDelegate_T_ *MTKViewDelegate;
 typedef struct _MTKViewDelegate_drawableSizeWillChange__T_ *MTKViewDelegate_drawSizeWillChange_;
@@ -45,7 +34,10 @@ typedef struct _MTKViewDelegate_drawInMTKView__T_ *MTKViewDelegate_drawInMTKView
 extern "C"
 {
 #endif
-    PT_ATTR_APPLE_SDK Class_MTKViewDelegate *MTKViewDelegate_allocClass(
+    PT_ATTR_APPLE_SDK MTKView MTKView_alloc();
+    PT_ATTR_APPLE_SDK MTKView MTKView_initWithFrame(MTKView mtk_view, CGRect frameRect, MTLDevice device);
+    PT_ATTR_APPLE_SDK void MTKView_setDelegate(MTKView mtk_view, MTKViewDelegate delegate);
+    PT_ATTR_APPLE_SDK Class_MTKViewDelegate MTKViewDelegate_allocClass(
         char const *class_name,
         void (*_I_MTKViewDelegate_drawableSizeWillChange_)(MTKViewDelegate, MTKViewDelegate_drawSizeWillChange_, MTKView, CGSize size),
         void (*_I_MTKViewDelegate_drawInMTKView_)(MTKViewDelegate, MTKViewDelegate_drawInMTKView_, MTKView));

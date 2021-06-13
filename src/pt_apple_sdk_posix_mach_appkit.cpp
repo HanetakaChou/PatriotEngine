@@ -45,7 +45,7 @@ static inline NSObject NSApplicationDelegate_To_NSObject(NSApplicationDelegate n
     return reinterpret_cast<NSObject>(ns_application_delegate);
 }
 
-static inline NSApplicationDelegate NSObject_ToNSApplicationDelegate(NSObject ns_application_delegate)
+static inline NSApplicationDelegate NSObject_To_NSApplicationDelegate(NSObject ns_application_delegate)
 {
     return reinterpret_cast<NSApplicationDelegate>(ns_application_delegate);
 }
@@ -186,7 +186,7 @@ PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSAppl
 
 PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_init(NSApplicationDelegate ns_application_delegate)
 {
-    return NSObject_ToNSApplicationDelegate(NSObject_init(NSApplicationDelegate_To_NSObject(ns_application_delegate)));
+    return NSObject_To_NSApplicationDelegate(NSObject_init(NSApplicationDelegate_To_NSObject(ns_application_delegate)));
 }
 
 PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication()

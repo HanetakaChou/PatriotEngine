@@ -44,6 +44,11 @@ static inline struct objc_object *NSObject_Unwrap(NSObject ns_object)
     return reinterpret_cast<struct objc_object *>(ns_object);
 }
 
+static inline struct objc_object *NSArray_Unwrap(NSArray ns_array)
+{
+    return reinterpret_cast<struct objc_object *>(ns_array);
+}
+
 extern "C" void *objc_autoreleasePoolPush(void);
 extern "C" void objc_autoreleasePoolPop(void *);
 
@@ -89,4 +94,13 @@ PT_ATTR_APPLE_SDK void NSObject_release(NSObject ns_object)
     return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
         NSObject_Unwrap(ns_object),
         sel_registerName("release"));
+}
+
+PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NSUInteger idx)
+{
+    struct objc_object *ret_ns_object = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *, NSUInteger)>(objc_msgSend)(
+        NSArray_Unwrap(ns_array),
+        sel_registerName("objectAtIndexedSubscript:"),
+        idx);
+    return NSObject_Wrap(ret_ns_object);
 }
