@@ -20,9 +20,9 @@
 #include <pt_mcrt_thread.h>
 #include <assert.h>
 
-#include "pt_wsi_window_posix_mach_objc.h"
-#include "pt_wsi_window_posix_mach_foundation.h"
-#include "pt_wsi_window_posix_mach_appkit.h"
+#include <pt_apple_sdk_posix_mach_objc.h>
+#include <pt_apple_sdk_posix_mach_foundation.h>
+#include <pt_apple_sdk_posix_mach_appkit.h>
 
 class ns_application_delegate
 {
@@ -39,7 +39,7 @@ int main(int argc, char const *argv[])
         // Using Autorelease Pool Blocks
         // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html
 
-        void *__here_auto_release_pool_object = objc_autoreleasePoolPush();
+        void *__here_auto_release_pool_object = AutoReleasePool_Push();
 
         bool __here_ns_thread_detach_target_has_finished = false;
 
@@ -63,12 +63,12 @@ int main(int argc, char const *argv[])
 
         assert(NSThread_isMultiThreaded() != false);
 
-        objc_autoreleasePoolPop(__here_auto_release_pool_object);
+        AutoReleasePool_Pop(__here_auto_release_pool_object);
     }
 
     //Register NSApplicationDelegate
     {
-        void *__here_auto_release_pool_object = objc_autoreleasePoolPush();
+        void *__here_auto_release_pool_object = AutoReleasePool_Push();
 
         Class_NSApplicationDelegate class_ns_application_delegate = NSApplicationDelegate_allocateClass(
             "NSApplicationDelegate_pt_wsi_window_posix_mach_osx",
@@ -82,10 +82,10 @@ int main(int argc, char const *argv[])
 
         NSApplication_setDelegate(ns_application, ns_application_delegate);
 
-        objc_autoreleasePoolPop(__here_auto_release_pool_object);
+        AutoReleasePool_Pop(__here_auto_release_pool_object);
     }
 
-    return NSApplicationMain(argc, argv);
+    return NSApplication_Main(argc, argv);
 }
 
 void ns_application_delegate::application_did_finish_launching(NSApplicationDelegate, NSApplicationDelegate_applicationDidFinishLaunching_, void *aNotification)
@@ -118,8 +118,4 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
 {
     return 1;
 }
-
-#include "pt_wsi_window_posix_mach_objc.inl"
-#include "pt_wsi_window_posix_mach_foundation.inl"
-#include "pt_wsi_window_posix_mach_appkit.inl"
 

@@ -2,7 +2,11 @@
     "configurations": [
         {
             "name": "Linux",
-            "compileCommands": "${workspaceFolder}/.vscode/compile_commands.json"
+            "compileCommands": "${workspaceFolder}/.vscode/compile_commands_linux.json"
+        },
+        {
+            "name": "Mac",
+            "compileCommands": "${workspaceFolder}/.vscode/compile_commands_mac.json"
         }
     ],
     "version": 4

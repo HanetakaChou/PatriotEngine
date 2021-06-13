@@ -15,10 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_WSI_WINDOW_POSIX_MACH_APPKIT_H_
-#define _PT_WSI_WINDOW_POSIX_MACH_APPKIT_H_ 1
+#ifndef _PT_APPLE_SDK_POSIX_MACH_APPKIT_H_
+#define _PT_APPLE_SDK_POSIX_MACH_APPKIT_H_ 1
 
-#include "pt_wsi_window_posix_mach_objc.h"
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_apple_sdk_common.h"
+#include "pt_apple_sdk_posix_mach_objc.h"
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h */
 typedef struct _Class_NSApplicationDelegate_T_ *Class_NSApplicationDelegate;
@@ -27,16 +30,16 @@ typedef struct _NSApplicationDelegate_applicationDidFinishLaunching__T_ *NSAppli
 typedef struct _NSApplicationDelegate_applicationWillTerminate__T_ *NSApplicationDelegate_applicationWillTerminate_;
 typedef struct _NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed__T_ *NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_;
 typedef struct _NSApplication_T_ *NSApplication;
-static inline Class_NSApplicationDelegate NSApplicationDelegate_allocateClass(
+PT_ATTR_APPLE_SDK Class_NSApplicationDelegate NSApplicationDelegate_allocateClass(
     char const *class_name,
     void (*_I_NSApplicationDelegate_applicationDidFinishLaunching_)(NSApplicationDelegate, NSApplicationDelegate_applicationDidFinishLaunching_, void *aNotification),
     void (*_I_NSApplicationDelegate_applicationWillTerminate_)(NSApplicationDelegate, NSApplicationDelegate_applicationWillTerminate_, void *aNotification),
     int8_t (*_I_NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_)(NSApplicationDelegate, NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_, NSApplication sender));
-static inline NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSApplicationDelegate class_ns_application_delegate);
-static inline NSApplicationDelegate NSApplicationDelegate_init(NSApplicationDelegate ns_application_delegate);
-static inline NSApplication NSApplication_sharedApplication();
-static inline void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
-extern "C" int NSApplicationMain(int argc, char const *argv[]);
+PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSApplicationDelegate class_ns_application_delegate);
+PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_init(NSApplicationDelegate ns_application_delegate);
+PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication();
+PT_ATTR_APPLE_SDK void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
+PT_ATTR_APPLE_SDK int NSApplication_Main(int argc, char const *argv[]);
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGBase.h */
 #if defined(__LP64__) && __LP64__
@@ -81,8 +84,8 @@ static inline NSRect NSMakeRect(CGFloat x, CGFloat y, CGFloat w, CGFloat h)
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSScreen.h */
 typedef struct _NSScreen_T_ *NSScreen;
-static inline NSScreen NSScreen_mainScreen();
-static inline NSRect NSScreen_frame(NSScreen ns_screen);
+PT_ATTR_APPLE_SDK NSScreen NSScreen_mainScreen();
+PT_ATTR_APPLE_SDK NSRect NSScreen_frame(NSScreen ns_screen);
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSWindow.h */
 typedef struct _Class_NSWindow_T_ *Class_NSWindow;
@@ -100,8 +103,8 @@ enum
 {
     NSBackingStoreBuffered __attribute__((availability(macos, introduced = 10.0))) = 2
 };
-static inline NSWindow NSWindow_alloc();
-static inline NSWindow __attribute__((availability(macos, introduced = 10.0))) NSWindow_initWithContentRect(NSWindow ns_window, NSRect ns_rect, NSWindowStyleMask ns_window_style_mask, NSBackingStoreType ns_backing_store_type, bool flag, NSScreen ns_screen);
+PT_ATTR_APPLE_SDK NSWindow NSWindow_alloc();
+PT_ATTR_APPLE_SDK NSWindow __attribute__((availability(macos, introduced = 10.0))) NSWindow_initWithContentRect(NSWindow ns_window, NSRect ns_rect, NSWindowStyleMask ns_window_style_mask, NSBackingStoreType ns_backing_store_type, bool flag, NSScreen ns_screen);
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h */
 typedef struct _Class_NSViewController_T_ *Class_NSViewController;

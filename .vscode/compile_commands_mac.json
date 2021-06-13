@@ -1,0 +1,22 @@
+[
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_objc.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_objc.o",
+        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_objc.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_foundation.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_foundation.o",
+        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_foundation.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_appkit.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_appkit.o",
+        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_appkit.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_posix_mach_osx.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_posix_mach_osx.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_posix_mach_osx.cpp"
+    }
+]

@@ -10,6 +10,10 @@
 		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
 		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
 		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
+		6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */; };
+		6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */; };
+		623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */; };
+		6238291B26769A0C002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D793C125974546001CC2AF /* Metal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C025974546001CC2AF /* Metal.tbd */; };
 		62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C62597454D001CC2AF /* MetalKit.tbd */; };
 		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
@@ -21,6 +25,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_apple_sdk_posix_mach_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		6238290A267692DD002ECF8A /* pt_apple_sdk_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_common.h; path = ../../include/pt_apple_sdk_common.h; sourceTree = "<group>"; };
+		6238290C267692F2002ECF8A /* pt_apple_sdk_posix_mach_appkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_appkit.h; path = ../../include/pt_apple_sdk_posix_mach_appkit.h; sourceTree = "<group>"; };
+		6238290D267692FA002ECF8A /* pt_apple_sdk_posix_mach_foundation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_foundation.h; path = ../../include/pt_apple_sdk_posix_mach_foundation.h; sourceTree = "<group>"; };
+		6238290E2676930A002ECF8A /* pt_apple_sdk_posix_mach_objc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_objc.h; path = ../../include/pt_apple_sdk_posix_mach_objc.h; sourceTree = "<group>"; };
+		6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_objc.cpp; path = ../../src/pt_apple_sdk_posix_mach_objc.cpp; sourceTree = "<group>"; };
+		6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_foundation.cpp; path = ../../src/pt_apple_sdk_posix_mach_foundation.cpp; sourceTree = "<group>"; };
+		623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_appkit.cpp; path = ../../src/pt_apple_sdk_posix_mach_appkit.cpp; sourceTree = "<group>"; };
 		62D793B425974516001CC2AF /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793B825974525001CC2AF /* AppKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = AppKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/AppKit.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
@@ -40,6 +52,16 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		6238290226768846002ECF8A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */,
+				62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */,
+				62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		92983F152447725E003F48B6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -56,9 +78,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */,
-				62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */,
-				62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */,
+				6238291B26769A0C002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
 				62D793C125974546001CC2AF /* Metal.tbd in Frameworks */,
 				62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */,
 			);
@@ -67,6 +87,27 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6238290826769285002ECF8A /* include */ = {
+			isa = PBXGroup;
+			children = (
+				6238290A267692DD002ECF8A /* pt_apple_sdk_common.h */,
+				6238290E2676930A002ECF8A /* pt_apple_sdk_posix_mach_objc.h */,
+				6238290D267692FA002ECF8A /* pt_apple_sdk_posix_mach_foundation.h */,
+				6238290C267692F2002ECF8A /* pt_apple_sdk_posix_mach_appkit.h */,
+			);
+			name = include;
+			sourceTree = "<group>";
+		};
+		62382909267692A3002ECF8A /* src */ = {
+			isa = PBXGroup;
+			children = (
+				6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */,
+				6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */,
+				623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */,
+			);
+			name = src;
+			sourceTree = "<group>";
+		};
 		62D793E7259750A4001CC2AF /* bldsys */ = {
 			isa = PBXGroup;
 			children = (
@@ -107,15 +148,45 @@
 			children = (
 				62D7940D2597576F001CC2AF /* examples */,
 				62D793E7259750A4001CC2AF /* bldsys */,
+				6238290826769285002ECF8A /* include */,
+				62382909267692A3002ECF8A /* src */,
 				9279CC2124390AE300DACBD7 /* Frameworks */,
 				62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */,
 				62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */,
+				6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */,
 			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		6238290026768846002ECF8A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_apple_sdk_posix_mach_osx" */;
+			buildPhases = (
+				6238290026768846002ECF8A /* Headers */,
+				6238290126768846002ECF8A /* Sources */,
+				6238290226768846002ECF8A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_apple_sdk_posix_mach_osx;
+			productName = pt_apple_sdk_posix_mach_osx;
+			productReference = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
 		92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 92983F2F2447725E003F48B6 /* Build configuration list for PBXNativeTarget "PatriotEngine-iPhoneOS" */;
@@ -159,6 +230,9 @@
 				LastUpgradeCheck = 1230;
 				ORGANIZATIONNAME = AdunZhang;
 				TargetAttributes = {
+					6238290326768846002ECF8A = {
+						CreatedOnToolsVersion = 12.5;
+					};
 					92983F172447725E003F48B6 = {
 						CreatedOnToolsVersion = 11.4;
 					};
@@ -182,6 +256,7 @@
 			targets = (
 				92F977E32439099000C5F3C5 /* PatriotEngine-MacOSX */,
 				92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */,
+				6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */,
 			);
 		};
 /* End PBXProject section */
@@ -204,6 +279,16 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		6238290126768846002ECF8A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */,
+				6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */,
+				623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		92983F142447725E003F48B6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -222,6 +307,39 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		6238290526768846002ECF8A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		6238290626768846002ECF8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = "PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT";
+				MACOSX_DEPLOYMENT_TARGET = 11.3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		92983F302447725E003F48B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -429,6 +547,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_apple_sdk_posix_mach_osx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6238290526768846002ECF8A /* Debug */,
+				6238290626768846002ECF8A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		92983F2F2447725E003F48B6 /* Build configuration list for PBXNativeTarget "PatriotEngine-iPhoneOS" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
