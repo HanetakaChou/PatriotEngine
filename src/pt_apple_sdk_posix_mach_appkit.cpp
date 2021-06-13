@@ -335,3 +335,11 @@ PT_ATTR_APPLE_SDK NSViewController NSViewController_initWithNibName(NSViewContro
         reinterpret_cast<struct objc_object *>(nibBundleOrNil));
     return NSViewController_Wrap(ret_ns_view_controller);
 }
+
+PT_ATTR_APPLE_SDK void NSViewController_setView(NSViewController ns_view_controller, MTKView mtk_view)
+{
+    return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
+        NSViewController_Unwrap(ns_view_controller),
+        sel_registerName("setView:"),
+        reinterpret_cast<struct objc_object *>(mtk_view));
+}

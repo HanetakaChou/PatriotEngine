@@ -22,14 +22,28 @@
 #include <stdint.h>
 #include "pt_apple_sdk_common.h"
 #include "pt_apple_sdk_posix_mach_objc.h"
+#include "pt_apple_sdk_posix_mach_foundation.h"
+#include "pt_apple_sdk_posix_mach_metalkit.h"
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h */
+typedef struct _NSApplication_T_ *NSApplication;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication();
+    PT_ATTR_APPLE_SDK void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
+    PT_ATTR_APPLE_SDK int NSApplication_Main(int argc, char const *argv[]);
+#ifdef __cplusplus
+}
+#endif
+
 typedef struct _Class_NSApplicationDelegate_T_ *Class_NSApplicationDelegate;
 typedef struct _NSApplicationDelegate_T_ *NSApplicationDelegate;
 typedef struct _NSApplicationDelegate_applicationDidFinishLaunching__T_ *NSApplicationDelegate_applicationDidFinishLaunching_;
 typedef struct _NSApplicationDelegate_applicationWillTerminate__T_ *NSApplicationDelegate_applicationWillTerminate_;
 typedef struct _NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed__T_ *NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_;
-typedef struct _NSApplication_T_ *NSApplication;
 
 #ifdef __cplusplus
 extern "C"
@@ -42,53 +56,9 @@ extern "C"
         int8_t (*_I_NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_)(NSApplicationDelegate, NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_, NSApplication sender));
     PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSApplicationDelegate class_ns_application_delegate);
     PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_init(NSApplicationDelegate ns_application_delegate);
-    PT_ATTR_APPLE_SDK NSApplication NSApplication_sharedApplication();
-    PT_ATTR_APPLE_SDK void NSApplication_setDelegate(NSApplication ns_application, NSApplicationDelegate ns_application_delegate);
-    PT_ATTR_APPLE_SDK int NSApplication_Main(int argc, char const *argv[]);
 #ifdef __cplusplus
 }
 #endif
-
-/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGBase.h */
-#if defined(__LP64__) && __LP64__
-#define CGFLOAT_TYPE double
-#else
-#define CGFLOAT_TYPE float
-#endif
-typedef CGFLOAT_TYPE CGFloat;
-
-/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSGeometry.h */
-typedef struct _NSPoint
-{
-    CGFloat x;
-    CGFloat y;
-} NSPoint;
-typedef struct _NSSize
-{
-    CGFloat width;
-    CGFloat height;
-} NSSize;
-typedef struct _NSRect
-{
-    NSPoint origin;
-    NSSize size;
-} NSRect;
-static inline NSSize NSMakeSize(CGFloat w, CGFloat h)
-{
-    NSSize s;
-    s.width = w;
-    s.height = h;
-    return s;
-}
-static inline NSRect NSMakeRect(CGFloat x, CGFloat y, CGFloat w, CGFloat h)
-{
-    NSRect r;
-    r.origin.x = x;
-    r.origin.y = y;
-    r.size.width = w;
-    r.size.height = h;
-    return r;
-}
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSScreen.h */
 typedef struct _NSScreen_T_ *NSScreen;
@@ -139,7 +109,6 @@ typedef struct _Class_NSViewController_T_ *Class_NSViewController;
 typedef struct _NSViewController_loadView_T_ *NSViewController_loadView;
 typedef struct _NSViewController_viewDidLoad_T_ *NSViewController_viewDidLoad;
 typedef struct _NSViewController_setRepresentedObject__T_ *NSViewController_setRepresentedObject_;
-
 #ifdef __cplusplus
 extern "C"
 {
@@ -152,6 +121,7 @@ extern "C"
     PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname);
     PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller);
     PT_ATTR_APPLE_SDK NSViewController __attribute__((availability(macos, introduced = 10.5))) NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil);
+    PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.5))) NSViewController_setView(NSViewController ns_view_controller, MTKView mtk_view);
 #ifdef __cplusplus
 }
 #endif

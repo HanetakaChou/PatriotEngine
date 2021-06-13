@@ -40,4 +40,53 @@ extern "C"
 }
 #endif
 
+/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreGraphics.framework/Headers/CGBase.h */
+#if defined(__LP64__) && __LP64__
+#define CGFLOAT_TYPE double
+#else
+#define CGFLOAT_TYPE float
+#endif
+typedef CGFLOAT_TYPE CGFloat;
+
+/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Headers/CGGeometry.h */
+typedef struct
+{
+    CGFloat x;
+    CGFloat y;
+} CGPoint;
+typedef struct
+{
+    CGFloat width;
+    CGFloat height;
+} CGSize;
+typedef struct
+{
+    CGPoint origin;
+    CGSize size;
+} CGRect;
+
+/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Headers/NSGeometry.h */
+#if (defined(__LP64__) && __LP64__) || NS_BUILD_32_LIKE_64
+typedef CGPoint NSPoint;
+typedef CGSize NSSize;
+typedef CGRect NSRect;
+#endif
+
+static inline NSSize NSMakeSize(CGFloat w, CGFloat h)
+{
+    NSSize s;
+    s.width = w;
+    s.height = h;
+    return s;
+}
+static inline NSRect NSMakeRect(CGFloat x, CGFloat y, CGFloat w, CGFloat h)
+{
+    NSRect r;
+    r.origin.x = x;
+    r.origin.y = y;
+    r.size.width = w;
+    r.size.height = h;
+    return r;
+}
+
 #endif
