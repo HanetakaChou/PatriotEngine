@@ -20,9 +20,16 @@
 
 #include "pt_apple_sdk_common.h"
 
-/** @file objc/obc-internal.h */
-PT_ATTR_APPLE_SDK void *AutoReleasePool_Push(void);
-PT_ATTR_APPLE_SDK void AutoReleasePool_Pop(void *);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    /** @file objc/obc-internal.h */
+    PT_ATTR_APPLE_SDK void *AutoReleasePool_Push(void);
+    PT_ATTR_APPLE_SDK void AutoReleasePool_Pop(void *);
+#ifdef __cplusplus
+}
+#endif
 
 /** @file objc/NSObjCRuntime.h */
 #if __LP64__ || 0 || NS_BUILD_32_LIKE_64
@@ -34,9 +41,17 @@ typedef unsigned int NSUInteger;
 #endif
 typedef struct _Class_NSObject_T_ *Class_NSObject;
 typedef struct _NSObject_T_ *NSObject;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObject class_ns_object, char const *ivarname);
 PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject);
 PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject);
 PT_ATTR_APPLE_SDK void NSObject_release(NSObject);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
