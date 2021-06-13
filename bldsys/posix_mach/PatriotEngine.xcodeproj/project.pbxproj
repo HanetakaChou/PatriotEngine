@@ -10,6 +10,7 @@
 		6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */; };
 		6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */; };
 		623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */; };
+		6268636B2676A202007817B9 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
 		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
 		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
@@ -58,6 +59,8 @@
 				62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */,
 				62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */,
 				62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */,
+				62D793C125974546001CC2AF /* Metal.tbd in Frameworks */,
+				62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -77,8 +80,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D793C125974546001CC2AF /* Metal.tbd in Frameworks */,
-				62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */,
+				6268636B2676A202007817B9 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
