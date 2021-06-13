@@ -100,6 +100,31 @@ static inline NSWindow NSObject_To_NSWindow(NSObject ns_window)
     return reinterpret_cast<NSWindow>(ns_window);
 }
 
+static inline Class_NSViewController Class_NSViewController_Wrap(Class class_ns_view_controller)
+{
+    return reinterpret_cast<Class_NSViewController>(class_ns_view_controller);
+}
+
+static inline Class Class_NSViewController_Unwrap(Class_NSViewController class_ns_view_controller)
+{
+    return reinterpret_cast<Class>(class_ns_view_controller);
+}
+
+static inline Class_NSObject Class_NSViewController_To_Class_NSObject(Class_NSViewController class_ns_view_controller)
+{
+    return reinterpret_cast<Class_NSObject>(class_ns_view_controller);
+}
+
+static inline NSViewController NSViewController_Wrap(struct objc_object *ns_view_controller)
+{
+    return reinterpret_cast<NSViewController>(ns_view_controller);
+}
+
+static inline struct objc_object *NSViewController_Unwrap(NSViewController ns_view_controller)
+{
+    return reinterpret_cast<struct objc_object *>(ns_view_controller);
+}
+
 // ---
 PT_ATTR_APPLE_SDK Class_NSApplicationDelegate NSApplicationDelegate_allocateClass(
     char const *class_name,
@@ -232,4 +257,81 @@ PT_ATTR_APPLE_SDK NSWindow NSWindow_initWithContentRect(NSWindow ns_window, NSRe
         (flag != false) ? YES : NO,
         NSScreen_Unwrap(ns_screen));
     return NSWindow_Wrap(ret_ns_window);
+}
+
+PT_ATTR_APPLE_SDK void NSWindow_setContentViewController(NSWindow ns_window, NSViewController ns_view_controller)
+{
+    return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
+        NSWindow_Unwrap(ns_window),
+        sel_registerName("setContentViewController:"),
+        NSViewController_Unwrap(ns_view_controller));
+}
+
+PT_ATTR_APPLE_SDK void NSWindow_makeKeyAndOrderFront(NSWindow ns_window, void *sender)
+{
+    return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
+        NSWindow_Unwrap(ns_window),
+        sel_registerName("makeKeyAndOrderFront:"),
+        reinterpret_cast<struct objc_object *>(sender));
+}
+
+PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
+    char const *class_name,
+    void (*_I_NSViewController_loadView)(NSViewController, NSViewController_loadView),
+    void (*_I_NSViewController_viewDidLoad)(NSViewController, NSViewController_viewDidLoad),
+    void (*_I_NSViewController_setRepresentedObject_)(NSViewController, NSViewController_setRepresentedObject_, void *representedObject))
+{
+
+    Class class_ns_view_controller = objc_allocateClassPair(
+        objc_getClass("NSViewController"),
+        class_name,
+        0);
+    assert(class_ns_view_controller != NULL);
+
+    BOOL result_load_view = class_addMethod(
+        class_ns_view_controller,
+        sel_registerName("loadView"),
+        reinterpret_cast<IMP>(_I_NSViewController_loadView),
+        "v@:");
+    assert(result_load_view != NO);
+
+    BOOL result_view_did_load = class_addMethod(
+        class_ns_view_controller,
+        sel_registerName("viewDidLoad"),
+        reinterpret_cast<IMP>(_I_NSViewController_viewDidLoad),
+        "v@:");
+    assert(result_view_did_load != NO);
+
+    BOOL result_set_represented_object = class_addMethod(
+        class_ns_view_controller,
+        sel_registerName("setRepresentedObject:"),
+        reinterpret_cast<IMP>(_I_NSViewController_setRepresentedObject_),
+        "v@:@");
+    assert(result_set_represented_object != NO);
+
+    return Class_NSViewController_Wrap(class_ns_view_controller);
+}
+
+PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname)
+{
+    return Class_NSObject_addIvarVoidPointer(Class_NSViewController_To_Class_NSObject(class_ns_view_controller), ivarname);
+}
+
+PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller)
+{
+    struct objc_object *ns_view_controller = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
+        Class_NSViewController_Unwrap(class_ns_view_controller),
+        sel_registerName("alloc"));
+    return NSViewController_Wrap(ns_view_controller);
+}
+
+PT_ATTR_APPLE_SDK NSViewController NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil)
+{
+
+    struct objc_object *ret_ns_view_controller = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *, struct objc_object *, struct objc_object *)>(objc_msgSend)(
+        NSViewController_Unwrap(ns_view_controller),
+        sel_registerName("initWithNibName:bundle:"),
+        reinterpret_cast<struct objc_object *>(nibNameOrNil),
+        reinterpret_cast<struct objc_object *>(nibBundleOrNil));
+    return NSViewController_Wrap(ret_ns_view_controller);
 }

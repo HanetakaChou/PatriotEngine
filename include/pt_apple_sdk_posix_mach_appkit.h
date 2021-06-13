@@ -120,17 +120,40 @@ enum
     NSBackingStoreBuffered __attribute__((availability(macos, introduced = 10.0))) = 2
 };
 
+typedef struct _NSViewController_T_ *NSViewController;
+
 #ifdef __cplusplus
 extern "C"
 {
 #endif
     PT_ATTR_APPLE_SDK NSWindow NSWindow_alloc();
     PT_ATTR_APPLE_SDK NSWindow __attribute__((availability(macos, introduced = 10.0))) NSWindow_initWithContentRect(NSWindow ns_window, NSRect ns_rect, NSWindowStyleMask ns_window_style_mask, NSBackingStoreType ns_backing_store_type, bool flag, NSScreen ns_screen);
+    PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.0))) NSWindow_setContentViewController(NSWindow ns_window, NSViewController ns_view_controller);
+    PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.0))) NSWindow_makeKeyAndOrderFront(NSWindow ns_window, void *sender);
 #ifdef __cplusplus
 }
 #endif
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h */
 typedef struct _Class_NSViewController_T_ *Class_NSViewController;
+typedef struct _NSViewController_loadView_T_ *NSViewController_loadView;
+typedef struct _NSViewController_viewDidLoad_T_ *NSViewController_viewDidLoad;
+typedef struct _NSViewController_setRepresentedObject__T_ *NSViewController_setRepresentedObject_;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
+        char const *class_name,
+        void (*_I_NSViewController_loadView)(NSViewController, NSViewController_loadView),
+        void (*_I_NSViewController_viewDidLoad)(NSViewController, NSViewController_viewDidLoad),
+        void (*_I_NSViewController_setRepresentedObject_)(NSViewController, NSViewController_setRepresentedObject_, void *representedObject));
+    PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname);
+    PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller);
+    PT_ATTR_APPLE_SDK NSViewController __attribute__((availability(macos, introduced = 10.5))) NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil);
+#ifdef __cplusplus
+}
+#endif
 
 #endif

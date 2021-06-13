@@ -32,6 +32,14 @@ public:
     static int8_t application_should_terminate_after_last_window_closed(NSApplicationDelegate, NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_, NSApplication sender);
 };
 
+class ns_view_controller
+{
+public:
+    static void load_view(NSViewController, NSViewController_loadView);
+    static void view_did_load(NSViewController, NSViewController_viewDidLoad);
+    static void set_represented_object(NSViewController, NSViewController_setRepresentedObject_, void *representedObject);
+};
+
 int main(int argc, char const *argv[])
 {
     //Enable MultiThreaded
@@ -46,7 +54,8 @@ int main(int argc, char const *argv[])
         Class_NSThreadDetachTarget class_ns_thread_detach_target = NSThreadDetachTarget_allocateClass(
             "NSThreadDetachTarget_pt_wsi_window_posix_mach_osx",
             "NSMain_pt_wsi_window_posix_mach_osx",
-            [](NSThreadDetachTarget, NSThreadDetachSelector_, void *__here_ns_thread_detach_target_has_finished) -> void {
+            [](NSThreadDetachTarget, NSThreadDetachSelector_, void *__here_ns_thread_detach_target_has_finished) -> void
+            {
                 (*static_cast<bool *>(__here_ns_thread_detach_target_has_finished)) = true;
             });
 
@@ -108,6 +117,20 @@ void ns_application_delegate::application_did_finish_launching(NSApplicationDele
         NSBackingStoreBuffered,
         false,
         ns_screen);
+
+    Class_NSViewController class_ns_view_controller = NSViewController_allocateClass(
+        "NSViewController_pt_wsi_window_posix_mach_osx",
+        ns_view_controller::load_view,
+        ns_view_controller::view_did_load,
+        ns_view_controller::set_represented_object);
+
+    Class_NSViewController_addIvarVoidPointer(class_ns_view_controller, "pUserData");
+
+    NSViewController ns_view_controller = NSViewController_initWithNibName(NSViewController_alloc(class_ns_view_controller), NULL, NULL);
+
+    NSWindow_setContentViewController(ns_window, ns_view_controller);
+
+    NSWindow_makeKeyAndOrderFront(ns_window, NULL);
 }
 
 void ns_application_delegate::application_will_terminate(NSApplicationDelegate, NSApplicationDelegate_applicationWillTerminate_, void *aNotification)
@@ -119,3 +142,17 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
     return 1;
 }
 
+void ns_view_controller::load_view(NSViewController, NSViewController_loadView)
+{
+    int huhu = 0;
+}
+
+void ns_view_controller::view_did_load(NSViewController, NSViewController_viewDidLoad)
+{
+    int huhu = 0;
+}
+
+void ns_view_controller::set_represented_object(NSViewController, NSViewController_setRepresentedObject_, void *representedObject)
+{
+    int huhu = 0;
+}

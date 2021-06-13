@@ -47,17 +47,17 @@ static inline struct objc_object *NSObject_Unwrap(NSObject ns_object)
 extern "C" void *objc_autoreleasePoolPush(void);
 extern "C" void objc_autoreleasePoolPop(void *);
 
-extern "C" PT_ATTR_APPLE_SDK void *AutoReleasePool_Push(void)
+PT_ATTR_APPLE_SDK void *AutoReleasePool_Push(void)
 {
     return objc_autoreleasePoolPush();
 }
 
-extern "C" PT_ATTR_APPLE_SDK void AutoReleasePool_Pop(void *auto_release_pool_object)
+PT_ATTR_APPLE_SDK void AutoReleasePool_Pop(void *auto_release_pool_object)
 {
     return objc_autoreleasePoolPop(auto_release_pool_object);
 }
 
-extern "C" PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObject class_ns_object, char const *ivarname)
+PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObject class_ns_object, char const *ivarname)
 {
     BOOL res = class_addIvar(
         Class_NSObject_Unwrap(class_ns_object),
@@ -68,7 +68,7 @@ extern "C" PT_ATTR_APPLE_SDK bool Class_NSObject_addIvarVoidPointer(Class_NSObje
     return (res != NO) ? true : false;
 }
 
-extern "C" PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject class_ns_object)
+PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject class_ns_object)
 {
     struct objc_object *ns_object = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
         Class_NSObject_Unwrap(class_ns_object),
@@ -76,7 +76,7 @@ extern "C" PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject class_ns_obj
     return NSObject_Wrap(ns_object);
 }
 
-extern "C" PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject ns_object)
+PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject ns_object)
 {
     struct objc_object *ret_ns_object = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
         NSObject_Unwrap(ns_object),
@@ -84,7 +84,7 @@ extern "C" PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject ns_object)
     return NSObject_Wrap(ret_ns_object);
 }
 
-extern "C" PT_ATTR_APPLE_SDK void NSObject_release(NSObject ns_object)
+PT_ATTR_APPLE_SDK void NSObject_release(NSObject ns_object)
 {
     return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
         NSObject_Unwrap(ns_object),
