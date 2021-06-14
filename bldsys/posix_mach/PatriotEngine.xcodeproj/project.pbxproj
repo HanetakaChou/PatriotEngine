@@ -16,15 +16,15 @@
 		625D4F3326775CEF000F087B /* pt_gfx_connection_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */; };
 		625D4F3726775DB1000F087B /* pt_gfx_connection_mtl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3626775DB1000F087B /* pt_gfx_connection_mtl.cpp */; };
 		625D4F392677611B000F087B /* pt_gfx_api_mtl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F382677611B000F087B /* pt_gfx_api_mtl.cpp */; };
-		625D4F3B26776198000F087B /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
-		6268636B2676A202007817B9 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
 		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
 		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
 		62D793C125974546001CC2AF /* Metal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C025974546001CC2AF /* Metal.tbd */; };
 		62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C62597454D001CC2AF /* MetalKit.tbd */; };
 		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
-		62D9E1BE267781770003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
+		62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
+		62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
+		62D9E1C726779F660003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0788D2447818700F82881 /* UIKit.tbd */; };
 		92F078942447863B00F82881 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F078932447863B00F82881 /* libobjc.tbd */; };
 		92F0793324479F0600F82881 /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793224479F0600F82881 /* Foundation.tbd */; };
@@ -88,7 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D9E1BE267781770003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
+				62D9E1C726779F660003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,8 +108,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				625D4F3B26776198000F087B /* libpt_gfx_wsi_window_osx.dylib in Frameworks */,
-				6268636B2676A202007817B9 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
+				62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */,
+				62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,6 +395,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -412,6 +413,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -429,12 +431,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -447,12 +449,12 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
