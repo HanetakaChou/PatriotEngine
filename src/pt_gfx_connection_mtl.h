@@ -27,7 +27,17 @@ class gfx_connection_mtl : public gfx_connection_common
 {
     class gfx_api_mtl m_api_mtl;
 
+    class gfx_texture_common *create_texture() override;
+    void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
+    void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
+    void wsi_on_redraw_needed_release() override;
+
+    inline gfx_connection_mtl();
+    inline ~gfx_connection_mtl();
     bool init(wsi_window_ref wsi_window);
+    void destroy() override;
+
+    friend class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 public:
 };

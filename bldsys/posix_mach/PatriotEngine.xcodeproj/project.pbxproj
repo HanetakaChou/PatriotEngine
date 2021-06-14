@@ -24,6 +24,7 @@
 		62D793C125974546001CC2AF /* Metal.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C025974546001CC2AF /* Metal.tbd */; };
 		62D793C72597454D001CC2AF /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793C62597454D001CC2AF /* MetalKit.tbd */; };
 		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
+		62D9E1BE267781770003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0788D2447818700F82881 /* UIKit.tbd */; };
 		92F078942447863B00F82881 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F078932447863B00F82881 /* libobjc.tbd */; };
 		92F0793324479F0600F82881 /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793224479F0600F82881 /* Foundation.tbd */; };
@@ -87,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62D9E1BE267781770003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

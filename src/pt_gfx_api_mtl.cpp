@@ -16,8 +16,26 @@
  */
 
 #include "pt_gfx_api_mtl.h"
+#include <pt_apple_sdk_posix_mach_metal.h>
 
 bool gfx_api_mtl::init(wsi_window_ref wsi_window)
 {
+    m_device = NULL;
+    {
+        NSArray devices = MTLDevice_CopyAllDevices();
+        NSUInteger count = NSArray_count(devices);
+        for (NSUInteger idx = 0U; idx < count; ++idx)
+        {
+            MTLDevice device = NSObject_To_MTLDevice(NSArray_objectAtIndexedSubscript(devices, idx));
+            bool has_unified_memory = MTLDevice_hasUnifiedMemory(device);
+            if (!has_unified_memory)
+            {
+                m_device = device;
+                break;
+            }
+        }
+        NSArray_release(devices);
+    }
+
     return true;
 }
