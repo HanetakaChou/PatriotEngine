@@ -23,6 +23,8 @@
 #include <pt_apple_sdk_posix_mach_objc.h>
 #include <pt_apple_sdk_posix_mach_foundation.h>
 #include <pt_apple_sdk_posix_mach_appkit.h>
+#include <pt_apple_sdk_posix_mach_metalkit.h>
+#include <pt_apple_sdk_posix_mach_metal.h>
 
 class ns_application_delegate
 {
@@ -36,8 +38,15 @@ class ns_view_controller
 {
 public:
     static void load_view(NSViewController ns_view_controller, NSViewController_loadView);
-    static void view_did_load(NSViewController, NSViewController_viewDidLoad);
-    static void set_represented_object(NSViewController, NSViewController_setRepresentedObject_, void *representedObject);
+    static void view_did_load(NSViewController ns_view_controller, NSViewController_viewDidLoad);
+    static void set_represented_object(NSViewController ns_view_controller, NSViewController_setRepresentedObject_, void *represented_object);
+};
+
+class mtk_view_delegate
+{
+public:
+    static void drawable_size_will_change(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size);
+    static void draw_in_mtk_view(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view);
 };
 
 int main(int argc, char const *argv[])
@@ -142,9 +151,6 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
     return 1;
 }
 
-#include <pt_apple_sdk_posix_mach_metalkit.h>
-#include <pt_apple_sdk_posix_mach_metal.h>
-
 void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewController_loadView)
 {
     MTLDevice device = NULL;
@@ -164,15 +170,38 @@ void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewCo
         NSArray_release(devices);
     }
 
-    
+    CGRect frame = {{0, 0}, {800, 600}};
+    MTKView mtk_view = MTKView_initWithFrame(MTKView_alloc(), frame, device);
+
+    Class_MTKViewDelegate class_mtk_view_delegate = MTKViewDelegate_allocClass(
+        "MTKViewDelegate_pt_wsi_window_posix_mach_osx",
+        mtk_view_delegate::drawable_size_will_change,
+        mtk_view_delegate::draw_in_mtk_view);
+
+    Class_MTKViewDelegate_addIvarVoidPointer(class_mtk_view_delegate, "pUserData");
+
+    MTKViewDelegate mtk_view_delegate = MTKViewDelegate_init(MTKViewDelegate_alloc(class_mtk_view_delegate));
+    //MTKViewDelegate_setIvarVoidPointer
+
+    MTKView_setDelegate(mtk_view, mtk_view_delegate);
+
+    NSViewController_setView(ns_view_controller, MTKView_To_NSView(mtk_view));
 }
 
-void ns_view_controller::view_did_load(NSViewController, NSViewController_viewDidLoad)
+void ns_view_controller::view_did_load(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd)
 {
-    int huhu = 0;
+    NSViewController_super_viewDidLoad(ns_view_controller, cmd);
 }
 
-void ns_view_controller::set_represented_object(NSViewController, NSViewController_setRepresentedObject_, void *representedObject)
+void ns_view_controller::set_represented_object(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object)
 {
-    int huhu = 0;
+    NSViewController_super_setRepresentedObject_(ns_view_controller, cmd, represented_object);
+}
+
+void mtk_view_delegate::drawable_size_will_change(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size)
+{
+}
+
+void mtk_view_delegate::draw_in_mtk_view(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view)
+{
 }

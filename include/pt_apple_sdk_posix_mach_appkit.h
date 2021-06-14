@@ -118,13 +118,15 @@ extern "C"
 #endif
     PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
         char const *class_name,
-        void (*_I_NSViewController_loadView)(NSViewController, NSViewController_loadView),
-        void (*_I_NSViewController_viewDidLoad)(NSViewController, NSViewController_viewDidLoad),
-        void (*_I_NSViewController_setRepresentedObject_)(NSViewController, NSViewController_setRepresentedObject_, void *representedObject));
+        void (*_I_NSViewController_loadView)(NSViewController ns_view_controller, NSViewController_loadView),
+        void (*_I_NSViewController_viewDidLoad)(NSViewController ns_view_controller, NSViewController_viewDidLoad),
+        void (*_I_NSViewController_setRepresentedObject_)(NSViewController ns_view_controller, NSViewController_setRepresentedObject_, void *represented_object));
     PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname);
     PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller);
     PT_ATTR_APPLE_SDK NSViewController __attribute__((availability(macos, introduced = 10.5))) NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil);
     PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.5))) NSViewController_setView(NSViewController ns_view_controller, NSView ns_view);
+    PT_ATTR_APPLE_SDK void NSViewController_super_viewDidLoad(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd);
+    PT_ATTR_APPLE_SDK void NSViewController_super_setRepresentedObject_(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object);
 #ifdef __cplusplus
 }
 #endif

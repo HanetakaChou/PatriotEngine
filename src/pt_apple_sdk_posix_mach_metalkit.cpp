@@ -50,6 +50,11 @@ static inline Class Class_MTKViewDelegate_Unwrap(Class_MTKViewDelegate class_mtk
     return reinterpret_cast<Class>(class_mtk_view_delegate);
 }
 
+static inline Class_NSObject Class_MTKViewDelegate_To_Class_NSObject(Class_MTKViewDelegate class_mtk_view_delegate)
+{
+    return reinterpret_cast<Class_NSObject>(class_mtk_view_delegate);
+}
+
 static inline NSObject MTKViewDelegate_To_NSObject(MTKViewDelegate mtk_view_delegate)
 {
     return reinterpret_cast<NSObject>(mtk_view_delegate);
@@ -99,8 +104,8 @@ PT_ATTR_APPLE_SDK void MTKView_setDelegate(MTKView mtk_view, MTKViewDelegate del
 
 PT_ATTR_APPLE_SDK Class_MTKViewDelegate MTKViewDelegate_allocClass(
     char const *class_name,
-    void (*_I_MTKViewDelegate_drawableSizeWillChange_)(MTKViewDelegate, MTKViewDelegate_drawSizeWillChange_, MTKView, CGSize size),
-    void (*_I_MTKViewDelegate_drawInMTKView_)(MTKViewDelegate, MTKViewDelegate_drawInMTKView_, MTKView))
+    void (*_I_MTKViewDelegate_drawableSizeWillChange_)(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size),
+    void (*_I_MTKViewDelegate_drawInMTKView_)(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view))
 {
     Class class_mtk_view_delegate = objc_allocateClassPair(
         objc_getClass("NSObject"),
@@ -123,6 +128,11 @@ PT_ATTR_APPLE_SDK Class_MTKViewDelegate MTKViewDelegate_allocClass(
     assert(result_draw_in_mtk_view != NO);
 
     return Class_MTKViewDelegate_Wrap(class_mtk_view_delegate);
+}
+
+PT_ATTR_APPLE_SDK bool Class_MTKViewDelegate_addIvarVoidPointer(Class_MTKViewDelegate class_mtk_view_delegate, char const *ivarname)
+{
+    return Class_NSObject_addIvarVoidPointer(Class_MTKViewDelegate_To_Class_NSObject(class_mtk_view_delegate), ivarname);
 }
 
 PT_ATTR_APPLE_SDK MTKViewDelegate MTKViewDelegate_alloc(Class_MTKViewDelegate class_mtk_view_delegate)

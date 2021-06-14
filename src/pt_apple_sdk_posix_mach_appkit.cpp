@@ -287,9 +287,9 @@ PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view)
 
 PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
     char const *class_name,
-    void (*_I_NSViewController_loadView)(NSViewController, NSViewController_loadView),
-    void (*_I_NSViewController_viewDidLoad)(NSViewController, NSViewController_viewDidLoad),
-    void (*_I_NSViewController_setRepresentedObject_)(NSViewController, NSViewController_setRepresentedObject_, void *representedObject))
+    void (*_I_NSViewController_loadView)(NSViewController ns_view_controller, NSViewController_loadView),
+    void (*_I_NSViewController_viewDidLoad)(NSViewController ns_view_controller, NSViewController_viewDidLoad),
+    void (*_I_NSViewController_setRepresentedObject_)(NSViewController ns_view_controller, NSViewController_setRepresentedObject_, void *represented_object))
 {
 
     Class class_ns_view_controller = objc_allocateClassPair(
@@ -346,10 +346,33 @@ PT_ATTR_APPLE_SDK NSViewController NSViewController_initWithNibName(NSViewContro
     return NSViewController_Wrap(ret_ns_view_controller);
 }
 
-PT_ATTR_APPLE_SDK void NSViewController_setView(NSViewController ns_view_controller,  NSView ns_view)
+PT_ATTR_APPLE_SDK void NSViewController_setView(NSViewController ns_view_controller, NSView ns_view)
 {
     return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
         NSViewController_Unwrap(ns_view_controller),
         sel_registerName("setView:"),
         NSView_Unwrap(ns_view));
+}
+
+PT_ATTR_APPLE_SDK void NSViewController_super_viewDidLoad(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd)
+{
+    struct objc_super super = {
+        NSViewController_Unwrap(ns_view_controller),
+        class_getSuperclass(object_getClass(NSViewController_Unwrap(ns_view_controller)))};
+
+    return reinterpret_cast<void (*)(struct objc_super *, struct objc_selector *)>(objc_msgSendSuper)(
+        &super,
+        reinterpret_cast<struct objc_selector *>(cmd));
+}
+
+PT_ATTR_APPLE_SDK void NSViewController_super_setRepresentedObject_(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object)
+{
+    struct objc_super super = {
+        NSViewController_Unwrap(ns_view_controller),
+        class_getSuperclass(object_getClass(NSViewController_Unwrap(ns_view_controller)))};
+
+    return reinterpret_cast<void (*)(struct objc_super *, struct objc_selector *, struct objc_object *)>(objc_msgSendSuper)(
+        &super,
+        reinterpret_cast<struct objc_selector *>(cmd),
+        reinterpret_cast<struct objc_object *>(represented_object));
 }

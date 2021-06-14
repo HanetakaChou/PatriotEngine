@@ -39,8 +39,8 @@ extern "C"
     PT_ATTR_APPLE_SDK void MTKView_setDelegate(MTKView mtk_view, MTKViewDelegate delegate);
     PT_ATTR_APPLE_SDK Class_MTKViewDelegate MTKViewDelegate_allocClass(
         char const *class_name,
-        void (*_I_MTKViewDelegate_drawableSizeWillChange_)(MTKViewDelegate, MTKViewDelegate_drawSizeWillChange_, MTKView, CGSize size),
-        void (*_I_MTKViewDelegate_drawInMTKView_)(MTKViewDelegate, MTKViewDelegate_drawInMTKView_, MTKView));
+        void (*_I_MTKViewDelegate_drawableSizeWillChange_)(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size),
+        void (*_I_MTKViewDelegate_drawInMTKView_)(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view));
     PT_ATTR_APPLE_SDK bool Class_MTKViewDelegate_addIvarVoidPointer(Class_MTKViewDelegate class_mtk_view_delegate, char const *ivarname);
     PT_ATTR_APPLE_SDK MTKViewDelegate MTKViewDelegate_alloc(Class_MTKViewDelegate class_mtk_view_delegate);
     PT_ATTR_APPLE_SDK MTKViewDelegate MTKViewDelegate_init(MTKViewDelegate mtk_view_delegate);
