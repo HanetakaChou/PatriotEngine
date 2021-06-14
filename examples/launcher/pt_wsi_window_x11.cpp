@@ -176,7 +176,7 @@ void *wsi_window_x11::draw_request_main(void *arg)
 {
     wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual));
+    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual), wrap_wsi_window(self->m_window));
     assert(self->m_gfx_connection != NULL);
     mcrt_atomic_store(&self->m_draw_request_thread_running, true);
 

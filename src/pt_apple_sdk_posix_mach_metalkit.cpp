@@ -75,6 +75,11 @@ static inline struct objc_object *MTKViewDelegate_Unwrap(MTKViewDelegate mtk_vie
     return reinterpret_cast<struct objc_object *>(mtk_view_delegate);
 }
 
+static inline struct objc_object *MTLDevice_Unwrap(MTLDevice mtl_device)
+{
+    return reinterpret_cast<struct objc_object *>(mtl_device);
+}
+
 // ---
 PT_ATTR_APPLE_SDK MTKView MTKView_alloc()
 {
@@ -90,7 +95,7 @@ PT_ATTR_APPLE_SDK MTKView MTKView_initWithFrame(MTKView mtk_view, CGRect frameRe
         MTKView_Unwrap(mtk_view),
         sel_registerName("initWithFrame:device:"),
         frameRect,
-        reinterpret_cast<struct objc_object *>(device));
+        MTLDevice_Unwrap(device));
     return MTKView_Wrap(ret_mtk_view);
 }
 
@@ -100,6 +105,14 @@ PT_ATTR_APPLE_SDK void MTKView_setDelegate(MTKView mtk_view, MTKViewDelegate del
         MTKView_Unwrap(mtk_view),
         sel_registerName("setDelegate:"),
         MTKViewDelegate_Unwrap(delegate));
+}
+
+PT_ATTR_APPLE_SDK void MTKView_setDevice(MTKView mtk_view, MTLDevice device)
+{
+    return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
+        MTKView_Unwrap(mtk_view),
+        sel_registerName("setDevice:"),
+        MTLDevice_Unwrap(device));
 }
 
 PT_ATTR_APPLE_SDK Class_MTKViewDelegate MTKViewDelegate_allocClass(

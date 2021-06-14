@@ -54,8 +54,6 @@ class gfx_connection_common
     texture_read_request *m_public_texture_read_request;
 
 public:
-    static class gfx_connection_common *init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
-
     virtual void destroy() = 0;
 
     virtual class gfx_texture_common *create_texture() = 0;
@@ -66,5 +64,7 @@ public:
 
     virtual void wsi_on_redraw_needed_release() = 0;
 };
+
+class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
 #endif

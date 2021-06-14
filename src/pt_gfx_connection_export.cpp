@@ -26,9 +26,9 @@ inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { 
 inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
 
-PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    return wrap(gfx_connection_common::init(wsi_connection, wsi_visual));
+    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, wsi_window));
 }
 
 PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection)

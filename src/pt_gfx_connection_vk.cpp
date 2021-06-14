@@ -30,7 +30,7 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
-bool gfx_connection_vk::internal_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     return (m_api_vk.init(wsi_connection, wsi_visual) && m_malloc.init(&m_api_vk));
 }
@@ -39,20 +39,6 @@ void gfx_connection_vk::destroy()
 {
     this->~gfx_connection_vk();
     mcrt_free(this);
-}
-
-class gfx_connection_vk *gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
-{
-    class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    if (connection->internal_init(wsi_connection, wsi_visual))
-    {
-        return connection;
-    }
-    else
-    {
-        connection->destroy();
-        return NULL;
-    }
 }
 
 class gfx_texture_common *gfx_connection_vk::create_texture()
@@ -71,4 +57,18 @@ void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, 
 
 void gfx_connection_vk::wsi_on_redraw_needed_release()
 {
+}
+
+class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+{
+    class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
+    if (connection->init(wsi_connection, wsi_visual))
+    {
+        return connection;
+    }
+    else
+    {
+        connection->destroy();
+        return NULL;
+    }
 }

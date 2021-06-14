@@ -28,7 +28,6 @@
 
 class gfx_connection_vk : public gfx_connection_common
 {
-
     class gfx_api_vk m_api_vk;
     class gfx_malloc_vk m_malloc;
 
@@ -57,12 +56,10 @@ class gfx_connection_vk : public gfx_connection_common
 
     inline gfx_connection_vk();
     inline ~gfx_connection_vk();
-    bool internal_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     void destroy() override;
 
 public:
-    static class gfx_connection_vk *init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
-
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_api_vk.get_physical_device_format_properties(format, out_format_properties); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
@@ -75,5 +72,7 @@ public:
     //uniform buffer
     //assert(0==(pMemoryRequirements->alignment%m_physical_device_limits_min_uniform_buffer_offset_alignment))
 };
+
+class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
 #endif

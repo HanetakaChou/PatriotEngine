@@ -18,8 +18,17 @@
 #ifndef _PT_GFX_API_MTL_H_
 #define _PT_GFX_API_MTL_H_ 1
 
-/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Headers/MTLDevice.h */
-typedef struct _MTLDevice_T_ *MTLDevice;
-extern "C" MTLDevice MTLCreateSystemDefaultDevice(void);
+#include <stddef.h>
+#include <stdint.h>
+#include <pt_gfx_connection.h>
+#include <pt_apple_sdk_posix_mach_metal.h>
+
+class gfx_api_mtl
+{
+    MTLDevice m_device;
+
+public:
+    bool init(wsi_window_ref wsi_window);
+};
 
 #endif

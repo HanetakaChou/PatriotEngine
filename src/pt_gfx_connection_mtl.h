@@ -18,13 +18,20 @@
 #ifndef _PT_GFX_CONNECTION_MTL_H_
 #define _PT_GFX_CONNECTION_MTL_H_ 1
 
-#include <pt_gfx_connection.h>
+#include <stddef.h>
+#include <stdint.h>
 #include "pt_gfx_connection_common.h"
+#include "pt_gfx_api_mtl.h"
 
 class gfx_connection_mtl : public gfx_connection_common
 {
+    class gfx_api_mtl m_api_mtl;
+
+    bool init(wsi_window_ref wsi_window);
+
 public:
-    static class gfx_connection_mtl *init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 };
+
+class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 #endif

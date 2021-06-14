@@ -103,6 +103,8 @@ extern "C"
 {
 #endif
     PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view);
+    PT_ATTR_APPLE_SDK MTKView NSView_To_MTKView(NSView ns_view);
+    PT_ATTR_APPLE_SDK NSView NSView_initWithFrame(NSView ns_view, NSRect frame_rect);
 #ifdef __cplusplus
 }
 #endif

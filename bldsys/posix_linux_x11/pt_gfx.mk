@@ -95,8 +95,6 @@ LOCAL_MODULE := libpt_gfx_wsi_none
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_d3d12.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_mtl.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \

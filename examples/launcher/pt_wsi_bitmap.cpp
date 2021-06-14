@@ -24,7 +24,7 @@
 int main(int argc, char **argv)
 {
 
-    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL);
+    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, NULL);
 
     gfx_texture_ref texture = gfx_connection_create_texture(gfx_connection);
     gfx_texture_read_file(texture, "third_party/assets/lenna/l_hires_directx_tex.dds");

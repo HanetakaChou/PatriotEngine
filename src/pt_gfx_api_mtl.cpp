@@ -15,17 +15,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_CONNECTION_D3D12_H_
-#define _PT_GFX_CONNECTION_D3D12_H_ 1
+#include "pt_gfx_api_mtl.h"
 
-#include <pt_gfx_connection.h>
-#include "pt_gfx_connection_common.h"
-
-class gfx_connection_d3d12 : public gfx_connection_common
+bool gfx_api_mtl::init(wsi_window_ref wsi_window)
 {
-public:
-};
-
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
-
-#endif
+    return true;
+}

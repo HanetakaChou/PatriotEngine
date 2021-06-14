@@ -100,6 +100,11 @@ static inline NSWindow NSObject_To_NSWindow(NSObject ns_window)
     return reinterpret_cast<NSWindow>(ns_window);
 }
 
+static inline NSView NSView_Wrap(struct objc_object *ns_view)
+{
+    return reinterpret_cast<NSView>(ns_view);
+}
+
 static inline struct objc_object *NSView_Unwrap(NSView ns_view)
 {
     return reinterpret_cast<struct objc_object *>(ns_view);
@@ -283,6 +288,20 @@ PT_ATTR_APPLE_SDK void NSWindow_makeKeyAndOrderFront(NSWindow ns_window, void *s
 PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view)
 {
     return reinterpret_cast<NSView>(mtk_view);
+}
+
+PT_ATTR_APPLE_SDK MTKView NSView_To_MTKView(NSView ns_view)
+{
+    return reinterpret_cast<MTKView>(ns_view);
+}
+
+PT_ATTR_APPLE_SDK NSView NSView_initWithFrame(NSView ns_view, NSRect frame_rect)
+{
+    struct objc_object *ret_ns_view = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *, NSRect)>(objc_msgSend)(
+        NSView_Unwrap(ns_view),
+        sel_registerName("initWithFrame:"),
+        frame_rect);
+    return NSView_Wrap(ret_ns_view);
 }
 
 PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(

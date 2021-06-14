@@ -18,31 +18,38 @@
 #include <stddef.h>
 #include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
-#include "pt_gfx_connection_d3d12.h"
-#include "pt_gfx_connection_mtl.h"
-#include "pt_gfx_connection_vk.h"
 
-class gfx_connection_common *gfx_connection_common::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+class gfx_connection_d3d12;
+class gfx_connection_mtl;
+class gfx_connection_vk;
+extern class gfx_connection_d3d12 *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+extern class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+extern class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+
+class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    class gfx_connection_common *gfx_connection;
+    class gfx_connection_common *gfx_connection = NULL;
 
-    gfx_connection = gfx_connection_d3d12::init(wsi_connection, wsi_visual);
-    if (NULL != gfx_connection)
+#if defined(PT_WIN32)
+    if (NULL == gfx_connection)
     {
-        return gfx_connection;
+        gfx_connection = reinterpret_cast<class gfx_connection_common *>(gfx_connection_d3d12_init(wsi_connection, wsi_visual));
     }
+#endif
 
-    gfx_connection = gfx_connection_mtl::init(wsi_connection, wsi_visual);
-    if (NULL != gfx_connection)
+#if defined(PT_POSIX_MACH)
+    if (NULL == gfx_connection)
     {
-        return gfx_connection;
+        gfx_connection = reinterpret_cast<class gfx_connection_common *>(gfx_connection_mtl_init(wsi_window));
     }
+#endif
 
-    gfx_connection = gfx_connection_vk::init(wsi_connection, wsi_visual);
-    if (NULL != gfx_connection)
+#if defined(PT_POSIX_LINUX) || defined(PT_WIN32)
+    if (NULL == gfx_connection)
     {
-        return gfx_connection;
+        gfx_connection = reinterpret_cast<class gfx_connection_common *>(gfx_connection_vk_init(wsi_connection, wsi_visual));
     }
+#endif
 
-    return NULL;
+    return gfx_connection;
 }

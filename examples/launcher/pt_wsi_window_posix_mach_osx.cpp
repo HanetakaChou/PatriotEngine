@@ -170,8 +170,10 @@ void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewCo
         NSArray_release(devices);
     }
 
-    CGRect frame = {{0, 0}, {800, 600}};
-    MTKView mtk_view = MTKView_initWithFrame(MTKView_alloc(), frame, device);
+    NSRect frame = {{0, 0}, {800, 600}};
+    MTKView mtk_view = NSView_To_MTKView(NSView_initWithFrame(MTKView_To_NSView(MTKView_alloc()), frame));
+
+    MTKView_setDevice(mtk_view, device);
 
     Class_MTKViewDelegate class_mtk_view_delegate = MTKViewDelegate_allocClass(
         "MTKViewDelegate_pt_wsi_window_posix_mach_osx",
@@ -200,8 +202,14 @@ void ns_view_controller::set_represented_object(NSViewController ns_view_control
 
 void mtk_view_delegate::drawable_size_will_change(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
 }
 
 void mtk_view_delegate::draw_in_mtk_view(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
 }
