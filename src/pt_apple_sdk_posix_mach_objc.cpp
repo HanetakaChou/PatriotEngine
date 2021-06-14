@@ -49,6 +49,11 @@ static inline struct objc_object *NSArray_Unwrap(NSArray ns_array)
     return reinterpret_cast<struct objc_object *>(ns_array);
 }
 
+static inline NSObject NSArray_To_NSObject(NSArray ns_array)
+{
+    return reinterpret_cast<NSObject>(ns_array);
+}
+
 extern "C" void *objc_autoreleasePoolPush(void);
 extern "C" void objc_autoreleasePoolPop(void *);
 
@@ -96,6 +101,14 @@ PT_ATTR_APPLE_SDK void NSObject_release(NSObject ns_object)
         sel_registerName("release"));
 }
 
+PT_ATTR_APPLE_SDK NSUInteger NSArray_count(NSArray ns_array)
+{
+    assert(sizeof(NSUInteger) == 1 || sizeof(NSUInteger) == 2 || sizeof(NSUInteger) == 4 || sizeof(NSUInteger) == 8);
+    return reinterpret_cast<NSUInteger (*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        NSArray_Unwrap(ns_array),
+        sel_registerName("count"));
+}
+
 PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NSUInteger idx)
 {
     struct objc_object *ret_ns_object = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *, NSUInteger)>(objc_msgSend)(
@@ -103,4 +116,9 @@ PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NS
         sel_registerName("objectAtIndexedSubscript:"),
         idx);
     return NSObject_Wrap(ret_ns_object);
+}
+
+PT_ATTR_APPLE_SDK void NSArray_release(NSArray ns_array)
+{
+    return NSObject_release(NSArray_To_NSObject(ns_array));
 }

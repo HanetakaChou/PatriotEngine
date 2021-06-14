@@ -95,6 +95,18 @@ extern "C"
 }
 #endif
 
+/** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSView.h */
+typedef struct _NSView_T_ *NSView;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view);
+#ifdef __cplusplus
+}
+#endif
+
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSViewController.h */
 typedef struct _Class_NSViewController_T_ *Class_NSViewController;
 typedef struct _NSViewController_loadView_T_ *NSViewController_loadView;
@@ -112,7 +124,7 @@ extern "C"
     PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname);
     PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller);
     PT_ATTR_APPLE_SDK NSViewController __attribute__((availability(macos, introduced = 10.5))) NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil);
-    PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.5))) NSViewController_setView(NSViewController ns_view_controller, MTKView mtk_view);
+    PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.5))) NSViewController_setView(NSViewController ns_view_controller, NSView ns_view);
 #ifdef __cplusplus
 }
 #endif

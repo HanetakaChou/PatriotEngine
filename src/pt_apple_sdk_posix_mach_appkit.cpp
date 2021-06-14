@@ -100,6 +100,11 @@ static inline NSWindow NSObject_To_NSWindow(NSObject ns_window)
     return reinterpret_cast<NSWindow>(ns_window);
 }
 
+static inline struct objc_object *NSView_Unwrap(NSView ns_view)
+{
+    return reinterpret_cast<struct objc_object *>(ns_view);
+}
+
 static inline Class_NSViewController Class_NSViewController_Wrap(Class class_ns_view_controller)
 {
     return reinterpret_cast<Class_NSViewController>(class_ns_view_controller);
@@ -275,6 +280,11 @@ PT_ATTR_APPLE_SDK void NSWindow_makeKeyAndOrderFront(NSWindow ns_window, void *s
         reinterpret_cast<struct objc_object *>(sender));
 }
 
+PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view)
+{
+    return reinterpret_cast<NSView>(mtk_view);
+}
+
 PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
     char const *class_name,
     void (*_I_NSViewController_loadView)(NSViewController, NSViewController_loadView),
@@ -336,10 +346,10 @@ PT_ATTR_APPLE_SDK NSViewController NSViewController_initWithNibName(NSViewContro
     return NSViewController_Wrap(ret_ns_view_controller);
 }
 
-PT_ATTR_APPLE_SDK void NSViewController_setView(NSViewController ns_view_controller, MTKView mtk_view)
+PT_ATTR_APPLE_SDK void NSViewController_setView(NSViewController ns_view_controller,  NSView ns_view)
 {
     return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *, struct objc_object *)>(objc_msgSend)(
         NSViewController_Unwrap(ns_view_controller),
         sel_registerName("setView:"),
-        reinterpret_cast<struct objc_object *>(mtk_view));
+        NSView_Unwrap(ns_view));
 }

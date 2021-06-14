@@ -35,7 +35,7 @@ public:
 class ns_view_controller
 {
 public:
-    static void load_view(NSViewController, NSViewController_loadView);
+    static void load_view(NSViewController ns_view_controller, NSViewController_loadView);
     static void view_did_load(NSViewController, NSViewController_viewDidLoad);
     static void set_represented_object(NSViewController, NSViewController_setRepresentedObject_, void *representedObject);
 };
@@ -142,9 +142,29 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
     return 1;
 }
 
-void ns_view_controller::load_view(NSViewController, NSViewController_loadView)
+#include <pt_apple_sdk_posix_mach_metalkit.h>
+#include <pt_apple_sdk_posix_mach_metal.h>
+
+void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewController_loadView)
 {
-    int huhu = 0;
+    MTLDevice device = NULL;
+    {
+        NSArray devices = MTLDevice_CopyAllDevices();
+        NSUInteger count = NSArray_count(devices);
+        for (NSUInteger idx = 0U; idx < count; ++idx)
+        {
+            MTLDevice current_device = NSObject_To_MTLDevice(NSArray_objectAtIndexedSubscript(devices, idx));
+            bool hasUnifiedMemory = MTLDevice_hasUnifiedMemory(current_device);
+            if (!hasUnifiedMemory)
+            {
+                device = current_device;
+                break;
+            }
+        }
+        NSArray_release(devices);
+    }
+
+    
 }
 
 void ns_view_controller::view_did_load(NSViewController, NSViewController_viewDidLoad)

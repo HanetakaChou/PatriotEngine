@@ -60,7 +60,9 @@ typedef struct _NSArray_T_ *NSArray;
 extern "C"
 {
 #endif
+    PT_ATTR_APPLE_SDK NSUInteger NSArray_count(NSArray ns_array);
     PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NSUInteger idx);
+    PT_ATTR_APPLE_SDK void NSArray_release(NSArray ns_array);
 #ifdef __cplusplus
 }
 #endif

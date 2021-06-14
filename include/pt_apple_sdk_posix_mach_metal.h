@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_apple_sdk_common.h"
+#include "pt_apple_sdk_posix_mach_objc.h"
 
 typedef struct _MTLDevice_T_ *MTLDevice;
 
@@ -28,7 +29,10 @@ typedef struct _MTLDevice_T_ *MTLDevice;
 extern "C"
 {
 #endif
-    PT_ATTR_APPLE_SDK MTLDevice MTLDevice_CreateSystemDefault(void);
+    PT_ATTR_APPLE_SDK MTLDevice MTLDevice_CreateSystemDefaultDevice(void);
+    PT_ATTR_APPLE_SDK NSArray MTLDevice_CopyAllDevices(void);
+    PT_ATTR_APPLE_SDK MTLDevice NSObject_To_MTLDevice(NSObject mtl_device);
+    PT_ATTR_APPLE_SDK bool MTLDevice_hasUnifiedMemory(MTLDevice mtl_device);
 #ifdef __cplusplus
 }
 #endif

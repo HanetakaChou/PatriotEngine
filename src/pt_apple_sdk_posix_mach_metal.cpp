@@ -28,6 +28,8 @@
 #error Unknown Target
 #endif
 
+#include <assert.h>
+
 static inline MTLDevice MTLDevice_Wrap(struct objc_object *mtl_device)
 {
     return reinterpret_cast<MTLDevice>(mtl_device);
@@ -38,9 +40,35 @@ static inline struct objc_object *MTLDevice_Unwrap(MTLDevice mtl_device)
     return reinterpret_cast<struct objc_object *>(mtl_device);
 }
 
+static inline NSArray NSArray_Wrap(struct objc_object *ns_array)
+{
+    return reinterpret_cast<NSArray>(ns_array);
+}
+
 extern "C" struct objc_object *MTLCreateSystemDefaultDevice(void);
 
-PT_ATTR_APPLE_SDK MTLDevice MTLDevice_CreateSystemDefault(void)
+PT_ATTR_APPLE_SDK MTLDevice MTLDevice_CreateSystemDefaultDevice(void)
 {
     return MTLDevice_Wrap(MTLCreateSystemDefaultDevice());
+}
+
+extern "C" struct objc_object *MTLCopyAllDevices(void);
+
+PT_ATTR_APPLE_SDK NSArray MTLDevice_CopyAllDevices(void)
+{
+    return NSArray_Wrap(MTLCopyAllDevices());
+}
+
+PT_ATTR_APPLE_SDK MTLDevice NSObject_To_MTLDevice(NSObject mtl_device)
+{
+    return reinterpret_cast<MTLDevice>(mtl_device);
+}
+
+PT_ATTR_APPLE_SDK bool MTLDevice_hasUnifiedMemory(MTLDevice mtl_device)
+{
+    assert(sizeof(BOOL) == 1 || sizeof(BOOL) == 2 || sizeof(BOOL) == 4 || sizeof(BOOL) == 8);
+    BOOL ret_has_unified_memory = reinterpret_cast<BOOL (*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        MTLDevice_Unwrap(mtl_device),
+        sel_registerName("hasUnifiedMemory"));
+    return (ret_has_unified_memory != NO) ? true : false;
 }
