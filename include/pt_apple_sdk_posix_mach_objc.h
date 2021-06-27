@@ -69,4 +69,15 @@ extern "C"
 }
 #endif
 
+typedef struct _NSString_T_ *NSString;
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_APPLE_SDK char const *NSString_UTF8String(NSString ns_string);
+#ifdef __cplusplus
+}
+#endif
+
 #endif

@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6210AF6A26891D4D00047DAB /* libVkLayer_khronos_validation.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		6210AF6B26891D6000047DAB /* libvulkan.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		6210AF712689203D00047DAB /* VkLayer_khronos_validation.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */; };
+		6210AF73268920A900047DAB /* MoltenVK_icd.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF722689206A00047DAB /* MoltenVK_icd.json */; };
 		6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */; };
 		6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */; };
 		623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */; };
@@ -19,7 +23,7 @@
 		625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		625C06F0268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */; };
-		62D2307B268890680044D96C /* libMoltenVK.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; };
+		62A5B4352689183B00AE5275 /* libvulkan.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.dylib */; };
 		62D230882688921E0044D96C /* pt_gfx_connection_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_connection_vk_wsi_metal.cpp */; };
 		62D230892688921E0044D96C /* pt_gfx_texture_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_common.cpp */; };
 		62D2308A2688921E0044D96C /* pt_gfx_malloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2307226888F830044D96C /* pt_gfx_malloc.cpp */; };
@@ -44,7 +48,7 @@
 		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
 		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
 		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
-		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
+		62D7940E25975789001CC2AF /* pt_wsi_window_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */; };
 		62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
 		62F91F37268807C6009FCA7E /* CoreVideo.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62F9437726880A93001A4BC8 /* CoreVideo.tbd */; };
@@ -89,11 +93,13 @@
 /* Begin PBXCopyFilesBuildPhase section */
 		625C06E426880E6200D173BE /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
+			buildActionMask = 12;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
 				625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */,
+				6210AF6B26891D6000047DAB /* libvulkan.dylib in Embed Libraries */,
+				6210AF6A26891D4D00047DAB /* libVkLayer_khronos_validation.dylib in Embed Libraries */,
 				624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */,
 				624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */,
 				624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */,
@@ -107,6 +113,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = "<group>"; };
+		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = "<group>"; };
+		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = "<group>"; };
 		6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_apple_sdk_posix_mach_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6238290A267692DD002ECF8A /* pt_apple_sdk_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_common.h; path = ../../include/pt_apple_sdk_common.h; sourceTree = "<group>"; };
 		6238290C267692F2002ECF8A /* pt_apple_sdk_posix_mach_appkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_appkit.h; path = ../../include/pt_apple_sdk_posix_mach_appkit.h; sourceTree = "<group>"; };
@@ -120,6 +129,7 @@
 		625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx_wsi_window_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_common.cpp; path = ../../src/pt_gfx_connection_common.cpp; sourceTree = "<group>"; };
 		625D4F3426775DA0000F087B /* pt_gfx_connection_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_common.h; path = ../../src/pt_gfx_connection_common.h; sourceTree = "<group>"; };
+		62A5B4342689183B00AE5275 /* libvulkan.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libvulkan.dylib; sourceTree = "<group>"; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_common.h; path = ../../src/pt_gfx_texture_common.h; sourceTree = "<group>"; };
 		62D23060268884630044D96C /* pt_gfx_texture_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common.cpp; path = ../../src/pt_gfx_texture_common.cpp; sourceTree = "<group>"; };
 		62D230622688861B0044D96C /* pt_gfx_texture_common_load_dds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common_load_dds.cpp; path = ../../src/pt_gfx_texture_common_load_dds.cpp; sourceTree = "<group>"; };
@@ -160,7 +170,7 @@
 		62D793C62597454D001CC2AF /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-MacOSX.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_window_posix_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_window_posix_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
+		62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_window_osx.cpp; path = ../../examples/launcher/pt_wsi_window_osx.cpp; sourceTree = SOURCE_ROOT; };
 		62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_corevideo.cpp; path = ../../src/pt_apple_sdk_posix_mach_corevideo.cpp; sourceTree = "<group>"; };
 		62F91F38268807E2009FCA7E /* pt_apple_sdk_posix_mach_corevideo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_corevideo.h; path = ../../include/pt_apple_sdk_posix_mach_corevideo.h; sourceTree = "<group>"; };
 		62F9437726880A93001A4BC8 /* CoreVideo.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = CoreVideo.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreVideo.framework/CoreVideo.tbd; sourceTree = DEVELOPER_DIR; };
@@ -191,7 +201,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				62D230D42688987A0044D96C /* libpt_mcrt.dylib in Frameworks */,
-				62D2307B268890680044D96C /* libMoltenVK.dylib in Frameworks */,
+				62A5B4352689183B00AE5275 /* libvulkan.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -297,7 +307,7 @@
 		62D7940D2597576F001CC2AF /* examples */ = {
 			isa = PBXGroup;
 			children = (
-				62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */,
+				62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */,
 			);
 			name = examples;
 			sourceTree = "<group>";
@@ -305,10 +315,14 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				62A5B4342689183B00AE5275 /* libvulkan.dylib */,
+				6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */,
+				6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */,
+				6210AF722689206A00047DAB /* MoltenVK_icd.json */,
+				62D2307A268890680044D96C /* libMoltenVK.dylib */,
 				62D230CB268896930044D96C /* libpt_irml.dylib */,
 				62D230CC268896930044D96C /* libpt_tbb.dylib */,
 				62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */,
-				62D2307A268890680044D96C /* libMoltenVK.dylib */,
 				62F9437726880A93001A4BC8 /* CoreVideo.tbd */,
 				62D793C62597454D001CC2AF /* MetalKit.tbd */,
 				62D793C025974546001CC2AF /* Metal.tbd */,
@@ -525,6 +539,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6210AF712689203D00047DAB /* VkLayer_khronos_validation.json in Resources */,
+				6210AF73268920A900047DAB /* MoltenVK_icd.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -585,7 +601,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */,
+				62D7940E25975789001CC2AF /* pt_wsi_window_osx.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -621,7 +637,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -640,7 +656,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
@@ -659,14 +675,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -679,14 +695,14 @@
 				CODE_SIGN_STYLE = Automatic;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -700,6 +716,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = (
@@ -720,6 +737,7 @@
 				DEVELOPMENT_ASSET_PATHS = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = (
@@ -740,11 +758,12 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6MJZWFY372;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
-					"@executable_path/Frameworks",
+					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-iPhoneOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -761,11 +780,12 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = "";
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
-					"@executable_path/Frameworks",
+					"@executable_path/../Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-iPhoneOS";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -811,7 +831,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -831,9 +850,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -876,7 +894,6 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -890,9 +907,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -906,6 +922,8 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
@@ -935,6 +953,8 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",

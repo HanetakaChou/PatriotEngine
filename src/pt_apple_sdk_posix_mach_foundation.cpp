@@ -60,6 +60,71 @@ static inline NSThreadDetachTarget NSObject_To_NSThreadDetachTarget(NSObject ns_
     return reinterpret_cast<NSThreadDetachTarget>(ns_thread_detach_target);
 }
 
+static inline NSFileManager NSFileManager_Wrap(struct objc_object *ns_file_manager)
+{
+    return reinterpret_cast<NSFileManager>(ns_file_manager);
+}
+
+static inline struct objc_object *NSFileManager_Unwrap(NSFileManager ns_file_manager)
+{
+    return reinterpret_cast<struct objc_object *>(ns_file_manager);
+}
+
+static inline NSArray_NSURL NSArray_NSURL_Wrap(struct objc_object *ns_array_ns_url)
+{
+    return reinterpret_cast<NSArray_NSURL>(ns_array_ns_url);
+}
+
+static inline struct objc_object *NSArray_NSURL_Unwrap(NSArray_NSURL ns_array_ns_url)
+{
+    return reinterpret_cast<struct objc_object *>(ns_array_ns_url);
+}
+
+static inline NSArray NSArray_NSURL_To_NSArray(NSArray_NSURL ns_array_ns_url)
+{
+    return reinterpret_cast<NSArray>(ns_array_ns_url);
+}
+
+static inline NSArray_NSURL NSArray_To_NSArray_NSURL(NSArray ns_array_ns_url)
+{
+    return reinterpret_cast<NSArray_NSURL>(ns_array_ns_url);
+}
+
+static inline NSURL NSURL_Wrap(struct objc_object *ns_url)
+{
+    return reinterpret_cast<NSURL>(ns_url);
+}
+
+static inline struct objc_object *NSURL_Unwrap(NSURL ns_url)
+{
+    return reinterpret_cast<struct objc_object *>(ns_url);
+}
+
+static inline NSObject NSURL_To_NSObject(NSURL ns_url)
+{
+    return reinterpret_cast<NSObject>(ns_url);
+}
+
+static inline NSURL NSObject_To_NSURL(NSObject ns_url)
+{
+    return reinterpret_cast<NSURL>(ns_url);
+}
+
+static inline NSBundle NSBundle_Wrap(struct objc_object *ns_bundle)
+{
+    return reinterpret_cast<NSBundle>(ns_bundle);
+}
+
+static inline struct objc_object *NSBundle_Unwrap(NSBundle ns_bundle)
+{
+    return reinterpret_cast<struct objc_object *>(ns_bundle);
+}
+
+static inline NSString NSString_Wrap(struct objc_object *ns_string)
+{
+    return reinterpret_cast<NSString>(ns_string);
+}
+
 PT_ATTR_APPLE_SDK Class_NSThreadDetachTarget NSThreadDetachTarget_allocateClass(char const *class_name, char const *selector_name, void (*_I_NSThreadDetachSelector_)(NSThreadDetachTarget, NSThreadDetachSelector_, void *argument))
 {
     Class class_ns_thread_detach_target = objc_allocateClassPair(
@@ -109,4 +174,54 @@ PT_ATTR_APPLE_SDK bool NSThread_isMultiThreaded()
         objc_getClass("NSThread"),
         sel_registerName("isMultiThreaded"));
     return (is_multi_threaded != NO) ? true : false;
+}
+
+PT_ATTR_APPLE_SDK NSFileManager NSFileManager_defaultManager()
+{
+    struct objc_object *ret_ns_file_Manager = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
+        objc_getClass("NSFileManager"),
+        sel_registerName("defaultManager"));
+    return NSFileManager_Wrap(ret_ns_file_Manager);
+}
+
+PT_ATTR_APPLE_SDK NSArray_NSURL NSFileManager_URLsForDirectory(NSFileManager ns_file_manager, NSSearchPathDirectory in_domains, NSSearchPathDomainMask domain_mask)
+{
+    struct objc_object *ns_array_ns_url = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *, NSSearchPathDirectory, NSSearchPathDomainMask)>(objc_msgSend)(
+        NSFileManager_Unwrap(ns_file_manager),
+        sel_registerName("URLsForDirectory:inDomains:"),
+        in_domains,
+        domain_mask);
+
+    return NSArray_NSURL_Wrap(ns_array_ns_url);
+}
+
+PT_ATTR_APPLE_SDK NSURL NSArray_NSURL_objectAtIndexedSubscript(NSArray_NSURL ns_array_ns_url, NSUInteger idx)
+{
+    return NSObject_To_NSURL(NSArray_objectAtIndexedSubscript(NSArray_NSURL_To_NSArray(ns_array_ns_url), idx));
+}
+
+PT_ATTR_APPLE_SDK char const *NSURL_fileSystemRepresentation(NSURL ns_url)
+{
+    assert(sizeof(char const *) == 1 || sizeof(char const *) == 2 || sizeof(char const *) == 4 || sizeof(char const *) == 8);
+
+    char const *file_system_representation = reinterpret_cast<char const *(*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        NSURL_Unwrap(ns_url),
+        sel_registerName("fileSystemRepresentation"));
+    return file_system_representation;
+}
+
+PT_ATTR_APPLE_SDK NSBundle NSBundle_mainBundle()
+{
+    struct objc_object *ret_ns_bundle = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
+        objc_getClass("NSBundle"),
+        sel_registerName("mainBundle"));
+    return NSBundle_Wrap(ret_ns_bundle);
+}
+
+PT_ATTR_APPLE_SDK NSString NSBundle_resourcePath(NSBundle ns_bundle)
+{
+    struct objc_object *ns_resource_path = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        NSBundle_Unwrap(ns_bundle),
+        sel_registerName("resourcePath"));
+    return NSString_Wrap(ns_resource_path);
 }

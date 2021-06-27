@@ -26,8 +26,8 @@
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
-        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_posix_mach_osx.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_posix_mach_osx.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_posix_mach_osx.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_osx.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_osx.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_osx.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",

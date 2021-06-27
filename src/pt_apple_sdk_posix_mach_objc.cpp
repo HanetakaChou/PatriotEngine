@@ -55,6 +55,11 @@ static inline NSObject NSArray_To_NSObject(NSArray ns_array)
     return reinterpret_cast<NSObject>(ns_array);
 }
 
+static inline struct objc_object *NSString_Unwrap(NSString ns_string)
+{
+    return reinterpret_cast<struct objc_object *>(ns_string);
+}
+
 extern "C" void *objc_autoreleasePoolPush(void);
 extern "C" void objc_autoreleasePoolPop(void *);
 
@@ -139,4 +144,14 @@ PT_ATTR_APPLE_SDK NSObject NSArray_objectAtIndexedSubscript(NSArray ns_array, NS
 PT_ATTR_APPLE_SDK void NSArray_release(NSArray ns_array)
 {
     return NSObject_release(NSArray_To_NSObject(ns_array));
+}
+
+PT_ATTR_APPLE_SDK char const *NSString_UTF8String(NSString ns_string)
+{
+    assert(sizeof(char const *) == 1 || sizeof(char const *) == 2 || sizeof(char const *) == 4 || sizeof(char const *) == 8);
+
+    char const *utf8_string = reinterpret_cast<char const *(*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        NSString_Unwrap(ns_string),
+        sel_registerName("UTF8String"));
+    return utf8_string;
 }
