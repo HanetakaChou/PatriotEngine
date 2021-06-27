@@ -26,6 +26,6 @@ class gfx_connection_d3d12 : public gfx_connection_common
 public:
 };
 
-class gfx_connection_d3d12 *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+class gfx_connection_common *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
 #endif

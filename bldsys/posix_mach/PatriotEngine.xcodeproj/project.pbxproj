@@ -10,21 +10,43 @@
 		6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */; };
 		6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */; };
 		623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */; };
+		624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		625C06DD26880C7C00D173BE /* pt_apple_sdk_posix_mach_corevideo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */; };
 		625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		625C06F0268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */; };
-		625D4F3126775C9B000F087B /* pt_gfx_connection_export.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3026775C9B000F087B /* pt_gfx_connection_export.cpp */; };
-		625D4F3326775CEF000F087B /* pt_gfx_connection_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */; };
-		625D4F3726775DB1000F087B /* pt_gfx_connection_mtl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3626775DB1000F087B /* pt_gfx_connection_mtl.cpp */; };
-		625D4F392677611B000F087B /* pt_gfx_api_mtl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F382677611B000F087B /* pt_gfx_api_mtl.cpp */; };
+		62D2307B268890680044D96C /* libMoltenVK.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; };
+		62D230882688921E0044D96C /* pt_gfx_connection_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_connection_vk_wsi_metal.cpp */; };
+		62D230892688921E0044D96C /* pt_gfx_texture_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_common.cpp */; };
+		62D2308A2688921E0044D96C /* pt_gfx_malloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2307226888F830044D96C /* pt_gfx_malloc.cpp */; };
+		62D2308B2688921E0044D96C /* pt_gfx_malloc_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */; };
+		62D2308C2688921E0044D96C /* pt_gfx_texture_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */; };
+		62D2308D2688921E0044D96C /* pt_gfx_texture_common_load_pvr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23064268886200044D96C /* pt_gfx_texture_common_load_pvr.cpp */; };
+		62D2308E2688921E0044D96C /* pt_gfx_connection_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */; };
+		62D2308F2688921E0044D96C /* pt_gfx_texture_common_load_dds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230622688861B0044D96C /* pt_gfx_texture_common_load_dds.cpp */; };
+		62D230902688921E0044D96C /* pt_gfx_api_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */; };
+		62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */; };
+		62D230BD268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */; };
+		62D230BE268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */; };
+		62D230BF268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */; };
+		62D230C0268893540044D96C /* pt_mcrt_memcpy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B3268893540044D96C /* pt_mcrt_memcpy.cpp */; };
+		62D230C4268893540044D96C /* pt_mcrt_malloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */; };
+		62D230C6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */; };
+		62D230C7268893540044D96C /* pt_mcrt_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230BA268893540044D96C /* pt_mcrt_task.cpp */; };
+		62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; };
+		62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; };
+		62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; };
+		62D230D42688987A0044D96C /* libpt_mcrt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; };
 		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
 		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
 		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
 		62D7940E25975789001CC2AF /* pt_wsi_window_posix_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_posix_mach_osx.cpp */; };
 		62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
-		62D9E1C726779F660003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62F91F37268807C6009FCA7E /* CoreVideo.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62F9437726880A93001A4BC8 /* CoreVideo.tbd */; };
 		92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0788D2447818700F82881 /* UIKit.tbd */; };
 		92F078942447863B00F82881 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F078932447863B00F82881 /* libobjc.tbd */; };
@@ -33,6 +55,37 @@
 		92F0793724479F1500F82881 /* MetalKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793624479F1500F82881 /* MetalKit.tbd */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		624EFC1726889C0E001F2F63 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62D230AB268893240044D96C;
+			remoteInfo = pt_mcrt;
+		};
+		62D230D62688987A0044D96C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62D230AB268893240044D96C;
+			remoteInfo = pt_mcrt;
+		};
+		62D230D826889B2E0044D96C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6238290326768846002ECF8A;
+			remoteInfo = pt_apple_sdk_posix_mach_osx;
+		};
+		62D230DA26889B330044D96C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 625D4F2B26775B6F000F087B;
+			remoteInfo = pt_gfx_wsi_window_osx;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
 		625C06E426880E6200D173BE /* Embed Libraries */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -40,8 +93,13 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */,
 				625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */,
+				624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */,
+				624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */,
+				624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */,
+				624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */,
+				624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */,
+				625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -60,13 +118,41 @@
 		625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_dispatch.cpp; path = ../../src/pt_apple_sdk_posix_mach_dispatch.cpp; sourceTree = "<group>"; };
 		625C06F1268837D100D173BE /* pt_apple_sdk_posix_mach_dispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_dispatch.h; path = ../../include/pt_apple_sdk_posix_mach_dispatch.h; sourceTree = "<group>"; };
 		625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx_wsi_window_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		625D4F3026775C9B000F087B /* pt_gfx_connection_export.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_export.cpp; path = ../../src/pt_gfx_connection_export.cpp; sourceTree = "<group>"; };
 		625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_common.cpp; path = ../../src/pt_gfx_connection_common.cpp; sourceTree = "<group>"; };
 		625D4F3426775DA0000F087B /* pt_gfx_connection_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_common.h; path = ../../src/pt_gfx_connection_common.h; sourceTree = "<group>"; };
-		625D4F3526775DAC000F087B /* pt_gfx_connection_mtl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_mtl.h; path = ../../src/pt_gfx_connection_mtl.h; sourceTree = "<group>"; };
-		625D4F3626775DB1000F087B /* pt_gfx_connection_mtl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_mtl.cpp; path = ../../src/pt_gfx_connection_mtl.cpp; sourceTree = "<group>"; };
-		625D4F382677611B000F087B /* pt_gfx_api_mtl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_api_mtl.cpp; path = ../../src/pt_gfx_api_mtl.cpp; sourceTree = "<group>"; };
-		625D4F3A26776125000F087B /* pt_gfx_api_mtl.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_api_mtl.h; path = ../../src/pt_gfx_api_mtl.h; sourceTree = "<group>"; };
+		62D2305F2688845C0044D96C /* pt_gfx_texture_common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_common.h; path = ../../src/pt_gfx_texture_common.h; sourceTree = "<group>"; };
+		62D23060268884630044D96C /* pt_gfx_texture_common.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common.cpp; path = ../../src/pt_gfx_texture_common.cpp; sourceTree = "<group>"; };
+		62D230622688861B0044D96C /* pt_gfx_texture_common_load_dds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common_load_dds.cpp; path = ../../src/pt_gfx_texture_common_load_dds.cpp; sourceTree = "<group>"; };
+		62D23064268886200044D96C /* pt_gfx_texture_common_load_pvr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common_load_pvr.cpp; path = ../../src/pt_gfx_texture_common_load_pvr.cpp; sourceTree = "<group>"; };
+		62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_vk.cpp; path = ../../src/pt_gfx_texture_vk.cpp; sourceTree = "<group>"; };
+		62D23068268886320044D96C /* pt_gfx_texture_vk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_vk.h; path = ../../src/pt_gfx_texture_vk.h; sourceTree = "<group>"; };
+		62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_api_vk.cpp; path = ../../src/pt_gfx_api_vk.cpp; sourceTree = "<group>"; };
+		62D2306C2688865D0044D96C /* pt_gfx_api_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_api_vk.h; path = ../../src/pt_gfx_api_vk.h; sourceTree = "<group>"; };
+		62D2306D26888F630044D96C /* pt_gfx_connection_vk_wsi_metal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_vk_wsi_metal.cpp; path = ../../src/pt_gfx_connection_vk_wsi_metal.cpp; sourceTree = "<group>"; };
+		62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_vk.cpp; path = ../../src/pt_gfx_connection_vk.cpp; sourceTree = "<group>"; };
+		62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_vk.h; path = ../../src/pt_gfx_connection_vk.h; sourceTree = "<group>"; };
+		62D2307226888F830044D96C /* pt_gfx_malloc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_malloc.cpp; path = ../../src/pt_gfx_malloc.cpp; sourceTree = "<group>"; };
+		62D2307426888F8E0044D96C /* pt_gfx_malloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_malloc.h; path = ../../src/pt_gfx_malloc.h; sourceTree = "<group>"; };
+		62D2307526888F9B0044D96C /* pt_gfx_malloc_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_malloc_vk.h; path = ../../src/pt_gfx_malloc_vk.h; sourceTree = "<group>"; };
+		62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_malloc_vk.cpp; path = ../../src/pt_gfx_malloc_vk.cpp; sourceTree = "<group>"; };
+		62D2307A268890680044D96C /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../../third_party/libs/molten_vk/lib/mach_osx/libMoltenVK.dylib; sourceTree = "<group>"; };
+		62D230AC268893240044D96C /* libpt_mcrt.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_mcrt.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp; sourceTree = "<group>"; };
+		62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp; sourceTree = "<group>"; };
+		62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp; sourceTree = "<group>"; };
+		62D230B3268893540044D96C /* pt_mcrt_memcpy.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy.cpp; path = ../../src/pt_mcrt_memcpy.cpp; sourceTree = "<group>"; };
+		62D230B4268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h; sourceTree = "<group>"; };
+		62D230B5268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h; sourceTree = "<group>"; };
+		62D230B6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h; sourceTree = "<group>"; };
+		62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_malloc.cpp; path = ../../src/pt_mcrt_malloc.cpp; sourceTree = "<group>"; };
+		62D230B8268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_scalable_allocator_tbb_scheduler.h; path = ../../src/pt_mcrt_scalable_allocator_tbb_scheduler.h; sourceTree = "<group>"; };
+		62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp; sourceTree = "<group>"; };
+		62D230BA268893540044D96C /* pt_mcrt_task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_task.cpp; path = ../../src/pt_mcrt_task.cpp; sourceTree = "<group>"; };
+		62D230BB268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_scalable_allocator_tbb_scheduler_common.h; path = ../../src/pt_mcrt_scalable_allocator_tbb_scheduler_common.h; sourceTree = "<group>"; };
+		62D230BC268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_memcpy_dpdk_rte_common.h; path = ../../src/pt_mcrt_memcpy_dpdk_rte_common.h; sourceTree = "<group>"; };
+		62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbbmalloc.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbbmalloc.dylib; sourceTree = "<group>"; };
+		62D230CB268896930044D96C /* libpt_irml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_irml.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_irml.dylib; sourceTree = "<group>"; };
+		62D230CC268896930044D96C /* libpt_tbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbb.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbb.dylib; sourceTree = "<group>"; };
 		62D793B425974516001CC2AF /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793B825974525001CC2AF /* AppKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = AppKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/AppKit.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
@@ -104,7 +190,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D9E1C726779F660003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
+				62D230D42688987A0044D96C /* libpt_mcrt.dylib in Frameworks */,
+				62D2307B268890680044D96C /* libMoltenVK.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62D230AA268893240044D96C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */,
+				62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */,
+				62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -148,13 +245,36 @@
 		62382909267692A3002ECF8A /* src */ = {
 			isa = PBXGroup;
 			children = (
+				62D2306C2688865D0044D96C /* pt_gfx_api_vk.h */,
+				62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */,
 				625D4F3426775DA0000F087B /* pt_gfx_connection_common.h */,
 				625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */,
-				625D4F3026775C9B000F087B /* pt_gfx_connection_export.cpp */,
-				625D4F3526775DAC000F087B /* pt_gfx_connection_mtl.h */,
-				625D4F3626775DB1000F087B /* pt_gfx_connection_mtl.cpp */,
-				625D4F3A26776125000F087B /* pt_gfx_api_mtl.h */,
-				625D4F382677611B000F087B /* pt_gfx_api_mtl.cpp */,
+				62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */,
+				62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */,
+				62D2306D26888F630044D96C /* pt_gfx_connection_vk_wsi_metal.cpp */,
+				62D2305F2688845C0044D96C /* pt_gfx_texture_common.h */,
+				62D23060268884630044D96C /* pt_gfx_texture_common.cpp */,
+				62D230622688861B0044D96C /* pt_gfx_texture_common_load_dds.cpp */,
+				62D23064268886200044D96C /* pt_gfx_texture_common_load_pvr.cpp */,
+				62D23068268886320044D96C /* pt_gfx_texture_vk.h */,
+				62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */,
+				62D2307426888F8E0044D96C /* pt_gfx_malloc.h */,
+				62D2307226888F830044D96C /* pt_gfx_malloc.cpp */,
+				62D2307526888F9B0044D96C /* pt_gfx_malloc_vk.h */,
+				62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */,
+				62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */,
+				62D230BC268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_common.h */,
+				62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */,
+				62D230B6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h */,
+				62D230B5268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h */,
+				62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */,
+				62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */,
+				62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */,
+				62D230B4268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h */,
+				62D230B3268893540044D96C /* pt_mcrt_memcpy.cpp */,
+				62D230BB268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler_common.h */,
+				62D230B8268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler.h */,
+				62D230BA268893540044D96C /* pt_mcrt_task.cpp */,
 				6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */,
 				6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */,
 				623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */,
@@ -185,6 +305,10 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				62D230CB268896930044D96C /* libpt_irml.dylib */,
+				62D230CC268896930044D96C /* libpt_tbb.dylib */,
+				62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */,
+				62D2307A268890680044D96C /* libMoltenVK.dylib */,
 				62F9437726880A93001A4BC8 /* CoreVideo.tbd */,
 				62D793C62597454D001CC2AF /* MetalKit.tbd */,
 				62D793C025974546001CC2AF /* Metal.tbd */,
@@ -212,6 +336,7 @@
 				62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */,
 				6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */,
 				625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */,
+				62D230AC268893240044D96C /* libpt_mcrt.dylib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -226,6 +351,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		625D4F2826775B6F000F087B /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62D230A8268893240044D96C /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -264,10 +396,28 @@
 			buildRules = (
 			);
 			dependencies = (
+				62D230D72688987A0044D96C /* PBXTargetDependency */,
 			);
 			name = pt_gfx_wsi_window_osx;
 			productName = pt_gfx_wsi_window_osx;
 			productReference = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		62D230AB268893240044D96C /* pt_mcrt */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62D230AD268893240044D96C /* Build configuration list for PBXNativeTarget "pt_mcrt" */;
+			buildPhases = (
+				62D230A8268893240044D96C /* Headers */,
+				62D230A9268893240044D96C /* Sources */,
+				62D230AA268893240044D96C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_mcrt;
+			productName = pt_mcrt;
+			productReference = 62D230AC268893240044D96C /* libpt_mcrt.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 		92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */ = {
@@ -299,6 +449,9 @@
 			buildRules = (
 			);
 			dependencies = (
+				62D230DB26889B330044D96C /* PBXTargetDependency */,
+				62D230D926889B2E0044D96C /* PBXTargetDependency */,
+				624EFC1826889C0E001F2F63 /* PBXTargetDependency */,
 			);
 			name = "PatriotEngine-MacOSX";
 			productName = CXXBasedMac;
@@ -318,6 +471,9 @@
 						CreatedOnToolsVersion = 12.5;
 					};
 					625D4F2B26775B6F000F087B = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62D230AB268893240044D96C = {
 						CreatedOnToolsVersion = 12.5;
 					};
 					92983F172447725E003F48B6 = {
@@ -345,6 +501,7 @@
 				92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */,
 				6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */,
 				625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */,
+				62D230AB268893240044D96C /* pt_mcrt */,
 			);
 		};
 /* End PBXProject section */
@@ -390,10 +547,30 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				625D4F392677611B000F087B /* pt_gfx_api_mtl.cpp in Sources */,
-				625D4F3326775CEF000F087B /* pt_gfx_connection_common.cpp in Sources */,
-				625D4F3726775DB1000F087B /* pt_gfx_connection_mtl.cpp in Sources */,
-				625D4F3126775C9B000F087B /* pt_gfx_connection_export.cpp in Sources */,
+				62D2308B2688921E0044D96C /* pt_gfx_malloc_vk.cpp in Sources */,
+				62D2308C2688921E0044D96C /* pt_gfx_texture_vk.cpp in Sources */,
+				62D230902688921E0044D96C /* pt_gfx_api_vk.cpp in Sources */,
+				62D230892688921E0044D96C /* pt_gfx_texture_common.cpp in Sources */,
+				62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */,
+				62D230882688921E0044D96C /* pt_gfx_connection_vk_wsi_metal.cpp in Sources */,
+				62D2308F2688921E0044D96C /* pt_gfx_texture_common_load_dds.cpp in Sources */,
+				62D2308A2688921E0044D96C /* pt_gfx_malloc.cpp in Sources */,
+				62D2308E2688921E0044D96C /* pt_gfx_connection_common.cpp in Sources */,
+				62D2308D2688921E0044D96C /* pt_gfx_texture_common_load_pvr.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62D230A9268893240044D96C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62D230C6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp in Sources */,
+				62D230BD268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */,
+				62D230BF268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */,
+				62D230C0268893540044D96C /* pt_mcrt_memcpy.cpp in Sources */,
+				62D230C7268893540044D96C /* pt_mcrt_task.cpp in Sources */,
+				62D230C4268893540044D96C /* pt_mcrt_malloc.cpp in Sources */,
+				62D230BE268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,6 +590,29 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		624EFC1826889C0E001F2F63 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62D230AB268893240044D96C /* pt_mcrt */;
+			targetProxy = 624EFC1726889C0E001F2F63 /* PBXContainerItemProxy */;
+		};
+		62D230D72688987A0044D96C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62D230AB268893240044D96C /* pt_mcrt */;
+			targetProxy = 62D230D62688987A0044D96C /* PBXContainerItemProxy */;
+		};
+		62D230D926889B2E0044D96C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */;
+			targetProxy = 62D230D826889B2E0044D96C /* PBXContainerItemProxy */;
+		};
+		62D230DB26889B330044D96C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */;
+			targetProxy = 62D230DA26889B330044D96C /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		6238290526768846002ECF8A /* Debug */ = {
@@ -466,6 +666,7 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -485,6 +686,47 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_osx";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62D230AE268893240044D96C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				OTHER_CFLAGS = (
+					"-mssse3",
+					"-mavx",
+					"-mavx512f",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62D230AF268893240044D96C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				EXECUTABLE_PREFIX = lib;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				OTHER_CFLAGS = (
+					"-mssse3",
+					"-mavx",
+					"-mavx512f",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -569,6 +811,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -585,7 +828,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -628,6 +876,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -638,7 +887,12 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+				);
+				LIBRARY_SEARCH_PATHS = "";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -652,6 +906,10 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+				);
 				INFOPLIST_FILE = osx.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -677,6 +935,10 @@
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
+				);
 				INFOPLIST_FILE = osx.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -712,6 +974,15 @@
 			buildConfigurations = (
 				625D4F2E26775B6F000F087B /* Debug */,
 				625D4F2F26775B6F000F087B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62D230AD268893240044D96C /* Build configuration list for PBXNativeTarget "pt_mcrt" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62D230AE268893240044D96C /* Debug */,
+				62D230AF268893240044D96C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

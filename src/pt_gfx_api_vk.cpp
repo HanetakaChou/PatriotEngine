@@ -35,10 +35,11 @@ gfx_api_vk::~gfx_api_vk()
 #endif
 }
 
-bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     m_wsi_connection = wsi_connection;
     m_wsi_visual = wsi_visual;
+    m_wsi_window = wsi_window;
 
     m_allocator_callbacks.pUserData = NULL;
     m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };

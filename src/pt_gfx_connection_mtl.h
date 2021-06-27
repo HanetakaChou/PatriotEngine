@@ -37,11 +37,11 @@ class gfx_connection_mtl : public gfx_connection_common
     bool init(wsi_window_ref wsi_window);
     void destroy() override;
 
-    friend class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+    friend class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 public:
 };
 
-class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 #endif

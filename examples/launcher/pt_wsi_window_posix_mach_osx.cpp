@@ -178,6 +178,8 @@ void ns_view_controller::view_did_load(NSViewController ns_view_controller, NSVi
 {
     NSViewController_super_viewDidLoad(ns_view_controller, cmd);
 
+    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+    
     dispatch_source_t dispatch_source = dispatch_create_source(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
 
     dispatch_set_source_event_handler(dispatch_source, MainThread_EventHandler, ns_view_controller);
@@ -217,4 +219,10 @@ static CVReturn CVDisplayLink_Output_Callback(
 
 static void MainThread_EventHandler(void *pUserData)
 {
+    NSViewController ns_view_controller = static_cast<NSViewController>(pUserData);
+
+    NSView ns_view = static_cast<NSView>(NSViewController_getIvarVoidPointer(ns_view_controller, "ns_view"));
+    CALayer ca_layer = NSView_layer(ns_view);
+    
+    return;
 }

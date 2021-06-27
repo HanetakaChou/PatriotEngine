@@ -94,3 +94,27 @@ bool gfx_texture_common::load_data_from_input_stream(
         return false;
     }
 }
+
+//--- export ---
+
+inline gfx_connection_ref wrap(class gfx_connection_common *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_common *>(gfx_connection); }
+
+inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
+inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
+
+PT_ATTR_GFX bool gfx_texture_read_input_stream(
+    gfx_texture_ref texture,
+    char const *initial_filename,
+    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+{
+    return unwrap(texture)->read_input_stream(initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
+}
+
+PT_ATTR_GFX void gfx_texture_destroy(gfx_texture_ref texture)
+{
+    return unwrap(texture)->destroy();
+}

@@ -24,7 +24,6 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gfx_wsi_window_x11
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_export.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_posix_linux_x11.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
@@ -58,7 +57,6 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gfx_wsi_bitmap
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_export.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_bitmap.cpp \
 
 

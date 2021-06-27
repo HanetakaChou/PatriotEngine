@@ -16,19 +16,18 @@
  */
 
 #include <stddef.h>
-#include <pt_gfx_connection.h>
 #include "pt_gfx_connection_common.h"
 
 #if defined(PT_WIN32)
-#include "pt_gfx_connection_d3d12.h"
+extern class gfx_connection_common *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 #endif
 
-#if defined(PT_POSIX_MACH)
-#include "pt_gfx_connection_mtl.h"
+#if 0 && defined(PT_POSIX_MACH)
+extern class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 #endif
 
-#if defined(PT_POSIX_LINUX) || defined(PT_WIN32)
-#include "pt_gfx_connection_vk.h"
+#if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
+extern class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 #endif
 
 class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
@@ -42,19 +41,57 @@ class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_c
     }
 #endif
 
-#if defined(PT_POSIX_MACH)
+#if 0 && defined(PT_POSIX_MACH)
     if (NULL == gfx_connection)
     {
         gfx_connection = gfx_connection_mtl_init(wsi_window);
     }
 #endif
 
-#if defined(PT_POSIX_LINUX) || defined(PT_WIN32)
+#if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
     if (NULL == gfx_connection)
     {
-        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual);
+        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual, wsi_window);
     }
 #endif
 
     return gfx_connection;
+}
+
+//--- export ---
+
+inline gfx_connection_ref wrap(class gfx_connection_common *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_common *>(gfx_connection); }
+
+inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
+inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
+
+PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, wsi_window));
+}
+
+PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection)
+{
+    return unwrap(gfx_connection)->destroy();
+}
+
+PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection)
+{
+    return wrap(unwrap(gfx_connection)->create_texture());
+}
+
+PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height)
+{
+    return unwrap(gfx_connection)->wsi_on_resized(wsi_window, width, height);
+}
+
+PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height)
+{
+    return unwrap(gfx_connection)->wsi_on_redraw_needed_acquire(wsi_window, width, height);
+}
+
+PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)
+{
+    return unwrap(gfx_connection)->wsi_on_redraw_needed_release();
 }

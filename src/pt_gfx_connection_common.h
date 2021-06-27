@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_gfx_connection.h>
 #include "pt_gfx_texture_common.h"
 
 class gfx_connection_proxy

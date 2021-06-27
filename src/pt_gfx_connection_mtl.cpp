@@ -54,7 +54,7 @@ void gfx_connection_mtl::wsi_on_redraw_needed_release()
 {
 }
 
-class gfx_connection_mtl *gfx_connection_mtl_init(wsi_window_ref wsi_window)
+class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window)
 {
     //class gfx_connection_mtl *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_mtl), alignof(gfx_connection_mtl))) gfx_connection_mtl();
     //if (connection->init(wsi_window))

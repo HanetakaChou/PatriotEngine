@@ -30,9 +30,9 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
-bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    return (m_api_vk.init(wsi_connection, wsi_visual) && m_malloc.init(&m_api_vk));
+    return (m_api_vk.init(wsi_connection, wsi_visual, wsi_window) && m_malloc.init(&m_api_vk));
 }
 
 void gfx_connection_vk::destroy()
@@ -59,10 +59,10 @@ void gfx_connection_vk::wsi_on_redraw_needed_release()
 {
 }
 
-class gfx_connection_vk *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    if (connection->init(wsi_connection, wsi_visual))
+    if (connection->init(wsi_connection, wsi_visual, wsi_window))
     {
         return connection;
     }

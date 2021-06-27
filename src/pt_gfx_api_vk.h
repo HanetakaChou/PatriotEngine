@@ -56,6 +56,7 @@ class gfx_api_vk
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
+    wsi_window_ref m_wsi_window;
     static char const *platform_surface_extension_name(uint32_t index);
     static uint32_t platform_surface_extension_count();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
@@ -74,7 +75,7 @@ public:
      gfx_api_vk();
      ~gfx_api_vk();
 
-    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
