@@ -21,11 +21,10 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
-#include <pt_apple_sdk_posix_mach_metal.h>
 
 class gfx_api_mtl
 {
-    MTLDevice m_device;
+    //MTLDevice m_device;
 
 public:
     bool init(wsi_window_ref wsi_window);

@@ -100,6 +100,16 @@ static inline NSWindow NSObject_To_NSWindow(NSObject ns_window)
     return reinterpret_cast<NSWindow>(ns_window);
 }
 
+static inline Class_NSView Class_NSView_Wrap(Class class_ns_view)
+{
+    return reinterpret_cast<Class_NSView>(class_ns_view);
+}
+
+static inline Class Class_NSView_Unwrap(Class_NSView class_ns_view)
+{
+    return reinterpret_cast<Class>(class_ns_view);
+}
+
 static inline NSView NSView_Wrap(struct objc_object *ns_view)
 {
     return reinterpret_cast<NSView>(ns_view);
@@ -108,6 +118,11 @@ static inline NSView NSView_Wrap(struct objc_object *ns_view)
 static inline struct objc_object *NSView_Unwrap(NSView ns_view)
 {
     return reinterpret_cast<struct objc_object *>(ns_view);
+}
+
+static inline CALayer CALayer_Wrap(struct objc_object *ca_layer)
+{
+    return reinterpret_cast<CALayer>(ca_layer);
 }
 
 static inline Class_NSViewController Class_NSViewController_Wrap(Class class_ns_view_controller)
@@ -133,6 +148,11 @@ static inline NSViewController NSViewController_Wrap(struct objc_object *ns_view
 static inline struct objc_object *NSViewController_Unwrap(NSViewController ns_view_controller)
 {
     return reinterpret_cast<struct objc_object *>(ns_view_controller);
+}
+
+static inline NSObject NSViewController_To_NSObject(NSViewController ns_view_controller)
+{
+    return reinterpret_cast<NSObject>(ns_view_controller);
 }
 
 // ---
@@ -184,6 +204,11 @@ PT_ATTR_APPLE_SDK Class_NSApplicationDelegate NSApplicationDelegate_allocateClas
     //assert(res != NO);
 
     return Class_NSApplicationDelegate_Wrap(class_ns_application_delegate);
+}
+
+PT_ATTR_APPLE_SDK void Class_NSApplicationDelegate_register(Class_NSApplicationDelegate class_ns_application_delegate)
+{
+    return objc_registerClassPair(Class_NSApplicationDelegate_Unwrap(class_ns_application_delegate));
 }
 
 PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSApplicationDelegate class_ns_application_delegate)
@@ -285,14 +310,87 @@ PT_ATTR_APPLE_SDK void NSWindow_makeKeyAndOrderFront(NSWindow ns_window, void *s
         reinterpret_cast<struct objc_object *>(sender));
 }
 
-PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view)
+//static Class _PT_C_UIView_layerClass(Class class_ui_view, struct objc_selector *)
+//{
+//    return objc_getClass("CAMetalLayer");
+//}
+
+static signed char _PT_I_NSView_wantsLayer(NSView ns_view, NSView_wantsLayer)
 {
-    return reinterpret_cast<NSView>(mtk_view);
+    return YES;
 }
 
-PT_ATTR_APPLE_SDK MTKView NSView_To_MTKView(NSView ns_view)
+static void *_PT_I_NSView_makeBackingLayer(NSView ns_view, NSView_makeBackingLayer)
 {
-    return reinterpret_cast<MTKView>(ns_view);
+    struct objc_object *ret_ca_layer = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
+        objc_getClass("CAMetalLayer"),
+        sel_registerName("layer"));
+    return ret_ca_layer;
+}
+
+static signed char _PT_I_NSView_wantsUpdateLayer(NSView ns_view, NSView_wantsUpdateLayer)
+{
+    return YES;
+}
+
+PT_ATTR_APPLE_SDK Class_NSView NSView_allocateClass(
+    char const *class_name,
+    signed char (*_I_NSView_wantsLayer)(NSView ns_view, NSView_wantsLayer),
+    void *(*_I_NSView_makeBackingLayer)(NSView ns_view, NSView_makeBackingLayer),
+    signed char (*_I_NSView_wantsUpdateLayer)(NSView ns_view, NSView_wantsUpdateLayer))
+{
+    Class class_ns_view = objc_allocateClassPair(
+        objc_getClass("NSView"),
+        class_name,
+        0);
+    assert(class_ns_view != NULL);
+
+    //Class metaclass_ns_view = objc_getMetaClass(class_name);
+    //BOOL result_layer_class = class_addMethod(
+    //    metaclass_ns_view,
+    //    sel_registerName("layerClass"),
+    //    reinterpret_cast<IMP>(_PT_C_NSView_layerClass),
+    //    "#@:");
+    //assert(result_layer_class != NO);
+
+    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+
+    BOOL result_wants_layer = class_addMethod(
+        class_ns_view,
+        sel_registerName("wantsLayer"),
+        reinterpret_cast<IMP>((NULL == _I_NSView_wantsLayer) ? _PT_I_NSView_wantsLayer : _I_NSView_wantsLayer),
+        "c@:");
+    assert(result_wants_layer != NO);
+
+    BOOL result_make_backing_layer = class_addMethod(
+        class_ns_view,
+        sel_registerName("makeBackingLayer"),
+        reinterpret_cast<IMP>((NULL == _I_NSView_makeBackingLayer) ? _PT_I_NSView_makeBackingLayer : _I_NSView_makeBackingLayer),
+        "@@:");
+    assert(result_make_backing_layer != NO);
+
+    BOOL result_wants_update_layer = class_addMethod(
+        class_ns_view,
+        sel_registerName("wantsUpdateLayer"),
+        reinterpret_cast<IMP>((NULL == _I_NSView_wantsUpdateLayer) ? _PT_I_NSView_wantsUpdateLayer : _I_NSView_wantsUpdateLayer),
+        "c@:");
+    assert(result_wants_update_layer != NO);
+
+    return Class_NSView_Wrap(class_ns_view);
+}
+
+PT_ATTR_APPLE_SDK void Class_NSView_register(Class_NSView class_ns_view)
+{
+    // The class seems incomplete without being registered and the MoltenVK would crash
+    return objc_registerClassPair(Class_NSView_Unwrap(class_ns_view));
+}
+
+PT_ATTR_APPLE_SDK NSView NSView_alloc(Class_NSView class_ns_view)
+{
+    struct objc_object *ns_view = reinterpret_cast<struct objc_object *(*)(Class, struct objc_selector *)>(objc_msgSend)(
+        Class_NSView_Unwrap(class_ns_view),
+        sel_registerName("alloc"));
+    return NSView_Wrap(ns_view);
 }
 
 PT_ATTR_APPLE_SDK NSView NSView_initWithFrame(NSView ns_view, NSRect frame_rect)
@@ -302,6 +400,14 @@ PT_ATTR_APPLE_SDK NSView NSView_initWithFrame(NSView ns_view, NSRect frame_rect)
         sel_registerName("initWithFrame:"),
         frame_rect);
     return NSView_Wrap(ret_ns_view);
+}
+
+PT_ATTR_APPLE_SDK CALayer NSView_layer(NSView ns_view)
+{
+    struct objc_object *ret_ca_layer = reinterpret_cast<struct objc_object *(*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
+        NSView_Unwrap(ns_view),
+        sel_registerName("layer"));
+    return CALayer_Wrap(ret_ca_layer);
 }
 
 PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
@@ -344,6 +450,11 @@ PT_ATTR_APPLE_SDK Class_NSViewController NSViewController_allocateClass(
 PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname)
 {
     return Class_NSObject_addIvarVoidPointer(Class_NSViewController_To_Class_NSObject(class_ns_view_controller), ivarname);
+}
+
+PT_ATTR_APPLE_SDK void Class_NSViewController_register(Class_NSViewController class_ns_view_controller)
+{
+    return objc_registerClassPair(Class_NSViewController_Unwrap(class_ns_view_controller));
 }
 
 PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller)
@@ -394,4 +505,14 @@ PT_ATTR_APPLE_SDK void NSViewController_super_setRepresentedObject_(NSViewContro
         &super,
         reinterpret_cast<struct objc_selector *>(cmd),
         reinterpret_cast<struct objc_object *>(represented_object));
+}
+
+PT_ATTR_APPLE_SDK void NSViewController_setIvarVoidPointer(NSViewController ns_view_controller, char const *ivarname, void *pVoid)
+{
+    return NSObject_setIvarVoidPointer(NSViewController_To_NSObject(ns_view_controller), ivarname, pVoid);
+}
+
+PT_ATTR_APPLE_SDK void *NSViewController_getIvarVoidPointer(NSViewController ns_view_controller, char const *ivarname)
+{
+    return NSObject_getIvarVoidPointer(NSViewController_To_NSObject(ns_view_controller), ivarname);
 }

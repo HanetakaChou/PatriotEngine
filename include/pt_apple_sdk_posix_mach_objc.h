@@ -50,6 +50,8 @@ extern "C"
     PT_ATTR_APPLE_SDK NSObject NSObject_alloc(Class_NSObject);
     PT_ATTR_APPLE_SDK NSObject NSObject_init(NSObject);
     PT_ATTR_APPLE_SDK void NSObject_release(NSObject);
+    PT_ATTR_APPLE_SDK void NSObject_setIvarVoidPointer(NSObject ns_object, char const *ivarname, void *pVoid);
+    PT_ATTR_APPLE_SDK void *NSObject_getIvarVoidPointer(NSObject ns_object, char const *ivarname);
 #ifdef __cplusplus
 }
 #endif

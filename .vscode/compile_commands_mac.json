@@ -16,13 +16,13 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_metalkit.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_metalkit.o",
-        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_metalkit.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_corevideo.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_corevideo.o",
+        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_corevideo.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_metal.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_metal.o",
-        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_metal.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_APPLE_SDK=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_apple_sdk_posix_mach_dispatch.cpp -o ${workspaceFolder}/obj/src/pt_apple_sdk_posix_mach_dispatch.o",
+        "file": "${workspaceFolder}/src/pt_apple_sdk_posix_mach_dispatch.cpp"
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",

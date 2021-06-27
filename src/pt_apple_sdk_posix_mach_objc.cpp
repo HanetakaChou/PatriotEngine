@@ -28,6 +28,7 @@
 #endif
 
 #include <assert.h>
+#include <string.h>
 
 static inline Class Class_NSObject_Unwrap(Class_NSObject class_ns_object)
 {
@@ -99,6 +100,23 @@ PT_ATTR_APPLE_SDK void NSObject_release(NSObject ns_object)
     return reinterpret_cast<void (*)(struct objc_object *, struct objc_selector *)>(objc_msgSend)(
         NSObject_Unwrap(ns_object),
         sel_registerName("release"));
+}
+
+PT_ATTR_APPLE_SDK void NSObject_setIvarVoidPointer(NSObject ns_object, char const *ivarname, void *pVoid)
+{
+    Ivar ivar_pUserData = class_getInstanceVariable(object_getClass(NSObject_Unwrap(ns_object)), ivarname);
+    assert(ivar_pUserData != NULL);
+    assert(strcmp(ivar_getTypeEncoding(ivar_pUserData), "^v") == 0);
+    (*reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(ns_object) + ivar_getOffset(ivar_pUserData))) = pVoid;
+    return;
+}
+
+PT_ATTR_APPLE_SDK void *NSObject_getIvarVoidPointer(NSObject ns_object, char const *ivarname)
+{
+    Ivar ivar_pUserData = class_getInstanceVariable(object_getClass(NSObject_Unwrap(ns_object)), ivarname);
+    assert(ivar_pUserData != NULL);
+    assert(strcmp(ivar_getTypeEncoding(ivar_pUserData), "^v") == 0);
+    return (*reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(ns_object) + ivar_getOffset(ivar_pUserData)));
 }
 
 PT_ATTR_APPLE_SDK NSUInteger NSArray_count(NSArray ns_array)

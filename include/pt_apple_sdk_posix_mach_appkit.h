@@ -23,7 +23,6 @@
 #include "pt_apple_sdk_common.h"
 #include "pt_apple_sdk_posix_mach_objc.h"
 #include "pt_apple_sdk_posix_mach_foundation.h"
-#include "pt_apple_sdk_posix_mach_metalkit.h"
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h */
 typedef struct _NSApplication_T_ *NSApplication;
@@ -45,6 +44,7 @@ extern "C"
         void (*_I_NSApplicationDelegate_applicationDidFinishLaunching_)(NSApplicationDelegate, NSApplicationDelegate_applicationDidFinishLaunching_, void *aNotification),
         void (*_I_NSApplicationDelegate_applicationWillTerminate_)(NSApplicationDelegate, NSApplicationDelegate_applicationWillTerminate_, void *aNotification),
         int8_t (*_I_NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_)(NSApplicationDelegate, NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_, NSApplication sender));
+    PT_ATTR_APPLE_SDK void Class_NSApplicationDelegate_register(Class_NSApplicationDelegate class_ns_application_delegate);
     PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_alloc(Class_NSApplicationDelegate class_ns_application_delegate);
     PT_ATTR_APPLE_SDK NSApplicationDelegate NSApplicationDelegate_init(NSApplicationDelegate ns_application_delegate);
 #ifdef __cplusplus
@@ -96,15 +96,26 @@ extern "C"
 #endif
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSView.h */
+typedef struct _Class_NSView_T_ *Class_NSView;
+typedef struct _NSView_wantsLayer_T_ *NSView_wantsLayer;
+typedef struct _NSView_makeBackingLayer_T_ *NSView_makeBackingLayer;
+typedef struct _NSView_wantsUpdateLayer_T_ *NSView_wantsUpdateLayer;
 typedef struct _NSView_T_ *NSView;
+typedef struct _CALayer_T_ *CALayer;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-    PT_ATTR_APPLE_SDK NSView MTKView_To_NSView(MTKView mtk_view);
-    PT_ATTR_APPLE_SDK MTKView NSView_To_MTKView(NSView ns_view);
+    PT_ATTR_APPLE_SDK Class_NSView NSView_allocateClass(
+        char const *class_name,
+        signed char (*_I_NSView_wantsLayer)(NSView ns_view, NSView_wantsLayer),
+        void *(*_I_NSView_makeBackingLayer)(NSView ns_view, NSView_makeBackingLayer),
+        signed char (*_I_NSView_wantsUpdateLayer)(NSView ns_view, NSView_wantsUpdateLayer));
+    PT_ATTR_APPLE_SDK void Class_NSView_register(Class_NSView class_ns_view);
+    PT_ATTR_APPLE_SDK NSView NSView_alloc(Class_NSView class_ns_view);
     PT_ATTR_APPLE_SDK NSView NSView_initWithFrame(NSView ns_view, NSRect frame_rect);
+    PT_ATTR_APPLE_SDK CALayer NSView_layer(NSView ns_view);
 #ifdef __cplusplus
 }
 #endif
@@ -124,11 +135,14 @@ extern "C"
         void (*_I_NSViewController_viewDidLoad)(NSViewController ns_view_controller, NSViewController_viewDidLoad),
         void (*_I_NSViewController_setRepresentedObject_)(NSViewController ns_view_controller, NSViewController_setRepresentedObject_, void *represented_object));
     PT_ATTR_APPLE_SDK bool Class_NSViewController_addIvarVoidPointer(Class_NSViewController class_ns_view_controller, char const *ivarname);
+    PT_ATTR_APPLE_SDK void Class_NSViewController_register(Class_NSViewController class_ns_view_controller);
     PT_ATTR_APPLE_SDK NSViewController NSViewController_alloc(Class_NSViewController class_ns_view_controller);
     PT_ATTR_APPLE_SDK NSViewController __attribute__((availability(macos, introduced = 10.5))) NSViewController_initWithNibName(NSViewController ns_view_controller, void *nibNameOrNil, void *nibBundleOrNil);
     PT_ATTR_APPLE_SDK void __attribute__((availability(macos, introduced = 10.5))) NSViewController_setView(NSViewController ns_view_controller, NSView ns_view);
     PT_ATTR_APPLE_SDK void NSViewController_super_viewDidLoad(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd);
     PT_ATTR_APPLE_SDK void NSViewController_super_setRepresentedObject_(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object);
+    PT_ATTR_APPLE_SDK void NSViewController_setIvarVoidPointer(NSViewController ns_view_controller, char const *ivarname, void *pVoid);
+    PT_ATTR_APPLE_SDK void *NSViewController_getIvarVoidPointer(NSViewController ns_view_controller, char const *ivarname);
 #ifdef __cplusplus
 }
 #endif

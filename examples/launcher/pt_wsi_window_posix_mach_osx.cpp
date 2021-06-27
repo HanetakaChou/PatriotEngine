@@ -23,8 +23,10 @@
 #include <pt_apple_sdk_posix_mach_objc.h>
 #include <pt_apple_sdk_posix_mach_foundation.h>
 #include <pt_apple_sdk_posix_mach_appkit.h>
-#include <pt_apple_sdk_posix_mach_metalkit.h>
-#include <pt_apple_sdk_posix_mach_metal.h>
+#include <pt_apple_sdk_posix_mach_corevideo.h>
+#include <pt_apple_sdk_posix_mach_dispatch.h>
+
+#include <pt_gfx_connection.h>
 
 class ns_application_delegate
 {
@@ -40,13 +42,6 @@ public:
     static void load_view(NSViewController ns_view_controller, NSViewController_loadView);
     static void view_did_load(NSViewController ns_view_controller, NSViewController_viewDidLoad);
     static void set_represented_object(NSViewController ns_view_controller, NSViewController_setRepresentedObject_, void *represented_object);
-};
-
-class mtk_view_delegate
-{
-public:
-    static void drawable_size_will_change(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size);
-    static void draw_in_mtk_view(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view);
 };
 
 int main(int argc, char const *argv[])
@@ -94,6 +89,8 @@ int main(int argc, char const *argv[])
             ns_application_delegate::application_will_terminate,
             ns_application_delegate::application_should_terminate_after_last_window_closed);
 
+        Class_NSApplicationDelegate_register(class_ns_application_delegate);
+
         NSApplicationDelegate ns_application_delegate = NSApplicationDelegate_init(NSApplicationDelegate_alloc(class_ns_application_delegate));
 
         NSApplication ns_application = NSApplication_sharedApplication();
@@ -133,7 +130,10 @@ void ns_application_delegate::application_did_finish_launching(NSApplicationDele
         ns_view_controller::view_did_load,
         ns_view_controller::set_represented_object);
 
-    Class_NSViewController_addIvarVoidPointer(class_ns_view_controller, "pUserData");
+    Class_NSViewController_addIvarVoidPointer(class_ns_view_controller, "ns_view");
+    Class_NSViewController_addIvarVoidPointer(class_ns_view_controller, "dispatch_source");
+
+    Class_NSViewController_register(class_ns_view_controller);
 
     NSViewController ns_view_controller = NSViewController_initWithNibName(NSViewController_alloc(class_ns_view_controller), NULL, NULL);
 
@@ -153,46 +153,49 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
 
 void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewController_loadView)
 {
-    MTLDevice device = NULL;
-    {
-        NSArray devices = MTLDevice_CopyAllDevices();
-        NSUInteger count = NSArray_count(devices);
-        for (NSUInteger idx = 0U; idx < count; ++idx)
-        {
-            MTLDevice current_device = NSObject_To_MTLDevice(NSArray_objectAtIndexedSubscript(devices, idx));
-            bool hasUnifiedMemory = MTLDevice_hasUnifiedMemory(current_device);
-            if (!hasUnifiedMemory)
-            {
-                device = current_device;
-                break;
-            }
-        }
-        NSArray_release(devices);
-    }
+    Class_NSView class_ns_view = NSView_allocateClass("CAMetalLayer_View", NULL, NULL, NULL);
 
-    NSRect frame = {{0, 0}, {800, 600}};
-    MTKView mtk_view = NSView_To_MTKView(NSView_initWithFrame(MTKView_To_NSView(MTKView_alloc()), frame));
+    // The class seems incomplete without being registered and the MoltenVK would crash
+    Class_NSView_register(class_ns_view);
 
-    MTKView_setDevice(mtk_view, device);
+    NSRect frame_rect = {{0, 0}, {800, 600}};
+    NSView ns_view = NSView_initWithFrame(NSView_alloc(class_ns_view), frame_rect);
 
-    Class_MTKViewDelegate class_mtk_view_delegate = MTKViewDelegate_allocClass(
-        "MTKViewDelegate_pt_wsi_window_posix_mach_osx",
-        mtk_view_delegate::drawable_size_will_change,
-        mtk_view_delegate::draw_in_mtk_view);
+    NSViewController_setIvarVoidPointer(ns_view_controller, "ns_view", ns_view);
 
-    Class_MTKViewDelegate_addIvarVoidPointer(class_mtk_view_delegate, "pUserData");
-
-    MTKViewDelegate mtk_view_delegate = MTKViewDelegate_init(MTKViewDelegate_alloc(class_mtk_view_delegate));
-    //MTKViewDelegate_setIvarVoidPointer
-
-    MTKView_setDelegate(mtk_view, mtk_view_delegate);
-
-    NSViewController_setView(ns_view_controller, MTKView_To_NSView(mtk_view));
+    NSViewController_setView(ns_view_controller, ns_view);
 }
+
+static CVReturn CVDisplayLink_Output_Callback(
+    CVDisplayLinkRef displayLink,
+    struct CVTimeStamp const *inNow, struct CVTimeStamp const *inOutputTime,
+    CVOptionFlags flagsIn, CVOptionFlags *flagsOut,
+    void *displayLinkContext);
+
+static void MainThread_EventHandler(void *pUserData);
 
 void ns_view_controller::view_did_load(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd)
 {
     NSViewController_super_viewDidLoad(ns_view_controller, cmd);
+
+    dispatch_source_t dispatch_source = dispatch_create_source(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
+
+    dispatch_set_source_event_handler(dispatch_source, MainThread_EventHandler, ns_view_controller);
+
+    dispatch_resume_source(dispatch_source);
+
+    NSViewController_setIvarVoidPointer(ns_view_controller, "dispatch_source", dispatch_source);
+
+    CVDisplayLinkRef display_link;
+
+    CVReturn cv_ret_create = CVDisplayLink_CreateWithActiveCGDisplays(&display_link);
+    assert(kCVReturnSuccess == cv_ret_create);
+
+    CVReturn cv_ret_set = CVDisplayLink_SetOutputCallback(display_link, CVDisplayLink_Output_Callback, ns_view_controller);
+    assert(kCVReturnSuccess == cv_ret_set);
+
+    CVReturn cv_ret_start = CVDisplayLink_Start(display_link);
+    assert(kCVReturnSuccess == cv_ret_start);
 }
 
 void ns_view_controller::set_represented_object(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object)
@@ -200,16 +203,18 @@ void ns_view_controller::set_represented_object(NSViewController ns_view_control
     NSViewController_super_setRepresentedObject_(ns_view_controller, cmd, represented_object);
 }
 
-void mtk_view_delegate::drawable_size_will_change(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawSizeWillChange_, MTKView mtk_view, CGSize size)
+static CVReturn CVDisplayLink_Output_Callback(
+    CVDisplayLinkRef displayLink,
+    struct CVTimeStamp const *inNow, struct CVTimeStamp const *inOutputTime,
+    CVOptionFlags flagsIn, CVOptionFlags *flagsOut,
+    void *displayLinkContext)
 {
-    void *__here_auto_release_pool_object = AutoReleasePool_Push();
-
-    AutoReleasePool_Pop(__here_auto_release_pool_object);
+    NSViewController ns_view_controller = static_cast<NSViewController>(displayLinkContext);
+    dispatch_source_t dispatch_source = static_cast<dispatch_source_t>(NSViewController_getIvarVoidPointer(ns_view_controller, "dispatch_source"));
+    dispatch_merge_source_data(dispatch_source, 1);
+    return kCVReturnSuccess;
 }
 
-void mtk_view_delegate::draw_in_mtk_view(MTKViewDelegate mtk_view_delegate, MTKViewDelegate_drawInMTKView_, MTKView mtk_view)
+static void MainThread_EventHandler(void *pUserData)
 {
-    void *__here_auto_release_pool_object = AutoReleasePool_Push();
-
-    AutoReleasePool_Pop(__here_auto_release_pool_object);
 }
