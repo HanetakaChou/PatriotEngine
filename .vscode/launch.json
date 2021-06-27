@@ -64,7 +64,7 @@
             "name": "(MacOSX) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/PatriotEngine-MacOSX.app/Contents/MacOS/PatriotEngine-MacOSX",
+            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/pt_launcher_wsi_window_osx.app/Contents/MacOS/pt_launcher_wsi_window_osx",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

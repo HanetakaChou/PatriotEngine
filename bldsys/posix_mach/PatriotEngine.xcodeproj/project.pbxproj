@@ -168,7 +168,7 @@
 		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793C025974546001CC2AF /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793C62597454D001CC2AF /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-MacOSX.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "pt_launcher_wsi_window_osx.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_window_osx.cpp; path = ../../examples/launcher/pt_wsi_window_osx.cpp; sourceTree = SOURCE_ROOT; };
 		62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_corevideo.cpp; path = ../../src/pt_apple_sdk_posix_mach_corevideo.cpp; sourceTree = "<group>"; };
@@ -346,7 +346,7 @@
 				6238290826769285002ECF8A /* include */,
 				62382909267692A3002ECF8A /* src */,
 				9279CC2124390AE300DACBD7 /* Frameworks */,
-				62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */,
+				62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */,
 				62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */,
 				6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */,
 				625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */,
@@ -451,9 +451,9 @@
 			productReference = 62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		92F977E32439099000C5F3C5 /* PatriotEngine-MacOSX */ = {
+		92F977E32439099000C5F3C5 /* pt_launcher_wsi_window_osx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "PatriotEngine-MacOSX" */;
+			buildConfigurationList = 92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_window_osx" */;
 			buildPhases = (
 				92F977E02439099000C5F3C5 /* Sources */,
 				92F977E12439099000C5F3C5 /* Frameworks */,
@@ -467,9 +467,9 @@
 				62D230D926889B2E0044D96C /* PBXTargetDependency */,
 				624EFC1826889C0E001F2F63 /* PBXTargetDependency */,
 			);
-			name = "PatriotEngine-MacOSX";
+			name = "pt_launcher_wsi_window_osx";
 			productName = CXXBasedMac;
-			productReference = 62D793E425974E73001CC2AF /* PatriotEngine-MacOSX.app */;
+			productReference = 62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -511,7 +511,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				92F977E32439099000C5F3C5 /* PatriotEngine-MacOSX */,
+				92F977E32439099000C5F3C5 /* pt_launcher_wsi_window_osx */,
 				92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */,
 				6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */,
 				625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */,
@@ -940,7 +940,7 @@
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-MacOSX";
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.pt_launcher_wsi_window_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -971,7 +971,7 @@
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
 					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.PatriotEngine-MacOSX";
+				PRODUCT_BUNDLE_IDENTIFIER = "HanetakaYuminaga.pt_launcher_wsi_window_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -1025,7 +1025,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "PatriotEngine-MacOSX" */ = {
+		92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_window_osx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				92F977F92439099100C5F3C5 /* Debug */,

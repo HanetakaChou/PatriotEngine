@@ -34,9 +34,9 @@ then
 fi
 
 if test \( \( -n "$1" \) -a \( "$1" = "debug" \) \);then 
-    XCODE_BUILD_ARG_CONFIG="Debug"
+    XCODE_BUILD_ARG_CONFIG="debug"
 elif test \( \( -n "$1" \) -a \( "$1" = "release" \) \);then
-    XCODE_BUILD_ARG_CONFIG="Release"
+    XCODE_BUILD_ARG_CONFIG="release"
 else
     echo "The config \"$1\" is not supported!"
     echo ""
@@ -48,9 +48,9 @@ else
 fi
 
 if test \( \( -n "$2" \) -a \( "$2" = "osx" \) \);then
-    XCODE_BUILD_ARG_PLATFORM="MacOSX"
+    XCODE_BUILD_ARG_PLATFORM="osx"
 elif test \( \( -n "$2" \) -a \( "$2" = "ios" \) \);then
-    XCODE_BUILD_ARG_PLATFORM="iPhoneOS"
+    XCODE_BUILD_ARG_PLATFORM="ios"
 else
     echo "The platform \"$2\" is not supported!"
     echo ""
