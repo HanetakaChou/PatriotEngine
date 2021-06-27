@@ -37,20 +37,21 @@ gfx_api_vk::~gfx_api_vk()
 
 bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    m_wsi_connection = wsi_connection;
-    m_wsi_visual = wsi_visual;
-    m_wsi_window = wsi_window;
+    this->m_wsi_connection = wsi_connection;
+    this->m_wsi_visual = wsi_visual;
+    this->m_wsi_window = wsi_window;
 
-    m_allocator_callbacks.pUserData = NULL;
-    m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };
-    m_allocator_callbacks.pfnReallocation = [](void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_realloc(pOriginal, size, alignment); };
-    m_allocator_callbacks.pfnFree = [](void *, void *pMemory) -> void { return mcrt_free(pMemory); };
-    m_allocator_callbacks.pfnInternalAllocation = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
-    m_allocator_callbacks.pfnInternalFree = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
+    this->m_allocator_callbacks.pUserData = NULL;
+    this->m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };
+    this->m_allocator_callbacks.pfnReallocation = [](void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_realloc(pOriginal, size, alignment); };
+    this->m_allocator_callbacks.pfnFree = [](void *, void *pMemory) -> void
+    { return mcrt_free(pMemory); };
+    this->m_allocator_callbacks.pfnInternalAllocation = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
+    this->m_allocator_callbacks.pfnInternalFree = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
 
     PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = vkGetInstanceProcAddr;
 
-    m_instance = VK_NULL_HANDLE;
+    this->m_instance = VK_NULL_HANDLE;
     {
         PFN_vkCreateInstance vk_create_instance = reinterpret_cast<PFN_vkCreateInstance>(vkGetInstanceProcAddr(NULL, "vkCreateInstance"));
         assert(NULL != vk_create_instance);
@@ -99,14 +100,18 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
-        VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &m_instance);
+        VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &this->m_instance);
         if (VK_SUCCESS != vk_res)
         {
             return false;
         }
     }
+    if (VK_NULL_HANDLE == this->m_instance)
+    {
+        return false;
+    }
 
-    vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetInstanceProcAddr"));
+    vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(this->m_instance, "vkGetInstanceProcAddr"));
     assert(NULL != vk_get_instance_proc_addr);
 
     this->m_vk_get_physical_device_memory_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceMemoryProperties"));
@@ -116,26 +121,27 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
     assert(NULL != this->m_vk_get_physical_device_format_properties);
 
 #ifndef NDEBUG
-    PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT"));
-    assert(NULL != vk_create_debug_report_callback_ext);
-
-    m_debug_report_callback = VK_NULL_HANDLE;
+    this->m_debug_report_callback = VK_NULL_HANDLE;
     {
+        PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT"));
+        assert(NULL != vk_create_debug_report_callback_ext);
+
         VkDebugReportCallbackCreateInfoEXT debug_report_callback_create_info;
         debug_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
         debug_report_callback_create_info.pNext = NULL;
         debug_report_callback_create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-        debug_report_callback_create_info.pfnCallback = [](VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) -> VkBool32 {
+        debug_report_callback_create_info.pfnCallback = [](VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) -> VkBool32
+        {
             return static_cast<gfx_api_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
         };
         debug_report_callback_create_info.pUserData = this;
 
-        VkResult vk_res = vk_create_debug_report_callback_ext(m_instance, &debug_report_callback_create_info, &m_allocator_callbacks, &m_debug_report_callback);
+        VkResult vk_res = vk_create_debug_report_callback_ext(this->m_instance, &debug_report_callback_create_info, &this->m_allocator_callbacks, &this->m_debug_report_callback);
         assert(VK_SUCCESS == vk_res);
     }
 #endif
 
-    m_physical_device = VK_NULL_HANDLE;
+    this->m_physical_device = VK_NULL_HANDLE;
     {
         VkPhysicalDevice *physical_devices;
         uint32_t physical_device_count;
@@ -167,82 +173,81 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
             }
         } internal_instance_physical_devices_guard(&physical_devices, &physical_device_count, m_instance, vk_get_instance_proc_addr);
 
-        // TODO
-        // https://github.com/ValveSoftware/dxvk
-        // src/dxvk/dxvk_adapter.cpp
-        // DxvkAdapter::findQueueFamilies
-        // src/d3d11/d3d11_swapchain.cpp
-        // D3D11SwapChain::CreatePresenter
-
-        // src/dxvk/dxvk_device.h
-        // DxvkDevice::hasDedicatedTransferQueue
-
-        // nvpro-samples/shared_sources/nvvk/context_vk.cpp
-        // Context::initDevice
-        // m_queueGCT
-        // m_queueC
-        // m_queue_T
-
         PFN_vkGetPhysicalDeviceProperties vk_get_physical_device_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceProperties"));
         assert(NULL != vk_get_physical_device_properties);
 
-        VkPhysicalDevice physical_device_integrated_gpu = VK_NULL_HANDLE;
-        VkDeviceSize physical_device_integrated_gpu_limits_buffer_image_granularity;
-        VkDeviceSize physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
-        VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
-        VkDeviceSize physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
-        VkDeviceSize physical_device_integrated_gpu_limits_non_coherent_atom_size;
+        // The lower index may imply the user preference // e.g. VK_LAYER_MESA_device_select
+        uint32_t physical_device_index_first_discrete_gpu = uint32_t(-1);
+        uint32_t physical_device_index_first_integrated_gpu = uint32_t(-1);
 
-        for (int physical_device_index = 0; physical_device_index < physical_device_count; ++physical_device_index)
+        for (uint32_t physical_device_index = 0; (uint32_t(-1) == physical_device_index_first_discrete_gpu) && (physical_device_index < physical_device_count); ++physical_device_index)
         {
-            VkPhysicalDevice physical_device = physical_devices[physical_device_index];
-
             struct VkPhysicalDeviceProperties physical_device_properties;
-            vk_get_physical_device_properties(physical_device, &physical_device_properties);
-
-            // The lower index implies the user preference // e.g. VK_LAYER_MESA_device_select
+            vk_get_physical_device_properties(physical_devices[physical_device_index], &physical_device_properties);
 
             if (VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU == physical_device_properties.deviceType)
             {
-                m_physical_device = physical_device;
-                m_physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
-                m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
-                m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
-                m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
-                m_physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
-
-                // The lowest index for discrete GPU
-                break;
+                physical_device_index_first_discrete_gpu = physical_device_index;
             }
-            else if ((VK_NULL_HANDLE == physical_device_integrated_gpu) && (VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_properties.deviceType))
+            else if (VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU == physical_device_properties.deviceType)
             {
-                physical_device_integrated_gpu = physical_device;
-                physical_device_integrated_gpu_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
-                physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
-                physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
-                physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
-                physical_device_integrated_gpu_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
+                physical_device_index_first_integrated_gpu = physical_device_index;
             }
         }
 
-        if ((VK_NULL_HANDLE == m_physical_device) && (VK_NULL_HANDLE != physical_device_integrated_gpu))
+        if (uint32_t(-1) != physical_device_index_first_discrete_gpu)
         {
-            m_physical_device = physical_device_integrated_gpu;
-            m_physical_device_limits_buffer_image_granularity = physical_device_integrated_gpu_limits_buffer_image_granularity;
-            m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_integrated_gpu_limits_min_uniform_buffer_offset_alignment;
-            m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_offset_alignment;
-            m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_integrated_gpu_limits_optimal_buffer_copy_row_pitch_alignment;
-            m_physical_device_limits_non_coherent_atom_size = physical_device_integrated_gpu_limits_non_coherent_atom_size;
+            this->m_physical_device = physical_devices[physical_device_index_first_discrete_gpu];
+        }
+        else if (uint32_t(-1) != physical_device_index_first_integrated_gpu)
+        {
+            this->m_physical_device = physical_devices[physical_device_index_first_integrated_gpu];
         }
     }
-    if (VK_NULL_HANDLE == m_physical_device)
+    if (VK_NULL_HANDLE == this->m_physical_device)
     {
         return false;
     }
 
-    m_has_dedicated_transfer_queue = false;
-    m_queue_GP_family_index = VK_QUEUE_FAMILY_IGNORED;
-    m_queue_T_family_index = VK_QUEUE_FAMILY_IGNORED;
+    this->m_physical_device_limits_buffer_image_granularity = VkDeviceSize(-1);
+    this->m_physical_device_limits_min_uniform_buffer_offset_alignment = VkDeviceSize(-1);
+    this->m_physical_device_limits_optimal_buffer_copy_offset_alignment = VkDeviceSize(-1);
+    this->m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = VkDeviceSize(-1);
+    this->m_physical_device_limits_non_coherent_atom_size = VkDeviceSize(-1);
+    {
+        PFN_vkGetPhysicalDeviceProperties vk_get_physical_device_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vk_get_instance_proc_addr(this->m_instance, "vkGetPhysicalDeviceProperties"));
+        assert(NULL != vk_get_physical_device_properties);
+
+        struct VkPhysicalDeviceProperties physical_device_properties;
+        vk_get_physical_device_properties(this->m_physical_device, &physical_device_properties);
+
+        this->m_physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
+        this->m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
+        this->m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
+        this->m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment = physical_device_properties.limits.optimalBufferCopyRowPitchAlignment;
+        this->m_physical_device_limits_non_coherent_atom_size = physical_device_properties.limits.nonCoherentAtomSize;
+    }
+
+    // TODO
+    // https://github.com/ValveSoftware/dxvk
+    // src/dxvk/dxvk_adapter.cpp
+    // DxvkAdapter::findQueueFamilies
+    // src/d3d11/d3d11_swapchain.cpp
+    // D3D11SwapChain::CreatePresenter
+
+    // src/dxvk/dxvk_device.h
+    // DxvkDevice::hasDedicatedTransferQueue
+
+    // nvpro-samples/shared_sources/nvvk/context_vk.cpp
+    // Context::initDevice
+    // m_queue_GCT
+    // m_queue_CT
+    // m_queue_transfer
+    this->m_has_dedicated_transfer_queue = false;
+    this->m_queue_graphics_family_index = VK_QUEUE_FAMILY_IGNORED;
+    this->m_queue_transfer_family_index = VK_QUEUE_FAMILY_IGNORED;
+    this->m_queue_graphics_queue_index = uint32_t(-1);
+    this->m_queue_transfer_queue_index = uint32_t(-1);
     {
         VkQueueFamilyProperties *queue_family_properties;
         uint32_t queue_family_property_count;
@@ -272,52 +277,49 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
             }
         } internal_instance_queue_family_properties_guard(&queue_family_properties, &queue_family_property_count, m_instance, vk_get_instance_proc_addr, m_physical_device);
 
+        //TODO
+        //support seperated present queue
+
         for (uint32_t queue_family_index = 0U; queue_family_index < queue_family_property_count; ++queue_family_index)
         {
             VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
 
             if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(m_physical_device, queue_family_index))
             {
-                m_queue_GP_family_index = queue_family_index;
-                m_queue_GP_queue_index = 0U;
+                this->m_queue_graphics_family_index = queue_family_index;
+                this->m_queue_graphics_queue_index = 0U;
                 break;
             }
         }
 
-        //TODO
-        //support seperated present queue
-
-        if (VK_QUEUE_FAMILY_IGNORED != m_queue_GP_family_index)
+        if (VK_QUEUE_FAMILY_IGNORED != this->m_queue_graphics_family_index)
         {
-
-            // vkspec // either GRAPHICS or COMPUTE implies TRANSFER // make TRANSFER optional
+            // transfer queues
 
             for (uint32_t queue_family_index = 0U; queue_family_index < queue_family_property_count; ++queue_family_index)
             {
-                VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
-
-                if ((m_queue_GP_family_index != queue_family_index) && (VK_QUEUE_TRANSFER_BIT == (queue_family_property.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT))))
+                if ((this->m_queue_graphics_family_index != queue_family_index) && (VK_QUEUE_TRANSFER_BIT == (queue_family_properties[queue_family_index].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT))))
                 {
-                    m_queue_T_family_index = queue_family_index;
-                    m_queue_T_queue_index = 0U;
-                    m_has_dedicated_transfer_queue = true;
+                    this->m_queue_transfer_family_index = queue_family_index;
+                    this->m_queue_transfer_queue_index = 0U;
+                    this->m_has_dedicated_transfer_queue = true;
                     break;
                 }
             }
 
             // fall back to other graphics / compute queues
 
-            if (VK_QUEUE_FAMILY_IGNORED == m_queue_T_family_index)
+            // vkspec // either GRAPHICS or COMPUTE implies TRANSFER // make TRANSFER optional
+
+            if (VK_QUEUE_FAMILY_IGNORED == this->m_queue_transfer_family_index)
             {
                 for (uint32_t queue_family_index = 0U; queue_family_index < queue_family_property_count; ++queue_family_index)
                 {
-                    VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
-
-                    if ((m_queue_GP_family_index != queue_family_index) && (queue_family_property.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)))
+                    if ((this->m_queue_graphics_family_index != queue_family_index) && (0 != (queue_family_properties[queue_family_index].queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))))
                     {
-                        m_queue_T_family_index = queue_family_index;
-                        m_queue_T_queue_index = 0U;
-                        m_has_dedicated_transfer_queue = true;
+                        this->m_queue_transfer_family_index = queue_family_index;
+                        this->m_queue_transfer_queue_index = 0U;
+                        this->m_has_dedicated_transfer_queue = true;
                         break;
                     }
                 }
@@ -325,25 +327,24 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
 
             // try the same queue family
 
-            if (VK_QUEUE_FAMILY_IGNORED == m_queue_T_family_index)
+            if (VK_QUEUE_FAMILY_IGNORED == this->m_queue_transfer_family_index)
             {
-                VkQueueFamilyProperties queue_family_property = queue_family_properties[m_queue_GP_family_index];
-                if (2U <= queue_family_property.queueCount)
+                if (2U <= queue_family_properties[this->m_queue_graphics_family_index].queueCount)
                 {
-                    m_queue_T_family_index = m_queue_GP_family_index;
-                    m_queue_T_queue_index = 1U;
-                    m_has_dedicated_transfer_queue = true;
+                    this->m_queue_transfer_family_index = this->m_queue_graphics_family_index;
+                    this->m_queue_transfer_queue_index = 1U;
+                    this->m_has_dedicated_transfer_queue = true;
                 }
                 else
                 {
-                    m_queue_T_family_index = m_queue_GP_family_index;
-                    m_queue_T_queue_index = 0U;
-                    m_has_dedicated_transfer_queue = false;
+                    this->m_queue_transfer_family_index = VK_QUEUE_FAMILY_IGNORED;
+                    this->m_queue_transfer_queue_index = uint32_t(-1);
+                    this->m_has_dedicated_transfer_queue = false;
                 }
             }
         }
     }
-    if ((VK_QUEUE_FAMILY_IGNORED == m_queue_GP_family_index) || (VK_QUEUE_FAMILY_IGNORED == m_queue_T_family_index))
+    if ((VK_QUEUE_FAMILY_IGNORED == this->m_queue_graphics_family_index) || (this->m_has_dedicated_transfer_queue && (VK_QUEUE_FAMILY_IGNORED == this->m_queue_transfer_family_index)))
     {
         return false;
     }
@@ -377,68 +378,79 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         device_create_info.pNext = NULL;
         device_create_info.flags = 0U;
-        float queue_GP_priorities[1] = {1.0f};
-        float queue_T_priorities[1] = {1.0f};
+        float queue_graphics_priorities[1] = {1.0f};
+        float queue_transfer_priorities[1] = {1.0f};
         struct VkDeviceQueueCreateInfo device_queue_create_infos[2];
-        if (m_queue_GP_family_index != m_queue_T_family_index)
+        if (m_has_dedicated_transfer_queue)
         {
-            device_queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            device_queue_create_infos[0].pNext = NULL;
-            device_queue_create_infos[0].flags = 0U;
-            device_queue_create_infos[0].queueFamilyIndex = m_queue_GP_family_index;
-            assert(0U == m_queue_GP_queue_index);
-            device_queue_create_infos[0].queueCount = 1U;
-            device_queue_create_infos[0].pQueuePriorities = queue_GP_priorities;
+            if (m_queue_graphics_family_index != m_queue_transfer_family_index)
+            {
+                device_queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                device_queue_create_infos[0].pNext = NULL;
+                device_queue_create_infos[0].flags = 0U;
+                device_queue_create_infos[0].queueFamilyIndex = m_queue_graphics_family_index;
+                assert(0U == m_queue_graphics_queue_index);
+                device_queue_create_infos[0].queueCount = 1U;
+                device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
 
-            device_queue_create_infos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-            device_queue_create_infos[1].pNext = NULL;
-            device_queue_create_infos[1].flags = 0U;
-            device_queue_create_infos[1].queueFamilyIndex = m_queue_T_family_index;
-            assert(0U == m_queue_T_queue_index);
-            device_queue_create_infos[1].queueCount = 1U;
-            device_queue_create_infos[1].pQueuePriorities = queue_T_priorities;
+                device_queue_create_infos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                device_queue_create_infos[1].pNext = NULL;
+                device_queue_create_infos[1].flags = 0U;
+                device_queue_create_infos[1].queueFamilyIndex = m_queue_transfer_family_index;
+                assert(0U == m_queue_transfer_queue_index);
+                device_queue_create_infos[1].queueCount = 1U;
+                device_queue_create_infos[1].pQueuePriorities = queue_transfer_priorities;
 
-            device_create_info.pQueueCreateInfos = device_queue_create_infos;
-            device_create_info.queueCreateInfoCount = 2U;
+                device_create_info.pQueueCreateInfos = device_queue_create_infos;
+                device_create_info.queueCreateInfoCount = 2U;
+            }
+            else
+            {
+                device_queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+                device_queue_create_infos[0].pNext = NULL;
+                device_queue_create_infos[0].flags = 0U;
+                device_queue_create_infos[0].queueFamilyIndex = m_queue_graphics_family_index;
+                assert(0U == m_queue_graphics_queue_index);
+                assert(1U == m_queue_transfer_queue_index);
+                device_queue_create_infos[0].queueCount = 2U;
+                device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
+                device_create_info.pQueueCreateInfos = device_queue_create_infos;
+                device_create_info.queueCreateInfoCount = 1U;
+            }
         }
         else
         {
             device_queue_create_infos[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
             device_queue_create_infos[0].pNext = NULL;
             device_queue_create_infos[0].flags = 0U;
-            device_queue_create_infos[0].queueFamilyIndex = m_queue_GP_family_index;
-            if (m_queue_GP_queue_index != m_queue_T_queue_index)
-            {
-                assert(1U >= m_queue_GP_queue_index);
-                assert(1U >= m_queue_T_queue_index);
-                device_queue_create_infos[0].queueCount = 2U;
-            }
-            else
-            {
-                assert(0U == m_queue_GP_queue_index);
-                device_queue_create_infos[0].queueCount = 1U;
-            }
-            device_queue_create_infos[0].pQueuePriorities = queue_GP_priorities;
-
+            device_queue_create_infos[0].queueFamilyIndex = m_queue_graphics_family_index;
+            assert(0U == m_queue_graphics_queue_index);
+            device_queue_create_infos[0].queueCount = 1U;
+            device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
             device_create_info.pQueueCreateInfos = device_queue_create_infos;
             device_create_info.queueCreateInfoCount = 1U;
         }
         device_create_info.enabledLayerCount = 0U;
         device_create_info.ppEnabledLayerNames = NULL;
+        assert(platform_surface_extension_count() <= 1);
         char const *enabled_extension_names[1] = {platform_swapchain_extension_name(0)};
         device_create_info.enabledExtensionCount = platform_swapchain_extension_count();
         device_create_info.ppEnabledExtensionNames = enabled_extension_names;
-        VkPhysicalDeviceFeatures enabled_features = {}; //all members are set to VK_FALSE
+        VkPhysicalDeviceFeatures enabled_features = {0}; //all members are set to VK_FALSE
         assert(VK_FALSE == 0);
         enabled_features.textureCompressionASTC_LDR = this->m_physical_device_feature_texture_compression_ASTC_LDR ? VK_TRUE : VK_FALSE;
         enabled_features.textureCompressionBC = this->m_physical_device_feature_texture_compression_BC ? VK_TRUE : VK_FALSE;
         device_create_info.pEnabledFeatures = &enabled_features;
 
-        VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &m_device);
+        VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &this->m_device);
         if (VK_SUCCESS != vk_res)
         {
             return false;
         }
+    }
+    if (VK_NULL_HANDLE == this->m_device)
+    {
+        return false;
     }
 
     PFN_vkGetDeviceProcAddr vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetDeviceProcAddr"));
@@ -446,9 +458,6 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
 
     vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_device_proc_addr(m_device, "vkGetDeviceProcAddr"));
     assert(NULL != vk_get_device_proc_addr);
-
-    PFN_vkGetDeviceQueue vk_get_device_queue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(m_device, "vkGetDeviceQueue"));
-    assert(NULL != vk_get_device_queue);
 
     this->m_vk_create_buffer = reinterpret_cast<PFN_vkCreateBuffer>(vk_get_device_proc_addr(m_device, "vkCreateBuffer"));
     assert(NULL != this->m_vk_create_buffer);
@@ -468,16 +477,24 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
     this->m_vk_free_memory = reinterpret_cast<PFN_vkFreeMemory>(vk_get_device_proc_addr(m_device, "vkFreeMemory"));
     assert(NULL != this->m_vk_free_memory);
 
-    vk_get_device_queue(m_device, m_queue_GP_family_index, m_queue_GP_queue_index, &m_queue_GP);
-    if (m_queue_T_family_index != m_queue_GP_family_index || m_queue_T_queue_index != m_queue_GP_queue_index)
+    this->m_queue_graphics = VK_NULL_HANDLE;
+    this->m_queue_transfer = VK_NULL_HANDLE;
     {
-        assert(m_has_dedicated_transfer_queue);
-        vk_get_device_queue(m_device, m_queue_T_family_index, m_queue_T_queue_index, &m_queue_T);
+        PFN_vkGetDeviceQueue vk_get_device_queue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(m_device, "vkGetDeviceQueue"));
+        assert(NULL != vk_get_device_queue);
+
+        vk_get_device_queue(this->m_device, this->m_queue_graphics_family_index, this->m_queue_graphics_queue_index, &this->m_queue_graphics);
+
+        if (this->m_has_dedicated_transfer_queue)
+        {
+            assert(VK_QUEUE_FAMILY_IGNORED != this->m_queue_transfer_family_index);
+            assert(uint32_t(-1) != this->m_queue_transfer_queue_index);
+        }
+        vk_get_device_queue(this->m_device, this->m_queue_transfer_family_index, this->m_queue_transfer_queue_index, &this->m_queue_transfer);
     }
-    else
+    if ((VK_NULL_HANDLE == this->m_queue_graphics) || (this->m_has_dedicated_transfer_queue && (VK_NULL_HANDLE == this->m_queue_transfer)))
     {
-        assert(!m_has_dedicated_transfer_queue);
-        m_queue_T = m_queue_GP;
+        return false;
     }
 
     return true;

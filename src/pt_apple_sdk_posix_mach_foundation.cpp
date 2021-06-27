@@ -40,11 +40,6 @@ static inline Class_NSObject Class_NSThreadDetachTarget_To_Class_NSObject(Class_
     return reinterpret_cast<Class_NSObject>(class_ns_thread_detach_target);
 }
 
-static inline NSThreadDetachTarget NSThreadDetachTarget_Wrap(struct objc_object *ns_thread_detach_target)
-{
-    return reinterpret_cast<NSThreadDetachTarget>(ns_thread_detach_target);
-}
-
 static inline struct objc_object *NSThreadDetachTarget_Unwrap(NSThreadDetachTarget ns_thread_detach_target)
 {
     return reinterpret_cast<struct objc_object *>(ns_thread_detach_target);
@@ -75,34 +70,14 @@ static inline NSArray_NSURL NSArray_NSURL_Wrap(struct objc_object *ns_array_ns_u
     return reinterpret_cast<NSArray_NSURL>(ns_array_ns_url);
 }
 
-static inline struct objc_object *NSArray_NSURL_Unwrap(NSArray_NSURL ns_array_ns_url)
-{
-    return reinterpret_cast<struct objc_object *>(ns_array_ns_url);
-}
-
 static inline NSArray NSArray_NSURL_To_NSArray(NSArray_NSURL ns_array_ns_url)
 {
     return reinterpret_cast<NSArray>(ns_array_ns_url);
 }
 
-static inline NSArray_NSURL NSArray_To_NSArray_NSURL(NSArray ns_array_ns_url)
-{
-    return reinterpret_cast<NSArray_NSURL>(ns_array_ns_url);
-}
-
-static inline NSURL NSURL_Wrap(struct objc_object *ns_url)
-{
-    return reinterpret_cast<NSURL>(ns_url);
-}
-
 static inline struct objc_object *NSURL_Unwrap(NSURL ns_url)
 {
     return reinterpret_cast<struct objc_object *>(ns_url);
-}
-
-static inline NSObject NSURL_To_NSObject(NSURL ns_url)
-{
-    return reinterpret_cast<NSObject>(ns_url);
 }
 
 static inline NSURL NSObject_To_NSURL(NSObject ns_url)

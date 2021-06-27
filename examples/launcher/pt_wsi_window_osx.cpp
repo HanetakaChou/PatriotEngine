@@ -49,6 +49,23 @@ public:
 
 int main(int argc, char const *argv[])
 {
+    //Lunarg Vulkan SDK
+    {
+        void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
+        std::string my_path = NSString_UTF8String(NSBundle_resourcePath(NSBundle_mainBundle()));
+
+        int ret_vk_layer_path = setenv("VK_LAYER_PATH", my_path.c_str(), 1);
+        assert(0 == ret_vk_layer_path);
+
+        my_path += "/MoltenVK_icd.json";
+
+        int ret_vk_icd_file_names = setenv("VK_ICD_FILENAMES", my_path.c_str(), 1);
+        assert(0 == ret_vk_icd_file_names);
+
+        AutoReleasePool_Pop(__here_auto_release_pool_object);
+    }
+
     //Enable MultiThreaded
     {
         // Using Autorelease Pool Blocks
@@ -103,28 +120,13 @@ int main(int argc, char const *argv[])
         AutoReleasePool_Pop(__here_auto_release_pool_object);
     }
 
-    //Lunarg Vulkan SDK
-    {
-        void *__here_auto_release_pool_object = AutoReleasePool_Push();
-
-        std::string my_tmp_path = NSString_UTF8String(NSBundle_resourcePath(NSBundle_mainBundle()));
-        
-        int ret_vk_layer_path = setenv("VK_LAYER_PATH", my_tmp_path.c_str(), 1);
-        assert(0 == ret_vk_layer_path);
-        
-        my_tmp_path += "/MoltenVK_icd.json";
-
-        int ret_vk_icd_file_names = setenv("VK_ICD_FILENAMES", my_tmp_path.c_str(), 1);
-        assert(0 == ret_vk_icd_file_names);
-
-        AutoReleasePool_Pop(__here_auto_release_pool_object);
-    }
-
     return NSApplication_Main(argc, argv);
 }
 
 void ns_application_delegate::application_did_finish_launching(NSApplicationDelegate, NSApplicationDelegate_applicationDidFinishLaunching_, void *aNotification)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
     NSSize ns_size_window = NSMakeSize(1280, 720);
 
     NSScreen ns_screen = NSScreen_mainScreen();
@@ -161,10 +163,15 @@ void ns_application_delegate::application_did_finish_launching(NSApplicationDele
     NSWindow_setContentViewController(ns_window, ns_view_controller);
 
     NSWindow_makeKeyAndOrderFront(ns_window, NULL);
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
+
+    return;
 }
 
 void ns_application_delegate::application_will_terminate(NSApplicationDelegate, NSApplicationDelegate_applicationWillTerminate_, void *aNotification)
 {
+    return;
 }
 
 int8_t ns_application_delegate::application_should_terminate_after_last_window_closed(NSApplicationDelegate, NSApplicationDelegate_applicationShouldTerminateAfterLastWindowClosed_, NSApplication sender)
@@ -174,6 +181,8 @@ int8_t ns_application_delegate::application_should_terminate_after_last_window_c
 
 void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewController_loadView)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
     Class_NSView class_ns_view = NSView_allocateClass("NSView_pt_wsi_window_osx", NULL, NULL, NULL);
 
     // The class seems incomplete without being registered and the MoltenVK would crash
@@ -185,6 +194,10 @@ void ns_view_controller::load_view(NSViewController ns_view_controller, NSViewCo
     NSViewController_setIvarVoidPointer(ns_view_controller, "ns_view", ns_view);
 
     NSViewController_setView(ns_view_controller, ns_view);
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
+
+    return;
 }
 
 static CVReturn CVDisplayLink_Output_Callback(
@@ -193,17 +206,19 @@ static CVReturn CVDisplayLink_Output_Callback(
     CVOptionFlags flagsIn, CVOptionFlags *flagsOut,
     void *displayLinkContext);
 
-static void MainThread_EventHandler(void *pUserData);
+static void DispatchSource_EventHandler(void *pUserData);
 
 void ns_view_controller::view_did_load(NSViewController ns_view_controller, NSViewController_viewDidLoad cmd)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
     NSViewController_super_viewDidLoad(ns_view_controller, cmd);
 
     // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
-
+    // RENDER_ON_MAIN_THREAD
     dispatch_source_t dispatch_source = dispatch_create_source(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
 
-    dispatch_set_source_event_handler(dispatch_source, MainThread_EventHandler, ns_view_controller);
+    dispatch_set_source_event_handler(dispatch_source, DispatchSource_EventHandler, ns_view_controller);
 
     dispatch_resume_source(dispatch_source);
 
@@ -221,11 +236,21 @@ void ns_view_controller::view_did_load(NSViewController ns_view_controller, NSVi
 
     CVReturn cv_ret_start = CVDisplayLink_Start(display_link);
     assert(kCVReturnSuccess == cv_ret_start);
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
+
+    return;
 }
 
 void ns_view_controller::set_represented_object(NSViewController ns_view_controller, NSViewController_setRepresentedObject_ cmd, void *represented_object)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
     NSViewController_super_setRepresentedObject_(ns_view_controller, cmd, represented_object);
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
+
+    return;
 }
 
 static CVReturn CVDisplayLink_Output_Callback(
@@ -234,9 +259,15 @@ static CVReturn CVDisplayLink_Output_Callback(
     CVOptionFlags flagsIn, CVOptionFlags *flagsOut,
     void *displayLinkContext)
 {
+    void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
     NSViewController ns_view_controller = static_cast<NSViewController>(displayLinkContext);
+
     dispatch_source_t dispatch_source = static_cast<dispatch_source_t>(NSViewController_getIvarVoidPointer(ns_view_controller, "dispatch_source"));
     dispatch_merge_source_data(dispatch_source, 1);
+
+    AutoReleasePool_Pop(__here_auto_release_pool_object);
+
     return kCVReturnSuccess;
 }
 
@@ -245,7 +276,7 @@ static inline wsi_visual_ref wsi_window_osx_wrap_wsi_visual(CALayer ca_layer)
     return reinterpret_cast<wsi_visual_ref>(reinterpret_cast<uintptr_t>(ca_layer));
 }
 
-static void MainThread_EventHandler(void *pUserData)
+static void DispatchSource_EventHandler(void *pUserData)
 {
     NSViewController ns_view_controller = static_cast<NSViewController>(pUserData);
 
@@ -256,10 +287,17 @@ static void MainThread_EventHandler(void *pUserData)
     }
     else
     {
+        void *__here_auto_release_pool_object = AutoReleasePool_Push();
+
         NSView ns_view = static_cast<NSView>(NSViewController_getIvarVoidPointer(ns_view_controller, "ns_view"));
+
         CALayer ca_layer = NSView_layer(ns_view);
+
         gfx_connection_ref gfx_connection_new = gfx_connection_init(NULL, wsi_window_osx_wrap_wsi_visual(ca_layer), NULL);
+
         NSViewController_setIvarVoidPointer(ns_view_controller, "gfx_connection", gfx_connection_new);
+
+        AutoReleasePool_Pop(__here_auto_release_pool_object);
     }
 
     return;

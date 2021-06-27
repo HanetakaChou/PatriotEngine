@@ -35,13 +35,13 @@ class gfx_api_vk
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment;
     VkDeviceSize m_physical_device_limits_non_coherent_atom_size; //we don't need non-coherent (for readback?)
     bool m_has_dedicated_transfer_queue;
-    uint32_t m_queue_GP_family_index;
-    uint32_t m_queue_T_family_index;
-    uint32_t m_queue_GP_queue_index;
-    uint32_t m_queue_T_queue_index;
+    uint32_t m_queue_graphics_family_index;
+    uint32_t m_queue_transfer_family_index;
+    uint32_t m_queue_graphics_queue_index;
+    uint32_t m_queue_transfer_queue_index;
     VkDevice m_device;
-    VkQueue m_queue_GP;
-    VkQueue m_queue_T;
+    VkQueue m_queue_graphics;
+    VkQueue m_queue_transfer;
     bool m_physical_device_feature_texture_compression_ASTC_LDR;
     bool m_physical_device_feature_texture_compression_BC;
 
