@@ -92,9 +92,17 @@ bool gfx_texture_vk::read_input_stream(
         struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
         struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
 
+
+
+
         size_t total_size = get_copyable_footprints(&specific_header_vk,
                                                     m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                    0,
                                                     num_subresource, memcpy_dest, cmdcopy_dest);
+
+
+
+//load_data_from_input_stream
 
         // vkAllocateMemory
         // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
@@ -365,14 +373,10 @@ inline uint32_t gfx_texture_vk::calc_subresource(uint32_t mipLevel, uint32_t arr
     return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
 }
 
-static inline size_t get_copyable_footprints(
-    struct specific_header_vk_t const *specific_header_vk,
-    VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
-    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
-
 inline size_t gfx_texture_vk::get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
+    size_t base_offset,
     size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest)
 {
     // Context::texSubImage2D libANGLE/Context.cpp
@@ -385,7 +389,7 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
 
     uint32_t aspectCount = get_format_aspect_count(specific_header_vk->format);
 
-    size_t stagingOffset = 0;
+    size_t stagingOffset = base_offset;
     size_t TotalBytes = 0;
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)

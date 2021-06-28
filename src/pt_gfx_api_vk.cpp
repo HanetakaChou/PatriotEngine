@@ -468,6 +468,12 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
     this->m_vk_create_image = reinterpret_cast<PFN_vkCreateImage>(vk_get_device_proc_addr(m_device, "vkCreateImage"));
     assert(NULL != this->m_vk_create_image);
 
+    this->m_vk_destroy_buffer = reinterpret_cast<PFN_vkDestroyBuffer>(vk_get_device_proc_addr(m_device, "vkDestroyBuffer"));
+    assert(NULL != this->m_vk_destroy_buffer);
+
+    this->m_vk_destroy_image = reinterpret_cast<PFN_vkDestroyImage>(vk_get_device_proc_addr(m_device, "vkDestroyImage"));
+    assert(NULL != this->m_vk_destroy_image);
+
     this->m_vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetBufferMemoryRequirements"));
     assert(NULL != this->m_vk_get_buffer_memory_requirements);
 
@@ -479,6 +485,12 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
 
     this->m_vk_free_memory = reinterpret_cast<PFN_vkFreeMemory>(vk_get_device_proc_addr(m_device, "vkFreeMemory"));
     assert(NULL != this->m_vk_free_memory);
+
+    this->m_vk_bind_buffer_memory = reinterpret_cast<PFN_vkBindBufferMemory>(vk_get_device_proc_addr(m_device, "vkBindBufferMemory"));
+    assert(NULL != this->m_vk_bind_buffer_memory);
+
+    this->m_vk_bind_image_memory = reinterpret_cast<PFN_vkBindImageMemory>(vk_get_device_proc_addr(m_device, "vkBindImageMemory"));
+    assert(NULL != this->m_vk_bind_image_memory);
 
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;

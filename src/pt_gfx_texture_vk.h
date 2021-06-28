@@ -65,6 +65,7 @@ class gfx_texture_vk : public gfx_texture_common
     static inline size_t get_copyable_footprints(
         struct specific_header_vk_t const *specific_header_vk,
         VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
+        size_t base_offset,
         size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
 
     struct vk_rgba_format_info_t

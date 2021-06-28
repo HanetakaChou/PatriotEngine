@@ -139,62 +139,189 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
     // then the bits set in memoryTypeBits returned for usage1 must be a subset of the bits set in memoryTypeBits returned for
     // usage2, for all values of flags.
 
-    m_transfer_src_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    // constant buffer
+    uint32_t uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+
+    // NVIDIA Driver 128 MB
+    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
+    // VmaAllocator_T::CalcPreferredBlockSize
+    // assert(size >= (1024ULL * 1024ULL * 128ULL));
+    VkDeviceSize uniform_buffer_size = (128ULL * 1024ULL * 1024ULL);
     {
-        struct VkBufferCreateInfo buffer_create_info_transfer_src;
-        buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info_transfer_src.pNext = NULL;
-        buffer_create_info_transfer_src.flags = 0U;
-        buffer_create_info_transfer_src.size = 8U;
-        buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
-        buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
+        uint32_t memory_requirements_memory_type_bits = 0U;
+        {
+            struct VkBufferCreateInfo buffer_create_info_uniform;
+            buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            buffer_create_info_uniform.pNext = NULL;
+            buffer_create_info_uniform.flags = 0U;
+            buffer_create_info_uniform.size = 8U;
+            buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            buffer_create_info_uniform.queueFamilyIndexCount = 0U;
+            buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-        VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
-        assert(VK_SUCCESS == vk_res);
+            VkBuffer dummy_buf;
+            VkResult res_create_buffer = m_api_vk->create_buffer(&buffer_create_info_uniform, &dummy_buf);
+            assert(VK_SUCCESS == res_create_buffer);
 
-        struct VkMemoryRequirements mem_req;
-        m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
-        // we leave the "Special pool" for uniform buffer
-        // e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
-        // m_transfer_src_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-        m_transfer_src_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            struct VkMemoryRequirements mem_req;
+            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
+
+            memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
+
+            m_api_vk->destroy_buffer(dummy_buf);
+        }
+
+        while (memory_requirements_memory_type_bits)
+        {
+            // VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : "AMD Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
+            uint32_t memory_type_index = __internal_find_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            if (VK_MAX_MEMORY_TYPES != memory_type_index)
+            {
+                assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+
+                if (uniform_buffer_size <= physical_device_memory_properties.memoryHeaps[memory_type_index].size)
+                {
+                    this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
+                    VkResult res_allocate_memory;
+                    {
+                        VkMemoryAllocateInfo memory_allocate_info;
+                        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                        memory_allocate_info.pNext = NULL;
+                        memory_allocate_info.allocationSize = uniform_buffer_size;
+                        memory_allocate_info.memoryTypeIndex = memory_type_index;
+
+                        res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &m_uniform_buffer_device_memory);
+                    }
+
+                    // we are not alone
+                    if (VK_SUCCESS == res_allocate_memory)
+                    {
+                        this->m_uniform_buffer = VK_NULL_HANDLE;
+                        {
+                            struct VkBufferCreateInfo buffer_create_info_uniform;
+                            buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                            buffer_create_info_uniform.pNext = NULL;
+                            buffer_create_info_uniform.flags = 0U;
+                            buffer_create_info_uniform.size = uniform_buffer_size;
+                            buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                            buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                            buffer_create_info_uniform.queueFamilyIndexCount = 0U;
+                            buffer_create_info_uniform.pQueueFamilyIndices = NULL;
+
+                            VkResult res_create_buffer = m_api_vk->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
+                            assert(VK_SUCCESS == res_create_buffer);
+                        }
+
+#ifndef NDEBUG
+                        {
+                            struct VkMemoryRequirements mem_req;
+                            m_api_vk->get_buffer_memory_requirements(m_uniform_buffer, &mem_req);
+                            assert(0 != (mem_req.memoryTypeBits & (1U << memory_type_index)));
+                        }
+#endif
+
+                        {
+                            VkResult res_bind_buffer_memory = this->m_api_vk->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
+                            assert(VK_SUCCESS == res_bind_buffer_memory);
+                        }
+
+                        uniform_buffer_memory_index = memory_type_index;
+                        break;
+                    }
+                    else
+                    {
+                        assert(VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
+                    }
+                }
+
+                memory_requirements_memory_type_bits ^= (1U << memory_type_index);
+            }
+            else
+            {
+                break;
+            }
+        }
     }
-    if (VK_MAX_MEMORY_TYPES == m_transfer_src_buffer_memory_index)
+    if (VK_NULL_HANDLE == this->m_uniform_buffer || VK_NULL_HANDLE == this->m_uniform_buffer_device_memory)
     {
         return false;
     }
-    assert(VK_MAX_MEMORY_TYPES > m_transfer_src_buffer_memory_index);
+    assert(VK_MAX_MEMORY_TYPES > uniform_buffer_memory_index);
 
-    m_uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    // We allocate the contant buffer first to ensure that the "AMD Special pool of video memory" is occupied by the the contant buffer
+    // VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[memory_type_index].size) : (physical_device_memory_properties.memoryHeaps[memory_type_index].size - uniform_buffer_size);
+
+    // staging buffer
+
     {
-        struct VkBufferCreateInfo buffer_create_info_uniform;
-        buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_create_info_uniform.pNext = NULL;
-        buffer_create_info_uniform.flags = 0U;
-        buffer_create_info_uniform.size = 8U;
+        uint32_t memory_requirements_memory_type_bits = 0U;
+        {
+            struct VkBufferCreateInfo buffer_create_info_transfer_src;
+            buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+            buffer_create_info_transfer_src.pNext = NULL;
+            buffer_create_info_transfer_src.flags = 0U;
+            buffer_create_info_transfer_src.size = 8U;
+            buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+            buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
+            buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
-        buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_create_info_uniform.queueFamilyIndexCount = 0U;
-        buffer_create_info_uniform.pQueueFamilyIndices = NULL;
+            VkBuffer dummy_buf;
+            VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
+            assert(VK_SUCCESS == vk_res);
 
-        VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_uniform, &dummy_buf);
-        assert(VK_SUCCESS == vk_res);
+            struct VkMemoryRequirements mem_req;
+            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
 
-        struct VkMemoryRequirements mem_req;
-        m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
-        //e.g. VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
-        m_uniform_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, mem_req.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
+
+            m_api_vk->destroy_buffer(dummy_buf);
+        }
+
+        VkDeviceSize transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
+
+        while (memory_requirements_memory_type_bits)
+        {
+            // We leave the "Special pool" for uniform buffer
+            // VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT : AMD "Special pool of video memory" [Sawicki 2018] Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.
+            // m_transfer_src_buffer_memory_index = __internal_find_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+            uint32_t memory_type_index = __internal_find_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+            if (VK_MAX_MEMORY_TYPES != memory_type_index)
+            {
+                assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+
+                // we allocate the contant buffer first to ensure that the "AMD Special pool of video memory" is occupied by the the contant buffer
+                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[memory_type_index].size) : (physical_device_memory_properties.memoryHeaps[memory_type_index].size - uniform_buffer_size);
+
+                if (transfer_src_buffer_size <= heap_size_budget)
+                {
+                    this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
+                    VkResult res_allocate_memory;
+                    {
+                        VkMemoryAllocateInfo memory_allocate_info;
+                        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                        memory_allocate_info.pNext = NULL;
+                        memory_allocate_info.allocationSize = uniform_buffer_size;
+                        memory_allocate_info.memoryTypeIndex = memory_type_index;
+
+                        res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &m_uniform_buffer_device_memory);
+                    }
+                }
+
+                memory_requirements_memory_type_bits ^= (1U << memory_type_index);
+            }
+            else
+            {
+                break;
+            }
+        }
     }
-    if (VK_MAX_MEMORY_TYPES == m_uniform_buffer_memory_index)
-    {
-        return false;
-    }
-    assert(VK_MAX_MEMORY_TYPES > m_uniform_buffer_memory_index);
+    //if (VK_MAX_MEMORY_TYPES == m_transfer_src_buffer_memory_index)
+    //{
+    //    return false;
+    //}
+    //assert(VK_MAX_MEMORY_TYPES > m_transfer_src_buffer_memory_index);
 
     m_transfer_dst_and_vertex_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
@@ -421,20 +548,6 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
     return true;
 }
 
-#if 0
-// Life of a triangle - NVIDIA's logical pipeline https://developer.nvidia.com/content/life-triangle-nvidias-logical-pipeline
-
-void *gfx_malloc_vk::alloc_uniform_buffer(size_t size)
-{
-    // NVIDIA Driver 128 MB
-    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
-    // VmaAllocator_T::CalcPreferredBlockSize
-    // assert(size >= (1024ULL * 1024ULL * 128ULL));
-
-    return NULL;
-}
-#endif
-
 static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
 
 uint64_t gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_self)
@@ -468,7 +581,7 @@ void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(uint64_t page
     return;
 }
 
-VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)
+VkDeviceMemory gfx_malloc_vk::transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)
 {
     assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
 
@@ -491,7 +604,7 @@ VkDeviceMemory gfx_malloc_vk::internal_transfer_dst_and_sampled_image_alloc(VkMe
     }
 }
 
-void gfx_malloc_vk::internal_transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
+void gfx_malloc_vk::transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
 {
     return this->gfx_malloc::transfer_dst_and_sampled_image_free(page_handle, offset, size, (uint64_t)device_memory, transfer_dst_and_sampled_image_slob_free_pages, this);
 }
