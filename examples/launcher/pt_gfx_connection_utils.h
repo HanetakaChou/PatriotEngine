@@ -32,9 +32,9 @@ inline bool gfx_texture_read_file(gfx_texture_ref texture, char const *initial_f
     return gfx_texture_read_input_stream(
         texture,
         initial_filename,
-        [](char const *initial_filename) -> gfx_input_stream_ref {int fd = openat64(AT_FDCWD, initial_filename, O_RDONLY); return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd)); },
+        [](char const *initial_filename) -> gfx_input_stream_ref {int fd = openat(AT_FDCWD, initial_filename, O_RDONLY); return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd)); },
         [](gfx_input_stream_ref input_stream, void *buf, size_t count) -> intptr_t {ssize_t _res = read(static_cast<int>(reinterpret_cast<intptr_t>(input_stream)), buf, count);return _res; },
-        [](gfx_input_stream_ref input_stream, int64_t offset, int whence) -> int64_t { off64_t _res =  lseek64(static_cast<int>(reinterpret_cast<intptr_t>(input_stream)),offset,whence);return _res; },
+        [](gfx_input_stream_ref input_stream, int64_t offset, int whence) -> int64_t { off_t _res =  lseek(static_cast<int>(reinterpret_cast<intptr_t>(input_stream)),offset,whence);return _res; },
         [](gfx_input_stream_ref input_stream) -> void { close(static_cast<int>(reinterpret_cast<intptr_t>(input_stream))); });
 }
 
