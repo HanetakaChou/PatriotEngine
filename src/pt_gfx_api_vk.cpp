@@ -70,10 +70,13 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         application_info.apiVersion = VK_API_VERSION_1_0;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
-#if defined(VK_HEADER_VERSION_COMPLETE)
-        constexpr uint32_t const MY_VK_HEADER_VERSION_COMPLETE = (VK_HEADER_VERSION_COMPLETE);
-        constexpr uint32_t const MY_VK_HEADER_VERSION_1_1_106 = (VK_MAKE_VERSION(1, 1, 106));
-#if (MY_VK_HEADER_VERSION_1_1_106 <= MY_VK_HEADER_VERSION_COMPLETE)
+
+#if defined(VK_API_VERSION_1_2)
+        char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
+        instance_create_info.enabledLayerCount = 1;
+        instance_create_info.ppEnabledLayerNames = enabled_layer_names;
+#elif defined(VK_API_VERSION_1_1)
+#if VK_HEADER_VERSION >= 106
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
         instance_create_info.enabledLayerCount = 1;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
