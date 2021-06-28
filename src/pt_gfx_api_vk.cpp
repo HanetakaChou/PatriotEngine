@@ -432,7 +432,7 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         }
         device_create_info.enabledLayerCount = 0U;
         device_create_info.ppEnabledLayerNames = NULL;
-        assert(platform_surface_extension_count() <= 1);
+        assert(platform_swapchain_extension_count() <= 1);
         char const *enabled_extension_names[1] = {platform_swapchain_extension_name(0)};
         device_create_info.enabledExtensionCount = platform_swapchain_extension_count();
         device_create_info.ppEnabledExtensionNames = enabled_extension_names;

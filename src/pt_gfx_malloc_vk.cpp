@@ -141,18 +141,18 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
 
     m_transfer_src_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
-        struct VkBufferCreateInfo buffer_ci_transfer_src;
-        buffer_ci_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_ci_transfer_src.pNext = NULL;
-        buffer_ci_transfer_src.flags = 0U;
-        buffer_ci_transfer_src.size = 8U;
-        buffer_ci_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-        buffer_ci_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_ci_transfer_src.queueFamilyIndexCount = 0U;
-        buffer_ci_transfer_src.pQueueFamilyIndices = NULL;
+        struct VkBufferCreateInfo buffer_create_info_transfer_src;
+        buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info_transfer_src.pNext = NULL;
+        buffer_create_info_transfer_src.flags = 0U;
+        buffer_create_info_transfer_src.size = 8U;
+        buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
+        buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_ci_transfer_src, &dummy_buf);
+        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -170,19 +170,19 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
 
     m_uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
-        struct VkBufferCreateInfo buffer_ci_uniform;
-        buffer_ci_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_ci_uniform.pNext = NULL;
-        buffer_ci_uniform.flags = 0U;
-        buffer_ci_uniform.size = 8U;
+        struct VkBufferCreateInfo buffer_create_info_uniform;
+        buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info_uniform.pNext = NULL;
+        buffer_create_info_uniform.flags = 0U;
+        buffer_create_info_uniform.size = 8U;
 
-        buffer_ci_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        buffer_ci_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_ci_uniform.queueFamilyIndexCount = 0U;
-        buffer_ci_uniform.pQueueFamilyIndices = NULL;
+        buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info_uniform.queueFamilyIndexCount = 0U;
+        buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_ci_uniform, &dummy_buf);
+        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_uniform, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -198,19 +198,19 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
 
     m_transfer_dst_and_vertex_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
-        struct VkBufferCreateInfo buffer_ci_transfer_dst_and_vertex_buffer;
-        buffer_ci_transfer_dst_and_vertex_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_ci_transfer_dst_and_vertex_buffer.pNext = NULL;
-        buffer_ci_transfer_dst_and_vertex_buffer.flags = 0U;
-        buffer_ci_transfer_dst_and_vertex_buffer.size = 8U;
+        struct VkBufferCreateInfo buffer_create_info_transfer_dst_and_vertex_buffer;
+        buffer_create_info_transfer_dst_and_vertex_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info_transfer_dst_and_vertex_buffer.pNext = NULL;
+        buffer_create_info_transfer_dst_and_vertex_buffer.flags = 0U;
+        buffer_create_info_transfer_dst_and_vertex_buffer.size = 8U;
 
-        buffer_ci_transfer_dst_and_vertex_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        buffer_ci_transfer_dst_and_vertex_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_ci_transfer_dst_and_vertex_buffer.queueFamilyIndexCount = 0U;
-        buffer_ci_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
+        buffer_create_info_transfer_dst_and_vertex_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        buffer_create_info_transfer_dst_and_vertex_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info_transfer_dst_and_vertex_buffer.queueFamilyIndexCount = 0U;
+        buffer_create_info_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_ci_transfer_dst_and_vertex_buffer, &dummy_buf);
+        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_dst_and_vertex_buffer, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -226,18 +226,18 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
 
     m_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
-        struct VkBufferCreateInfo buffer_ci_transfer_dst_and_index_buffer;
-        buffer_ci_transfer_dst_and_index_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buffer_ci_transfer_dst_and_index_buffer.pNext = NULL;
-        buffer_ci_transfer_dst_and_index_buffer.flags = 0U;
-        buffer_ci_transfer_dst_and_index_buffer.size = 8U;
-        buffer_ci_transfer_dst_and_index_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-        buffer_ci_transfer_dst_and_index_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buffer_ci_transfer_dst_and_index_buffer.queueFamilyIndexCount = 0U;
-        buffer_ci_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
+        struct VkBufferCreateInfo buffer_create_info_transfer_dst_and_index_buffer;
+        buffer_create_info_transfer_dst_and_index_buffer.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        buffer_create_info_transfer_dst_and_index_buffer.pNext = NULL;
+        buffer_create_info_transfer_dst_and_index_buffer.flags = 0U;
+        buffer_create_info_transfer_dst_and_index_buffer.size = 8U;
+        buffer_create_info_transfer_dst_and_index_buffer.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        buffer_create_info_transfer_dst_and_index_buffer.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        buffer_create_info_transfer_dst_and_index_buffer.queueFamilyIndexCount = 0U;
+        buffer_create_info_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
 
         VkBuffer dummy_buf;
-        VkResult vk_res = m_api_vk->create_buffer(&buffer_ci_transfer_dst_and_index_buffer, &dummy_buf);
+        VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_dst_and_index_buffer, &dummy_buf);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -268,27 +268,27 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT);
 
-        struct VkImageCreateInfo image_ci_regular_tiling_optimal;
-        image_ci_regular_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_ci_regular_tiling_optimal.pNext = NULL;
-        image_ci_regular_tiling_optimal.flags = 0U;
-        image_ci_regular_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
-        image_ci_regular_tiling_optimal.format = color_format;
-        image_ci_regular_tiling_optimal.extent.width = 8U;
-        image_ci_regular_tiling_optimal.extent.height = 8U;
-        image_ci_regular_tiling_optimal.extent.depth = 1U;
-        image_ci_regular_tiling_optimal.mipLevels = 1U;
-        image_ci_regular_tiling_optimal.arrayLayers = 1U;
-        image_ci_regular_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
-        image_ci_regular_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_ci_regular_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        image_ci_regular_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        image_ci_regular_tiling_optimal.queueFamilyIndexCount = 0U;
-        image_ci_regular_tiling_optimal.pQueueFamilyIndices = NULL;
-        image_ci_regular_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        struct VkImageCreateInfo image_create_info_regular_tiling_optimal;
+        image_create_info_regular_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info_regular_tiling_optimal.pNext = NULL;
+        image_create_info_regular_tiling_optimal.flags = 0U;
+        image_create_info_regular_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
+        image_create_info_regular_tiling_optimal.format = color_format;
+        image_create_info_regular_tiling_optimal.extent.width = 8U;
+        image_create_info_regular_tiling_optimal.extent.height = 8U;
+        image_create_info_regular_tiling_optimal.extent.depth = 1U;
+        image_create_info_regular_tiling_optimal.mipLevels = 1U;
+        image_create_info_regular_tiling_optimal.arrayLayers = 1U;
+        image_create_info_regular_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info_regular_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_create_info_regular_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        image_create_info_regular_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info_regular_tiling_optimal.queueFamilyIndexCount = 0U;
+        image_create_info_regular_tiling_optimal.pQueueFamilyIndices = NULL;
+        image_create_info_regular_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = m_api_vk->create_image(&image_ci_regular_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_api_vk->create_image(&image_create_info_regular_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -311,27 +311,27 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT); //INPUT_ATTACHMENT
         assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
 
-        struct VkImageCreateInfo image_ci_transient_tiling_optimal;
-        image_ci_transient_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_ci_transient_tiling_optimal.pNext = NULL;
-        image_ci_transient_tiling_optimal.flags = 0U;
-        image_ci_transient_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
-        image_ci_transient_tiling_optimal.format = color_format;
-        image_ci_transient_tiling_optimal.extent.width = 8U;
-        image_ci_transient_tiling_optimal.extent.height = 8U;
-        image_ci_transient_tiling_optimal.extent.depth = 1U;
-        image_ci_transient_tiling_optimal.mipLevels = 1U;
-        image_ci_transient_tiling_optimal.arrayLayers = 1U;
-        image_ci_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
-        image_ci_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_ci_transient_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
-        image_ci_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        image_ci_transient_tiling_optimal.queueFamilyIndexCount = 0U;
-        image_ci_transient_tiling_optimal.pQueueFamilyIndices = NULL;
-        image_ci_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        struct VkImageCreateInfo image_create_info_transient_tiling_optimal;
+        image_create_info_transient_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info_transient_tiling_optimal.pNext = NULL;
+        image_create_info_transient_tiling_optimal.flags = 0U;
+        image_create_info_transient_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
+        image_create_info_transient_tiling_optimal.format = color_format;
+        image_create_info_transient_tiling_optimal.extent.width = 8U;
+        image_create_info_transient_tiling_optimal.extent.height = 8U;
+        image_create_info_transient_tiling_optimal.extent.depth = 1U;
+        image_create_info_transient_tiling_optimal.mipLevels = 1U;
+        image_create_info_transient_tiling_optimal.arrayLayers = 1U;
+        image_create_info_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_create_info_transient_tiling_optimal.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+        image_create_info_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info_transient_tiling_optimal.queueFamilyIndexCount = 0U;
+        image_create_info_transient_tiling_optimal.pQueueFamilyIndices = NULL;
+        image_create_info_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = m_api_vk->create_image(&image_ci_transient_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_api_vk->create_image(&image_create_info_transient_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
@@ -385,27 +385,27 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
 
-        struct VkImageCreateInfo image_ci_depth_stencil_transient_tiling_optimal;
-        image_ci_depth_stencil_transient_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        image_ci_depth_stencil_transient_tiling_optimal.pNext = NULL;
-        image_ci_depth_stencil_transient_tiling_optimal.flags = 0U;
-        image_ci_depth_stencil_transient_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
-        image_ci_depth_stencil_transient_tiling_optimal.format = m_format_depth_stencil;
-        image_ci_depth_stencil_transient_tiling_optimal.extent.width = 8U;
-        image_ci_depth_stencil_transient_tiling_optimal.extent.height = 8U;
-        image_ci_depth_stencil_transient_tiling_optimal.extent.depth = 1U;
-        image_ci_depth_stencil_transient_tiling_optimal.mipLevels = 1U;
-        image_ci_depth_stencil_transient_tiling_optimal.arrayLayers = 1U;
-        image_ci_depth_stencil_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
-        image_ci_depth_stencil_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
-        image_ci_depth_stencil_transient_tiling_optimal.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
-        image_ci_depth_stencil_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        image_ci_depth_stencil_transient_tiling_optimal.queueFamilyIndexCount = 0U;
-        image_ci_depth_stencil_transient_tiling_optimal.pQueueFamilyIndices = NULL;
-        image_ci_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        struct VkImageCreateInfo image_create_info_depth_stencil_transient_tiling_optimal;
+        image_create_info_depth_stencil_transient_tiling_optimal.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info_depth_stencil_transient_tiling_optimal.pNext = NULL;
+        image_create_info_depth_stencil_transient_tiling_optimal.flags = 0U;
+        image_create_info_depth_stencil_transient_tiling_optimal.imageType = VK_IMAGE_TYPE_2D;
+        image_create_info_depth_stencil_transient_tiling_optimal.format = m_format_depth_stencil;
+        image_create_info_depth_stencil_transient_tiling_optimal.extent.width = 8U;
+        image_create_info_depth_stencil_transient_tiling_optimal.extent.height = 8U;
+        image_create_info_depth_stencil_transient_tiling_optimal.extent.depth = 1U;
+        image_create_info_depth_stencil_transient_tiling_optimal.mipLevels = 1U;
+        image_create_info_depth_stencil_transient_tiling_optimal.arrayLayers = 1U;
+        image_create_info_depth_stencil_transient_tiling_optimal.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info_depth_stencil_transient_tiling_optimal.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_create_info_depth_stencil_transient_tiling_optimal.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+        image_create_info_depth_stencil_transient_tiling_optimal.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info_depth_stencil_transient_tiling_optimal.queueFamilyIndexCount = 0U;
+        image_create_info_depth_stencil_transient_tiling_optimal.pQueueFamilyIndices = NULL;
+        image_create_info_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
         VkImage dummy_img;
-        VkResult vk_res = m_api_vk->create_image(&image_ci_depth_stencil_transient_tiling_optimal, &dummy_img);
+        VkResult vk_res = m_api_vk->create_image(&image_create_info_depth_stencil_transient_tiling_optimal, &dummy_img);
         assert(VK_SUCCESS == vk_res);
 
         struct VkMemoryRequirements mem_req;
