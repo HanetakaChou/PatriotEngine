@@ -20,6 +20,20 @@
                ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "6277492826894ADC009F2E71"
+               BuildableName = "pt_launcher_wsi_bitmap.app"
+               BlueprintName = "pt_launcher_wsi_bitmap"
+               ReferencedContainer = "container:PatriotEngine.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -44,12 +58,21 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
+            BlueprintIdentifier = "6277492826894ADC009F2E71"
+            BuildableName = "pt_launcher_wsi_bitmap.app"
+            BlueprintName = "pt_launcher_wsi_bitmap"
+            ReferencedContainer = "container:PatriotEngine.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+      <MacroExpansion>
+         <BuildableReference
+            BuildableIdentifier = "primary"
             BlueprintIdentifier = "92F977E32439099000C5F3C5"
             BuildableName = "pt_launcher_wsi_window_osx.app"
             BlueprintName = "pt_launcher_wsi_window_osx"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
