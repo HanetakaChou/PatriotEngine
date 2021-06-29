@@ -20,16 +20,31 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
+#include <list>
+#include <set>
+
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
-#include <list>
-#include <set>
+#include <pt_mcrt_thread.h>
 #include <pt_mcrt_scalable_allocator.h>
+
 #include <assert.h>
 
 class gfx_malloc
 {
+
+    // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
+private:
+    mcrt_native_thread_id m_transfer_src_buffer_owner;
+
+protected:
+    void transfer_src_buffer_lock();
+    uint64_t transfer_src_buffer_offset();
+    void transfer_src_buffer_alloc(uint64_t size);
+    void transfer_src_buffer_free(uint64_t offset, uint64_t size);
+    void transfer_src_buffer_unlock();
 
     // SLOB related
 private:
@@ -199,10 +214,6 @@ private:
     class slob m_transfer_dst_and_sampled_image_slob;
 
 protected:
-    gfx_malloc();
-
-    ~gfx_malloc();
-
     static uint64_t const PAGE_MEMORY_HANDLE_POISON;
 
     void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_init(uint64_t page_size);
@@ -213,9 +224,10 @@ protected:
     uint64_t transfer_dst_and_sampled_image_alloc(uint64_t size, uint64_t align, uint64_t slob_new_pages_callback(void *), void *slob_new_pages_callback_data, void **out_page_handle, uint64_t *out_offset);
     void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, uint64_t page_memory_handle, void slob_free_pages_callback(uint64_t, void *), void *slob_free_pages_callback_data);
 
-    //public:
-    //using gfx_malloc_page_handle = slob_page_list_iter;
-    //virtual void *alloc_uniform_buffer(size_t size) = 0;
+    // CPP related
+protected:
+    gfx_malloc();
+    ~gfx_malloc();
 };
 
 #endif

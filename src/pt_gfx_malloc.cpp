@@ -747,14 +747,6 @@ inline void gfx_malloc::slob::free(
     }
 }
 
-gfx_malloc::gfx_malloc()
-{
-}
-
-gfx_malloc::~gfx_malloc()
-{
-}
-
 void gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_init(uint64_t page_size)
 {
     this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob.init(page_size);
@@ -811,6 +803,16 @@ void gfx_malloc::transfer_dst_and_sampled_image_free(void *page_handle, uint64_t
     class slob_page *page = static_cast<class slob_page *>(page_handle);
     assert(page_memory_handle == page->page_memory_handle());
     return m_transfer_dst_and_sampled_image_slob.free(page, offset, size, slob_free_pages_callback, slob_free_pages_callback_data);
+}
+
+gfx_malloc::gfx_malloc()
+{
+    return;
+}
+
+gfx_malloc::~gfx_malloc()
+{
+    return;
 }
 
 // wrap

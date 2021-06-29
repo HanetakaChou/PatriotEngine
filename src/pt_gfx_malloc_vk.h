@@ -30,6 +30,7 @@ class gfx_malloc_vk : public gfx_malloc
     // stagingbuffer
     VkBuffer m_transfer_src_buffer;
     VkDeviceMemory m_transfer_src_buffer_device_memory;
+    void *m_transfer_src_buffer_device_memory_pointer;
     //uint32_t m_transfer_src_buffer_memory_index;
     //VkDeviceSize m_transfer_src_buffer_ringbuffer_begin;
     //VkDeviceSize m_transfer_src_buffer_ringbuffer_end;
@@ -37,6 +38,7 @@ class gfx_malloc_vk : public gfx_malloc
     // constantbuffer
     VkBuffer m_uniform_buffer;
     VkDeviceMemory m_uniform_buffer_device_memory;
+    void *m_uniform_buffer_device_memory_pointer;
     //uint32_t m_uniform_buffer_memory_index;
     //VkDeviceSize m_uniform_buffer_ringbuffer_begin;
     //VkDeviceSize m_uniform_buffer_ringbuffer_end;
@@ -49,8 +51,9 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_depth_stencil_attachment_and_transient_attachment_memory_index;
 
     // We never use a buffer as both the vertex buffer and the index buffer
-    uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
     uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
+    VkDeviceSize m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
+
     static uint64_t transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *);
     static void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_free_pages(uint64_t, void *);
 
@@ -66,8 +69,8 @@ class gfx_malloc_vk : public gfx_malloc
     // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
     // VmaBlocksOnSamePage
     // VmaIsBufferImageGranularityConflict
-    uint32_t m_transfer_dst_and_sampled_image_page_size;
     uint32_t m_transfer_dst_and_sampled_image_memory_index;
+    VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
     static uint64_t transfer_dst_and_sampled_image_slob_new_pages(void *);
     static void transfer_dst_and_sampled_image_slob_free_pages(uint64_t, void *);
 
@@ -84,9 +87,11 @@ public:
 
     void transfer_src_buffer_lock();
 
-    void transfer_src_buffer_offset();
+    uint64_t transfer_src_buffer_offset();
 
     void transfer_src_buffer_alloc(uint64_t size);
+
+    void transfer_src_buffer_free(uint64_t offset, uint64_t size);
 
     void transfer_src_buffer_unlock();
 

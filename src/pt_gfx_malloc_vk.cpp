@@ -141,12 +141,14 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
 
     // constant buffer
     uint32_t uniform_buffer_memory_index = VK_MAX_MEMORY_TYPES;
-
     // NVIDIA Driver 128 MB
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // AMD Special Pool 256MB
     // \[Sawicki 2018\] [Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.](https://gpuopen.com/events/gdc-2018-presentations)
     VkDeviceSize uniform_buffer_size = (224ULL * 1024ULL * 1024ULL); // 224MB
+    this->m_uniform_buffer = VK_NULL_HANDLE;
+    this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
+    this->m_uniform_buffer_device_memory_pointer = NULL;
     {
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
@@ -181,7 +183,6 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
 
-            this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
             VkResult res_allocate_memory;
             {
                 VkMemoryAllocateInfo memory_allocate_info;
@@ -190,7 +191,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 memory_allocate_info.allocationSize = uniform_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
-                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &m_uniform_buffer_device_memory);
+                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &this->m_uniform_buffer_device_memory);
             }
             assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
@@ -201,7 +202,11 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(uniform_buffer_size <= heap_size_budget);
 
-                this->m_uniform_buffer = VK_NULL_HANDLE;
+                {
+                    VkResult res_map_memory = this->m_api_vk->map_memory(this->m_uniform_buffer_device_memory, 0U, uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
+                    assert(VK_SUCCESS == res_map_memory);
+                }
+
                 {
                     struct VkBufferCreateInfo buffer_create_info_uniform;
                     buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -235,7 +240,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             }
         }
     }
-    if (VK_NULL_HANDLE == this->m_uniform_buffer || VK_NULL_HANDLE == this->m_uniform_buffer_device_memory)
+    if (VK_NULL_HANDLE == this->m_uniform_buffer || VK_NULL_HANDLE == this->m_uniform_buffer_device_memory || NULL == this->m_uniform_buffer_device_memory_pointer)
     {
         return false;
     }
@@ -244,6 +249,9 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
     // staging buffer
     uint32_t transfer_src_memory_index = VK_MAX_MEMORY_TYPES;
     VkDeviceSize transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
+    this->m_transfer_src_buffer = VK_NULL_HANDLE;
+    this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
+    this->m_transfer_src_buffer_device_memory_pointer = NULL;
     {
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
@@ -278,7 +286,6 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
 
-            this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
             VkResult res_allocate_memory;
             {
                 VkMemoryAllocateInfo memory_allocate_info;
@@ -287,20 +294,23 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 memory_allocate_info.allocationSize = transfer_src_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
-                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &m_transfer_src_buffer_device_memory);
+                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
             }
             assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
             if (VK_SUCCESS == res_allocate_memory)
             {
-
                 // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
                 VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[memory_type_index].size) : (physical_device_memory_properties.memoryHeaps[memory_type_index].size - uniform_buffer_size);
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(transfer_src_buffer_size <= heap_size_budget);
 
-                this->m_transfer_src_buffer = VK_NULL_HANDLE;
+                {
+                    VkResult res_map_memory = this->m_api_vk->map_memory(this->m_transfer_src_buffer_device_memory, 0U, transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
+                    assert(VK_SUCCESS == res_map_memory);
+                }
+
                 {
                     struct VkBufferCreateInfo buffer_create_info_uniform;
                     buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -334,7 +344,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             }
         }
     }
-    if (VK_NULL_HANDLE == this->m_transfer_src_buffer || VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory)
+    if (VK_NULL_HANDLE == this->m_transfer_src_buffer || VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory || NULL == this->m_transfer_src_buffer_device_memory_pointer)
     {
         return false;
     }
@@ -717,7 +727,7 @@ void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(uint64_t page
 
 VkDeviceMemory gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)
 {
-     assert(((1U << m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index) & memory_requirements->memoryTypeBits) != 0);
+    assert(((1U << m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index) & memory_requirements->memoryTypeBits) != 0);
 
     void *page_handle;
     uint64_t page_memory_handle = this->gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(

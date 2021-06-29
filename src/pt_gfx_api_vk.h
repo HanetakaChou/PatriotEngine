@@ -59,6 +59,8 @@ class gfx_api_vk
     PFN_vkFreeMemory m_vk_free_memory;
     PFN_vkBindBufferMemory m_vk_bind_buffer_memory;
     PFN_vkBindImageMemory m_vk_bind_image_memory;
+    PFN_vkMapMemory m_vk_map_memory;
+    PFN_vkUnmapMemory m_vk_unmap_memory;
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -107,6 +109,8 @@ public:
     inline void free_memory(VkDeviceMemory device_memory) { return m_vk_free_memory(m_device, device_memory, &m_allocator_callbacks); }
     inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset) { return m_vk_bind_buffer_memory(m_device, buffer, memory, memoryOffset); }
     inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset) { return m_vk_bind_image_memory(m_device, image, memory, memoryOffset); }
+    inline VkResult map_memory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void **ppData) { return m_vk_map_memory(m_device, memory, offset, size, flags, ppData); }
+    inline void unmap_memory(VkDeviceMemory memory) { return m_vk_unmap_memory(m_device, memory); }
 };
 
 #endif

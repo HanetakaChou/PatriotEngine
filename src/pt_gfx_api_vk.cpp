@@ -492,6 +492,12 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
     this->m_vk_bind_image_memory = reinterpret_cast<PFN_vkBindImageMemory>(vk_get_device_proc_addr(m_device, "vkBindImageMemory"));
     assert(NULL != this->m_vk_bind_image_memory);
 
+    this->m_vk_map_memory = reinterpret_cast<PFN_vkMapMemory>(vk_get_device_proc_addr(m_device, "vkMapMemory"));
+    assert(NULL != this->m_vk_map_memory);
+
+    this->m_vk_unmap_memory = reinterpret_cast<PFN_vkUnmapMemory>(vk_get_device_proc_addr(m_device, "vkUnmapMemory"));
+    assert(NULL != this->m_vk_unmap_memory);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {
