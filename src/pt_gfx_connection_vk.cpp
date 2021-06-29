@@ -26,19 +26,30 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
-inline gfx_connection_vk::~gfx_connection_vk()
-{
-}
-
 bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    return (m_api_vk.init(wsi_connection, wsi_visual, wsi_window) && m_malloc.init(&m_api_vk));
+    if (!m_api_vk.init(wsi_connection, wsi_visual, wsi_window))
+    {
+        return false;
+    }
+
+    if (!m_malloc.init(&m_api_vk))
+    {
+        return false;
+    }
+
+    return true;
 }
 
 void gfx_connection_vk::destroy()
 {
     this->~gfx_connection_vk();
     mcrt_free(this);
+}
+
+inline gfx_connection_vk::~gfx_connection_vk()
+{
+
 }
 
 class gfx_texture_common *gfx_connection_vk::create_texture()

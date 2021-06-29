@@ -55,15 +55,17 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_release() override;
 
     inline gfx_connection_vk();
-    inline ~gfx_connection_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     void destroy() override;
+    inline ~gfx_connection_vk();
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 public:
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_api_vk.get_physical_device_format_properties(format, out_format_properties); }
+   
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
+   
     inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_api_vk.create_image(pCreateInfo, pImage); }
     inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_api_vk.get_image_memory_requirements(image, memory_requirements); }
 

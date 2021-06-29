@@ -61,6 +61,12 @@ class gfx_api_vk
     PFN_vkBindImageMemory m_vk_bind_image_memory;
     PFN_vkMapMemory m_vk_map_memory;
     PFN_vkUnmapMemory m_vk_unmap_memory;
+    PFN_vkResetCommandPool m_vk_reset_command_pool;
+    PFN_vkAllocateCommandBuffers m_vk_allocate_command_buffers;
+    PFN_vkBeginCommandBuffer m_vk_begin_command_buffer;
+    PFN_vkEndCommandBuffer m_vk_end_command_buffer;
+    PFN_vkCmdPipelineBarrier m_vk_cmd_pipeline_barrier;
+    PFN_vkCmdCopyBufferToImage m_vk_cmd_copy_buffer_to_image;
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -74,6 +80,11 @@ class gfx_api_vk
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height);
     void wsi_on_redraw_needed_release();
 
+    static uint32_t const FRAME_THROTTLING_COUNT = 3U;
+    uint32_t m_frame_throtting_index;
+    VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
+    VkCommandPool m_transfer_command_pool[FRAME_THROTTLING_COUNT];
+
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
     VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
@@ -81,8 +92,8 @@ class gfx_api_vk
 
 public:
     gfx_api_vk();
-    ~gfx_api_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    ~gfx_api_vk();
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
