@@ -21,13 +21,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <list>
-#include <set>
-
 #include <pt_common.h>
 #include <pt_gfx_common.h>
 #include <pt_mcrt_common.h>
 #include <pt_mcrt_thread.h>
+
+#include <list>
+#include <set>
+
 #include <pt_mcrt_scalable_allocator.h>
 
 #include <assert.h>
