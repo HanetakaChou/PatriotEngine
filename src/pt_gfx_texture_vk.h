@@ -26,9 +26,14 @@
 
 class gfx_texture_vk : public gfx_texture_common
 {
+    gfx_connection_vk *m_gfx_connection;
+
     VkImage m_image;
 
-    gfx_connection_vk *m_gfx_connection;
+    uint64_t m_gfx_malloc_offset;
+    uint64_t m_gfx_malloc_size;
+    void *m_gfx_malloc_page_handle;
+    VkDeviceMemory m_gfx_malloc_device_memory;
 
     void destroy() override;
 

@@ -27,8 +27,6 @@
 
 class wsi_window_x11
 {
-    mcrt_native_thread_id m_wsi_window_thread_id;
-
     xcb_connection_t *m_xcb_connection;
 
     xcb_setup_t const *m_setup;

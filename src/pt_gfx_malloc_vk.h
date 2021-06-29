@@ -89,11 +89,27 @@ public:
 
     uint64_t transfer_src_buffer_offset();
 
-    void transfer_src_buffer_alloc(uint64_t size);
+    bool transfer_src_buffer_validate_offset(uint64_t size);
+
+    bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset);
 
     void transfer_src_buffer_free(uint64_t offset, uint64_t size);
 
     void transfer_src_buffer_unlock();
+
+    void *uniform_buffer_pointer();
+
+    void uniform_buffer_lock();
+
+    //uint64_t uniform_buffer_offset();
+
+    //bool uniform_buffer_validate_offset(uint64_t size);
+
+    bool uniform_buffer_alloc(uint64_t size, uint64_t *out_offset);
+
+    void uniform_buffer_free(uint64_t offset, uint64_t size);
+    
+    void uniform_buffer_unlock();
 
     VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
 

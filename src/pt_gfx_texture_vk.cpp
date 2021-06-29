@@ -68,8 +68,8 @@ bool gfx_texture_vk::read_input_stream(
 
         struct common_header_t common_header;
         size_t common_data_offset;
-        bool res = load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback);
-        if (!res)
+        bool res_load_header_from_input_stream = this->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback);
+        if (!res_load_header_from_input_stream)
         {
             return false;
         }
@@ -91,26 +91,63 @@ bool gfx_texture_vk::read_input_stream(
 
         struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
         struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
+        uint64_t base_offset = uint64_t(-1);
+        size_t total_size = size_t(-1);
+        {
+            this->m_gfx_connection->transfer_src_buffer_lock();
 
+            base_offset = this->m_gfx_connection->transfer_src_buffer_offset();
 
+            total_size = get_copyable_footprints(&specific_header_vk,
+                                                 m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                 base_offset,
+                                                 num_subresource, memcpy_dest, cmdcopy_dest);
 
+            if (this->m_gfx_connection->transfer_src_buffer_validate_offset(total_size))
+            {
+                uint64_t ret_offset;
+                bool res_transfer_src_buffer_alloc = this->m_gfx_connection->transfer_src_buffer_alloc(total_size, &ret_offset);
+                if (!res_transfer_src_buffer_alloc)
+                {
+                    return false;
+                }
+                assert(base_offset == ret_offset);
+            }
+            else
+            {
+                base_offset = 0U;
 
-        size_t total_size = get_copyable_footprints(&specific_header_vk,
-                                                    m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
-                                                    0,
-                                                    num_subresource, memcpy_dest, cmdcopy_dest);
+                total_size = get_copyable_footprints(&specific_header_vk,
+                                                     m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                     base_offset,
+                                                     num_subresource, memcpy_dest, cmdcopy_dest);
 
+                uint64_t ret_offset;
+                bool res_transfer_src_buffer_alloc = this->m_gfx_connection->transfer_src_buffer_alloc(total_size, &ret_offset);
+                if (!res_transfer_src_buffer_alloc)
+                {
+                    return false;
+                }
+                assert(base_offset == ret_offset);
+            }
 
+            this->m_gfx_connection->transfer_src_buffer_unlock();
+        }
 
-//load_data_from_input_stream
-
-        // vkAllocateMemory
-        // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
+        bool res_load_data_from_input_stream = this->load_data_from_input_stream(&common_header, &common_data_offset,
+                                                                                 this->m_gfx_connection->transfer_src_buffer_pointer(),
+                                                                                 num_subresource, memcpy_dest,
+                                                                                 calc_subresource,
+                                                                                 input_stream, input_stream_read_callback, input_stream_seek_callback);
+        
         mcrt_free(memcpy_dest);
-        mcrt_free(cmdcopy_dest);
+        
+        if (!res_load_data_from_input_stream)
+        {
+            return false;
+        }
 
-        m_image = VK_NULL_HANDLE;
+        this->m_image = VK_NULL_HANDLE;
         {
             VkImageCreateInfo create_info;
             create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -128,20 +165,32 @@ bool gfx_texture_vk::read_input_stream(
             create_info.queueFamilyIndexCount = 0U;
             create_info.pQueueFamilyIndices = NULL;
             create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            VkResult res = m_gfx_connection->create_image(&create_info, &m_image);
+            VkResult res = m_gfx_connection->create_image(&create_info, &this->m_image);
             assert(VK_SUCCESS == res);
         }
 
-        VkMemoryRequirements memory_requirements;
-        m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
+        this->m_gfx_malloc_offset = uint64_t(-1);
+        this->m_gfx_malloc_size = uint64_t(-1);
+        this->m_gfx_malloc_page_handle = NULL;
+        this->m_gfx_malloc_device_memory = VK_NULL_HANDLE;
+        {
+            VkMemoryRequirements memory_requirements;
+            this->m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
 
-        uint64_t offset;
-        uint64_t size;
-        void *page_handle;
-        VkDeviceMemory device_memory = m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &page_handle, &offset, &size);
+            // vkAllocateMemory
+            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
+
+            this->m_gfx_malloc_device_memory = this->m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
+        }
+
+
+
+
+        mcrt_free(cmdcopy_dest);
+
         //class gfx_malloc_vk::slob_page_vk *slob
         //VkDeviceMemory device_memory = slob->device_memory();
-        m_gfx_connection->transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory);
+        //m_gfx_connection->transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory);
     }
 
     return true;

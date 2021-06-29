@@ -67,11 +67,19 @@ public:
     inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_api_vk.create_image(pCreateInfo, pImage); }
     inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_api_vk.get_image_memory_requirements(image, memory_requirements); }
 
-    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
-    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
+    inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
+    inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
+    inline uint64_t transfer_src_buffer_offset() { return m_malloc.transfer_src_buffer_offset(); }
+    inline bool transfer_src_buffer_validate_offset(uint64_t size) { return m_malloc.transfer_src_buffer_validate_offset(size); }
+    inline bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset) { return m_malloc.transfer_src_buffer_alloc(size, out_offset); }
+    inline void transfer_src_buffer_free(uint64_t offset, uint64_t size) { return m_malloc.transfer_src_buffer_free(offset, size); }
+    inline void transfer_src_buffer_unlock() { return m_malloc.transfer_src_buffer_unlock(); }
 
     //uniform buffer
-    //assert(0==(pMemoryRequirements->alignment%m_physical_device_limits_min_uniform_buffer_offset_alignment))
+    //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
+
+    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
+    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

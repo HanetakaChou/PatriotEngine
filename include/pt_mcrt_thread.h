@@ -55,7 +55,9 @@ inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__std
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name);
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid);
 
-inline mcrt_native_thread_id mono_native_thread_id_get(void);
+inline mcrt_native_thread_id mcrt_native_thread_id_get(void);
+
+inline bool mcrt_native_thread_id_equal(mcrt_native_thread_id tid_left, mcrt_native_thread_id tid_right);
 
 #if defined(PT_POSIX)
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));

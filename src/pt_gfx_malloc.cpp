@@ -3,6 +3,229 @@
 #include "pt_gfx_malloc.h"
 #include <algorithm>
 
+inline gfx_malloc::ring_buffer::ring_buffer()
+#ifndef NDEBUG
+    : m_buffer_lock(false),
+      m_buffer_thread_id(((mcrt_native_thread_id)-1)),
+      m_buffer_size(-1),
+      m_buffer_begin(-1),
+      m_buffer_end(-1),
+      m_buffer_remainder(-1)
+#endif
+{
+    return;
+}
+
+inline void gfx_malloc::ring_buffer::init(uint64_t buffer_size)
+{
+    m_buffer_size = buffer_size;
+    m_buffer_begin = 0U;
+    m_buffer_end = buffer_size;
+    m_buffer_remainder = 0U;
+}
+
+inline void gfx_malloc::ring_buffer::lock()
+{
+#ifndef NDEBUG
+    assert(false == this->m_buffer_lock);
+    this->m_buffer_lock = true;
+    this->m_buffer_thread_id = mcrt_native_thread_id_get();
+#endif
+}
+
+inline uint64_t gfx_malloc::ring_buffer::offset()
+{
+#ifndef NDEBUG
+    assert(true == this->m_buffer_lock);
+    assert(mcrt_native_thread_id_equal(this->m_buffer_thread_id, mcrt_native_thread_id_get()));
+#endif
+
+    return this->m_buffer_begin;
+}
+
+inline bool gfx_malloc::ring_buffer::validate_offset(uint64_t size)
+{
+#ifndef NDEBUG
+    assert(true == this->m_buffer_lock);
+    assert(mcrt_native_thread_id_equal(this->m_buffer_thread_id, mcrt_native_thread_id_get()));
+#endif
+    if (this->m_buffer_end >= this->m_buffer_size)
+    {
+        if ((size + this->m_buffer_begin) <= this->m_buffer_size)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return true;
+    }
+}
+
+inline bool gfx_malloc::ring_buffer::alloc(uint64_t size, uint64_t *out_offset)
+{
+#ifndef NDEBUG
+    assert(true == this->m_buffer_lock);
+    assert(mcrt_native_thread_id_equal(this->m_buffer_thread_id, mcrt_native_thread_id_get()));
+#endif
+
+    if (this->m_buffer_end >= this->m_buffer_size)
+    {
+        if ((size + this->m_buffer_begin) <= this->m_buffer_size)
+        {
+            (*out_offset) = this->m_buffer_begin;
+            this->m_buffer_begin += size;
+            return true;
+        }
+        else
+        {
+            if ((size + this->m_buffer_begin) <= this->m_buffer_end)
+            {
+                assert(this->m_buffer_begin <= this->m_buffer_size);
+                this->m_buffer_remainder = (this->m_buffer_size - this->m_buffer_begin);
+                this->m_buffer_begin = 0U;
+                this->m_buffer_end -= this->m_buffer_size;
+
+                (*out_offset) = this->m_buffer_begin;
+                this->m_buffer_begin += size;
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+    }
+    else
+    {
+        if ((size + this->m_buffer_begin) <= this->m_buffer_end)
+        {
+            (*out_offset) = this->m_buffer_begin;
+            this->m_buffer_begin += size;
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
+inline void gfx_malloc::ring_buffer::free(uint64_t offset, uint64_t size)
+{
+#ifndef NDEBUG
+    assert(true == this->m_buffer_lock);
+    assert(mcrt_native_thread_id_equal(this->m_buffer_thread_id, mcrt_native_thread_id_get()));
+#endif
+
+    if ((this->m_buffer_size + offset) == this->m_buffer_end)
+    {
+        this->m_buffer_end += size;
+        if ((0U != this->m_buffer_remainder) && ((this->m_buffer_remainder + this->m_buffer_end) == (this->m_buffer_size + this->m_buffer_size)))
+        {
+            this->m_buffer_end = (this->m_buffer_size + this->m_buffer_size);
+            this->m_buffer_remainder = 0U;
+        }
+    }
+    else if (offset == this->m_buffer_end)
+    {
+        this->m_buffer_end += size;
+        if ((0U != this->m_buffer_remainder) && ((this->m_buffer_remainder + this->m_buffer_end) == this->m_buffer_size))
+        {
+            this->m_buffer_end = this->m_buffer_size;
+            this->m_buffer_remainder = 0U;
+        }
+    }
+    else
+    {
+        assert(0);
+    }
+}
+
+inline void gfx_malloc::ring_buffer::unlock()
+{
+#ifndef NDEBUG
+    assert(true == this->m_buffer_lock);
+    assert(mcrt_native_thread_id_equal(this->m_buffer_thread_id, mcrt_native_thread_id_get()));
+    this->m_buffer_lock = false;
+    this->m_buffer_thread_id = ((mcrt_native_thread_id)-1);
+#endif
+}
+
+void gfx_malloc::transfer_src_buffer_init(uint64_t buffer_size)
+{
+    return m_transfer_src_buffer.init(buffer_size);
+}
+
+void gfx_malloc::transfer_src_buffer_lock()
+{
+    return m_transfer_src_buffer.lock();
+}
+
+uint64_t gfx_malloc::transfer_src_buffer_offset()
+{
+    return m_transfer_src_buffer.offset();
+}
+
+bool gfx_malloc::transfer_src_buffer_validate_offset(uint64_t size)
+{
+    return m_transfer_src_buffer.validate_offset(size);
+}
+
+bool gfx_malloc::transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset)
+{
+    return m_transfer_src_buffer.alloc(size, out_offset);
+}
+
+void gfx_malloc::transfer_src_buffer_free(uint64_t offset, uint64_t size)
+{
+    return m_transfer_src_buffer.free(offset, size);
+}
+
+void gfx_malloc::transfer_src_buffer_unlock()
+{
+    return m_transfer_src_buffer.unlock();
+}
+
+void gfx_malloc::uniform_buffer_init(uint64_t buffer_size)
+{
+    return m_uniform_buffer.init(buffer_size);
+}
+
+void gfx_malloc::uniform_buffer_lock()
+{
+    return m_uniform_buffer.lock();
+}
+
+uint64_t gfx_malloc::uniform_buffer_offset()
+{
+    return m_uniform_buffer.offset();
+}
+
+bool gfx_malloc::uniform_buffer_validate_offset(uint64_t size)
+{
+    return m_uniform_buffer.validate_offset(size);
+}
+
+bool gfx_malloc::uniform_buffer_alloc(uint64_t size, uint64_t *out_offset)
+{
+    return m_uniform_buffer.alloc(size, out_offset);
+}
+
+void gfx_malloc::uniform_buffer_free(uint64_t offset, uint64_t size)
+{
+    return m_uniform_buffer.free(offset, size);
+}
+
+void gfx_malloc::uniform_buffer_unlock()
+{
+    return m_uniform_buffer.unlock();
+}
+
 // linux
 // https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB
 // https://github.com/torvalds/linux/blob/master/mm/slub.c //CONFIG_SLUB
@@ -572,6 +795,7 @@ inline gfx_malloc::slob::slob()
       m_page_size(PAGE_SIZE_POISON)
 #endif
 {
+    return;
 }
 
 inline void gfx_malloc::slob::init(uint64_t page_size)

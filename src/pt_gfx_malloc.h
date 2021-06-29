@@ -37,14 +37,49 @@ class gfx_malloc
 
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
 private:
-    mcrt_native_thread_id m_transfer_src_buffer_owner;
+    class ring_buffer
+    {
+#ifndef NDEBUG
+        bool m_buffer_lock;
+        mcrt_native_thread_id m_buffer_thread_id; // indicates the "owner" // is only valid when locked
+#endif
+        uint64_t m_buffer_size;
+        uint64_t m_buffer_begin;
+        uint64_t m_buffer_end;
+        uint64_t m_buffer_remainder;
+
+    public:
+        inline ring_buffer();
+
+        inline void init(uint64_t buffer_size);
+        inline void lock();
+        inline uint64_t offset();
+        inline bool validate_offset(uint64_t size); // false means the offset would be zero
+        inline bool alloc(uint64_t size, uint64_t *out_offset);
+        inline void free(uint64_t offset, uint64_t size);
+        inline void unlock();
+    };
+
+    class ring_buffer m_transfer_src_buffer;
+
+    class ring_buffer m_uniform_buffer;
 
 protected:
+    void transfer_src_buffer_init(uint64_t buffer_size);
     void transfer_src_buffer_lock();
     uint64_t transfer_src_buffer_offset();
-    void transfer_src_buffer_alloc(uint64_t size);
+    bool transfer_src_buffer_validate_offset(uint64_t size);
+    bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset);
     void transfer_src_buffer_free(uint64_t offset, uint64_t size);
     void transfer_src_buffer_unlock();
+
+    void uniform_buffer_init(uint64_t buffer_size);
+    void uniform_buffer_lock();
+    uint64_t uniform_buffer_offset();
+    bool uniform_buffer_validate_offset(uint64_t size);
+    bool uniform_buffer_alloc(uint64_t size, uint64_t *out_offset);
+    void uniform_buffer_free(uint64_t offset, uint64_t size);
+    void uniform_buffer_unlock();
 
     // SLOB related
 private:

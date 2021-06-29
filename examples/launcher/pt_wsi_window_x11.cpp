@@ -33,8 +33,6 @@ int main(int argc, char **argv)
 
 void wsi_window_x11::init()
 {
-    m_wsi_window_thread_id = mono_native_thread_id_get();
-
     int scr;
     m_xcb_connection = xcb_connect(NULL, &scr);
     assert(xcb_connection_has_error(m_xcb_connection) == 0);
