@@ -20,12 +20,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_api_vk.h"
+#include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 
 class gfx_malloc_vk : public gfx_malloc
 {
-    class gfx_api_vk *m_api_vk;
+    class gfx_device_vk *m_device;
 
     // stagingbuffer
     VkBuffer m_transfer_src_buffer;
@@ -79,7 +79,7 @@ class gfx_malloc_vk : public gfx_malloc
 public:
     gfx_malloc_vk();
 
-    bool init(class gfx_api_vk *api_vk);
+    bool init(class gfx_device_vk *api_vk);
 
     ~gfx_malloc_vk();
 

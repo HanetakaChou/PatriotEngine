@@ -28,12 +28,12 @@ inline gfx_connection_vk::gfx_connection_vk()
 
 bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    if (!m_api_vk.init(wsi_connection, wsi_visual, wsi_window))
+    if (!m_device.init(wsi_connection, wsi_visual, wsi_window))
     {
         return false;
     }
 
-    if (!m_malloc.init(&m_api_vk))
+    if (!m_malloc.init(&m_device))
     {
         return false;
     }

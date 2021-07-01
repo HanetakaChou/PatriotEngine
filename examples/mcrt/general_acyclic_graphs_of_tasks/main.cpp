@@ -62,7 +62,7 @@ class dag_task
 
     static mcrt_task_ref execute(mcrt_task_ref _self)
     {
-        class dag_task *self = unwrap(mcrt_task_user_data(_self));
+        class dag_task *self = unwrap(mcrt_task_get_user_data(_self));
 
         // execute
         if (self->m_successor_bottom != NULL || self->m_successor_right != NULL)
@@ -95,14 +95,14 @@ class dag_task
 
             if (NULL != self->m_successor_bottom)
             {
-                class dag_task *successor_bottom = unwrap(mcrt_task_user_data(self->m_successor_bottom));
+                class dag_task *successor_bottom = unwrap(mcrt_task_get_user_data(self->m_successor_bottom));
 
                 assert(value_uninit == successor_bottom->m_value_top);
                 successor_bottom->m_value_top = self->m_value_left + self->m_value_top;
             }
             if (NULL != self->m_successor_right)
             {
-                class dag_task *successor_right = unwrap(mcrt_task_user_data(self->m_successor_right));
+                class dag_task *successor_right = unwrap(mcrt_task_get_user_data(self->m_successor_right));
 
                 assert(value_uninit == successor_right->m_value_left);
                 successor_right->m_value_left = self->m_value_left + self->m_value_top;
@@ -111,7 +111,7 @@ class dag_task
         else
         {
             //we reach the end point
-            class dag_task *real_root = unwrap(mcrt_task_user_data(mcrt_task_parent(_self)));
+            class dag_task *real_root = unwrap(mcrt_task_get_user_data(mcrt_task_parent(_self)));
             real_root->m_value_left = self->m_value_left;
             real_root->m_value_top = self->m_value_top;
         }
@@ -165,12 +165,12 @@ public:
     inline static mcrt_task_ref allocate_root(int i, int j, mcrt_task_ref successor_bottom, mcrt_task_ref successor_right)
     {
         mcrt_task_ref t = mcrt_task_allocate_root(execute);
-        init(mcrt_task_user_data(t), i, j, successor_bottom, successor_right);
+        init(mcrt_task_get_user_data(t), i, j, successor_bottom, successor_right);
         return t;
     }
 
-    inline static int value_top(mcrt_task_ref self) { return unwrap(mcrt_task_user_data(self))->m_value_top; }
-    inline static int value_left(mcrt_task_ref self) { return unwrap(mcrt_task_user_data(self))->m_value_left; }
+    inline static int value_top(mcrt_task_ref self) { return unwrap(mcrt_task_get_user_data(self))->m_value_top; }
+    inline static int value_left(mcrt_task_ref self) { return unwrap(mcrt_task_get_user_data(self))->m_value_left; }
 };
 
 int main(int argc, char **argv)
@@ -194,7 +194,7 @@ int main(int argc, char **argv)
 
     mcrt_task_ref real_root = dag_task::allocate_root(-1, -1, NULL, NULL);
     mcrt_task_set_parent(x[M - 1][N - 1], real_root);
-    mcrt_task_set_ref_count(real_root, 2);
+    mcrt_task_set_ref_count(real_root, 2); //The "mcrt_task_spawn_and_wait_for_all" is to wait for reference count to become one,
     mcrt_task_spawn_and_wait_for_all(real_root, x[0][0]);
     assert(0 == mcrt_task_ref_count(real_root));
 

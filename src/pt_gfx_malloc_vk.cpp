@@ -111,12 +111,12 @@ gfx_malloc_vk::gfx_malloc_vk()
 {
 }
 
-bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
+bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 {
-    m_api_vk = api_vk;
+    m_device = api_vk;
 
     VkPhysicalDeviceMemoryProperties physical_device_memory_properties;
-    m_api_vk->get_physical_device_memory_properties(&physical_device_memory_properties);
+    m_device->get_physical_device_memory_properties(&physical_device_memory_properties);
 
     // vulkaninfo
     // https://github.com/KhronosGroup/Vulkan-Tools/tree/master/vulkaninfo/vulkaninfo/vulkaninfo.h
@@ -163,15 +163,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult res_create_buffer = m_api_vk->create_buffer(&buffer_create_info_uniform, &dummy_buf);
+            VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &dummy_buf);
             assert(VK_SUCCESS == res_create_buffer);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
+            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
 
             memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_buffer(dummy_buf);
+            m_device->destroy_buffer(dummy_buf);
         }
 
         for (uint32_t memory_type_index;
@@ -191,7 +191,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 memory_allocate_info.allocationSize = uniform_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
-                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &this->m_uniform_buffer_device_memory);
+                res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_uniform_buffer_device_memory);
             }
             assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
@@ -203,7 +203,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 assert(uniform_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_api_vk->map_memory(this->m_uniform_buffer_device_memory, 0U, uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
+                    VkResult res_map_memory = this->m_device->map_memory(this->m_uniform_buffer_device_memory, 0U, uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -218,20 +218,20 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
                     buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-                    VkResult res_create_buffer = m_api_vk->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
+                    VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
                     assert(VK_SUCCESS == res_create_buffer);
                 }
 
 #ifndef NDEBUG
                 {
                     struct VkMemoryRequirements mem_req;
-                    m_api_vk->get_buffer_memory_requirements(m_uniform_buffer, &mem_req);
+                    m_device->get_buffer_memory_requirements(m_uniform_buffer, &mem_req);
                     assert(0 != (mem_req.memoryTypeBits & (1U << memory_type_index)));
                 }
 #endif
 
                 {
-                    VkResult res_bind_buffer_memory = this->m_api_vk->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
+                    VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
 
@@ -267,15 +267,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
+            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
+            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
 
             memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_buffer(dummy_buf);
+            m_device->destroy_buffer(dummy_buf);
         }
 
         for (uint32_t memory_type_index;
@@ -295,7 +295,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 memory_allocate_info.allocationSize = transfer_src_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
-                res_allocate_memory = m_api_vk->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
+                res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
             }
             assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
@@ -308,7 +308,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                 assert(transfer_src_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_api_vk->map_memory(this->m_transfer_src_buffer_device_memory, 0U, transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
+                    VkResult res_map_memory = this->m_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -323,20 +323,20 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
                     buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-                    VkResult res_create_buffer = m_api_vk->create_buffer(&buffer_create_info_uniform, &this->m_transfer_src_buffer);
+                    VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_transfer_src_buffer);
                     assert(VK_SUCCESS == res_create_buffer);
                 }
 
 #ifndef NDEBUG
                 {
                     struct VkMemoryRequirements mem_req;
-                    m_api_vk->get_buffer_memory_requirements(m_transfer_src_buffer, &mem_req);
+                    m_device->get_buffer_memory_requirements(m_transfer_src_buffer, &mem_req);
                     assert(0 != (mem_req.memoryTypeBits & (1U << memory_type_index)));
                 }
 #endif
 
                 {
-                    VkResult res_bind_buffer_memory = this->m_api_vk->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
+                    VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
 
@@ -368,15 +368,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             buffer_create_info_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_dst_and_vertex_buffer, &dummy_buf);
+            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_vertex_buffer, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
+            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
 
             memory_requirements_memory_type_bits_vertex_buffer = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_buffer(dummy_buf);
+            m_device->destroy_buffer(dummy_buf);
         }
 
         uint32_t memory_requirements_memory_type_bits_index_buffer = 0U;
@@ -392,15 +392,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             buffer_create_info_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_api_vk->create_buffer(&buffer_create_info_transfer_dst_and_index_buffer, &dummy_buf);
+            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_index_buffer, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_buffer_memory_requirements(dummy_buf, &mem_req);
+            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
 
             memory_requirements_memory_type_bits_index_buffer = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_buffer(dummy_buf);
+            m_device->destroy_buffer(dummy_buf);
         }
 
         uint32_t memory_requirements_memory_type_bits = (memory_requirements_memory_type_bits_vertex_buffer & memory_requirements_memory_type_bits_index_buffer);
@@ -441,7 +441,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
             struct VkFormatProperties format_properties;
-            m_api_vk->get_physical_device_format_properties(color_format, &format_properties);
+            m_device->get_physical_device_format_properties(color_format, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
@@ -467,15 +467,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             image_create_info_regular_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_api_vk->create_image(&image_create_info_regular_tiling_optimal, &dummy_img);
+            VkResult vk_res = m_device->create_image(&image_create_info_regular_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
+            m_device->get_image_memory_requirements(dummy_img, &mem_req);
 
             memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_image(dummy_img);
+            m_device->destroy_image(dummy_img);
         }
 
         for (uint32_t memory_type_index;
@@ -504,7 +504,7 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
             struct VkFormatProperties format_properties;
-            m_api_vk->get_physical_device_format_properties(color_format, &format_properties);
+            m_device->get_physical_device_format_properties(color_format, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT); //INPUT_ATTACHMENT
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BLEND_BIT);
 
@@ -528,15 +528,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             image_create_info_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_api_vk->create_image(&image_create_info_transient_tiling_optimal, &dummy_img);
+            VkResult vk_res = m_device->create_image(&image_create_info_transient_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
+            m_device->get_image_memory_requirements(dummy_img, &mem_req);
 
             memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_image(dummy_img);
+            m_device->destroy_image(dummy_img);
         }
 
         for (uint32_t memory_type_index;
@@ -581,20 +581,20 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
         struct VkFormatProperties format_properties;
 
         this->m_format_depth = VK_FORMAT_D32_SFLOAT;
-        this->m_api_vk->get_physical_device_format_properties(this->m_format_depth, &format_properties);
+        this->m_device->get_physical_device_format_properties(this->m_format_depth, &format_properties);
         if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
         {
             this->m_format_depth = VK_FORMAT_X8_D24_UNORM_PACK32;
-            this->m_api_vk->get_physical_device_format_properties(this->m_format_depth, &format_properties);
+            this->m_device->get_physical_device_format_properties(this->m_format_depth, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
 
         this->m_format_depth_stencil = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        this->m_api_vk->get_physical_device_format_properties(this->m_format_depth_stencil, &format_properties);
+        this->m_device->get_physical_device_format_properties(this->m_format_depth_stencil, &format_properties);
         if (0 == (format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT))
         {
             this->m_format_depth_stencil = VK_FORMAT_D24_UNORM_S8_UINT;
-            this->m_api_vk->get_physical_device_format_properties(this->m_format_depth_stencil, &format_properties);
+            this->m_device->get_physical_device_format_properties(this->m_format_depth_stencil, &format_properties);
             assert(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
         }
 
@@ -620,15 +620,15 @@ bool gfx_malloc_vk::init(class gfx_api_vk *api_vk)
             image_create_info_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_api_vk->create_image(&image_create_info_depth_stencil_transient_tiling_optimal, &dummy_img);
+            VkResult vk_res = m_device->create_image(&image_create_info_depth_stencil_transient_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
-            m_api_vk->get_image_memory_requirements(dummy_img, &mem_req);
+            m_device->get_image_memory_requirements(dummy_img, &mem_req);
 
             memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
 
-            m_api_vk->destroy_image(dummy_img);
+            m_device->destroy_image(dummy_img);
         }
 
         for (uint32_t memory_type_index;
@@ -730,7 +730,7 @@ uint64_t gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index
         memory_allocate_info.pNext = NULL;
         memory_allocate_info.allocationSize = malloc_vk->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
         memory_allocate_info.memoryTypeIndex = malloc_vk->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-        res_allocate_memory = malloc_vk->m_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
+        res_allocate_memory = malloc_vk->m_device->allocate_memory(&memory_allocate_info, &device_memory);
     }
     assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
@@ -749,7 +749,7 @@ void gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buf
 {
     class gfx_malloc_vk *malloc_vk = static_cast<class gfx_malloc_vk *>(_malloc_vk);
     static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-    malloc_vk->m_api_vk->free_memory((VkDeviceMemory)page_memory_handle);
+    malloc_vk->m_device->free_memory((VkDeviceMemory)page_memory_handle);
     return;
 }
 
@@ -765,7 +765,7 @@ uint64_t gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *_mal
         memory_allocate_info.pNext = NULL;
         memory_allocate_info.allocationSize = malloc_vk->m_transfer_dst_and_sampled_image_page_size;
         memory_allocate_info.memoryTypeIndex = malloc_vk->m_transfer_dst_and_sampled_image_memory_index;
-        res_allocate_memory = malloc_vk->m_api_vk->allocate_memory(&memory_allocate_info, &device_memory);
+        res_allocate_memory = malloc_vk->m_device->allocate_memory(&memory_allocate_info, &device_memory);
     }
     assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
@@ -784,7 +784,7 @@ void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(uint64_t page
 {
     class gfx_malloc_vk *malloc_vk = static_cast<class gfx_malloc_vk *>(_malloc_vk);
     static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-    malloc_vk->m_api_vk->free_memory((VkDeviceMemory)page_memory_handle);
+    malloc_vk->m_device->free_memory((VkDeviceMemory)page_memory_handle);
     return;
 }
 

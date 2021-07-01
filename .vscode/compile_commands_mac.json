@@ -41,8 +41,8 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/lunarg_vulkan_sdk/include ${workspaceFolder}/src/pt_gfx_api_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_api_vk.o",
-        "file": "${workspaceFolder}/src/pt_gfx_api_vk.cpp"
+        "command": "clang++ -c -xc++ -std=c++11 -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/lunarg_vulkan_sdk/include ${workspaceFolder}/src/pt_gfx_device_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_api_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_device_vk.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",

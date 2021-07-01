@@ -16,17 +16,18 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_api_vk.h"
+#include "pt_gfx_device_vk.h"
 #include <pt_mcrt_malloc.h>
 #include <assert.h>
 #include <algorithm>
 #include <stdio.h>
 
-gfx_api_vk::gfx_api_vk()
+gfx_device_vk::gfx_device_vk()
 {
+    return;
 }
 
-bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     this->m_wsi_connection = wsi_connection;
     this->m_wsi_visual = wsi_visual;
@@ -126,7 +127,7 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
         debug_report_callback_create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
         debug_report_callback_create_info.pfnCallback = [](VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) -> VkBool32
         {
-            return static_cast<gfx_api_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
+            return static_cast<gfx_device_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
         };
         debug_report_callback_create_info.pUserData = this;
 
@@ -562,7 +563,7 @@ bool gfx_api_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visu
     return true;
 }
 
-gfx_api_vk::~gfx_api_vk()
+gfx_device_vk::~gfx_device_vk()
 {
 #ifndef NDEBUG
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT"));
@@ -572,7 +573,7 @@ gfx_api_vk::~gfx_api_vk()
 }
 
 #ifndef NDEBUG
-VkBool32 gfx_api_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
+VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     printf("[%s] : %s", pLayerPrefix, pMessage);
     return VK_FALSE;

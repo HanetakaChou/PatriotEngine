@@ -59,7 +59,7 @@ PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref
     return wrap(t);
 }
 
-PT_ATTR_MCRT mcrt_task_user_data_t *PT_CALL mcrt_task_user_data(mcrt_task_ref self)
+PT_ATTR_MCRT mcrt_task_user_data_t *PT_CALL mcrt_task_get_user_data(mcrt_task_ref self)
 {
     return unwrap(self)->user_data();
 }

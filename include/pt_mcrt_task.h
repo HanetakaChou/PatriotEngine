@@ -45,7 +45,7 @@ extern "C"
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/continuation-passing.html
     PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_ref self));
 
-    PT_ATTR_MCRT mcrt_task_user_data_t *PT_CALL mcrt_task_user_data(mcrt_task_ref t);
+    PT_ATTR_MCRT mcrt_task_user_data_t *PT_CALL mcrt_task_get_user_data(mcrt_task_ref t);
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_destory(mcrt_task_ref victim);
 
@@ -65,6 +65,8 @@ extern "C"
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn(mcrt_task_ref t);
 
+    // Wait for reference count to become one, and set reference count to zero.
+    // We may set the recount to 2 if the task has one child
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task_ref self, mcrt_task_ref child);
 
 #ifdef __cplusplus

@@ -15,15 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_API_VK_H_
-#define _PT_GFX_API_VK_H_ 1
+#ifndef _PT_GFX_DEVICE_VK_H_
+#define _PT_GFX_DEVICE_VK_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
 #include <vulkan/vulkan.h>
 
-class gfx_api_vk
+class gfx_device_vk
 {
     VkAllocationCallbacks m_allocator_callbacks;
 
@@ -83,6 +83,7 @@ class gfx_api_vk
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throtting_index;
     VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
+
     VkCommandPool m_transfer_command_pool[FRAME_THROTTLING_COUNT];
 
 #ifndef NDEBUG
@@ -91,9 +92,9 @@ class gfx_api_vk
 #endif
 
 public:
-    gfx_api_vk();
+    gfx_device_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
-    ~gfx_api_vk();
+    ~gfx_device_vk();
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
@@ -122,6 +123,11 @@ public:
     inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset) { return m_vk_bind_image_memory(m_device, image, memory, memoryOffset); }
     inline VkResult map_memory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void **ppData) { return m_vk_map_memory(m_device, memory, offset, size, flags, ppData); }
     inline void unmap_memory(VkDeviceMemory memory) { return m_vk_unmap_memory(m_device, memory); }
+
+    inline void cmd_copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *pRegions)
+    {
+        return m_vk_cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, dst_image_layout, region_count, pRegions);
+    }
 };
 
 #endif

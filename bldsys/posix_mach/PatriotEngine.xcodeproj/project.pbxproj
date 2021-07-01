@@ -44,7 +44,7 @@
 		62D2308D2688921E0044D96C /* pt_gfx_texture_common_load_pvr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23064268886200044D96C /* pt_gfx_texture_common_load_pvr.cpp */; };
 		62D2308E2688921E0044D96C /* pt_gfx_connection_common.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */; };
 		62D2308F2688921E0044D96C /* pt_gfx_texture_common_load_dds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230622688861B0044D96C /* pt_gfx_texture_common_load_dds.cpp */; };
-		62D230902688921E0044D96C /* pt_gfx_api_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */; };
+		62D230902688921E0044D96C /* pt_gfx_device_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */; };
 		62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */; };
 		62D230BD268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */; };
 		62D230BE268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */; };
@@ -63,7 +63,7 @@
 		62D7940E25975789001CC2AF /* pt_wsi_window_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */; };
 		62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
 		62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
-		62E54AA226894DFF00D7A782 /* pt_gfx_api_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */; };
+		62E54AA226894DFF00D7A782 /* pt_gfx_device_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */; };
 		62E54AA326894E1400D7A782 /* pt_gfx_connection_vk_wsi_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6277494B26894D22009F2E71 /* pt_gfx_connection_vk_wsi_bitmap.cpp */; };
 		62E54AA426894EA600D7A782 /* pt_gfx_connection_vk_wsi_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6277494B26894D22009F2E71 /* pt_gfx_connection_vk_wsi_bitmap.cpp */; };
 		62E54AA626894EF700D7A782 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -224,8 +224,8 @@
 		62D23064268886200044D96C /* pt_gfx_texture_common_load_pvr.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_common_load_pvr.cpp; path = ../../src/pt_gfx_texture_common_load_pvr.cpp; sourceTree = SOURCE_ROOT; };
 		62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_vk.cpp; path = ../../src/pt_gfx_texture_vk.cpp; sourceTree = SOURCE_ROOT; };
 		62D23068268886320044D96C /* pt_gfx_texture_vk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_vk.h; path = ../../src/pt_gfx_texture_vk.h; sourceTree = SOURCE_ROOT; };
-		62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_api_vk.cpp; path = ../../src/pt_gfx_api_vk.cpp; sourceTree = SOURCE_ROOT; };
-		62D2306C2688865D0044D96C /* pt_gfx_api_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_api_vk.h; path = ../../src/pt_gfx_api_vk.h; sourceTree = SOURCE_ROOT; };
+		62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_device_vk.cpp; path = ../../src/pt_gfx_device_vk.cpp; sourceTree = SOURCE_ROOT; };
+		62D2306C2688865D0044D96C /* pt_gfx_device_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_device_vk.h; path = ../../src/pt_gfx_device_vk.h; sourceTree = SOURCE_ROOT; };
 		62D2306D26888F630044D96C /* pt_gfx_connection_vk_wsi_metal.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_vk_wsi_metal.cpp; path = ../../src/pt_gfx_connection_vk_wsi_metal.cpp; sourceTree = SOURCE_ROOT; };
 		62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_vk.cpp; path = ../../src/pt_gfx_connection_vk.cpp; sourceTree = SOURCE_ROOT; };
 		62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_vk.h; path = ../../src/pt_gfx_connection_vk.h; sourceTree = SOURCE_ROOT; };
@@ -363,8 +363,8 @@
 		62382909267692A3002ECF8A /* src */ = {
 			isa = PBXGroup;
 			children = (
-				62D2306C2688865D0044D96C /* pt_gfx_api_vk.h */,
-				62D2306A268886570044D96C /* pt_gfx_api_vk.cpp */,
+				62D2306C2688865D0044D96C /* pt_gfx_device_vk.h */,
+				62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */,
 				625D4F3426775DA0000F087B /* pt_gfx_connection_common.h */,
 				625D4F3226775CEF000F087B /* pt_gfx_connection_common.cpp */,
 				62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */,
@@ -740,7 +740,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D230902688921E0044D96C /* pt_gfx_api_vk.cpp in Sources */,
+				62D230902688921E0044D96C /* pt_gfx_device_vk.cpp in Sources */,
 				62D2308E2688921E0044D96C /* pt_gfx_connection_common.cpp in Sources */,
 				62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */,
 				62D230882688921E0044D96C /* pt_gfx_connection_vk_wsi_metal.cpp in Sources */,
@@ -766,7 +766,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62E54AA226894DFF00D7A782 /* pt_gfx_api_vk.cpp in Sources */,
+				62E54AA226894DFF00D7A782 /* pt_gfx_device_vk.cpp in Sources */,
 				6277495126894D30009F2E71 /* pt_gfx_connection_common.cpp in Sources */,
 				6277495226894D30009F2E71 /* pt_gfx_connection_vk.cpp in Sources */,
 				62E54AA426894EA600D7A782 /* pt_gfx_connection_vk_wsi_bitmap.cpp in Sources */,

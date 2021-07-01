@@ -19,7 +19,7 @@
     global:
         mcrt_task_allocate_root;
         mcrt_task_allocate_continuation;
-        mcrt_task_user_data;
+        mcrt_task_get_user_data;
         mcrt_task_destory;
         mcrt_task_recycle_as_child_of;
         mcrt_task_ref_count;

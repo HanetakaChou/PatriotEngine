@@ -21,14 +21,16 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_gfx_connection_common.h"
-#include "pt_gfx_api_vk.h"
+#include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include <vulkan/vulkan.h>
 
+#include <pt_mcrt_thread.h>
+
 class gfx_connection_vk : public gfx_connection_common
 {
-    class gfx_api_vk m_api_vk;
+    class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
     //deque
@@ -54,6 +56,12 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_release() override;
 
+    // Streaming
+    static uint32_t const STREAMING_THREAD_COUNT = 1U;
+    mcrt_native_thread_id m_transder_native_thread_id[STREAMING_THREAD_COUNT]; //The owner 
+    VkCommandPool m_transfer_command_pool[STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_transfer_command_buffer[STREAMING_THREAD_COUNT];
+
     inline gfx_connection_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     void destroy() override;
@@ -61,13 +69,13 @@ class gfx_connection_vk : public gfx_connection_common
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 public:
-    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_api_vk.get_physical_device_format_properties(format, out_format_properties); }
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_device.get_physical_device_format_properties(format, out_format_properties); }
    
-    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
-    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_api_vk.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
    
-    inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_api_vk.create_image(pCreateInfo, pImage); }
-    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_api_vk.get_image_memory_requirements(image, memory_requirements); }
+    inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_device.create_image(pCreateInfo, pImage); }
+    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
 
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
     inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
@@ -80,10 +88,58 @@ public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
+    //Streaming
+
     inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
+
+    //void copy_buffer_to_image(, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *pRegions)
+
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+
+// Streaming in CryEngine - StatObj
+
+// The logic/application layer requests load
+// CEntity::LoadGeometry
+// ...
+//
+// CRenderProxy::RegisterForRendering // add to the m_deferredRenderProxyStreamingPriorityUpdates
+
+// The renderloop uses camera to deduce the LOD which impacts the streaming  
+// C3DEngine::RenderWorld
+// C3DEngine::UpdateRenderingCamera
+//   traverse the m_deferredRenderProxyStreamingPriorityUpdates
+//     CObjManager::UpdateRenderNodeStreamingPriority
+//     CObjManager::PrecacheStatObj
+//     ...
+//     CStatObj::UpdateStreamableComponents
+//     ...
+//     CObjManager::RegisterForStreaming // add to the m_arrStreamableObjects 
+//   clear the m_deferredRenderProxyStreamingPriorityUpdates
+
+
+//
+// C3DEngine::SyncProcessStreamingUpdate
+// CObjManager::ProcessObjectsStreaming // remove from m_arrStreamableObjects // add to m_arrStreamableToLoad
+
+// Called at the end of the frame
+// C3DEngine::SyncProcessStreamingUpdate
+// CObjManager::ProcessObjectsStreaming_Finish
+//   traverse the m_arrStreamableToLoad
+//     CStatObj::StartStreaming
+//     CStreamEngine::StartRead // forward to the streaming module
+//   clear the m_arrStreamableToLoad
+
+// The streaming module
+
+// callback on complete
+// CStatObj::StreamAsyncOnComplete
+
+class gfx_task_queue_graphics_submit
+{
+
+};
 
 #endif
