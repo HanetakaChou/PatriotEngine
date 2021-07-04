@@ -318,7 +318,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                     buffer_create_info_uniform.pNext = NULL;
                     buffer_create_info_uniform.flags = 0U;
                     buffer_create_info_uniform.size = transfer_src_buffer_size;
-                    buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+                    buffer_create_info_uniform.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
                     buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
                     buffer_create_info_uniform.pQueueFamilyIndices = NULL;

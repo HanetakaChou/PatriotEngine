@@ -490,6 +490,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_unmap_memory = reinterpret_cast<PFN_vkUnmapMemory>(vk_get_device_proc_addr(m_device, "vkUnmapMemory"));
     assert(NULL != this->m_vk_unmap_memory);
 
+    this->m_vk_create_command_pool = reinterpret_cast<PFN_vkCreateCommandPool>(vk_get_device_proc_addr(m_device, "vkCreateCommandPool"));
+    assert(NULL != this->m_vk_create_command_pool);
+
     this->m_vk_reset_command_pool = reinterpret_cast<PFN_vkResetCommandPool>(vk_get_device_proc_addr(m_device, "vkResetCommandPool"));
     assert(NULL != this->m_vk_reset_command_pool);
 
@@ -526,38 +529,6 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     if ((VK_NULL_HANDLE == this->m_queue_graphics) || (this->m_has_dedicated_transfer_queue && (VK_NULL_HANDLE == this->m_queue_transfer)))
     {
         return false;
-    }
-
-    //Frame Throttling
-    {
-        this->m_frame_throtting_index = 0U;
-
-        PFN_vkCreateCommandPool vk_create_command_pool = reinterpret_cast<PFN_vkCreateCommandPool>(vk_get_device_proc_addr(m_device, "vkCreateCommandPool"));
-        assert(NULL != vk_create_command_pool);
-
-        for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
-        {
-            {
-                VkCommandPoolCreateInfo command_pool_create_info = {
-                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                    NULL,
-                    0U,
-                    this->m_queue_graphics_family_index};
-                VkResult res_create_command_pool = vk_create_command_pool(this->m_device, &command_pool_create_info, &this->m_allocator_callbacks, &this->m_graphics_commmand_pool[frame_throttling_index]);
-                assert(VK_SUCCESS == res_create_command_pool);
-            }
-
-            if (this->m_has_dedicated_transfer_queue)
-            {
-                VkCommandPoolCreateInfo command_pool_create_info = {
-                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                    NULL,
-                    0U,
-                    this->m_queue_transfer_family_index};
-                VkResult res_create_command_pool = vk_create_command_pool(this->m_device, &command_pool_create_info, &this->m_allocator_callbacks, &this->m_transfer_command_pool[frame_throttling_index]);
-                assert(VK_SUCCESS == res_create_command_pool);
-            }
-        }
     }
 
     return true;

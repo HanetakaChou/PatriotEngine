@@ -56,11 +56,26 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_release() override;
 
+    // Frame Throttling
+    static uint32_t const FRAME_THROTTLING_COUNT = 3U;
+    uint32_t m_frame_throtting_index;
+    VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
+
     // Streaming
     static uint32_t const STREAMING_THREAD_COUNT = 1U;
-    mcrt_native_thread_id m_transder_native_thread_id[STREAMING_THREAD_COUNT]; //The owner 
-    VkCommandPool m_transfer_command_pool[STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_transfer_command_buffer[STREAMING_THREAD_COUNT];
+    mcrt_native_thread_id m_streaming_native_thread_id[STREAMING_THREAD_COUNT]; //The owner
+    uint32_t m_streaming_affinity_mask; // TBB Arena
+    // padding // false sharing   
+    // struct
+    // {
+    // 
+    // padding // false sharing   
+    // } [STREAMING_THREAD_COUNT]
+    VkCommandPool m_streaming_command_pool[STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_streaming_command_buffer[STREAMING_THREAD_COUNT];
+
+    inline uint32_t streaming_thread_index_get();
+    inline uint32_t streaming_thread_index_allocate();
 
     inline gfx_connection_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -68,16 +83,19 @@ class gfx_connection_vk : public gfx_connection_common
     inline ~gfx_connection_vk();
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+
 public:
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_device.get_physical_device_format_properties(format, out_format_properties); }
-   
+
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
-   
-    inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_device.create_image(pCreateInfo, pImage); }
+
+    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
     inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
+    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
 
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
+    inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
     inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
     inline uint64_t transfer_src_buffer_offset() { return m_malloc.transfer_src_buffer_offset(); }
     inline bool transfer_src_buffer_validate_offset(uint64_t size) { return m_malloc.transfer_src_buffer_validate_offset(size); }
@@ -93,8 +111,7 @@ public:
     inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
 
-    //void copy_buffer_to_image(, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *pRegions)
-
+    void copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -107,7 +124,7 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 //
 // CRenderProxy::RegisterForRendering // add to the m_deferredRenderProxyStreamingPriorityUpdates
 
-// The renderloop uses camera to deduce the LOD which impacts the streaming  
+// The renderloop uses camera to deduce the LOD which impacts the streaming
 // C3DEngine::RenderWorld
 // C3DEngine::UpdateRenderingCamera
 //   traverse the m_deferredRenderProxyStreamingPriorityUpdates
@@ -116,9 +133,8 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 //     ...
 //     CStatObj::UpdateStreamableComponents
 //     ...
-//     CObjManager::RegisterForStreaming // add to the m_arrStreamableObjects 
+//     CObjManager::RegisterForStreaming // add to the m_arrStreamableObjects
 //   clear the m_deferredRenderProxyStreamingPriorityUpdates
-
 
 //
 // C3DEngine::SyncProcessStreamingUpdate
@@ -136,10 +152,10 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 
 // callback on complete
 // CStatObj::StreamAsyncOnComplete
+// m_eStreamingStatus = ecss_Ready
 
 class gfx_task_queue_graphics_submit
 {
-
 };
 
 #endif

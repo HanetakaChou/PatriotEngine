@@ -61,6 +61,7 @@ class gfx_device_vk
     PFN_vkBindImageMemory m_vk_bind_image_memory;
     PFN_vkMapMemory m_vk_map_memory;
     PFN_vkUnmapMemory m_vk_unmap_memory;
+    PFN_vkCreateCommandPool m_vk_create_command_pool;
     PFN_vkResetCommandPool m_vk_reset_command_pool;
     PFN_vkAllocateCommandBuffers m_vk_allocate_command_buffers;
     PFN_vkBeginCommandBuffer m_vk_begin_command_buffer;
@@ -80,12 +81,6 @@ class gfx_device_vk
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height);
     void wsi_on_redraw_needed_release();
 
-    static uint32_t const FRAME_THROTTLING_COUNT = 3U;
-    uint32_t m_frame_throtting_index;
-    VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
-
-    VkCommandPool m_transfer_command_pool[FRAME_THROTTLING_COUNT];
-
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
     VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
@@ -99,6 +94,10 @@ public:
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
 
+    inline bool has_dedicated_transfer_queue() { return m_has_dedicated_transfer_queue; }
+    inline uint32_t queue_graphics_family_index() { return m_queue_graphics_family_index; }
+    inline uint32_t queue_transfer_family_index() { return m_queue_transfer_family_index; }
+
     // Externally Synchronized Parameters
     // The queue parameter in vkQueueSubmit
 
@@ -111,23 +110,25 @@ public:
     // vkFreeMemory
     inline void get_physical_device_memory_properties(VkPhysicalDeviceMemoryProperties *memory_properties) { return m_vk_get_physical_device_memory_properties(m_physical_device, memory_properties); }
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, out_format_properties); }
-    inline VkResult create_buffer(VkBufferCreateInfo const *pCreateInfo, VkBuffer *pBuffer) { return m_vk_create_buffer(m_device, pCreateInfo, &m_allocator_callbacks, pBuffer); }
-    inline VkResult create_image(VkImageCreateInfo const *pCreateInfo, VkImage *pImage) { return m_vk_create_image(m_device, pCreateInfo, &m_allocator_callbacks, pImage); }
+    inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return m_vk_create_buffer(m_device, create_info, &m_allocator_callbacks, buffer); }
+    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_vk_create_image(m_device, create_info, &m_allocator_callbacks, image); }
     inline void destroy_buffer(VkBuffer buffer) { return m_vk_destroy_buffer(m_device, buffer, &m_allocator_callbacks); }
     inline void destroy_image(VkImage image) { return m_vk_destroy_image(m_device, image, &m_allocator_callbacks); }
     inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return m_vk_get_buffer_memory_requirements(m_device, buffer, memory_requirements); }
     inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_vk_get_image_memory_requirements(m_device, image, memory_requirements); }
-    inline VkResult allocate_memory(VkMemoryAllocateInfo const *memory_allocate_info, VkDeviceMemory *out_device_memory) { return m_vk_allocate_memory(m_device, memory_allocate_info, &m_allocator_callbacks, out_device_memory); }
+    inline VkResult allocate_memory(VkMemoryAllocateInfo const *allocate_info, VkDeviceMemory *out_device_memory) { return m_vk_allocate_memory(m_device, allocate_info, &m_allocator_callbacks, out_device_memory); }
     inline void free_memory(VkDeviceMemory device_memory) { return m_vk_free_memory(m_device, device_memory, &m_allocator_callbacks); }
-    inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memoryOffset) { return m_vk_bind_buffer_memory(m_device, buffer, memory, memoryOffset); }
-    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memoryOffset) { return m_vk_bind_image_memory(m_device, image, memory, memoryOffset); }
+    inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_vk_bind_buffer_memory(m_device, buffer, memory, memory_offset); }
+    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_vk_bind_image_memory(m_device, image, memory, memory_offset); }
     inline VkResult map_memory(VkDeviceMemory memory, VkDeviceSize offset, VkDeviceSize size, VkMemoryMapFlags flags, void **ppData) { return m_vk_map_memory(m_device, memory, offset, size, flags, ppData); }
     inline void unmap_memory(VkDeviceMemory memory) { return m_vk_unmap_memory(m_device, memory); }
 
-    inline void cmd_copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *pRegions)
-    {
-        return m_vk_cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, dst_image_layout, region_count, pRegions);
-    }
+    inline VkResult create_command_Pool(VkCommandPoolCreateInfo const *create_info, VkCommandPool *command_pool) { return m_vk_create_command_pool(m_device, create_info, &m_allocator_callbacks, command_pool); }
+    inline VkResult allocate_command_buffers(VkCommandBufferAllocateInfo const *allocate_info, VkCommandBuffer *command_buffers) { return m_vk_allocate_command_buffers(m_device, allocate_info, command_buffers); }
+    inline VkResult begin_command_buffer(VkCommandBuffer command_buffer, VkCommandBufferBeginInfo const *begin_info) { return m_vk_begin_command_buffer(command_buffer, begin_info); }
+
+    inline void cmd_pipeline_barrier(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkDependencyFlags dependency_flags, uint32_t memory_barrier_count, VkMemoryBarrier const *memory_barriers, uint32_t buffer_memory_barrier_count, VkBufferMemoryBarrier *const buffer_memory_barriers, uint32_t image_memory_barrier_count, VkImageMemoryBarrier const *image_memory_barriers) { return m_vk_cmd_pipeline_barrier(command_buffer, src_stage_mask, dst_stage_mask, dependency_flags, memory_barrier_count, memory_barriers, buffer_memory_barrier_count, buffer_memory_barriers, image_memory_barrier_count, image_memory_barriers); }
+    inline void cmd_copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *regions) { return m_vk_cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, dst_image_layout, region_count, regions); }
 };
 
 #endif

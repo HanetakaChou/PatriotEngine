@@ -139,9 +139,9 @@ bool gfx_texture_vk::read_input_stream(
                                                                                  num_subresource, memcpy_dest,
                                                                                  calc_subresource,
                                                                                  input_stream, input_stream_read_callback, input_stream_seek_callback);
-        
+
         mcrt_free(memcpy_dest);
-        
+
         if (!res_load_data_from_input_stream)
         {
             return false;
@@ -183,8 +183,14 @@ bool gfx_texture_vk::read_input_stream(
             this->m_gfx_malloc_device_memory = this->m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
         }
 
+        {
+            VkResult res_bind_image_memory = this->m_gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
+            assert(VK_SUCCESS == res_bind_image_memory);
+        }
 
-
+        VkBuffer transfer_src_buffer = this->m_gfx_connection->transfer_src_buffer();
+        VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
+        this->m_gfx_connection->copy_buffer_to_image(transfer_src_buffer, this->m_image, &subresource_range, num_subresource, cmdcopy_dest);
 
         mcrt_free(cmdcopy_dest);
 
