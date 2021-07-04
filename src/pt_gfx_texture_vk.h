@@ -62,11 +62,14 @@ class gfx_texture_vk : public gfx_texture_common
 
     static inline uint32_t calc_subresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
 
-    //https://source.winehq.org/git/vkd3d.git/
-    //libs/vkd3d/device.c
-    //d3d12_device_GetCopyableFootprints
-    //libs/vkd3d/utils.c
-    //vkd3d_formats
+    // https://source.winehq.org/git/vkd3d.git/
+    // libs/vkd3d/device.c
+    // d3d12_device_GetCopyableFootprints
+    // libs/vkd3d/utils.c
+    // vkd3d_formats
+
+    // https://github.com/ValveSoftware/dxvk/blob/master/src/dxvk/dxvk_context.cpp
+    // DxvkContext::uploadImage
     static inline size_t get_copyable_footprints(
         struct specific_header_vk_t const *specific_header_vk,
         VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,

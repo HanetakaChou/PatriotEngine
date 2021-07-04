@@ -231,7 +231,7 @@ void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_im
 
     // https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples#upload-data-from-the-cpu-to-an-image-sampled-in-a-fragment-shader
 
-    if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index()!=this->m_device.queue_graphics_family_index()))
+    if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
     {
         // Queue Family Ownership Transfer
         // Release Operation

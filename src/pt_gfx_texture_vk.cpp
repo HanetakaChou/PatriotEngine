@@ -444,8 +444,8 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
 
     uint32_t aspectCount = get_format_aspect_count(specific_header_vk->format);
 
-    size_t stagingOffset = base_offset;
-    size_t TotalBytes = 0;
+    size_t stagingOffset = internal_round_up(base_offset, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+    size_t TotalBytes = (stagingOffset - base_offset);
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
