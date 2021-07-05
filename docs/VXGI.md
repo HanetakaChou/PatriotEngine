@@ -12,4 +12,5 @@ The atomic operation may be replaced by "VK_EXT_fragment_shader_interlock" or "G
 \[Crassin 2012\] [Cyril Crassin, Simon Green. "Chapter 22. Octree-Based Sparse Voxelization Using The GPU Hardware Rasterizer." OpenGL Insights 2012.](https://research.nvidia.com/publication/octree-based-sparse-voxelization-using-gpu-hardware-rasterizer)  
 \[Crassin 2011\] [Cyril Crassin, Fabrice Neyret, Miguel Sainz, Simon Green, Elmar Eisemann. "Interactive Indirect Illumination Using Voxel Cone Tracing." SIGGRAPH 2011.](https://research.nvidia.com/publication/interactive-indirect-illumination-using-voxel-cone-tracing)  
 \[Hoetzlein 2016\] Rama Hoetzlein. "GVDB: Raytracing Sparse Voxel Database Structures on the GPU." HPG 2016.  
+\[Lin 2013] [heng-Tso Lin. "Implementing Sparse Voxel Octree." JCGT 2013](https://github.com/otaku690/SparseVoxelOctree)  
 
