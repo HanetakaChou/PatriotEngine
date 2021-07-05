@@ -20,17 +20,37 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_llvm_cxx_static
 LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++ #-D_GLIBCXX_USE_CXX11_ABI=1 
-LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++
-include $(BUILD_STATIC_LIBRARY)
-
-include $(CLEAR_VARS)
-LOCAL_MODULE := libpt_llvm_cxx_shared
-LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-nostdlib -nodefaultlibs #-static-libgcc -static-libstdc++ #-D_GLIBCXX_USE_CXX11_ABI=1 
-LOCAL_EXPORT_LDFLAGS := -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-lc++ -lunwind #-nostdlib -nodefaultlibs #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-static-libgcc -static-libstdc++
+LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -static-libstdc++ #-static-libgcc #-rtlib=compiler-rt -unwindlib=libunwind #-nostdlib -nodefaultlibs #-D_GLIBCXX_USE_CXX11_ABI=1 
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1
+endif
+LOCAL_EXPORT_LDFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -static-libstdc++ #-static-libgcc  #-rtlib=compiler-rt -unwindlib=libunwind #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-nostdlib -nodefaultlibs
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib
+LOCAL_EXPORT_LDFLAGS += -lc++abi
+#LOCAL_EXPORT_LDFLAGS += -Wl,-Bstatic -lc++abi -Wl,-Bdynamic 
+#LOCAL_EXPORT_LDFLAGS += -lunwind
+#LOCAL_EXPORT_LDFLAGS += -llzma
+endif
+endif
 include $(BUILD_STATIC_LIBRARY)
 
 # TODO
 # enable LOCAL_DISABLE_FATAL_LINKER_WARNINGS in build-binary.mk
 # x86/Gos-linux.c:299: warning: sigreturn is not implemented and will always fail
+
+include $(CLEAR_VARS)
+LOCAL_MODULE := libpt_llvm_cxx_shared
+LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
+LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1
+endif
+LOCAL_EXPORT_LDFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-lc++ -lunwind #-nostdlib -nodefaultlibs #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-static-libgcc -static-libstdc++
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib
+endif
+endif
+include $(BUILD_STATIC_LIBRARY)

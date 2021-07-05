@@ -20,14 +20,38 @@ LOCAL_PATH := $(call my-dir)
 include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gnu_stdcxx_static
 LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_gnu_stdcxx_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
-LOCAL_EXPORT_LDFLAGS := -static-libgcc -static-libstdc++
+LOCAL_EXPORT_CPPFLAGS += -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+LOCAL_EXPORT_CPPFLAGS += -I/usr/include/c++/9 
+LOCAL_EXPORT_CPPFLAGS += -I/usr/include/x86_64-linux-gnu/c++/9
+endif
+LOCAL_EXPORT_LDFLAGS += -static-libgcc -static-libstdc++
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang)  # bug for Ubuntu clang?
+ifeq (x86_64,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/gcc/x86_64-linux-gnu/9
+endif
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/gcc/i686-linux-gnu//9
+endif
+endif
 include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gnu_stdcxx_shared
 LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_gnu_stdcxx_fake.cpp
-LOCAL_EXPORT_CPPFLAGS := -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 #-static-libgcc -static-libstdc++ 
+LOCAL_EXPORT_CPPFLAGS := -D_GLIBCXX_USE_CXX11_ABI=1 #-static-libgcc -static-libstdc++ 
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+LOCAL_EXPORT_CPPFLAGS += -I/usr/include/c++/9
+LOCAL_EXPORT_CPPFLAGS += -I/usr/include/x86_64-linux-gnu/c++/9
+endif
 #LOCAL_EXPORT_LDFLAGS := #-static-libgcc -static-libstdc++
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang)  # bug for Ubuntu clang?
+ifeq (x86_64,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/gcc/x86_64-linux-gnu/9
+endif
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/gcc/i686-linux-gnu//9
+endif
+endif
 include $(BUILD_STATIC_LIBRARY)
 

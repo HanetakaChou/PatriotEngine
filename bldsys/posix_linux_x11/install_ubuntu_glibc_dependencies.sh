@@ -36,15 +36,31 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     dpkg --add-architecture i386
     apt-get update
 
+    apt remove libc++abi1-10 # bug ?
+    apt remove libc++abi-10-dev # bug ?
+    apt remove libc++1-10 # bug ?
+    apt remove libc++-10-dev # bug ?
+    #apt remove gcc-9
+    #apt remove gcc
+    #apt remove g++-9
+    #apt remove g++
+    #apt remove clang-10
+    #apt remove clang
+    apt autoremove
+
     apt install libc6-dev:i386
-    apt install libgcc-7-dev:i386 # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
-    # apt install libstdc++-7-dev:i386
+    apt install libgcc-9-dev:i386 # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
+    apt install libstdc++-9-dev:i386
     apt install liblzma-dev:i386
     apt install libunwind8:i386
     apt install libunwind-dev:i386
+    apt install libc++abi1-10:i386
     apt install libc++abi1:i386
+    apt install libc++abi-10-dev:i386
     apt install libc++abi-dev:i386
+    apt install libc++1-10:i386
     apt install libc++1:i386
+    apt install libc++-10-dev:i386
     apt install libc++-dev:i386
     apt install libxcb1-dev:i386
     apt install libx11-dev:i386
@@ -52,36 +68,40 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt install mesa-vulkan-drivers:i386
     apt install libvulkan-dev:i386
 
-    # apt install gcc-7:i386
+    # apt install gcc-9:i386
     # apt install gcc:i386
-    # apt install g++-7:i386
+    # apt install g++-9:i386
     # apt install g++:i386
-    # apt install clang-6.0:i386
+    apt install clang-10:i386
     apt install clang:i386
-    apt install chrpath:i386
+    apt install chrpath
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
-    apt install libgcc-7-dev # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
-    # apt install libstdc++-7-dev
+    apt install libgcc-9-dev # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
+    apt install libstdc++-9-dev
     apt install liblzma-dev
     apt install libunwind8
     apt install libunwind-dev
+    apt install libc++abi1-10
     apt install libc++abi1
+    apt install libc++abi-10-dev 
     apt install libc++abi-dev
+    apt install libc++1-10
     apt install libc++1
+    apt install libc++-10-dev
     apt install libc++-dev
     apt install libxcb1-dev
     apt install libx11-dev
     apt install libvulkan1
     apt install mesa-vulkan-drivers
-    # apt install vulkan-validationlayers
+    apt install vulkan-validationlayers
     apt install libvulkan-dev
 
-    # apt install gcc-7
-    # apt install gcc
-    # apt install g++-7
-    # apt install g++
-    # apt install clang-6.0
+    apt install gcc-9
+    apt install gcc
+    apt install g++-9
+    apt install g++
+    apt install clang-10
     apt install clang
     apt install chrpath
 else
