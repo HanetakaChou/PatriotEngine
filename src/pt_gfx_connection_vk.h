@@ -56,6 +56,8 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_release() override;
 
+	// Perhaps we should prepare different intermediate textures for differenct frames
+    
     // Frame Throttling
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throtting_index;
