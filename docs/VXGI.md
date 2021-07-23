@@ -1,10 +1,16 @@
 
 ## Tips
-By \[Harris 2019\], the Geometry Shader is hostile to the performance for mobile GPU  
 
+### Geometry Shader
+By \[Harris 2019\], the geometry shader is hostile to the performance for mobile GPU.  
+Besides, for Mali GPU, the geometry shader is not supported by the hardware and is emulated by the compute shader. And since the number of the vertices produced by a single geometry shader may vary, a parallel scan pass is required to perform the prefix sum.  
+The normals may be calculated when the vertices are loaded. It must be ensured that the normals of the vertices of the same triangle are the same. For example, if a vertex is shared by multiple triangles, new vertices with different normals may be created for different triangles.  
+
+### Conservative Rasterization
 \[Hasselgren 2005\] may be replaced by "VK_EXT_conservative_rasterization"  
 
-The atomic operation may be replaced by "VK_EXT_fragment_shader_interlock" or "GL_EXT_shader_framebuffer_fetch"  
+### Atomic Read-Modify-Write Operation
+The atomic read-modify-write operation may be replaced by "VK_EXT_fragment_shader_interlock" or "GL_EXT_shader_framebuffer_fetch"  
 
 ## Reference  
 \[Harris 2019\] [Pete Harris. "Arm Mali GPUs Best Practices Developer Guide." ARM Developer 2019.](https://developer.arm.com/solutions/graphics/developer-guides/mali-gpu-best-practices)  
