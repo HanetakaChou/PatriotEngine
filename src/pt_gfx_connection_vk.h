@@ -67,9 +67,7 @@ class gfx_connection_vk : public gfx_connection_common
     uint64_t m_transfer_src_buffer_offset;
 
     // Streaming
-    static uint32_t const STREAMING_THREAD_COUNT = 1U;
-    mcrt_native_thread_id m_streaming_native_thread_id[STREAMING_THREAD_COUNT]; //The owner
-    uint32_t m_streaming_affinity_mask; // TBB Arena
+    static uint32_t const STREAMING_THREAD_COUNT = 32U;
     // padding // false sharing   
     // struct
     // {
@@ -82,7 +80,6 @@ class gfx_connection_vk : public gfx_connection_common
     mcrt_task_ref m_streaming_task_root;
 
     inline uint32_t streaming_thread_index_get();
-    inline uint32_t streaming_thread_index_allocate();
 
     inline void sync_streaming_thread();
 

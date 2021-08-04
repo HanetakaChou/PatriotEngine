@@ -21,6 +21,8 @@
 
 #include "pt_mcrt_scalable_allocator_tbb_scheduler.h"
 
+#include <tbb/task_arena.h>
+
 class mcrt_task_t;
 
 inline mcrt_task_ref wrap(class mcrt_task_t *t) { return reinterpret_cast<mcrt_task_ref>(t); }
@@ -118,4 +120,10 @@ PT_ATTR_MCRT void PT_CALL mcrt_task_wait_for_all(mcrt_task_ref self)
 PT_ATTR_MCRT void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task_ref self, mcrt_task_ref child)
 {
     return unwrap(self)->spawn_and_wait_for_all(*unwrap(child));
+}
+
+PT_ATTR_MCRT uint32_t mcrt_task_arena_current_thread_index()
+{
+    int idx = tbb::this_task_arena::current_thread_index();
+    return (tbb::task_arena::not_initialized != idx) ? uint32_t(idx) : uint32_t(-1);
 }

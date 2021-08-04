@@ -58,7 +58,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     this->m_transfer_src_buffer_offset = 0U;
 
     // Streaming
-    this->m_streaming_affinity_mask = 0U;
+    //this->m_streaming_affinity_mask = 0U;
 
     for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
     {
@@ -123,75 +123,20 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 
 inline uint32_t gfx_connection_vk::streaming_thread_index_get()
 {
-    uint32_t streaming_thread_index = uint32_t(-1);
+    uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
+    assert(uint32_t(-1) != streaming_thread_index);
+    assert(streaming_thread_index < STREAMING_THREAD_COUNT);
 
-    mcrt_native_thread_id native_thread_id = mcrt_native_thread_id_get();
-
-    //
+    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_thread_index]))
     {
-        uint32_t streaming_affinity_mask_temp = mcrt_atomic_load(&this->m_streaming_affinity_mask);
-        for (uint32_t i = 0U; i < STREAMING_THREAD_COUNT; ++i)
-        {
-            if ((0U != (streaming_affinity_mask_temp & (1U << i))) && (native_thread_id == this->m_streaming_native_thread_id[i]))
-            {
-                streaming_thread_index = i;
-                break;
-            }
-        }
-    }
-
-    //
-    {
-        if (uint32_t(-1) == streaming_thread_index)
-        {
-            streaming_thread_index = this->streaming_thread_index_allocate();
-            if (uint32_t(-1) != streaming_thread_index)
-            {
-                this->m_streaming_native_thread_id[streaming_thread_index] = native_thread_id;
-            }
-        }
-    }
-
-    return streaming_thread_index;
-}
-
-inline uint32_t gfx_connection_vk::streaming_thread_index_allocate()
-{
-    static_assert(STREAMING_THREAD_COUNT < 32U, "");
-
-    uint32_t streaming_affinity_mask_old = uint32_t(-1);
-    uint32_t streaming_affinity_mask_find = uint32_t(-1);
-    uint32_t streaming_thread_index_find = uint32_t(-1);
-    bool find_avaliable = false;
-    do
-    {
-        streaming_affinity_mask_old = mcrt_atomic_load(&this->m_streaming_affinity_mask);
-
-        find_avaliable = false;
-        for (uint32_t i = 0U; i < STREAMING_THREAD_COUNT; ++i)
-        {
-            streaming_affinity_mask_find = (1U << i);
-            if (0U == (streaming_affinity_mask_old & streaming_affinity_mask_find))
-            {
-                streaming_thread_index_find = i;
-                find_avaliable = true;
-                break;
-            }
-        }
-    } while (find_avaliable && (streaming_affinity_mask_old != mcrt_atomic_cas_u32(&this->m_streaming_affinity_mask, streaming_affinity_mask_old | streaming_affinity_mask_find, streaming_affinity_mask_old)));
-
-    if (find_avaliable)
-    {
-        assert(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_thread_index_find]);
-     
         VkCommandBufferAllocateInfo command_buffer_allocate_info;
         command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_streaming_command_pool[streaming_thread_index_find];
+        command_buffer_allocate_info.commandPool = this->m_streaming_command_pool[streaming_thread_index];
         command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_command_buffer[streaming_thread_index_find]);
+        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_command_buffer[streaming_thread_index]);
         assert(VK_SUCCESS == res_allocate_command_buffers);
 
         VkCommandBufferBeginInfo command_buffer_begin_info = {
@@ -200,15 +145,11 @@ inline uint32_t gfx_connection_vk::streaming_thread_index_allocate()
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             NULL,
         };
-        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_command_buffer[streaming_thread_index_find], &command_buffer_begin_info);
+        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_command_buffer[streaming_thread_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
+    }
 
-        return streaming_thread_index_find;
-    }
-    else
-    {
-        return uint32_t(-1);
-    }
+    return streaming_thread_index;
 }
 
 void gfx_connection_vk::sync_streaming_thread()
@@ -230,13 +171,10 @@ void gfx_connection_vk::sync_streaming_thread()
     submit_info.signalSemaphoreCount = 0U;
     submit_info.pSignalSemaphores = NULL;
 
-    uint32_t streaming_affinity_mask = mcrt_atomic_load(&this->m_streaming_affinity_mask);
-
     for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
     {
-        if (0U != (streaming_affinity_mask & (1U << streaming_thread_index)))
+        if (VK_NULL_HANDLE != this->m_streaming_command_buffer[streaming_thread_index])
         {
-            assert(VK_NULL_HANDLE != this->m_streaming_command_buffer[streaming_thread_index]);
             this->m_device.end_command_buffer(this->m_streaming_command_buffer[streaming_thread_index]);
 
             command_buffers[submit_info.commandBufferCount] = this->m_streaming_command_buffer[streaming_thread_index];
@@ -244,14 +182,8 @@ void gfx_connection_vk::sync_streaming_thread()
 
             this->m_streaming_command_buffer[streaming_thread_index] = VK_NULL_HANDLE;
         }
-        else
-        {
-            assert(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_thread_index]);
-        }
     }
-
-    this->m_streaming_affinity_mask = 0U;
-
+    
     if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
     {
         this->m_device.queue_submit(this->m_device.queue_transfer(), 1, &submit_info, VK_NULL_HANDLE);
