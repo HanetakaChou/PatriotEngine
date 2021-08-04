@@ -33,6 +33,11 @@ inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t
     return __sync_val_compare_and_swap(dest, comp, exch);
 }
 
+inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint64_t comp)
+{
+    return __sync_val_compare_and_swap(dest, comp, exch);
+}
+
 inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp)
 {
     return __sync_val_compare_and_swap(dest, comp, exch);

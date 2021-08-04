@@ -14,13 +14,8 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [
-                //{
-                //"name": "DISPLAY",
-                //"value": "" //NVIDIA driver
-                //"value": ":0.0"
-                //}
-            ],
+            "environment": [],
+            "envFile": "${workspaceFolder}/.vscode/cppvsdbg.env",
             "externalConsole": false,
             //"targetArchitecture": "x86",
             "MIMode": "gdb",

@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_mcrt_task.h>
 #include "pt_gfx_texture_common.h"
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
@@ -43,6 +44,18 @@ class gfx_texture_vk : public gfx_texture_common
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
+
+    struct read_input_stream_task_data
+    {
+        char const *m_initial_filename;
+        gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
+        intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
+        int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
+        void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+        class gfx_texture_vk *m_gfx_texture;
+    };
+
+    static mcrt_task_ref read_input_stream_task_data_execute(mcrt_task_ref self);
 
     struct specific_header_vk_t
     {

@@ -78,9 +78,8 @@ class gfx_malloc_vk : public gfx_malloc
 
 public:
     gfx_malloc_vk();
-
     bool init(class gfx_device_vk *api_vk);
-
+    void destroy();
     ~gfx_malloc_vk();
 
     void *transfer_src_buffer_pointer();

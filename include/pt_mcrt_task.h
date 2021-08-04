@@ -57,6 +57,8 @@ extern "C"
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_set_ref_count(mcrt_task_ref self, int count);
 
+    PT_ATTR_MCRT void PT_CALL mcrt_task_increment_ref_count(mcrt_task_ref self);
+
     PT_ATTR_MCRT int PT_CALL mcrt_task_decrement_ref_count(mcrt_task_ref self);
 
     PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_parent(mcrt_task_ref self);
@@ -64,6 +66,10 @@ extern "C"
     PT_ATTR_MCRT void PT_CALL mcrt_task_set_parent(mcrt_task_ref self, mcrt_task_ref parent);
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn(mcrt_task_ref t);
+
+    // Wait for reference count to become one, and set reference count to zero.
+    // We may set the recount to 2 if the task has one child
+    PT_ATTR_MCRT void PT_CALL mcrt_task_wait_for_all(mcrt_task_ref self);
 
     // Wait for reference count to become one, and set reference count to zero.
     // We may set the recount to 2 if the task has one child

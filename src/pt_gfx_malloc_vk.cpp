@@ -653,6 +653,11 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     return true;
 }
 
+void gfx_malloc_vk::destroy()
+{
+    
+}
+
 gfx_malloc_vk::~gfx_malloc_vk()
 {
     return;

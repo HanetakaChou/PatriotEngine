@@ -24,10 +24,12 @@
         mcrt_task_recycle_as_child_of;
         mcrt_task_ref_count;
         mcrt_task_set_ref_count;
+        mcrt_task_increment_ref_count;
         mcrt_task_decrement_ref_count;
         mcrt_task_parent;
         mcrt_task_set_parent;
         mcrt_task_spawn;
+        mcrt_task_wait_for_all;
         mcrt_task_spawn_and_wait_for_all;
         mcrt_malloc;
         mcrt_free;

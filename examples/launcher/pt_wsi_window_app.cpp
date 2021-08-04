@@ -38,4 +38,5 @@ void wsi_window_app_handle_event(wsi_window_app_ref wsi_window_app, struct wsi_w
 
 void wsi_window_app_destroy(wsi_window_app_ref wsi_window_app)
 {
+
 }

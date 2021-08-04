@@ -20,13 +20,13 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_mcrt_thread.h>
+#include <pt_mcrt_task.h>
 #include "pt_gfx_connection_common.h"
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include <vulkan/vulkan.h>
-
-#include <pt_mcrt_thread.h>
 
 class gfx_connection_vk : public gfx_connection_common
 {
@@ -63,6 +63,9 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_frame_throtting_index;
     VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
 
+    // Staging Buffer
+    uint64_t m_transfer_src_buffer_offset;
+
     // Streaming
     static uint32_t const STREAMING_THREAD_COUNT = 1U;
     mcrt_native_thread_id m_streaming_native_thread_id[STREAMING_THREAD_COUNT]; //The owner
@@ -76,8 +79,12 @@ class gfx_connection_vk : public gfx_connection_common
     VkCommandPool m_streaming_command_pool[STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_command_buffer[STREAMING_THREAD_COUNT];
 
+    mcrt_task_ref m_streaming_task_root;
+
     inline uint32_t streaming_thread_index_get();
     inline uint32_t streaming_thread_index_allocate();
+
+    inline void sync_streaming_thread();
 
     inline gfx_connection_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -98,8 +105,9 @@ public:
 
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
+    inline uint64_t *transfer_src_buffer_offset() { return &m_transfer_src_buffer_offset; }
+
     inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
-    inline uint64_t transfer_src_buffer_offset() { return m_malloc.transfer_src_buffer_offset(); }
     inline bool transfer_src_buffer_validate_offset(uint64_t size) { return m_malloc.transfer_src_buffer_validate_offset(size); }
     inline bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset) { return m_malloc.transfer_src_buffer_alloc(size, out_offset); }
     inline void transfer_src_buffer_free(uint64_t offset, uint64_t size) { return m_malloc.transfer_src_buffer_free(offset, size); }
@@ -109,6 +117,8 @@ public:
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
     //Streaming
+
+    inline mcrt_task_ref streaming_task_root() { return m_streaming_task_root; }
 
     inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }

@@ -27,7 +27,17 @@ inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t
     return InterlockedCompareExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch), static_cast<LONG>(comp));
 }
 
+inline uint32_t mcrt_atomic_cas_u32(uint32_t volatile *dest, uint32_t exch, uint32_t comp)
+{
+    return InterlockedCompareExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch), static_cast<LONG>(comp));
+}
+
 inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t comp)
+{
+    return InterlockedCompareExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch), static_cast<LONGLONG>(comp));
+}
+
+inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint64_t comp)
 {
     return InterlockedCompareExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch), static_cast<LONGLONG>(comp));
 }

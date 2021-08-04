@@ -249,10 +249,6 @@ protected:
     };
 
 private:
-    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-    mcrt_string m_asset_filename;
-
     static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type);
 
     static inline enum gfx_texture_common_format_t dds_get_common_format(uint32_t dds_format);
@@ -302,6 +298,9 @@ protected:
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
+    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+    mcrt_string m_asset_filename;
 public:
     virtual void destroy() = 0;
 

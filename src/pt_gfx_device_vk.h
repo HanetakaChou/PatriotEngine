@@ -68,6 +68,7 @@ class gfx_device_vk
     PFN_vkEndCommandBuffer m_vk_end_command_buffer;
     PFN_vkCmdPipelineBarrier m_vk_cmd_pipeline_barrier;
     PFN_vkCmdCopyBufferToImage m_vk_cmd_copy_buffer_to_image;
+    PFN_vkQueueSubmit m_vk_queue_submit;
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -89,6 +90,7 @@ class gfx_device_vk
 public:
     gfx_device_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    void destroy();
     ~gfx_device_vk();
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
@@ -97,6 +99,8 @@ public:
     inline bool has_dedicated_transfer_queue() { return m_has_dedicated_transfer_queue; }
     inline uint32_t queue_graphics_family_index() { return m_queue_graphics_family_index; }
     inline uint32_t queue_transfer_family_index() { return m_queue_transfer_family_index; }
+    inline VkQueue queue_graphics() { return m_queue_graphics; }
+    inline VkQueue queue_transfer() { return m_queue_transfer; }
 
     // Externally Synchronized Parameters
     // The queue parameter in vkQueueSubmit
@@ -126,9 +130,12 @@ public:
     inline VkResult create_command_Pool(VkCommandPoolCreateInfo const *create_info, VkCommandPool *command_pool) { return m_vk_create_command_pool(m_device, create_info, &m_allocator_callbacks, command_pool); }
     inline VkResult allocate_command_buffers(VkCommandBufferAllocateInfo const *allocate_info, VkCommandBuffer *command_buffers) { return m_vk_allocate_command_buffers(m_device, allocate_info, command_buffers); }
     inline VkResult begin_command_buffer(VkCommandBuffer command_buffer, VkCommandBufferBeginInfo const *begin_info) { return m_vk_begin_command_buffer(command_buffer, begin_info); }
+    inline VkResult end_command_buffer(VkCommandBuffer command_buffer) { return m_vk_end_command_buffer(command_buffer); }
 
     inline void cmd_pipeline_barrier(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkDependencyFlags dependency_flags, uint32_t memory_barrier_count, VkMemoryBarrier const *memory_barriers, uint32_t buffer_memory_barrier_count, VkBufferMemoryBarrier *const buffer_memory_barriers, uint32_t image_memory_barrier_count, VkImageMemoryBarrier const *image_memory_barriers) { return m_vk_cmd_pipeline_barrier(command_buffer, src_stage_mask, dst_stage_mask, dependency_flags, memory_barrier_count, memory_barriers, buffer_memory_barrier_count, buffer_memory_barriers, image_memory_barrier_count, image_memory_barriers); }
     inline void cmd_copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *regions) { return m_vk_cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, dst_image_layout, region_count, regions); }
+
+    inline VkResult queue_submit(VkQueue queue, uint32_t submit_count, const VkSubmitInfo *submits, VkFence fence) { return this->m_vk_queue_submit(queue, submit_count, submits, fence); }
 };
 
 #endif

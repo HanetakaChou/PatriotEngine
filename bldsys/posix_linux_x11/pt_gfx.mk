@@ -26,7 +26,7 @@ LOCAL_MODULE := libpt_gfx_wsi_window_x11
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_posix_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_x11.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \
@@ -66,7 +66,7 @@ LOCAL_MODULE := libpt_gfx_wsi_bitmap
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk_wsi_bitmap.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_bitmap.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \

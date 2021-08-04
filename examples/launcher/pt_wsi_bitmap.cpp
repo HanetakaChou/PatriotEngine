@@ -57,6 +57,8 @@ int main(int argc, char **argv)
 
     //gfx_connection_wsi_on_resized(gfx_connection, NULL, 0, 0);
 
+    gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
+
     gfx_connection_destroy(gfx_connection);
 
     return 0;

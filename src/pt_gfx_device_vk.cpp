@@ -511,6 +511,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_cmd_copy_buffer_to_image = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(vk_get_device_proc_addr(m_device, "vkCmdCopyBufferToImage"));
     assert(NULL != this->m_vk_cmd_copy_buffer_to_image);
 
+    this->m_vk_queue_submit = reinterpret_cast<PFN_vkQueueSubmit>(vk_get_device_proc_addr(m_device, "vkQueueSubmit"));
+    assert(NULL != this->m_vk_queue_submit);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {
@@ -523,8 +526,8 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         {
             assert(VK_QUEUE_FAMILY_IGNORED != this->m_queue_transfer_family_index);
             assert(uint32_t(-1) != this->m_queue_transfer_queue_index);
+            vk_get_device_queue(this->m_device, this->m_queue_transfer_family_index, this->m_queue_transfer_queue_index, &this->m_queue_transfer);
         }
-        vk_get_device_queue(this->m_device, this->m_queue_transfer_family_index, this->m_queue_transfer_queue_index, &this->m_queue_transfer);
     }
     if ((VK_NULL_HANDLE == this->m_queue_graphics) || (this->m_has_dedicated_transfer_queue && (VK_NULL_HANDLE == this->m_queue_transfer)))
     {
@@ -534,13 +537,19 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     return true;
 }
 
-gfx_device_vk::~gfx_device_vk()
+void gfx_device_vk::destroy()
 {
 #ifndef NDEBUG
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
     vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, &m_allocator_callbacks);
+    m_debug_report_callback = NULL;
 #endif
+}
+
+gfx_device_vk::~gfx_device_vk()
+{
+    assert(NULL == m_debug_report_callback);
 }
 
 #ifndef NDEBUG
