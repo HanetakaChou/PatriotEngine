@@ -98,7 +98,7 @@ inline int32_t mcrt_atomic_inc_i32(int32_t volatile *dest)
 
 inline uint32_t mcrt_atomic_inc_u32(uint32_t volatile *dest)
 {
-        return __sync_add_and_fetch(dest, static_cast<uint32_t>(1));
+    return __sync_add_and_fetch(dest, static_cast<uint32_t>(1));
 }
 
 inline int64_t mcrt_atomic_inc_i64(int64_t volatile *dest)

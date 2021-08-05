@@ -20,11 +20,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "pt_gfx_streaming_object.h"
 #include <pt_gfx_connection.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include <string>
 
-class gfx_texture_common
+class gfx_texture_common : public gfx_streaming_object
 {
 protected:
     enum gfx_texture_common_type_t
@@ -288,30 +287,15 @@ protected:
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
-    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-    mcrt_string m_asset_filename;
-
-    // CryEngine
-    // m_eStreamingStatus
-    enum streaming_status_t
-    {
-        STREAMING_STATUS_NOT_LOAD,
-        STREAMING_STATUS_IN_PROCESS,
-        STREAMING_STATUS_READY,
-        STREAMING_STATUS_ERROR
-    };
-    streaming_status_t m_streaming_status;
-
-    inline gfx_texture_common(streaming_status_t streaming_status) : m_streaming_status(streaming_status) {}
+    inline gfx_texture_common(streaming_status_t streaming_status) : gfx_streaming_object(streaming_status) {}
 
 public:
-    virtual bool
-    read_input_stream(char const *initial_filename,
-                      gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                      intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-                      int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-                      void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
+    virtual bool read_input_stream(
+        char const *initial_filename,
+        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
 
     virtual void destroy() = 0;
 };

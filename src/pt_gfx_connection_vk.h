@@ -27,6 +27,7 @@
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
+#include "pt_gfx_streaming_object.h"
 #include <vulkan/vulkan.h>
 
 class gfx_connection_vk : public gfx_connection_common
@@ -71,7 +72,7 @@ class gfx_connection_vk : public gfx_connection_common
     uint64_t m_transfer_src_buffer_begin_and_end; // Staging Buffer
     uint32_t m_transfer_src_buffer_max_end[STREAMING_THROTTLING_COUNT];
     // TODO
-    // padding // false sharing
+    // padding // cacheline // false sharing
     // struct
     // {
     //
@@ -81,6 +82,14 @@ class gfx_connection_vk : public gfx_connection_common
     VkCommandBuffer m_streaming_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
+
+    // we don't need the operations below since the fence ensures that there is no consumer
+    //
+    // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
+    // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
+    //
+
+    struct streaming_object_list_node *m_streaming_object_list[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_thread_get_command_buffer(uint32_t streaming_throttling_index);
     inline void sync_streaming_thread();

@@ -544,9 +544,14 @@ gfx_device_vk::~gfx_device_vk()
 }
 
 #ifndef NDEBUG
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
-    printf("[%s] : %s", pLayerPrefix, pMessage);
+    char debug_message[4096];
+    snprintf(debug_message, 4096, "[%s] : %s \n", pLayerPrefix, pMessage);
+    write(STDOUT_FILENO, debug_message, strlen(debug_message));
     return VK_FALSE;
 }
 #endif

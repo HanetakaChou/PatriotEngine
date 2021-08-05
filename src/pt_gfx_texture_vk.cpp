@@ -258,7 +258,15 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
 
                     // enough memeory
                     assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
-                } while (((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size) || (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin_and_end(), gfx_connection_vk::transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_begin, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
+
+                    // not enough memory
+                    if (PT_UNLIKELY((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size))
+                    {
+                        task_data->m_gfx_texture->m_streaming_status = STREAMING_STATUS_ERROR;
+                        return NULL;
+                    }
+
+                } while (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin_and_end(), gfx_connection_vk::transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_begin, transfer_src_buffer_end), transfer_src_buffer_begin_and_end));
 
                 // store the max end
                 uint32_t transfer_src_buffer_max_end = uint32_t(-1);
@@ -569,6 +577,8 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
                 uint32_t bufferRowLength;
                 uint32_t bufferImageHeight;
 
+                size_t texel_block_size;
+
                 if (is_format_compressed(specific_header_vk->format))
                 {
                     assert(1 == get_compressed_format_block_depth(specific_header_vk->format));
@@ -610,6 +620,8 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
 
                     //bufferRowLength = mcrt_intrin_round_up(specific_header_vk->extent.width, get_compressed_format_block_width(specific_header_vk->format));
                     //bufferImageHeight = mcrt_intrin_round_up(specific_header_vk->extent.height, get_compressed_format_block_height(specific_header_vk->format));
+
+                    texel_block_size = get_compressed_format_block_size_in_bytes(specific_header_vk->format);
                 }
                 else if (is_format_rgba(specific_header_vk->format))
                 {
@@ -623,6 +635,8 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
 
                     bufferRowLength = outputRowPitch / get_rgba_format_pixel_bytes(specific_header_vk->format);
                     bufferImageHeight = outputNumRows;
+
+                    texel_block_size = get_rgba_format_pixel_bytes(specific_header_vk->format);
                 }
                 else
                 {
@@ -636,9 +650,11 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
 
                     bufferRowLength = outputRowPitch / get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex);
                     bufferImageHeight = outputNumRows;
+
+                    texel_block_size = get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex);
                 }
 
-                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(stagingOffset, physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(stagingOffset, size_t(4U)), texel_block_size), physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
                 TotalBytes += (stagingOffset_new - stagingOffset);
                 stagingOffset = stagingOffset_new;
 
@@ -671,6 +687,7 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
                 size_t surfaceSize = (outputSlicePitch * outputNumSlices);
                 stagingOffset += surfaceSize;
                 TotalBytes += surfaceSize;
+                assert((base_offset + TotalBytes) == stagingOffset);
 
                 w = w >> 1;
                 h = h >> 1;
