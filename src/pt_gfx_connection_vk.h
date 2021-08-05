@@ -81,6 +81,9 @@ class gfx_connection_vk : public gfx_connection_common
     // } [STREAMING_THREAD_COUNT]
     VkCommandPool m_streaming_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandPool m_streaming_acquire_ownership_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_streaming_acquire_ownership_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
 
@@ -93,8 +96,9 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
-    inline VkCommandBuffer streaming_thread_get_command_buffer(uint32_t streaming_throttling_index);
-    inline void sync_streaming_thread();
+    inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index);
+    inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index);
+    inline void reduce_streaming_task();
 
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline gfx_connection_vk();

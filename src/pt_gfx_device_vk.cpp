@@ -508,6 +508,12 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_destory_fence = reinterpret_cast<PFN_vkDestroyFence>(vk_get_device_proc_addr(m_device, "vkDestroyFence"));
     assert(NULL != this->m_vk_destory_fence);
 
+    this->m_vk_create_semaphore = reinterpret_cast<PFN_vkCreateSemaphore>(vk_get_device_proc_addr(m_device, "vkCreateSemaphore"));
+    assert(NULL != this->m_vk_create_semaphore);
+
+    this->m_vk_destroy_semaphore = reinterpret_cast<PFN_vkDestroySemaphore>(vk_get_device_proc_addr(m_device, "vkDestroySemaphore"));
+    assert(NULL != this->m_vk_destroy_semaphore);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {

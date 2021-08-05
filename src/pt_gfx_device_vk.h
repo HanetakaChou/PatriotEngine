@@ -73,6 +73,8 @@ class gfx_device_vk
     PFN_vkWaitForFences m_vk_wait_for_fences;
     PFN_vkResetFences m_vk_reset_fences;
     PFN_vkDestroyFence m_vk_destory_fence;
+    PFN_vkCreateSemaphore m_vk_create_semaphore;
+    PFN_vkDestroySemaphore m_vk_destroy_semaphore;
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -147,6 +149,9 @@ public:
     inline VkResult wait_for_fences(uint32_t fence_count, const VkFence *fences, VkBool32 wait_all, uint64_t timeout) { return this->m_vk_wait_for_fences(this->m_device, fence_count, fences, wait_all, timeout); }
     inline VkResult reset_fences(uint32_t fence_count, const VkFence *fences) { return this->m_vk_reset_fences(this->m_device, fence_count, fences); }
     inline void destroy_fence(VkFence fence) { return this->m_vk_destory_fence(this->m_device, fence, &this->m_allocator_callbacks); }
+
+    inline VkResult create_semaphore(VkSemaphoreCreateInfo const *create_info, VkSemaphore *semaphore) { return this->m_vk_create_semaphore(this->m_device, create_info, &this->m_allocator_callbacks, semaphore); }
+    inline void destroy_semaphore(VkSemaphore semaphore) { return this->m_vk_destroy_semaphore(this->m_device, semaphore, &this->m_allocator_callbacks); }
 };
 
 #endif
