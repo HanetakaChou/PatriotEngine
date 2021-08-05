@@ -193,7 +193,6 @@ void *wsi_window_x11::draw_request_main(void *arg)
         gfx_connection_wsi_on_redraw_needed_release(self->m_gfx_connection);
     }
 
-    gfx_connection_destroy(self->m_gfx_connection);
     mcrt_atomic_store(&self->m_draw_request_thread_running, false);
     return NULL;
 }
@@ -208,7 +207,7 @@ void *wsi_window_x11::app_main(void *arg)
 
     int res = wsi_window_app_main(self->m_wsi_window_app);
 
-    mcrt_atomic_store(&self->m_loop, false);
+    //mcrt_atomic_store(&self->m_loop, false);
 
     //wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
 
@@ -368,6 +367,7 @@ void wsi_window_x11::destroy()
     {
         mcrt_os_yield();
     }
+    gfx_connection_destroy(this->m_gfx_connection);
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
 

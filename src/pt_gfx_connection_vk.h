@@ -118,7 +118,7 @@ public:
     inline VkDeviceSize transfer_src_buffer_size() { return m_malloc.transfer_src_buffer_size(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
     inline uint64_t *transfer_src_buffer_begin_and_end() { return &m_transfer_src_buffer_begin_and_end; }
-    inline uint32_t *transfer_src_buffer_max_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_max_end[streaming_throttling_index]; }
+    inline uint32_t *transfer_src_buffer_streaming_task_max_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_max_end[streaming_throttling_index]; }
 
     static inline uint32_t transfer_src_buffer_unpack_begin(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end >> 32U); }
     static inline uint32_t transfer_src_buffer_unpack_end(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end & 0XFFFFFFFFU); }
@@ -132,9 +132,8 @@ public:
 
     //Streaming
     inline uint32_t current_streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
-
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
-
+    bool streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 

@@ -37,7 +37,6 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 
 inline gfx_connection_vk::gfx_connection_vk()
 {
-
 }
 
 bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
@@ -111,6 +110,8 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
 
         this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL);
         mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
+
+        this->m_streaming_object_count[streaming_throttling_index] = 0U;
     }
 
     return true;
@@ -126,7 +127,6 @@ void gfx_connection_vk::destroy()
 
 inline gfx_connection_vk::~gfx_connection_vk()
 {
-
 }
 
 inline VkCommandBuffer gfx_connection_vk::streaming_thread_get_command_buffer(uint32_t streaming_throttling_index)
@@ -164,9 +164,9 @@ inline VkCommandBuffer gfx_connection_vk::streaming_thread_get_command_buffer(ui
 void gfx_connection_vk::sync_streaming_thread()
 {
     // STREAMING_THROTTLING_COUNT - 3
-    // 0 - Fence / ResetCommandPool 
+    // 0 - Fence / ResetCommandPool
     // 1 - sync by TBB / Submit - "current" streaming_throttling_index
-    // 2 - spawn / BeginCommandBuffer  
+    // 2 - spawn / BeginCommandBuffer
 
     // Multi-Threading
     // gfx_texture_vk::read_input_stream
@@ -185,7 +185,7 @@ void gfx_connection_vk::sync_streaming_thread()
     submit_info.pWaitSemaphores = NULL;
     submit_info.pWaitDstStageMask = NULL;
     VkCommandBuffer command_buffers[STREAMING_THREAD_COUNT];
-    submit_info.commandBufferCount = 0U; 
+    submit_info.commandBufferCount = 0U;
     submit_info.pCommandBuffers = command_buffers;
     submit_info.signalSemaphoreCount = 0U;
     submit_info.pSignalSemaphores = NULL;
@@ -215,7 +215,7 @@ void gfx_connection_vk::sync_streaming_thread()
     }
 
     // wait the Fence
-    // Submit ensures EndCommandBuffer 
+    // Submit ensures EndCommandBuffer
     // Fence ensures "Completed by GPU"
     // safe to ResetCommandPool
     streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
@@ -225,7 +225,7 @@ void gfx_connection_vk::sync_streaming_thread()
     // free memory
     {
         uint64_t transfer_src_buffer_begin_and_end = uint64_t(-1);
-        uint32_t transfer_src_buffer_begin = this->m_transfer_src_buffer_max_end[streaming_throttling_index];
+        uint32_t transfer_src_buffer_begin = uint32_t(-1);
         uint32_t transfer_src_buffer_end = uint32_t(-1);
         uint32_t transfer_src_buffer_size = uint32_t(-1);
         {
@@ -233,16 +233,17 @@ void gfx_connection_vk::sync_streaming_thread()
             assert(uint64_t(transfer_src_buffer_size_uint64) < uint64_t(UINT32_MAX));
             transfer_src_buffer_size = uint32_t(transfer_src_buffer_size_uint64);
         }
-
+        uint32_t transfer_src_buffer_streaming_task_max_end = this->m_transfer_src_buffer_max_end[streaming_throttling_index];
         do
         {
             transfer_src_buffer_begin_and_end = mcrt_atomic_load(&this->m_transfer_src_buffer_begin_and_end);
-            assert(transfer_src_buffer_unpack_begin(transfer_src_buffer_begin_and_end) <= transfer_src_buffer_begin);
+            transfer_src_buffer_begin = transfer_src_buffer_unpack_begin(transfer_src_buffer_begin_and_end);
+            // assert(transfer_src_buffer_begin <= transfer_src_buffer_streaming_task_max_end); // the max_end remains if there is no task
             transfer_src_buffer_end = transfer_src_buffer_unpack_end(transfer_src_buffer_begin_and_end);
 
             // enough memeory
-            assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
-        } while (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_begin, transfer_src_buffer_end), transfer_src_buffer_begin_and_end));
+            assert((transfer_src_buffer_end - transfer_src_buffer_streaming_task_max_end) <= transfer_src_buffer_size);
+        } while ((transfer_src_buffer_streaming_task_max_end > transfer_src_buffer_begin) && (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_streaming_task_max_end, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
     }
 
     // TODO limit the thread arena number
@@ -250,8 +251,30 @@ void gfx_connection_vk::sync_streaming_thread()
     {
         this->m_device.reset_command_pool(this->m_streaming_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
     }
+
     // iterate the list
-    
+    {
+        uint32_t streaming_object_count = this->m_streaming_object_count[streaming_throttling_index];
+        for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_count; ++streaming_object_index)
+        {
+            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->mark_ready();
+        }
+        this->m_streaming_object_count[streaming_throttling_index] = 0U;
+    }
+}
+
+bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
+{
+    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
+    if (PT_LIKELY(streaming_object_index < STREAMING_OBJECT_COUNT))
+    {
+        this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)

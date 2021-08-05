@@ -27,6 +27,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \
@@ -67,6 +68,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_bitmap.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \

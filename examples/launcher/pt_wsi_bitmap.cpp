@@ -64,6 +64,9 @@ int main(int argc, char **argv)
 
     gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
     gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
+    gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
+    gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
+    gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
 
     gfx_texture_destroy(texture1);
     gfx_texture_destroy(texture2);

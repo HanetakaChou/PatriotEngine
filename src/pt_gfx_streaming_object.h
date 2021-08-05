@@ -43,6 +43,9 @@ protected:
     streaming_status_t m_streaming_status;
 
     inline gfx_streaming_object(streaming_status_t streaming_status) : m_streaming_status(streaming_status) {}
+
+public:
+    void mark_ready();
 };
 
 #endif
