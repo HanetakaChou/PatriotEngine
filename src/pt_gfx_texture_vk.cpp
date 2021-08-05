@@ -151,10 +151,10 @@ bool gfx_texture_vk::read_input_stream(
     task_data->m_gfx_texture = this;
 
     // we must cache the streaming_throttling_index to eusure the consistency
-    task_data->streaming_throttling_index = this->m_gfx_connection->current_streaming_throttling_index();
+    task_data->m_streaming_throttling_index = this->m_gfx_connection->current_streaming_throttling_index();
 
-    mcrt_task_increment_ref_count(this->m_gfx_connection->streaming_task_root(task_data->streaming_throttling_index));
-    mcrt_task_set_parent(task, this->m_gfx_connection->streaming_task_root(task_data->streaming_throttling_index));
+    mcrt_task_increment_ref_count(this->m_gfx_connection->streaming_task_root(task_data->m_streaming_throttling_index));
+    mcrt_task_set_parent(task, this->m_gfx_connection->streaming_task_root(task_data->m_streaming_throttling_index));
 
     this->m_streaming_status = STREAMING_STATUS_IN_PROCESS;
     mcrt_task_spawn(task);
@@ -230,18 +230,42 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
             } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
 
             {
-                uint64_t base_offset = uint64_t(-1);
-                size_t total_size = size_t(-1);
+                uint64_t transfer_src_buffer_begin_and_end = uint64_t(-1);
+                uint32_t transfer_src_buffer_begin = uint32_t(-1);
+                uint32_t transfer_src_buffer_end = uint32_t(-1);
+                uint32_t transfer_src_buffer_size = uint32_t(-1);
+                {
+                    VkDeviceSize transfer_src_buffer_size_uint64 = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_size();
+                    assert(uint64_t(transfer_src_buffer_size_uint64) < uint64_t(UINT32_MAX));
+                    transfer_src_buffer_size = uint32_t(transfer_src_buffer_size_uint64);
+                }
+
+                // allocate memory
                 do
                 {
-                    base_offset = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset());
+                    transfer_src_buffer_begin_and_end = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin_and_end());
+                    transfer_src_buffer_begin = gfx_connection_vk::transfer_src_buffer_unpack_begin(transfer_src_buffer_begin_and_end);
+                    transfer_src_buffer_end = gfx_connection_vk::transfer_src_buffer_unpack_end(transfer_src_buffer_begin_and_end);
 
-                    total_size = get_copyable_footprints(&specific_header_vk,
-                                                         task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
-                                                         base_offset,
-                                                         num_subresource, memcpy_dest, cmdcopy_dest);
+                    uint64_t base_offset = (transfer_src_buffer_end % transfer_src_buffer_size);
 
-                } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset(), base_offset + total_size, base_offset));
+                    size_t total_size = get_copyable_footprints(&specific_header_vk,
+                                                                task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                                base_offset,
+                                                                num_subresource, memcpy_dest, cmdcopy_dest);
+                    assert(uint64_t(total_size) < uint64_t(UINT32_MAX));
+                    transfer_src_buffer_end += uint32_t(total_size);
+
+                    // enough memeory
+                    assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+                } while (((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size) || (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin_and_end(), gfx_connection_vk::transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_begin, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
+
+                // store the max end
+                uint32_t transfer_src_buffer_max_end = uint32_t(-1);
+                do
+                {
+                    transfer_src_buffer_max_end = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_max_end(task_data->m_streaming_throttling_index));
+                } while ((transfer_src_buffer_end > transfer_src_buffer_max_end) && (transfer_src_buffer_max_end != mcrt_atomic_cas_u32(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_max_end(task_data->m_streaming_throttling_index), transfer_src_buffer_end, transfer_src_buffer_max_end)));
             }
 
             bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset,
@@ -258,7 +282,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
 
             VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
             VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
-            task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(task_data->streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
+            task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(task_data->m_streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
         }
     }
 

@@ -65,10 +65,11 @@ class gfx_connection_vk : public gfx_connection_common
     VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
 
     // Streaming
-    uint64_t m_transfer_src_buffer_offset; // Staging Buffer
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
-    uint32_t m_streaming_throttling_index;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
+    uint32_t m_streaming_throttling_index;
+    uint64_t m_transfer_src_buffer_begin_and_end; // Staging Buffer
+    uint32_t m_transfer_src_buffer_max_end[STREAMING_THROTTLING_COUNT];
     // TODO
     // padding // false sharing
     // struct
@@ -103,8 +104,14 @@ public:
     inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
 
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
+    inline VkDeviceSize transfer_src_buffer_size() { return m_malloc.transfer_src_buffer_size(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
-    inline uint64_t *transfer_src_buffer_offset() { return &m_transfer_src_buffer_offset; }
+    inline uint64_t *transfer_src_buffer_begin_and_end() { return &m_transfer_src_buffer_begin_and_end; }
+    inline uint32_t *transfer_src_buffer_max_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_max_end[streaming_throttling_index]; }
+
+    static inline uint32_t transfer_src_buffer_unpack_begin(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end >> 32U); }
+    static inline uint32_t transfer_src_buffer_unpack_end(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end & 0XFFFFFFFFU); }
+    static inline uint64_t transfer_src_buffer_pack_begin_and_end(uint32_t transfer_src_buffer_begin, uint32_t transfer_src_buffer_end) { return ((uint64_t(transfer_src_buffer_begin) << 32U) | (uint64_t(transfer_src_buffer_end))); }
 
     inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
     inline bool transfer_src_buffer_validate_offset(uint64_t size) { return m_malloc.transfer_src_buffer_validate_offset(size); }

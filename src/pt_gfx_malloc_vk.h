@@ -28,6 +28,7 @@ class gfx_malloc_vk : public gfx_malloc
     class gfx_device_vk *m_device;
 
     // stagingbuffer
+    VkDeviceSize m_transfer_src_buffer_size;
     VkBuffer m_transfer_src_buffer;
     VkDeviceMemory m_transfer_src_buffer_device_memory;
     void *m_transfer_src_buffer_device_memory_pointer;
@@ -83,6 +84,8 @@ public:
     ~gfx_malloc_vk();
 
     void *transfer_src_buffer_pointer();
+
+    inline VkDeviceSize transfer_src_buffer_size() { return m_transfer_src_buffer_size; }
 
     inline VkBuffer transfer_src_buffer() { return m_transfer_src_buffer; }
 

@@ -250,7 +250,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 
     // staging buffer
     uint32_t transfer_src_memory_index = VK_MAX_MEMORY_TYPES;
-    VkDeviceSize transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
+    this->m_transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
     this->m_transfer_src_buffer = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory_pointer = NULL;
@@ -293,7 +293,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkMemoryAllocateInfo memory_allocate_info;
                 memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 memory_allocate_info.pNext = NULL;
-                memory_allocate_info.allocationSize = transfer_src_buffer_size;
+                memory_allocate_info.allocationSize = this->m_transfer_src_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
                 res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
@@ -307,10 +307,10 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - uniform_buffer_size);
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
-                assert(transfer_src_buffer_size <= heap_size_budget);
+                assert(this->m_transfer_src_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
+                    VkResult res_map_memory = this->m_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, this->m_transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -319,7 +319,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                     buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
                     buffer_create_info_uniform.pNext = NULL;
                     buffer_create_info_uniform.flags = 0U;
-                    buffer_create_info_uniform.size = transfer_src_buffer_size;
+                    buffer_create_info_uniform.size = this->m_transfer_src_buffer_size;
                     buffer_create_info_uniform.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
                     buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
@@ -352,7 +352,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
-    this->gfx_malloc::transfer_src_buffer_init(transfer_src_buffer_size);
+    this->gfx_malloc::transfer_src_buffer_init(this->m_transfer_src_buffer_size);
 
     m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {

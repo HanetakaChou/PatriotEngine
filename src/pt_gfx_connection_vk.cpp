@@ -68,13 +68,13 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
         }
     }
 
-    
-
     // Streaming
-    this->m_transfer_src_buffer_offset = 0U;
     this->m_streaming_throttling_index = 0U;
+    this->m_transfer_src_buffer_begin_and_end = 0U;
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
+        this->m_transfer_src_buffer_max_end[streaming_throttling_index] = 0U;
+
         for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
         {
             if (m_device.has_dedicated_transfer_queue())
@@ -170,7 +170,7 @@ void gfx_connection_vk::sync_streaming_thread()
 
     // Multi-Threading
     // gfx_texture_vk::read_input_stream
-    uint32_t streaming_throttling_index = this->m_streaming_throttling_index;
+    uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
 
     // sync by TBB
@@ -221,6 +221,30 @@ void gfx_connection_vk::sync_streaming_thread()
     streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
     this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
     this->m_device.reset_fences(1U, &this->m_streaming_fence[streaming_throttling_index]);
+
+    // free memory
+    {
+        uint64_t transfer_src_buffer_begin_and_end = uint64_t(-1);
+        uint32_t transfer_src_buffer_begin = this->m_transfer_src_buffer_max_end[streaming_throttling_index];
+        uint32_t transfer_src_buffer_end = uint32_t(-1);
+        uint32_t transfer_src_buffer_size = uint32_t(-1);
+        {
+            VkDeviceSize transfer_src_buffer_size_uint64 = this->transfer_src_buffer_size();
+            assert(uint64_t(transfer_src_buffer_size_uint64) < uint64_t(UINT32_MAX));
+            transfer_src_buffer_size = uint32_t(transfer_src_buffer_size_uint64);
+        }
+
+        do
+        {
+            transfer_src_buffer_begin_and_end = mcrt_atomic_load(&this->m_transfer_src_buffer_begin_and_end);
+            assert(transfer_src_buffer_unpack_begin(transfer_src_buffer_begin_and_end) <= transfer_src_buffer_begin);
+            transfer_src_buffer_end = transfer_src_buffer_unpack_end(transfer_src_buffer_begin_and_end);
+
+            // enough memeory
+            assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+        } while (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_begin, transfer_src_buffer_end), transfer_src_buffer_begin_and_end));
+    }
+
     // TODO limit the thread arena number
     for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
     {
