@@ -614,7 +614,7 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
                     bufferImageHeight = outputNumRows;
                 }
 
-                size_t stagingOffset_new = (mcrt_intrin_round_up(mcrt_intrin_round_up(stagingOffset, physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment) - base_offset);
+                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(stagingOffset, physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
                 TotalBytes += (stagingOffset_new - stagingOffset);
                 stagingOffset = stagingOffset_new;
 

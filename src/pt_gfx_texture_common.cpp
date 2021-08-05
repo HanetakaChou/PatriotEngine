@@ -89,11 +89,6 @@ bool gfx_texture_common::load_data_from_input_stream(
         }
     }
 
-    if (input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
-    {
-        return false;
-    }
-
     switch (dwMagicNumber)
     {
     case DDS_MAGIC:

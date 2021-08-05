@@ -52,15 +52,21 @@ int main(int argc, char **argv)
 
     gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, NULL);
 
-    gfx_texture_ref texture = gfx_connection_create_texture(gfx_connection);
-    gfx_texture_read_file(texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
-
+    gfx_texture_ref texture1 = gfx_connection_create_texture(gfx_connection);
+    gfx_texture_read_file(texture1, "third_party/assets/lenna/l_hires_rgba.pvr");
+    //gfx_texture_read_file(texture1, "third_party/assets/lenna/l_hires_directx_tex.dds");
     //gfx_connection_wsi_on_resized(gfx_connection, NULL, 0, 0);
 
     gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
+
+    gfx_texture_ref texture2 = gfx_connection_create_texture(gfx_connection);
+    gfx_texture_read_file(texture2, "third_party/assets/lenna/l_hires_directx_tex.dds");
+
     gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
     gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection, NULL, 0, 0);
 
+    gfx_texture_destroy(texture1);
+    gfx_texture_destroy(texture2);
     gfx_connection_destroy(gfx_connection);
 
     return 0;
