@@ -145,7 +145,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // AMD Special Pool 256MB
     // \[Sawicki 2018\] [Adam Sawicki. "Memory Management in Vulkan and DX12." GDC 2018.](https://gpuopen.com/events/gdc-2018-presentations)
-    VkDeviceSize uniform_buffer_size = (224ULL * 1024ULL * 1024ULL); // 224MB
+    this->m_uniform_buffer_size = (224ULL * 1024ULL * 1024ULL); // 224MB
     this->m_uniform_buffer = VK_NULL_HANDLE;
     this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
     this->m_uniform_buffer_device_memory_pointer = NULL;
@@ -188,7 +188,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkMemoryAllocateInfo memory_allocate_info;
                 memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 memory_allocate_info.pNext = NULL;
-                memory_allocate_info.allocationSize = uniform_buffer_size;
+                memory_allocate_info.allocationSize = this->m_uniform_buffer_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
                 res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_uniform_buffer_device_memory);
@@ -201,10 +201,10 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkDeviceSize heap_size_budget = physical_device_memory_properties.memoryHeaps[heap_index].size;
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
-                assert(uniform_buffer_size <= heap_size_budget);
+                assert(this->m_uniform_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_device->map_memory(this->m_uniform_buffer_device_memory, 0U, uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
+                    VkResult res_map_memory = this->m_device->map_memory(this->m_uniform_buffer_device_memory, 0U, this->m_uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -213,7 +213,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                     buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
                     buffer_create_info_uniform.pNext = NULL;
                     buffer_create_info_uniform.flags = 0U;
-                    buffer_create_info_uniform.size = uniform_buffer_size;
+                    buffer_create_info_uniform.size = this->m_uniform_buffer_size;
                     buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
                     buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
@@ -246,7 +246,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > uniform_buffer_memory_index);
-    this->gfx_malloc::uniform_buffer_init(uniform_buffer_size);
 
     // staging buffer
     uint32_t transfer_src_memory_index = VK_MAX_MEMORY_TYPES;
@@ -304,7 +303,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             {
                 // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
                 uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - uniform_buffer_size);
+                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - this->m_uniform_buffer_size);
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(this->m_transfer_src_buffer_size <= heap_size_budget);
@@ -352,7 +351,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
-    this->gfx_malloc::transfer_src_buffer_init(this->m_transfer_src_buffer_size);
 
     m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
@@ -663,66 +661,6 @@ void gfx_malloc_vk::destroy()
 gfx_malloc_vk::~gfx_malloc_vk()
 {
     return;
-}
-
-void *gfx_malloc_vk::transfer_src_buffer_pointer()
-{
-    return this->m_transfer_src_buffer_device_memory_pointer;
-}
-
-void gfx_malloc_vk::transfer_src_buffer_lock()
-{
-    return this->gfx_malloc::transfer_src_buffer_lock();
-}
-
-uint64_t gfx_malloc_vk::transfer_src_buffer_offset()
-{
-    return this->gfx_malloc::transfer_src_buffer_offset();
-}
-
-bool gfx_malloc_vk::transfer_src_buffer_validate_offset(uint64_t size)
-{
-    return this->gfx_malloc::transfer_src_buffer_validate_offset(size);
-}
-
-bool gfx_malloc_vk::transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset)
-{
-    return this->gfx_malloc::transfer_src_buffer_alloc(size, out_offset);
-}
-
-void gfx_malloc_vk::transfer_src_buffer_free(uint64_t offset, uint64_t size)
-{
-    return this->gfx_malloc::transfer_src_buffer_free(offset, size);
-}
-
-void gfx_malloc_vk::transfer_src_buffer_unlock()
-{
-    return this->gfx_malloc::transfer_src_buffer_unlock();
-}
-
-void *gfx_malloc_vk::uniform_buffer_pointer()
-{
-    return this->m_uniform_buffer_device_memory_pointer;
-}
-
-void gfx_malloc_vk::uniform_buffer_lock()
-{
-    return this->gfx_malloc::uniform_buffer_lock();
-}
-
-bool gfx_malloc_vk::uniform_buffer_alloc(uint64_t size, uint64_t *out_offset)
-{
-    return this->gfx_malloc::uniform_buffer_alloc(size, out_offset);
-}
-
-void gfx_malloc_vk::uniform_buffer_free(uint64_t offset, uint64_t size)
-{
-    return this->gfx_malloc::uniform_buffer_free(offset, size);
-}
-
-void gfx_malloc_vk::uniform_buffer_unlock()
-{
-    return this->gfx_malloc::uniform_buffer_unlock();
 }
 
 uint64_t gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *_malloc_vk)

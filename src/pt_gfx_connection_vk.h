@@ -69,6 +69,7 @@ class gfx_connection_vk : public gfx_connection_common
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
     uint32_t m_streaming_throttling_index;
+    // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
     uint64_t m_transfer_src_buffer_begin_and_end; // Staging Buffer
     uint32_t m_transfer_src_buffer_max_end[STREAMING_THROTTLING_COUNT];
     // TODO
@@ -88,8 +89,9 @@ class gfx_connection_vk : public gfx_connection_common
     // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
     // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
     //
-
-    struct streaming_object_list_node *m_streaming_object_list[STREAMING_THROTTLING_COUNT];
+    static uint32_t const STREAMING_OBJECT_COUNT = 4096U;
+    uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
+    class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
     inline VkCommandBuffer streaming_thread_get_command_buffer(uint32_t streaming_throttling_index);
     inline void sync_streaming_thread();
@@ -121,12 +123,6 @@ public:
     static inline uint32_t transfer_src_buffer_unpack_begin(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end >> 32U); }
     static inline uint32_t transfer_src_buffer_unpack_end(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end & 0XFFFFFFFFU); }
     static inline uint64_t transfer_src_buffer_pack_begin_and_end(uint32_t transfer_src_buffer_begin, uint32_t transfer_src_buffer_end) { return ((uint64_t(transfer_src_buffer_begin) << 32U) | (uint64_t(transfer_src_buffer_end))); }
-
-    inline void transfer_src_buffer_lock() { return m_malloc.transfer_src_buffer_lock(); }
-    inline bool transfer_src_buffer_validate_offset(uint64_t size) { return m_malloc.transfer_src_buffer_validate_offset(size); }
-    inline bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset) { return m_malloc.transfer_src_buffer_alloc(size, out_offset); }
-    inline void transfer_src_buffer_free(uint64_t offset, uint64_t size) { return m_malloc.transfer_src_buffer_free(offset, size); }
-    inline void transfer_src_buffer_unlock() { return m_malloc.transfer_src_buffer_unlock(); }
 
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)

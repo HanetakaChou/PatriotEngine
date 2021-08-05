@@ -37,6 +37,7 @@ class gfx_malloc_vk : public gfx_malloc
     //VkDeviceSize m_transfer_src_buffer_ringbuffer_end;
 
     // constantbuffer
+    VkDeviceSize m_uniform_buffer_size;
     VkBuffer m_uniform_buffer;
     VkDeviceMemory m_uniform_buffer_device_memory;
     void *m_uniform_buffer_device_memory_pointer;
@@ -83,37 +84,13 @@ public:
     void destroy();
     ~gfx_malloc_vk();
 
-    void *transfer_src_buffer_pointer();
+    inline void *transfer_src_buffer_pointer() { return this->m_transfer_src_buffer_device_memory_pointer; }
 
     inline VkDeviceSize transfer_src_buffer_size() { return m_transfer_src_buffer_size; }
 
     inline VkBuffer transfer_src_buffer() { return m_transfer_src_buffer; }
 
-    void transfer_src_buffer_lock();
-
-    uint64_t transfer_src_buffer_offset();
-
-    bool transfer_src_buffer_validate_offset(uint64_t size);
-
-    bool transfer_src_buffer_alloc(uint64_t size, uint64_t *out_offset);
-
-    void transfer_src_buffer_free(uint64_t offset, uint64_t size);
-
-    void transfer_src_buffer_unlock();
-
-    void *uniform_buffer_pointer();
-
-    void uniform_buffer_lock();
-
-    //uint64_t uniform_buffer_offset();
-
-    //bool uniform_buffer_validate_offset(uint64_t size);
-
-    bool uniform_buffer_alloc(uint64_t size, uint64_t *out_offset);
-
-    void uniform_buffer_free(uint64_t offset, uint64_t size);
-
-    void uniform_buffer_unlock();
+    inline void *uniform_buffer_pointer() { return this->m_uniform_buffer_device_memory_pointer; }
 
     VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
 
