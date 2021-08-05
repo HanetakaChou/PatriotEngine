@@ -126,6 +126,7 @@ inline uint32_t gfx_connection_vk::streaming_thread_index_get()
     uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
+    assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
 
     if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_thread_index]))
     {

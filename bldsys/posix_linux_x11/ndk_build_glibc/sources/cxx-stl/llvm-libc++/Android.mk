@@ -19,15 +19,16 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_llvm_cxx_static
-LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
 LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -static-libstdc++ #-static-libgcc #-rtlib=compiler-rt -unwindlib=libunwind #-nostdlib -nodefaultlibs #-D_GLIBCXX_USE_CXX11_ABI=1 
-ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
-LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang)
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1 # bug of the Ubuntu clang
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-11/include/c++/v1 # bug of the Debian clang
 endif
 LOCAL_EXPORT_LDFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -static-libstdc++ #-static-libgcc  #-rtlib=compiler-rt -unwindlib=libunwind #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-nostdlib -nodefaultlibs
-ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang)
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib # bug of the Ubuntu clang
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-11/lib # bug of the Debian clang
 LOCAL_EXPORT_LDFLAGS += -lc++abi
 #LOCAL_EXPORT_LDFLAGS += -Wl,-Bstatic -lc++abi -Wl,-Bdynamic 
 #LOCAL_EXPORT_LDFLAGS += -lunwind
@@ -42,15 +43,16 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_llvm_cxx_shared
-LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_llvm_cxx_fake.cpp
 LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++
-ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
-LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) 
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1 # bug of the Ubuntu clang
+LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-11/include/c++/v1 # bug of the Debian clang
 endif
 LOCAL_EXPORT_LDFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ #-lc++ -lunwind #-nostdlib -nodefaultlibs #-Wl,-Bstatic -lc++ -lunwind -llzma -Wl,-Bdynamic #-static-libgcc -static-libstdc++
-ifeq ($(NDK_TOOLCHAIN_VERSION),clang) # bug for Ubuntu clang?
+ifeq ($(NDK_TOOLCHAIN_VERSION),clang) 
 ifeq (x86,$(TARGET_ARCH))
-LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-10/lib # bug of the Ubuntu clang
+LOCAL_EXPORT_LDFLAGS += -L/usr/lib/llvm-11/lib # bug of the Debian clang
 endif
 endif
 include $(BUILD_STATIC_LIBRARY)

@@ -278,37 +278,42 @@ private:
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
 protected:
-    enum
-    {
-        PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE_PROTECTED = PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE
-    };
-
-    enum
-    {
-        PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED = PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE
-    };
-
     static bool load_header_from_input_stream(
         struct common_header_t *common_header, size_t *common_data_offset,
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
     static bool load_data_from_input_stream(
         struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
-        void*staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
+        void *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
     //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
     using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
     mcrt_string m_asset_filename;
-public:
-    virtual void destroy() = 0;
 
-    virtual bool read_input_stream(char const *initial_filename,
-                                   gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                                   intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-                                   int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-                                   void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
+    // CryEngine
+    // m_eStreamingStatus
+    enum streaming_status_t
+    {
+        STREAMING_STATUS_NOT_LOAD,
+        STREAMING_STATUS_IN_PROCESS,
+        STREAMING_STATUS_READY,
+        STREAMING_STATUS_ERROR
+    };
+    streaming_status_t m_streaming_status;
+
+    inline gfx_texture_common(streaming_status_t streaming_status) : m_streaming_status(streaming_status) {}
+
+public:
+    virtual bool
+    read_input_stream(char const *initial_filename,
+                      gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                      intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+                      int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+                      void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
+
+    virtual void destroy() = 0;
 };
 
 #endif

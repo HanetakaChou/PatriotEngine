@@ -96,15 +96,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 #endif
 
         VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &this->m_instance);
-        if (VK_SUCCESS != vk_res)
-        {
-            return false;
-        }
+        assert(VK_SUCCESS == vk_res);
     }
-    if (VK_NULL_HANDLE == this->m_instance)
-    {
-        return false;
-    }
+    assert(VK_NULL_HANDLE != this->m_instance);
 
     vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(this->m_instance, "vkGetInstanceProcAddr"));
     assert(NULL != vk_get_instance_proc_addr);
@@ -166,7 +160,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             {
                 mcrt_free((*m_physical_devices));
             }
-        } internal_instance_physical_devices_guard(&physical_devices, &physical_device_count, m_instance, vk_get_instance_proc_addr);
+        } instance_internal_physical_devices_guard(&physical_devices, &physical_device_count, m_instance, vk_get_instance_proc_addr);
 
         PFN_vkGetPhysicalDeviceProperties vk_get_physical_device_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceProperties"));
         assert(NULL != vk_get_physical_device_properties);
@@ -199,10 +193,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             this->m_physical_device = physical_devices[physical_device_index_first_integrated_gpu];
         }
     }
-    if (VK_NULL_HANDLE == this->m_physical_device)
-    {
-        return false;
-    }
+    assert(VK_NULL_HANDLE != this->m_physical_device);
 
     this->m_physical_device_limits_buffer_image_granularity = VkDeviceSize(-1);
     this->m_physical_device_limits_min_uniform_buffer_offset_alignment = VkDeviceSize(-1);
@@ -270,7 +261,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             {
                 mcrt_free((*m_queue_family_properties));
             }
-        } internal_instance_queue_family_properties_guard(&queue_family_properties, &queue_family_property_count, m_instance, vk_get_instance_proc_addr, m_physical_device);
+        } instance_internal_queue_family_properties_guard(&queue_family_properties, &queue_family_property_count, m_instance, vk_get_instance_proc_addr, m_physical_device);
 
         //TODO
         //support seperated present queue
@@ -339,10 +330,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             }
         }
     }
-    if ((VK_QUEUE_FAMILY_IGNORED == this->m_queue_graphics_family_index) || (this->m_has_dedicated_transfer_queue && (VK_QUEUE_FAMILY_IGNORED == this->m_queue_transfer_family_index)))
-    {
-        return false;
-    }
+    assert((VK_QUEUE_FAMILY_IGNORED != this->m_queue_graphics_family_index) && ((!this->m_has_dedicated_transfer_queue) || (VK_QUEUE_FAMILY_IGNORED != this->m_queue_transfer_family_index)));
 
     // EnabledFeatures.geometryShader = VK_FALSE; //be consistant with the Metal  //the GeometryShader can be replaced by DrawInstanced //and the StreamOutput can be replaced by RWTexture
     // EnabledFeatures.tessellationShader = VK_FALSE; //The vertex bandwidth doesn't benifit from the Tile-Arch
@@ -438,15 +426,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         device_create_info.pEnabledFeatures = &enabled_features;
 
         VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &this->m_device);
-        if (VK_SUCCESS != vk_res)
-        {
-            return false;
-        }
+        assert(VK_SUCCESS == vk_res);
     }
-    if (VK_NULL_HANDLE == this->m_device)
-    {
-        return false;
-    }
+    assert(VK_NULL_HANDLE != this->m_device);
 
     PFN_vkGetDeviceProcAddr vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetDeviceProcAddr"));
     assert(NULL != vk_get_device_proc_addr);
@@ -529,10 +511,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             vk_get_device_queue(this->m_device, this->m_queue_transfer_family_index, this->m_queue_transfer_queue_index, &this->m_queue_transfer);
         }
     }
-    if ((VK_NULL_HANDLE == this->m_queue_graphics) || (this->m_has_dedicated_transfer_queue && (VK_NULL_HANDLE == this->m_queue_transfer)))
-    {
-        return false;
-    }
+    assert((VK_NULL_HANDLE != this->m_queue_graphics) && ((!this->m_has_dedicated_transfer_queue) || (VK_NULL_HANDLE != this->m_queue_transfer)));
 
     return true;
 }

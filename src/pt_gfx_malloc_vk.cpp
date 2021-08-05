@@ -197,7 +197,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 
             if (VK_SUCCESS == res_allocate_memory)
             {
-                VkDeviceSize heap_size_budget = physical_device_memory_properties.memoryHeaps[memory_type_index].size;
+                uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
+                VkDeviceSize heap_size_budget = physical_device_memory_properties.memoryHeaps[heap_index].size;
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(uniform_buffer_size <= heap_size_budget);
@@ -302,7 +303,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             if (VK_SUCCESS == res_allocate_memory)
             {
                 // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
-                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[memory_type_index].size) : (physical_device_memory_properties.memoryHeaps[memory_type_index].size - uniform_buffer_size);
+                uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
+                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - uniform_buffer_size);
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(transfer_src_buffer_size <= heap_size_budget);

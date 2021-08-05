@@ -131,7 +131,7 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
 include $(BUILD_STATIC_LIBRARY)
 
-# -mavx512f / libpt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon
+# neon / libpt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon
 
 include $(CLEAR_VARS)
 

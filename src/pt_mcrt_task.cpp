@@ -127,3 +127,9 @@ PT_ATTR_MCRT uint32_t mcrt_task_arena_current_thread_index()
     int idx = tbb::this_task_arena::current_thread_index();
     return (tbb::task_arena::not_initialized != idx) ? uint32_t(idx) : uint32_t(-1);
 }
+
+PT_ATTR_MCRT uint32_t mcrt_task_arena_max_concurrency()
+{
+    int limit = tbb::this_task_arena::max_concurrency();
+    return uint32_t(limit);
+}

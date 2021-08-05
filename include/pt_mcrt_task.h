@@ -67,16 +67,19 @@ extern "C"
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn(mcrt_task_ref t);
 
-    // Wait for reference count to become one, and set reference count to zero.
+    // Wait for reference count to become one, and set reference count to zero (while don't execute the task)
     // We may set the recount to 2 if the task has one child
     PT_ATTR_MCRT void PT_CALL mcrt_task_wait_for_all(mcrt_task_ref self);
 
-    // Wait for reference count to become one, and set reference count to zero.
+    // Wait for reference count to become one, and set reference count to zero (while don't execute the task)
     // We may set the recount to 2 if the task has one child
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task_ref self, mcrt_task_ref child);
 
     // All master threads have a corresponding task_arena while the work threads don't
     PT_ATTR_MCRT uint32_t mcrt_task_arena_current_thread_index();
+
+    // All master threads have a corresponding task_arena while the work threads don't
+    PT_ATTR_MCRT uint32_t mcrt_task_arena_max_concurrency();
 
 #ifdef __cplusplus
 }

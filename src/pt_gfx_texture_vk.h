@@ -36,8 +36,6 @@ class gfx_texture_vk : public gfx_texture_common
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
 
-    void destroy() override;
-
     bool read_input_stream(
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
@@ -66,6 +64,8 @@ class gfx_texture_vk : public gfx_texture_common
         uint32_t mipLevels;
         uint32_t arrayLayers;
     };
+
+    void destroy() override;
 
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 
@@ -163,7 +163,7 @@ class gfx_texture_vk : public gfx_texture_common
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk(gfx_connection_vk *gfx_connection) : m_image(VK_NULL_HANDLE), m_gfx_connection(gfx_connection) {}
+    inline gfx_texture_vk(gfx_connection_vk *gfx_connection) : gfx_texture_common(STREAMING_STATUS_NOT_LOAD), m_gfx_connection(gfx_connection), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
 };
 
 #endif

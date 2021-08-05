@@ -33,8 +33,6 @@ LOCAL_MODULE := libpt_xcb
 
 LOCAL_EXPORT_LDLIBS:= -lxcb
 
-LOCAL_SRC_FILES := $(LOCAL_PATH)/pt_xcb_fake.cpp
-
 include $(BUILD_STATIC_LIBRARY)
 
 # intel_tbb / libpt_tbbmalloc 

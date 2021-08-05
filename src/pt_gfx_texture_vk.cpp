@@ -24,12 +24,6 @@
 #include <vulkan/vulkan.h>
 #include <new>
 
-void gfx_texture_vk::destroy()
-{
-    this->~gfx_texture_vk();
-    mcrt_free(this);
-}
-
 bool gfx_texture_vk::read_input_stream(
     char const *initial_filename,
     gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
@@ -41,7 +35,7 @@ bool gfx_texture_vk::read_input_stream(
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
     // the second stage is trivially implemented by the task spawned by the first stage
-    // the third stage can be implemented as "reduce" 
+    // the third stage can be implemented as "reduce"
 
     // We don't have the third stage here
 
@@ -72,11 +66,14 @@ bool gfx_texture_vk::read_input_stream(
             }
         } input_stream_guard(input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
 
+        assert(STREAMING_STATUS_NOT_LOAD == this->m_streaming_status);
+
         struct common_header_t common_header;
         size_t common_data_offset;
         bool res_load_header_from_input_stream = this->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback);
         if (!res_load_header_from_input_stream)
         {
+            this->m_streaming_status = STREAMING_STATUS_ERROR;
             return false;
         }
 
@@ -89,11 +86,12 @@ bool gfx_texture_vk::read_input_stream(
             m_gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
             if (0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT))
             {
+                this->m_streaming_status = STREAMING_STATUS_ERROR;
                 return false;
             }
         }
 
-        this->m_image = VK_NULL_HANDLE;
+        assert(VK_NULL_HANDLE == this->m_image);
         {
             VkImageCreateInfo create_info;
             create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -115,10 +113,7 @@ bool gfx_texture_vk::read_input_stream(
             assert(VK_SUCCESS == res);
         }
 
-        this->m_gfx_malloc_offset = uint64_t(-1);
-        this->m_gfx_malloc_size = uint64_t(-1);
-        this->m_gfx_malloc_page_handle = NULL;
-        this->m_gfx_malloc_device_memory = VK_NULL_HANDLE;
+        assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
         {
             VkMemoryRequirements memory_requirements;
             this->m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
@@ -127,7 +122,15 @@ bool gfx_texture_vk::read_input_stream(
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
             this->m_gfx_malloc_device_memory = this->m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
+            if (VK_NULL_HANDLE == this->m_gfx_malloc_device_memory)
+            {
+                this->m_gfx_connection->destroy_image(this->m_image);
+                this->m_image = VK_NULL_HANDLE;
+                this->m_streaming_status = STREAMING_STATUS_ERROR;
+                return false;
+            }
         }
+        assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
 
         {
             VkResult res_bind_image_memory = this->m_gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
@@ -150,6 +153,7 @@ bool gfx_texture_vk::read_input_stream(
     mcrt_task_increment_ref_count(this->m_gfx_connection->streaming_task_root());
     mcrt_task_set_parent(task, this->m_gfx_connection->streaming_task_root());
 
+    this->m_streaming_status = STREAMING_STATUS_IN_PROCESS;
     mcrt_task_spawn(task);
 
     return true;
@@ -184,11 +188,14 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
             }
         } input_stream_guard(input_stream, task_data->m_initial_filename, task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
 
+        assert(STREAMING_STATUS_IN_PROCESS == task_data->m_gfx_texture->m_streaming_status);
+
         struct common_header_t common_header;
         size_t common_data_offset;
         bool res_load_header_from_input_stream = task_data->m_gfx_texture->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
         if (!res_load_header_from_input_stream)
         {
+            task_data->m_gfx_texture->m_streaming_status = STREAMING_STATUS_ERROR;
             return NULL;
         }
 
@@ -196,48 +203,80 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
 
         uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * specific_header_vk.arrayLayers * specific_header_vk.mipLevels;
 
-        struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
-        struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
+        struct load_memcpy_dest_t *memcpy_dest;
+        struct VkBufferImageCopy *cmdcopy_dest;
         {
-            uint64_t base_offset = uint64_t(-1);
-            size_t total_size = size_t(-1);
-            do
+
+            class internal_mem_cmd_copy_dest_guard
             {
-                base_offset = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset());
+                struct load_memcpy_dest_t **const m_memcpy_dest;
+                struct VkBufferImageCopy **const m_cmdcopy_dest;
 
-                total_size = get_copyable_footprints(&specific_header_vk,
-                                                     task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
-                                                     base_offset,
-                                                     num_subresource, memcpy_dest, cmdcopy_dest);
+            public:
+                inline internal_mem_cmd_copy_dest_guard(struct load_memcpy_dest_t **const memcpy_dest, struct VkBufferImageCopy **const cmdcopy_dest, uint32_t num_subresource)
+                    : m_memcpy_dest(memcpy_dest), m_cmdcopy_dest(cmdcopy_dest)
+                {
+                    (*m_memcpy_dest) = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
+                    (*m_cmdcopy_dest) = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
+                }
+                inline ~internal_mem_cmd_copy_dest_guard()
+                {
+                    mcrt_free(*m_memcpy_dest);
+                    mcrt_free(*m_cmdcopy_dest);
+                }
+            } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
 
-            } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset(), base_offset + total_size, base_offset));
+            {
+                uint64_t base_offset = uint64_t(-1);
+                size_t total_size = size_t(-1);
+                do
+                {
+                    base_offset = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset());
+
+                    total_size = get_copyable_footprints(&specific_header_vk,
+                                                         task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+                                                         base_offset,
+                                                         num_subresource, memcpy_dest, cmdcopy_dest);
+
+                } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_offset(), base_offset + total_size, base_offset));
+            }
+
+            bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset,
+                                                                                                         task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_pointer(),
+                                                                                                         num_subresource, memcpy_dest,
+                                                                                                         calc_subresource,
+                                                                                                         input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
+
+            if (!res_load_data_from_input_stream)
+            {
+                task_data->m_gfx_texture->m_streaming_status = STREAMING_STATUS_ERROR;
+                return NULL;
+            }
+
+            VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
+            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
+            task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
         }
-
-        bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset,
-                                                                                                     task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_pointer(),
-                                                                                                     num_subresource, memcpy_dest,
-                                                                                                     calc_subresource,
-                                                                                                     input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
-
-        mcrt_free(memcpy_dest);
-
-        if (!res_load_data_from_input_stream)
-        {
-            return NULL;
-        }
-
-        VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
-        VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
-        task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
-
-        mcrt_free(cmdcopy_dest);
-
-        //class gfx_malloc_vk::slob_page_vk *slob
-        //VkDeviceMemory device_memory = slob->device_memory();
-        //m_gfx_connection->transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory);
     }
 
     return NULL;
+}
+
+void gfx_texture_vk::destroy()
+{
+    if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
+    {
+        this->m_gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
+    }
+
+    if (VK_NULL_HANDLE != this->m_image)
+    {
+        this->m_gfx_connection->destroy_image(this->m_image);
+    }
+
+    this->~gfx_texture_vk();
+
+    mcrt_free(this);
 }
 
 inline struct gfx_texture_vk::specific_header_vk_t gfx_texture_vk::common_to_specific_header_translate(struct common_header_t const *common_header)
@@ -262,7 +301,7 @@ inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(enum gfx
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0]))");
+    static_assert(gfx_texture_common::PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
@@ -455,7 +494,7 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE_PROTECTED == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0]))");
+    static_assert(gfx_texture_common::PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];
