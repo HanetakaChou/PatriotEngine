@@ -150,8 +150,11 @@ bool gfx_texture_vk::read_input_stream(
     task_data->m_input_stream_destroy_callback = input_stream_destroy_callback;
     task_data->m_gfx_texture = this;
 
-    mcrt_task_increment_ref_count(this->m_gfx_connection->streaming_task_root());
-    mcrt_task_set_parent(task, this->m_gfx_connection->streaming_task_root());
+    // we must cache the streaming_throttling_index to eusure the consistency
+    task_data->streaming_throttling_index = this->m_gfx_connection->current_streaming_throttling_index();
+
+    mcrt_task_increment_ref_count(this->m_gfx_connection->streaming_task_root(task_data->streaming_throttling_index));
+    mcrt_task_set_parent(task, this->m_gfx_connection->streaming_task_root(task_data->streaming_throttling_index));
 
     this->m_streaming_status = STREAMING_STATUS_IN_PROCESS;
     mcrt_task_spawn(task);
@@ -255,7 +258,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
 
             VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
             VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
-            task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
+            task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(task_data->streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
         }
     }
 

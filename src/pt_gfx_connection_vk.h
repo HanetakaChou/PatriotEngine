@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
 #include <pt_mcrt_task.h>
 #include "pt_gfx_connection_common.h"
@@ -80,7 +81,7 @@ class gfx_connection_vk : public gfx_connection_common
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
 
-    inline uint32_t streaming_thread_index_get();
+    inline VkCommandBuffer streaming_thread_get_command_buffer(uint32_t streaming_throttling_index);
     inline void sync_streaming_thread();
 
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -118,9 +119,11 @@ public:
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
 
     //Streaming
-    inline mcrt_task_ref *streaming_task_root() { return &m_streaming_task_root[0]; }
-   
-    void copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
+    inline uint32_t current_streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
+
+    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
+
+    void copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

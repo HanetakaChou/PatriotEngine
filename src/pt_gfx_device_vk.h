@@ -69,6 +69,10 @@ class gfx_device_vk
     PFN_vkCmdPipelineBarrier m_vk_cmd_pipeline_barrier;
     PFN_vkCmdCopyBufferToImage m_vk_cmd_copy_buffer_to_image;
     PFN_vkQueueSubmit m_vk_queue_submit;
+    PFN_vkCreateFence m_vk_create_fence;
+    PFN_vkWaitForFences m_vk_wait_for_fences;
+    PFN_vkResetFences m_vk_reset_fences;
+    PFN_vkDestroyFence m_vk_destory_fence;
 
     wsi_connection_ref m_wsi_connection;
     wsi_visual_ref m_wsi_visual;
@@ -128,6 +132,8 @@ public:
     inline void unmap_memory(VkDeviceMemory memory) { return m_vk_unmap_memory(m_device, memory); }
 
     inline VkResult create_command_Pool(VkCommandPoolCreateInfo const *create_info, VkCommandPool *command_pool) { return m_vk_create_command_pool(m_device, create_info, &m_allocator_callbacks, command_pool); }
+    inline VkResult reset_command_pool(VkCommandPool command_pool, VkCommandPoolResetFlags flags) { return this->m_vk_reset_command_pool(this->m_device, command_pool, flags); }
+
     inline VkResult allocate_command_buffers(VkCommandBufferAllocateInfo const *allocate_info, VkCommandBuffer *command_buffers) { return m_vk_allocate_command_buffers(m_device, allocate_info, command_buffers); }
     inline VkResult begin_command_buffer(VkCommandBuffer command_buffer, VkCommandBufferBeginInfo const *begin_info) { return m_vk_begin_command_buffer(command_buffer, begin_info); }
     inline VkResult end_command_buffer(VkCommandBuffer command_buffer) { return m_vk_end_command_buffer(command_buffer); }
@@ -136,6 +142,11 @@ public:
     inline void cmd_copy_buffer_to_image(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkImage dst_image, VkImageLayout dst_image_layout, uint32_t region_count, const VkBufferImageCopy *regions) { return m_vk_cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, dst_image_layout, region_count, regions); }
 
     inline VkResult queue_submit(VkQueue queue, uint32_t submit_count, const VkSubmitInfo *submits, VkFence fence) { return this->m_vk_queue_submit(queue, submit_count, submits, fence); }
+
+    inline VkResult create_fence(VkFenceCreateInfo const *create_info, VkFence *fence) { return this->m_vk_create_fence(this->m_device, create_info, &this->m_allocator_callbacks, fence); }
+    inline VkResult wait_for_fences(uint32_t fence_count, const VkFence *fences, VkBool32 wait_all, uint64_t timeout) { return this->m_vk_wait_for_fences(this->m_device, fence_count, fences, wait_all, timeout); }
+    inline VkResult reset_fences(uint32_t fence_count, const VkFence *fences) { return this->m_vk_reset_fences(this->m_device, fence_count, fences); }
+    inline void destroy_fence(VkFence fence) { return this->m_vk_destory_fence(this->m_device, fence, &this->m_allocator_callbacks); }
 };
 
 #endif

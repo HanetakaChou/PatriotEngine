@@ -17,13 +17,27 @@
 
 #include <stddef.h>
 #include <pt_mcrt_malloc.h>
-#include <pt_mcrt_atomic.h>
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
 
+class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
+    if (connection->init(wsi_connection, wsi_visual, wsi_window))
+    {
+        return connection;
+    }
+    else
+    {
+        connection->destroy();
+        return NULL;
+    }
+}
+
 inline gfx_connection_vk::gfx_connection_vk()
 {
+
 }
 
 bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
@@ -88,6 +102,13 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
             this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index] = VK_NULL_HANDLE;
         }
 
+        VkFenceCreateInfo fence_create_info;
+        fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_create_info.pNext = NULL;
+        fence_create_info.flags = ((STREAMING_THROTTLING_COUNT - 1U) != streaming_throttling_index) ? 0U : VK_FENCE_CREATE_SIGNALED_BIT;
+        VkResult res_create_fence = this->m_device.create_fence(&fence_create_info, &this->m_streaming_fence[streaming_throttling_index]);
+        assert(VK_SUCCESS == res_create_fence);
+
         this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL);
         mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
     }
@@ -108,37 +129,23 @@ inline gfx_connection_vk::~gfx_connection_vk()
 
 }
 
-class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
-{
-    class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    if (connection->init(wsi_connection, wsi_visual, wsi_window))
-    {
-        return connection;
-    }
-    else
-    {
-        connection->destroy();
-        return NULL;
-    }
-}
-
-inline uint32_t gfx_connection_vk::streaming_thread_index_get()
+inline VkCommandBuffer gfx_connection_vk::streaming_thread_get_command_buffer(uint32_t streaming_throttling_index)
 {
     uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
     assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
 
-    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_thread_index]))
+    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index]))
     {
         VkCommandBufferAllocateInfo command_buffer_allocate_info;
         command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
         command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_streaming_command_pool[streaming_thread_index];
+        command_buffer_allocate_info.commandPool = this->m_streaming_command_pool[streaming_throttling_index][streaming_thread_index];
         command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_command_buffer[streaming_thread_index]);
+        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index]);
         assert(VK_SUCCESS == res_allocate_command_buffers);
 
         VkCommandBufferBeginInfo command_buffer_begin_info = {
@@ -147,26 +154,26 @@ inline uint32_t gfx_connection_vk::streaming_thread_index_get()
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             NULL,
         };
-        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_command_buffer[streaming_thread_index], &command_buffer_begin_info);
+        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
     }
 
-    return streaming_thread_index;
+    return this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index];
 }
 
 void gfx_connection_vk::sync_streaming_thread()
 {
     // STREAMING_THROTTLING_COUNT - 3
     // 0 - Fence / ResetCommandPool 
-    // 1 - Sync by TBB / Submit - "current" streaming_throttling_index
-    // 2 - Spawn / BeginCommandBuffer  
+    // 1 - sync by TBB / Submit - "current" streaming_throttling_index
+    // 2 - spawn / BeginCommandBuffer  
 
     // Multi-Threading
     // gfx_texture_vk::read_input_stream
     uint32_t streaming_throttling_index = this->m_streaming_throttling_index;
-    mcrt_atomic_store(this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
+    mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
 
-    // Sync by TBB
+    // sync by TBB
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
@@ -178,43 +185,55 @@ void gfx_connection_vk::sync_streaming_thread()
     submit_info.pWaitSemaphores = NULL;
     submit_info.pWaitDstStageMask = NULL;
     VkCommandBuffer command_buffers[STREAMING_THREAD_COUNT];
-    submit_info.commandBufferCount = 0U;
+    submit_info.commandBufferCount = 0U; 
     submit_info.pCommandBuffers = command_buffers;
     submit_info.signalSemaphoreCount = 0U;
     submit_info.pSignalSemaphores = NULL;
 
     for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
     {
-        if (VK_NULL_HANDLE != this->m_streaming_command_buffer[streaming_thread_index])
+        if (VK_NULL_HANDLE != this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index])
         {
-            this->m_device.end_command_buffer(this->m_streaming_command_buffer[streaming_thread_index]);
+            this->m_device.end_command_buffer(this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index]);
 
-            command_buffers[submit_info.commandBufferCount] = this->m_streaming_command_buffer[streaming_thread_index];
+            command_buffers[submit_info.commandBufferCount] = this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index];
             ++submit_info.commandBufferCount;
 
-            this->m_streaming_command_buffer[streaming_thread_index] = VK_NULL_HANDLE;
+            this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index] = VK_NULL_HANDLE;
         }
     }
-    
+
+    // VUID-VkSubmitInfo-pCommandBuffers-parameter
+    // "commandBufferCount 0" is legal
     if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
     {
-        this->m_device.queue_submit(this->m_device.queue_transfer(), 1, &submit_info, VK_NULL_HANDLE);
+        this->m_device.queue_submit(this->m_device.queue_transfer(), 1, &submit_info, this->m_streaming_fence[streaming_throttling_index]);
     }
     else
     {
-        this->m_device.queue_submit(this->m_device.queue_graphics(), 1, &submit_info, VK_NULL_HANDLE);
+        this->m_device.queue_submit(this->m_device.queue_graphics(), 1, &submit_info, this->m_streaming_fence[streaming_throttling_index]);
     }
 
-    // Wait the Fence
+    // wait the Fence
     // Submit ensures EndCommandBuffer 
     // Fence ensures "Completed by GPU"
-    // Safe to ResetCommandPool
+    // safe to ResetCommandPool
+    streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
+    this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
+    this->m_device.reset_fences(1U, &this->m_streaming_fence[streaming_throttling_index]);
+    // TODO limit the thread arena number
+    for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+    {
+        this->m_device.reset_command_pool(this->m_streaming_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
+    }
+    // iterate the list
 }
 
-void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
+void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
 {
-    uint32_t streaming_thread_index = this->streaming_thread_index_get();
-    assert(streaming_thread_index < STREAMING_THREAD_COUNT);
+    // we can't use m_streaming_throttling_index here
+    // we must cache the streaming_throttling_index to eusure the consistency
+    VkCommandBuffer command_buffer = this->streaming_thread_get_command_buffer(streaming_throttling_index);
 
     VkImageMemoryBarrier image_memory_barrier_before_copy[1] = {
         {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -228,9 +247,9 @@ void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_im
          dst_image,
          (*subresource_range)}};
 
-    m_device.cmd_pipeline_barrier(this->m_streaming_command_buffer[streaming_thread_index], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_before_copy);
+    m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_before_copy);
 
-    m_device.cmd_copy_buffer_to_image(this->m_streaming_command_buffer[streaming_thread_index], src_buffer, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region_count, regions);
+    m_device.cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region_count, regions);
 
     // https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples#upload-data-from-the-cpu-to-an-image-sampled-in-a-fragment-shader
 
@@ -249,7 +268,7 @@ void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_im
              this->m_device.queue_graphics_family_index(),
              dst_image,
              (*subresource_range)}};
-        m_device.cmd_pipeline_barrier(this->m_streaming_command_buffer[streaming_thread_index], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
+        m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
 
         // Queue Family Ownership Transfer
         // Acquire Operation
@@ -268,7 +287,7 @@ void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_im
              VK_QUEUE_FAMILY_IGNORED,
              dst_image,
              (*subresource_range)}};
-        m_device.cmd_pipeline_barrier(this->m_streaming_command_buffer[streaming_thread_index], VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
+        m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
     }
 }
 

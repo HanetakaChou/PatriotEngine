@@ -36,10 +36,15 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     dpkg --add-architecture i386
     apt-get update
 
-    apt remove libc++abi1-10 # bug ?
-    apt remove libc++abi-10-dev # bug ?
-    apt remove libc++1-10 # bug ?
-    apt remove libc++-10-dev # bug ?
+    # bug ?
+    apt remove libc++abi1-10
+    apt remove libc++abi1
+    apt remove libc++abi-10-dev
+    apt remove libc++abi-dev
+    apt remove libc++1-10  
+    apt remove libc++1
+    apt remove libc++-10-dev 
+    apt remove libc++-dev
     #apt remove gcc-9
     #apt remove gcc
     #apt remove g++-9

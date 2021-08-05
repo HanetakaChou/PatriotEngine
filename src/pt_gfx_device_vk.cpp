@@ -496,6 +496,18 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_queue_submit = reinterpret_cast<PFN_vkQueueSubmit>(vk_get_device_proc_addr(m_device, "vkQueueSubmit"));
     assert(NULL != this->m_vk_queue_submit);
 
+    this->m_vk_create_fence = reinterpret_cast<PFN_vkCreateFence>(vk_get_device_proc_addr(m_device, "vkCreateFence"));
+    assert(NULL != this->m_vk_create_fence);
+
+    this->m_vk_wait_for_fences = reinterpret_cast<PFN_vkWaitForFences>(vk_get_device_proc_addr(m_device, "vkWaitForFences"));
+    assert(NULL != this->m_vk_wait_for_fences);
+
+    this->m_vk_reset_fences = reinterpret_cast<PFN_vkResetFences>(vk_get_device_proc_addr(m_device, "vkResetFences"));
+    assert(NULL != this->m_vk_reset_fences);
+
+    this->m_vk_destory_fence = reinterpret_cast<PFN_vkDestroyFence>(vk_get_device_proc_addr(m_device, "vkDestroyFence"));
+    assert(NULL != this->m_vk_destory_fence);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {
