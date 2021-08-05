@@ -63,28 +63,28 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_frame_throtting_index;
     VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
 
-    // Staging Buffer
-    uint64_t m_transfer_src_buffer_offset;
-
     // Streaming
+    uint64_t m_transfer_src_buffer_offset; // Staging Buffer
+    static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
+    uint32_t m_streaming_throttling_index;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
-    // padding // false sharing   
+    // TODO
+    // padding // false sharing
     // struct
     // {
-    // 
-    // padding // false sharing   
+    //
+    // padding // false sharing
     // } [STREAMING_THREAD_COUNT]
-    VkCommandPool m_streaming_command_pool[STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_streaming_command_buffer[STREAMING_THREAD_COUNT];
-
-    mcrt_task_ref m_streaming_task_root;
+    VkCommandPool m_streaming_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_streaming_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
+    mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
 
     inline uint32_t streaming_thread_index_get();
-
     inline void sync_streaming_thread();
 
-    inline gfx_connection_vk();
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline gfx_connection_vk();
     void destroy() override;
     inline ~gfx_connection_vk();
 
@@ -114,13 +114,12 @@ public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
-    //Streaming
-
-    inline mcrt_task_ref streaming_task_root() { return m_streaming_task_root; }
-
     inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
 
+    //Streaming
+    inline mcrt_task_ref *streaming_task_root() { return &m_streaming_task_root[0]; }
+   
     void copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 

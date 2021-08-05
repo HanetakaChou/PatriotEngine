@@ -54,42 +54,43 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
         }
     }
 
-    // Staging Buffer
-    this->m_transfer_src_buffer_offset = 0U;
+    
 
     // Streaming
-    //this->m_streaming_affinity_mask = 0U;
-
-    for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+    this->m_transfer_src_buffer_offset = 0U;
+    this->m_streaming_throttling_index = 0U;
+    for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
-        if (m_device.has_dedicated_transfer_queue())
+        for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
         {
-            VkCommandPoolCreateInfo command_pool_create_info = {
-                VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                NULL,
-                0U,
-                m_device.queue_transfer_family_index()};
-            VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_command_pool[streaming_thread_index]);
-            assert(VK_SUCCESS == res_create_command_pool);
-        }
-        else
-        {
-            // use the same graphics queue but different command pools
-            VkCommandPoolCreateInfo command_pool_create_info = {
-                VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                NULL,
-                0U,
-                m_device.queue_graphics_family_index()};
-            VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_command_pool[streaming_thread_index]);
-            assert(VK_SUCCESS == res_create_command_pool);
+            if (m_device.has_dedicated_transfer_queue())
+            {
+                VkCommandPoolCreateInfo command_pool_create_info = {
+                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                    NULL,
+                    0U,
+                    m_device.queue_transfer_family_index()};
+                VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_command_pool[streaming_throttling_index][streaming_thread_index]);
+                assert(VK_SUCCESS == res_create_command_pool);
+            }
+            else
+            {
+                // use the same graphics queue but different command pools
+                VkCommandPoolCreateInfo command_pool_create_info = {
+                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                    NULL,
+                    0U,
+                    m_device.queue_graphics_family_index()};
+                VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_command_pool[streaming_throttling_index][streaming_thread_index]);
+                assert(VK_SUCCESS == res_create_command_pool);
+            }
+
+            this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index] = VK_NULL_HANDLE;
         }
 
-        this->m_streaming_command_buffer[streaming_thread_index] = VK_NULL_HANDLE;
+        this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL);
+        mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
     }
-
-    //
-    this->m_streaming_task_root = mcrt_task_allocate_root(NULL);
-    mcrt_task_set_ref_count(this->m_streaming_task_root, 1U);
 
     return true;
 }
@@ -155,9 +156,19 @@ inline uint32_t gfx_connection_vk::streaming_thread_index_get()
 
 void gfx_connection_vk::sync_streaming_thread()
 {
+    // STREAMING_THROTTLING_COUNT - 3
+    // 0 - Fence / ResetCommandPool 
+    // 1 - Sync by TBB / Submit - "current" streaming_throttling_index
+    // 2 - Spawn / BeginCommandBuffer  
+
+    // Multi-Threading
+    // gfx_texture_vk::read_input_stream
+    uint32_t streaming_throttling_index = this->m_streaming_throttling_index;
+    mcrt_atomic_store(this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
+
     // Sync by TBB
-    mcrt_task_wait_for_all(this->m_streaming_task_root);
-    mcrt_task_set_ref_count(this->m_streaming_task_root, 1U);
+    mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
+    mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
     // submit
     VkSubmitInfo submit_info;
@@ -193,6 +204,11 @@ void gfx_connection_vk::sync_streaming_thread()
     {
         this->m_device.queue_submit(this->m_device.queue_graphics(), 1, &submit_info, VK_NULL_HANDLE);
     }
+
+    // Wait the Fence
+    // Submit ensures EndCommandBuffer 
+    // Fence ensures "Completed by GPU"
+    // Safe to ResetCommandPool
 }
 
 void gfx_connection_vk::copy_buffer_to_image(VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
