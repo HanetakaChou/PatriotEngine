@@ -70,6 +70,7 @@ extern "C"
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
     // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"
+    // but must be after the return of the "gfx_connection_create_texture"
     PT_ATTR_GFX bool gfx_texture_read_input_stream(
         gfx_texture_ref texture,
         char const *initial_filename,
@@ -78,6 +79,8 @@ extern "C"
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
 
+    // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
+    // but must be after the return of the "gfx_connection_create_texture"
     PT_ATTR_GFX void gfx_texture_destroy(gfx_texture_ref texture);
 
 #ifdef __cplusplus
