@@ -143,8 +143,14 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
 
     // SwapChain
     {
-        VkResult res_platform_create_surface = this->m_device.platform_create_surface(&m_surface, wsi_connection, wsi_visual, wsi_window);
+        VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
         assert(VK_SUCCESS == res_platform_create_surface);
+    }
+    {
+        VkBool32 supported;
+        VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
+        assert(VK_SUCCESS == res_get_physical_device_surface_support);
+        assert(VK_TRUE == supported);
     }
     this->m_width = 1280;
     this->m_height = 720;
@@ -279,7 +285,7 @@ bool gfx_connection_vk::init_swapchain()
                 {
                     mcrt_free((*m_present_modes));
                 }
-            } instance_internal_present_modes_guard(&present_modes, &present_modes_count,  this->m_surface, &this->m_device);
+            } instance_internal_present_modes_guard(&present_modes, &present_modes_count, this->m_surface, &this->m_device);
 
             swapchain_create_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
             for (uint32_t present_mode_index = 0U; present_mode_index < present_modes_count; ++present_mode_index)
@@ -656,7 +662,7 @@ void gfx_connection_vk::reduce_streaming_task()
 
     // throttling count
     {
-        uint32_t streaming_throttling_count =  this->m_streaming_throttling_count[streaming_throttling_index];
+        uint32_t streaming_throttling_count = this->m_streaming_throttling_count[streaming_throttling_index];
         this->m_streaming_throttling_count[streaming_throttling_index] = 0U;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         if (streaming_throttling_count > 0U)

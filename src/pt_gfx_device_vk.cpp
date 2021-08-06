@@ -104,6 +104,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_get_physical_device_format_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceFormatProperties"));
     assert(NULL != this->m_vk_get_physical_device_format_properties);
 
+    this->m_vk_get_physical_device_surface_support = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceSupportKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfaceSupportKHR"));
+    assert(NULL != this->m_vk_get_physical_device_surface_support);
+
     this->m_vk_get_physical_device_surface_capablilities = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
     assert(NULL != this->m_vk_get_physical_device_surface_capablilities);
 
