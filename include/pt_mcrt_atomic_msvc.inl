@@ -92,6 +92,11 @@ inline int32_t mcrt_atomic_dec_i32(int32_t volatile *dest)
     return InterlockedDecrement(reinterpret_cast<LONG volatile *>(dest));
 }
 
+inline uint32_t mcrt_atomic_dec_u32(uint32_t volatile *dest)
+{
+    return InterlockedDecrement(reinterpret_cast<LONG volatile *>(dest));
+}
+
 inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest)
 {
     return InterlockedDecrement64(reinterpret_cast<LONGLONG volatile *>(dest));

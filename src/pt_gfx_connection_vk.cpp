@@ -72,7 +72,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     this->m_transfer_src_buffer_begin_and_end = 0U;
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
-        this->m_transfer_src_buffer_max_end[streaming_throttling_index] = 0U;
+        this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index] = 0U;
 
         for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
         {
@@ -141,16 +141,30 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     return true;
 }
 
-void gfx_connection_vk::destroy()
+bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
 {
-    this->m_malloc.destroy();
-    this->m_device.destroy();
-    this->~gfx_connection_vk();
-    mcrt_free(this);
-}
+    // TBB
+    // tally_completion_of_predecessor
+    // SchedulerTraits::has_slow_atomic
 
-inline gfx_connection_vk::~gfx_connection_vk()
-{
+    if (STREAMING_OBJECT_COUNT <= mcrt_atomic_load(&this->m_streaming_object_count[streaming_throttling_index]))
+    {
+        return false;
+    }
+    else
+    {
+        uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
+        if (PT_LIKELY(streaming_object_index < STREAMING_OBJECT_COUNT))
+        {
+            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
+            return true;
+        }
+        else
+        {
+            mcrt_atomic_dec_u32(&this->m_streaming_object_count[streaming_throttling_index]);
+            return false;
+        }
+    }
 }
 
 inline VkCommandBuffer gfx_connection_vk::streaming_task_get_command_buffer(uint32_t streaming_throttling_index)
@@ -219,6 +233,84 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_acquire_ownership_c
     return this->m_streaming_acquire_ownership_command_buffer[streaming_throttling_index][streaming_thread_index];
 }
 
+void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
+{
+    // we can't use m_streaming_throttling_index here
+    // we must cache the streaming_throttling_index to eusure the consistency
+    VkCommandBuffer command_buffer = this->streaming_task_get_command_buffer(streaming_throttling_index);
+
+    VkImageMemoryBarrier image_memory_barrier_before_copy[1] = {
+        {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+         NULL,
+         0,
+         VK_ACCESS_TRANSFER_WRITE_BIT,
+         VK_IMAGE_LAYOUT_UNDEFINED,
+         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+         VK_QUEUE_FAMILY_IGNORED,
+         VK_QUEUE_FAMILY_IGNORED,
+         dst_image,
+         (*subresource_range)}};
+
+    m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_before_copy);
+
+    m_device.cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region_count, regions);
+
+    // https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples#upload-data-from-the-cpu-to-an-image-sampled-in-a-fragment-shader
+
+    if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
+    {
+        // Queue Family Ownership Transfer
+        // Release Operation
+        {
+            VkImageMemoryBarrier image_memory_barrier_after_copy[1] = {
+                {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                 NULL,
+                 VK_ACCESS_TRANSFER_WRITE_BIT,
+                 0,
+                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                 this->m_device.queue_transfer_family_index(),
+                 this->m_device.queue_graphics_family_index(),
+                 dst_image,
+                 (*subresource_range)}};
+            m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
+        }
+
+        // Queue Family Ownership Transfer
+        // Acquire Operation
+        {
+            VkCommandBuffer command_buffer_acquire_ownership = this->streaming_task_get_acquire_ownership_command_buffer(streaming_throttling_index);
+            VkImageMemoryBarrier image_memory_barrier_acquire_ownership[1] = {
+                {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+                 NULL,
+                 0,
+                 0,
+                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                 this->m_device.queue_transfer_family_index(),
+                 this->m_device.queue_graphics_family_index(),
+                 dst_image,
+                 (*subresource_range)}};
+            m_device.cmd_pipeline_barrier(command_buffer_acquire_ownership, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_acquire_ownership);
+        }
+    }
+    else
+    {
+        VkImageMemoryBarrier image_memory_barrier_after_copy[1] = {
+            {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+             NULL,
+             0,
+             VK_ACCESS_SHADER_READ_BIT,
+             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+             VK_QUEUE_FAMILY_IGNORED,
+             VK_QUEUE_FAMILY_IGNORED,
+             dst_image,
+             (*subresource_range)}};
+        m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
+    }
+}
+
 void gfx_connection_vk::reduce_streaming_task()
 {
     // STREAMING_THROTTLING_COUNT - 3
@@ -232,6 +324,7 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
 
     // sync by TBB
+    // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
@@ -342,7 +435,7 @@ void gfx_connection_vk::reduce_streaming_task()
             assert(uint64_t(transfer_src_buffer_size_uint64) < uint64_t(UINT32_MAX));
             transfer_src_buffer_size = uint32_t(transfer_src_buffer_size_uint64);
         }
-        uint32_t transfer_src_buffer_streaming_task_max_end = this->m_transfer_src_buffer_max_end[streaming_throttling_index];
+        uint32_t transfer_src_buffer_streaming_task_max_end = this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index];
         do
         {
             transfer_src_buffer_begin_and_end = mcrt_atomic_load(&this->m_transfer_src_buffer_begin_and_end);
@@ -353,6 +446,7 @@ void gfx_connection_vk::reduce_streaming_task()
             // enough memeory
             assert((transfer_src_buffer_end - transfer_src_buffer_streaming_task_max_end) <= transfer_src_buffer_size);
         } while ((transfer_src_buffer_streaming_task_max_end > transfer_src_buffer_begin) && (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_streaming_task_max_end, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
+        // this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index] = 0;
     }
 
     // TODO limit the thread arena number
@@ -378,96 +472,16 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 }
 
-bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
+void gfx_connection_vk::destroy()
 {
-    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
-    if (PT_LIKELY(streaming_object_index < STREAMING_OBJECT_COUNT))
-    {
-        this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    this->m_malloc.destroy();
+    this->m_device.destroy();
+    this->~gfx_connection_vk();
+    mcrt_free(this);
 }
 
-void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
+inline gfx_connection_vk::~gfx_connection_vk()
 {
-    // we can't use m_streaming_throttling_index here
-    // we must cache the streaming_throttling_index to eusure the consistency
-    VkCommandBuffer command_buffer = this->streaming_task_get_command_buffer(streaming_throttling_index);
-
-    VkImageMemoryBarrier image_memory_barrier_before_copy[1] = {
-        {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-         NULL,
-         0,
-         VK_ACCESS_TRANSFER_WRITE_BIT,
-         VK_IMAGE_LAYOUT_UNDEFINED,
-         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-         VK_QUEUE_FAMILY_IGNORED,
-         VK_QUEUE_FAMILY_IGNORED,
-         dst_image,
-         (*subresource_range)}};
-
-    m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_before_copy);
-
-    m_device.cmd_copy_buffer_to_image(command_buffer, src_buffer, dst_image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, region_count, regions);
-
-    // https://github.com/KhronosGroup/Vulkan-Docs/wiki/Synchronization-Examples#upload-data-from-the-cpu-to-an-image-sampled-in-a-fragment-shader
-
-    if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
-    {
-        // Queue Family Ownership Transfer
-        // Release Operation
-        {
-            VkImageMemoryBarrier image_memory_barrier_after_copy[1] = {
-                {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                 NULL,
-                 VK_ACCESS_TRANSFER_WRITE_BIT,
-                 0,
-                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                 this->m_device.queue_transfer_family_index(),
-                 this->m_device.queue_graphics_family_index(),
-                 dst_image,
-                 (*subresource_range)}};
-            m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
-        }
-
-        // Queue Family Ownership Transfer
-        // Acquire Operation
-        {
-            VkCommandBuffer command_buffer_acquire_ownership = this->streaming_task_get_acquire_ownership_command_buffer(streaming_throttling_index);
-            VkImageMemoryBarrier image_memory_barrier_acquire_ownership[1] = {
-                {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-                 NULL,
-                 0,
-                 0,
-                 VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                 this->m_device.queue_transfer_family_index(),
-                 this->m_device.queue_graphics_family_index(),
-                 dst_image,
-                 (*subresource_range)}};
-            m_device.cmd_pipeline_barrier(command_buffer_acquire_ownership, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_acquire_ownership);
-        }
-    }
-    else
-    {
-        VkImageMemoryBarrier image_memory_barrier_after_copy[1] = {
-            {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-             NULL,
-             0,
-             VK_ACCESS_SHADER_READ_BIT,
-             VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-             VK_QUEUE_FAMILY_IGNORED,
-             VK_QUEUE_FAMILY_IGNORED,
-             dst_image,
-             (*subresource_range)}};
-        m_device.cmd_pipeline_barrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, image_memory_barrier_after_copy);
-    }
 }
 
 void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)

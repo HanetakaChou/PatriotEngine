@@ -249,7 +249,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 
     // staging buffer
     uint32_t transfer_src_memory_index = VK_MAX_MEMORY_TYPES;
-    this->m_transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
+    this->m_transfer_src_buffer_size = (2ULL * 1024ULL * 1024ULL * 1024ULL);
     this->m_transfer_src_buffer = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory_pointer = NULL;

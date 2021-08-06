@@ -71,7 +71,7 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_streaming_throttling_index;
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
     uint64_t m_transfer_src_buffer_begin_and_end; // Staging Buffer
-    uint32_t m_transfer_src_buffer_max_end[STREAMING_THROTTLING_COUNT];
+    uint32_t m_transfer_src_buffer_streaming_task_max_end[STREAMING_THROTTLING_COUNT];
     // TODO
     // padding // cacheline // false sharing
     // struct
@@ -92,7 +92,7 @@ class gfx_connection_vk : public gfx_connection_common
     // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
     // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
     //
-    static uint32_t const STREAMING_OBJECT_COUNT = 4096U;
+    static uint32_t const STREAMING_OBJECT_COUNT = 64U; // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
@@ -122,7 +122,7 @@ public:
     inline VkDeviceSize transfer_src_buffer_size() { return m_malloc.transfer_src_buffer_size(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
     inline uint64_t *transfer_src_buffer_begin_and_end() { return &m_transfer_src_buffer_begin_and_end; }
-    inline uint32_t *transfer_src_buffer_streaming_task_max_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_max_end[streaming_throttling_index]; }
+    inline uint32_t *transfer_src_buffer_streaming_task_max_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index]; }
 
     static inline uint32_t transfer_src_buffer_unpack_begin(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end >> 32U); }
     static inline uint32_t transfer_src_buffer_unpack_end(uint64_t transfer_src_buffer_begin_and_end) { return (transfer_src_buffer_begin_and_end & 0XFFFFFFFFU); }

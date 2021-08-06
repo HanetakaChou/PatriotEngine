@@ -40,7 +40,6 @@ bool gfx_texture_vk::read_input_stream(
     // We don't have the third stage here
 
     // first stage
-    //
 
     gfx_input_stream_ref input_stream;
     {
@@ -140,15 +139,15 @@ bool gfx_texture_vk::read_input_stream(
         }
     }
 
-    uint32_t streaming_throttling_index = this->m_gfx_connection->current_streaming_throttling_index();
+    // second stage
+
+    uint32_t streaming_throttling_index = uint32_t(-1);
+    do
     {
-        bool res_streaming_object_list_push = this->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, this);
-        if (PT_UNLIKELY(!res_streaming_object_list_push))
-        {
-            this->m_streaming_status = STREAMING_STATUS_ERROR;
-            return false;
-        }
-    }
+        streaming_throttling_index = this->m_gfx_connection->current_streaming_throttling_index();
+    } while (!this->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, this));
+    // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    // assert(mcrt_task_ref_count(this->m_gfx_connection->streaming_task_root(streaming_throttling_index)) <= (STREAMING_OBJECT_COUNT + 1));
 
     this->m_asset_filename = initial_filename;
 
@@ -242,7 +241,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
                 }
             } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
 
-            {
+            //{
                 uint64_t transfer_src_buffer_begin_and_end = uint64_t(-1);
                 uint32_t transfer_src_buffer_begin = uint32_t(-1);
                 uint32_t transfer_src_buffer_end = uint32_t(-1);
@@ -261,12 +260,20 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
                     transfer_src_buffer_end = gfx_connection_vk::transfer_src_buffer_unpack_end(transfer_src_buffer_begin_and_end);
 
                     uint64_t base_offset = (transfer_src_buffer_end % transfer_src_buffer_size);
-
-                    size_t total_size = get_copyable_footprints(&specific_header_vk,
-                                                                task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
-                                                                base_offset,
-                                                                num_subresource, memcpy_dest, cmdcopy_dest);
+                    size_t total_size = get_copyable_footprints(&specific_header_vk, task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, memcpy_dest, cmdcopy_dest);
                     assert(uint64_t(total_size) < uint64_t(UINT32_MAX));
+
+                    if (PT_UNLIKELY((base_offset + total_size) > transfer_src_buffer_size))
+                    {
+                        transfer_src_buffer_end = mcrt_intrin_round_up(transfer_src_buffer_end, transfer_src_buffer_size);
+                        assert(0U == (transfer_src_buffer_end % transfer_src_buffer_size));
+                        base_offset = 0U;
+                        size_t total_size = get_copyable_footprints(&specific_header_vk, task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, memcpy_dest, cmdcopy_dest);
+                        assert(uint64_t(total_size) < uint64_t(UINT32_MAX));
+                    }
+
+                    // not overflow
+                    assert((uint64_t(transfer_src_buffer_end) + uint64_t(total_size)) < uint64_t(UINT32_MAX));
                     transfer_src_buffer_end += uint32_t(total_size);
 
                     // enough memeory
@@ -287,7 +294,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
                 {
                     transfer_src_buffer_streaming_task_max_end = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_streaming_task_max_end(task_data->m_streaming_throttling_index));
                 } while ((transfer_src_buffer_end > transfer_src_buffer_streaming_task_max_end) && (transfer_src_buffer_streaming_task_max_end != mcrt_atomic_cas_u32(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_streaming_task_max_end(task_data->m_streaming_throttling_index), transfer_src_buffer_end, transfer_src_buffer_streaming_task_max_end)));
-            }
+            //}
 
             bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset,
                                                                                                          task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_pointer(),
