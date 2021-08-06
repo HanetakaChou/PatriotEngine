@@ -19,22 +19,6 @@
 #include <stdint.h>
 #include "pt_gfx_device_vk.h"
 
-void gfx_device_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
-{
-    void *bitmap_data = static_cast<void *>(m_wsi_connection);
-}
-
-void gfx_device_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
-{
-    void *bitmap_data = static_cast<void *>(m_wsi_connection);
-
-}
-
-void gfx_device_vk::wsi_on_redraw_needed_release()
-{
-
-}
-
 char const *gfx_device_vk::platform_surface_extension_name(uint32_t index)
 {
     return NULL;
@@ -45,11 +29,6 @@ uint32_t gfx_device_vk::platform_surface_extension_count()
     return 0;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
-{
-    return true;
-}
-
 char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
 {
     return NULL;
@@ -58,4 +37,14 @@ char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
 uint32_t gfx_device_vk::platform_swapchain_extension_count()
 {
     return 0;
+}
+
+bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    return true;
+}
+
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    return VK_SUCCESS;
 }

@@ -109,6 +109,14 @@ class gfx_connection_vk : public gfx_connection_common
     inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index);
     inline void reduce_streaming_task();
 
+    // SwapChain
+    VkSurfaceKHR m_surface;
+    uint32_t m_width;
+    uint32_t m_height;
+    VkSwapchainKHR m_swapchain;
+
+    bool init_swapchain();
+
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline gfx_connection_vk();
     void destroy() override;

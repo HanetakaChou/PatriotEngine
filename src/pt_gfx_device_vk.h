@@ -49,6 +49,10 @@ class gfx_device_vk
 
     PFN_vkGetPhysicalDeviceMemoryProperties m_vk_get_physical_device_memory_properties;
     PFN_vkGetPhysicalDeviceFormatProperties m_vk_get_physical_device_format_properties;
+    PFN_vkGetPhysicalDeviceSurfaceSupportKHR m_vk_get_physical_device_surface_support;
+    PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR m_vk_get_physical_device_surface_capablilities;
+    PFN_vkGetPhysicalDeviceSurfaceFormatsKHR m_vk_get_physical_device_surface_formats;
+    PFN_vkGetPhysicalDeviceSurfacePresentModesKHR m_vk_get_physical_device_surface_present_modes;
     PFN_vkCreateBuffer m_vk_create_buffer;
     PFN_vkCreateImage m_vk_create_image;
     PFN_vkDestroyBuffer m_vk_destroy_buffer;
@@ -75,18 +79,13 @@ class gfx_device_vk
     PFN_vkDestroyFence m_vk_destory_fence;
     PFN_vkCreateSemaphore m_vk_create_semaphore;
     PFN_vkDestroySemaphore m_vk_destroy_semaphore;
+    PFN_vkCreateSwapchainKHR m_vk_create_swapchain;
 
-    wsi_connection_ref m_wsi_connection;
-    wsi_visual_ref m_wsi_visual;
-    wsi_window_ref m_wsi_window;
     static char const *platform_surface_extension_name(uint32_t index);
     static uint32_t platform_surface_extension_count();
-    bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index);
     static char const *platform_swapchain_extension_name(uint32_t index);
     static uint32_t platform_swapchain_extension_count();
-    void wsi_on_resized(wsi_window_ref wsi_window, float width, float height);
-    void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height);
-    void wsi_on_redraw_needed_release();
+    bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
@@ -152,6 +151,12 @@ public:
 
     inline VkResult create_semaphore(VkSemaphoreCreateInfo const *create_info, VkSemaphore *semaphore) { return this->m_vk_create_semaphore(this->m_device, create_info, &this->m_allocator_callbacks, semaphore); }
     inline void destroy_semaphore(VkSemaphore semaphore) { return this->m_vk_destroy_semaphore(this->m_device, semaphore, &this->m_allocator_callbacks); }
+
+    VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline VkResult get_physical_device_surface_capablilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR *surface_capabilities) { return this->m_vk_get_physical_device_surface_capablilities(this->m_physical_device, surface, surface_capabilities); }
+    inline VkResult get_physical_device_surface_formats(VkSurfaceKHR surface, uint32_t *surface_format_count, VkSurfaceFormatKHR *surface_formats) { return this->m_vk_get_physical_device_surface_formats(this->m_physical_device, surface, surface_format_count, surface_formats); }
+    inline VkResult get_physical_device_surface_present_modes(VkSurfaceKHR surface, uint32_t *present_mode_count, VkPresentModeKHR *present_modes) { return this->m_vk_get_physical_device_surface_present_modes(this->m_physical_device, surface, present_mode_count, present_modes); }
+    inline VkResult create_swapchain(VkSwapchainCreateInfoKHR const *create_info, VkSwapchainKHR *swapchain) { return this->m_vk_create_swapchain(this->m_device, create_info, &this->m_allocator_callbacks, swapchain); }
 };
 
 #endif

@@ -22,38 +22,11 @@
 #include "pt_gfx_device_vk.h"
 #include <xcb/xcb.h>
 #include <vulkan/vulkan.h>
+#include <assert.h>
 
 inline xcb_connection_t *unwrap(wsi_connection_ref wsi_connection) { return reinterpret_cast<xcb_connection_t *>(wsi_connection); }
+inline xcb_window_t unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<uintptr_t>(wsi_window); }
 inline xcb_visualid_t unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast<uintptr_t>(wsi_visual); }
-
-//static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
-
-void gfx_device_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
-{
-    //m_wsi_window = wsi_window;
-
-    //xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    //xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-    //xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-}
-
-void gfx_device_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
-{
-#if 0
-    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
-    assert(m_visual == m_invalid_visual || m_visual == _visual);
-    m_wsi_connection = _wsi_connection;
-    m_visual = _visual;
-
-    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-#endif
-}
-
-void gfx_device_vk::wsi_on_redraw_needed_release()
-{
-}
 
 char const *gfx_device_vk::platform_surface_extension_name(uint32_t index)
 {
@@ -76,18 +49,6 @@ uint32_t gfx_device_vk::platform_surface_extension_count()
     return 2;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
-{
-    PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR m_vkGetPhysicalDeviceXcbPresentationSupportKHR = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
-
-    xcb_connection_t *wsi_connection = unwrap(m_wsi_connection);
-    xcb_visualid_t wsi_visual = unwrap(m_wsi_visual);
-
-    VkBool32 res = m_vkGetPhysicalDeviceXcbPresentationSupportKHR(physical_device, queue_family_index, wsi_connection, wsi_visual);
-
-    return (VK_FALSE != res);
-}
-
 char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
 {
     if (0 == index)
@@ -103,4 +64,28 @@ char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
 uint32_t gfx_device_vk::platform_swapchain_extension_count()
 {
     return 1;
+}
+
+bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR vk_get_physical_device_xcb_presentation_support = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
+
+    VkBool32 res_get_physical_device_xcb_presentation_support = vk_get_physical_device_xcb_presentation_support(physical_device, queue_family_index, unwrap(wsi_connection), unwrap(wsi_visual));
+
+    return (VK_FALSE != res_get_physical_device_xcb_presentation_support);
+}
+
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    PFN_vkCreateXcbSurfaceKHR vk_create_xcb_surface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(vkGetInstanceProcAddr(this->m_instance, "vkCreateXcbSurfaceKHR"));
+    assert(NULL != vk_create_xcb_surface);
+
+    VkXcbSurfaceCreateInfoKHR xcb_surface_create_info;
+    xcb_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    xcb_surface_create_info.pNext = NULL;
+    xcb_surface_create_info.flags = 0U;
+    xcb_surface_create_info.connection = unwrap(wsi_connection);
+    xcb_surface_create_info.window = unwrap(wsi_window);
+
+    return vk_create_xcb_surface(this->m_instance, &xcb_surface_create_info, &this->m_allocator_callbacks, surface);
 }

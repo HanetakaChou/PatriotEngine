@@ -28,10 +28,6 @@ gfx_device_vk::gfx_device_vk()
 
 bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    this->m_wsi_connection = wsi_connection;
-    this->m_wsi_visual = wsi_visual;
-    this->m_wsi_window = wsi_window;
-
     this->m_allocator_callbacks.pUserData = NULL;
     this->m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };
     this->m_allocator_callbacks.pfnReallocation = [](void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_realloc(pOriginal, size, alignment); };
@@ -107,6 +103,15 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
     this->m_vk_get_physical_device_format_properties = reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceFormatProperties"));
     assert(NULL != this->m_vk_get_physical_device_format_properties);
+
+    this->m_vk_get_physical_device_surface_capablilities = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfaceCapabilitiesKHR"));
+    assert(NULL != this->m_vk_get_physical_device_surface_capablilities);
+
+    this->m_vk_get_physical_device_surface_formats = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfaceFormatsKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfaceFormatsKHR"));
+    assert(NULL != this->m_vk_get_physical_device_surface_formats);
+
+    this->m_vk_get_physical_device_surface_present_modes = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfacePresentModesKHR"));
+    assert(NULL != this->m_vk_get_physical_device_surface_present_modes);
 
 #ifndef NDEBUG
     this->m_debug_report_callback = VK_NULL_HANDLE;
@@ -269,7 +274,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         {
             VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
 
-            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(m_physical_device, queue_family_index))
+            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(m_physical_device, queue_family_index, wsi_connection, wsi_visual, wsi_window))
             {
                 this->m_queue_graphics_family_index = queue_family_index;
                 this->m_queue_graphics_queue_index = 0U;
@@ -512,6 +517,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
     this->m_vk_destroy_semaphore = reinterpret_cast<PFN_vkDestroySemaphore>(vk_get_device_proc_addr(m_device, "vkDestroySemaphore"));
     assert(NULL != this->m_vk_destroy_semaphore);
+
+    this->m_vk_create_swapchain = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk_get_device_proc_addr(m_device, "vkCreateSwapchainKHR"));
+    assert(NULL != this->m_vk_create_swapchain);
 
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
