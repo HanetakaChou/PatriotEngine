@@ -355,7 +355,10 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
     {
         // The slob allocator is serial which is harmful to the parallel performance
         // leave the "steaming_cancel" to the third stage
-
+        // tracker by "slob_lock_busy_count"
+#if 0
+        task_data->m_gfx_texture->streaming_cancel();
+#else
         // pass to the third stage
         {
             bool res_streaming_object_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_object_list_push(task_data->m_streaming_throttling_index, task_data->m_gfx_texture);
@@ -365,8 +368,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_data_execute(mcrt_task_ref 
                 return NULL;
             }
         }
-
         mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+#endif
     }
 
     return NULL;
