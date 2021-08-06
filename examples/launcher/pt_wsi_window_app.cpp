@@ -3,6 +3,7 @@
 #include <vector>
 #include "pt_wsi_window_app.h"
 #include "pt_gfx_connection_utils.h"
+#include <pt_mcrt_thread.h>
 
 static gfx_connection_ref my_gfx_connection = NULL;
 //static gfx_texture_ref my_texture1 = NULL;
@@ -61,6 +62,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             }
         }
     }
+
+    sleep(10);
 
     for (gfx_texture_ref my_texture : my_textures)
     {
