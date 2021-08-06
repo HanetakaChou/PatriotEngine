@@ -92,9 +92,13 @@ class gfx_connection_vk : public gfx_connection_common
     // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
     // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
     //
-    static uint32_t const STREAMING_OBJECT_COUNT = 64U; // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    static uint32_t const STREAMING_OBJECT_COUNT = 96U; 
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
+
+  // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    static uint32_t const STREAMING_THROTTLING_THRESHOLD = (STREAMING_OBJECT_COUNT - STREAMING_THREAD_COUNT);
+    uint32_t m_streaming_throttling_count[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index);
     inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index);
@@ -136,6 +140,7 @@ public:
 
     //Streaming
     inline uint32_t current_streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
+    bool streaming_throttling(uint32_t streaming_throttling_index);
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
     bool streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);

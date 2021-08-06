@@ -52,6 +52,11 @@ inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
     return InterlockedExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch));
 }
 
+inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch)
+{
+    return InterlockedExchange(reinterpret_cast<LONG volatile *>(dest), static_cast<LONG>(exch));
+}
+
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
 {
     return InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch));

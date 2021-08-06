@@ -2,6 +2,10 @@
 #include <pt_mcrt_atomic.h>
 #include "pt_gfx_malloc.h"
 #include <algorithm>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 
 // linux
 // https://github.com/torvalds/linux/blob/master/mm/slab.c //CONFIG_SLAB
@@ -174,6 +178,7 @@ inline gfx_malloc::slob_page::slob_page(
 #endif
       m_page_memory_handle(page_memory_handle)
 {
+    
 }
 
 gfx_malloc::slob_page::~slob_page()
@@ -568,7 +573,7 @@ inline gfx_malloc::slob::slob()
 #ifndef NDEBUG
     : m_slob_break1(SLOB_BREAK_POISON),
       m_slob_break2(SLOB_BREAK_POISON),
-      m_slob_lock(false),
+      m_slob_lock_busy_count(0U),
       m_page_size(PAGE_SIZE_POISON)
 #endif
 {
@@ -583,22 +588,36 @@ inline void gfx_malloc::slob::init(uint64_t page_size)
     m_page_size = page_size;
     m_slob_break1 = page_size / 16ULL; //(page_size * 256/*SLOB_BREAK1*/) / 4096
     m_slob_break2 = page_size / 4ULL;  //(page_size * 1024/*SLOB_BREAK2*/) / 4096
+
+    mcrt_os_mutex_init(&m_slob_lock);
+}
+
+inline gfx_malloc::slob::~slob()
+{
+    mcrt_os_mutex_destroy(&m_slob_lock);
+#ifndef NDEBUG
+    char debug_message[256];
+    snprintf(debug_message, 256, "slob_lock_busy_count: %i \n", int(m_slob_lock_busy_count));
+    write(STDOUT_FILENO, debug_message, strlen(debug_message));
+#endif
 }
 
 inline void gfx_malloc::slob::lock()
 {
-    assert(mcrt_atomic_load(&m_slob_lock) == false);
 #ifndef NDEBUG
-    mcrt_atomic_store(&m_slob_lock, true);
+    if (0 != mcrt_os_mutex_trylock(&m_slob_lock))
+    {
+        ++m_slob_lock_busy_count;
+        mcrt_os_mutex_lock(&m_slob_lock);
+    }
+#else
+    mcrt_os_mutex_lock(&m_slob_lock);
 #endif
 }
 
 inline void gfx_malloc::slob::unlock()
 {
-    assert(mcrt_atomic_load(&m_slob_lock) == true);
-#ifndef NDEBUG
-    mcrt_atomic_store(&m_slob_lock, false);
-#endif
+    mcrt_os_mutex_unlock(&m_slob_lock);
 }
 
 inline gfx_malloc::slob_page_list *gfx_malloc::slob::get_free_page_list(uint64_t size)

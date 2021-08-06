@@ -20,6 +20,10 @@
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
+#include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
@@ -72,6 +76,8 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     this->m_transfer_src_buffer_begin_and_end = 0U;
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
+        this->m_streaming_throttling_count[streaming_throttling_index] = 0U;
+
         this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index] = 0U;
 
         for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
@@ -141,29 +147,45 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     return true;
 }
 
-bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
+bool gfx_connection_vk::streaming_throttling(uint32_t streaming_throttling_index)
 {
     // TBB
     // tally_completion_of_predecessor
     // SchedulerTraits::has_slow_atomic
 
-    if (STREAMING_OBJECT_COUNT <= mcrt_atomic_load(&this->m_streaming_object_count[streaming_throttling_index]))
+    if (STREAMING_THROTTLING_THRESHOLD <= mcrt_atomic_load(&this->m_streaming_throttling_count[streaming_throttling_index]))
     {
         return false;
     }
     else
     {
-        uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
-        if (PT_LIKELY(streaming_object_index < STREAMING_OBJECT_COUNT))
+        uint32_t streaming_throttling_count = mcrt_atomic_inc_u32(&this->m_streaming_throttling_count[streaming_throttling_index]) - 1U;
+        if (PT_LIKELY(streaming_throttling_count < STREAMING_THROTTLING_THRESHOLD))
         {
-            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
             return true;
         }
         else
         {
-            mcrt_atomic_dec_u32(&this->m_streaming_object_count[streaming_throttling_index]);
+            mcrt_atomic_dec_u32(&this->m_streaming_throttling_count[streaming_throttling_index]);
+            assert(0);
             return false;
         }
+    }
+}
+
+bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
+{
+    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
+    if (PT_LIKELY(streaming_object_index < STREAMING_OBJECT_COUNT))
+    {
+        this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
+        return true;
+    }
+    else
+    {
+        mcrt_atomic_dec_u32(&this->m_streaming_object_count[streaming_throttling_index]);
+        assert(0);
+        return false;
     }
 }
 
@@ -323,6 +345,9 @@ void gfx_connection_vk::reduce_streaming_task()
     uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
 
+    //TODO race condition
+    //allocate child not atomic
+
     // sync by TBB
     // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
@@ -447,6 +472,16 @@ void gfx_connection_vk::reduce_streaming_task()
             assert((transfer_src_buffer_end - transfer_src_buffer_streaming_task_max_end) <= transfer_src_buffer_size);
         } while ((transfer_src_buffer_streaming_task_max_end > transfer_src_buffer_begin) && (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_streaming_task_max_end, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
         // this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index] = 0;
+
+#ifndef NDEBUG
+        uint32_t transfer_src_buffer_used = (transfer_src_buffer_end - transfer_src_buffer_begin);
+        if (transfer_src_buffer_used > 0U)
+        {
+            char debug_message[256];
+            snprintf(debug_message, 256, "transfer_src_buffer unused memory %f mb\n", float(transfer_src_buffer_size - transfer_src_buffer_used) / 1024.0f / 1024.0f);
+            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+        }
+#endif
     }
 
     // TODO limit the thread arena number
@@ -460,15 +495,37 @@ void gfx_connection_vk::reduce_streaming_task()
         }
     }
 
+    // throttling count
+    {
+        uint32_t streaming_throttling_count =  this->m_streaming_throttling_count[streaming_throttling_index];
+        this->m_streaming_throttling_count[streaming_throttling_index] = 0U;
+#ifndef NDEBUG
+        if (streaming_throttling_count > 0U)
+        {
+            char debug_message[256];
+            snprintf(debug_message, 256, "streaming_throttling_count %i \n", int(streaming_throttling_count));
+            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+        }
+#endif
+    }
+
     // iterate the list
     {
         uint32_t streaming_object_count = this->m_streaming_object_count[streaming_throttling_index];
         for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_count; ++streaming_object_index)
         {
-            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->mark_ready();
+            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->streaming_done();
             this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = NULL;
         }
         this->m_streaming_object_count[streaming_throttling_index] = 0U;
+#ifndef NDEBUG
+        if (streaming_object_count > 0U)
+        {
+            char debug_message[256];
+            snprintf(debug_message, 256, "streaming_object_count %i \n", int(streaming_object_count));
+            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+        }
+#endif
     }
 }
 

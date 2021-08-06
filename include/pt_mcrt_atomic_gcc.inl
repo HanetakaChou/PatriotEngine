@@ -61,6 +61,16 @@ inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
     return old_dest;
 }
 
+inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch)
+{
+    uint32_t old_dest;
+    do
+    {
+        old_dest = (*dest);
+    } while (__sync_val_compare_and_swap(dest, old_dest, exch) != old_dest);
+    return old_dest;
+}
+
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
 {
     int64_t old_dest;

@@ -29,6 +29,7 @@ inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t
 inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint64_t comp);
 inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp);
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch);
+inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch);
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch);
 inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch);
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add);
@@ -41,8 +42,16 @@ inline uint32_t mcrt_atomic_dec_u32(uint32_t volatile *dest);
 inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest);
 inline int32_t mcrt_atomic_fetch_add_i32(int32_t volatile *dest, int32_t add);
 inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add);
+
+// A load operation performs the acquire operation on the affected memory location: 
+// no reads or writes in the current thread can be reordered before this load. 
+// All writes in other threads that release the same atomic variable are visible in the current thread.
 template <typename T>
 inline T mcrt_atomic_load(T volatile *src);
+
+// A store operation performs the release operation: 
+// no reads or writes in the current thread can be reordered after this store. 
+// All writes in the current thread are visible in other threads that acquire the same atomic variable.
 template <typename T>
 inline void mcrt_atomic_store(T volatile *dst, T val);
 

@@ -153,9 +153,13 @@ private:
         slob_page_list m_large_free_page_list;
         slob_page_list m_full_page_list;
 
+
+        mcrt_mutex_t m_slob_lock;
+
 #ifndef NDEBUG
-        bool m_slob_lock;
+        int m_slob_lock_busy_count;
 #endif
+
         inline void lock();
         inline void unlock();
 
@@ -165,8 +169,8 @@ private:
 
     public:
         inline slob();
-
         inline void init(uint64_t page_size);
+        inline ~slob();
 
         //The "slob_new_pages" is internally synchronized
         inline class slob_page *alloc(

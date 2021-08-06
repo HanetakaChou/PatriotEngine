@@ -35,17 +35,21 @@ protected:
     // m_eStreamingStatus
     enum streaming_status_t
     {
-        STREAMING_STATUS_NOT_LOAD,
-        STREAMING_STATUS_IN_PROCESS,
-        STREAMING_STATUS_READY,
-        STREAMING_STATUS_ERROR
+        STREAMING_STATUS_STAGE_FIRST,
+        STREAMING_STATUS_STAGE_SECOND,
+        STREAMING_STATUS_STAGE_THIRD,
+        STREAMING_STATUS_DONE,
     };
     streaming_status_t m_streaming_status;
+    bool m_streaming_error;
+    bool m_streaming_cancel;
 
-    inline gfx_streaming_object(streaming_status_t streaming_status) : m_streaming_status(streaming_status) {}
+    uint32_t m_spin_lock_streaming_done;
 
+    inline gfx_streaming_object(streaming_status_t streaming_status) : m_streaming_status(streaming_status), m_streaming_error(false), m_streaming_cancel(false), m_spin_lock_streaming_done(0U) {}
 public:
-    void mark_ready();
+    void streaming_done();
+    virtual void streaming_cancel() = 0;
 };
 
 #endif
