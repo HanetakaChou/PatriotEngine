@@ -69,6 +69,7 @@ extern "C"
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
+    // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"
     PT_ATTR_GFX bool gfx_texture_read_input_stream(
         gfx_texture_ref texture,
         char const *initial_filename,
