@@ -58,8 +58,8 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_release() override;
 
-	// Perhaps we should prepare different intermediate textures for differenct frames
-    
+    // Perhaps we should prepare different intermediate textures for differenct frames
+
     // Frame Throttling
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throtting_index;
@@ -92,11 +92,14 @@ class gfx_connection_vk : public gfx_connection_common
     // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
     // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
     //
-    static uint32_t const STREAMING_OBJECT_COUNT = 96U; 
+    static uint32_t const STREAMING_OBJECT_COUNT = 128U;
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
-  // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    // 
+    // At most time, "m_streaming_throttling_count" may equal "m_streaming_object_count"
+    // However, "mcrt_task_wait_for_all" may occur between "current_streaming_throttling_index" and "mcrt_task_increment_ref_count" in "read_input_stream"
     static uint32_t const STREAMING_THROTTLING_THRESHOLD = (STREAMING_OBJECT_COUNT - STREAMING_THREAD_COUNT);
     uint32_t m_streaming_throttling_count[STREAMING_THROTTLING_COUNT];
 
@@ -185,9 +188,5 @@ class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_conne
 // callback on complete
 // CStatObj::StreamAsyncOnComplete
 // m_eStreamingStatus = ecss_Ready
-
-class gfx_task_queue_graphics_submit
-{
-};
 
 #endif

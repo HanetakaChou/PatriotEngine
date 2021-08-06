@@ -25,13 +25,13 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     {
         long int r1 = rand_r(&rand_buf);
 
-        if (0 == r1 % 8 || 1 == r1 % 8 || 2 == r1 % 8)
+        if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
             gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_rgba.pvr");
             my_textures.push_back(my_texture);
         }
-        else if (3 == r1 % 8 || 4 == r1 % 8 || 5 == r1 % 8)
+        else if (4 == r1 % 9 || 5 == r1 % 9 || 6 == r1 % 9 || 7 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
             gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
@@ -42,28 +42,22 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             if (!my_textures.empty())
             {
                 long int r2 = rand_r(&rand_buf);
-                int vec_idx = (r2 % my_textures.size());
+                int vec_idx = (r2 % (my_textures.size() / 2 + 1));
                 gfx_texture_ref my_texture = my_textures[vec_idx];
                 my_textures[vec_idx] = my_textures.back();
                 my_textures.pop_back();
                 gfx_texture_destroy(my_texture);
             }
-            else if (6 == r1 % 8)
-            {
-                gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-                gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_rgba.pvr");
-                my_textures.push_back(my_texture);
-            }
             else
             {
                 gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-                gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
+                gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
                 my_textures.push_back(my_texture);
             }
         }
     }
 
-    sleep(10);
+    sleep(15);
 
     for (gfx_texture_ref my_texture : my_textures)
     {
