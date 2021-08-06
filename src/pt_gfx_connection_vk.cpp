@@ -20,10 +20,7 @@
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
+#include <pt_mcrt_log.h>
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
@@ -335,6 +332,8 @@ void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index
 
 void gfx_connection_vk::reduce_streaming_task()
 {
+    // the third stage
+
     // STREAMING_THROTTLING_COUNT - 3
     // 0 - Fence / ResetCommandPool
     // 1 - sync by TBB / Submit - "current" streaming_throttling_index
@@ -473,13 +472,11 @@ void gfx_connection_vk::reduce_streaming_task()
         } while ((transfer_src_buffer_streaming_task_max_end > transfer_src_buffer_begin) && (transfer_src_buffer_begin_and_end != mcrt_atomic_cas_u64(&this->m_transfer_src_buffer_begin_and_end, transfer_src_buffer_pack_begin_and_end(transfer_src_buffer_streaming_task_max_end, transfer_src_buffer_end), transfer_src_buffer_begin_and_end)));
         // this->m_transfer_src_buffer_streaming_task_max_end[streaming_throttling_index] = 0;
 
-#ifndef NDEBUG
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         uint32_t transfer_src_buffer_used = (transfer_src_buffer_end - transfer_src_buffer_begin);
         if (transfer_src_buffer_used > 0U)
         {
-            char debug_message[256];
-            snprintf(debug_message, 256, "transfer_src_buffer unused memory %f mb\n", float(transfer_src_buffer_size - transfer_src_buffer_used) / 1024.0f / 1024.0f);
-            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+            mcrt_log_print("transfer_src_buffer unused memory %f mb\n", float(transfer_src_buffer_size - transfer_src_buffer_used) / 1024.0f / 1024.0f);
         }
 #endif
     }
@@ -499,12 +496,10 @@ void gfx_connection_vk::reduce_streaming_task()
     {
         uint32_t streaming_throttling_count =  this->m_streaming_throttling_count[streaming_throttling_index];
         this->m_streaming_throttling_count[streaming_throttling_index] = 0U;
-#ifndef NDEBUG
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         if (streaming_throttling_count > 0U)
         {
-            char debug_message[256];
-            snprintf(debug_message, 256, "streaming_throttling_count %i \n", int(streaming_throttling_count));
-            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+            mcrt_log_print("streaming_throttling_count %i \n", int(streaming_throttling_count));
         }
 #endif
     }
@@ -518,12 +513,10 @@ void gfx_connection_vk::reduce_streaming_task()
             this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = NULL;
         }
         this->m_streaming_object_count[streaming_throttling_index] = 0U;
-#ifndef NDEBUG
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         if (streaming_object_count > 0U)
         {
-            char debug_message[256];
-            snprintf(debug_message, 256, "streaming_object_count %i \n", int(streaming_object_count));
-            write(STDOUT_FILENO, debug_message, strlen(debug_message));
+            mcrt_log_print("streaming_object_count %i \n", int(streaming_object_count));
         }
 #endif
     }

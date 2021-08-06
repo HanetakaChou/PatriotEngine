@@ -18,9 +18,8 @@
 #include <stddef.h>
 #include "pt_gfx_device_vk.h"
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_log.h>
 #include <assert.h>
-#include <algorithm>
-#include <stdio.h>
 
 gfx_device_vk::gfx_device_vk()
 {
@@ -550,14 +549,9 @@ gfx_device_vk::~gfx_device_vk()
 }
 
 #ifndef NDEBUG
-#include <unistd.h>
-#include <fcntl.h>
-#include <string.h>
 VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
-    char debug_message[4096];
-    snprintf(debug_message, 4096, "[%s] : %s \n", pLayerPrefix, pMessage);
-    write(STDOUT_FILENO, debug_message, strlen(debug_message));
+    mcrt_log_print("[%s] : %s \n", pLayerPrefix, pMessage);
     return VK_FALSE;
 }
 #endif

@@ -39,7 +39,7 @@ bool gfx_texture_vk::read_input_stream(
 
     // We don't have the third stage here
 
-    // first stage
+    // the first stage
 
     streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
     bool streaming_error = mcrt_atomic_load(&this->m_streaming_error);
@@ -145,7 +145,7 @@ bool gfx_texture_vk::read_input_stream(
             }
         }
 
-        // second stage
+        // pass to the second stage
 
         uint32_t streaming_throttling_index = uint32_t(-1);
         // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited

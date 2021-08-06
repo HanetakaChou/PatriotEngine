@@ -156,7 +156,7 @@ private:
 
         mcrt_mutex_t m_slob_lock;
 
-#ifndef NDEBUG
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         int m_slob_lock_busy_count;
 #endif
 

@@ -69,9 +69,18 @@ class gfx_connection_vk : public gfx_connection_common
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
     uint32_t m_streaming_throttling_index;
+
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
     uint64_t m_transfer_src_buffer_begin_and_end; // Staging Buffer
     uint32_t m_transfer_src_buffer_streaming_task_max_end[STREAMING_THROTTLING_COUNT];
+
+    // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
+    //
+    // At most time, "m_streaming_throttling_count" may equal "m_streaming_object_count"
+    // However, "mcrt_task_wait_for_all" may occur between "current_streaming_throttling_index" and "mcrt_task_increment_ref_count" in "read_input_stream"
+    static uint32_t const STREAMING_THROTTLING_THRESHOLD = 88U; // < (STREAMING_OBJECT_COUNT - STREAMING_THREAD_COUNT)
+    uint32_t m_streaming_throttling_count[STREAMING_THROTTLING_COUNT];
+
     // TODO
     // padding // cacheline // false sharing
     // struct
@@ -95,13 +104,6 @@ class gfx_connection_vk : public gfx_connection_common
     static uint32_t const STREAMING_OBJECT_COUNT = 128U;
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
-
-    // The size of the transfer src buffer is limited and thus the number of the streaming_object should be limited
-    // 
-    // At most time, "m_streaming_throttling_count" may equal "m_streaming_object_count"
-    // However, "mcrt_task_wait_for_all" may occur between "current_streaming_throttling_index" and "mcrt_task_increment_ref_count" in "read_input_stream"
-    static uint32_t const STREAMING_THROTTLING_THRESHOLD = (STREAMING_OBJECT_COUNT - STREAMING_THREAD_COUNT);
-    uint32_t m_streaming_throttling_count[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index);
     inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index);

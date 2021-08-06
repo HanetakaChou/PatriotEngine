@@ -38,6 +38,7 @@
         mcrt_aligned_malloc;
         mcrt_aligned_realloc;
         mcrt_memcpy;
+        mcrt_log_print;
     local:
         *;
 };

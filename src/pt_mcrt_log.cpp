@@ -15,15 +15,43 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_COMMON_H_
-#define _PT_GFX_COMMON_H_ 1
-
-#include "pt_common.h"
-
-#ifndef PT_ATTR_GFX
-#define PT_ATTR_GFX PT_ATTR_IMPORT
+#include <stddef.h>
+#include <pt_mcrt_log.h>
+#include <stdarg.h>
+#include <stdio.h>
+#if defined(PT_POSIX)
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#elif defined(PT_WIN32)
+    TODO
+#else
+#error Unknown Platform
 #endif
 
-#define PT_GFX_PROFILE 1
+int PT_CALL mcrt_log_write(char const *msg)
+{
 
+#if defined(PT_POSIX)
+    return write(STDOUT_FILENO, msg, strlen(msg));
+#elif defined(PT_WIN32)
+    TODO
+#else
+#error Unknown Platform
 #endif
+}
+
+#define LOG_BUFFER_SIZE 4096
+
+int PT_CALL mcrt_log_print(char const *fmt, ...)
+{
+    char buf[LOG_BUFFER_SIZE];
+
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(buf, LOG_BUFFER_SIZE, fmt, ap);
+    va_end(ap);
+
+    return mcrt_log_write(buf);
+}
+

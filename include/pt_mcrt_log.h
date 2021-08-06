@@ -15,15 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_COMMON_H_
-#define _PT_GFX_COMMON_H_ 1
+#ifndef _PT_MCRT_LOG_H_
+#define _PT_MCRT_LOG_H_ 1
 
+#include <stddef.h>
 #include "pt_common.h"
+#include "pt_mcrt_common.h"
 
-#ifndef PT_ATTR_GFX
-#define PT_ATTR_GFX PT_ATTR_IMPORT
+#ifdef __cplusplus
+extern "C"
+{
 #endif
+    PT_ATTR_MCRT int PT_CALL mcrt_log_write(char const *msg);
 
-#define PT_GFX_PROFILE 1
+    PT_ATTR_MCRT int PT_CALL mcrt_log_print(char const *fmt, ...);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
