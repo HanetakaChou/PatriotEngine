@@ -183,35 +183,35 @@ void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_th
 }
 #endif
 
-bool gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
+void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
 {
     uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_count[streaming_throttling_index]) - 1U;
     if (streaming_object_index < STREAMING_OBJECT_COUNT)
     {
         this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
-        return true;
+        //return true;
     }
     else
     {
         assert(0);
         mcrt_atomic_dec_u32(&this->m_streaming_object_count[streaming_throttling_index]);
-        return false;
+        //return false;
     }
 }
 
-bool gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task)
+void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object_respawn_task)
 {
     uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_count[streaming_throttling_index]) - 1U;
     if (streaming_task_respawn_index < STREAMING_TASK_RESPAWN_COUNT)
     {
-        this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_task;
-        return true;
+        this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_object_respawn_task;
+        //return true;
     }
     else
     {
         assert(0);
         mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_count[streaming_throttling_index]);
-        return false;
+        //return false;
     }
 }
 
@@ -371,10 +371,12 @@ void gfx_connection_vk::reduce_streaming_task()
     // Multi-Threading
     // gfx_texture_vk::read_input_stream
     uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
-    mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
-
+   
     // TODO race condition
     // allocate child not atomic
+    this->streaming_throttling_index_lock();
+    mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
+    this->streaming_throttling_index_unlock();
 
     // sync by TBB
     // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
@@ -480,7 +482,8 @@ void gfx_connection_vk::reduce_streaming_task()
         uint32_t streaming_task_respawn_count = this->m_streaming_task_respawn_count[streaming_throttling_index];
         for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_count; ++streaming_task_respawn_index)
         {
-            mcrt_task_spawn(this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index]);
+
+            this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index]->streaming_task_respawn();
             this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
         }
         this->m_streaming_task_respawn_count[streaming_throttling_index] = 0U;

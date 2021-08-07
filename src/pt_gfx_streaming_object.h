@@ -49,6 +49,7 @@ protected:
     inline gfx_streaming_object(streaming_status_t streaming_status) : m_streaming_status(streaming_status), m_streaming_error(false), m_streaming_cancel(false), m_spin_lock_streaming_done(0U) {}
 public:
     void streaming_done();
+    virtual void streaming_task_respawn() = 0;
     virtual void streaming_cancel() = 0;
 };
 

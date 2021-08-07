@@ -36,12 +36,19 @@ class gfx_texture_vk : public gfx_texture_common
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
 
+    gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
+    intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
+    int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
+    void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+
     bool read_input_stream(
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
+
+    void streaming_task_respawn() override;
 
     struct read_input_stream_task_data
     {
@@ -56,7 +63,9 @@ class gfx_texture_vk : public gfx_texture_common
 
     static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
 
-    static mcrt_task_ref read_input_stream_task_respawn(uint32_t streaming_throttling_index, mcrt_task_ref self);
+    void destroy() override;
+
+    void streaming_cancel() override;
 
     struct specific_header_vk_t
     {
@@ -67,10 +76,6 @@ class gfx_texture_vk : public gfx_texture_common
         uint32_t mipLevels;
         uint32_t arrayLayers;
     };
-
-    void destroy() override;
-    
-    void streaming_cancel() override;
 
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 

@@ -47,7 +47,6 @@ class gfx_connection_vk : public gfx_connection_common
     void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
     void wsi_on_redraw_needed_release() override;
 
-
     // Streaming
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
@@ -84,8 +83,7 @@ class gfx_connection_vk : public gfx_connection_common
 
     static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 256U;
     uint32_t m_streaming_task_respawn_count[STREAMING_THROTTLING_COUNT];
-    mcrt_task_ref m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
-
+    class gfx_streaming_object *m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
 
     // we don't need the operations below since the fence ensures that there is no consumer
     //
@@ -154,18 +152,29 @@ public:
         {
             mcrt_os_yield();
         }
+        // mcrt_atomic_acquire_barrier();
     }
-    inline uint32_t streaming_throttling_index() { return this->m_streaming_throttling_index; }
-    inline void streaming_throttling_index_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U); }
-    inline uint32_t current_streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
+
+    inline uint32_t streaming_throttling_index()
+    {
+        return mcrt_atomic_load(&this->m_streaming_throttling_index);
+    }
+
+    inline void streaming_throttling_index_unlock()
+    {
+        mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U);
+    }
 #ifndef NDEBUG
     void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
     void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
 #endif
-    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
+    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
+    {
+        return m_streaming_task_root[streaming_throttling_index];
+    }
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
-    bool streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
-    bool streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task);
+    void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
+    void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object_respawn_task);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 
