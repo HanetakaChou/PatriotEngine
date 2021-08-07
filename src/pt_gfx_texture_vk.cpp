@@ -167,7 +167,12 @@ bool gfx_texture_vk::read_input_stream(
             // move streaming_object_list_push to "read_input_stream_task_execute"
 
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_SECOND);
-            mcrt_task_spawn(task);
+
+            // different master task doesn't share the task_arena
+            // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+            mcrt_task_enqueue(task, this->m_gfx_connection->task_arena());
+
+            //mcrt_task_spawn(task);
         }
     }
     else
@@ -309,7 +314,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
                                 task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
-                                // recycle manually ttally_completion_of_predecessor   
+                                // recycle needs manually tally_completion_of_predecessor   
                                 // evidenly this function should be called after all works are done
                                 mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
                                 return NULL;
@@ -336,7 +341,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
                     // copy_buffer_to_image
                     {
                         //TODO different master task doesn't share the task_arena
-                        uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
+                        uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
                         VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
                         VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
                         task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);

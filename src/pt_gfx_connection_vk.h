@@ -83,8 +83,9 @@ class gfx_connection_vk : public gfx_connection_common
 
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_respawn_root;
+    mcrt_task_arena_ref m_task_arena;
 
-    static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 256U;
+    static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 512U;
     uint32_t m_streaming_task_respawn_count[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
 
@@ -178,6 +179,7 @@ public:
         return m_streaming_task_root[streaming_throttling_index];
     }
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
+    inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
     void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);

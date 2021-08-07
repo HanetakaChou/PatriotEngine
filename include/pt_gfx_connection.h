@@ -66,6 +66,8 @@ extern "C"
 
     // the gfx module may use the given window to recreate the swapchain
     // frame throttling
+
+    // due to the limit of the tbb task arena, "gfx_connection_wsi_on_redraw_needed_acquire" must be called by the same thread as "gfx_connection_init"
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 

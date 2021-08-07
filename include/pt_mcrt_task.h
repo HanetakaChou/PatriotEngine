@@ -35,6 +35,8 @@ extern "C"
         uint8_t m_user_data[128]; // use mcrt_intrin_round_up
     };
 
+    typedef struct _mcrt_task_arena_t_ *mcrt_task_arena_ref;
+
     // Scheduler Bypass
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/scheduler-bypass.html
 
@@ -75,11 +77,19 @@ extern "C"
     // We may set the recount to 2 if the task has one child
     PT_ATTR_MCRT void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task_ref self, mcrt_task_ref child);
 
-    // All master threads have a corresponding task_arena while the work threads don't
-    PT_ATTR_MCRT uint32_t mcrt_task_arena_current_thread_index();
+    PT_ATTR_MCRT mcrt_task_arena_ref PT_CALL mcrt_task_arena_attach();
+
+    PT_ATTR_MCRT bool PT_CALL mcrt_task_arena_is_active(mcrt_task_arena_ref task_arena);
+
+    PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_ref task_arena);
+
+    PT_ATTR_MCRT void PT_CALL mcrt_task_arena_terminate(mcrt_task_arena_ref task_arena);
 
     // All master threads have a corresponding task_arena while the work threads don't
-    PT_ATTR_MCRT uint32_t mcrt_task_arena_max_concurrency();
+    PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_current_thread_index();
+
+    // All master threads have a corresponding task_arena while the work threads don't
+    PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency();
 
 #ifdef __cplusplus
 }

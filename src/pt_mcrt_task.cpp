@@ -23,11 +23,19 @@
 
 #include <tbb/task_arena.h>
 
+#include <pt_mcrt_malloc.h>
+
+#include <new>
+
 class mcrt_task_t;
 
-inline mcrt_task_ref wrap(class mcrt_task_t *t) { return reinterpret_cast<mcrt_task_ref>(t); }
+inline mcrt_task_ref wrap(class mcrt_task_t *task) { return reinterpret_cast<mcrt_task_ref>(task); }
 
-inline class mcrt_task_t *unwrap(mcrt_task_ref t) { return reinterpret_cast<class mcrt_task_t *>(t); }
+inline class mcrt_task_t *unwrap(mcrt_task_ref task) { return reinterpret_cast<class mcrt_task_t *>(task); }
+
+inline mcrt_task_arena_ref wrap(tbb::task_arena *task_arena) { return reinterpret_cast<mcrt_task_arena_ref>(task_arena); }
+
+inline tbb::task_arena *unwrap(mcrt_task_arena_ref task_arena) { return reinterpret_cast<tbb::task_arena *>(task_arena); }
 
 class mcrt_task_t : public tbb::task
 {
@@ -122,14 +130,37 @@ PT_ATTR_MCRT void PT_CALL mcrt_task_spawn_and_wait_for_all(mcrt_task_ref self, m
     return unwrap(self)->spawn_and_wait_for_all(*unwrap(child));
 }
 
-PT_ATTR_MCRT uint32_t mcrt_task_arena_current_thread_index()
+PT_ATTR_MCRT mcrt_task_arena_ref PT_CALL mcrt_task_arena_attach()
 {
-    int idx = tbb::this_task_arena::current_thread_index();
-    return (tbb::task_arena::not_initialized != idx) ? uint32_t(idx) : uint32_t(-1);
+    tbb::task_arena *task_arena = new (mcrt_aligned_malloc(sizeof(tbb::task_arena), alignof(tbb::task_arena))) tbb::task_arena(tbb::task_arena::attach{});
+    return wrap(task_arena);
 }
 
-PT_ATTR_MCRT uint32_t mcrt_task_arena_max_concurrency()
+PT_ATTR_MCRT bool PT_CALL mcrt_task_arena_is_active(mcrt_task_arena_ref task_arena)
 {
-    int limit = tbb::this_task_arena::max_concurrency();
-    return uint32_t(limit);
+    return unwrap(task_arena)->is_active();
+}
+
+PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_ref task_arena)
+{
+    return tbb::task::enqueue((*unwrap(task)), (*unwrap(task_arena)), tbb::priority_normal);
+}
+
+PT_ATTR_MCRT void PT_CALL mcrt_task_arena_terminate(mcrt_task_arena_ref task_arena)
+{
+    unwrap(task_arena)->~task_arena();
+    mcrt_free(task_arena);
+    return;
+}
+
+PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_current_thread_index()
+{
+    int current_thread_index = tbb::this_task_arena::current_thread_index();
+    return (tbb::task_arena::not_initialized != current_thread_index) ? uint32_t(current_thread_index) : uint32_t(-1);
+}
+
+PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency()
+{
+    int max_concurrency = tbb::this_task_arena::max_concurrency();
+    return uint32_t(max_concurrency);
 }

@@ -143,6 +143,14 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
 
         // never used for wait
         this->m_streaming_task_respawn_root = mcrt_task_allocate_root(NULL);
+        mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
+
+        // init arena
+        mcrt_task_wait_for_all(this->m_streaming_task_respawn_root);
+        mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
+
+        this->m_task_arena = mcrt_task_arena_attach();
+        assert(mcrt_task_arena_is_active(this->m_task_arena));
 
         this->m_streaming_task_respawn_count[streaming_throttling_index] = 0U;
 
@@ -216,9 +224,10 @@ void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_thro
 
 inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
 {
+    assert(this->m_device.has_dedicated_transfer_queue());
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
-    assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
+    assert(mcrt_this_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
 
     if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_transfer_command_buffer[streaming_throttling_index][streaming_thread_index]))
     {
@@ -247,11 +256,11 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_bu
 
 inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
 {
-    assert(this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()));
+    assert((this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())) || (!this->m_device.has_dedicated_transfer_queue()));
 
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
-    assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
+    assert(mcrt_this_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
 
     if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_graphics_command_buffer[streaming_throttling_index][streaming_thread_index]))
     {
@@ -639,12 +648,30 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
     // TODO limit the thread arena number
-    for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+    if (this->m_device.has_dedicated_transfer_queue())
     {
-        this->m_device.reset_command_pool(this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
-
-        if (this->m_device.has_dedicated_transfer_queue())
+        if (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())
         {
+            for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+            {
+                this->m_device.reset_command_pool(this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
+                this->m_device.reset_command_pool(this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
+            }
+        }
+        else
+        {
+            for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+            {
+
+                this->m_device.reset_command_pool(this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
+            }
+        }
+    }
+    else
+    {
+        for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
+        {
+
             this->m_device.reset_command_pool(this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
         }
     }
