@@ -81,10 +81,7 @@ class gfx_device_vk
     PFN_vkDestroySemaphore m_vk_destroy_semaphore;
     PFN_vkCreateSwapchainKHR m_vk_create_swapchain;
 
-    static char const *platform_surface_extension_name(uint32_t index);
-    static uint32_t platform_surface_extension_count();
-    static char const *platform_swapchain_extension_name(uint32_t index);
-    static uint32_t platform_swapchain_extension_count();
+    static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
 #ifndef NDEBUG

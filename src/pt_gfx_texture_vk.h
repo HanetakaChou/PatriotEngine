@@ -51,10 +51,12 @@ class gfx_texture_vk : public gfx_texture_common
         int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
         void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
         class gfx_texture_vk *m_gfx_texture;
-        uint32_t m_streaming_throttling_index;
+        //uint32_t m_streaming_throttling_index;
     };
 
-    static mcrt_task_ref read_input_stream_task_data_execute(mcrt_task_ref self);
+    static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
+
+    static mcrt_task_ref read_input_stream_task_respawn(uint32_t streaming_throttling_index, mcrt_task_ref self);
 
     struct specific_header_vk_t
     {

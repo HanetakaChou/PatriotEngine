@@ -57,7 +57,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         }
     }
 
-    sleep(15);
+    sleep(20);
 
     for (gfx_texture_ref my_texture : my_textures)
     {

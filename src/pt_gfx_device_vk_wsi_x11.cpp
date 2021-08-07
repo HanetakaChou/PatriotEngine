@@ -28,42 +28,9 @@ inline xcb_connection_t *unwrap(wsi_connection_ref wsi_connection) { return rein
 inline xcb_window_t unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<uintptr_t>(wsi_window); }
 inline xcb_visualid_t unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast<uintptr_t>(wsi_visual); }
 
-char const *gfx_device_vk::platform_surface_extension_name(uint32_t index)
+char const *gfx_device_vk::platform_surface_extension_name()
 {
-    if (0 == index)
-    {
-        return VK_KHR_SURFACE_EXTENSION_NAME;
-    }
-    else if (1 == index)
-    {
-        return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-uint32_t gfx_device_vk::platform_surface_extension_count()
-{
-    return 2;
-}
-
-char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
-{
-    if (0 == index)
-    {
-        return VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-uint32_t gfx_device_vk::platform_swapchain_extension_count()
-{
-    return 1;
+    return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 }
 
 bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)

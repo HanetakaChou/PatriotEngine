@@ -77,16 +77,14 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.enabledLayerCount = 5;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
 #endif
-        assert(platform_surface_extension_count() <= 2);
-        char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, platform_surface_extension_name(0), platform_surface_extension_name(1)};
-        instance_create_info.enabledExtensionCount = 1 + platform_surface_extension_count();
+        char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
+        instance_create_info.enabledExtensionCount = 3U;
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #else
         instance_create_info.enabledLayerCount = 0;
         instance_create_info.ppEnabledLayerNames = NULL;
-        assert(platform_surface_extension_count() <= 2);
-        char const *enabled_extension_names[2] = {platform_surface_extension_name(0), platform_surface_extension_name(1)};
-        instance_create_info.enabledExtensionCount = platform_surface_extension_count();
+        char const *enabled_extension_names[2] = {VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
+        instance_create_info.enabledExtensionCount = 2U;
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
@@ -422,12 +420,11 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         }
         device_create_info.enabledLayerCount = 0U;
         device_create_info.ppEnabledLayerNames = NULL;
-        assert(platform_swapchain_extension_count() <= 1);
-        char const *enabled_extension_names[1] = {platform_swapchain_extension_name(0)};
-        device_create_info.enabledExtensionCount = platform_swapchain_extension_count();
+        char const *enabled_extension_names[1] = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+        device_create_info.enabledExtensionCount = 1U;
         device_create_info.ppEnabledExtensionNames = enabled_extension_names;
-        VkPhysicalDeviceFeatures enabled_features = {0}; //all members are set to VK_FALSE
         assert(VK_FALSE == 0);
+        VkPhysicalDeviceFeatures enabled_features = {0}; //all members are set to VK_FALSE
         enabled_features.textureCompressionASTC_LDR = this->m_physical_device_feature_texture_compression_ASTC_LDR ? VK_TRUE : VK_FALSE;
         enabled_features.textureCompressionBC = this->m_physical_device_feature_texture_compression_BC ? VK_TRUE : VK_FALSE;
         device_create_info.pEnabledFeatures = &enabled_features;
