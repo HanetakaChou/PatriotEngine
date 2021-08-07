@@ -21,9 +21,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_mcrt_task.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include "pt_gfx_texture_common.h"
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
+#include <string>
+
 
 class gfx_texture_vk : public gfx_texture_common
 {
@@ -36,10 +39,9 @@ class gfx_texture_vk : public gfx_texture_common
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
 
-    gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
-    intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-    int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-    void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+    mcrt_string m_asset_filename;
 
     bool read_input_stream(
         char const *initial_filename,
@@ -47,8 +49,6 @@ class gfx_texture_vk : public gfx_texture_common
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
-
-    void streaming_task_respawn() override;
 
     struct read_input_stream_task_data
     {

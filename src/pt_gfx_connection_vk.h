@@ -74,10 +74,10 @@ class gfx_connection_vk : public gfx_connection_common
     uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
     uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
-    VkCommandPool m_streaming_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_streaming_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandPool m_streaming_acquire_ownership_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_streaming_acquire_ownership_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandPool m_streaming_transfer_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_streaming_transfer_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandPool m_streaming_graphics_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    VkCommandBuffer m_streaming_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
 
@@ -86,7 +86,7 @@ class gfx_connection_vk : public gfx_connection_common
 
     static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 256U;
     uint32_t m_streaming_task_respawn_count[STREAMING_THROTTLING_COUNT];
-    class gfx_streaming_object *m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
+    mcrt_task_ref m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
 
     // we don't need the operations below since the fence ensures that there is no consumer
     //
@@ -99,8 +99,8 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
-    inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
-    inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
+    inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
+    inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
     inline void reduce_streaming_task();
 
     // Frame Throttling
@@ -179,7 +179,7 @@ public:
     }
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
-    void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object_respawn_task);
+    void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 

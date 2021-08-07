@@ -148,20 +148,16 @@ bool gfx_texture_vk::read_input_stream(
         // pass to the second stage
 
         this->m_asset_filename = initial_filename;
-        this->m_input_stream_init_callback = input_stream_init_callback;
-        this->m_input_stream_read_callback = input_stream_read_callback;
-        this->m_input_stream_seek_callback = input_stream_seek_callback;
-        this->m_input_stream_destroy_callback = input_stream_destroy_callback;
 
         {
             mcrt_task_ref task = mcrt_task_allocate_root(read_input_stream_task_execute);
             static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
             read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(task));
             task_data->m_initial_filename = this->m_asset_filename.c_str();
-            task_data->m_input_stream_init_callback = this->m_input_stream_init_callback;
-            task_data->m_input_stream_read_callback = this->m_input_stream_read_callback;
-            task_data->m_input_stream_seek_callback = this->m_input_stream_seek_callback;
-            task_data->m_input_stream_destroy_callback = this->m_input_stream_destroy_callback;
+            task_data->m_input_stream_init_callback = input_stream_init_callback;
+            task_data->m_input_stream_read_callback = input_stream_read_callback;
+            task_data->m_input_stream_seek_callback = input_stream_seek_callback;
+            task_data->m_input_stream_destroy_callback = input_stream_destroy_callback;
             task_data->m_gfx_texture = this;
             // we must cache the streaming_throttling_index to eusure the consistency
             // streaming_throttling_index = streaming_throttling_index;
@@ -182,34 +178,6 @@ bool gfx_texture_vk::read_input_stream(
     }
 
     return true;
-}
-
-void gfx_texture_vk::streaming_task_respawn()
-{
-    streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
-    bool streaming_error = mcrt_atomic_load(&this->m_streaming_error);
-    bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
-    assert(STREAMING_STATUS_STAGE_SECOND == streaming_status);
-    assert(!streaming_error);
-
-    if (!streaming_cancel)
-    {
-        mcrt_task_ref task = mcrt_task_allocate_root(read_input_stream_task_execute);
-        static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-        read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(task));
-        task_data->m_initial_filename = this->m_asset_filename.c_str();
-        task_data->m_input_stream_init_callback = this->m_input_stream_init_callback;
-        task_data->m_input_stream_read_callback = this->m_input_stream_read_callback;
-        task_data->m_input_stream_seek_callback = this->m_input_stream_seek_callback;
-        task_data->m_input_stream_destroy_callback = this->m_input_stream_destroy_callback;
-        task_data->m_gfx_texture = this;
-
-        mcrt_task_spawn(task);
-    }
-    else
-    {
-        this->streaming_cancel();
-    }
 }
 
 mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
@@ -235,7 +203,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
     mcrt_task_set_parent(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     {
-#ifndef NDEBUG
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
         class internal_streaming_task_debug_executing_guard
         {
             uint32_t m_streaming_throttling_index;
@@ -336,7 +304,14 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
                             // respawn if memory not enough
                             if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
                             {
-                                task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, task_data->m_gfx_texture);
+                                // recycle to prevent free_task
+                                mcrt_task_recycle_as_child_of(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_root());
+
+                                task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
+
+                                // recycle manually ttally_completion_of_predecessor   
+                                // evidenly this function should be called after all works are done
+                                mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
                                 return NULL;
                             }
 
@@ -360,6 +335,7 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
                     // copy_buffer_to_image
                     {
+                        //TODO different master task doesn't share the task_arena
                         uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
                         VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
                         VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};

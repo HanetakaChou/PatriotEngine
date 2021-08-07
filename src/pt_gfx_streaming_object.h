@@ -20,17 +20,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include <string>
 
 class gfx_streaming_object
 {
 
 protected:
-    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-    mcrt_string m_asset_filename;
-
     // CryEngine
     // m_eStreamingStatus
     enum streaming_status_t
@@ -49,7 +43,6 @@ protected:
     inline gfx_streaming_object(streaming_status_t streaming_status) : m_streaming_status(streaming_status), m_streaming_error(false), m_streaming_cancel(false), m_spin_lock_streaming_done(0U) {}
 public:
     void streaming_done();
-    virtual void streaming_task_respawn() = 0;
     virtual void streaming_cancel() = 0;
 };
 
