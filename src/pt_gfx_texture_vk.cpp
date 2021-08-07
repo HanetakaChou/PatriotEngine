@@ -211,6 +211,22 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
     mcrt_task_increment_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_texture->m_gfx_connection->streaming_throttling_index_unlock();
 
+    bool tally_completion_of_predecessor;
+    mcrt_task_ref task_bypass = read_input_stream_task_execute_internal(streaming_throttling_index, task_data, streaming_cancel, self, &tally_completion_of_predecessor);
+
+    // make sure that this function is called after all works are done
+    if (tally_completion_of_predecessor)
+    {
+        mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
+    }
+
+    return task_bypass;
+}
+
+inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uint32_t streaming_throttling_index, struct read_input_stream_task_data *task_data, bool streaming_cancel, mcrt_task_ref self, bool *tally_completion_of_predecessor)
+{
+    (*tally_completion_of_predecessor) = false;
+
     mcrt_task_set_parent(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
@@ -319,9 +335,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
                                 task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
-                                // recycle needs manually tally_completion_of_predecessor   
-                                // evidenly this function should be called after all works are done
-                                mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
+                                // recycle needs manually tally_completion_of_predecessor
+                                (*tally_completion_of_predecessor) = true;
                                 return NULL;
                             }
 

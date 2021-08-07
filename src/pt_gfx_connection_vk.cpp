@@ -705,6 +705,7 @@ void gfx_connection_vk::reduce_streaming_task()
     MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], false);
 #endif
+    return;
 }
 
 bool gfx_connection_vk::init_swapchain()

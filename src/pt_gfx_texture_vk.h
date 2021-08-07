@@ -63,6 +63,8 @@ class gfx_texture_vk : public gfx_texture_common
 
     static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
 
+    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t streaming_throttling_index, struct read_input_stream_task_data *task_data, bool streaming_cancel, mcrt_task_ref self, bool *tally_completion_of_predecessor);
+
     void destroy() override;
 
     void streaming_cancel() override;
