@@ -53,42 +53,42 @@ inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
     // return __sync_lock_test_and_set(dest, exch);
     // __sync_lock_release
 
-    int32_t old_dest;
+    int32_t dest_old;
     do
     {
-        old_dest = (*dest);
-    } while (__sync_val_compare_and_swap(dest, old_dest, exch) != old_dest);
-    return old_dest;
+        dest_old = (*dest);
+    } while (__sync_val_compare_and_swap(dest, dest_old, exch) != dest_old);
+    return dest_old;
 }
 
 inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch)
 {
-    uint32_t old_dest;
+    uint32_t dest_old;
     do
     {
-        old_dest = (*dest);
-    } while (__sync_val_compare_and_swap(dest, old_dest, exch) != old_dest);
-    return old_dest;
+        dest_old = (*dest);
+    } while (__sync_val_compare_and_swap(dest, dest_old, exch) != dest_old);
+    return dest_old;
 }
 
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
 {
-    int64_t old_dest;
+    int64_t dest_old;
     do
     {
-        old_dest = (*dest);
-    } while (__sync_val_compare_and_swap(dest, old_dest, exch) != old_dest);
-    return old_dest;
+        dest_old = (*dest);
+    } while (__sync_val_compare_and_swap(dest, dest_old, exch) != dest_old);
+    return dest_old;
 }
 
 inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch)
 {
-    void *old_dest;
+    void *dest_old;
     do
     {
-        old_dest = (*dest);
-    } while (__sync_val_compare_and_swap(dest, old_dest, exch) != old_dest);
-    return old_dest;
+        dest_old = (*dest);
+    } while (__sync_val_compare_and_swap(dest, dest_old, exch) != dest_old);
+    return dest_old;
 }
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)

@@ -193,146 +193,172 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
     uint32_t streaming_throttling_index = task_data->m_gfx_texture->m_gfx_connection->current_streaming_throttling_index();
     mcrt_task_increment_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
+  
+    // race condition
+    // task: current_streaming_throttling_index
+    // reduce_streaming_task: ++streaming_throttling_index
+    // reduce_streaming_task: mcrt_task_wait_for_all // return immediately
+    // task: mcrt_task_increment_ref_count
+
     mcrt_task_set_parent(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
-
-
-    if (!streaming_cancel)
     {
-        gfx_input_stream_ref input_stream;
+#ifndef NDEBUG
+        class internal_streaming_task_debug_executing_guard
         {
-            class gfx_input_stream_guard
-            {
-                gfx_input_stream_ref &m_input_stream;
-                void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+            uint32_t m_streaming_throttling_index;
+            class gfx_connection_vk *m_gfx_connection;
 
-            public:
-                inline gfx_input_stream_guard(
-                    gfx_input_stream_ref &input_stream,
-                    char const *initial_filename,
-                    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
-                    : m_input_stream(input_stream),
-                      m_input_stream_destroy_callback(input_stream_destroy_callback)
-                {
-                    m_input_stream = input_stream_init_callback(initial_filename);
-                }
-                inline ~gfx_input_stream_guard()
-                {
-                    m_input_stream_destroy_callback(m_input_stream);
-                }
-            } input_stream_guard(input_stream, task_data->m_initial_filename, task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
-
-            struct common_header_t common_header;
-            size_t common_data_offset;
-            bool res_load_header_from_input_stream = task_data->m_gfx_texture->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
-            if (!res_load_header_from_input_stream)
+        public:
+            inline internal_streaming_task_debug_executing_guard(uint32_t streaming_throttling_index, class gfx_connection_vk *gfx_connection)
+                : m_streaming_throttling_index(streaming_throttling_index), m_gfx_connection(gfx_connection)
             {
-                mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
-                return NULL;
+                m_gfx_connection->streaming_task_debug_executing_begin(m_streaming_throttling_index);
             }
-
-            specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
-
-            uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * specific_header_vk.arrayLayers * specific_header_vk.mipLevels;
-
-            struct load_memcpy_dest_t *memcpy_dest;
-            struct VkBufferImageCopy *cmdcopy_dest;
+            inline ~internal_streaming_task_debug_executing_guard()
             {
+                m_gfx_connection->streaming_task_debug_executing_end(m_streaming_throttling_index);
+            }
+        } instance_internal_streaming_task_debug_executing_guard(streaming_throttling_index, task_data->m_gfx_texture->m_gfx_connection);
+#endif
 
-                class internal_mem_cmd_copy_dest_guard
+        if (!streaming_cancel)
+        {
+            gfx_input_stream_ref input_stream;
+            {
+                class gfx_input_stream_guard
                 {
-                    struct load_memcpy_dest_t **const m_memcpy_dest;
-                    struct VkBufferImageCopy **const m_cmdcopy_dest;
+                    gfx_input_stream_ref &m_input_stream;
+                    void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
 
                 public:
-                    inline internal_mem_cmd_copy_dest_guard(struct load_memcpy_dest_t **const memcpy_dest, struct VkBufferImageCopy **const cmdcopy_dest, uint32_t num_subresource)
-                        : m_memcpy_dest(memcpy_dest), m_cmdcopy_dest(cmdcopy_dest)
+                    inline gfx_input_stream_guard(
+                        gfx_input_stream_ref &input_stream,
+                        char const *initial_filename,
+                        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+                        : m_input_stream(input_stream),
+                          m_input_stream_destroy_callback(input_stream_destroy_callback)
                     {
-                        (*m_memcpy_dest) = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
-                        (*m_cmdcopy_dest) = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
+                        m_input_stream = input_stream_init_callback(initial_filename);
                     }
-                    inline ~internal_mem_cmd_copy_dest_guard()
+                    inline ~gfx_input_stream_guard()
                     {
-                        mcrt_free(*m_memcpy_dest);
-                        mcrt_free(*m_cmdcopy_dest);
+                        m_input_stream_destroy_callback(m_input_stream);
                     }
-                } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
+                } input_stream_guard(input_stream, task_data->m_initial_filename, task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
 
-                // get_copyable_footprints
+                struct common_header_t common_header;
+                size_t common_data_offset;
+                bool res_load_header_from_input_stream = task_data->m_gfx_texture->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
+                if (!res_load_header_from_input_stream)
                 {
-                    uint64_t transfer_src_buffer_begin = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin(streaming_throttling_index);
-                    uint64_t transfer_src_buffer_end = uint64_t(-1);
-                    uint64_t transfer_src_buffer_size = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_size(streaming_throttling_index);
-                    uint64_t base_offset = uint64_t(-1);
+                    mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
+                    return NULL;
+                }
 
-                    // allocate memory
-                    do
+                specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
+
+                uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * specific_header_vk.arrayLayers * specific_header_vk.mipLevels;
+
+                struct load_memcpy_dest_t *memcpy_dest;
+                struct VkBufferImageCopy *cmdcopy_dest;
+                {
+
+                    class internal_mem_cmd_copy_dest_guard
                     {
-                        base_offset = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
+                        struct load_memcpy_dest_t **const m_memcpy_dest;
+                        struct VkBufferImageCopy **const m_cmdcopy_dest;
 
-                        size_t total_size = get_copyable_footprints(&specific_header_vk, task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, memcpy_dest, cmdcopy_dest);
+                    public:
+                        inline internal_mem_cmd_copy_dest_guard(struct load_memcpy_dest_t **const memcpy_dest, struct VkBufferImageCopy **const cmdcopy_dest, uint32_t num_subresource)
+                            : m_memcpy_dest(memcpy_dest), m_cmdcopy_dest(cmdcopy_dest)
+                        {
+                            (*m_memcpy_dest) = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
+                            (*m_cmdcopy_dest) = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
+                        }
+                        inline ~internal_mem_cmd_copy_dest_guard()
+                        {
+                            mcrt_free(*m_memcpy_dest);
+                            mcrt_free(*m_cmdcopy_dest);
+                        }
+                    } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
 
-                        transfer_src_buffer_end = (base_offset + total_size);
-                        //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+                    // get_copyable_footprints
+                    {
+                        uint64_t transfer_src_buffer_begin = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_begin(streaming_throttling_index);
+                        uint64_t transfer_src_buffer_end = uint64_t(-1);
+                        uint64_t transfer_src_buffer_size = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_size(streaming_throttling_index);
+                        uint64_t base_offset = uint64_t(-1);
 
-                        // respawn if memory not enough
-                        if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
+                        // allocate memory
+                        do
+                        {
+                            base_offset = mcrt_atomic_load(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
+
+                            size_t total_size = get_copyable_footprints(&specific_header_vk, task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), task_data->m_gfx_texture->m_gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, memcpy_dest, cmdcopy_dest);
+
+                            transfer_src_buffer_end = (base_offset + total_size);
+                            //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+
+                            // respawn if memory not enough
+                            if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
+                            {
+                                return read_input_stream_task_respawn(streaming_throttling_index, self);
+                            }
+
+                        } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
+                    }
+
+                    // pass to the third stage
+                    {
+                        bool res_streaming_object_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_texture);
+                        if (!res_streaming_object_list_push)
                         {
                             return read_input_stream_task_respawn(streaming_throttling_index, self);
                         }
-
-                    } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
-                }
-
-                // pass to the third stage
-                {
-                    bool res_streaming_object_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_texture);
-                    if (!res_streaming_object_list_push)
-                    {
-                        return read_input_stream_task_respawn(streaming_throttling_index, self);
                     }
-                }
 
-                // load_data_from_input_stream
-                {
-                    bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset, task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_pointer(), num_subresource, memcpy_dest, calc_subresource, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
-                    if (!res_load_data_from_input_stream)
+                    // load_data_from_input_stream
                     {
-                        mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
-                        return NULL;
+                        bool res_load_data_from_input_stream = task_data->m_gfx_texture->load_data_from_input_stream(&common_header, &common_data_offset, task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer_pointer(), num_subresource, memcpy_dest, calc_subresource, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback);
+                        if (!res_load_data_from_input_stream)
+                        {
+                            mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
+                            return NULL;
+                        }
                     }
-                }
 
-                // copy_buffer_to_image
-                {
-                    VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
-                    VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
-                    task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
-                }
+                    // copy_buffer_to_image
+                    {
+                        VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
+                        VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
+                        task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
+                    }
 
-                mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+                    mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+                }
             }
         }
-    }
-    else
-    {
-        // The slob allocator is serial which is harmful to the parallel performance
-        // leave the "steaming_cancel" to the third stage
-        // tracker by "slob_lock_busy_count"
+        else
+        {
+            // The slob allocator is serial which is harmful to the parallel performance
+            // leave the "steaming_cancel" to the third stage
+            // tracker by "slob_lock_busy_count"
 #if 0
         task_data->m_gfx_texture->streaming_cancel();
 #else
-        // pass to the third stage
-        {
-            bool res_streaming_object_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_texture);
-            if (!res_streaming_object_list_push)
+            // pass to the third stage
             {
-                return read_input_stream_task_respawn(streaming_throttling_index, self);
+                bool res_streaming_object_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_texture);
+                if (!res_streaming_object_list_push)
+                {
+                    return read_input_stream_task_respawn(streaming_throttling_index, self);
+                }
             }
-        }
 
-        mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+            mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
 #endif
+        }
     }
 
     return NULL;
@@ -346,15 +372,15 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_respawn(uint32_t streaming_
     // recycle skip free_task
     mcrt_task_recycle_as_child_of(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_root());
 
-    // tally_completion_of_predecessor not for recycle
-    mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
-
     bool res_streaming_task_respawn_list_push = task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
     if (!res_streaming_task_respawn_list_push)
     {
         assert(0);
         mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
     }
+
+    // tally_completion_of_predecessor not for recycle
+    mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
     return NULL;
 }

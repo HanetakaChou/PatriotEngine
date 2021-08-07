@@ -52,6 +52,12 @@ class gfx_connection_vk : public gfx_connection_common
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
     uint32_t m_streaming_throttling_index;
+    uint32_t m_spin_lock_streaming_throttling_index;
+
+#ifndef NDEBUG
+    uint32_t m_streaming_task_executing_count[STREAMING_THROTTLING_COUNT];
+    bool m_streaming_task_reducing[STREAMING_THROTTLING_COUNT];
+#endif
 
     // Staging Buffer
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
@@ -77,7 +83,7 @@ class gfx_connection_vk : public gfx_connection_common
     mcrt_task_ref m_streaming_task_respawn_root;
 
     static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 256U;
-    uint32_t m_streaming_task_respawn_count[STREAMING_TASK_RESPAWN_COUNT];
+    uint32_t m_streaming_task_respawn_count[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
 
 
@@ -142,8 +148,20 @@ public:
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
 
     //Streaming
+    inline void streaming_throttling_index_lock()
+    {
+        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U))
+        {
+            mcrt_os_yield();
+        }
+    }
+    inline uint32_t streaming_throttling_index() { return this->m_streaming_throttling_index; }
+    inline void streaming_throttling_index_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U); }
     inline uint32_t current_streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
-    bool streaming_throttling(uint32_t streaming_throttling_index);
+#ifndef NDEBUG
+    void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
+    void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
+#endif
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
     bool streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
