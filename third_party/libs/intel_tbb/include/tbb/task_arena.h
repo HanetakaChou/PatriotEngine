@@ -54,10 +54,11 @@ namespace tbb
 
             class task_arena_base
             {
-            protected:
+            public:
                 //! NULL if not currently initialized.
                 internal::arena *my_arena;
 
+            protected:
 #if __TBB_TASK_GROUP_CONTEXT
                 //! default context of the arena
                 task_group_context *my_context;

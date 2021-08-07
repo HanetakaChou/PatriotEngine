@@ -196,6 +196,11 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
     assert(STREAMING_STATUS_STAGE_SECOND == streaming_status);
     assert(!streaming_error);
 
+    // different master task doesn't share the task_arena
+    // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+    assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_texture->m_gfx_connection->task_arena()));
+    assert(mcrt_task_arena_internal_arena(task_data->m_gfx_texture->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+
     // race condition
     // task: current_streaming_throttling_index
     // reduce_streaming_task: ++streaming_throttling_index

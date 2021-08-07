@@ -91,6 +91,11 @@ extern "C"
     // All master threads have a corresponding task_arena while the work threads don't
     PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency();
 
+    // For debug purpose
+    PT_ATTR_MCRT void *PT_CALL mcrt_task_arena_internal_arena(mcrt_task_arena_ref task_arena);
+
+    // For debug purpose
+    PT_ATTR_MCRT void *PT_CALL mcrt_this_task_arena_internal_arena();
 #ifdef __cplusplus
 }
 #endif

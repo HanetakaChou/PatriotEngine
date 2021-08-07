@@ -151,6 +151,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
 
         this->m_task_arena = mcrt_task_arena_attach();
         assert(mcrt_task_arena_is_active(this->m_task_arena));
+        assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
 
         this->m_streaming_task_respawn_count[streaming_throttling_index] = 0U;
 
@@ -462,6 +463,11 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
     this->streaming_throttling_index_unlock();
 
+    // different master task doesn't share the task_arena
+    // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+    assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
+    assert(mcrt_task_arena_internal_arena(this->m_task_arena) == mcrt_this_task_arena_internal_arena());
+
     // sync by TBB
     // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
@@ -662,7 +668,6 @@ void gfx_connection_vk::reduce_streaming_task()
         {
             for (uint32_t streaming_thread_index = 0U; streaming_thread_index < STREAMING_THREAD_COUNT; ++streaming_thread_index)
             {
-
                 this->m_device.reset_command_pool(this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index], 0U);
             }
         }

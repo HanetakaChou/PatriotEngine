@@ -164,3 +164,18 @@ PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency()
     int max_concurrency = tbb::this_task_arena::max_concurrency();
     return uint32_t(max_concurrency);
 }
+
+PT_ATTR_MCRT void *PT_CALL mcrt_task_arena_internal_arena(mcrt_task_arena_ref task_arena)
+{
+    return unwrap(task_arena)->my_arena;
+}
+
+PT_ATTR_MCRT void *PT_CALL mcrt_this_task_arena_internal_arena()
+{
+    tbb::internal::arena *arena;
+    {
+        tbb::task_arena this_task_arena(tbb::task_arena::attach{});
+        arena = this_task_arena.my_arena;
+    }
+    return arena;
+}
