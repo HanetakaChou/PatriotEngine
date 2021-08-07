@@ -35,6 +35,16 @@ class gfx_connection_vk : public gfx_connection_common
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
+    // TODO
+    // tweak the layout of this struct according to the cacheline to reduce false sharing
+    //
+    // padding // cacheline // false sharing
+    // struct
+    // {
+    //
+    // padding // false sharing
+    // } [STREAMING_THREAD_COUNT]
+
     // The unique uniform buffer.
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
@@ -53,7 +63,7 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_streaming_throttling_index;
     uint32_t m_spin_lock_streaming_throttling_index;
 
-#ifndef NDEBUG
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     uint32_t m_streaming_task_executing_count[STREAMING_THROTTLING_COUNT];
     bool m_streaming_task_reducing[STREAMING_THROTTLING_COUNT];
 #endif
@@ -64,13 +74,6 @@ class gfx_connection_vk : public gfx_connection_common
     uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
     uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
-    // TODO
-    // padding // cacheline // false sharing
-    // struct
-    // {
-    //
-    // padding // false sharing
-    // } [STREAMING_THREAD_COUNT]
     VkCommandPool m_streaming_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandPool m_streaming_acquire_ownership_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
@@ -96,8 +99,8 @@ class gfx_connection_vk : public gfx_connection_common
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
 
-    inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index);
-    inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index);
+    inline VkCommandBuffer streaming_task_get_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
+    inline VkCommandBuffer streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
     inline void reduce_streaming_task();
 
     // Frame Throttling
@@ -164,10 +167,12 @@ public:
     {
         mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U);
     }
-#ifndef NDEBUG
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
     void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
 #endif
+
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
     {
         return m_streaming_task_root[streaming_throttling_index];
@@ -175,7 +180,7 @@ public:
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
     void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object_respawn_task);
-    void copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
+    void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

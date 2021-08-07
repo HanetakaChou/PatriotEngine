@@ -43,7 +43,8 @@ if test \( \( -n "$1" \) -a \( "$1" = "debug" \) \);then
     OUT_DIR_CONFIG="debug"
 elif test \( \( -n "$1" \) -a \( "$1" = "release" \) \);then
     NDK_BUILD_ARG_CONFIG="APP_DEBUG:=false"
-    INT_DIR_CONFIG="libs"
+    #INT_DIR_CONFIG="libs"
+    INT_DIR_CONFIG="obj/local"
     OUT_DIR_CONFIG="release"
 else
     echo "The config \"$1\" is not supported!"

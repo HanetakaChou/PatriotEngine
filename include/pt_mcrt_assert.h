@@ -15,17 +15,14 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_COMMON_H_
-#define _PT_GFX_COMMON_H_ 1
+#ifndef _PT_MCRT_MCRT_H_
+#define _PT_MCRT_LOG_H_ 1
 
+#include <stddef.h>
 #include "pt_common.h"
+#include "pt_mcrt_common.h"
+#include <stdlib.h>
 
-#ifndef PT_ATTR_GFX
-#define PT_ATTR_GFX PT_ATTR_IMPORT
-#endif
-
-#define PT_GFX_PROFILE 1
-
-#define PT_GFX_DEBUG_MCRT 1
+#define MCRT_ASSERT(e) ((e) ? ((void)0) : abort())
 
 #endif

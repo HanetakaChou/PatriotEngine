@@ -21,6 +21,7 @@
 #include "pt_gfx_texture_vk.h"
 #include <new>
 #include <pt_mcrt_log.h>
+#include <pt_mcrt_assert.h>
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
@@ -169,16 +170,16 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     return true;
 }
 
-#ifndef NDEBUG
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
 void gfx_connection_vk::streaming_task_debug_executing_begin(uint32_t streaming_throttling_index)
 {
-    assert(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
+    MCRT_ASSERT(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
     mcrt_atomic_inc_u32(&this->m_streaming_task_executing_count[streaming_throttling_index]);
 }
 
 void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_throttling_index)
 {
-    assert(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
+    MCRT_ASSERT(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
     mcrt_atomic_dec_u32(&this->m_streaming_task_executing_count[streaming_throttling_index]);
 }
 #endif
@@ -215,9 +216,8 @@ void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_thro
     }
 }
 
-inline VkCommandBuffer gfx_connection_vk::streaming_task_get_command_buffer(uint32_t streaming_throttling_index)
+inline VkCommandBuffer gfx_connection_vk::streaming_task_get_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
 {
-    uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
     assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
@@ -247,11 +247,10 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_command_buffer(uint
     return this->m_streaming_command_buffer[streaming_throttling_index][streaming_thread_index];
 }
 
-inline VkCommandBuffer gfx_connection_vk::streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index)
+inline VkCommandBuffer gfx_connection_vk::streaming_task_get_acquire_ownership_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
 {
-    assert(this->m_device.has_dedicated_transfer_queue());
+    assert(this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()));
 
-    uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < STREAMING_THREAD_COUNT);
     assert(mcrt_task_arena_max_concurrency() < STREAMING_THREAD_COUNT);
@@ -281,11 +280,11 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_acquire_ownership_c
     return this->m_streaming_acquire_ownership_command_buffer[streaming_throttling_index][streaming_thread_index];
 }
 
-void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
+void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
 {
     // we can't use m_streaming_throttling_index here
     // we must cache the streaming_throttling_index to eusure the consistency
-    VkCommandBuffer command_buffer = this->streaming_task_get_command_buffer(streaming_throttling_index);
+    VkCommandBuffer command_buffer = this->streaming_task_get_command_buffer(streaming_throttling_index, streaming_thread_index);
 
     VkImageMemoryBarrier image_memory_barrier_before_copy[1] = {
         {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -327,7 +326,7 @@ void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index
         // Queue Family Ownership Transfer
         // Acquire Operation
         {
-            VkCommandBuffer command_buffer_acquire_ownership = this->streaming_task_get_acquire_ownership_command_buffer(streaming_throttling_index);
+            VkCommandBuffer command_buffer_acquire_ownership = this->streaming_task_get_acquire_ownership_command_buffer(streaming_throttling_index, streaming_thread_index);
             VkImageMemoryBarrier image_memory_barrier_acquire_ownership[1] = {
                 {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                  NULL,
@@ -371,7 +370,7 @@ void gfx_connection_vk::reduce_streaming_task()
     // Multi-Threading
     // gfx_texture_vk::read_input_stream
     uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
-   
+
     // TODO race condition
     // allocate child not atomic
     this->streaming_throttling_index_lock();
@@ -383,9 +382,9 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
-// ensure mutex
-#ifndef NDEBUG
-    assert(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    // ensure mutex
+    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], true);
 #endif
 
@@ -495,9 +494,9 @@ void gfx_connection_vk::reduce_streaming_task()
 #endif
     }
 
-// ensure mutex
-#ifndef NDEBUG
-    assert(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    // ensure mutex
+    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], false);
 #endif
 
@@ -509,9 +508,9 @@ void gfx_connection_vk::reduce_streaming_task()
     this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
     this->m_device.reset_fences(1U, &this->m_streaming_fence[streaming_throttling_index]);
 
-// ensure mutex
-#ifndef NDEBUG
-    assert(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    // ensure mutex
+    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], true);
 #endif
 
@@ -560,9 +559,9 @@ void gfx_connection_vk::reduce_streaming_task()
         huhu += streaming_object_count;
     }
 
-#ifndef NDEBUG
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     // ensure mutex
-    assert(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
+    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], false);
 #endif
 }

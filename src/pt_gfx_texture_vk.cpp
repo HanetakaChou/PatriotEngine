@@ -360,9 +360,10 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
                     // copy_buffer_to_image
                     {
+                        uint32_t streaming_thread_index = mcrt_task_arena_current_thread_index();
                         VkBuffer transfer_src_buffer = task_data->m_gfx_texture->m_gfx_connection->transfer_src_buffer();
                         VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, specific_header_vk.mipLevels, 0, 1};
-                        task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(streaming_throttling_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
+                        task_data->m_gfx_texture->m_gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, task_data->m_gfx_texture->m_image, &subresource_range, num_subresource, cmdcopy_dest);
                     }
 
                     mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
