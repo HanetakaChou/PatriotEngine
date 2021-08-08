@@ -11,7 +11,8 @@
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#pragma once
+#ifndef _DIRECTX_MATH_VECTOR_INL_
+#define _DIRECTX_MATH_VECTOR_INL_ 1
 
 #if defined(_XM_NO_INTRINSICS_)
 #define XMISNAN(x)  ((*(const uint32_t*)&(x) & 0x7F800000) == 0x7F800000 && (*(const uint32_t*)&(x) & 0x7FFFFF) != 0)
@@ -4122,8 +4123,8 @@ inline XMVECTOR XM_CALLCONV XMVectorPow
         } } };
     return vResult.v;
 #elif defined(_XM_SSE_INTRINSICS_)
-    __declspec(align(16)) float a[4];
-    __declspec(align(16)) float b[4];
+    XM_ALIGNAS(16) float a[4];
+    XM_ALIGNAS(16) float b[4];
     _mm_store_ps( a, V1 );
     _mm_store_ps( b, V2 );
     XMVECTOR vResult = _mm_setr_ps(
@@ -14592,3 +14593,4 @@ inline XMVECTOR XM_CALLCONV operator*
 #undef XM3PACK4INTO3
 #endif
 
+#endif
