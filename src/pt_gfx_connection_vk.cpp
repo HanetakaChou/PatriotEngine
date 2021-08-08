@@ -1216,11 +1216,10 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipeline_layout_create_info.pNext = NULL;
         pipeline_layout_create_info.flags = 0U;
-        pipeline_layout_create_info.setLayoutCount=2U;
-       pipeline_layout_create_info.pSetLayouts=set_layouts;
+        pipeline_layout_create_info.setLayoutCount = 2U;
+        pipeline_layout_create_info.pSetLayouts = set_layouts;
         pipeline_layout_create_info.pushConstantRangeCount;
         const VkPushConstantRange *pPushConstantRanges;
-
     }
 
     return true;

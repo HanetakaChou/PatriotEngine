@@ -180,7 +180,6 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest = -1;
         bool signalled;
         do
         {
@@ -190,7 +189,6 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
                 if (!events[i]->mcrtp_state_signalled)
                 {
                     signalled_and = false;
-                    lowest = i;
                     break;
                 }
             }
@@ -294,7 +292,6 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
         mcrt_os_mutex_lock(mutex);
 
         int res;
-        int lowest = -1;
         bool signalled;
         do
         {
@@ -304,7 +301,6 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
                 if (!events[i]->mcrtp_state_signalled)
                 {
                     signalled_and = false;
-                    lowest = i;
                     break;
                 }
             }
@@ -375,7 +371,7 @@ inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t
         if ((res == 0) && signalled)
         {
             assert(lowest >= 0);
-            assert(static_cast<size_t>(lowest) < nevents);
+            assert(lowest < nevents);
             if (!events[lowest]->mcrtp_manual_reset)
             {
                 events[lowest]->mcrtp_state_signalled = false;

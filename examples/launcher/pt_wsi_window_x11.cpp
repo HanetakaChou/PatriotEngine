@@ -254,7 +254,7 @@ xcb_keysym_t wsi_window_x11::keycode_to_keysym(xcb_keycode_t keycode)
 
     if (keycode >= m_min_keycode && keycode <= m_max_keycode)
     {
-        assert((m_keysyms_per_keycode * (keycode - m_min_keycode)) < m_keysym.size());
+        assert((m_keysyms_per_keycode * (keycode - m_min_keycode)) < static_cast<uint8_t>(m_keysym.size()));
         return m_keysym[m_keysyms_per_keycode * (keycode - m_min_keycode)];
     }
     else

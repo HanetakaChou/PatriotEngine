@@ -2310,11 +2310,6 @@ namespace Internal
     }
 };
 
-#if !defined(_XM_NO_INTRINSICS_) && !defined(__clang__)
-#pragma float_control(push)
-#pragma float_control(precise, on)
-#endif
-
 inline XMVECTOR XM_CALLCONV XMVectorRound
 (
     FXMVECTOR V
@@ -2358,10 +2353,6 @@ inline XMVECTOR XM_CALLCONV XMVectorRound
     return vResult;
 #endif
 }
-
-#if !defined(_XM_NO_INTRINSICS_) && !defined(__clang__)
-#pragma float_control(pop)
-#endif
 
 //------------------------------------------------------------------------------
 

@@ -123,7 +123,7 @@
 #define _In_reads_(expression)
 #define _In_reads_bytes_(expression)
 #define _Out_
-#define _Out_opt_ 
+#define _Out_opt_
 #define _Out_writes_(expression)
 #define _Out_writes_bytes_(expression)
 #define _Success_(expression)
@@ -283,10 +283,10 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4068 4201 4365 4324 4820)
-    // C4068: ignore unknown pragmas
-    // C4201: nonstandard extension used : nameless struct/union
-    // C4365: Off by default noise
-    // C4324/4820: padding warnings
+// C4068: ignore unknown pragmas
+// C4201: nonstandard extension used : nameless struct/union
+// C4365: Off by default noise
+// C4324/4820: padding warnings
 
 #ifdef _PREFAST_
 #pragma prefast(push)
@@ -295,10 +295,10 @@
 
 #pragma warning(push)
 #pragma warning(disable : 4068 4214 4204 4365 4616 4640 6001 6101)
-    // C4068/4616: ignore unknown pragmas
-    // C4214/4204: nonstandard extension used
-    // C4365/4640: Off by default noise
-    // C6001/6101: False positives
+// C4068/4616: ignore unknown pragmas
+// C4214/4204: nonstandard extension used
+// C4365/4640: Off by default noise
+// C6001/6101: False positives
 
 #ifdef _PREFAST_
 #pragma prefast(push)
@@ -2327,8 +2327,8 @@ namespace DirectX
         // Multiply by the reciprocal (Perform a right shift by DivExponent)
         vResult = vmulq_f32(vResult, reinterpret_cast<const float32x4_t *>(&vScale)[0]);
         return vResult;
-#else // XM_SSE_INTRINSICS_ \
-      // Splat the int
+#else // XM_SSE_INTRINSICS_ 
+        // Splat the int
         __m128i vScale = _mm_set1_epi32(IntConstant);
         // Convert to a float
         XMVECTOR vResult = _mm_cvtepi32_ps(vScale);
