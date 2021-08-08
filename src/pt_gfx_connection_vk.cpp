@@ -17,11 +17,12 @@
 
 #include <stddef.h>
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_log.h>
+#include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
-#include <pt_mcrt_log.h>
-#include <pt_mcrt_assert.h>
+#include <DirectXMath.h>
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {

@@ -85,3 +85,13 @@ endif
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
+
+# fake / libpt_directx_math
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libpt_directx_math
+
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
+
+include $(BUILD_STATIC_LIBRARY)
