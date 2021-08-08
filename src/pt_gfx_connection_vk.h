@@ -85,9 +85,15 @@ class  gfx_connection_vk final : public gfx_connection_common
     mcrt_task_ref m_streaming_task_respawn_root;
     mcrt_task_arena_ref m_task_arena;
 
-    static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 512U;
-    uint32_t m_streaming_task_respawn_count[STREAMING_THROTTLING_COUNT];
+    static uint32_t const STREAMING_TASK_RESPAWN_COUNT = 64U;
+    uint32_t m_streaming_task_respawn_list_count[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_COUNT];
+    struct streaming_task_respawn_task_respawn_link_list
+    {
+        struct streaming_task_respawn_task_respawn_link_list *m_next;
+        mcrt_task_ref m_task;
+    };
+    struct streaming_task_respawn_task_respawn_link_list *m_streaming_task_respawn_link_list_head[STREAMING_THROTTLING_COUNT];
 
     // we don't need the operations below since the fence ensures that there is no consumer
     //
@@ -99,6 +105,7 @@ class  gfx_connection_vk final : public gfx_connection_common
     static uint32_t const STREAMING_OBJECT_COUNT = 128U;
     uint32_t m_streaming_object_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_COUNT];
+
 
     inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
     inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);

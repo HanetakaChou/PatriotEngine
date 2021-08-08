@@ -24,10 +24,16 @@
 #include "pt_mcrt_common.h"
 
 inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t comp);
+
 inline uint32_t mcrt_atomic_cas_u32(uint32_t volatile *dest, uint32_t exch, uint32_t comp);
+
 inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t comp);
+
 inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint64_t comp);
-inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp);
+
+template <typename T>
+inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp);
+
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch);
 inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch);
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch);

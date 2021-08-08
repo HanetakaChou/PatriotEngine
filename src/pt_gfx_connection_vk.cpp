@@ -153,7 +153,8 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
         assert(mcrt_task_arena_is_active(this->m_task_arena));
         assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
 
-        this->m_streaming_task_respawn_count[streaming_throttling_index] = 0U;
+        this->m_streaming_task_respawn_list_count[streaming_throttling_index] = 0U;
+        this->m_streaming_task_respawn_link_list_head[streaming_throttling_index] = NULL;
 
         this->m_streaming_object_count[streaming_throttling_index] = 0U;
     }
@@ -197,29 +198,37 @@ void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling
     if (streaming_object_index < STREAMING_OBJECT_COUNT)
     {
         this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
-        //return true;
     }
     else
     {
         assert(0);
         mcrt_atomic_dec_u32(&this->m_streaming_object_count[streaming_throttling_index]);
-        //return false;
     }
 }
 
 void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task)
 {
-    uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_count[streaming_throttling_index]) - 1U;
+    uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_list_count[streaming_throttling_index]) - 1U;
     if (streaming_task_respawn_index < STREAMING_TASK_RESPAWN_COUNT)
     {
         this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_task;
-        //return true;
     }
     else
     {
-        assert(0);
-        mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_count[streaming_throttling_index]);
-        //return false;
+        mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_list_count[streaming_throttling_index]);
+        
+        // performance issue
+
+        // ABA safe since the fence ensures that there is no consumer
+        struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_node = new (mcrt_aligned_malloc(sizeof(struct streaming_task_respawn_task_respawn_link_list), alignof(struct streaming_task_respawn_task_respawn_link_list))) streaming_task_respawn_task_respawn_link_list();
+        streaming_task_respawn_link_list_node->m_task = streaming_task;
+
+        struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_head;
+        do
+        {
+            streaming_task_respawn_link_list_head = mcrt_atomic_load(&this->m_streaming_task_respawn_link_list_head[streaming_throttling_index]);
+            streaming_task_respawn_link_list_node->m_next = streaming_task_respawn_link_list_head;
+        } while (streaming_task_respawn_link_list_head != mcrt_atomic_cas_ptr(&this->m_streaming_task_respawn_link_list_head[streaming_throttling_index], streaming_task_respawn_link_list_node, streaming_task_respawn_link_list_head));
     }
 }
 
@@ -602,20 +611,47 @@ void gfx_connection_vk::reduce_streaming_task()
 
     // respawn task
     {
-        uint32_t streaming_task_respawn_count = this->m_streaming_task_respawn_count[streaming_throttling_index];
-        for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_count; ++streaming_task_respawn_index)
+        // list
         {
-            //TODO different master task doesn't share the task_arena
-            mcrt_task_spawn(this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index]);
-            this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
-        }
-        this->m_streaming_task_respawn_count[streaming_throttling_index] = 0U;
+            uint32_t streaming_task_respawn_list_count = this->m_streaming_task_respawn_list_count[streaming_throttling_index];
+            for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_list_count; ++streaming_task_respawn_index)
+            {
+                //TODO different master task doesn't share the task_arena
+                mcrt_task_spawn(this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index]);
+                this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
+            }
+            this->m_streaming_task_respawn_list_count[streaming_throttling_index] = 0U;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-        if (streaming_task_respawn_count > 0U)
-        {
-            mcrt_log_print("index %i: streaming_task_respawn_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_count));
-        }
+            if (streaming_task_respawn_list_count > 0U)
+            {
+                mcrt_log_print("index %i: streaming_task_respawn_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_list_count));
+            }
 #endif
+        }
+
+        // link list
+        {
+            uint32_t streaming_task_respawn_link_list_count = 0U;
+            struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_node = this->m_streaming_task_respawn_link_list_head[streaming_throttling_index];
+            while (streaming_task_respawn_link_list_node != NULL)
+            {
+                mcrt_task_spawn(streaming_task_respawn_link_list_node->m_task);
+
+                struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_next = streaming_task_respawn_link_list_node->m_next;
+                mcrt_free(streaming_task_respawn_link_list_node);
+
+                streaming_task_respawn_link_list_node = streaming_task_respawn_link_list_next;
+
+                ++streaming_task_respawn_link_list_count;
+            }
+            this->m_streaming_task_respawn_link_list_head[streaming_throttling_index] = NULL;
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
+            if (streaming_task_respawn_link_list_count > 0U)
+            {
+                mcrt_log_print("index %i: streaming_task_respawn_link_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_link_list_count));
+            }
+#endif
+        }
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

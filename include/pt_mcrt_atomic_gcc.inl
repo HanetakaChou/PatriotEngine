@@ -38,9 +38,11 @@ inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint
     return __sync_val_compare_and_swap(dest, comp, exch);
 }
 
-inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp)
+template <typename T>
+inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp)
 {
-    return __sync_val_compare_and_swap(dest, comp, exch);
+    uintptr_t dest_old = __sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), reinterpret_cast<uintptr_t>(comp), reinterpret_cast<uintptr_t>(exch));
+    return reinterpret_cast<T *>(dest_old);
 }
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
