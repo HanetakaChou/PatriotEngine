@@ -41,7 +41,7 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
-bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     if (!m_device.init(wsi_connection, wsi_visual, wsi_window))
     {
@@ -70,6 +70,43 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     }
 
     // Streaming
+    if (!this->init_streaming())
+    {
+        return false;
+    }
+
+    // SwapChain
+    {
+        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
+        assert(VK_SUCCESS == res_platform_create_surface);
+    }
+#ifndef NDEBUG
+    {
+        VkBool32 supported;
+        VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
+        assert(VK_SUCCESS == res_get_physical_device_surface_support);
+        assert(VK_TRUE == supported);
+    }
+#endif
+    this->m_framebuffer_width = 1280;
+    this->m_framebuffer_height = 720;
+    this->m_swapchain = VK_NULL_HANDLE;
+    if (!this->init_swapchain())
+    {
+        return false;
+    }
+
+    // RenderPass
+    if (!this->init_renderpass())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+inline bool gfx_connection_vk::init_streaming()
+{
     this->m_streaming_throttling_index = 0U;
     this->m_spin_lock_streaming_throttling_index = 0U;
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
@@ -159,22 +196,6 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
         this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
         this->m_streaming_object_link_list_head[streaming_throttling_index] = NULL;
     }
-
-    // SwapChain
-    {
-        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
-        assert(VK_SUCCESS == res_platform_create_surface);
-    }
-    {
-        VkBool32 supported;
-        PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
-        assert(VK_SUCCESS == res_get_physical_device_surface_support);
-        assert(VK_TRUE == supported);
-    }
-    this->m_width = 1280;
-    this->m_height = 720;
-    this->m_swapchain = VK_NULL_HANDLE;
-    this->init_swapchain();
 
     return true;
 }
@@ -785,10 +806,11 @@ void gfx_connection_vk::reduce_streaming_task()
     return;
 }
 
-bool gfx_connection_vk::init_swapchain()
+inline bool gfx_connection_vk::init_swapchain()
 {
-    VkSwapchainKHR old_swapchain = this->m_swapchain;
     {
+        VkSwapchainKHR old_swapchain = this->m_swapchain;
+
         VkSwapchainCreateInfoKHR swapchain_create_info;
         swapchain_create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
         swapchain_create_info.pNext = NULL;
@@ -838,32 +860,32 @@ bool gfx_connection_vk::init_swapchain()
             VkSurfaceCapabilitiesKHR surface_capabilities;
             PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_capablilities = this->m_device.get_physical_device_surface_capablilities(this->m_surface, &surface_capabilities);
             assert(VK_SUCCESS == res_get_physical_device_surface_capablilities);
-            swapchain_create_info.imageExtent.width = surface_capabilities.currentExtent.width;
-            if (swapchain_create_info.imageExtent.width == 0XFFFFFFFFU)
+            if (swapchain_create_info.imageExtent.width != 0XFFFFFFFFU)
             {
-                swapchain_create_info.imageExtent.width = this->m_width;
+                this->m_framebuffer_width = surface_capabilities.currentExtent.width;
             }
-            if (swapchain_create_info.imageExtent.width < surface_capabilities.minImageExtent.width)
+            if (this->m_framebuffer_width < surface_capabilities.minImageExtent.width)
             {
-                swapchain_create_info.imageExtent.width = surface_capabilities.minImageExtent.width;
+                this->m_framebuffer_width = surface_capabilities.minImageExtent.width;
             }
-            if (swapchain_create_info.imageExtent.width > surface_capabilities.maxImageExtent.width)
+            if (this->m_framebuffer_width > surface_capabilities.maxImageExtent.width)
             {
-                swapchain_create_info.imageExtent.width = surface_capabilities.maxImageExtent.width;
+                this->m_framebuffer_width = surface_capabilities.maxImageExtent.width;
             }
-            swapchain_create_info.imageExtent.height = surface_capabilities.currentExtent.height;
+            swapchain_create_info.imageExtent.width = this->m_framebuffer_width;
             if (swapchain_create_info.imageExtent.height == 0XFFFFFFFFU)
             {
-                swapchain_create_info.imageExtent.height = this->m_height;
+                this->m_framebuffer_height = swapchain_create_info.imageExtent.height;
             }
-            if (swapchain_create_info.imageExtent.height < surface_capabilities.minImageExtent.height)
+            if (this->m_framebuffer_height < surface_capabilities.minImageExtent.height)
             {
-                swapchain_create_info.imageExtent.height = surface_capabilities.minImageExtent.height;
+                this->m_framebuffer_height = surface_capabilities.minImageExtent.height;
             }
-            if (swapchain_create_info.imageExtent.height > surface_capabilities.maxImageExtent.height)
+            if (this->m_framebuffer_height > surface_capabilities.maxImageExtent.height)
             {
-                swapchain_create_info.imageExtent.height = surface_capabilities.maxImageExtent.height;
+                this->m_framebuffer_height = surface_capabilities.maxImageExtent.height;
             }
+            swapchain_create_info.imageExtent.height = this->m_framebuffer_height;
 
             swapchain_create_info.preTransform = surface_capabilities.currentTransform;
 
@@ -937,10 +959,21 @@ bool gfx_connection_vk::init_swapchain()
     return true;
 }
 
+inline bool gfx_connection_vk::init_renderpass()
+{
+    //this->m_device.get_physical_device_format_properties
+
+    return true;
+}
+
 void gfx_connection_vk::destroy()
 {
+    mcrt_task_arena_terminate(this->m_task_arena);
+
     this->m_malloc.destroy();
+
     this->m_device.destroy();
+
     this->~gfx_connection_vk();
     mcrt_free(this);
 }

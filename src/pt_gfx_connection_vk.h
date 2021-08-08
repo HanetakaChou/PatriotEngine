@@ -117,16 +117,22 @@ class  gfx_connection_vk final : public gfx_connection_common
 
     // Perhaps we should prepare different intermediate textures for differenct frames
 
+    // RenderPass
+
+    // Framebuffer
+
     // SwapChain
     VkSurfaceKHR m_surface;
-    uint32_t m_width;
-    uint32_t m_height;
+    uint32_t m_framebuffer_width;
+    uint32_t m_framebuffer_height;
     VkSwapchainKHR m_swapchain;
 
-    bool init_swapchain();
-
-    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline gfx_connection_vk();
+    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool init_streaming();
+    inline bool init_swapchain();
+    inline bool init_renderpass();
+
     void destroy() override;
     inline ~gfx_connection_vk();
 

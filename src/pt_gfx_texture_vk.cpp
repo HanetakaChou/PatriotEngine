@@ -228,8 +228,8 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
     assert(!streaming_error);
 
     // race condition
-    // task: current_streaming_throttling_index
-    // reduce_streaming_task: ++streaming_throttling_index
+    // task: load streaming_throttling_index
+    // reduce_streaming_task: store ++streaming_throttling_index
     // reduce_streaming_task: mcrt_task_wait_for_all // return immediately
     // task: mcrt_task_increment_ref_count
     task_data->m_gfx_connection->streaming_throttling_index_lock();

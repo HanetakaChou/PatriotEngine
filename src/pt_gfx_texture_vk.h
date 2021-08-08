@@ -37,9 +37,7 @@ class gfx_texture_vk final : public gfx_texture_common
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
 
-    //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
     using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-    //mcrt_string m_asset_filename;
 
     bool read_input_stream(
         class gfx_connection_common *gfx_connection,
