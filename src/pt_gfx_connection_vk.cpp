@@ -961,6 +961,9 @@ inline bool gfx_connection_vk::init_swapchain()
 
 inline bool gfx_connection_vk::init_renderpass()
 {
+    // VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT feature must be supported for at least one of VK_FORMAT_X8_D24_UNORM_PACK32 and VK_FORMAT_D32_SFLOAT, 
+    // and must be supported for at least one of VK_FORMAT_D24_UNORM_S8_UINT and VK_FORMAT_D32_SFLOAT_S8_UINT.
+
     //this->m_device.get_physical_device_format_properties
 
     return true;
