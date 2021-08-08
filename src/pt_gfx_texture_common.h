@@ -20,8 +20,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_streaming_object.h"
 #include <pt_gfx_connection.h>
+#include "pt_gfx_streaming_object.h"
 
 class gfx_texture_common : public gfx_streaming_object
 {
@@ -291,13 +291,14 @@ protected:
 
 public:
     virtual bool read_input_stream(
+        class gfx_connection_common *gfx_connection,
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
 
-    virtual void destroy() = 0;
+    virtual void destroy(class gfx_connection_common *gfx_connection) = 0;
 };
 
 #endif

@@ -21,7 +21,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
-#include "pt_gfx_texture_common.h"
 
 class gfx_connection_proxy
 {
@@ -38,21 +37,9 @@ class gfx_connection_common
     // https://en.wikipedia.org/wiki/Distributed_object_communication
     // proxy/stub -> skeleton
 
-    //Maybe we can do the cpu side work in the calling thread?
-    //struct texture_read_request
-    //{
-    //    class gfx_texture_common *m_texture;
-    //    char const *m_initial_filename;
-     //   void *(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
-    //    intptr_t(PT_PTR *m_input_stream_read_callback)(void *input_stream, void *buf, size_t count);
-    //    void(PT_PTR *m_input_stream_destroy_callback)(void *input_stream);
-    //};
-
     //\[Hudson 2006\] Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.
     //freeListPush
     //repatriatePublicFreeList
-
-    //texture_read_request *m_public_texture_read_request;
 
 public:
     virtual void destroy() = 0;

@@ -20,7 +20,7 @@
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
 
-void gfx_streaming_object::streaming_done()
+void gfx_streaming_object::streaming_done(class gfx_connection_common *gfx_connection)
 {
     while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_done, 1U))
     {
@@ -30,7 +30,8 @@ void gfx_streaming_object::streaming_done()
     PT_MAYBE_UNUSED streaming_status_t streaming_status = this->m_streaming_status;
     PT_MAYBE_UNUSED bool streaming_error = this->m_streaming_error;
     bool streaming_cancel = this->m_streaming_cancel;
-    assert(STREAMING_STATUS_STAGE_THIRD == streaming_status);
+    assert(streaming_error || STREAMING_STATUS_STAGE_THIRD == streaming_status);
+    assert(!streaming_error || STREAMING_STATUS_STAGE_SECOND == streaming_status);
 
     if (!streaming_cancel)
     {
@@ -38,7 +39,7 @@ void gfx_streaming_object::streaming_done()
     }
     else
     {
-        this->streaming_cancel();
+        this->streaming_cancel(gfx_connection);
     }
 
     mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U);

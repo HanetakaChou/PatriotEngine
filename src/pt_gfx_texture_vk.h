@@ -30,8 +30,6 @@
 
 class gfx_texture_vk final : public gfx_texture_common
 {
-    gfx_connection_vk *m_gfx_connection;
-
     VkImage m_image;
 
     uint64_t m_gfx_malloc_offset;
@@ -41,9 +39,10 @@ class gfx_texture_vk final : public gfx_texture_common
 
     //using vector = std::vector<T, mcrt::scalable_allocator<T>>;
     using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-    mcrt_string m_asset_filename;
+    //mcrt_string m_asset_filename;
 
     bool read_input_stream(
+        class gfx_connection_common *gfx_connection,
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
@@ -52,7 +51,7 @@ class gfx_texture_vk final : public gfx_texture_common
 
     struct read_input_stream_task_data
     {
-        char const *m_initial_filename;
+        mcrt_string m_initial_filename;
         gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
         intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
         int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
@@ -63,11 +62,11 @@ class gfx_texture_vk final : public gfx_texture_common
 
     static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
 
-    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_tally_completion_of_predecessor, mcrt_task_ref self);
+    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
 
-    void destroy() override;
+    void destroy(class gfx_connection_common *gfx_connection) override;
 
-    void streaming_cancel() override;
+    void streaming_cancel(class gfx_connection_common *gfx_connection) override;
 
     struct specific_header_vk_t
     {
@@ -175,7 +174,7 @@ class gfx_texture_vk final : public gfx_texture_common
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk(gfx_connection_vk *gfx_connection) : gfx_texture_common(STREAMING_STATUS_STAGE_FIRST), m_gfx_connection(gfx_connection), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk() : gfx_texture_common(STREAMING_STATUS_STAGE_FIRST), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
 };
 
 #endif

@@ -686,7 +686,7 @@ void gfx_connection_vk::reduce_streaming_task()
         uint32_t streaming_object_count = this->m_streaming_object_count[streaming_throttling_index];
         for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_count; ++streaming_object_index)
         {
-            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->streaming_done();
+            this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->streaming_done(this);
             this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = NULL;
         }
         this->m_streaming_object_count[streaming_throttling_index] = 0U;
@@ -887,6 +887,6 @@ void gfx_connection_vk::wsi_on_redraw_needed_release()
 
 class gfx_texture_common *gfx_connection_vk::create_texture()
 {
-    gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk(this);
+    gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
     return texture;
 }

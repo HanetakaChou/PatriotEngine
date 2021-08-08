@@ -28,13 +28,13 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_rgba.pvr");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_rgba.pvr");
             my_textures.push_back(my_texture);
         }
         else if (4 == r1 % 9 || 5 == r1 % 9 || 6 == r1 % 9 || 7 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
             my_textures.push_back(my_texture);
         }
         else
@@ -46,12 +46,12 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
                 gfx_texture_ref my_texture = my_textures[vec_idx];
                 my_textures[vec_idx] = my_textures.back();
                 my_textures.pop_back();
-                gfx_texture_destroy(my_texture);
+                gfx_texture_destroy(my_gfx_connection, my_texture);
             }
             else
             {
                 gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-                gfx_texture_read_file(my_texture, "third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
+                gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
                 my_textures.push_back(my_texture);
             }
         }
@@ -61,7 +61,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     for (gfx_texture_ref my_texture : my_textures)
     {
-        gfx_texture_destroy(my_texture);
+        gfx_texture_destroy(my_gfx_connection, my_texture);
     }
 
     return 0;

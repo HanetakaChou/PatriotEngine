@@ -111,6 +111,7 @@ inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterp
 inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
 
 PT_ATTR_GFX bool gfx_texture_read_input_stream(
+    gfx_connection_ref gfx_connection,
     gfx_texture_ref texture,
     char const *initial_filename,
     gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
@@ -118,10 +119,10 @@ PT_ATTR_GFX bool gfx_texture_read_input_stream(
     int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
     void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
 {
-    return unwrap(texture)->read_input_stream(initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
+    return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
 }
 
-PT_ATTR_GFX void gfx_texture_destroy(gfx_texture_ref texture)
+PT_ATTR_GFX void gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture)
 {
-    return unwrap(texture)->destroy();
+    return unwrap(texture)->destroy(unwrap(gfx_connection));
 }
