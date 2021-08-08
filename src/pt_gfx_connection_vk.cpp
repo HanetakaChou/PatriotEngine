@@ -153,10 +153,10 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
         assert(mcrt_task_arena_is_active(this->m_task_arena));
         assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
 
-        this->m_streaming_task_respawn_list_count[streaming_throttling_index] = 0U;
+        this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index] = 0U;
         this->m_streaming_task_respawn_link_list_head[streaming_throttling_index] = NULL;
 
-        this->m_streaming_object_list_count[streaming_throttling_index] = 0U;
+        this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
         this->m_streaming_object_link_list_head[streaming_throttling_index] = NULL;
     }
 
@@ -195,14 +195,14 @@ void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_th
 
 void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
 {
-    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_list_count[streaming_throttling_index]) - 1U;
-    if (streaming_object_index < STREAMING_OBJECT_COUNT)
+    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_linear_list_count[streaming_throttling_index]) - 1U;
+    if (streaming_object_index < STREAMING_OBJECT_LINEAR_LIST_COUNT)
     {
-        this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = streaming_object;
+        this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index] = streaming_object;
     }
     else
     {
-        mcrt_atomic_dec_u32(&this->m_streaming_object_list_count[streaming_throttling_index]);
+        mcrt_atomic_dec_u32(&this->m_streaming_object_linear_list_count[streaming_throttling_index]);
 
         // performance issue
 
@@ -221,14 +221,14 @@ void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling
 
 void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task)
 {
-    uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_list_count[streaming_throttling_index]) - 1U;
-    if (streaming_task_respawn_index < STREAMING_TASK_RESPAWN_COUNT)
+    uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index]) - 1U;
+    if (streaming_task_respawn_index < STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT)
     {
-        this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_task;
+        this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_task;
     }
     else
     {
-        mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_list_count[streaming_throttling_index]);
+        mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index]);
 
         // performance issue
 
@@ -629,18 +629,18 @@ void gfx_connection_vk::reduce_streaming_task()
     {
         // list
         {
-            uint32_t streaming_task_respawn_list_count = this->m_streaming_task_respawn_list_count[streaming_throttling_index];
-            for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_list_count; ++streaming_task_respawn_index)
+            uint32_t streaming_task_respawn_linear_list_count = this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index];
+            for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_linear_list_count; ++streaming_task_respawn_index)
             {
                 //TODO different master task doesn't share the task_arena
-                mcrt_task_spawn(this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index]);
-                this->m_streaming_task_respawn_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
+                mcrt_task_spawn(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index]);
+                this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
             }
-            this->m_streaming_task_respawn_list_count[streaming_throttling_index] = 0U;
+            this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index] = 0U;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_task_respawn_list_count > 0U)
+            if (streaming_task_respawn_linear_list_count > 0U)
             {
-                mcrt_log_print("index %i: streaming_task_respawn_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_list_count));
+                mcrt_log_print("index %i: streaming_task_respawn_linear_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_linear_list_count));
             }
 #endif
         }
@@ -737,17 +737,17 @@ void gfx_connection_vk::reduce_streaming_task()
     {
         // link
         {
-            uint32_t streaming_object_list_count = this->m_streaming_object_list_count[streaming_throttling_index];
-            for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_list_count; ++streaming_object_index)
+            uint32_t streaming_object_linear_list_count = this->m_streaming_object_linear_list_count[streaming_throttling_index];
+            for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_linear_list_count; ++streaming_object_index)
             {
-                this->m_streaming_object_list[streaming_throttling_index][streaming_object_index]->streaming_done(this);
-                this->m_streaming_object_list[streaming_throttling_index][streaming_object_index] = NULL;
+                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index]->streaming_done(this);
+                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index] = NULL;
             }
-            this->m_streaming_object_list_count[streaming_throttling_index] = 0U;
+            this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_object_list_count > 0U)
+            if (streaming_object_linear_list_count > 0U)
             {
-                mcrt_log_print("index %i: streaming_object_list_count %i \n", int(streaming_throttling_index), int(streaming_object_list_count));
+                mcrt_log_print("index %i: streaming_object_linear_list_count %i \n", int(streaming_throttling_index), int(streaming_object_linear_list_count));
             }
 #endif
         }
