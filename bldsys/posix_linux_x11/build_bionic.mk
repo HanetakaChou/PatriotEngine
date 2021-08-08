@@ -23,7 +23,7 @@ include $(LOCAL_PATH)/pt_gfx.mk
 
 include $(LOCAL_PATH)/pt_launcher.mk
 
-include $(LOCAL_PATH)/pt_general_acyclic_graphs_of_tasks.mk
+include $(LOCAL_PATH)/pt_example.mk
 
 # fake / libpt_xcb
 

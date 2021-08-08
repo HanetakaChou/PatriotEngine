@@ -129,7 +129,7 @@ void wsi_window_x11::init()
     // draw_request_thread
     m_gfx_connection = NULL;
     mcrt_atomic_store(&m_draw_request_thread_running, false);
-    bool res_draw_request_thread = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
+    PT_MAYBE_UNUSED bool res_draw_request_thread = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
     assert(res_draw_request_thread);
     while (!mcrt_atomic_load(&m_draw_request_thread_running))
     {
@@ -140,7 +140,7 @@ void wsi_window_x11::init()
     // app_thread
     m_wsi_window_app = NULL;
     mcrt_atomic_store(&m_app_thread_running, false);
-    bool res_app_thread = mcrt_native_thread_create(&m_app_thread_id, app_main, this);
+    PT_MAYBE_UNUSED bool res_app_thread = mcrt_native_thread_create(&m_app_thread_id, app_main, this);
     assert(res_app_thread);
     while (!mcrt_atomic_load(&m_app_thread_running))
     {
@@ -371,7 +371,7 @@ void wsi_window_x11::destroy()
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
 
-    xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
+    PT_MAYBE_UNUSED xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
     xcb_disconnect(m_xcb_connection);

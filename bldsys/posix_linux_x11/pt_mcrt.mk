@@ -33,8 +33,9 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+LOCAL_CFLAGS += -Wall
 
-LOCAL_CPPFLAGS += -std=c++11
+#LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
@@ -64,8 +65,9 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+LOCAL_CFLAGS += -Wall
 	
-LOCAL_CPPFLAGS += -std=c++11
+#LOCAL_CPPFLAGS += -std=c++11
 
 ifeq (x86_64,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mavx512f 
@@ -91,8 +93,9 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+LOCAL_CFLAGS += -Wall
 	
-LOCAL_CPPFLAGS += -std=c++11
+#LOCAL_CPPFLAGS += -std=c++11
 
 ifeq (x86_64,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mavx 
@@ -118,8 +121,9 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+LOCAL_CFLAGS += -Wall
 	
-LOCAL_CPPFLAGS += -std=c++11
+#LOCAL_CPPFLAGS += -std=c++11
 
 ifeq (x86_64,$(TARGET_ARCH))
 LOCAL_CFLAGS += -mssse3 
@@ -145,8 +149,9 @@ LOCAL_SRC_FILES:= \
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
-	
-LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CFLAGS += -Wall
+
+#LOCAL_CPPFLAGS += -std=c++11
 
 ifeq (arm,$(TARGET_ARCH))
 LOCAL_ARM_NEON := true

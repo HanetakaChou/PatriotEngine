@@ -41,8 +41,8 @@ bool gfx_texture_vk::read_input_stream(
 
     // the first stage
 
-    streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
-    bool streaming_error = mcrt_atomic_load(&this->m_streaming_error);
+    PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
+    PT_MAYBE_UNUSED bool streaming_error = mcrt_atomic_load(&this->m_streaming_error);
     bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
     assert(STREAMING_STATUS_STAGE_FIRST == streaming_status);
     assert(!streaming_error);
@@ -116,7 +116,7 @@ bool gfx_texture_vk::read_input_stream(
                 create_info.queueFamilyIndexCount = 0U;
                 create_info.pQueueFamilyIndices = NULL;
                 create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                VkResult res = m_gfx_connection->create_image(&create_info, &this->m_image);
+                PT_MAYBE_UNUSED VkResult res = m_gfx_connection->create_image(&create_info, &this->m_image);
                 assert(VK_SUCCESS == res);
             }
 
@@ -140,7 +140,7 @@ bool gfx_texture_vk::read_input_stream(
             assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
 
             {
-                VkResult res_bind_image_memory = this->m_gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
+                PT_MAYBE_UNUSED VkResult res_bind_image_memory = this->m_gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
                 assert(VK_SUCCESS == res_bind_image_memory);
             }
         }
@@ -159,6 +159,7 @@ bool gfx_texture_vk::read_input_stream(
             task_data->m_input_stream_seek_callback = input_stream_seek_callback;
             task_data->m_input_stream_destroy_callback = input_stream_destroy_callback;
             task_data->m_gfx_texture = this;
+            task_data->m_gfx_connection = this->m_gfx_connection;
             // we must cache the streaming_throttling_index to eusure the consistency
             // streaming_throttling_index = streaming_throttling_index;
 
@@ -187,19 +188,37 @@ bool gfx_texture_vk::read_input_stream(
 
 mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 {
+    uint32_t streaming_throttling_index;
+    bool tally_completion_of_predecessor;
+    // The "read_input_stream_task_execute_internal" makes sure that the "mcrt_task_decrement_ref_count" is called after all works are done
+    mcrt_task_ref task_bypass = read_input_stream_task_execute_internal(&streaming_throttling_index, &tally_completion_of_predecessor, self);
+
+    if (tally_completion_of_predecessor)
+    {
+        static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
+        read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+
+        mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
+    }
+
+    return task_bypass;
+}
+
+inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_tally_completion_of_predecessor, mcrt_task_ref self)
+{
     static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
     read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(self));
-
-    streaming_status_t streaming_status = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_status);
-    bool streaming_error = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_error);
-    bool streaming_cancel = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_cancel);
-    assert(STREAMING_STATUS_STAGE_SECOND == streaming_status);
-    assert(!streaming_error);
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
     assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_texture->m_gfx_connection->task_arena()));
     assert(mcrt_task_arena_internal_arena(task_data->m_gfx_texture->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+
+    PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_status);
+    PT_MAYBE_UNUSED bool streaming_error = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_error);
+    bool streaming_cancel = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_cancel);
+    assert(STREAMING_STATUS_STAGE_SECOND == streaming_status);
+    assert(!streaming_error);
 
     // race condition
     // task: current_streaming_throttling_index
@@ -211,23 +230,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
     mcrt_task_increment_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_texture->m_gfx_connection->streaming_throttling_index_unlock();
 
-    bool tally_completion_of_predecessor;
-    mcrt_task_ref task_bypass = read_input_stream_task_execute_internal(streaming_throttling_index, task_data, streaming_cancel, self, &tally_completion_of_predecessor);
-
-    // make sure that this function is called after all works are done
-    if (tally_completion_of_predecessor)
-    {
-        mcrt_task_decrement_ref_count(task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
-    }
-
-    return task_bypass;
-}
-
-inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uint32_t streaming_throttling_index, struct read_input_stream_task_data *task_data, bool streaming_cancel, mcrt_task_ref self, bool *tally_completion_of_predecessor)
-{
-    (*tally_completion_of_predecessor) = false;
-
-    mcrt_task_set_parent(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
+    (*output_streaming_throttling_index) = streaming_throttling_index;
+    (*output_tally_completion_of_predecessor) = false;
     {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
         class internal_streaming_task_debug_executing_guard
@@ -247,6 +251,7 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
             }
         } instance_internal_streaming_task_debug_executing_guard(streaming_throttling_index, task_data->m_gfx_texture->m_gfx_connection);
 #endif
+        mcrt_task_set_parent(self, task_data->m_gfx_texture->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
         if (!streaming_cancel)
         {
@@ -336,7 +341,7 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
                                 task_data->m_gfx_texture->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
                                 // recycle needs manually tally_completion_of_predecessor
-                                (*tally_completion_of_predecessor) = true;
+                                (*output_tally_completion_of_predecessor) = true;
                                 return NULL;
                             }
 
@@ -416,6 +421,7 @@ void gfx_texture_vk::destroy()
         else
         {
             assert(0);
+            streaming_done = false;
         }
 
         mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U);
@@ -446,7 +452,7 @@ void gfx_texture_vk::destroy()
 
 void gfx_texture_vk::streaming_cancel()
 {
-    bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
+    PT_MAYBE_UNUSED bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
     assert(streaming_cancel);
 
     if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)

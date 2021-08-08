@@ -356,7 +356,7 @@ inline uint64_t gfx_malloc::slob_page::internal_alloc(uint64_t size, uint64_t al
             // merge with prev
             if (delta > 0U)
             {
-                slob_block_list_iter iter_prev = (iter_cur != this->m_free_block_list.begin()) ? wrapped_prev(this->m_free_block_list, iter_cur) : std::move(slob_block_list_iter{});
+                slob_block_list_iter iter_prev = (iter_cur != this->m_free_block_list.begin()) ? wrapped_prev(this->m_free_block_list, iter_cur) : this->m_free_block_list.begin();
                 assert((this->m_free_block_list.begin() == iter_cur) || ((iter_prev->offset() + iter_prev->size()) <= cur_offset));
                 if ((this->m_free_block_list.begin() != iter_cur) && ((iter_prev->offset() + iter_prev->size()) == cur_offset))
                 {

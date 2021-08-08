@@ -600,8 +600,10 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
 
                     if (inputSliceSize == memcpy_dest[dstSubresource].outputSlicePitch && inputRowSize == memcpy_dest[dstSubresource].outputRowPitch)
                     {
-                        int64_t offset_cur;
-                        assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                        {
+                            PT_MAYBE_UNUSED int64_t offset_cur;
+                            assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                        }
 
                         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + memcpy_dest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
                         if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
@@ -615,8 +617,10 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
 
                         for (size_t z = 0; z < inputNumSlices; ++z)
                         {
-                            int64_t offset_cur;
-                            assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                            {
+                                PT_MAYBE_UNUSED int64_t offset_cur;
+                                assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                            }
 
                             ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z), inputSliceSize);
                             if (BytesRead == -1 || BytesRead < inputSliceSize)
@@ -634,8 +638,10 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
                         {
                             for (size_t y = 0; y < inputNumRows; ++y)
                             {
-                                int64_t offset_cur;
-                                assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                {
+                                    PT_MAYBE_UNUSED int64_t offset_cur;
+                                    assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                }
 
                                 ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z + memcpy_dest[dstSubresource].outputRowPitch * y), inputRowSize);
                                 if (BytesRead == -1 || BytesRead < inputRowSize)
@@ -652,7 +658,7 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
         }
     }
 
-    uint8_t u_assert_only[1];
+    PT_MAYBE_UNUSED uint8_t u_assert_only[1];
     assert(0 == input_stream_read_callback(input_stream, u_assert_only, sizeof(uint8_t)));
     return true;
 }

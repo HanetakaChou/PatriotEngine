@@ -27,8 +27,8 @@ void gfx_streaming_object::streaming_done()
         mcrt_os_yield();
     }
 
-    streaming_status_t streaming_status = this->m_streaming_status;
-    bool streaming_error = this->m_streaming_error;
+    PT_MAYBE_UNUSED streaming_status_t streaming_status = this->m_streaming_status;
+    PT_MAYBE_UNUSED bool streaming_error = this->m_streaming_error;
     bool streaming_cancel = this->m_streaming_cancel;
     assert(STREAMING_STATUS_STAGE_THIRD == streaming_status);
 

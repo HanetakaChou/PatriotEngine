@@ -2110,7 +2110,7 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     gnustl_static,\
     cxx-stl/gnu-libstdc++,\
-    libpt_gnu_stdcxx_static,\
+    ndk_build_glibc_gnu_stdcxx_static,\
     ,\
     \
     )
@@ -2121,7 +2121,7 @@ $(call ndk-stl-register,\
     gnustl_shared,\
     cxx-stl/gnu-libstdc++,\
     ,\
-    libpt_gnu_stdcxx_shared,\
+    ndk_build_glibc_gnu_stdcxx_shared,\
     \
     )
 
@@ -2130,7 +2130,7 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     c++_static,\
     cxx-stl/llvm-libc++,\
-    libpt_llvm_cxx_static,\
+    ndk_build_glibc_llvm_cxx_static,\
     \
     )
 
@@ -2139,7 +2139,7 @@ $(call ndk-stl-register,\
 $(call ndk-stl-register,\
     c++_shared,\
     cxx-stl/llvm-libc++,\
-    libpt_llvm_cxx_shared,\
+    ndk_build_glibc_llvm_cxx_shared,\
     \
     )
 

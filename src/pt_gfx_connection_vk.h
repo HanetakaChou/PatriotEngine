@@ -30,7 +30,7 @@
 #include "pt_gfx_streaming_object.h"
 #include <vulkan/vulkan.h>
 
-class gfx_connection_vk : public gfx_connection_common
+class  gfx_connection_vk final : public gfx_connection_common 
 {
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
@@ -48,9 +48,9 @@ class gfx_connection_vk : public gfx_connection_common
     // The unique uniform buffer.
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
-    VkBuffer m_uniform_buffer;
-    uint64_t m_uniform_buffer_ring_buffer_begin;
-    uint64_t m_uniform_buffer_ring_buffer_end;
+    //VkBuffer m_uniform_buffer;
+    //uint64_t m_uniform_buffer_ring_buffer_begin;
+    //uint64_t m_uniform_buffer_ring_buffer_end;
 
     class gfx_texture_common *create_texture() override;
     void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;

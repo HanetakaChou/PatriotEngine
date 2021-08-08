@@ -28,7 +28,7 @@
 #include <string>
 
 
-class gfx_texture_vk : public gfx_texture_common
+class gfx_texture_vk final : public gfx_texture_common
 {
     gfx_connection_vk *m_gfx_connection;
 
@@ -57,13 +57,13 @@ class gfx_texture_vk : public gfx_texture_common
         intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
         int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
         void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+        class gfx_connection_vk *m_gfx_connection;
         class gfx_texture_vk *m_gfx_texture;
-        //uint32_t m_streaming_throttling_index;
     };
 
     static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
 
-    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t streaming_throttling_index, struct read_input_stream_task_data *task_data, bool streaming_cancel, mcrt_task_ref self, bool *tally_completion_of_predecessor);
+    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_tally_completion_of_predecessor, mcrt_task_ref self);
 
     void destroy() override;
 

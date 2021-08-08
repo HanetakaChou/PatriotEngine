@@ -27,20 +27,20 @@
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
-	int res = pthread_create(tid, NULL, (void *(*)(void *))func, arg);
+	PT_MAYBE_UNUSED int res = pthread_create(tid, NULL, (void *(*)(void *))func, arg);
 	return ((res == 0) ? true : false);
 }
 
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name)
 {
 #if defined(__linux__)
-	int res = pthread_setname_np(tid, name);
+	PT_MAYBE_UNUSED int res = pthread_setname_np(tid, name);
 	assert(res == 0);
 	return;
 #elif defined(__MACH__)
 	if (pthread_equal(pthread_self(), tid))
 	{
-		int res = pthread_setname_np(name);
+		PT_MAYBE_UNUSED int res = pthread_setname_np(name);
 		assert(res == 0);
 		return;
 	}
@@ -57,7 +57,7 @@ inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *n
 inline bool mcrt_native_thread_join(mcrt_native_thread_id tid)
 {
 	void *retcode;
-	int res = pthread_join(tid, &retcode);
+	PT_MAYBE_UNUSED int res = pthread_join(tid, &retcode);
 	return ((res == 0) ? true : false);
 }
 
@@ -73,20 +73,20 @@ inline bool mcrt_native_thread_id_equal(mcrt_native_thread_id tid_left, mcrt_nat
 
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *))
 {
-	int res = pthread_key_create(key, destructor);
+	PT_MAYBE_UNUSED int res = pthread_key_create(key, destructor);
 	assert(res == 0);
 	return ((res == 0) ? true : false);
 }
 
 inline void mcrt_native_tls_free(mcrt_native_tls_key key)
 {
-	int res = pthread_key_delete(key);
+	PT_MAYBE_UNUSED int res = pthread_key_delete(key);
 	assert(res == 0);
 }
 
 inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value)
 {
-	int res = pthread_setspecific(key, value);
+	PT_MAYBE_UNUSED int res = pthread_setspecific(key, value);
 	return ((res == 0) ? true : false);
 }
 
@@ -99,11 +99,11 @@ inline void mcrt_os_yield()
 {
 #if defined(__linux__)
 #if defined(__BIONIC__)
-	int res = sched_yield();
+	PT_MAYBE_UNUSED int res = sched_yield();
 	assert(res == 0);
 	return;
 #elif defined(__GLIBC__)
-	int res = pthread_yield();
+	PT_MAYBE_UNUSED int res = pthread_yield();
 	assert(res == 0);
 	return;
 #else
@@ -118,25 +118,25 @@ inline void mcrt_os_yield()
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex)
 {
-	int res = pthread_mutex_init(mutex, NULL);
+	PT_MAYBE_UNUSED int res = pthread_mutex_init(mutex, NULL);
 	assert(res == 0);
 }
 
 inline void mcrt_os_mutex_destroy(mcrt_mutex_t *mutex)
 {
-	int res = pthread_mutex_destroy(mutex);
+	PT_MAYBE_UNUSED int res = pthread_mutex_destroy(mutex);
 	assert(res == 0);
 }
 
 inline void mcrt_os_mutex_lock(mcrt_mutex_t *mutex)
 {
-	int res = pthread_mutex_lock(mutex);
+	PT_MAYBE_UNUSED int res = pthread_mutex_lock(mutex);
 	assert(res == 0);
 }
 
 inline int mcrt_os_mutex_trylock(mcrt_mutex_t *mutex)
 {
-	int res = pthread_mutex_trylock(mutex);
+	PT_MAYBE_UNUSED int res = pthread_mutex_trylock(mutex);
 	assert(res == 0 || res == EBUSY);
 
 	return ((res == 0) ? 0 : -1);
@@ -144,25 +144,25 @@ inline int mcrt_os_mutex_trylock(mcrt_mutex_t *mutex)
 
 inline void mcrt_os_mutex_unlock(mcrt_mutex_t *mutex)
 {
-	int res = pthread_mutex_unlock(mutex);
+	PT_MAYBE_UNUSED int res = pthread_mutex_unlock(mutex);
 	assert(res == 0);
 }
 
 inline void mcrt_os_cond_init(mcrt_cond_t *cond)
 {
-	int res = pthread_cond_init(cond, NULL);
+	PT_MAYBE_UNUSED int res = pthread_cond_init(cond, NULL);
 	assert(res == 0);
 }
 
 inline void mcrt_os_cond_destroy(mcrt_cond_t *cond)
 {
-	int res = pthread_cond_destroy(cond);
+	PT_MAYBE_UNUSED int res = pthread_cond_destroy(cond);
 	assert(res == 0);
 }
 
 inline int mcrt_os_cond_wait(mcrt_cond_t *cond, mcrt_mutex_t *mutex)
 {
-	int res = pthread_cond_wait(cond, mutex);
+	PT_MAYBE_UNUSED int res = pthread_cond_wait(cond, mutex);
 	assert(res == 0);
 	return ((res == 0) ? 0 : -1);
 }
@@ -170,42 +170,40 @@ inline int mcrt_os_cond_wait(mcrt_cond_t *cond, mcrt_mutex_t *mutex)
 inline int mcrt_os_cond_timedwait(mcrt_cond_t *cond, mcrt_mutex_t *mutex, uint32_t timeout_ms)
 {
 	struct timespec ts;
-	int res;
-
-	/* ms = 10^-3, us = 10^-6, ns = 10^-9 */
-
-	struct timeval tv;
-	res = gettimeofday(&tv, NULL);
-	assert(res == 0);
-
-	ts.tv_sec = tv.tv_sec;
-	ts.tv_nsec = tv.tv_usec * 1000;
-
-	ts.tv_sec += timeout_ms / 1000;
-	ts.tv_nsec += (timeout_ms % 1000) * 1000 * 1000;
-
-	if (ts.tv_nsec >= (1000 * 1000 * 1000))
 	{
-		ts.tv_nsec -= (1000 * 1000 * 1000);
-		++ts.tv_sec;
+
+		struct timeval tv;
+		PT_MAYBE_UNUSED int res_get_time_of_day = gettimeofday(&tv, NULL);
+		assert(res_get_time_of_day == 0);
+
+		// ms = 10^-3, us = 10^-6, ns = 10^-9
+		ts.tv_sec = tv.tv_sec;
+		ts.tv_nsec = tv.tv_usec * 1000;
+		ts.tv_sec += timeout_ms / 1000;
+		ts.tv_nsec += (timeout_ms % 1000) * 1000 * 1000;
+		if (ts.tv_nsec >= (1000 * 1000 * 1000))
+		{
+			ts.tv_nsec -= (1000 * 1000 * 1000);
+			++ts.tv_sec;
+		}
+		assert(ts.tv_nsec < 1000 * 1000 * 1000);
 	}
-	assert(ts.tv_nsec < 1000 * 1000 * 1000);
 
-	res = pthread_cond_timedwait(cond, mutex, &ts);
-	assert(res == 0 || res == ETIMEDOUT);
+	PT_MAYBE_UNUSED int res_pthread_cond_timedwait = pthread_cond_timedwait(cond, mutex, &ts);
+	assert(res_pthread_cond_timedwait == 0 || res_pthread_cond_timedwait == ETIMEDOUT);
 
-	return ((res == 0) ? 0 : -1);
+	return ((res_pthread_cond_timedwait == 0) ? 0 : -1);
 }
 
 inline void mcrt_os_cond_signal(mcrt_cond_t *cond)
 {
-	int res = pthread_cond_signal(cond);
+	PT_MAYBE_UNUSED int res = pthread_cond_signal(cond);
 	assert(res == 0);
 }
 
 inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 {
-	int res = pthread_cond_broadcast(cond);
+	PT_MAYBE_UNUSED int res = pthread_cond_broadcast(cond);
 	assert(res == 0);
 }
 

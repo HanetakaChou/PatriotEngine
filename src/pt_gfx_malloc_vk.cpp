@@ -163,7 +163,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &dummy_buf);
+            PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &dummy_buf);
             assert(VK_SUCCESS == res_create_buffer);
 
             struct VkMemoryRequirements mem_req;
@@ -198,13 +198,13 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             if (VK_SUCCESS == res_allocate_memory)
             {
                 uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-                VkDeviceSize heap_size_budget = physical_device_memory_properties.memoryHeaps[heap_index].size;
+                PT_MAYBE_UNUSED VkDeviceSize heap_size_budget = physical_device_memory_properties.memoryHeaps[heap_index].size;
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(this->m_uniform_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_device->map_memory(this->m_uniform_buffer_device_memory, 0U, this->m_uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
+                    PT_MAYBE_UNUSED VkResult res_map_memory = this->m_device->map_memory(this->m_uniform_buffer_device_memory, 0U, this->m_uniform_buffer_size, 0U, &this->m_uniform_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -219,7 +219,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
                     buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-                    VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
+                    PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
                     assert(VK_SUCCESS == res_create_buffer);
                 }
 
@@ -232,7 +232,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 #endif
 
                 {
-                    VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
+                    PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
 
@@ -267,7 +267,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
@@ -303,13 +303,13 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             {
                 // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
                 uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-                VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - this->m_uniform_buffer_size);
+                PT_MAYBE_UNUSED VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - this->m_uniform_buffer_size);
                 // The application is not alone and there may be other applications which interact with the Vulkan as well.
                 // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
                 assert(this->m_transfer_src_buffer_size <= heap_size_budget);
 
                 {
-                    VkResult res_map_memory = this->m_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, this->m_transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
+                    PT_MAYBE_UNUSED VkResult res_map_memory = this->m_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, this->m_transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
                     assert(VK_SUCCESS == res_map_memory);
                 }
 
@@ -324,7 +324,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                     buffer_create_info_uniform.queueFamilyIndexCount = 0U;
                     buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-                    VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_transfer_src_buffer);
+                    PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_transfer_src_buffer);
                     assert(VK_SUCCESS == res_create_buffer);
                 }
 
@@ -337,7 +337,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 #endif
 
                 {
-                    VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
+                    PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
 
@@ -368,7 +368,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             buffer_create_info_transfer_dst_and_vertex_buffer.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_vertex_buffer, &dummy_buf);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_vertex_buffer, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
@@ -392,7 +392,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             buffer_create_info_transfer_dst_and_index_buffer.pQueueFamilyIndices = NULL;
 
             VkBuffer dummy_buf;
-            VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_index_buffer, &dummy_buf);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_dst_and_index_buffer, &dummy_buf);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
@@ -467,7 +467,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             image_create_info_regular_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_device->create_image(&image_create_info_regular_tiling_optimal, &dummy_img);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_image(&image_create_info_regular_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
@@ -528,7 +528,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             image_create_info_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_device->create_image(&image_create_info_transient_tiling_optimal, &dummy_img);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_image(&image_create_info_transient_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;
@@ -620,7 +620,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
             image_create_info_depth_stencil_transient_tiling_optimal.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
             VkImage dummy_img;
-            VkResult vk_res = m_device->create_image(&image_create_info_depth_stencil_transient_tiling_optimal, &dummy_img);
+            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_image(&image_create_info_depth_stencil_transient_tiling_optimal, &dummy_img);
             assert(VK_SUCCESS == vk_res);
 
             struct VkMemoryRequirements mem_req;

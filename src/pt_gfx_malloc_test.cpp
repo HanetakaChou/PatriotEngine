@@ -257,7 +257,9 @@ int main(int argc, char **argv)
                     }
                     else
                     {
-                        assert(false);
+                        assert(0);
+                        config_begin_bytes_to_allocate = uint64_t(-1);
+                        config_additional_operation_count = uint32_t(-1);
                     }
 
                     // MainTest
@@ -493,7 +495,7 @@ static inline void MainTest_GetNextAllocationSize(std::vector<struct allocation_
             out_image_size_width = alloc_size.image_size_min + (r1 % (alloc_size.image_size_max - alloc_size.image_size_min));
 
             long int r2 = rand_r(&rand_buf);
-            out_image_size_height = alloc_size.image_size_min + (r1 % (alloc_size.image_size_max - alloc_size.image_size_min));
+            out_image_size_height = alloc_size.image_size_min + (r2 % (alloc_size.image_size_max - alloc_size.image_size_min));
         }
     }
     else
@@ -531,7 +533,7 @@ uint64_t gfx_malloc_test::transfer_dst_and_vertex_buffer_or_transfer_dst_and_ind
     uint64_t page_memory_handle = self->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_memory_handle_counter;
     assert(PAGE_MEMORY_HANDLE_POISON != page_memory_handle);
     ++self->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_memory_handle_counter;
-    auto res = self->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_dict.insert(page_memory_handle);
+    PT_MAYBE_UNUSED auto res = self->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_dict.insert(page_memory_handle);
     assert(res.second);
     return page_memory_handle;
 }
@@ -552,7 +554,7 @@ uint64_t gfx_malloc_test::transfer_dst_and_sampled_image_slob_new_pages(void *_s
     uint64_t page_memory_handle = self->m_transfer_dst_and_sampled_image_page_memory_handle_counter;
     assert(PAGE_MEMORY_HANDLE_POISON != page_memory_handle);
     ++self->m_transfer_dst_and_sampled_image_page_memory_handle_counter;
-    auto res = self->m_transfer_dst_and_sampled_image_page_dict.insert(page_memory_handle);
+    PT_MAYBE_UNUSED auto res = self->m_transfer_dst_and_sampled_image_page_dict.insert(page_memory_handle);
     assert(res.second);
     return page_memory_handle;
 }

@@ -18,7 +18,7 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := libpt_llvm_cxx_static
+LOCAL_MODULE := ndk_build_glibc_llvm_cxx_static
 LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++ -static-libstdc++ #-static-libgcc #-rtlib=compiler-rt -unwindlib=libunwind #-nostdlib -nodefaultlibs #-D_GLIBCXX_USE_CXX11_ABI=1 
 ifeq ($(NDK_TOOLCHAIN_VERSION),clang)
 LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1 # bug of the Ubuntu clang
@@ -42,7 +42,7 @@ include $(BUILD_STATIC_LIBRARY)
 # x86/Gos-linux.c:299: warning: sigreturn is not implemented and will always fail
 
 include $(CLEAR_VARS)
-LOCAL_MODULE := libpt_llvm_cxx_shared
+LOCAL_MODULE := ndk_build_glibc_llvm_cxx_shared
 LOCAL_EXPORT_CPPFLAGS += -rtlib=compiler-rt -unwindlib=libunwind -stdlib=libc++
 ifeq ($(NDK_TOOLCHAIN_VERSION),clang) 
 LOCAL_EXPORT_CPPFLAGS += -I/usr/lib/llvm-10/include/c++/v1 # bug of the Ubuntu clang

@@ -88,7 +88,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
-        VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &this->m_instance);
+        PT_MAYBE_UNUSED VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &this->m_instance);
         assert(VK_SUCCESS == vk_res);
     }
     assert(VK_NULL_HANDLE != this->m_instance);
@@ -152,12 +152,12 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 assert(NULL != vk_enumerate_physical_devices);
 
                 uint32_t physical_device_count_before;
-                VkResult vk_res_before = vk_enumerate_physical_devices(instance, &physical_device_count_before, NULL);
+                PT_MAYBE_UNUSED VkResult vk_res_before = vk_enumerate_physical_devices(instance, &physical_device_count_before, NULL);
                 assert(VK_SUCCESS == vk_res_before);
 
                 (*m_physical_device_count) = physical_device_count_before;
                 (*m_physical_devices) = static_cast<VkPhysicalDevice *>(mcrt_malloc(sizeof(VkPhysicalDevice) * (*m_physical_device_count)));
-                VkResult vk_res = vk_enumerate_physical_devices(instance, m_physical_device_count, (*m_physical_devices));
+                PT_MAYBE_UNUSED VkResult vk_res = vk_enumerate_physical_devices(instance, m_physical_device_count, (*m_physical_devices));
                 assert(physical_device_count_before == (*m_physical_device_count));
                 assert(VK_SUCCESS == vk_res);
             }
@@ -429,7 +429,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         enabled_features.textureCompressionBC = this->m_physical_device_feature_texture_compression_BC ? VK_TRUE : VK_FALSE;
         device_create_info.pEnabledFeatures = &enabled_features;
 
-        VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &this->m_device);
+        PT_MAYBE_UNUSED VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &this->m_device);
         assert(VK_SUCCESS == vk_res);
     }
     assert(VK_NULL_HANDLE != this->m_device);

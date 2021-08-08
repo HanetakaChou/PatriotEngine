@@ -59,6 +59,8 @@
 #define PT_LIKELY(x) __builtin_expect(!!(x), 1)
 #define PT_UNLIKELY(x) __builtin_expect(!!(x), 0)
 
+#define PT_MAYBE_UNUSED __attribute__((unused))
+
 #elif defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 
@@ -97,6 +99,8 @@
 //Likely
 #define PT_LIKELY(x) (!!(x))
 #define PT_UNLIKELY(x) (!!(x))
+
+#define PT_MAYBE_UNUSED 
 
 #else
 #error Unknown Compiler

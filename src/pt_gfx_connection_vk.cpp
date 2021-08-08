@@ -64,7 +64,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
                 NULL,
                 0U,
                 m_device.queue_graphics_family_index()};
-            VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_graphics_commmand_pool[frame_throttling_index]);
+            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_graphics_commmand_pool[frame_throttling_index]);
             assert(VK_SUCCESS == res_create_command_pool);
         }
     }
@@ -92,7 +92,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
                         NULL,
                         0U,
                         m_device.queue_transfer_family_index()};
-                    VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index]);
+                    PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_transfer_command_pool[streaming_throttling_index][streaming_thread_index]);
                     assert(VK_SUCCESS == res_create_command_pool);
                 }
 
@@ -103,14 +103,14 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
                         NULL,
                         0U,
                         m_device.queue_graphics_family_index()};
-                    VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index]);
+                    PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index]);
                     assert(VK_SUCCESS == res_create_command_pool);
 
                     VkSemaphoreCreateInfo semaphore_create_info;
                     semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                     semaphore_create_info.pNext = NULL;
                     semaphore_create_info.flags = 0U;
-                    VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_streaming_semaphore[streaming_throttling_index]);
+                    PT_MAYBE_UNUSED VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_streaming_semaphore[streaming_throttling_index]);
                     assert(VK_SUCCESS == res_create_semaphore);
                 }
             }
@@ -122,7 +122,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
                     NULL,
                     0U,
                     m_device.queue_graphics_family_index()};
-                VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index]);
+                PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_graphics_command_pool[streaming_throttling_index][streaming_thread_index]);
                 assert(VK_SUCCESS == res_create_command_pool);
             }
 
@@ -134,7 +134,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
             fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
             fence_create_info.pNext = NULL;
             fence_create_info.flags = ((STREAMING_THROTTLING_COUNT - 1U) != streaming_throttling_index) ? 0U : VK_FENCE_CREATE_SIGNALED_BIT;
-            VkResult res_create_fence = this->m_device.create_fence(&fence_create_info, &this->m_streaming_fence[streaming_throttling_index]);
+            PT_MAYBE_UNUSED VkResult res_create_fence = this->m_device.create_fence(&fence_create_info, &this->m_streaming_fence[streaming_throttling_index]);
             assert(VK_SUCCESS == res_create_fence);
         }
 
@@ -160,12 +160,12 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
 
     // SwapChain
     {
-        VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
+        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
         assert(VK_SUCCESS == res_platform_create_surface);
     }
     {
         VkBool32 supported;
-        VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
+        PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
         assert(VK_SUCCESS == res_get_physical_device_surface_support);
         assert(VK_TRUE == supported);
     }
@@ -239,7 +239,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_bu
         command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_transfer_command_buffer[streaming_throttling_index][streaming_thread_index]);
+        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_transfer_command_buffer[streaming_throttling_index][streaming_thread_index]);
         assert(VK_SUCCESS == res_allocate_command_buffers);
 
         VkCommandBufferBeginInfo command_buffer_begin_info = {
@@ -248,7 +248,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_bu
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             NULL,
         };
-        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_transfer_command_buffer[streaming_throttling_index][streaming_thread_index], &command_buffer_begin_info);
+        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_transfer_command_buffer[streaming_throttling_index][streaming_thread_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
     }
 
@@ -272,7 +272,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
         command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
         command_buffer_allocate_info.commandBufferCount = 1U;
 
-        VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_graphics_command_buffer[streaming_throttling_index][streaming_thread_index]);
+        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_graphics_command_buffer[streaming_throttling_index][streaming_thread_index]);
         assert(VK_SUCCESS == res_allocate_command_buffers);
 
         VkCommandBufferBeginInfo command_buffer_begin_info = {
@@ -281,7 +281,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
             VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
             NULL,
         };
-        VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_graphics_command_buffer[streaming_throttling_index][streaming_thread_index], &command_buffer_begin_info);
+        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_graphics_command_buffer[streaming_throttling_index][streaming_thread_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
     }
 
@@ -733,12 +733,12 @@ bool gfx_connection_vk::init_swapchain()
                     : m_surface_formats(surface_formats), m_surface_formats_count(surface_formats_count)
                 {
                     uint32_t surface_formats_count_before;
-                    VkResult res_get_physical_device_surface_formats_before = gfx_device->get_physical_device_surface_formats(surface, &surface_formats_count_before, NULL);
+                    PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_formats_before = gfx_device->get_physical_device_surface_formats(surface, &surface_formats_count_before, NULL);
                     assert(VK_SUCCESS == res_get_physical_device_surface_formats_before);
 
                     (*m_surface_formats_count) = surface_formats_count_before;
                     (*m_surface_formats) = static_cast<VkSurfaceFormatKHR *>(mcrt_malloc(sizeof(VkSurfaceFormatKHR) * (*m_surface_formats_count)));
-                    VkResult res_get_physical_device_surface_formats = gfx_device->get_physical_device_surface_formats(surface, m_surface_formats_count, (*m_surface_formats));
+                    PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_formats = gfx_device->get_physical_device_surface_formats(surface, m_surface_formats_count, (*m_surface_formats));
                     assert(surface_formats_count_before == (*m_surface_formats_count));
                     assert(VK_SUCCESS == res_get_physical_device_surface_formats);
                 }
@@ -759,7 +759,7 @@ bool gfx_connection_vk::init_swapchain()
         // imageExtent //preTransform //compositeAlpha
         {
             VkSurfaceCapabilitiesKHR surface_capabilities;
-            VkResult res_get_physical_device_surface_capablilities = this->m_device.get_physical_device_surface_capablilities(this->m_surface, &surface_capabilities);
+            PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_capablilities = this->m_device.get_physical_device_surface_capablilities(this->m_surface, &surface_capabilities);
             assert(VK_SUCCESS == res_get_physical_device_surface_capablilities);
             swapchain_create_info.imageExtent.width = surface_capabilities.currentExtent.width;
             if (swapchain_create_info.imageExtent.width == 0XFFFFFFFFU)
@@ -820,12 +820,12 @@ bool gfx_connection_vk::init_swapchain()
                     : m_present_modes(present_modes), m_present_modes_count(present_modes_count)
                 {
                     uint32_t present_modes_count_before;
-                    VkResult res_get_physical_device_surface_present_modes_before = gfx_device->get_physical_device_surface_present_modes(surface, &present_modes_count_before, NULL);
+                    PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_present_modes_before = gfx_device->get_physical_device_surface_present_modes(surface, &present_modes_count_before, NULL);
                     assert(VK_SUCCESS == res_get_physical_device_surface_present_modes_before);
 
                     (*m_present_modes_count) = present_modes_count_before;
                     (*m_present_modes) = static_cast<VkPresentModeKHR *>(mcrt_malloc(sizeof(VkPresentModeKHR) * (*m_present_modes_count)));
-                    VkResult res_get_physical_device_surface_present_modes = gfx_device->get_physical_device_surface_present_modes(surface, m_present_modes_count, (*m_present_modes));
+                    PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_present_modes = gfx_device->get_physical_device_surface_present_modes(surface, m_present_modes_count, (*m_present_modes));
                     assert(present_modes_count_before == (*m_present_modes_count));
                     assert(VK_SUCCESS == res_get_physical_device_surface_present_modes);
                 }
@@ -853,7 +853,7 @@ bool gfx_connection_vk::init_swapchain()
         swapchain_create_info.clipped = VK_TRUE;
         swapchain_create_info.oldSwapchain = old_swapchain;
 
-        VkResult res_create_swap_chain = this->m_device.create_swapchain(&swapchain_create_info, &this->m_swapchain);
+        PT_MAYBE_UNUSED VkResult res_create_swap_chain = this->m_device.create_swapchain(&swapchain_create_info, &this->m_swapchain);
         assert(VK_SUCCESS == res_create_swap_chain);
     }
 
