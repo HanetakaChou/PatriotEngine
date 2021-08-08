@@ -7,11 +7,11 @@
 // PARTICULAR PURPOSE.
 //  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+//
+// http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#ifdef _MSC_VER
 #pragma once
-#endif
 
 /****************************************************************************
  *
@@ -21,11 +21,9 @@
 
 //------------------------------------------------------------------------------
 
-#if defined(_XM_NO_INTRINSICS_) || defined(_XM_SSE_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
-// For VMX128, these routines are all defines in the main header
-
 #pragma warning(push)
-#pragma warning(disable:4701) // Prevent warnings about 'Result' potentially being used without having been initialized
+#pragma warning(disable:4701)
+// C4701: false positives
 
 inline XMVECTOR XM_CALLCONV XMConvertVectorIntToFloat
 (
@@ -46,7 +44,7 @@ inline XMVECTOR XM_CALLCONV XMConvertVectorIntToFloat
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float fScale = 1.0f / (float)(1U << DivExponent);
     float32x4_t vResult = vcvtq_f32_s32( VInt );
-    return XM_VMULQ_N_F32( vResult, fScale );
+    return vmulq_n_f32( vResult, fScale );
 #else // _XM_SSE_INTRINSICS_
     // Convert to floats
     XMVECTOR vResult = _mm_cvtepi32_ps(_mm_castps_si128(VInt));
@@ -87,7 +85,7 @@ inline XMVECTOR XM_CALLCONV XMConvertVectorFloatToInt
     } while (++ElementIndex<4);
     return Result;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    float32x4_t vResult = XM_VMULQ_N_F32(VFloat, (float)(1U << MulExponent));
+    float32x4_t vResult = vmulq_n_f32(VFloat, (float)(1U << MulExponent));
     // In case of positive overflow, detect it
     uint32x4_t vOverflow = vcgtq_f32(vResult,g_XMMaxInt);
     // Float to int conversion
@@ -132,7 +130,7 @@ inline XMVECTOR XM_CALLCONV XMConvertVectorUIntToFloat
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float fScale = 1.0f / (float)(1U << DivExponent);
     float32x4_t vResult = vcvtq_f32_u32( VUInt );
-    return XM_VMULQ_N_F32( vResult, fScale );
+    return vmulq_n_f32( vResult, fScale );
 #else // _XM_SSE_INTRINSICS_
     // For the values that are higher than 0x7FFFFFFF, a fixup is needed
     // Determine which ones need the fix.
@@ -183,7 +181,7 @@ inline XMVECTOR XM_CALLCONV XMConvertVectorFloatToUInt
     } while (++ElementIndex<4);
     return Result;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    float32x4_t vResult = XM_VMULQ_N_F32(VFloat,(float)(1U << MulExponent));
+    float32x4_t vResult = vmulq_n_f32(VFloat,(float)(1U << MulExponent));
     // In case of overflow, detect it
     uint32x4_t vOverflow = vcgtq_f32(vResult,g_XMMaxUInt);
     // Float to int conversion
@@ -218,8 +216,6 @@ inline XMVECTOR XM_CALLCONV XMConvertVectorFloatToUInt
 
 #pragma warning(pop)
 
-#endif // _XM_NO_INTRINSICS_ || _XM_SSE_INTRINSICS_ || _XM_ARM_NEON_INTRINSICS_
-
 /****************************************************************************
  *
  * Vector and matrix load operations
@@ -243,8 +239,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt(const uint32_t* pSource)
     return vld1q_lane_u32( pSource, zero, 0 );
 #elif defined(_XM_SSE_INTRINSICS_)
     return _mm_load_ss( reinterpret_cast<const float*>(pSource) );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -264,8 +259,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat(const float* pSource)
     return vld1q_lane_f32( pSource, zero, 0 );
 #elif defined(_XM_SSE_INTRINSICS_)
     return _mm_load_ss( pSource );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -291,8 +285,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt2
     __m128 x = _mm_load_ss( reinterpret_cast<const float*>(pSource) );
     __m128 y = _mm_load_ss( reinterpret_cast<const float*>(pSource+1) );
     return _mm_unpacklo_ps( x, y );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -318,8 +311,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt2A
 #elif defined(_XM_SSE_INTRINSICS_)
     __m128i V = _mm_loadl_epi64( reinterpret_cast<const __m128i*>(pSource) );
     return _mm_castsi128_ps(V);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -345,8 +337,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat2
     __m128 x = _mm_load_ss( &pSource->x );
     __m128 y = _mm_load_ss( &pSource->y );
     return _mm_unpacklo_ps( x, y );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -372,8 +363,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat2A
 #elif defined(_XM_SSE_INTRINSICS_)
     __m128i V = _mm_loadl_epi64( reinterpret_cast<const __m128i*>(pSource) );
     return _mm_castsi128_ps(V);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -401,8 +391,7 @@ inline XMVECTOR XM_CALLCONV XMLoadSInt2
     __m128 y = _mm_load_ss( reinterpret_cast<const float*>(&pSource->y) );
     __m128 V = _mm_unpacklo_ps( x, y );
     return _mm_cvtepi32_ps(_mm_castps_si128(V));
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -442,8 +431,7 @@ inline XMVECTOR XM_CALLCONV XMLoadUInt2
     vMask = _mm_and_ps(_mm_castsi128_ps(iMask),g_XMFixUnsigned);
     vResult = _mm_add_ps(vResult,vMask);
     return vResult;
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -472,8 +460,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt3
     __m128 z = _mm_load_ss( reinterpret_cast<const float*>(pSource+2) );
     __m128 xy = _mm_unpacklo_ps( x, y );
     return _mm_movelh_ps( xy, z );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -501,8 +488,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt3A
     __m128i V = _mm_load_si128( reinterpret_cast<const __m128i*>(pSource) );
     V = _mm_and_si128( V, g_XMMask3 );
     return _mm_castsi128_ps(V);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -531,8 +517,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat3
     __m128 z = _mm_load_ss( &pSource->z );
     __m128 xy = _mm_unpacklo_ps( x, y );
     return _mm_movelh_ps( xy, z );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -559,8 +544,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat3A
     // Reads an extra float which is zero'd
     __m128 V = _mm_load_ps( &pSource->x );
     return _mm_and_ps( V, g_XMMask3 );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -593,8 +577,7 @@ inline XMVECTOR XM_CALLCONV XMLoadSInt3
     __m128 xy = _mm_unpacklo_ps( x, y );
     __m128 V = _mm_movelh_ps( xy, z );
     return _mm_cvtepi32_ps(_mm_castps_si128(V));
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -637,9 +620,7 @@ inline XMVECTOR XM_CALLCONV XMLoadUInt3
     vMask = _mm_and_ps(_mm_castsi128_ps(iMask),g_XMFixUnsigned);
     vResult = _mm_add_ps(vResult,vMask);
     return vResult; 
-
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -663,8 +644,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt4
 #elif defined(_XM_SSE_INTRINSICS_)
     __m128i V = _mm_loadu_si128( reinterpret_cast<const __m128i*>(pSource) );
     return _mm_castsi128_ps(V);
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -688,8 +668,7 @@ inline XMVECTOR XM_CALLCONV XMLoadInt4A
 #elif defined(_XM_SSE_INTRINSICS_)
     __m128i V = _mm_load_si128( reinterpret_cast<const __m128i*>(pSource) );
     return _mm_castsi128_ps(V);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -711,8 +690,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat4
     return vld1q_f32( reinterpret_cast<const float*>(pSource) );
 #elif defined(_XM_SSE_INTRINSICS_)
     return _mm_loadu_ps( &pSource->x );
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -735,8 +713,7 @@ inline XMVECTOR XM_CALLCONV XMLoadFloat4A
     return vld1q_f32_ex( reinterpret_cast<const float*>(pSource), 128 );
 #elif defined(_XM_SSE_INTRINSICS_)
     return _mm_load_ps( &pSource->x );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -762,8 +739,7 @@ inline XMVECTOR XM_CALLCONV XMLoadSInt4
 #elif defined(_XM_SSE_INTRINSICS_)
     __m128i V = _mm_loadu_si128( reinterpret_cast<const __m128i*>(pSource) );
     return _mm_cvtepi32_ps(V);
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -799,8 +775,7 @@ inline XMVECTOR XM_CALLCONV XMLoadUInt4
     vMask = _mm_and_ps(_mm_castsi128_ps(iMask),g_XMFixUnsigned);
     vResult = _mm_add_ps(vResult,vMask);
     return vResult;
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -865,8 +840,7 @@ inline XMMATRIX XM_CALLCONV XMLoadFloat3x3
     M.r[2] = _mm_shuffle_ps( V2, V3, _MM_SHUFFLE(1, 0, 3, 2) );
     M.r[3] = g_XMIdentityR3;
     return M;
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -946,8 +920,7 @@ inline XMMATRIX XM_CALLCONV XMLoadFloat4x3
             vTemp3,
             _mm_castsi128_ps(vTemp4i));
     return M;
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1028,8 +1001,7 @@ inline XMMATRIX XM_CALLCONV XMLoadFloat4x3A
             vTemp3,
             _mm_castsi128_ps(vTemp4i));
     return M;
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1078,8 +1050,7 @@ inline XMMATRIX XM_CALLCONV XMLoadFloat4x4
     M.r[2] = _mm_loadu_ps( &pSource->_31 );
     M.r[3] = _mm_loadu_ps( &pSource->_41 );
     return M;
-#elif defined(XM_NO_MISALIGNED_VECTOR_ACCESS)
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1129,8 +1100,7 @@ inline XMMATRIX XM_CALLCONV XMLoadFloat4x4A
     M.r[2] = _mm_load_ps( &pSource->_31 );
     M.r[3] = _mm_load_ps( &pSource->_41 );
     return M;
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 /****************************************************************************
@@ -1149,11 +1119,10 @@ inline void XM_CALLCONV XMStoreInt
 #if defined(_XM_NO_INTRINSICS_)
     *pDestination = XMVectorGetIntX( V );
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    vst1q_lane_u32( pDestination, V, 0 );
+    vst1q_lane_u32( pDestination, *reinterpret_cast<const uint32x4_t*>(&V), 0 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_store_ss( reinterpret_cast<float*>(pDestination), V );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1171,8 +1140,7 @@ inline void XM_CALLCONV XMStoreFloat
     vst1q_lane_f32( pDestination, V, 0 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_store_ss( pDestination, V );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1194,8 +1162,7 @@ inline void XM_CALLCONV XMStoreInt2
     XMVECTOR T = XM_PERMUTE_PS( V, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination[0]), V );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination[1]), T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1216,8 +1183,7 @@ inline void XM_CALLCONV XMStoreInt2A
     vst1_u32_ex( pDestination, VL, 64 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_storel_epi64( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1239,8 +1205,7 @@ inline void XM_CALLCONV XMStoreFloat2
     XMVECTOR T = XM_PERMUTE_PS( V, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     _mm_store_ss( &pDestination->x, V );
     _mm_store_ss( &pDestination->y, T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1261,8 +1226,7 @@ inline void XM_CALLCONV XMStoreFloat2A
     vst1_f32_ex( reinterpret_cast<float*>(pDestination), VL, 64 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_storel_epi64( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1294,8 +1258,7 @@ inline void XM_CALLCONV XMStoreSInt2
     XMVECTOR T = XM_PERMUTE_PS( vOverflow, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->x), vOverflow );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->y), T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1336,8 +1299,7 @@ inline void XM_CALLCONV XMStoreUInt2
     XMVECTOR T = XM_PERMUTE_PS( vResult, _MM_SHUFFLE( 1, 1, 1, 1 ) );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->x), vResult );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->y), T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1356,15 +1318,14 @@ inline void XM_CALLCONV XMStoreInt3
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     uint32x2_t VL = vget_low_u32(V);
     vst1_u32( pDestination, VL );
-    vst1q_lane_u32( pDestination+2, V, 2 );
+    vst1q_lane_u32( pDestination+2, *reinterpret_cast<const uint32x4_t*>(&V), 2 );
 #elif defined(_XM_SSE_INTRINSICS_)
     XMVECTOR T1 = XM_PERMUTE_PS(V,_MM_SHUFFLE(1,1,1,1));
     XMVECTOR T2 = XM_PERMUTE_PS(V,_MM_SHUFFLE(2,2,2,2));
     _mm_store_ss( reinterpret_cast<float*>(pDestination), V );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination[1]), T1 );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination[2]), T2 );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1384,13 +1345,12 @@ inline void XM_CALLCONV XMStoreInt3A
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     uint32x2_t VL = vget_low_u32(V);
     vst1_u32_ex( pDestination, VL, 64 );
-    vst1q_lane_u32( pDestination+2, V, 2 );
+    vst1q_lane_u32( pDestination+2, *reinterpret_cast<const uint32x4_t*>(&V), 2 );
 #elif defined(_XM_SSE_INTRINSICS_)
     XMVECTOR T = XM_PERMUTE_PS(V,_MM_SHUFFLE(2,2,2,2));
     _mm_storel_epi64( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination[2]), T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1416,8 +1376,7 @@ inline void XM_CALLCONV XMStoreFloat3
     _mm_store_ss( &pDestination->x, V );
     _mm_store_ss( &pDestination->y, T1 );
     _mm_store_ss( &pDestination->z, T2 );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1442,8 +1401,7 @@ inline void XM_CALLCONV XMStoreFloat3A
     XMVECTOR T = XM_PERMUTE_PS(V,_MM_SHUFFLE(2,2,2,2));
     _mm_storel_epi64( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
     _mm_store_ss( &pDestination->z, T );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1479,8 +1437,7 @@ inline void XM_CALLCONV XMStoreSInt3
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->x), vOverflow );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->y), T1 );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->z), T2 );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1525,8 +1482,7 @@ inline void XM_CALLCONV XMStoreUInt3
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->x), vResult );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->y), T1 );
     _mm_store_ss( reinterpret_cast<float*>(&pDestination->z), T2 );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1547,8 +1503,7 @@ inline void XM_CALLCONV XMStoreInt4
     vst1q_u32( pDestination, V );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_storeu_si128( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1570,10 +1525,8 @@ inline void XM_CALLCONV XMStoreInt4A
     vst1q_u32_ex( pDestination, V, 128 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_store_si128( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(V) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
-
 
 //------------------------------------------------------------------------------
 _Use_decl_annotations_
@@ -1593,8 +1546,7 @@ inline void XM_CALLCONV XMStoreFloat4
     vst1q_f32( reinterpret_cast<float*>(pDestination), V );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_storeu_ps( &pDestination->x, V );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1616,10 +1568,8 @@ inline void XM_CALLCONV XMStoreFloat4A
     vst1q_f32_ex( reinterpret_cast<float*>(pDestination), V, 128 );
 #elif defined(_XM_SSE_INTRINSICS_)
     _mm_store_ps( &pDestination->x, V );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
-
 
 //------------------------------------------------------------------------------
 _Use_decl_annotations_
@@ -1648,8 +1598,7 @@ inline void XM_CALLCONV XMStoreSInt4
     vOverflow = _mm_andnot_ps(vOverflow,_mm_castsi128_ps(vResulti));
     vOverflow = _mm_or_ps(vOverflow,vResult);
     _mm_storeu_si128( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(vOverflow) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1688,8 +1637,7 @@ inline void XM_CALLCONV XMStoreUInt4
     // On those that are too large, set to 0xFFFFFFFF
     vResult = _mm_or_ps(vResult,vOverflow);
     _mm_storeu_si128( reinterpret_cast<__m128i*>(pDestination), _mm_castps_si128(vResult) );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1736,10 +1684,8 @@ inline void XM_CALLCONV XMStoreFloat3x3
     _mm_storeu_ps(&pDestination->m[1][1],vTemp2);
     vTemp3 = XM_PERMUTE_PS(vTemp3,_MM_SHUFFLE(2,2,2,2));
     _mm_store_ss(&pDestination->m[2][2],vTemp3);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
-
 
 //------------------------------------------------------------------------------
 _Use_decl_annotations_
@@ -1793,8 +1739,7 @@ inline void XM_CALLCONV XMStoreFloat4x3
     _mm_storeu_ps(&pDestination->m[0][0],vTemp1);
     _mm_storeu_ps(&pDestination->m[1][1],vTemp2x);
     _mm_storeu_ps(&pDestination->m[2][2],vTemp3);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1860,10 +1805,8 @@ inline void XM_CALLCONV XMStoreFloat4x3A
     _mm_store_ps(&pDestination->m[0][0],vTemp1);
     _mm_store_ps(&pDestination->m[1][1],vTemp2);
     _mm_store_ps(&pDestination->m[2][2],vTemp3);
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
-
 
 //------------------------------------------------------------------------------
 _Use_decl_annotations_
@@ -1906,8 +1849,7 @@ inline void XM_CALLCONV XMStoreFloat4x4
     _mm_storeu_ps( &pDestination->_21, M.r[1] );
     _mm_storeu_ps( &pDestination->_31, M.r[2] );
     _mm_storeu_ps( &pDestination->_41, M.r[3] );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
 //------------------------------------------------------------------------------
@@ -1952,7 +1894,6 @@ inline void XM_CALLCONV XMStoreFloat4x4A
     _mm_store_ps( &pDestination->_21, M.r[1] );
     _mm_store_ps( &pDestination->_31, M.r[2] );
     _mm_store_ps( &pDestination->_41, M.r[3] );
-#else // _XM_VMX128_INTRINSICS_
-#endif // _XM_VMX128_INTRINSICS_
+#endif
 }
 
