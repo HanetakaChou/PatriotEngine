@@ -43,7 +43,7 @@ bool gfx_texture_common::load_header_from_input_stream(
     uint32_t dwMagicNumber;
     {
         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, &dwMagicNumber, sizeof(uint32_t));
-        if (BytesRead == -1 || BytesRead < sizeof(uint32_t))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(uint32_t))
         {
             return false;
         }
@@ -83,7 +83,7 @@ bool gfx_texture_common::load_data_from_input_stream(
     uint32_t dwMagicNumber;
     {
         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, &dwMagicNumber, sizeof(uint32_t));
-        if (BytesRead == -1 || BytesRead < sizeof(uint32_t))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(uint32_t))
         {
             return false;
         }

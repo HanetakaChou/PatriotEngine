@@ -53,7 +53,7 @@ LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_gfx.def
 
 LOCAL_LDLIBS += -lvulkan 
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_xcb libpt_directx_math
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_math libpt_xcb
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 

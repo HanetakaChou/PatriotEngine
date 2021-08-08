@@ -319,7 +319,7 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream_r
         header.version = version;
         {
             ptrdiff_t BytesRead = input_stream_read_callback(input_stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
-            if (BytesRead == -1 || BytesRead < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
+            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
             {
                 return false;
             }
@@ -347,7 +347,7 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream_r
             Pvr_MetaData metadata;
             {
                 ptrdiff_t BytesRead = input_stream_read_callback(input_stream, &metadata, sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
-                if (BytesRead == -1 || BytesRead < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
+                if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
                 {
                     return false;
                 }
@@ -606,7 +606,7 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
                         }
 
                         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + memcpy_dest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
-                        if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                         {
                             return false;
                         }
@@ -623,7 +623,7 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
                             }
 
                             ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z), inputSliceSize);
-                            if (BytesRead == -1 || BytesRead < inputSliceSize)
+                            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                             {
                                 return false;
                             }
@@ -644,7 +644,7 @@ bool gfx_texture_common::load_pvr_data_from_input_stream(
                                 }
 
                                 ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z + memcpy_dest[dstSubresource].outputRowPitch * y), inputRowSize);
-                                if (BytesRead == -1 || BytesRead < inputRowSize)
+                                if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                                 {
                                     return false;
                                 }

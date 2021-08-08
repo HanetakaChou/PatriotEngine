@@ -618,7 +618,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                     assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                     ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
-                    if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                    if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                     {
                         return false;
                     }
@@ -633,7 +633,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                         assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                         ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
-                        if (BytesRead == -1 || BytesRead < inputSliceSize)
+                        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                         {
                             return false;
                         }
@@ -652,7 +652,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                             assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                             ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
-                            if (BytesRead == -1 || BytesRead < inputRowSize)
+                            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                             {
                                 return false;
                             }

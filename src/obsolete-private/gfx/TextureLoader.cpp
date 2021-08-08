@@ -22,7 +22,7 @@ bool TextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*stream_r
     uint32_t dwMagicNumber;
     {
         ptrdiff_t BytesRead = stream_read(stream, &dwMagicNumber, sizeof(uint32_t));
-        if (BytesRead == -1 || BytesRead < sizeof(uint32_t))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(uint32_t))
         {
             return false;
         }
@@ -53,7 +53,7 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
     uint32_t dwMagicNumber;
     {
         ptrdiff_t BytesRead = stream_read(stream, &dwMagicNumber, sizeof(uint32_t));
-        if (BytesRead == -1 || BytesRead < sizeof(uint32_t))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(uint32_t))
         {
             return false;
         }

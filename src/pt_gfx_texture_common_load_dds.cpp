@@ -295,7 +295,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     uint8_t const *ddsData = ddsDataBuf;
     {
         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
-        if (BytesRead == -1 || BytesRead < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
         {
             return false;
         }
@@ -321,7 +321,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     {
         // Must be long enough for both headers and magic value
         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
-        if (BytesRead == -1 || BytesRead < sizeof(struct DDS_HEADER_DXT10))
+        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(struct DDS_HEADER_DXT10))
         {
             return false;
         }
@@ -633,7 +633,7 @@ bool gfx_texture_common::load_dds_data_from_input_stream(
                     }
 
                     ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + memcpy_dest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
-                    if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                    if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                     {
                         return false;
                     }
@@ -650,7 +650,7 @@ bool gfx_texture_common::load_dds_data_from_input_stream(
                         }
 
                         ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z), inputSliceSize);
-                        if (BytesRead == -1 || BytesRead < inputSliceSize)
+                        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                         {
                             return false;
                         }
@@ -671,7 +671,7 @@ bool gfx_texture_common::load_dds_data_from_input_stream(
                             }
 
                             ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z + memcpy_dest[dstSubresource].outputRowPitch * y), inputRowSize);
-                            if (BytesRead == -1 || BytesRead < inputRowSize)
+                            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                             {
                                 return false;
                             }

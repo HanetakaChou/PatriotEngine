@@ -307,7 +307,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
         header.version = version;
         {
             ptrdiff_t BytesRead = stream_read(stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
-            if (BytesRead == -1 || BytesRead < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
+            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
             {
                 return false;
             }
@@ -335,7 +335,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
             Pvr_MetaData metadata;
             {
                 ptrdiff_t BytesRead = stream_read(stream, &metadata, sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
-                if (BytesRead == -1 || BytesRead < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
+                if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
                 {
                     return false;
                 }
@@ -593,7 +593,7 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                         assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                         ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
-                        if (BytesRead == -1 || BytesRead < (inputSliceSize * inputNumSlices))
+                        if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                         {
                             return false;
                         }
@@ -608,7 +608,7 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                             assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                             ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
-                            if (BytesRead == -1 || BytesRead < inputSliceSize)
+                            if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                             {
                                 return false;
                             }
@@ -627,7 +627,7 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                                 assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
                                 ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
-                                if (BytesRead == -1 || BytesRead < inputRowSize)
+                                if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                                 {
                                     return false;
                                 }

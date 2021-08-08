@@ -17,6 +17,8 @@
 
 LOCAL_PATH:= $(call my-dir)
 
+include $(LOCAL_PATH)/pt_math.mk
+
 include $(LOCAL_PATH)/pt_mcrt.mk
 
 include $(LOCAL_PATH)/pt_gfx.mk

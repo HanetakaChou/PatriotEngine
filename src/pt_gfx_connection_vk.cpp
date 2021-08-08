@@ -22,7 +22,6 @@
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
-#include <DirectXMath.h>
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
@@ -1204,13 +1203,15 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         assert(VK_SUCCESS == res_create_descriptor_set_layout);
     }
 
+    // pipeline layout = descriptor layout + push constant
     {
         VkDescriptorSetLayout set_layouts[2] = {this->m_descriptor_set_layout_each_object_immutable, this->m_descriptor_set_layout_each_object_dynamic};
 
         VkPushConstantRange push_constant_ranges[1];
         push_constant_ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         push_constant_ranges[0].offset = 0U;
-        push_constant_ranges[0].size = 128U;
+        push_constant_ranges[0].size = sizeof(this->m_mat_vp) + sizeof(this->m_mat_m);
+        assert(push_constant_ranges[0].size <= m_limit_min_max_push_constants_size);
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info;
         pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1218,9 +1219,15 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         pipeline_layout_create_info.flags = 0U;
         pipeline_layout_create_info.setLayoutCount = 2U;
         pipeline_layout_create_info.pSetLayouts = set_layouts;
-        pipeline_layout_create_info.pushConstantRangeCount;
-        const VkPushConstantRange *pPushConstantRanges;
+        pipeline_layout_create_info.pushConstantRangeCount = 1U;
+        pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges;
+
+        VkResult res_create_pipeline_layout = this->m_device.create_pipeline_layout(&pipeline_layout_create_info, &this->m_pipeline_layout);
+        assert(VK_SUCCESS == res_create_pipeline_layout);
     }
+
+    math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
+    math_store_alignas16_mat4x4(&this->m_mat_vp, m);
 
     return true;
 }

@@ -1853,7 +1853,7 @@ inline XMVECTOR XM_CALLCONV XMColorSRGBToRGB(FXMVECTOR srgb)
 
 //------------------------------------------------------------------------------
 
-#if 0
+#if defined(_MSC_VER) 
 
 inline bool XMVerifyCPUSupport()
 {
