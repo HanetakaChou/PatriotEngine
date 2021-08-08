@@ -521,6 +521,30 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_create_swapchain = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk_get_device_proc_addr(m_device, "vkCreateSwapchainKHR"));
     assert(NULL != this->m_vk_create_swapchain);
 
+    this->m_vk_get_swapchain_images = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk_get_device_proc_addr(m_device, "vkGetSwapchainImagesKHR"));
+    assert(NULL != this->m_vk_get_swapchain_images);
+
+    this->m_vk_create_render_pass = reinterpret_cast<PFN_vkCreateRenderPass>(vk_get_device_proc_addr(m_device, "vkCreateRenderPass"));
+    assert(NULL != this->m_vk_create_render_pass);
+
+    this->m_vk_create_image_view = reinterpret_cast<PFN_vkCreateImageView>(vk_get_device_proc_addr(m_device, "vkCreateImageView"));
+    assert(NULL != this->m_vk_create_image_view);
+
+    this->m_vk_destory_image_view = reinterpret_cast<PFN_vkDestroyImageView>(vk_get_device_proc_addr(m_device, "vkDestroyImageView"));
+    assert(NULL != this->m_vk_destory_image_view);
+
+    this->m_vk_create_framebuffer = reinterpret_cast<PFN_vkCreateFramebuffer>(vk_get_device_proc_addr(m_device, "vkCreateFramebuffer"));
+    assert(NULL != this->m_vk_create_framebuffer);
+
+    this->m_vk_destory_framebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(vk_get_device_proc_addr(m_device, "vkDestroyFramebuffer"));
+    assert(NULL != this->m_vk_destory_framebuffer);
+
+    this->m_vk_create_descriptor_set_layout = reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(vk_get_device_proc_addr(m_device, "vkCreateDescriptorSetLayout"));
+    assert(NULL != this->m_vk_create_descriptor_set_layout);
+
+    this->m_vk_create_pipeline_layout = reinterpret_cast<PFN_vkCreatePipelineLayout>(vk_get_device_proc_addr(m_device, "vkCreatePipelineLayout"));
+    assert(NULL != this->m_vk_create_pipeline_layout);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {

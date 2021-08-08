@@ -150,28 +150,26 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     this->m_uniform_buffer_device_memory = VK_NULL_HANDLE;
     this->m_uniform_buffer_device_memory_pointer = NULL;
     {
+        VkDeviceSize memory_requirements_size = VkDeviceSize(-1);
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
             struct VkBufferCreateInfo buffer_create_info_uniform;
             buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info_uniform.pNext = NULL;
             buffer_create_info_uniform.flags = 0U;
-            buffer_create_info_uniform.size = 8U;
+            buffer_create_info_uniform.size = this->m_uniform_buffer_size;
             buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
             buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info_uniform.queueFamilyIndexCount = 0U;
             buffer_create_info_uniform.pQueueFamilyIndices = NULL;
 
-            VkBuffer dummy_buf;
-            PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &dummy_buf);
+            PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
             assert(VK_SUCCESS == res_create_buffer);
 
-            struct VkMemoryRequirements mem_req;
-            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
-
-            memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
-
-            m_device->destroy_buffer(dummy_buf);
+            struct VkMemoryRequirements memory_requirements;
+            this->m_device->get_buffer_memory_requirements(this->m_uniform_buffer, &memory_requirements);
+            memory_requirements_size = memory_requirements.size;
+            memory_requirements_memory_type_bits = memory_requirements.memoryTypeBits;
         }
 
         for (uint32_t memory_type_index;
@@ -188,7 +186,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkMemoryAllocateInfo memory_allocate_info;
                 memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 memory_allocate_info.pNext = NULL;
-                memory_allocate_info.allocationSize = this->m_uniform_buffer_size;
+                memory_allocate_info.allocationSize = memory_requirements_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
                 res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_uniform_buffer_device_memory);
@@ -209,29 +207,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 }
 
                 {
-                    struct VkBufferCreateInfo buffer_create_info_uniform;
-                    buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-                    buffer_create_info_uniform.pNext = NULL;
-                    buffer_create_info_uniform.flags = 0U;
-                    buffer_create_info_uniform.size = this->m_uniform_buffer_size;
-                    buffer_create_info_uniform.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-                    buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-                    buffer_create_info_uniform.queueFamilyIndexCount = 0U;
-                    buffer_create_info_uniform.pQueueFamilyIndices = NULL;
-
-                    PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_uniform_buffer);
-                    assert(VK_SUCCESS == res_create_buffer);
-                }
-
-#ifndef NDEBUG
-                {
-                    struct VkMemoryRequirements mem_req;
-                    m_device->get_buffer_memory_requirements(m_uniform_buffer, &mem_req);
-                    assert(0 != (mem_req.memoryTypeBits & (1U << memory_type_index)));
-                }
-#endif
-
-                {
                     PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_uniform_buffer, this->m_uniform_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
@@ -243,6 +218,15 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     }
     if (VK_NULL_HANDLE == this->m_uniform_buffer || VK_NULL_HANDLE == this->m_uniform_buffer_device_memory || NULL == this->m_uniform_buffer_device_memory_pointer)
     {
+        assert(VK_NULL_HANDLE == this->m_uniform_buffer_device_memory);
+        assert(NULL == this->m_uniform_buffer_device_memory_pointer);
+
+        if (VK_NULL_HANDLE != this->m_uniform_buffer)
+        {
+            this->m_device->destroy_buffer(this->m_uniform_buffer);
+            this->m_uniform_buffer = VK_NULL_HANDLE;
+        }
+
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > uniform_buffer_memory_index);
@@ -254,28 +238,26 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory_pointer = NULL;
     {
+        VkDeviceSize memory_requirements_size = VkDeviceSize(-1);
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
             struct VkBufferCreateInfo buffer_create_info_transfer_src;
             buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info_transfer_src.pNext = NULL;
             buffer_create_info_transfer_src.flags = 0U;
-            buffer_create_info_transfer_src.size = 8U;
+            buffer_create_info_transfer_src.size = this->m_transfer_src_buffer_size;
             buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
             buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
-            VkBuffer dummy_buf;
-            PT_MAYBE_UNUSED VkResult vk_res = m_device->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
-            assert(VK_SUCCESS == vk_res);
+            PT_MAYBE_UNUSED VkResult res_create_buffer = this->m_device->create_buffer(&buffer_create_info_transfer_src, &this->m_transfer_src_buffer);
+            assert(VK_SUCCESS == res_create_buffer);
 
-            struct VkMemoryRequirements mem_req;
-            m_device->get_buffer_memory_requirements(dummy_buf, &mem_req);
-
-            memory_requirements_memory_type_bits = mem_req.memoryTypeBits;
-
-            m_device->destroy_buffer(dummy_buf);
+            struct VkMemoryRequirements memory_requirements;
+            this->m_device->get_buffer_memory_requirements(this->m_transfer_src_buffer, &memory_requirements);
+            memory_requirements_size = memory_requirements.size;
+            memory_requirements_memory_type_bits = memory_requirements.memoryTypeBits;
         }
 
         for (uint32_t memory_type_index;
@@ -292,7 +274,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 VkMemoryAllocateInfo memory_allocate_info;
                 memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
                 memory_allocate_info.pNext = NULL;
-                memory_allocate_info.allocationSize = this->m_transfer_src_buffer_size;
+                memory_allocate_info.allocationSize = memory_requirements_size;
                 memory_allocate_info.memoryTypeIndex = memory_type_index;
 
                 res_allocate_memory = m_device->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
@@ -314,29 +296,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
                 }
 
                 {
-                    struct VkBufferCreateInfo buffer_create_info_uniform;
-                    buffer_create_info_uniform.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-                    buffer_create_info_uniform.pNext = NULL;
-                    buffer_create_info_uniform.flags = 0U;
-                    buffer_create_info_uniform.size = this->m_transfer_src_buffer_size;
-                    buffer_create_info_uniform.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-                    buffer_create_info_uniform.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-                    buffer_create_info_uniform.queueFamilyIndexCount = 0U;
-                    buffer_create_info_uniform.pQueueFamilyIndices = NULL;
-
-                    PT_MAYBE_UNUSED VkResult res_create_buffer = m_device->create_buffer(&buffer_create_info_uniform, &this->m_transfer_src_buffer);
-                    assert(VK_SUCCESS == res_create_buffer);
-                }
-
-#ifndef NDEBUG
-                {
-                    struct VkMemoryRequirements mem_req;
-                    m_device->get_buffer_memory_requirements(m_transfer_src_buffer, &mem_req);
-                    assert(0 != (mem_req.memoryTypeBits & (1U << memory_type_index)));
-                }
-#endif
-
-                {
                     PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = this->m_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
                     assert(VK_SUCCESS == res_bind_buffer_memory);
                 }
@@ -348,6 +307,15 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     }
     if (VK_NULL_HANDLE == this->m_transfer_src_buffer || VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory || NULL == this->m_transfer_src_buffer_device_memory_pointer)
     {
+        assert(VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory);
+        assert(NULL == this->m_transfer_src_buffer_device_memory_pointer);
+
+        if (VK_NULL_HANDLE != this->m_transfer_src_buffer)
+        {
+            this->m_device->destroy_buffer(this->m_transfer_src_buffer);
+            this->m_transfer_src_buffer = VK_NULL_HANDLE;
+        }
+
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
@@ -438,7 +406,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     {
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
-            enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
+            VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
             struct VkFormatProperties format_properties;
             m_device->get_physical_device_format_properties(color_format, &format_properties);
@@ -501,7 +469,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
     {
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
-            enum VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
+            VkFormat color_format = VK_FORMAT_R8G8B8A8_UNORM;
 
             struct VkFormatProperties format_properties;
             m_device->get_physical_device_format_properties(color_format, &format_properties);
@@ -655,7 +623,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *api_vk)
 
 void gfx_malloc_vk::destroy()
 {
-    
 }
 
 gfx_malloc_vk::~gfx_malloc_vk()

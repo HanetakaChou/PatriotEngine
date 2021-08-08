@@ -80,6 +80,14 @@ class gfx_device_vk
     PFN_vkCreateSemaphore m_vk_create_semaphore;
     PFN_vkDestroySemaphore m_vk_destroy_semaphore;
     PFN_vkCreateSwapchainKHR m_vk_create_swapchain;
+    PFN_vkGetSwapchainImagesKHR m_vk_get_swapchain_images;
+    PFN_vkCreateRenderPass m_vk_create_render_pass;
+    PFN_vkCreateImageView m_vk_create_image_view;
+    PFN_vkDestroyImageView m_vk_destory_image_view;
+    PFN_vkCreateFramebuffer m_vk_create_framebuffer;
+    PFN_vkDestroyFramebuffer m_vk_destory_framebuffer;
+    PFN_vkCreateDescriptorSetLayout m_vk_create_descriptor_set_layout;
+    PFN_vkCreatePipelineLayout m_vk_create_pipeline_layout;
 
     static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -149,12 +157,24 @@ public:
     inline VkResult create_semaphore(VkSemaphoreCreateInfo const *create_info, VkSemaphore *semaphore) { return this->m_vk_create_semaphore(this->m_device, create_info, &this->m_allocator_callbacks, semaphore); }
     inline void destroy_semaphore(VkSemaphore semaphore) { return this->m_vk_destroy_semaphore(this->m_device, semaphore, &this->m_allocator_callbacks); }
 
+    inline VkResult create_render_pass(VkRenderPassCreateInfo const *create_info, VkRenderPass *renderpass) { return this->m_vk_create_render_pass(this->m_device, create_info, &this->m_allocator_callbacks, renderpass); }
+
+    inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_vk_create_image_view(this->m_device, create_info, &this->m_allocator_callbacks, view); }
+    inline void destroy_image_view(VkImageView image_view) { return this->m_vk_destory_image_view(this->m_device, image_view, &this->m_allocator_callbacks); }
+
+    inline VkResult create_framebuffer(VkFramebufferCreateInfo const *create_info, VkFramebuffer *framebuffer) { return this->m_vk_create_framebuffer(this->m_device, create_info, &this->m_allocator_callbacks, framebuffer); }
+    inline void destroy_framebuffer(VkFramebuffer framebuffer) { return this->m_vk_destory_framebuffer(this->m_device, framebuffer, &this->m_allocator_callbacks); }
+
+    inline VkResult create_descriptor_set_layout(VkDescriptorSetLayoutCreateInfo const *create_info, VkDescriptorSetLayout *set_layout) { return this->m_vk_create_descriptor_set_layout(this->m_device, create_info, &this->m_allocator_callbacks, set_layout); }
+    inline VkResult create_pipeline_layout(VkPipelineLayoutCreateInfo const *create_info, VkPipelineLayout *pipeline_layout) { return this->m_vk_create_pipeline_layout(this->m_device, create_info, &this->m_allocator_callbacks, pipeline_layout); }
+
     VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline VkResult get_physical_device_surface_support(uint32_t queue_family_index, VkSurfaceKHR surface, VkBool32 *supported) { return this->m_vk_get_physical_device_surface_support(this->m_physical_device, queue_family_index, surface, supported); }
     inline VkResult get_physical_device_surface_capablilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR *surface_capabilities) { return this->m_vk_get_physical_device_surface_capablilities(this->m_physical_device, surface, surface_capabilities); }
     inline VkResult get_physical_device_surface_formats(VkSurfaceKHR surface, uint32_t *surface_format_count, VkSurfaceFormatKHR *surface_formats) { return this->m_vk_get_physical_device_surface_formats(this->m_physical_device, surface, surface_format_count, surface_formats); }
     inline VkResult get_physical_device_surface_present_modes(VkSurfaceKHR surface, uint32_t *present_mode_count, VkPresentModeKHR *present_modes) { return this->m_vk_get_physical_device_surface_present_modes(this->m_physical_device, surface, present_mode_count, present_modes); }
     inline VkResult create_swapchain(VkSwapchainCreateInfoKHR const *create_info, VkSwapchainKHR *swapchain) { return this->m_vk_create_swapchain(this->m_device, create_info, &this->m_allocator_callbacks, swapchain); }
+    inline VkResult get_swapchain_images(VkSwapchainKHR swapchain, uint32_t *swapchain_image_count, VkImage *swapchain_images) { return this->m_vk_get_swapchain_images(this->m_device, swapchain, swapchain_image_count, swapchain_images); }
 };
 
 #endif

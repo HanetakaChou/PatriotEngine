@@ -27,29 +27,23 @@ class gfx_malloc_vk : public gfx_malloc
 {
     class gfx_device_vk *m_device;
 
-    // stagingbuffer
-    VkDeviceSize m_transfer_src_buffer_size;
-    VkBuffer m_transfer_src_buffer;
-    VkDeviceMemory m_transfer_src_buffer_device_memory;
-    void *m_transfer_src_buffer_device_memory_pointer;
-    //uint32_t m_transfer_src_buffer_memory_index;
-    //VkDeviceSize m_transfer_src_buffer_ringbuffer_begin;
-    //VkDeviceSize m_transfer_src_buffer_ringbuffer_end;
-
-    // constantbuffer
+    // constant buffer
     VkDeviceSize m_uniform_buffer_size;
     VkBuffer m_uniform_buffer;
     VkDeviceMemory m_uniform_buffer_device_memory;
     void *m_uniform_buffer_device_memory_pointer;
-    //uint32_t m_uniform_buffer_memory_index;
-    //VkDeviceSize m_uniform_buffer_ringbuffer_begin;
-    //VkDeviceSize m_uniform_buffer_ringbuffer_end;
+
+    // staging buffer
+    VkDeviceSize m_transfer_src_buffer_size;
+    VkBuffer m_transfer_src_buffer;
+    VkDeviceMemory m_transfer_src_buffer_device_memory;
+    void *m_transfer_src_buffer_device_memory_pointer;
 
     // framebuffer attachment
     uint32_t m_color_attachment_and_input_attachment_and_transient_attachment_memory_index;
     uint32_t m_color_attachment_and_sampled_image_memory_index;
-    enum VkFormat m_format_depth;
-    enum VkFormat m_format_depth_stencil;
+    VkFormat m_format_depth;
+    VkFormat m_format_depth_stencil;
     uint32_t m_depth_stencil_attachment_and_transient_attachment_memory_index;
 
     // We never use a buffer as both the vertex buffer and the index buffer
@@ -84,20 +78,20 @@ public:
     void destroy();
     ~gfx_malloc_vk();
 
-    inline void *transfer_src_buffer_pointer() { return this->m_transfer_src_buffer_device_memory_pointer; }
-
-    inline VkDeviceSize transfer_src_buffer_size() { return m_transfer_src_buffer_size; }
-
-    inline VkBuffer transfer_src_buffer() { return m_transfer_src_buffer; }
-
     inline void *uniform_buffer_pointer() { return this->m_uniform_buffer_device_memory_pointer; }
 
-    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
+    inline void *transfer_src_buffer_pointer() { return this->m_transfer_src_buffer_device_memory_pointer; }
+    inline VkDeviceSize transfer_src_buffer_size() { return this->m_transfer_src_buffer_size; }
+    inline VkBuffer transfer_src_buffer() { return this->m_transfer_src_buffer; }
 
+    inline VkFormat format_depth() { return this->m_format_depth; }
+    inline VkFormat format_depth_stencil() { return this->m_format_depth_stencil; }
+    inline uint32_t depth_stencil_attachment_and_transient_attachment_memory_index() { return this->m_depth_stencil_attachment_and_transient_attachment_memory_index; }
+
+    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
     void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 
     VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
-
     void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 };
 

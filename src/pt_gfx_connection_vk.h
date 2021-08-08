@@ -35,16 +35,6 @@ class  gfx_connection_vk final : public gfx_connection_common
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
-    // TODO
-    // tweak the layout of this struct according to the cacheline to reduce false sharing
-    //
-    // padding // cacheline // false sharing
-    // struct
-    // {
-    //
-    // padding // false sharing
-    // } [STREAMING_THREAD_COUNT]
-
     // The unique uniform buffer.
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
@@ -59,7 +49,6 @@ class  gfx_connection_vk final : public gfx_connection_common
 
     // Streaming
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
-    static uint32_t const STREAMING_THREAD_COUNT = 32U;
     uint32_t m_streaming_throttling_index;
     uint32_t m_spin_lock_streaming_throttling_index;
 
@@ -74,16 +63,29 @@ class  gfx_connection_vk final : public gfx_connection_common
     uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
     uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
+    static uint32_t const STREAMING_THREAD_COUNT = 32U;
+
+    // TODO
+    // tweak the layout of this struct according to the cacheline to reduce false sharing
+    //
+    // padding // cacheline // false sharing
+    // struct
+    // {
+    //
+    // padding // false sharing
+    // } [STREAMING_THREAD_COUNT]
     VkCommandPool m_streaming_transfer_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_transfer_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandPool m_streaming_graphics_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+
+
     VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
 
+    mcrt_task_arena_ref m_task_arena;
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
     mcrt_task_ref m_streaming_task_respawn_root;
-    mcrt_task_arena_ref m_task_arena;
 
     static uint32_t const STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U;
     uint32_t m_streaming_task_respawn_linear_list_count[STREAMING_THROTTLING_COUNT];
@@ -95,7 +97,6 @@ class  gfx_connection_vk final : public gfx_connection_common
     };
     struct streaming_task_respawn_task_respawn_link_list *m_streaming_task_respawn_link_list_head[STREAMING_THROTTLING_COUNT];
 
-    // include not only the allocate but also the cancel
     static uint32_t const STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U;
     uint32_t m_streaming_object_linear_list_count[STREAMING_THROTTLING_COUNT];
     class gfx_streaming_object *m_streaming_object_linear_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_LINEAR_LIST_COUNT];
@@ -115,23 +116,46 @@ class  gfx_connection_vk final : public gfx_connection_common
     uint32_t m_frame_throtting_index;
     VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
 
-    // Perhaps we should prepare different intermediate textures for differenct frames
-
     // RenderPass
+    // Ideally, we can use only one renderpass by using the preserve attachments
+    VkRenderPass m_render_pass;
+
+    // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap33.html#limits-minmax
+    // maxPushConstantsSize 128
+    // minUniformBufferOffsetAlignment 256
+    static VkDeviceSize const m_limit_min_max_push_constants_size = 128U;
+    static uint32_t const m_limit_max_min_uniform_buffer_offset_alignment = 256U;
+
+    // Descriptor
+    VkDescriptorSetLayout m_descriptor_set_layout_each_object_immutable;
+    VkDescriptorSetLayout m_descriptor_set_layout_each_object_dynamic;
 
     // Framebuffer
+    // The memory allocator is not required since the number of the framebuffer images is verily limited   
+    // Perhaps we should prepare different intermediate textures for differenct frames ???
+    VkImage m_depth_image;
+    VkDeviceMemory m_depth_device_memory;
+    VkImageView m_depth_image_view;
+    VkFramebuffer *m_framebuffers;
 
     // SwapChain
     VkSurfaceKHR m_surface;
     uint32_t m_framebuffer_width;
     uint32_t m_framebuffer_height;
+    VkFormat m_swapchain_image_format;
+    uint32_t m_swapchain_image_count;
+    VkImage *m_swapchain_images;
+    VkImageView *m_swapchain_image_views;
     VkSwapchainKHR m_swapchain;
 
     inline gfx_connection_vk();
     inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool init_streaming();
-    inline bool init_swapchain();
+    inline bool init_swapchain_and_renderpass_and_framebuffer(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool update_swapchain();
     inline bool init_renderpass();
+    inline bool update_framebuffer();
+    inline bool init_descriptor_and_pipeline_layout();
 
     void destroy() override;
     inline ~gfx_connection_vk();
