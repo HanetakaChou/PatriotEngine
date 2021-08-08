@@ -74,7 +74,7 @@ bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref w
     this->m_spin_lock_streaming_throttling_index = 0U;
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
-#ifndef NDEBUG
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
         this->m_streaming_task_executing_count[streaming_throttling_index] = 0;
         this->m_streaming_task_reducing[streaming_throttling_index] = false;
 #endif
