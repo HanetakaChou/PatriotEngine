@@ -1232,6 +1232,15 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
     return true;
 }
 
+inline bool gfx_connection_vk::init_shader_and_pipeline()
+{
+    uint32_t const vs_code[] = {
+#include "pt_gfx_shader_mesh_vertex_vk.inl"
+    };
+
+    return true;
+}
+
 void gfx_connection_vk::destroy()
 {
     mcrt_task_arena_terminate(this->m_task_arena);

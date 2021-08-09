@@ -127,6 +127,7 @@ class  gfx_connection_vk final : public gfx_connection_common
     static VkDeviceSize const m_limit_min_max_push_constants_size = 128U;
     static uint32_t const m_limit_max_min_uniform_buffer_offset_alignment = 256U;
 
+    // push constant
     math_alignas16_mat4x4 m_mat_vp;
     math_alignas16_mat4x4 m_mat_m;
 
@@ -134,6 +135,8 @@ class  gfx_connection_vk final : public gfx_connection_common
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_immutable;
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_dynamic;
     VkPipelineLayout m_pipeline_layout;
+
+    // 
 
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited   
@@ -161,6 +164,7 @@ class  gfx_connection_vk final : public gfx_connection_common
     inline bool init_renderpass();
     inline bool update_framebuffer();
     inline bool init_descriptor_and_pipeline_layout();
+    inline bool init_shader_and_pipeline();
 
     void destroy() override;
     inline ~gfx_connection_vk();
