@@ -1226,8 +1226,8 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         assert(VK_SUCCESS == res_create_pipeline_layout);
     }
 
-    math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
-    math_store_alignas16_mat4x4(&this->m_mat_vp, m);
+    ///math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
+    ///math_store_alignas16_mat4x4(&this->m_mat_vp, m);
 
     return true;
 }

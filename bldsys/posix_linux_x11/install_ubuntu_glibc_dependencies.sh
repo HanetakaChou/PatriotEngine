@@ -45,12 +45,12 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt remove libc++1
     apt remove libc++-10-dev 
     apt remove libc++-dev
-    #apt remove gcc-9
-    #apt remove gcc
-    #apt remove g++-9
-    #apt remove g++
-    #apt remove clang-10
-    #apt remove clang
+    apt remove gcc-9
+    apt remove gcc
+    apt remove g++-9
+    apt remove g++
+    apt remove clang-10
+    apt remove clang
     apt autoremove
 
     apt install libc6-dev:i386
@@ -73,13 +73,15 @@ if test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     apt install mesa-vulkan-drivers:i386
     apt install libvulkan-dev:i386
 
-    # apt install gcc-9:i386
-    # apt install gcc:i386
-    # apt install g++-9:i386
-    # apt install g++:i386
+
+    apt install gcc-9:i386
+    apt install gcc:i386
+    apt install g++-9:i386
+    apt install g++:i386
     apt install clang-10:i386
     apt install clang:i386
     apt install chrpath
+    apt install glslang-tools:i386
 elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install libc6-dev
     apt install libgcc-9-dev # libc++ links libgcc_s # -nostdlib -nodefaultlibs 
@@ -109,6 +111,7 @@ elif test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     apt install clang-10
     apt install clang
     apt install chrpath
+    apt install glslang-tools
 else
     echo "The arch \"$1\" is not supported!"
     echo ""
