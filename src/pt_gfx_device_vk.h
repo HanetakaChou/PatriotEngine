@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
+#include <pt_mcrt_intrin.h>
 #include <vulkan/vulkan.h>
 
 class gfx_device_vk
@@ -30,6 +31,9 @@ class gfx_device_vk
     VkInstance m_instance;
 
     VkPhysicalDevice m_physical_device;
+    uint32_t m_physical_device_pipeline_vendor_id;
+    uint32_t m_physical_device_pipeline_device_id;
+    mcrt_uuid m_physical_device_pipeline_cache_uuid;
     VkDeviceSize m_physical_device_limits_buffer_image_granularity;
     VkDeviceSize m_physical_device_limits_min_uniform_buffer_offset_alignment; //Dynimac Uniform Buffer
     VkDeviceSize m_physical_device_limits_optimal_buffer_copy_offset_alignment;
@@ -89,6 +93,9 @@ class gfx_device_vk
     PFN_vkCreateDescriptorSetLayout m_vk_create_descriptor_set_layout;
     PFN_vkCreatePipelineLayout m_vk_create_pipeline_layout;
     PFN_vkCreateShaderModule m_vk_create_shader_module;
+    PFN_vkDestroyShaderModule m_vk_destroy_shader_module;
+    PFN_vkCreateGraphicsPipelines m_vk_create_graphics_pipelines;
+    PFN_vkCreatePipelineCache m_vk_create_pipeline_cache;
 
     static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -103,6 +110,10 @@ public:
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     void destroy();
     ~gfx_device_vk();
+
+    inline uint32_t physical_device_pipeline_vendor_id() { return m_physical_device_pipeline_vendor_id; }
+    inline uint32_t physical_device_pipeline_device_id() { return m_physical_device_pipeline_device_id; }
+    inline mcrt_uuid physical_device_pipeline_cache_uuid() { return m_physical_device_pipeline_cache_uuid; }
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_physical_device_limits_optimal_buffer_copy_offset_alignment; }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_physical_device_limits_optimal_buffer_copy_row_pitch_alignment; }
@@ -168,6 +179,12 @@ public:
 
     inline VkResult create_descriptor_set_layout(VkDescriptorSetLayoutCreateInfo const *create_info, VkDescriptorSetLayout *set_layout) { return this->m_vk_create_descriptor_set_layout(this->m_device, create_info, &this->m_allocator_callbacks, set_layout); }
     inline VkResult create_pipeline_layout(VkPipelineLayoutCreateInfo const *create_info, VkPipelineLayout *pipeline_layout) { return this->m_vk_create_pipeline_layout(this->m_device, create_info, &this->m_allocator_callbacks, pipeline_layout); }
+
+    inline VkResult create_shader_module(VkShaderModuleCreateInfo const *create_info, VkShaderModule *shader_module) { return this->m_vk_create_shader_module(this->m_device, create_info, &this->m_allocator_callbacks, shader_module); }
+    inline void destroy_shader_module(VkShaderModule shader_module) { return this->m_vk_destroy_shader_module(this->m_device, shader_module, &this->m_allocator_callbacks); }
+
+    inline VkResult create_graphics_pipelines(VkPipelineCache pipeline_cache, uint32_t create_info_count, VkGraphicsPipelineCreateInfo const *create_infos, VkPipeline *pipelines) { return this->m_vk_create_graphics_pipelines(this->m_device, pipeline_cache, create_info_count, create_infos, &this->m_allocator_callbacks, pipelines); };
+    inline VkResult create_pipeline_cache(VkPipelineCacheCreateInfo const *create_info, VkPipelineCache *pipeline_cache) { return this->m_vk_create_pipeline_cache(this->m_device, create_info, &this->m_allocator_callbacks, pipeline_cache); }
 
     VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline VkResult get_physical_device_surface_support(uint32_t queue_family_index, VkSurfaceKHR surface, VkBool32 *supported) { return this->m_vk_get_physical_device_surface_support(this->m_physical_device, queue_family_index, surface, supported); }

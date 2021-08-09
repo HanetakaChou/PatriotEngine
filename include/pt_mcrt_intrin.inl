@@ -75,6 +75,24 @@ inline T mcrt_intrin_round_up(T value, T alignment)
     return (((value - static_cast<T>(1)) | (alignment - static_cast<T>(1))) + static_cast<T>(1));
 }
 
+#if defined(PT_X64) || defined(PT_X86)
+#include <emmintrin.h>
+inline mcrt_uuid mcrt_uuid_load(uint8_t bytes[16])
+{
+    return _mm_loadu_si128(reinterpret_cast<__m128i *>(&bytes[0]));
+}
+
+inline bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
+{
+    //DirectX::XMVectorEqualIntR
+    __m128i v = _mm_cmpeq_epi8(a, b);
+    return (0XFFFF == _mm_movemask_epi8(v));
+}
+#elif defined(PT_ARM64) || defined(PT_ARM)
+#else
+#error Unknown Architecture
+#endif
+
 #else
 #error "Never use <pt_mcrt_intrin.inl> directly; include <pt_mcrt_intrin.h> instead."
 #endif

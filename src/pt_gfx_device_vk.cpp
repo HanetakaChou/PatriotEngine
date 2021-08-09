@@ -212,6 +212,10 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         struct VkPhysicalDeviceProperties physical_device_properties;
         vk_get_physical_device_properties(this->m_physical_device, &physical_device_properties);
 
+        this->m_physical_device_pipeline_vendor_id = physical_device_properties.vendorID;
+        this->m_physical_device_pipeline_device_id = physical_device_properties.deviceID;
+        static_assert(sizeof(mcrt_uuid) == sizeof(VkPhysicalDeviceProperties::pipelineCacheUUID), "");
+        this->m_physical_device_pipeline_cache_uuid = mcrt_uuid_load(physical_device_properties.pipelineCacheUUID);
         this->m_physical_device_limits_buffer_image_granularity = physical_device_properties.limits.bufferImageGranularity;
         this->m_physical_device_limits_min_uniform_buffer_offset_alignment = physical_device_properties.limits.minUniformBufferOffsetAlignment;
         this->m_physical_device_limits_optimal_buffer_copy_offset_alignment = physical_device_properties.limits.optimalBufferCopyOffsetAlignment;
@@ -547,6 +551,15 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
     this->m_vk_create_shader_module = reinterpret_cast<PFN_vkCreateShaderModule>(vk_get_device_proc_addr(m_device, "vkCreateShaderModule"));
     assert(NULL != this->m_vk_create_shader_module);
+
+    this->m_vk_destroy_shader_module = reinterpret_cast<PFN_vkDestroyShaderModule>(vk_get_device_proc_addr(m_device, "vkDestroyShaderModule"));
+    assert(NULL != this->m_vk_destroy_shader_module);
+
+    this->m_vk_create_graphics_pipelines = reinterpret_cast<PFN_vkCreateGraphicsPipelines>(vk_get_device_proc_addr(m_device, "vkCreateGraphicsPipelines"));
+    assert(NULL != this->m_vk_create_graphics_pipelines);
+
+    this->m_vk_create_pipeline_cache = reinterpret_cast<PFN_vkCreatePipelineCache>(vk_get_device_proc_addr(m_device, "vkCreatePipelineCache"));
+    assert(NULL != this->m_vk_create_pipeline_cache);
 
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;

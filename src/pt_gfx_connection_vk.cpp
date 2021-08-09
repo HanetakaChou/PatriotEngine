@@ -87,6 +87,12 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
         return false;
     }
 
+    //
+    if (!this->init_shader_and_pipeline())
+    {
+        return false;
+    }
+
     return true;
 }
 
@@ -1234,9 +1240,85 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
 
 inline bool gfx_connection_vk::init_shader_and_pipeline()
 {
-    uint32_t const vs_code[] = {
+    //mesh_vertex
+    {
+        uint32_t const shader_code_mesh_vertex[] = {
 #include "pt_gfx_shader_mesh_vertex_vk.inl"
-    };
+        };
+
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = NULL;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.codeSize = sizeof(shader_code_mesh_vertex);
+        shader_module_create_info.pCode = shader_code_mesh_vertex;
+
+        VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_vertex);
+        assert(VK_SUCCESS == res_create_shader_module);
+    }
+
+    //mesh_fragment
+    {
+        uint32_t const shader_code_mesh_fragment[] = {
+#include "pt_gfx_shader_mesh_fragment_vk.inl"
+        };
+
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = NULL;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.codeSize = sizeof(shader_code_mesh_fragment);
+        shader_module_create_info.pCode = shader_code_mesh_fragment;
+
+        VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_fragment);
+        assert(VK_SUCCESS == res_create_shader_module);
+    }
+
+    {
+        VkPipelineCache pipeline_cache;
+        bool res_load_pipeline_cache = this->load_pipeline_cache("mesh", &pipeline_cache);
+
+        VkPipelineShaderStageCreateInfo stages[2];
+        stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[0].pNext = NULL;
+        stages[0].flags = 0U;
+        stages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
+        stages[0].module = this->m_shader_module_mesh_vertex;
+        stages[0].pName = "main";
+        stages[0].pSpecializationInfo = NULL;
+        stages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[1].pNext = NULL;
+        stages[1].flags = 0U;
+        stages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+        stages[1].module = this->m_shader_module_mesh_fragment;
+        stages[1].pName = "main";
+        stages[1].pSpecializationInfo = NULL;
+
+        VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;
+        graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        graphics_pipeline_create_info.pNext = NULL;
+        graphics_pipeline_create_info.flags = 0U;
+        graphics_pipeline_create_info.stageCount=2U;
+        graphics_pipeline_create_info.pStages=stages;
+        const VkPipelineVertexInputStateCreateInfo *pVertexInputState;
+        const VkPipelineInputAssemblyStateCreateInfo *pInputAssemblyState;
+        const VkPipelineTessellationStateCreateInfo *pTessellationState;
+        const VkPipelineViewportStateCreateInfo *pViewportState;
+        const VkPipelineRasterizationStateCreateInfo *pRasterizationState;
+        const VkPipelineMultisampleStateCreateInfo *pMultisampleState;
+        const VkPipelineDepthStencilStateCreateInfo *pDepthStencilState;
+        const VkPipelineColorBlendStateCreateInfo *pColorBlendState;
+        const VkPipelineDynamicStateCreateInfo *pDynamicState;
+        VkPipelineLayout layout;
+        VkRenderPass renderPass;
+        uint32_t subpass;
+        VkPipeline basePipelineHandle;
+        int32_t basePipelineIndex;
+
+        //this->m_device.create_graphics_pipelines()
+
+           
+    }
 
     return true;
 }
@@ -1274,4 +1356,76 @@ class gfx_texture_common *gfx_connection_vk::create_texture()
 {
     gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
     return texture;
+}
+
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
+inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache)
+{
+    size_t pipeline_cache_size;
+    void *pipeline_cache_data;
+    {
+        int fd;
+        {
+            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+            mcrt_string path = ".cache/mesa_shader_cache/";
+            path += pipeline_cache_name;
+            path += ".bin";
+            fd = openat(AT_FDCWD, path.c_str(), O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        }
+        if (fd != -1)
+        {
+            struct stat statbuf;
+            if (fstat(fd, &statbuf) == 0 && S_ISREG(statbuf.st_mode) && statbuf.st_size >= 32)
+            {
+                void *data = mcrt_aligned_malloc(sizeof(uint8_t) * statbuf.st_size, alignof(uint8_t));
+
+                uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data));
+                uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data) + 4);
+                uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data) + 8);
+                uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data) + 12);
+                mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(data) + 16);
+                if (header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()))
+                {
+                    pipeline_cache_size = statbuf.st_size;
+                    pipeline_cache_data = data;
+                }
+                else
+                {
+                    mcrt_free(data);
+                    pipeline_cache_size = 0U;
+                    pipeline_cache_data = NULL;
+                }
+            }
+            else
+            {
+                pipeline_cache_size = 0U;
+                pipeline_cache_data = NULL;
+            }
+
+            close(fd);
+        }
+        else
+        {
+            pipeline_cache_size = 0U;
+            pipeline_cache_data = NULL;
+        }
+    }
+
+    VkPipelineCacheCreateInfo pipeline_cache_create_info;
+    pipeline_cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    pipeline_cache_create_info.pNext = NULL;
+    pipeline_cache_create_info.flags = 0;
+    pipeline_cache_create_info.initialDataSize = pipeline_cache_size;
+    pipeline_cache_create_info.pInitialData = pipeline_cache_data;
+    VkResult res_create_pipeline_cache = this->m_device.create_pipeline_cache(&pipeline_cache_create_info, pipeline_cache);
+
+    if (NULL != pipeline_cache_data)
+    {
+        mcrt_free(pipeline_cache_data);
+    }
+
+    return (VK_SUCCESS == res_create_pipeline_cache);
 }

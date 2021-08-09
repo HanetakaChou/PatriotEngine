@@ -34,6 +34,18 @@ inline T mcrt_intrin_round_down(T value, T alignment);
 template <typename T>
 inline T mcrt_intrin_round_up(T value, T alignment);
 
+#if defined(PT_X64) || defined(PT_X86)
+#include <emmintrin.h>
+typedef __m128i mcrt_uuid;
+#elif defined(PT_ARM64) || defined(PT_ARM)
+#else
+#error Unknown Architecture
+#endif
+
+inline mcrt_uuid mcrt_uuid_load(uint8_t bytes[16]);
+
+inline bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b);
+
 #if defined PT_GCC
 #include "pt_mcrt_intrin_gcc.inl"
 #elif defined PT_MSVC

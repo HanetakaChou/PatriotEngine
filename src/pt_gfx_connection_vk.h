@@ -135,6 +135,8 @@ class gfx_connection_vk final : public gfx_connection_common
     VkPipelineLayout m_pipeline_layout;
 
     //
+    VkShaderModule m_shader_module_mesh_vertex;
+    VkShaderModule m_shader_module_mesh_fragment;
 
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited
@@ -163,6 +165,7 @@ class gfx_connection_vk final : public gfx_connection_common
     inline bool update_framebuffer();
     inline bool init_descriptor_and_pipeline_layout();
     inline bool init_shader_and_pipeline();
+    inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
 
     void destroy() override;
     inline ~gfx_connection_vk();

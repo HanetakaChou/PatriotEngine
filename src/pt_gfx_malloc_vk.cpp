@@ -630,7 +630,7 @@ gfx_malloc_vk::~gfx_malloc_vk()
 
 uint64_t gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *slob_new_pages_callback_data_void)
 {
-    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *slob_new_pages_callback_data = static_cast<class transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *>(slob_new_pages_callback_data_void);
+    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *slob_new_pages_callback_data = static_cast<struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *>(slob_new_pages_callback_data_void);
 
     VkDeviceMemory device_memory;
     VkResult res_allocate_memory;
