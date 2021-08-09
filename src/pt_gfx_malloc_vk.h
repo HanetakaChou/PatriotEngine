@@ -20,13 +20,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "pt_gfx_malloc.h"
 #include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 
 class gfx_malloc_vk : public gfx_malloc
 {
-    class gfx_device_vk *m_device;
-
     // constant buffer
     VkDeviceSize m_uniform_buffer_size;
     VkBuffer m_uniform_buffer;
@@ -50,6 +49,12 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
     VkDeviceSize m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
 
+    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data
+    {
+        class gfx_device_vk *m_gfx_device;
+        uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
+        VkDeviceSize m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
+    };
     static uint64_t transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *);
     static void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_free_pages(uint64_t, void *);
 
@@ -67,14 +72,19 @@ class gfx_malloc_vk : public gfx_malloc
     // VmaIsBufferImageGranularityConflict
     uint32_t m_transfer_dst_and_sampled_image_memory_index;
     VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
+
+    struct transfer_dst_and_sampled_image_slob_new_pages_callback_data
+    {
+        class gfx_device_vk *m_gfx_device;
+        uint32_t m_transfer_dst_and_sampled_image_memory_index;
+        VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
+    };
     static uint64_t transfer_dst_and_sampled_image_slob_new_pages(void *);
     static void transfer_dst_and_sampled_image_slob_free_pages(uint64_t, void *);
 
-    //void *alloc_uniform_buffer(size_t size) override;
-
 public:
     gfx_malloc_vk();
-    bool init(class gfx_device_vk *api_vk);
+    bool init(class gfx_device_vk *gfx_device);
     void destroy();
     ~gfx_malloc_vk();
 
@@ -88,11 +98,11 @@ public:
     inline VkFormat format_depth_stencil() { return this->m_format_depth_stencil; }
     inline uint32_t depth_stencil_attachment_and_transient_attachment_memory_index() { return this->m_depth_stencil_attachment_and_transient_attachment_memory_index; }
 
-    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
-    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
+    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
+    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 
-    VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
-    void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
+    VkDeviceMemory transfer_dst_and_sampled_image_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
+    void transfer_dst_and_sampled_image_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 };
 
 #endif

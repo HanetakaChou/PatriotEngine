@@ -26,12 +26,11 @@
 #include <pt_math.h>
 #include "pt_gfx_connection_common.h"
 #include "pt_gfx_device_vk.h"
-#include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include "pt_gfx_streaming_object.h"
 #include <vulkan/vulkan.h>
 
-class  gfx_connection_vk final : public gfx_connection_common 
+class gfx_connection_vk final : public gfx_connection_common
 {
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
@@ -79,7 +78,6 @@ class  gfx_connection_vk final : public gfx_connection_common
     VkCommandBuffer m_streaming_transfer_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandPool m_streaming_graphics_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
     VkCommandBuffer m_streaming_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-
 
     VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
@@ -136,10 +134,10 @@ class  gfx_connection_vk final : public gfx_connection_common
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_dynamic;
     VkPipelineLayout m_pipeline_layout;
 
-    // 
+    //
 
     // Framebuffer
-    // The memory allocator is not required since the number of the framebuffer images is verily limited   
+    // The memory allocator is not required since the number of the framebuffer images is verily limited
     // Perhaps we should prepare different intermediate textures for differenct frames ???
     VkImage m_depth_image;
     VkDeviceMemory m_depth_device_memory;
@@ -191,8 +189,8 @@ public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
-    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return m_malloc.transfer_dst_and_sampled_image_alloc(memory_requirements, out_page_handle, out_offset, out_size); }
-    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return m_malloc.transfer_dst_and_sampled_image_free(page_handle, offset, size, device_memory); }
+    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return this->m_malloc.transfer_dst_and_sampled_image_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
+    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
 
     //Streaming
     inline void streaming_throttling_index_lock()
