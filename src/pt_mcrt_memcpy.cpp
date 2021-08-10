@@ -165,4 +165,8 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
 #error Unknown Platform
 #endif
 
+#elif defined(PT_ARM64)
+// pt_mcrt_memcpy_dpdk_rte_memcpy_arm64
+#else
+#error Unknown Architecture
 #endif

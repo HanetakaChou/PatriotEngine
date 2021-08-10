@@ -26,7 +26,7 @@ inline CAMetalLayer *unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast
 
 //static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
 
-void gfx_device_vk::wsi_on_resized(float width, float height)
+void gfx_device_vk::on_wsi_resized(float width, float height)
 {
     this->m
     //m_wsi_window = wsi_window;
@@ -36,7 +36,7 @@ void gfx_device_vk::wsi_on_resized(float width, float height)
     //xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
 }
 
-void gfx_device_vk::wsi_on_redraw_needed_acquire()
+void gfx_device_vk::on_wsi_redraw_needed_acquire()
 {
 #if 0
     assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
@@ -50,7 +50,7 @@ void gfx_device_vk::wsi_on_redraw_needed_acquire()
 #endif
 }
 
-void gfx_device_vk::wsi_on_redraw_needed_release()
+void gfx_device_vk::on_wsi_redraw_needed_release()
 {
 }
 

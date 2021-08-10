@@ -46,11 +46,11 @@ public:
 
     virtual class gfx_texture_common *create_texture() = 0;
 
-    virtual void wsi_on_resized(float width, float height) = 0;
+    virtual void on_wsi_resized(float width, float height) = 0;
 
-    virtual void wsi_on_redraw_needed_acquire() = 0; //frame throttling
+    virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling
 
-    virtual void wsi_on_redraw_needed_release() = 0;
+    virtual void on_wsi_redraw_needed_release() = 0;
 };
 
 class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

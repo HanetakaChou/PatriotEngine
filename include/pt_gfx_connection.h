@@ -114,12 +114,12 @@ struct gfx_iconnection
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
-    virtual void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) = 0;
+    virtual void on_wsi_resized(wsi_window_ref wsi_window, float width, float height) = 0;
 
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
     // the gfx module may use the given window to recreate the swapchain
-    virtual void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
+    virtual void on_wsi_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
 
     // update animation etc
 

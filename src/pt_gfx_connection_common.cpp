@@ -83,15 +83,15 @@ PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection
 
 PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height)
 {
-    return unwrap(gfx_connection)->wsi_on_resized(width, height);
+    return unwrap(gfx_connection)->on_wsi_resized(width, height);
 }
 
 PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->wsi_on_redraw_needed_acquire();
+    return unwrap(gfx_connection)->on_wsi_redraw_needed_acquire();
 }
 
 PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->wsi_on_redraw_needed_release();
+    return unwrap(gfx_connection)->on_wsi_redraw_needed_release();
 }

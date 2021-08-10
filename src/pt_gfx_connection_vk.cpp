@@ -53,42 +53,14 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
         return false;
     }
 
-    //Frame Throttling
+    // Frame
+    if(!this->init_frame(wsi_connection, wsi_visual, wsi_window))
     {
-        this->m_frame_throtting_index = 0U;
-
-        for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
-        {
-            VkCommandPoolCreateInfo command_pool_create_info = {
-                VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                NULL,
-                0U,
-                m_device.queue_graphics_family_index()};
-            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_graphics_commmand_pool[frame_throttling_index]);
-            assert(VK_SUCCESS == res_create_command_pool);
-        }
+        return false;
     }
 
     // Streaming
     if (!this->init_streaming())
-    {
-        return false;
-    }
-
-    // SwapChain Renderpass Framebuffer
-    if (!this->init_swapchain_and_renderpass_and_framebuffer(wsi_connection, wsi_visual, wsi_window))
-    {
-        return false;
-    }
-
-    //
-    if (!this->init_descriptor_and_pipeline_layout())
-    {
-        return false;
-    }
-
-    //
-    if (!this->init_shader_and_pipeline())
     {
         return false;
     }
@@ -797,8 +769,25 @@ void gfx_connection_vk::reduce_streaming_task()
     return;
 }
 
-inline bool gfx_connection_vk::init_swapchain_and_renderpass_and_framebuffer(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
+    //Frame Throttling
+    {
+        this->m_frame_throtting_index = 0U;
+
+        for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
+        {
+            VkCommandPoolCreateInfo command_pool_create_info = {
+                VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                NULL,
+                0U,
+                m_device.queue_graphics_family_index()};
+            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_graphics_commmand_pool[frame_throttling_index]);
+            assert(VK_SUCCESS == res_create_command_pool);
+        }
+    }
+
+    // Surface
     {
         PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
         assert(VK_SUCCESS == res_platform_create_surface);
@@ -817,7 +806,32 @@ inline bool gfx_connection_vk::init_swapchain_and_renderpass_and_framebuffer(wsi
     this->m_swapchain_image_count = 0U;
     this->m_swapchain = VK_NULL_HANDLE;
 
-    return (this->update_swapchain() && this->init_renderpass() && this->update_framebuffer());
+    if (!this->update_swapchain())
+    {
+        return false;
+    }
+
+    if (!this->init_renderpass())
+    {
+        return false;
+    }
+
+    if (!this->update_framebuffer())
+    {
+        return false;
+    }
+
+    if (!this->init_pipeline_layout())
+    {
+        return false;
+    }
+
+    if (!this->init_pipeline())
+    {
+        return false;
+    }
+
+    return true;
 }
 
 inline bool gfx_connection_vk::update_swapchain()
@@ -1159,7 +1173,7 @@ inline bool gfx_connection_vk::update_framebuffer()
     return true;
 }
 
-inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
+inline bool gfx_connection_vk::init_pipeline_layout()
 {
     // \[Kubisch 2016\] [Christoph Kubisch. "Vulkan Shader Resource Binding." NVIDIA GameWorks Blog 2016.](https://developer.nvidia.com/vulkan-shader-resource-binding)
 
@@ -1238,7 +1252,7 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
     return true;
 }
 
-inline bool gfx_connection_vk::init_shader_and_pipeline()
+inline bool gfx_connection_vk::init_pipeline()
 {
     //mesh_vertex
     {
@@ -1464,6 +1478,11 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
 
 inline void gfx_connection_vk::acquire_frame()
 {
+    //VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, )
+}
+
+inline void gfx_connection_vk::release_frame()
+{
     
 }
 
@@ -1487,20 +1506,21 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
-void gfx_connection_vk::wsi_on_resized(float width, float height)
+void gfx_connection_vk::on_wsi_resized(float width, float height)
 {
     this->m_framebuffer_width = width;
     this->m_framebuffer_height = height;
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_acquire()
+void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
-    this->reduce_streaming_task();
     this->acquire_frame();
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_release()
+void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
+    this->release_frame();
+    this->reduce_streaming_task();
 }
 
 class gfx_texture_common *gfx_connection_vk::create_texture()

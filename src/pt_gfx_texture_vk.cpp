@@ -393,7 +393,7 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
             // leave the "steaming_cancel" to the third stage
             // tracker by "slob_lock_busy_count"
 #if 0
-        task_data->m_gfx_texture->streaming_cancel();
+            task_data->m_gfx_texture->streaming_cancel();
 #else
             // pass to the third stage
             {

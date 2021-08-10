@@ -159,16 +159,17 @@ class gfx_connection_vk final : public gfx_connection_common
     VkSwapchainKHR m_swapchain;
 
     inline void acquire_frame();
+    inline void release_frame();
 
     inline gfx_connection_vk();
     inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool init_streaming();
-    inline bool init_swapchain_and_renderpass_and_framebuffer(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool update_swapchain();
     inline bool init_renderpass();
     inline bool update_framebuffer();
-    inline bool init_descriptor_and_pipeline_layout();
-    inline bool init_shader_and_pipeline();
+    inline bool init_pipeline_layout();
+    inline bool init_pipeline();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
     inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
 
@@ -179,19 +180,30 @@ class gfx_connection_vk final : public gfx_connection_common
 
     class gfx_texture_common *create_texture() override;
 
-    void wsi_on_resized(float width, float height) override;
-    void wsi_on_redraw_needed_acquire() override;
-    void wsi_on_redraw_needed_release() override;
+    void on_wsi_resized(float width, float height) override;
+    void on_wsi_redraw_needed_acquire() override;
+    void on_wsi_redraw_needed_release() override;
 public:
-    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_device.get_physical_device_format_properties(format, out_format_properties); }
 
-    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
-    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
+    //uniform buffer
+    //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
-    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
-    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
-    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
-    inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
+    // Streaming
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
+    void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
+#endif
+    
+    inline void streaming_throttling_index_lock() { while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U)) { mcrt_os_yield(); } }
+    inline uint32_t streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
+    inline void streaming_throttling_index_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U); }
+
+    inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
+    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
+    {
+        return m_streaming_task_root[streaming_throttling_index];
+    }
+    inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
 
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
@@ -199,46 +211,21 @@ public:
     inline uint64_t *transfer_src_buffer_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_end[streaming_throttling_index]; }
     inline uint64_t transfer_src_buffer_size(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_size[streaming_throttling_index]; }
 
-    //uniform buffer
-    //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
+    inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
 
-    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return this->m_malloc.transfer_dst_and_sampled_image_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
-    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
+    void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 
-    //Streaming
-    inline void streaming_throttling_index_lock()
-    {
-        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U))
-        {
-            mcrt_os_yield();
-        }
-        // mcrt_atomic_acquire_barrier();
-    }
-
-    inline uint32_t streaming_throttling_index()
-    {
-        return mcrt_atomic_load(&this->m_streaming_throttling_index);
-    }
-
-    inline void streaming_throttling_index_unlock()
-    {
-        mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U);
-    }
-
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
-    void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
-#endif
-
-    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
-    {
-        return m_streaming_task_root[streaming_throttling_index];
-    }
-    inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
-    inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
     void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task);
-    void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
+
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_device.get_physical_device_format_properties(format, out_format_properties); }
+    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
+    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
+    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return this->m_malloc.transfer_dst_and_sampled_image_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
+    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
+    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
+    inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
 };
 
 class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

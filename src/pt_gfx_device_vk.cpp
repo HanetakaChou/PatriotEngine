@@ -564,6 +564,12 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_get_pipeline_cache_data = reinterpret_cast<PFN_vkGetPipelineCacheData>(vk_get_device_proc_addr(m_device, "vkGetPipelineCacheData"));
     assert(NULL != this->m_vk_get_pipeline_cache_data);
 
+    this->m_vk_acquire_next_image = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk_get_device_proc_addr(m_device, "vkAcquireNextImageKHR"));
+    assert(NULL != this->m_vk_acquire_next_image);
+
+    this->m_vk_queue_present = reinterpret_cast<PFN_vkQueuePresentKHR>(vk_get_device_proc_addr(m_device, "vkQueuePresentKHR"));
+    assert(NULL != this->m_vk_queue_present);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {

@@ -42,15 +42,15 @@ class gfx_texture_common *gfx_connection_mtl::create_texture()
     return NULL;
 }
 
-void gfx_connection_mtl::wsi_on_resized(float width, float height)
+void gfx_connection_mtl::on_wsi_resized(float width, float height)
 {
 }
 
-void gfx_connection_mtl::wsi_on_redraw_needed_acquire()
+void gfx_connection_mtl::on_wsi_redraw_needed_acquire()
 {
 }
 
-void gfx_connection_mtl::wsi_on_redraw_needed_release()
+void gfx_connection_mtl::on_wsi_redraw_needed_release()
 {
 }
 
