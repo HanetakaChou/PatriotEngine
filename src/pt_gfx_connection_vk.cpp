@@ -1184,7 +1184,7 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         descriptor_set_layout_each_object_immutable_create_info.bindingCount = 1U;
         descriptor_set_layout_each_object_immutable_create_info.pBindings = descriptor_set_layout_each_object_immutable_bindings;
 
-        VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_immutable_create_info, &this->m_descriptor_set_layout_each_object_immutable);
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_immutable_create_info, &this->m_descriptor_set_layout_each_object_immutable);
         assert(VK_SUCCESS == res_create_descriptor_set_layout);
     }
 
@@ -1205,7 +1205,7 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         descriptor_set_layout_each_object_dynamic_create_info.bindingCount = 1U;
         descriptor_set_layout_each_object_dynamic_create_info.pBindings = descriptor_set_layout_each_object_dynamic_bindings;
 
-        VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_dynamic_create_info, &this->m_descriptor_set_layout_each_object_dynamic);
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_dynamic_create_info, &this->m_descriptor_set_layout_each_object_dynamic);
         assert(VK_SUCCESS == res_create_descriptor_set_layout);
     }
 
@@ -1228,7 +1228,7 @@ inline bool gfx_connection_vk::init_descriptor_and_pipeline_layout()
         pipeline_layout_create_info.pushConstantRangeCount = 1U;
         pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges;
 
-        VkResult res_create_pipeline_layout = this->m_device.create_pipeline_layout(&pipeline_layout_create_info, &this->m_pipeline_layout);
+        PT_MAYBE_UNUSED VkResult res_create_pipeline_layout = this->m_device.create_pipeline_layout(&pipeline_layout_create_info, &this->m_pipeline_layout);
         assert(VK_SUCCESS == res_create_pipeline_layout);
     }
 
@@ -1253,7 +1253,7 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
         shader_module_create_info.codeSize = sizeof(shader_code_mesh_vertex);
         shader_module_create_info.pCode = shader_code_mesh_vertex;
 
-        VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_vertex);
+        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_vertex);
         assert(VK_SUCCESS == res_create_shader_module);
     }
 
@@ -1270,13 +1270,13 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
         shader_module_create_info.codeSize = sizeof(shader_code_mesh_fragment);
         shader_module_create_info.pCode = shader_code_mesh_fragment;
 
-        VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_fragment);
+        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_fragment);
         assert(VK_SUCCESS == res_create_shader_module);
     }
 
     // pipeline cache
     {
-        bool res_load_pipeline_cache = this->load_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+        PT_MAYBE_UNUSED bool res_load_pipeline_cache = this->load_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
         assert(res_load_pipeline_cache);
     }
 
@@ -1453,19 +1453,21 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
         graphics_pipeline_create_infos[0].basePipelineIndex = -1;
 
         VkPipeline pipelines[1];
-        VkResult res_create_graphics_pipelines = this->m_device.create_graphics_pipelines(this->m_pipeline_cache_mesh, 1U, graphics_pipeline_create_infos, pipelines);
+        PT_MAYBE_UNUSED VkResult res_create_graphics_pipelines = this->m_device.create_graphics_pipelines(this->m_pipeline_cache_mesh, 1U, graphics_pipeline_create_infos, pipelines);
         assert(VK_SUCCESS == res_create_graphics_pipelines);
 
         this->m_pipeline_mesh = pipelines[0];
     }
-
-    this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
 
     return true;
 }
 
 void gfx_connection_vk::destroy()
 {
+    //after queuesubmit
+    //may before destory
+    this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+
     mcrt_task_arena_terminate(this->m_task_arena);
 
     this->m_malloc.destroy();
@@ -1526,7 +1528,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
             {
                 void *data = mcrt_aligned_malloc(statbuf.st_size, alignof(uint8_t));
 
-                int res_read = read(fd, data, statbuf.st_size);
+                PT_MAYBE_UNUSED int res_read = read(fd, data, statbuf.st_size);
                 assert(res_read == statbuf.st_size);
 
                 uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data));
@@ -1602,7 +1604,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
                 else
                 {
                     mcrt_log_print("can not use %s for vulkan pipeline cache (not a directory) --- remove it!\n", path);
-                    int res_unlinkat = unlinkat(fd_dir_parent, path, 0);
+                    PT_MAYBE_UNUSED int res_unlinkat = unlinkat(fd_dir_parent, path, 0);
                     assert(0 == res_unlinkat);
                     close(fd_dir);
                     mkdir_needed = true;
@@ -1616,8 +1618,8 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
 
             if (mkdir_needed)
             {
-                int ret_mkdirat = mkdirat(fd_dir_parent, path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-                assert(0 == ret_mkdirat);
+                PT_MAYBE_UNUSED int res_mkdirat = mkdirat(fd_dir_parent, path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+                assert(0 == res_mkdirat);
 
                 fd_dir = openat(fd_dir_parent, path, O_RDONLY);
                 assert(-1 != fd_dir);
@@ -1643,16 +1645,16 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
     assert(fd != -1);
 
     size_t pipeline_cache_size_before;
-    VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size_before, NULL);
+    PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size_before, NULL);
     assert(VK_SUCCESS == res_get_pipeline_cache_data_before);
 
     size_t pipeline_cache_size = pipeline_cache_size_before;
     void *pipeline_cache_data = mcrt_aligned_malloc(pipeline_cache_size, alignof(uint8_t));
-    VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
+    PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
     assert(VK_SUCCESS == res_get_pipeline_cache_data);
     assert(pipeline_cache_size_before == pipeline_cache_size);
 
-    ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
+    PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
     assert(res_write == pipeline_cache_size);
 
     mcrt_free(pipeline_cache_data);
