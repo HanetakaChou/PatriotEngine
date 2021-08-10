@@ -26,14 +26,9 @@
 extern "C"
 {
 #endif
-
-    PT_ATTR_MCRT void *PT_CALL mcrt_malloc(size_t size);
-    PT_ATTR_MCRT void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
-    PT_ATTR_MCRT void PT_CALL mcrt_free(void *ptr);
-    PT_ATTR_MCRT void *PT_CALL mcrt_realloc(void *ptr, size_t size);
     PT_ATTR_MCRT void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment);
     PT_ATTR_MCRT void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t alignment);
-    PT_ATTR_MCRT size_t PT_CALL mcrt_msize(void *ptr);
+    PT_ATTR_MCRT void PT_CALL mcrt_aligned_free(void *ptr);
 
 #ifdef __cplusplus
 }

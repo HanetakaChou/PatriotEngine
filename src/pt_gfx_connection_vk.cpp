@@ -638,7 +638,7 @@ void gfx_connection_vk::reduce_streaming_task()
                 mcrt_task_spawn(streaming_task_respawn_link_list_node->m_task);
 
                 struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_next = streaming_task_respawn_link_list_node->m_next;
-                mcrt_free(streaming_task_respawn_link_list_node);
+                mcrt_aligned_free(streaming_task_respawn_link_list_node);
 
                 streaming_task_respawn_link_list_node = streaming_task_respawn_link_list_next;
 
@@ -745,7 +745,7 @@ void gfx_connection_vk::reduce_streaming_task()
                 streaming_object_link_list_node->m_streaming_object->streaming_done(this);
 
                 struct streaming_object_link_list *streaming_object_link_list_next = streaming_object_link_list_node->m_next;
-                mcrt_free(streaming_object_link_list_node);
+                mcrt_aligned_free(streaming_object_link_list_node);
 
                 streaming_object_link_list_node = streaming_object_link_list_next;
 
@@ -782,7 +782,7 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                 NULL,
                 0U,
                 m_device.queue_graphics_family_index()};
-            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_graphics_commmand_pool[frame_throttling_index]);
+            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_commmand_pool[frame_throttling_index]);
             assert(VK_SUCCESS == res_create_command_pool);
         }
     }
@@ -865,14 +865,14 @@ inline bool gfx_connection_vk::update_swapchain()
                     assert(VK_SUCCESS == res_get_physical_device_surface_formats_before);
 
                     (*m_surface_formats_count) = surface_formats_count_before;
-                    (*m_surface_formats) = static_cast<VkSurfaceFormatKHR *>(mcrt_malloc(sizeof(VkSurfaceFormatKHR) * (*m_surface_formats_count)));
+                    (*m_surface_formats) = static_cast<VkSurfaceFormatKHR *>(mcrt_aligned_malloc(sizeof(VkSurfaceFormatKHR) * (*m_surface_formats_count), alignof(VkSurfaceFormatKHR)));
                     PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_formats = gfx_device->get_physical_device_surface_formats(surface, m_surface_formats_count, (*m_surface_formats));
                     assert(surface_formats_count_before == (*m_surface_formats_count));
                     assert(VK_SUCCESS == res_get_physical_device_surface_formats);
                 }
                 inline ~internal_surface_formats_guard()
                 {
-                    mcrt_free((*m_surface_formats));
+                    mcrt_aligned_free((*m_surface_formats));
                 }
             } instance_internal_surface_formats_guard(&surface_formats, &surface_formats_count, this->m_surface, &this->m_device);
 
@@ -956,14 +956,14 @@ inline bool gfx_connection_vk::update_swapchain()
                     assert(VK_SUCCESS == res_get_physical_device_surface_present_modes_before);
 
                     (*m_present_modes_count) = present_modes_count_before;
-                    (*m_present_modes) = static_cast<VkPresentModeKHR *>(mcrt_malloc(sizeof(VkPresentModeKHR) * (*m_present_modes_count)));
+                    (*m_present_modes) = static_cast<VkPresentModeKHR *>(mcrt_aligned_malloc(sizeof(VkPresentModeKHR) * (*m_present_modes_count), alignof(VkPresentModeKHR)));
                     PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_present_modes = gfx_device->get_physical_device_surface_present_modes(surface, m_present_modes_count, (*m_present_modes));
                     assert(present_modes_count_before == (*m_present_modes_count));
                     assert(VK_SUCCESS == res_get_physical_device_surface_present_modes);
                 }
                 inline ~internal_present_modes_guard()
                 {
-                    mcrt_free((*m_present_modes));
+                    mcrt_aligned_free((*m_present_modes));
                 }
             } instance_internal_present_modes_guard(&present_modes, &present_modes_count, this->m_surface, &this->m_device);
 
@@ -1024,9 +1024,9 @@ inline bool gfx_connection_vk::update_framebuffer()
             assert(NULL != this->m_swapchain_image_views);
             assert(NULL != this->m_swapchain_images);
             assert(NULL != this->m_framebuffers);
-            mcrt_free(this->m_swapchain_image_views);
-            mcrt_free(this->m_swapchain_images);
-            mcrt_free(this->m_framebuffers);
+            mcrt_aligned_free(this->m_swapchain_image_views);
+            mcrt_aligned_free(this->m_swapchain_images);
+            mcrt_aligned_free(this->m_framebuffers);
         }
 
         uint32_t swapchain_image_count_before;
@@ -1034,12 +1034,12 @@ inline bool gfx_connection_vk::update_framebuffer()
         assert(VK_SUCCESS == res_get_swapchain_images_before);
 
         this->m_swapchain_image_count = swapchain_image_count_before;
-        this->m_swapchain_images = static_cast<VkImage *>(mcrt_malloc(sizeof(VkImage) * this->m_swapchain_image_count));
+        this->m_swapchain_images = static_cast<VkImage *>(mcrt_aligned_malloc(sizeof(VkImage) * this->m_swapchain_image_count, alignof(VkImage)));
         PT_MAYBE_UNUSED VkResult res_get_swapchain_images = this->m_device.get_swapchain_images(this->m_swapchain, &this->m_swapchain_image_count, this->m_swapchain_images);
         assert(swapchain_image_count_before == this->m_swapchain_image_count);
         assert(VK_SUCCESS == res_get_swapchain_images);
 
-        this->m_swapchain_image_views = static_cast<VkImageView *>(mcrt_malloc(sizeof(VkImageView) * this->m_swapchain_image_count));
+        this->m_swapchain_image_views = static_cast<VkImageView *>(mcrt_aligned_malloc(sizeof(VkImageView) * this->m_swapchain_image_count, alignof(VkImageView)));
 
         for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
         {
@@ -1074,8 +1074,8 @@ inline bool gfx_connection_vk::update_framebuffer()
             this->m_device.destroy_image_view(this->m_depth_image_view);
             this->m_device.destroy_image(this->m_depth_image);
             this->m_device.free_memory(this->m_depth_device_memory);
-            mcrt_free(this->m_swapchain_image_views);
-            mcrt_free(this->m_swapchain_images);
+            mcrt_aligned_free(this->m_swapchain_image_views);
+            mcrt_aligned_free(this->m_swapchain_images);
         }
 
         // depth
@@ -1148,7 +1148,7 @@ inline bool gfx_connection_vk::update_framebuffer()
     // frame buffer
     {
 
-        this->m_framebuffers = static_cast<VkFramebuffer *>(mcrt_malloc(sizeof(VkFramebuffer) * this->m_swapchain_image_count));
+        this->m_framebuffers = static_cast<VkFramebuffer *>(mcrt_aligned_malloc(sizeof(VkFramebuffer) * this->m_swapchain_image_count, alignof(VkFramebuffer)));
 
         for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
         {
@@ -1483,7 +1483,7 @@ inline void gfx_connection_vk::acquire_frame()
 
 inline void gfx_connection_vk::release_frame()
 {
-    
+
 }
 
 void gfx_connection_vk::destroy()
@@ -1499,7 +1499,7 @@ void gfx_connection_vk::destroy()
     this->m_device.destroy();
 
     this->~gfx_connection_vk();
-    mcrt_free(this);
+    mcrt_aligned_free(this);
 }
 
 inline gfx_connection_vk::~gfx_connection_vk()
@@ -1571,7 +1571,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
                 }
                 else
                 {
-                    mcrt_free(data);
+                    mcrt_aligned_free(data);
                     pipeline_cache_size = 0U;
                     pipeline_cache_data = NULL;
                 }
@@ -1602,7 +1602,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
 
     if (NULL != pipeline_cache_data)
     {
-        mcrt_free(pipeline_cache_data);
+        mcrt_aligned_free(pipeline_cache_data);
     }
 
     return (VK_SUCCESS == res_create_pipeline_cache);
@@ -1685,7 +1685,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
     PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
     assert(res_write == pipeline_cache_size);
 
-    mcrt_free(pipeline_cache_data);
+    mcrt_aligned_free(pipeline_cache_data);
 
     close(fd);
 

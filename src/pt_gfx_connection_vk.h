@@ -59,6 +59,7 @@ class gfx_connection_vk final : public gfx_connection_common
     uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
     static uint32_t const STREAMING_THREAD_COUNT = 32U;
+    //m_streaming
 
     // TODO
     // tweak the layout of this struct according to the cacheline to reduce false sharing
@@ -101,14 +102,15 @@ class gfx_connection_vk final : public gfx_connection_common
     };
     struct streaming_object_link_list *m_streaming_object_link_list_head[STREAMING_THROTTLING_COUNT];
 
-    inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
-    inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_inde);
+    inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
+    inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
     inline void reduce_streaming_task();
 
     // Frame Throttling
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throtting_index;
-    VkCommandPool m_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
+    VkCommandPool m_frame_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
+    VkCommandBuffer m_frame_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
 
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
@@ -138,7 +140,6 @@ class gfx_connection_vk final : public gfx_connection_common
     // reversed-Z
     // https://developer.nvidia.com/content/depth-precision-visualized
     static VkCompareOp const m_z_nearer = VK_COMPARE_OP_LESS_OR_EQUAL;
-
 
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited

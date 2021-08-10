@@ -59,6 +59,8 @@ static_assert(sizeof(mcrt_task_t) <= mcrt::internal::generic_scheduler::quick_ta
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
+    // https://gcc.gnu.org/wiki/VerboseDiagnostics#missing_vtable
+    // To fix the linker error be sure you have provided a definition for the first non-inline non-pure virtual function declared in the class
     mcrt_task_t *t = new (tbb::task::allocate_root()) mcrt_task_t(execute_callback);
     return wrap(t);
 }
@@ -149,7 +151,7 @@ PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_
 PT_ATTR_MCRT void PT_CALL mcrt_task_arena_terminate(mcrt_task_arena_ref task_arena)
 {
     unwrap(task_arena)->~task_arena();
-    mcrt_free(task_arena);
+    mcrt_aligned_free(task_arena);
     return;
 }
 

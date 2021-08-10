@@ -21,20 +21,6 @@
 
 #include <tbb/scalable_allocator.h>
 
-PT_ATTR_MCRT void *PT_CALL mcrt_malloc(size_t size)
-{
-    return scalable_malloc(size);
-}
-
-PT_ATTR_MCRT void *PT_CALL mcrt_calloc(size_t nobj, size_t size);
-
-PT_ATTR_MCRT void PT_CALL mcrt_free(void *ptr)
-{
-    return scalable_free(ptr);
-}
-
-PT_ATTR_MCRT void *PT_CALL mcrt_realloc(void *ptr, size_t size);
-
 PT_ATTR_MCRT void *PT_CALL mcrt_aligned_malloc(size_t size, size_t alignment)
 {
     return scalable_aligned_malloc(size, alignment);
@@ -45,4 +31,8 @@ PT_ATTR_MCRT void *PT_CALL mcrt_aligned_realloc(void *ptr, size_t size, size_t a
     return scalable_aligned_realloc(ptr, size, alignment);
 }
 
-PT_ATTR_MCRT size_t PT_CALL mcrt_msize(void *ptr);
+PT_ATTR_MCRT void PT_CALL mcrt_aligned_free(void *ptr)
+{
+    return scalable_aligned_free(ptr);
+}
+

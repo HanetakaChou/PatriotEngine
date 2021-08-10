@@ -32,7 +32,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };
     this->m_allocator_callbacks.pfnReallocation = [](void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_realloc(pOriginal, size, alignment); };
     this->m_allocator_callbacks.pfnFree = [](void *, void *pMemory) -> void
-    { return mcrt_free(pMemory); };
+    { return mcrt_aligned_free(pMemory); };
     this->m_allocator_callbacks.pfnInternalAllocation = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
     this->m_allocator_callbacks.pfnInternalFree = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
 
@@ -156,14 +156,14 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 assert(VK_SUCCESS == vk_res_before);
 
                 (*m_physical_device_count) = physical_device_count_before;
-                (*m_physical_devices) = static_cast<VkPhysicalDevice *>(mcrt_malloc(sizeof(VkPhysicalDevice) * (*m_physical_device_count)));
+                (*m_physical_devices) = static_cast<VkPhysicalDevice *>(mcrt_aligned_malloc(sizeof(VkPhysicalDevice) * (*m_physical_device_count), alignof(VkPhysicalDevice)));
                 PT_MAYBE_UNUSED VkResult vk_res = vk_enumerate_physical_devices(instance, m_physical_device_count, (*m_physical_devices));
                 assert(physical_device_count_before == (*m_physical_device_count));
                 assert(VK_SUCCESS == vk_res);
             }
             inline ~internal_physical_devices_guard()
             {
-                mcrt_free((*m_physical_devices));
+                mcrt_aligned_free((*m_physical_devices));
             }
         } instance_internal_physical_devices_guard(&physical_devices, &physical_device_count, m_instance, vk_get_instance_proc_addr);
 
@@ -262,13 +262,13 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 vk_get_physical_device_queue_family_properties(physical_device, &queue_family_property_count_before, NULL);
 
                 (*m_queue_family_property_count) = queue_family_property_count_before;
-                (*m_queue_family_properties) = static_cast<VkQueueFamilyProperties *>(mcrt_malloc(sizeof(VkQueueFamilyProperties) * (*m_queue_family_property_count)));
+                (*m_queue_family_properties) = static_cast<VkQueueFamilyProperties *>(mcrt_aligned_malloc(sizeof(VkQueueFamilyProperties) * (*m_queue_family_property_count), alignof(VkQueueFamilyProperties)));
                 vk_get_physical_device_queue_family_properties(physical_device, m_queue_family_property_count, (*m_queue_family_properties));
                 assert(queue_family_property_count_before == (*m_queue_family_property_count));
             }
             inline ~internal_queue_family_properties_guard()
             {
-                mcrt_free((*m_queue_family_properties));
+                mcrt_aligned_free((*m_queue_family_properties));
             }
         } instance_internal_queue_family_properties_guard(&queue_family_properties, &queue_family_property_count, m_instance, vk_get_instance_proc_addr, m_physical_device);
 

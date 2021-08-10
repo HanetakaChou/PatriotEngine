@@ -142,7 +142,7 @@ namespace mcrt
         //! Free previously allocated block of memory
         void deallocate(pointer p, size_type)
         {
-            mcrt_free(p);
+            mcrt_aligned_free(p);
         }
 
         //! Largest value for which method allocate might succeed.

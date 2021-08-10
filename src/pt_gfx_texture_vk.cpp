@@ -318,8 +318,8 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
                         }
                         inline ~internal_mem_cmd_copy_dest_guard()
                         {
-                            mcrt_free(*m_memcpy_dest);
-                            mcrt_free(*m_cmdcopy_dest);
+                            mcrt_aligned_free(*m_memcpy_dest);
+                            mcrt_aligned_free(*m_cmdcopy_dest);
                         }
                     } instance_internal_mem_cmd_copy_dest_guard(&memcpy_dest, &cmdcopy_dest, num_subresource);
 
@@ -461,7 +461,7 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
         }
 
         this->~gfx_texture_vk();
-        mcrt_free(this);
+        mcrt_aligned_free(this);
     }
 }
 
@@ -483,7 +483,7 @@ void gfx_texture_vk::streaming_cancel(class gfx_connection_common *gfx_connectio
     }
 
     this->~gfx_texture_vk();
-    mcrt_free(this);
+    mcrt_aligned_free(this);
 }
 
 inline struct gfx_texture_vk::specific_header_vk_t gfx_texture_vk::common_to_specific_header_translate(struct common_header_t const *common_header)
