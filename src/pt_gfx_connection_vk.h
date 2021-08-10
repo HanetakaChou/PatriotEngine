@@ -173,6 +173,7 @@ class gfx_connection_vk final : public gfx_connection_common
     inline bool init_descriptor_and_pipeline_layout();
     inline bool init_shader_and_pipeline();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
+    inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
 
     void destroy() override;
     inline ~gfx_connection_vk();

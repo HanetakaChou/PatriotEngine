@@ -1459,6 +1459,8 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
         this->m_pipeline_mesh = pipelines[0];
     }
 
+    this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+
     return true;
 }
 
@@ -1509,17 +1511,23 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
         int fd;
         {
             using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-            mcrt_string path = ".cache/mesa_shader_cache/";
+            mcrt_string path = ".cache/vulkan_pipeline_cache/";
             path += pipeline_cache_name;
             path += ".bin";
-            fd = openat(AT_FDCWD, path.c_str(), O_RDONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
         }
+
         if (fd != -1)
         {
             struct stat statbuf;
-            if (fstat(fd, &statbuf) == 0 && S_ISREG(statbuf.st_mode) && statbuf.st_size >= 32)
+            PT_MAYBE_UNUSED int res_fstat = fstat(fd, &statbuf);
+            assert(0 == res_fstat);
+            if (S_ISREG(statbuf.st_mode) && statbuf.st_size >= 32)
             {
-                void *data = mcrt_aligned_malloc(sizeof(uint8_t) * statbuf.st_size, alignof(uint8_t));
+                void *data = mcrt_aligned_malloc(statbuf.st_size, alignof(uint8_t));
+
+                int res_read = read(fd, data, statbuf.st_size);
+                assert(res_read == statbuf.st_size);
 
                 uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data));
                 uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data) + 4);
@@ -1548,6 +1556,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
         }
         else
         {
+            assert(errno == ENOENT);
             pipeline_cache_size = 0U;
             pipeline_cache_data = NULL;
         }
@@ -1567,4 +1576,88 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
     }
 
     return (VK_SUCCESS == res_create_pipeline_cache);
+}
+
+inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache)
+{
+    int fd_dir;
+    {
+        char const *paths[2] = {".cache", "vulkan_pipeline_cache"};
+        int fd_dir_parent = AT_FDCWD;
+        for (char const *path : paths)
+        {
+            fd_dir = openat(fd_dir_parent, path, O_RDONLY);
+
+            bool mkdir_needed;
+
+            if (fd_dir != -1)
+            {
+                struct stat statbuf;
+                PT_MAYBE_UNUSED int res_fstat = fstat(fd_dir, &statbuf);
+                assert(0 == res_fstat);
+                if (S_ISDIR(statbuf.st_mode))
+                {
+                    mkdir_needed = false;
+                }
+                else
+                {
+                    mcrt_log_print("can not use %s for vulkan pipeline cache (not a directory) --- remove it!\n", path);
+                    int res_unlinkat = unlinkat(fd_dir_parent, path, 0);
+                    assert(0 == res_unlinkat);
+                    close(fd_dir);
+                    mkdir_needed = true;
+                }
+            }
+            else
+            {
+                assert(errno == ENOENT);
+                mkdir_needed = true;
+            }
+
+            if (mkdir_needed)
+            {
+                int ret_mkdirat = mkdirat(fd_dir_parent, path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+                assert(0 == ret_mkdirat);
+
+                fd_dir = openat(fd_dir_parent, path, O_RDONLY);
+                assert(-1 != fd_dir);
+            }
+
+            if (AT_FDCWD != fd_dir_parent)
+            {
+                close(fd_dir_parent);
+            }
+
+            fd_dir_parent = fd_dir;
+        }
+    }
+
+    int fd;
+    {
+        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+        mcrt_string path = pipeline_cache_name;
+        path += ".bin";
+        fd = openat(fd_dir, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        close(fd_dir);
+    }
+    assert(fd != -1);
+
+    size_t pipeline_cache_size_before;
+    VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size_before, NULL);
+    assert(VK_SUCCESS == res_get_pipeline_cache_data_before);
+
+    size_t pipeline_cache_size = pipeline_cache_size_before;
+    void *pipeline_cache_data = mcrt_aligned_malloc(pipeline_cache_size, alignof(uint8_t));
+    VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
+    assert(VK_SUCCESS == res_get_pipeline_cache_data);
+    assert(pipeline_cache_size_before == pipeline_cache_size);
+
+    ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
+    assert(res_write == pipeline_cache_size);
+
+    mcrt_free(pipeline_cache_data);
+
+    close(fd);
+
+    return;
 }
