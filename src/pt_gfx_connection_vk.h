@@ -58,29 +58,38 @@ class gfx_connection_vk final : public gfx_connection_common
     uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
     uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
-    static uint32_t const STREAMING_THREAD_COUNT = 32U;
+    //static uint32_t const STREAMING_THREAD_COUNT = 32U;
     //m_streaming
 
-    // TODO
-    // tweak the layout of this struct according to the cacheline to reduce false sharing
-    //
-    // padding // cacheline // false sharing
-    // struct
-    // {
-    //
-    // padding // false sharing
-    // } [STREAMING_THREAD_COUNT]
-    VkCommandPool m_streaming_transfer_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_streaming_transfer_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandPool m_streaming_graphics_command_pool[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
-    VkCommandBuffer m_streaming_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    mcrt_task_arena_ref m_task_arena;
+    mcrt_task_ref m_streaming_task_respawn_root;
+    uint32_t m_streaming_thread_count;
+    VkCommandBuffer *m_streaming_transfer_submit_info_command_buffers;
+    VkCommandBuffer *m_streaming_graphics_submit_info_command_buffers;
+
+// avoid false sharing
+#if defined(PT_X64) || defined(PT_X86) || defined(PT_ARM64) || defined(PT_ARM)
+    static uint32_t const MCRT_ESTIMATED_CACHE_LINE_SIZE = 64U;
+#else
+#error Unknown Architecture
+#endif
+
+    struct streaming_thread_block
+    {
+        VkCommandPool m_streaming_transfer_command_pool;
+        VkCommandBuffer m_streaming_transfer_command_buffer;
+        VkCommandPool m_streaming_graphics_command_pool;
+        VkCommandBuffer m_streaming_graphics_command_buffer;
+        uint8_t m_padding[MCRT_ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_transfer_command_buffer) + sizeof(m_streaming_graphics_command_buffer) + sizeof(m_streaming_transfer_command_pool))];
+    };
+    static_assert(MCRT_ESTIMATED_CACHE_LINE_SIZE >= (sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_pool)), "");
+    static_assert(sizeof(struct streaming_thread_block) == MCRT_ESTIMATED_CACHE_LINE_SIZE, "");
+    struct streaming_thread_block *m_streaming_thread_block[STREAMING_THROTTLING_COUNT];
 
     VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
 
-    mcrt_task_arena_ref m_task_arena;
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
-    mcrt_task_ref m_streaming_task_respawn_root;
 
     static uint32_t const STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U;
     uint32_t m_streaming_task_respawn_linear_list_count[STREAMING_THROTTLING_COUNT];
@@ -110,7 +119,7 @@ class gfx_connection_vk final : public gfx_connection_common
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throtting_index;
     VkCommandPool m_frame_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
-    VkCommandBuffer m_frame_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    //VkCommandBuffer m_frame_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
 
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
@@ -184,8 +193,8 @@ class gfx_connection_vk final : public gfx_connection_common
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
-public:
 
+public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
@@ -194,8 +203,14 @@ public:
     void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
     void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
 #endif
-    
-    inline void streaming_throttling_index_lock() { while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U)) { mcrt_os_yield(); } }
+
+    inline void streaming_throttling_index_lock()
+    {
+        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U))
+        {
+            mcrt_os_yield();
+        }
+    }
     inline uint32_t streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
     inline void streaming_throttling_index_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U); }
 
