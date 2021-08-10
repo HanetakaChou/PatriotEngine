@@ -41,21 +41,21 @@ LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dta
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_math.def
 
-LOCAL_SHARED_LIBRARIES := libpt_math_avx2 libpt_math_avx libpt_math_sse2
+LOCAL_SHARED_LIBRARIES := libpt_math_directx_math_x86_avx2 libpt_math_directx_math_x86_avx libpt_math_directx_math_x86_sse2
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
 
 
-# -mavx2 / libpt_math_avx2
+# -mavx2 / libpt_math_directx_math_x86_avx2
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_avx2
+LOCAL_MODULE := libpt_math_directx_math_x86_avx2
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_math_avx2.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_avx2.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -73,19 +73,18 @@ LOCAL_CFLAGS += -mavx2
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-
-LOCAL_SHARED_LIBRARIES := libpt_directx_math
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
-# -mavx / libpt_math_avx
+# -mavx / libpt_math_directx_math_x86_avx
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_avx
+LOCAL_MODULE := libpt_math_directx_math_x86_avx
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_math_avx.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_avx.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -103,19 +102,18 @@ LOCAL_CFLAGS += -mavx
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-
-LOCAL_SHARED_LIBRARIES := libpt_directx_math
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
-# -mavx / libpt_math_sse2
+# -mavx / libpt_math_directx_math_x86_sse2
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_sse2
+LOCAL_MODULE := libpt_math_directx_math_x86_sse2
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_math_sse2.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_sse2.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -133,7 +131,6 @@ LOCAL_CFLAGS += -msse2
 endif
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-
-LOCAL_SHARED_LIBRARIES := libpt_directx_math
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)

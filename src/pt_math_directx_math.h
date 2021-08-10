@@ -20,12 +20,12 @@
 
 #include <pt_math.h>
 
-void PT_VECTORCALL math_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
-void PT_VECTORCALL math_avx2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
-void PT_VECTORCALL math_sse2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
+void PT_VECTORCALL directx_math_x86_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
+void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
+void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
 
-math_simd_mat PT_VECTORCALL math_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
-math_simd_mat PT_VECTORCALL math_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
-math_simd_mat PT_VECTORCALL math_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
 
 #endif

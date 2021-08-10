@@ -16,7 +16,7 @@
  */
 
 #include <pt_math.h>
-#include "pt_math_base.h"
+#include "pt_math_directx_math.h"
 
 static bool math_support_avx2 = false;
 static bool math_support_avx = false;
@@ -25,15 +25,15 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x
 {
     if (math_support_avx2)
     {
-        return math_avx2_store_alignas16_mat4x4(destination, m);
+        return directx_math_x86_avx2_store_alignas16_mat4x4(destination, m);
     }
     else if (math_support_avx)
     {
-        return math_avx_store_alignas16_mat4x4(destination, m);
+        return directx_math_x86_avx_store_alignas16_mat4x4(destination, m);
     }
     else
     {
-        return math_sse2_store_alignas16_mat4x4(destination, m);
+        return directx_math_x86_sse2_store_alignas16_mat4x4(destination, m);
     }
 }
 
@@ -41,15 +41,15 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_a
 {
     if (math_support_avx2)
     {
-        return math_avx2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
+        return directx_math_x86_avx2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
     }
     else if (math_support_avx)
     {
-        return math_avx_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
+        return directx_math_x86_avx_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
     }
     else
     {
-        return math_sse2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
+        return directx_math_x86_sse2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
     }
 }
 

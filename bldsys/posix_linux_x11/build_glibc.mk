@@ -27,16 +27,6 @@ include $(LOCAL_PATH)/pt_launcher.mk
 
 include $(LOCAL_PATH)/pt_example.mk
 
-# fake / libpt_xcb
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := libpt_xcb
-
-LOCAL_EXPORT_LDLIBS:= -lxcb
-
-include $(BUILD_STATIC_LIBRARY)
-
 # intel_tbb / libpt_tbbmalloc 
 
 include $(CLEAR_VARS)
@@ -87,13 +77,3 @@ endif
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
-
-# fake / libpt_directx_math
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := libpt_directx_math
-
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
-
-include $(BUILD_STATIC_LIBRARY)

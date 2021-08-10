@@ -16,7 +16,7 @@
  */
 
 #include <pt_math.h>
-#include "pt_math_base.h"
+#include "pt_math_directx_math.h"
 
 #include <DirectXMath.h>
 
@@ -39,12 +39,12 @@ inline DirectX::XMFLOAT4X4A *unwrap(math_alignas16_mat4x4 *alignas16_mat4x4) { r
 inline DirectX::XMMATRIX unwrap(math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
 inline math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<math_simd_mat *>(&simd_mat)); }
 
-void PT_VECTORCALL math_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+void PT_VECTORCALL directx_math_x86_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4A(unwrap(destination), unwrap(m));
 }
 
-math_simd_mat PT_VECTORCALL math_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
 }

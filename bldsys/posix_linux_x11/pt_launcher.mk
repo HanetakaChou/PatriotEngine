@@ -39,6 +39,8 @@ LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dta
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_executable.def
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx libpt_xcb
+LOCAL_LDLIBS += -lxcb
+
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx
 
 include $(BUILD_EXECUTABLE)
