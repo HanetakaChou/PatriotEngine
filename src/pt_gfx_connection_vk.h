@@ -137,6 +137,13 @@ class gfx_connection_vk final : public gfx_connection_common
     //
     VkShaderModule m_shader_module_mesh_vertex;
     VkShaderModule m_shader_module_mesh_fragment;
+    VkPipeline m_pipeline_mesh;
+    VkPipelineCache m_pipeline_cache_mesh;
+
+    // reversed-Z
+    // https://developer.nvidia.com/content/depth-precision-visualized
+    static VkCompareOp const m_z_nearer = VK_COMPARE_OP_LESS_OR_EQUAL;
+
 
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited
