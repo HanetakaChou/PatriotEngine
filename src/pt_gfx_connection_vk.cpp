@@ -1462,6 +1462,11 @@ inline bool gfx_connection_vk::init_shader_and_pipeline()
     return true;
 }
 
+inline void gfx_connection_vk::acquire_frame()
+{
+    
+}
+
 void gfx_connection_vk::destroy()
 {
     //after queuesubmit
@@ -1482,13 +1487,16 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
-void gfx_connection_vk::wsi_on_resized(wsi_window_ref wsi_window, float width, float height)
+void gfx_connection_vk::wsi_on_resized(float width, float height)
 {
+    this->m_framebuffer_width = width;
+    this->m_framebuffer_height = height;
 }
 
-void gfx_connection_vk::wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height)
+void gfx_connection_vk::wsi_on_redraw_needed_acquire()
 {
     this->reduce_streaming_task();
+    this->acquire_frame();
 }
 
 void gfx_connection_vk::wsi_on_redraw_needed_release()

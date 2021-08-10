@@ -81,14 +81,14 @@ PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection
     return wrap(unwrap(gfx_connection)->create_texture());
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height)
+PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height)
 {
-    return unwrap(gfx_connection)->wsi_on_resized(wsi_window, width, height);
+    return unwrap(gfx_connection)->wsi_on_resized(width, height);
 }
 
-PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height)
+PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->wsi_on_redraw_needed_acquire(wsi_window, width, height);
+    return unwrap(gfx_connection)->wsi_on_redraw_needed_acquire();
 }
 
 PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)

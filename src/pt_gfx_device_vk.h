@@ -97,6 +97,7 @@ class gfx_device_vk
     PFN_vkCreateGraphicsPipelines m_vk_create_graphics_pipelines;
     PFN_vkCreatePipelineCache m_vk_create_pipeline_cache;
     PFN_vkGetPipelineCacheData m_vk_get_pipeline_cache_data;
+    PFN_vkAcquireNextImageKHR m_vk_acquire_next_image;
 
     static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

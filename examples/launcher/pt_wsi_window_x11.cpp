@@ -188,7 +188,7 @@ void *wsi_window_x11::draw_request_main(void *arg)
         // gfx release //draw and present //draw //not sync scenetree
 
         // update scenetree
-        gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection, wrap_wsi_window(self->m_window), self->m_window_width, self->m_window_height);
+        gfx_connection_wsi_on_redraw_needed_acquire(self->m_gfx_connection);
         // update animation etc
         gfx_connection_wsi_on_redraw_needed_release(self->m_gfx_connection);
     }
@@ -308,7 +308,7 @@ void wsi_window_x11::run()
             assert(XCB_CONFIGURE_NOTIFY == (event->response_type & (~uint8_t(0X80))));
 
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-            gfx_connection_wsi_on_resized(m_gfx_connection, wrap_wsi_window(m_window), configure_notify->width, configure_notify->height);
+            gfx_connection_wsi_on_resized(m_gfx_connection, configure_notify->width, configure_notify->height);
         }
         break;
         case XCB_MAPPING_NOTIFY:

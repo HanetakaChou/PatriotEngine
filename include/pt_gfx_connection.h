@@ -52,7 +52,7 @@ extern "C"
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
-    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height);
 
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
@@ -68,7 +68,7 @@ extern "C"
     // frame throttling
 
     // due to the limit of the tbb task arena, "gfx_connection_wsi_on_redraw_needed_acquire" must be called by the same thread as "gfx_connection_init"
-    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection, wsi_window_ref wsi_window, float width, float height);
+    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
     // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"

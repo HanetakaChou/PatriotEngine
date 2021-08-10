@@ -42,11 +42,6 @@ class gfx_connection_vk final : public gfx_connection_common
     //uint64_t m_uniform_buffer_ring_buffer_begin;
     //uint64_t m_uniform_buffer_ring_buffer_end;
 
-    class gfx_texture_common *create_texture() override;
-    void wsi_on_resized(wsi_window_ref wsi_window, float width, float height) override;
-    void wsi_on_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) override;
-    void wsi_on_redraw_needed_release() override;
-
     // Streaming
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     uint32_t m_streaming_throttling_index;
@@ -163,6 +158,8 @@ class gfx_connection_vk final : public gfx_connection_common
     VkImageView *m_swapchain_image_views;
     VkSwapchainKHR m_swapchain;
 
+    inline void acquire_frame();
+
     inline gfx_connection_vk();
     inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool init_streaming();
@@ -180,6 +177,11 @@ class gfx_connection_vk final : public gfx_connection_common
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
+    class gfx_texture_common *create_texture() override;
+
+    void wsi_on_resized(float width, float height) override;
+    void wsi_on_redraw_needed_acquire() override;
+    void wsi_on_redraw_needed_release() override;
 public:
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_device.get_physical_device_format_properties(format, out_format_properties); }
 
