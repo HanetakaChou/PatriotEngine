@@ -71,6 +71,7 @@ class gfx_device_vk
     PFN_vkUnmapMemory m_vk_unmap_memory;
     PFN_vkCreateCommandPool m_vk_create_command_pool;
     PFN_vkResetCommandPool m_vk_reset_command_pool;
+    PFN_vkDestroyCommandPool m_vk_destroy_command_pool;
     PFN_vkAllocateCommandBuffers m_vk_allocate_command_buffers;
     PFN_vkBeginCommandBuffer m_vk_begin_command_buffer;
     PFN_vkEndCommandBuffer m_vk_end_command_buffer;
@@ -154,6 +155,7 @@ public:
 
     inline VkResult create_command_Pool(VkCommandPoolCreateInfo const *create_info, VkCommandPool *command_pool) { return m_vk_create_command_pool(m_device, create_info, &m_allocator_callbacks, command_pool); }
     inline VkResult reset_command_pool(VkCommandPool command_pool, VkCommandPoolResetFlags flags) { return this->m_vk_reset_command_pool(this->m_device, command_pool, flags); }
+    inline void destroy_command_pool(VkCommandPool command_pool) { return this->m_vk_destroy_command_pool(this->m_device, command_pool, &this->m_allocator_callbacks); }
 
     inline VkResult allocate_command_buffers(VkCommandBufferAllocateInfo const *allocate_info, VkCommandBuffer *command_buffers) { return m_vk_allocate_command_buffers(m_device, allocate_info, command_buffers); }
     inline VkResult begin_command_buffer(VkCommandBuffer command_buffer, VkCommandBufferBeginInfo const *begin_info) { return m_vk_begin_command_buffer(command_buffer, begin_info); }

@@ -53,6 +53,21 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
         return false;
     }
 
+    // MCRT
+    {
+        this->m_task_unused = mcrt_task_allocate_root(NULL);
+        mcrt_task_set_ref_count(this->m_task_unused, 1U);
+
+        mcrt_task_wait_for_all(this->m_task_unused);
+        mcrt_task_set_ref_count(this->m_task_unused, 1U);
+
+        this->m_task_arena = mcrt_task_arena_attach();
+        assert(mcrt_task_arena_is_active(this->m_task_arena));
+        assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
+
+        this->m_task_arena_thread_count = mcrt_this_task_arena_max_concurrency();
+    }
+
     // Frame
     if (!this->init_frame(wsi_connection, wsi_visual, wsi_window))
     {
@@ -72,20 +87,8 @@ inline bool gfx_connection_vk::init_streaming()
 {
     this->m_streaming_throttling_index = 0U;
     this->m_spin_lock_streaming_throttling_index = 0U;
-
-    // never used for actual waiting
-    this->m_streaming_task_respawn_root = mcrt_task_allocate_root(NULL);
-    mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
-
-    // init arena
-    mcrt_task_wait_for_all(this->m_streaming_task_respawn_root);
-    mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
-
-    this->m_task_arena = mcrt_task_arena_attach();
-    assert(mcrt_task_arena_is_active(this->m_task_arena));
-    assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
-
-    this->m_streaming_thread_count = mcrt_this_task_arena_max_concurrency();
+    this->m_streaming_task_respawn_root = this->m_task_unused;
+    this->m_streaming_thread_count = this->m_task_arena_thread_count;
     this->m_streaming_transfer_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
     this->m_streaming_graphics_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
 
@@ -478,8 +481,6 @@ void gfx_connection_vk::reduce_streaming_task()
     // gfx_texture_vk::read_input_stream
     uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
 
-    // TODO race condition
-    // allocate child not atomic
     this->streaming_throttling_index_lock();
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
     this->streaming_throttling_index_unlock();
@@ -780,7 +781,9 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
 {
     //Frame Throttling
     {
-        this->m_frame_throtting_index = 0U;
+        this->m_frame_throttling_index = 0U;
+        this->m_frame_thread_count = this->m_task_arena_thread_count;
+        this->m_frame_graphics_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_frame_thread_count, alignof(VkCommandBuffer)));
 
         for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
         {
@@ -791,6 +794,24 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                 m_device.queue_graphics_family_index()};
             PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_commmand_pool[frame_throttling_index]);
             assert(VK_SUCCESS == res_create_command_pool);
+
+            {
+                VkSemaphoreCreateInfo semaphore_create_info;
+                semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+                semaphore_create_info.pNext = NULL;
+                semaphore_create_info.flags = 0U;
+                PT_MAYBE_UNUSED VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_frame_semaphore[frame_throttling_index]);
+                assert(VK_SUCCESS == res_create_semaphore);
+            }
+
+            {
+                VkFenceCreateInfo fence_create_info;
+                fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+                fence_create_info.pNext = NULL;
+                fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+                PT_MAYBE_UNUSED VkResult res_create_fence = this->m_device.create_fence(&fence_create_info, &this->m_frame_fence[frame_throttling_index]);
+                assert(VK_SUCCESS == res_create_fence);
+            }
         }
     }
 
@@ -1485,18 +1506,77 @@ inline bool gfx_connection_vk::init_pipeline()
 
 inline void gfx_connection_vk::acquire_frame()
 {
-    //VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, )
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+
+    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_streaming_semaphore[frame_throttling_index], VK_NULL_HANDLE, &this->swapchain_image_index[frame_throttling_index]);
+    assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
+
+    if (VK_SUCCESS == res_acquire_next_image)
+    {
+        // do nothing
+    }
+    else
+    {
+        for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
+        {
+            this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
+            this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
+        }
+
+
+    }
 }
 
 inline void gfx_connection_vk::release_frame()
 {
+
+}
+
+inline void gfx_connection_vk::destroy_streaming()
+{
+    for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
+    {
+        this->m_device.destroy_fence(this->m_streaming_fence[streaming_throttling_index]);
+
+        if (this->m_device.has_dedicated_transfer_queue() && (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index()))
+        {
+            this->m_device.destroy_semaphore(this->m_streaming_semaphore[streaming_throttling_index]);
+        }
+
+        for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
+        {
+
+            if (this->m_device.has_dedicated_transfer_queue())
+            {
+                this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool);
+
+                if (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())
+                {
+                    this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
+                }
+            }
+            else
+            {
+                this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
+            }
+        }
+
+        mcrt_aligned_free(this->m_streaming_thread_block[streaming_throttling_index]);
+    }
+
+    mcrt_aligned_free(this->m_streaming_transfer_submit_info_command_buffers);
+    mcrt_aligned_free(this->m_streaming_transfer_submit_info_command_buffers);
 }
 
 void gfx_connection_vk::destroy()
 {
-    //after queuesubmit
-    //may before destory
+    // after queuesubmit
+    // may before destory
     this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+
+    this->destroy_streaming();
+
+    mcrt_task_destory(this->m_task_unused);
 
     mcrt_task_arena_terminate(this->m_task_arena);
 
@@ -1505,6 +1585,7 @@ void gfx_connection_vk::destroy()
     this->m_device.destroy();
 
     this->~gfx_connection_vk();
+
     mcrt_aligned_free(this);
 }
 
@@ -1520,12 +1601,12 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
 
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
-    this->acquire_frame();
+    //this->acquire_frame();
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
-    this->release_frame();
+    //this->release_frame();
     this->reduce_streaming_task();
 }
 

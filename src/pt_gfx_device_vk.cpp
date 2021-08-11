@@ -486,6 +486,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_reset_command_pool = reinterpret_cast<PFN_vkResetCommandPool>(vk_get_device_proc_addr(m_device, "vkResetCommandPool"));
     assert(NULL != this->m_vk_reset_command_pool);
 
+    this->m_vk_destroy_command_pool = reinterpret_cast<PFN_vkDestroyCommandPool>(vk_get_device_proc_addr(m_device, "vkDestroyCommandPool"));
+    assert(NULL != this->m_vk_destroy_command_pool);
+
     this->m_vk_allocate_command_buffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(vk_get_device_proc_addr(m_device, "vkAllocateCommandBuffers"));
     assert(NULL != this->m_vk_allocate_command_buffers);
 
