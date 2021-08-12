@@ -17,15 +17,10 @@
 
 #include <assert.h>
 #include "pt_gfx_streaming_object.h"
-#include <pt_mcrt_atomic.h>
-#include <pt_mcrt_thread.h>
 
 void gfx_streaming_object::streaming_done(class gfx_connection_common *gfx_connection)
 {
-    while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_done, 1U))
-    {
-        mcrt_os_yield();
-    }
+    this->streaming_done_lock();
 
     PT_MAYBE_UNUSED streaming_status_t streaming_status = this->m_streaming_status;
     PT_MAYBE_UNUSED bool streaming_error = this->m_streaming_error;
@@ -42,5 +37,5 @@ void gfx_streaming_object::streaming_done(class gfx_connection_common *gfx_conne
         this->streaming_cancel(gfx_connection);
     }
 
-    mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U);
+    this->streaming_done_unlock();
 }

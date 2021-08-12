@@ -204,20 +204,17 @@ class gfx_connection_vk final : public gfx_connection_common
     inline bool init_pipeline();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
     inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
-
-    void destroy() override;
+    
     inline void destroy_streaming();
     inline ~gfx_connection_vk();
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
-
     class gfx_buffer_base *create_buffer() override;
-    
     class gfx_texture_common *create_texture() override;
-
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
+    void destroy() override;
 
 public:
     //uniform buffer
@@ -259,6 +256,7 @@ public:
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
 
+    void copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);

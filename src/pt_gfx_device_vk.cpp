@@ -498,6 +498,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_end_command_buffer = reinterpret_cast<PFN_vkEndCommandBuffer>(vk_get_device_proc_addr(m_device, "vkEndCommandBuffer"));
     assert(NULL != this->m_vk_end_command_buffer);
 
+    this->m_vk_cmd_copy_buffer = reinterpret_cast<PFN_vkCmdCopyBuffer>(vk_get_device_proc_addr(m_device, "vkCmdCopyBuffer"));
+    assert(NULL != this->m_vk_cmd_copy_buffer);
+
     this->m_vk_cmd_pipeline_barrier = reinterpret_cast<PFN_vkCmdPipelineBarrier>(vk_get_device_proc_addr(m_device, "vkCmdPipelineBarrier"));
     assert(NULL != this->m_vk_cmd_pipeline_barrier);
 

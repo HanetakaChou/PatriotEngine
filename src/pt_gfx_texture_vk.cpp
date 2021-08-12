@@ -417,10 +417,7 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
     bool streaming_done;
     {
         // make sure this function happens before or after the gfx_streaming_object::streaming_done
-        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_done, 1U))
-        {
-            mcrt_os_yield();
-        }
+        this->streaming_done_lock();
 
         streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
 
@@ -439,7 +436,7 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
             streaming_done = false;
         }
 
-        mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U);
+        this->streaming_done_unlock();
     }
 
     if (streaming_done)

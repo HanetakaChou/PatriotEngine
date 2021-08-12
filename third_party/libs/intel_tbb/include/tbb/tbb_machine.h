@@ -441,11 +441,11 @@ inline T __TBB_MaskedCompareAndSwap (volatile T * const ptr, const T value, cons
         #endif
     }};
 
-    const uint32_t byte_offset            = (uint32_t) ((uintptr_t)ptr & 0x3);
-    volatile uint32_t * const aligned_ptr = (uint32_t*)((uintptr_t)ptr - byte_offset );
+    const uint32_t input_stream_offset            = (uint32_t) ((uintptr_t)ptr & 0x3);
+    volatile uint32_t * const aligned_ptr = (uint32_t*)((uintptr_t)ptr - input_stream_offset );
 
     // location of T within uint32_t for a C++ shift operation
-    const uint32_t bits_to_shift     = 8*(endianness::is_big_endian() ? (4 - sizeof(T) - (byte_offset)) : byte_offset);
+    const uint32_t bits_to_shift     = 8*(endianness::is_big_endian() ? (4 - sizeof(T) - (input_stream_offset)) : input_stream_offset);
     const uint32_t mask              = (((uint32_t)1<<(sizeof(T)*8)) - 1 )<<bits_to_shift;
     // for signed T, any sign extension bits in cast value/comparand are immediately clipped by mask
     const uint32_t shifted_comparand = ((uint32_t)comparand << bits_to_shift)&mask;
