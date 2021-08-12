@@ -121,30 +121,30 @@ bool gfx_texture_vk::read_input_stream(
                 PT_MAYBE_UNUSED VkResult res = gfx_connection->create_image(&create_info, &this->m_image);
                 assert(VK_SUCCESS == res);
             }
+        }
+        
+        assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
+        {
+            VkMemoryRequirements memory_requirements;
+            gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
 
-            assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
+            // vkAllocateMemory
+            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
+
+            this->m_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
+            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory))
             {
-                VkMemoryRequirements memory_requirements;
-                gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
-
-                // vkAllocateMemory
-                // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
-                this->m_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
-                if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory))
-                {
-                    gfx_connection->destroy_image(this->m_image);
-                    this->m_image = VK_NULL_HANDLE;
-                    mcrt_atomic_store(&this->m_streaming_error, true);
-                    return false;
-                }
+                gfx_connection->destroy_image(this->m_image);
+                this->m_image = VK_NULL_HANDLE;
+                mcrt_atomic_store(&this->m_streaming_error, true);
+                return false;
             }
-            assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
+        }
+        assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
 
-            {
-                PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
-                assert(VK_SUCCESS == res_bind_image_memory);
-            }
+        {
+            PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
+            assert(VK_SUCCESS == res_bind_image_memory);
         }
 
         // pass to the second stage

@@ -20,6 +20,7 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
+#include "pt_gfx_buffer_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
 
@@ -1748,6 +1749,12 @@ void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
     this->release_frame();
     this->reduce_streaming_task();
+}
+
+class gfx_buffer_base *gfx_connection_vk::create_buffer()
+{
+    gfx_buffer_vk *buffer = new (mcrt_aligned_malloc(sizeof(gfx_buffer_vk), alignof(gfx_buffer_vk))) gfx_buffer_vk();
+    return buffer;
 }
 
 class gfx_texture_common *gfx_connection_vk::create_texture()

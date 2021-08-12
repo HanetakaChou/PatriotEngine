@@ -287,7 +287,7 @@ protected:
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
-    inline gfx_texture_common(streaming_status_t streaming_status) : gfx_streaming_object(streaming_status) {}
+    inline gfx_texture_common() : gfx_streaming_object() {}
 
 public:
     virtual bool read_input_stream(

@@ -37,6 +37,8 @@ enum
     PT_GFX_INPUT_STREAM_SEEK_END = 2
 };
 
+typedef struct _gfx_buffer_t_ *gfx_buffer_ref;
+
 typedef struct _gfx_texture_t_ *gfx_texture_ref;
 
 #ifdef __cplusplus
@@ -47,8 +49,6 @@ extern "C"
     PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
     PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
-
-    PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
@@ -68,24 +68,21 @@ extern "C"
     // frame throttling
 
     // due to the limit of the tbb task arena, "gfx_connection_wsi_on_redraw_needed_acquire" must be called by the same thread as "gfx_connection_init"
-    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX void gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
+    PT_ATTR_GFX gfx_buffer_ref PT_CALL gfx_connection_create_buffer(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL gfx_buffer_read_vertex_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t byte_offset, int64_t byte_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+    PT_ATTR_GFX bool PT_CALL gfx_buffer_read_index_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t byte_offset, int64_t byte_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+    PT_ATTR_GFX void PT_CALL gfx_buffer_destroy(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer);
+
+    PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
     // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"
     // but must be after the return of the "gfx_connection_create_texture"
-    PT_ATTR_GFX bool gfx_texture_read_input_stream(
-        gfx_connection_ref gfx_connection,
-        gfx_texture_ref texture,
-        char const *initial_filename,
-        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
-
+    PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
     // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
     // but must be after the return of the "gfx_connection_create_texture"
-    PT_ATTR_GFX void gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
-
+    PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
 #ifdef __cplusplus
 }
 #endif

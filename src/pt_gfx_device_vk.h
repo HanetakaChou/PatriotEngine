@@ -148,7 +148,7 @@ public:
     // vkAllocateMemory
     // vkFreeMemory
     inline void get_physical_device_memory_properties(VkPhysicalDeviceMemoryProperties *memory_properties) { return m_vk_get_physical_device_memory_properties(m_physical_device, memory_properties); }
-    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *out_format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, out_format_properties); }
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, format_properties); }
     inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return m_vk_create_buffer(m_device, create_info, &m_allocator_callbacks, buffer); }
     inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_vk_create_image(m_device, create_info, &m_allocator_callbacks, image); }
     inline void destroy_buffer(VkBuffer buffer) { return m_vk_destroy_buffer(m_device, buffer, &m_allocator_callbacks); }
