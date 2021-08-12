@@ -573,6 +573,33 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_queue_present = reinterpret_cast<PFN_vkQueuePresentKHR>(vk_get_device_proc_addr(m_device, "vkQueuePresentKHR"));
     assert(NULL != this->m_vk_queue_present);
 
+    this->m_vk_cmd_begin_render_pass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(vk_get_device_proc_addr(m_device, "vkCmdBeginRenderPass"));
+    assert(NULL != this->m_vk_cmd_begin_render_pass);
+
+    this->m_vk_cmd_bind_pipeline = reinterpret_cast<PFN_vkCmdBindPipeline>(vk_get_device_proc_addr(m_device, "vkCmdBindPipeline"));
+    assert(NULL != this->m_vk_cmd_bind_pipeline);
+
+    this->m_vk_cmd_set_viewport = reinterpret_cast<PFN_vkCmdSetViewport>(vk_get_device_proc_addr(m_device, "vkCmdSetViewport"));
+    assert(NULL != this->m_vk_cmd_set_viewport);
+
+    this->m_vk_cmd_set_scissor = reinterpret_cast<PFN_vkCmdSetScissor>(vk_get_device_proc_addr(m_device, "vkCmdSetScissor"));
+    assert(NULL != this->m_vk_cmd_set_scissor);
+
+    this->m_vk_cmd_bind_vertex_buffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(vk_get_device_proc_addr(m_device, "vkCmdBindVertexBuffers"));
+    assert(NULL != this->m_vk_cmd_bind_vertex_buffers);
+
+    this->m_vk_cmd_push_constants = reinterpret_cast<PFN_vkCmdPushConstants>(vk_get_device_proc_addr(m_device, "vkCmdPushConstants"));
+    assert(NULL != this->m_vk_cmd_push_constants);
+
+    this->m_vk_cmd_bind_descriptor_sets = reinterpret_cast<PFN_vkCmdBindDescriptorSets>(vk_get_device_proc_addr(m_device, "vkCmdBindDescriptorSets"));
+    assert(NULL != this->m_vk_cmd_bind_descriptor_sets);
+
+    this->m_vk_cmd_draw = reinterpret_cast<PFN_vkCmdDraw>(vk_get_device_proc_addr(m_device, "vkCmdDraw"));
+    assert(NULL != this->m_vk_cmd_draw);
+
+    this->m_vk_cmd_end_render_pass = reinterpret_cast<PFN_vkCmdEndRenderPass>(vk_get_device_proc_addr(m_device, "vkCmdEndRenderPass"));
+    assert(NULL != this->m_vk_cmd_end_render_pass);
+
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {

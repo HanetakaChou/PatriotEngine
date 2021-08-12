@@ -59,14 +59,24 @@ class gfx_connection_vk final : public gfx_connection_common
 
     uint32_t m_frame_thread_count;
 
-    VkCommandBuffer *m_frame_graphics_submit_info_command_buffers;
+    // secondary command
+    VkCommandBuffer *m_frame_graphics_submit_info_command_buffers; 
 
     uint32_t swapchain_image_index[FRAME_THROTTLING_COUNT];
 
-    VkCommandPool m_frame_graphics_commmand_pool[FRAME_THROTTLING_COUNT];
-    //VkCommandBuffer m_frame_graphics_command_buffer[STREAMING_THROTTLING_COUNT][STREAMING_THREAD_COUNT];
+    struct frame_thread_block
+    {
+        VkCommandPool m_frame_graphics_commmand_pool;
+        VkCommandBuffer m_frame_graphics_command_buffer;
+    };
+    //struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
 
-    VkSemaphore m_frame_semaphore[FRAME_THROTTLING_COUNT];
+
+    VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
+    VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
+
+    VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
+    VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
     VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
 
     // RenderPass
@@ -97,6 +107,7 @@ class gfx_connection_vk final : public gfx_connection_common
     // reversed-Z
     // https://developer.nvidia.com/content/depth-precision-visualized
     static VkCompareOp const m_z_nearer = VK_COMPARE_OP_LESS_OR_EQUAL;
+    static constexpr float const m_z_farthest = 1.0f;
 
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited

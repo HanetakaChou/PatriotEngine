@@ -100,6 +100,15 @@ class gfx_device_vk
     PFN_vkGetPipelineCacheData m_vk_get_pipeline_cache_data;
     PFN_vkAcquireNextImageKHR m_vk_acquire_next_image;
     PFN_vkQueuePresentKHR m_vk_queue_present;
+    PFN_vkCmdBeginRenderPass m_vk_cmd_begin_render_pass;
+    PFN_vkCmdBindPipeline m_vk_cmd_bind_pipeline;
+    PFN_vkCmdSetViewport m_vk_cmd_set_viewport;
+    PFN_vkCmdSetScissor m_vk_cmd_set_scissor;
+    PFN_vkCmdBindVertexBuffers m_vk_cmd_bind_vertex_buffers;
+    PFN_vkCmdPushConstants m_vk_cmd_push_constants;
+    PFN_vkCmdBindDescriptorSets m_vk_cmd_bind_descriptor_sets;
+    PFN_vkCmdDraw m_vk_cmd_draw;
+    PFN_vkCmdEndRenderPass m_vk_cmd_end_render_pass;
 
     static char const *platform_surface_extension_name();
     bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
@@ -194,6 +203,16 @@ public:
 
     inline VkResult acquire_next_image(VkSwapchainKHR swapchain, uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t *image_index) { return this->m_vk_acquire_next_image(this->m_device, swapchain, timeout, semaphore, fence, image_index); }
     inline VkResult queue_present(VkQueue queue, VkPresentInfoKHR const *present_info) { return this->m_vk_queue_present(queue, present_info); }
+
+    inline void cmd_begin_render_pass(VkCommandBuffer command_buffer, VkRenderPassBeginInfo const *render_pass_begin, VkSubpassContents contents) { return this->m_vk_cmd_begin_render_pass(command_buffer, render_pass_begin, contents); }
+    inline void cmd_bind_pipeline(VkCommandBuffer command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipeline pipeline) { return this->m_vk_cmd_bind_pipeline(command_buffer, pipeline_bind_point, pipeline); }
+    inline void cmd_set_viewport(VkCommandBuffer command_buffer, uint32_t first_viewport, uint32_t viewport_count, VkViewport const *viewports) { return this->m_vk_cmd_set_viewport(command_buffer, first_viewport, viewport_count, viewports); }
+    inline void cmd_set_scissor(VkCommandBuffer command_buffer, uint32_t first_scissor, uint32_t scissor_count, VkRect2D const *scissors) { return this->m_vk_cmd_set_scissor(command_buffer, first_scissor, scissor_count, scissors); }
+    inline void cmd_bind_vertex_buffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, VkBuffer const *buffers, VkDeviceSize const *offsets) { return this->m_vk_cmd_bind_vertex_buffers(command_buffer, first_binding, binding_count, buffers, offsets); }
+    inline void cmd_push_constants(VkCommandBuffer command_buffer, VkPipelineLayout layout, VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size, void const *values) { return this->m_vk_cmd_push_constants(command_buffer, layout, stage_flags, offset, size, values); }
+    inline void cmd_bind_descriptor_sets(VkCommandBuffer command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout layout, uint32_t first_set, uint32_t descriptor_set_count, const VkDescriptorSet *descriptor_sets, uint32_t dynamic_offset_count, const uint32_t *dynamic_offsets) { return this->m_vk_cmd_bind_descriptor_sets(command_buffer, pipeline_bind_point, layout, first_set, descriptor_set_count, descriptor_sets, dynamic_offset_count, dynamic_offsets); }
+    inline void cmd_draw(VkCommandBuffer command_buffer, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) { return this->m_vk_cmd_draw(command_buffer, vertex_count, instance_count, first_vertex, first_instance); }
+    inline void cmd_end_render_pass(VkCommandBuffer command_buffer) { return this->m_vk_cmd_end_render_pass(command_buffer); }
 
     VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline VkResult get_physical_device_surface_support(uint32_t queue_family_index, VkSurfaceKHR surface, VkBool32 *supported) { return this->m_vk_get_physical_device_surface_support(this->m_physical_device, queue_family_index, surface, supported); }

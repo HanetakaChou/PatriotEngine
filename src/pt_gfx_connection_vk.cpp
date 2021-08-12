@@ -101,7 +101,7 @@ inline bool gfx_connection_vk::init_streaming()
         this->m_transfer_src_buffer_begin[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
         this->m_transfer_src_buffer_end[streaming_throttling_index] = this->m_transfer_src_buffer_begin[streaming_throttling_index];
         this->m_transfer_src_buffer_size[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * (streaming_throttling_index + 1U)) / 3U) - ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
-        
+
         this->m_streaming_thread_block[streaming_throttling_index] = static_cast<struct streaming_thread_block *>(mcrt_aligned_malloc(sizeof(struct streaming_thread_block) * this->m_streaming_thread_count, alignof(struct streaming_thread_block)));
 
         for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
@@ -522,8 +522,8 @@ void gfx_connection_vk::reduce_streaming_task()
             submit_info_graphics.pNext = NULL;
             submit_info_graphics.waitSemaphoreCount = 1U;
             submit_info_graphics.pWaitSemaphores = &this->m_streaming_semaphore[streaming_throttling_index];
-            VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            submit_info_graphics.pWaitDstStageMask = &wait_dst_stage_mask;
+            VkPipelineStageFlags wait_dst_stage_mask[1] = {VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT};
+            submit_info_graphics.pWaitDstStageMask = wait_dst_stage_mask;
             submit_info_graphics.commandBufferCount = 0U;
             submit_info_graphics.pCommandBuffers = this->m_streaming_graphics_submit_info_command_buffers;
             submit_info_graphics.signalSemaphoreCount = 0U;
@@ -674,8 +674,12 @@ void gfx_connection_vk::reduce_streaming_task()
     // Fence ensures "Completed by GPU"
     // safe to ResetCommandPool
     streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
-    this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
-    this->m_device.reset_fences(1U, &this->m_streaming_fence[streaming_throttling_index]);
+    {
+        PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
+        assert(VK_SUCCESS == res_wait_for_fences);
+        PT_MAYBE_UNUSED VkResult res_reset_fences = this->m_device.reset_fences(1U, &this->m_streaming_fence[streaming_throttling_index]);
+        assert(VK_SUCCESS == res_reset_fences);
+    }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     // ensure mutex
@@ -704,15 +708,18 @@ void gfx_connection_vk::reduce_streaming_task()
         {
             for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
             {
-                this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool, 0U);
-                this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 0U);
+                PT_MAYBE_UNUSED VkResult res_reset_command_pool_transfer = this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool, 0U);
+                assert(VK_SUCCESS == res_reset_command_pool_transfer);
+                PT_MAYBE_UNUSED VkResult res_reset_command_pool_graphics = this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 0U);
+                assert(VK_SUCCESS == res_reset_command_pool_graphics);
             }
         }
         else
         {
             for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
             {
-                this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool, 0U);
+                PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool, 0U);
+                assert(VK_SUCCESS == res_reset_command_pool);
             }
         }
     }
@@ -720,8 +727,8 @@ void gfx_connection_vk::reduce_streaming_task()
     {
         for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
         {
-
-            this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 0U);
+            PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 0U);
+            assert(VK_SUCCESS == res_reset_command_pool);
         }
     }
 
@@ -787,20 +794,31 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
 
         for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
         {
-            VkCommandPoolCreateInfo command_pool_create_info = {
-                VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-                NULL,
-                0U,
-                m_device.queue_graphics_family_index()};
-            PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_commmand_pool[frame_throttling_index]);
-            assert(VK_SUCCESS == res_create_command_pool);
+            {
+                VkCommandPoolCreateInfo command_pool_create_info = {
+                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                    NULL,
+                    0U,
+                    m_device.queue_graphics_family_index()};
+                PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_primary_commmand_pool[frame_throttling_index]);
+                assert(VK_SUCCESS == res_create_command_pool);
+            }
 
             {
                 VkSemaphoreCreateInfo semaphore_create_info;
                 semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                 semaphore_create_info.pNext = NULL;
                 semaphore_create_info.flags = 0U;
-                PT_MAYBE_UNUSED VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_frame_semaphore[frame_throttling_index]);
+                PT_MAYBE_UNUSED VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_frame_semaphore_acquire_next_image[frame_throttling_index]);
+                assert(VK_SUCCESS == res_create_semaphore);
+            }
+
+            {
+                VkSemaphoreCreateInfo semaphore_create_info;
+                semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+                semaphore_create_info.pNext = NULL;
+                semaphore_create_info.flags = 0U;
+                PT_MAYBE_UNUSED VkResult res_create_semaphore = this->m_device.create_semaphore(&semaphore_create_info, &this->m_frame_semaphore_queue_submit[frame_throttling_index]);
                 assert(VK_SUCCESS == res_create_semaphore);
             }
 
@@ -1508,28 +1526,150 @@ inline void gfx_connection_vk::acquire_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
 
-    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_streaming_semaphore[frame_throttling_index], VK_NULL_HANDLE, &this->swapchain_image_index[frame_throttling_index]);
+    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
 
     if (VK_SUCCESS == res_acquire_next_image)
     {
-        // do nothing
+    }
+    else if (VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image)
+    {
+        PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
+        assert(VK_SUCCESS == res_wait_for_fences);
     }
     else
     {
-        for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
-        {
-            this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
-            this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
-        }
-
-
     }
 }
 
 inline void gfx_connection_vk::release_frame()
 {
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    {
+        PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
+        assert(VK_SUCCESS == res_wait_for_fences);
+        PT_MAYBE_UNUSED VkResult res_reset_fences = this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
+        assert(VK_SUCCESS == res_reset_fences);
+    }
 
+    {
+        PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_frame_graphics_primary_commmand_pool[frame_throttling_index], 0U);
+        assert(VK_SUCCESS == res_reset_command_pool);
+    }
+
+    {
+        VkCommandBufferAllocateInfo command_buffer_allocate_info;
+        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        command_buffer_allocate_info.pNext = NULL;
+        command_buffer_allocate_info.commandPool = this->m_frame_graphics_primary_commmand_pool[frame_throttling_index];
+        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        command_buffer_allocate_info.commandBufferCount = 1U;
+
+        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+        assert(VK_SUCCESS == res_allocate_command_buffers);
+    }
+
+    {
+        VkCommandBufferBeginInfo command_buffer_begin_info = {
+            VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+            NULL,
+            VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+            NULL,
+        };
+        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &command_buffer_begin_info);
+        assert(VK_SUCCESS == res_begin_command_buffer);
+    }
+
+    {
+        VkClearValue clear_values[2];
+        clear_values[0].color.float32[0] = 0.0f;
+        clear_values[0].color.float32[1] = 0.0f;
+        clear_values[0].color.float32[2] = 0.0f;
+        clear_values[0].color.float32[3] = 0.0f;
+        clear_values[1].depthStencil.depth = m_z_farthest;
+        clear_values[1].depthStencil.stencil = 0U;
+
+        VkRenderPassBeginInfo render_pass_begin;
+        render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        render_pass_begin.pNext = NULL;
+        render_pass_begin.renderPass = this->m_render_pass;
+        render_pass_begin.framebuffer = this->m_framebuffers[frame_throttling_index];
+        render_pass_begin.renderArea.offset.x = 0U;
+        render_pass_begin.renderArea.offset.y = 0U;
+        render_pass_begin.renderArea.extent.width = this->m_framebuffer_width;
+        render_pass_begin.renderArea.extent.height = this->m_framebuffer_height;
+        render_pass_begin.clearValueCount = 2U;
+        render_pass_begin.pClearValues = clear_values;
+
+        this->m_device.cmd_begin_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &render_pass_begin, VK_SUBPASS_CONTENTS_INLINE);
+    }
+
+    this->m_device.cmd_bind_pipeline(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], VK_PIPELINE_BIND_POINT_GRAPHICS, this->m_pipeline_mesh);
+
+    {
+        VkViewport viewports[1];
+        viewports[0].x = 0.0f;
+        viewports[0].y = 0.0f;
+        viewports[0].width = this->m_framebuffer_width;
+        viewports[0].height = this->m_framebuffer_height;
+        viewports[0].minDepth = 0.0f;
+        viewports[0].maxDepth = 1.0f;
+        this->m_device.cmd_set_viewport(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0U, 1U, viewports);
+    }
+
+    {
+        VkRect2D scissors[1];
+        scissors[0].offset.x = 0;
+        scissors[0].offset.y = 0;
+        scissors[0].extent.width = this->m_framebuffer_width;
+        scissors[0].extent.height = this->m_framebuffer_height;
+        this->m_device.cmd_set_scissor(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0U, 1U, scissors);
+    }
+
+    //this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index],0U,1U,)
+    //pushconstant
+    //binddescriptorset
+    //this->m_device.cmd_draw(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 3U, 1U, 0U, 0U);
+
+    this->m_device.cmd_end_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+
+    this->m_device.end_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+
+    {
+        VkPipelineStageFlags wait_dst_stage_mask[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+        VkSubmitInfo submit_info;
+        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+        submit_info.pNext = NULL;
+        submit_info.waitSemaphoreCount = 1U;
+        submit_info.pWaitSemaphores = &this->m_frame_semaphore_acquire_next_image[frame_throttling_index];
+        submit_info.pWaitDstStageMask = wait_dst_stage_mask;
+        submit_info.commandBufferCount = 1U;
+        submit_info.pCommandBuffers = &this->m_frame_graphics_primary_command_buffer[frame_throttling_index];
+        submit_info.signalSemaphoreCount = 1U;
+        submit_info.pSignalSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
+
+        PT_MAYBE_UNUSED VkResult res_queue_submit = this->m_device.queue_submit(this->m_device.queue_graphics(), 1U, &submit_info, this->m_frame_fence[frame_throttling_index]);
+        assert(VK_SUCCESS == res_queue_submit);
+    }
+
+    // TODO seperate present queue
+    {
+        VkPresentInfoKHR present_info;
+        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        present_info.pNext = NULL;
+        present_info.waitSemaphoreCount = 1U;
+        present_info.pWaitSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
+        present_info.swapchainCount = 1U;
+        present_info.pSwapchains = &this->m_swapchain;
+        present_info.pImageIndices = &this->swapchain_image_index[frame_throttling_index];
+        present_info.pResults = NULL;
+
+        PT_MAYBE_UNUSED VkResult res_queue_present = this->m_device.queue_present(this->m_device.queue_graphics(), &present_info);
+        assert(VK_SUCCESS == res_queue_present);
+    }
+
+    mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
 }
 
 inline void gfx_connection_vk::destroy_streaming()
@@ -1601,12 +1741,12 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
 
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
-    //this->acquire_frame();
+    this->acquire_frame();
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
-    //this->release_frame();
+    this->release_frame();
     this->reduce_streaming_task();
 }
 
