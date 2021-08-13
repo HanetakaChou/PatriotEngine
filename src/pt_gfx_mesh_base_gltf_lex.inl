@@ -1,6 +1,6 @@
-#line 2 "../../src/pt_json_lex.inl"
+#line 2 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
-#line 4 "../../src/pt_json_lex.inl"
+#line 4 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 #define  YY_INT_ALIGNED short int
 
@@ -15,213 +15,213 @@
 #endif
 
 #ifdef yy_create_buffer
-#define json_ll_create_buffer_ALREADY_DEFINED
+#define gltf_yy_create_buffer_ALREADY_DEFINED
 #else
-#define yy_create_buffer json_ll_create_buffer
+#define yy_create_buffer gltf_yy_create_buffer
 #endif
 
 #ifdef yy_delete_buffer
-#define json_ll_delete_buffer_ALREADY_DEFINED
+#define gltf_yy_delete_buffer_ALREADY_DEFINED
 #else
-#define yy_delete_buffer json_ll_delete_buffer
+#define yy_delete_buffer gltf_yy_delete_buffer
 #endif
 
 #ifdef yy_scan_buffer
-#define json_ll_scan_buffer_ALREADY_DEFINED
+#define gltf_yy_scan_buffer_ALREADY_DEFINED
 #else
-#define yy_scan_buffer json_ll_scan_buffer
+#define yy_scan_buffer gltf_yy_scan_buffer
 #endif
 
 #ifdef yy_scan_string
-#define json_ll_scan_string_ALREADY_DEFINED
+#define gltf_yy_scan_string_ALREADY_DEFINED
 #else
-#define yy_scan_string json_ll_scan_string
+#define yy_scan_string gltf_yy_scan_string
 #endif
 
 #ifdef yy_scan_bytes
-#define json_ll_scan_bytes_ALREADY_DEFINED
+#define gltf_yy_scan_bytes_ALREADY_DEFINED
 #else
-#define yy_scan_bytes json_ll_scan_bytes
+#define yy_scan_bytes gltf_yy_scan_bytes
 #endif
 
 #ifdef yy_init_buffer
-#define json_ll_init_buffer_ALREADY_DEFINED
+#define gltf_yy_init_buffer_ALREADY_DEFINED
 #else
-#define yy_init_buffer json_ll_init_buffer
+#define yy_init_buffer gltf_yy_init_buffer
 #endif
 
 #ifdef yy_flush_buffer
-#define json_ll_flush_buffer_ALREADY_DEFINED
+#define gltf_yy_flush_buffer_ALREADY_DEFINED
 #else
-#define yy_flush_buffer json_ll_flush_buffer
+#define yy_flush_buffer gltf_yy_flush_buffer
 #endif
 
 #ifdef yy_load_buffer_state
-#define json_ll_load_buffer_state_ALREADY_DEFINED
+#define gltf_yy_load_buffer_state_ALREADY_DEFINED
 #else
-#define yy_load_buffer_state json_ll_load_buffer_state
+#define yy_load_buffer_state gltf_yy_load_buffer_state
 #endif
 
 #ifdef yy_switch_to_buffer
-#define json_ll_switch_to_buffer_ALREADY_DEFINED
+#define gltf_yy_switch_to_buffer_ALREADY_DEFINED
 #else
-#define yy_switch_to_buffer json_ll_switch_to_buffer
+#define yy_switch_to_buffer gltf_yy_switch_to_buffer
 #endif
 
 #ifdef yypush_buffer_state
-#define json_llpush_buffer_state_ALREADY_DEFINED
+#define gltf_yypush_buffer_state_ALREADY_DEFINED
 #else
-#define yypush_buffer_state json_llpush_buffer_state
+#define yypush_buffer_state gltf_yypush_buffer_state
 #endif
 
 #ifdef yypop_buffer_state
-#define json_llpop_buffer_state_ALREADY_DEFINED
+#define gltf_yypop_buffer_state_ALREADY_DEFINED
 #else
-#define yypop_buffer_state json_llpop_buffer_state
+#define yypop_buffer_state gltf_yypop_buffer_state
 #endif
 
 #ifdef yyensure_buffer_stack
-#define json_llensure_buffer_stack_ALREADY_DEFINED
+#define gltf_yyensure_buffer_stack_ALREADY_DEFINED
 #else
-#define yyensure_buffer_stack json_llensure_buffer_stack
+#define yyensure_buffer_stack gltf_yyensure_buffer_stack
 #endif
 
 #ifdef yylex
-#define json_lllex_ALREADY_DEFINED
+#define gltf_yylex_ALREADY_DEFINED
 #else
-#define yylex json_lllex
+#define yylex gltf_yylex
 #endif
 
 #ifdef yyrestart
-#define json_llrestart_ALREADY_DEFINED
+#define gltf_yyrestart_ALREADY_DEFINED
 #else
-#define yyrestart json_llrestart
+#define yyrestart gltf_yyrestart
 #endif
 
 #ifdef yylex_init
-#define json_lllex_init_ALREADY_DEFINED
+#define gltf_yylex_init_ALREADY_DEFINED
 #else
-#define yylex_init json_lllex_init
+#define yylex_init gltf_yylex_init
 #endif
 
 #ifdef yylex_init_extra
-#define json_lllex_init_extra_ALREADY_DEFINED
+#define gltf_yylex_init_extra_ALREADY_DEFINED
 #else
-#define yylex_init_extra json_lllex_init_extra
+#define yylex_init_extra gltf_yylex_init_extra
 #endif
 
 #ifdef yylex_destroy
-#define json_lllex_destroy_ALREADY_DEFINED
+#define gltf_yylex_destroy_ALREADY_DEFINED
 #else
-#define yylex_destroy json_lllex_destroy
+#define yylex_destroy gltf_yylex_destroy
 #endif
 
 #ifdef yyget_debug
-#define json_llget_debug_ALREADY_DEFINED
+#define gltf_yyget_debug_ALREADY_DEFINED
 #else
-#define yyget_debug json_llget_debug
+#define yyget_debug gltf_yyget_debug
 #endif
 
 #ifdef yyset_debug
-#define json_llset_debug_ALREADY_DEFINED
+#define gltf_yyset_debug_ALREADY_DEFINED
 #else
-#define yyset_debug json_llset_debug
+#define yyset_debug gltf_yyset_debug
 #endif
 
 #ifdef yyget_extra
-#define json_llget_extra_ALREADY_DEFINED
+#define gltf_yyget_extra_ALREADY_DEFINED
 #else
-#define yyget_extra json_llget_extra
+#define yyget_extra gltf_yyget_extra
 #endif
 
 #ifdef yyset_extra
-#define json_llset_extra_ALREADY_DEFINED
+#define gltf_yyset_extra_ALREADY_DEFINED
 #else
-#define yyset_extra json_llset_extra
+#define yyset_extra gltf_yyset_extra
 #endif
 
 #ifdef yyget_in
-#define json_llget_in_ALREADY_DEFINED
+#define gltf_yyget_in_ALREADY_DEFINED
 #else
-#define yyget_in json_llget_in
+#define yyget_in gltf_yyget_in
 #endif
 
 #ifdef yyset_in
-#define json_llset_in_ALREADY_DEFINED
+#define gltf_yyset_in_ALREADY_DEFINED
 #else
-#define yyset_in json_llset_in
+#define yyset_in gltf_yyset_in
 #endif
 
 #ifdef yyget_out
-#define json_llget_out_ALREADY_DEFINED
+#define gltf_yyget_out_ALREADY_DEFINED
 #else
-#define yyget_out json_llget_out
+#define yyget_out gltf_yyget_out
 #endif
 
 #ifdef yyset_out
-#define json_llset_out_ALREADY_DEFINED
+#define gltf_yyset_out_ALREADY_DEFINED
 #else
-#define yyset_out json_llset_out
+#define yyset_out gltf_yyset_out
 #endif
 
 #ifdef yyget_leng
-#define json_llget_leng_ALREADY_DEFINED
+#define gltf_yyget_leng_ALREADY_DEFINED
 #else
-#define yyget_leng json_llget_leng
+#define yyget_leng gltf_yyget_leng
 #endif
 
 #ifdef yyget_text
-#define json_llget_text_ALREADY_DEFINED
+#define gltf_yyget_text_ALREADY_DEFINED
 #else
-#define yyget_text json_llget_text
+#define yyget_text gltf_yyget_text
 #endif
 
 #ifdef yyget_lineno
-#define json_llget_lineno_ALREADY_DEFINED
+#define gltf_yyget_lineno_ALREADY_DEFINED
 #else
-#define yyget_lineno json_llget_lineno
+#define yyget_lineno gltf_yyget_lineno
 #endif
 
 #ifdef yyset_lineno
-#define json_llset_lineno_ALREADY_DEFINED
+#define gltf_yyset_lineno_ALREADY_DEFINED
 #else
-#define yyset_lineno json_llset_lineno
+#define yyset_lineno gltf_yyset_lineno
 #endif
 
 #ifdef yyget_column
-#define json_llget_column_ALREADY_DEFINED
+#define gltf_yyget_column_ALREADY_DEFINED
 #else
-#define yyget_column json_llget_column
+#define yyget_column gltf_yyget_column
 #endif
 
 #ifdef yyset_column
-#define json_llset_column_ALREADY_DEFINED
+#define gltf_yyset_column_ALREADY_DEFINED
 #else
-#define yyset_column json_llset_column
+#define yyset_column gltf_yyset_column
 #endif
 
 #ifdef yywrap
-#define json_llwrap_ALREADY_DEFINED
+#define gltf_yywrap_ALREADY_DEFINED
 #else
-#define yywrap json_llwrap
+#define yywrap gltf_yywrap
 #endif
 
 #ifdef yyalloc
-#define json_llalloc_ALREADY_DEFINED
+#define gltf_yyalloc_ALREADY_DEFINED
 #else
-#define yyalloc json_llalloc
+#define yyalloc gltf_yyalloc
 #endif
 
 #ifdef yyrealloc
-#define json_llrealloc_ALREADY_DEFINED
+#define gltf_yyrealloc_ALREADY_DEFINED
 #else
-#define yyrealloc json_llrealloc
+#define yyrealloc gltf_yyrealloc
 #endif
 
 #ifdef yyfree
-#define json_llfree_ALREADY_DEFINED
+#define gltf_yyfree_ALREADY_DEFINED
 #else
-#define yyfree json_llfree
+#define yyfree gltf_yyfree
 #endif
 
 /* First, we deal with  platform-specific or compiler-specific issues. */
@@ -565,16 +565,16 @@ static void yynoreturn yy_fatal_error ( const char* msg , yyscan_t yyscanner );
 	yyg->yy_hold_char = *yy_cp; \
 	*yy_cp = '\0'; \
 	yyg->yy_c_buf_p = yy_cp;
-#define YY_NUM_RULES 16
-#define YY_END_OF_BUFFER 17
+#define YY_NUM_RULES 13
+#define YY_END_OF_BUFFER 14
 struct yy_trans_info
 	{
 	flex_int16_t yy_verify;
 	flex_int16_t yy_nxt;
 	};
-static const struct yy_trans_info yy_transition[1291] =
+static const struct yy_trans_info yy_transition[1271] =
     {
- {   0,   0 }, {   0,1163 }, {   0,   0 }, {   0,1161 }, {   1, 260 },
+ {   0,   0 }, {   0,1143 }, {   0,   0 }, {   0,1141 }, {   1, 260 },
  {   2, 260 }, {   3, 260 }, {   4, 260 }, {   5, 260 }, {   6, 260 },
  {   7, 260 }, {   8, 260 }, {   9, 262 }, {  10, 264 }, {  11, 260 },
  {  12, 260 }, {  13, 262 }, {  14, 260 }, {  15, 260 }, {  16, 260 },
@@ -597,12 +597,12 @@ static const struct yy_trans_info yy_transition[1291] =
  {  92, 260 }, {  93, 273 }, {  94, 260 }, {  95, 260 }, {  96, 260 },
 
  {  97, 260 }, {  98, 260 }, {  99, 260 }, { 100, 260 }, { 101, 260 },
- { 102, 416 }, { 103, 260 }, { 104, 260 }, { 105, 260 }, { 106, 260 },
- { 107, 260 }, { 108, 260 }, { 109, 260 }, { 110, 418 }, { 111, 260 },
- { 112, 260 }, { 113, 260 }, { 114, 260 }, { 115, 260 }, { 116, 420 },
+ { 102, 260 }, { 103, 260 }, { 104, 260 }, { 105, 260 }, { 106, 260 },
+ { 107, 260 }, { 108, 260 }, { 109, 260 }, { 110, 260 }, { 111, 260 },
+ { 112, 260 }, { 113, 260 }, { 114, 260 }, { 115, 260 }, { 116, 260 },
  { 117, 260 }, { 118, 260 }, { 119, 260 }, { 120, 260 }, { 121, 260 },
- { 122, 260 }, { 123, 422 }, { 124, 260 }, { 125, 424 }, { 126, 260 },
- { 127, 260 }, { 128, 260 }, {   0,   0 }, {   0,1031 }, {   1, 130 },
+ { 122, 260 }, { 123, 277 }, { 124, 260 }, { 125, 279 }, { 126, 260 },
+ { 127, 260 }, { 128, 260 }, {   0,   0 }, {   0,1011 }, {   1, 130 },
  {   2, 130 }, {   3, 130 }, {   4, 130 }, {   5, 130 }, {   6, 130 },
  {   7, 130 }, {   8, 130 }, {   9, 132 }, {  10, 134 }, {  11, 130 },
  {  12, 130 }, {  13, 132 }, {  14, 130 }, {  15, 130 }, {  16, 130 },
@@ -625,203 +625,192 @@ static const struct yy_trans_info yy_transition[1291] =
  {  87, 130 }, {  88, 130 }, {  89, 130 }, {  90, 130 }, {  91, 140 },
  {  92, 130 }, {  93, 143 }, {  94, 130 }, {  95, 130 }, {  96, 130 },
  {  97, 130 }, {  98, 130 }, {  99, 130 }, { 100, 130 }, { 101, 130 },
- { 102, 286 }, { 103, 130 }, { 104, 130 }, { 105, 130 }, { 106, 130 },
- { 107, 130 }, { 108, 130 }, { 109, 130 }, { 110, 288 }, { 111, 130 },
- { 112, 130 }, { 113, 130 }, { 114, 130 }, { 115, 130 }, { 116, 290 },
+ { 102, 130 }, { 103, 130 }, { 104, 130 }, { 105, 130 }, { 106, 130 },
+ { 107, 130 }, { 108, 130 }, { 109, 130 }, { 110, 130 }, { 111, 130 },
+ { 112, 130 }, { 113, 130 }, { 114, 130 }, { 115, 130 }, { 116, 130 },
 
  { 117, 130 }, { 118, 130 }, { 119, 130 }, { 120, 130 }, { 121, 130 },
- { 122, 130 }, { 123, 292 }, { 124, 130 }, { 125, 294 }, { 126, 130 },
- { 127, 130 }, { 128, 130 }, {   0,  15 }, {   0, 901 }, {   0,   2 },
- {   0, 899 }, {   0,   1 }, {   0, 897 }, {   0,   8 }, {   0, 895 },
- {   0,   5 }, {   0, 893 }, {   0,   6 }, {   0, 891 }, {   9, 166 },
- {   0,   7 }, {   0, 888 }, {   0,   0 }, {  13, 166 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,  15 }, {   0, 877 }, {   1, 253 }, {   2, 253 },
- {   3, 253 }, {   4, 253 }, {   5, 253 }, {   6, 253 }, {   7, 253 },
- {   8, 253 }, {   9, 253 }, {  32, 166 }, {  11, 253 }, {  12, 253 },
+ { 122, 130 }, { 123, 147 }, { 124, 130 }, { 125, 149 }, { 126, 130 },
+ { 127, 130 }, { 128, 130 }, {   0,  12 }, {   0, 881 }, {   0,   2 },
+ {   0, 879 }, {   0,   1 }, {   0, 877 }, {   0,   8 }, {   0, 875 },
+ {   0,   5 }, {   0, 873 }, {   0,   6 }, {   0, 871 }, {   9, 156 },
+ {   0,   7 }, {   0, 868 }, {   0,   0 }, {  13, 156 }, {   0,   3 },
+ {   0, 864 }, {   0,   4 }, {   0, 862 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,  12 }, {   0, 857 }, {   1, 233 }, {   2, 233 },
+ {   3, 233 }, {   4, 233 }, {   5, 233 }, {   6, 233 }, {   7, 233 },
+ {   8, 233 }, {   9, 233 }, {  32, 156 }, {  11, 233 }, {  12, 233 },
 
- {  13, 253 }, {  14, 253 }, {  15, 253 }, {  16, 253 }, {  17, 253 },
- {  18, 253 }, {  19, 253 }, {  20, 253 }, {  21, 253 }, {  22, 253 },
- {  23, 253 }, {  24, 253 }, {  25, 253 }, {  26, 253 }, {  27, 253 },
- {  28, 253 }, {  29, 253 }, {  30, 253 }, {  31, 253 }, {  32, 253 },
- {  33, 253 }, {  34, 146 }, {  35, 253 }, {  36, 253 }, {  37, 253 },
- {  38, 253 }, {  39, 253 }, {  40, 253 }, {  41, 253 }, {  42, 253 },
- {  43, 253 }, {  44, 253 }, {  45, 253 }, {  46, 253 }, {  47, 253 },
- {  48, 253 }, {  49, 253 }, {  50, 253 }, {  51, 253 }, {  52, 253 },
- {  53, 253 }, {  54, 253 }, {  55, 253 }, {  56, 253 }, {  57, 253 },
- {  58, 253 }, {  59, 253 }, {  60, 253 }, {  61, 253 }, {  62, 253 },
+ {  13, 233 }, {  14, 233 }, {  15, 233 }, {  16, 233 }, {  17, 233 },
+ {  18, 233 }, {  19, 233 }, {  20, 233 }, {  21, 233 }, {  22, 233 },
+ {  23, 233 }, {  24, 233 }, {  25, 233 }, {  26, 233 }, {  27, 233 },
+ {  28, 233 }, {  29, 233 }, {  30, 233 }, {  31, 233 }, {  32, 233 },
+ {  33, 233 }, {  34, 136 }, {  35, 233 }, {  36, 233 }, {  37, 233 },
+ {  38, 233 }, {  39, 233 }, {  40, 233 }, {  41, 233 }, {  42, 233 },
+ {  43, 233 }, {  44, 233 }, {  45, 233 }, {  46, 233 }, {  47, 233 },
+ {  48, 233 }, {  49, 233 }, {  50, 233 }, {  51, 233 }, {  52, 233 },
+ {  53, 233 }, {  54, 233 }, {  55, 233 }, {  56, 233 }, {  57, 233 },
+ {  58, 233 }, {  59, 233 }, {  60, 233 }, {  61, 233 }, {  62, 233 },
 
- {  63, 253 }, {  64, 253 }, {  65, 253 }, {  66, 253 }, {  67, 253 },
- {  68, 253 }, {  69, 253 }, {  70, 253 }, {  71, 253 }, {  72, 253 },
- {  73, 253 }, {  74, 253 }, {  75, 253 }, {  76, 253 }, {  77, 253 },
- {  78, 253 }, {  79, 253 }, {  80, 253 }, {  81, 253 }, {  82, 253 },
- {  83, 253 }, {  84, 253 }, {  85, 253 }, {  86, 253 }, {  87, 253 },
- {  88, 253 }, {  89, 253 }, {  90, 253 }, {  91, 253 }, {  92, 383 },
- {  93, 253 }, {  94, 253 }, {  95, 253 }, {  96, 253 }, {  97, 253 },
- {  98, 253 }, {  99, 253 }, { 100, 253 }, { 101, 253 }, { 102, 253 },
- { 103, 253 }, { 104, 253 }, { 105, 253 }, { 106, 253 }, { 107, 253 },
- { 108, 253 }, { 109, 253 }, { 110, 253 }, { 111, 253 }, { 112, 253 },
+ {  63, 233 }, {  64, 233 }, {  65, 233 }, {  66, 233 }, {  67, 233 },
+ {  68, 233 }, {  69, 233 }, {  70, 233 }, {  71, 233 }, {  72, 233 },
+ {  73, 233 }, {  74, 233 }, {  75, 233 }, {  76, 233 }, {  77, 233 },
+ {  78, 233 }, {  79, 233 }, {  80, 233 }, {  81, 233 }, {  82, 233 },
+ {  83, 233 }, {  84, 233 }, {  85, 233 }, {  86, 233 }, {  87, 233 },
+ {  88, 233 }, {  89, 233 }, {  90, 233 }, {  91, 233 }, {  92, 363 },
+ {  93, 233 }, {  94, 233 }, {  95, 233 }, {  96, 233 }, {  97, 233 },
+ {  98, 233 }, {  99, 233 }, { 100, 233 }, { 101, 233 }, { 102, 233 },
+ { 103, 233 }, { 104, 233 }, { 105, 233 }, { 106, 233 }, { 107, 233 },
+ { 108, 233 }, { 109, 233 }, { 110, 233 }, { 111, 233 }, { 112, 233 },
 
- { 113, 253 }, { 114, 253 }, { 115, 253 }, { 116, 253 }, { 117, 253 },
- { 118, 253 }, { 119, 253 }, { 120, 253 }, { 121, 253 }, { 122, 253 },
- { 123, 253 }, { 124, 253 }, { 125, 253 }, { 126, 253 }, { 127, 253 },
- { 128, 253 }, {   0,  15 }, {   0, 747 }, {   0,  15 }, {   0, 745 },
- {   0,  15 }, {   0, 743 }, {   0,  15 }, {   0, 741 }, {   0,   3 },
- {   0, 739 }, {   0,   4 }, {   0, 737 }, {   0,  12 }, {   0, 735 },
- {   0,   2 }, {   0, 733 }, {   0,  14 }, {   0, 731 }, {   0,   0 },
+ { 113, 233 }, { 114, 233 }, { 115, 233 }, { 116, 233 }, { 117, 233 },
+ { 118, 233 }, { 119, 233 }, { 120, 233 }, { 121, 233 }, { 122, 233 },
+ { 123, 233 }, { 124, 233 }, { 125, 233 }, { 126, 233 }, { 127, 233 },
+ { 128, 233 }, {   0,  12 }, {   0, 727 }, {   0,   0 }, {   0,   0 },
+ {   0,   2 }, {   0, 723 }, {   0,  11 }, {   0, 721 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   9 }, {   0, 715 },
+ {   9,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {  13,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   9,   0 }, {   0,   0 }, {   0, 722 }, {   0,   0 }, {  13,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
 
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {  32,   0 }, {   0,   0 },
- {  48, 383 }, {  49, 383 }, {  50, 383 }, {  51, 383 }, {  52, 383 },
- {  53, 383 }, {  54, 383 }, {  55, 383 }, {  56, 383 }, {  57, 383 },
- {  46, 381 }, {   0,   0 }, {  48, 393 }, {  49, 393 }, {  50, 393 },
- {  51, 393 }, {  52, 393 }, {  53, 393 }, {  54, 393 }, {  55, 393 },
- {  56, 393 }, {  57, 393 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {  69, 452 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {  48, 363 }, {  49, 363 }, {  50, 363 }, {  51, 363 }, {  52, 363 },
+ {  53, 363 }, {  54, 363 }, {  55, 363 }, {  56, 363 }, {  57, 363 },
+ {  46, 361 }, {   0,   0 }, {  48, 373 }, {  49, 373 }, {  50, 373 },
+ {  51, 373 }, {  52, 373 }, {  53, 373 }, {  54, 373 }, {  55, 373 },
+ {  56, 373 }, {  57, 373 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {  69, 432 }, {   0,   0 },
 
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {  97,  23 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- { 101, 452 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, { 114, 381 }, { 117, 381 }, {   0,   0 },
  {   0, 624 }, {   1,   0 }, {   2,   0 }, {   3,   0 }, {   4,   0 },
  {   5,   0 }, {   6,   0 }, {   7,   0 }, {   8,   0 }, {   9,   0 },
-
- { 108, 365 }, {  11,   0 }, {  12,   0 }, {  13,   0 }, {  14,   0 },
+ { 101, 432 }, {  11,   0 }, {  12,   0 }, {  13,   0 }, {  14,   0 },
  {  15,   0 }, {  16,   0 }, {  17,   0 }, {  18,   0 }, {  19,   0 },
  {  20,   0 }, {  21,   0 }, {  22,   0 }, {  23,   0 }, {  24,   0 },
  {  25,   0 }, {  26,   0 }, {  27,   0 }, {  28,   0 }, {  29,   0 },
- {  30,   0 }, {  31,   0 }, {  32,   0 }, {  33,   0 }, {  34,-107 },
+
+ {  30,   0 }, {  31,   0 }, {  32,   0 }, {  33,   0 }, {  34, -97 },
  {  35,   0 }, {  36,   0 }, {  37,   0 }, {  38,   0 }, {  39,   0 },
  {  40,   0 }, {  41,   0 }, {  42,   0 }, {  43,   0 }, {  44,   0 },
  {  45,   0 }, {  46,   0 }, {  47,   0 }, {  48,   0 }, {  49,   0 },
  {  50,   0 }, {  51,   0 }, {  52,   0 }, {  53,   0 }, {  54,   0 },
  {  55,   0 }, {  56,   0 }, {  57,   0 }, {  58,   0 }, {  59,   0 },
-
  {  60,   0 }, {  61,   0 }, {  62,   0 }, {  63,   0 }, {  64,   0 },
  {  65,   0 }, {  66,   0 }, {  67,   0 }, {  68,   0 }, {  69,   0 },
  {  70,   0 }, {  71,   0 }, {  72,   0 }, {  73,   0 }, {  74,   0 },
  {  75,   0 }, {  76,   0 }, {  77,   0 }, {  78,   0 }, {  79,   0 },
+
  {  80,   0 }, {  81,   0 }, {  82,   0 }, {  83,   0 }, {  84,   0 },
  {  85,   0 }, {  86,   0 }, {  87,   0 }, {  88,   0 }, {  89,   0 },
  {  90,   0 }, {  91,   0 }, {  92, 130 }, {  93,   0 }, {  94,   0 },
  {  95,   0 }, {  96,   0 }, {  97,   0 }, {  98,   0 }, {  99,   0 },
  { 100,   0 }, { 101,   0 }, { 102,   0 }, { 103,   0 }, { 104,   0 },
  { 105,   0 }, { 106,   0 }, { 107,   0 }, { 108,   0 }, { 109,   0 },
-
  { 110,   0 }, { 111,   0 }, { 112,   0 }, { 113,   0 }, { 114,   0 },
  { 115,   0 }, { 116,   0 }, { 117,   0 }, { 118,   0 }, { 119,   0 },
  { 120,   0 }, { 121,   0 }, { 122,   0 }, { 123,   0 }, { 124,   0 },
  { 125,   0 }, { 126,   0 }, { 127,   0 }, { 128,   0 }, {   0,   0 },
+
  {   0, 494 }, {   1,-130 }, {   2,-130 }, {   3,-130 }, {   4,-130 },
  {   5,-130 }, {   6,-130 }, {   7,-130 }, {   8,-130 }, {   9,-130 },
  {   0,   0 }, {  11,-130 }, {  12,-130 }, {  13,-130 }, {  14,-130 },
  {  15,-130 }, {  16,-130 }, {  17,-130 }, {  18,-130 }, {  19,-130 },
  {  20,-130 }, {  21,-130 }, {  22,-130 }, {  23,-130 }, {  24,-130 },
  {  25,-130 }, {  26,-130 }, {  27,-130 }, {  28,-130 }, {  29,-130 },
-
  {  30,-130 }, {  31,-130 }, {  32,-130 }, {  33,-130 }, {  34,-130 },
  {  35,-130 }, {  36,-130 }, {  37,-130 }, {  38,-130 }, {  39,-130 },
  {  40,-130 }, {  41,-130 }, {  42,-130 }, {  43,-130 }, {  44,-130 },
  {  45,-130 }, {  46,-130 }, {  47,-130 }, {  48,-130 }, {  49,-130 },
+
  {  50,-130 }, {  51,-130 }, {  52,-130 }, {  53,-130 }, {  54,-130 },
  {  55,-130 }, {  56,-130 }, {  57,-130 }, {  58,-130 }, {  59,-130 },
  {  60,-130 }, {  61,-130 }, {  62,-130 }, {  63,-130 }, {  64,-130 },
  {  65,-130 }, {  66,-130 }, {  67,-130 }, {  68,-130 }, {  69,-130 },
  {  70,-130 }, {  71,-130 }, {  72,-130 }, {  73,-130 }, {  74,-130 },
  {  75,-130 }, {  76,-130 }, {  77,-130 }, {  78,-130 }, {  79,-130 },
-
  {  80,-130 }, {  81,-130 }, {  82,-130 }, {  83,-130 }, {  84,-130 },
  {  85,-130 }, {  86,-130 }, {  87,-130 }, {  88,-130 }, {  89,-130 },
  {  90,-130 }, {  91,-130 }, {  92,-130 }, {  93,-130 }, {  94,-130 },
  {  95,-130 }, {  96,-130 }, {  97,-130 }, {  98,-130 }, {  99,-130 },
+
  { 100,-130 }, { 101,-130 }, { 102,-130 }, { 103,-130 }, { 104,-130 },
  { 105,-130 }, { 106,-130 }, { 107,-130 }, { 108,-130 }, { 109,-130 },
  { 110,-130 }, { 111,-130 }, { 112,-130 }, { 113,-130 }, { 114,-130 },
  { 115,-130 }, { 116,-130 }, { 117,-130 }, { 118,-130 }, { 119,-130 },
  { 120,-130 }, { 121,-130 }, { 122,-130 }, { 123,-130 }, { 124,-130 },
- { 125,-130 }, { 126,-130 }, { 127,-130 }, { 128,-130 }, {   0,  12 },
+ { 125,-130 }, { 126,-130 }, { 127,-130 }, { 128,-130 }, {   0,   9 },
+ {   0, 364 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0, 354 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
 
- {   0, 364 }, {   0,   0 }, {   0, 362 }, {   0,   0 }, {   0, 360 },
- {   0,   0 }, {   0,   0 }, {   0, 357 }, {   0,   0 }, {   0,   0 },
- {   0, 354 }, {   0,   0 }, {   0, 352 }, {   0,   0 }, {   0,   0 },
- {   0, 349 }, {   0,   0 }, {   0, 347 }, {   0,  11 }, {   0, 345 },
- {   0,   0 }, {   0,  12 }, {   0, 342 }, {   0,   9 }, {   0, 340 },
- {   0,  10 }, {   0, 338 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   9 }, {   0, 342 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {  46,  10 }, {   0,   0 }, {  48,  22 }, {  49,  22 },
-
  {  50,  22 }, {  51,  22 }, {  52,  22 }, {  53,  22 }, {  54,  22 },
  {  55,  22 }, {  56,  22 }, {  57,  22 }, {  48,  83 }, {  49,  83 },
  {  50,  83 }, {  51,  83 }, {  52,  83 }, {  53,  83 }, {  54,  83 },
  {  55,  83 }, {  56,  83 }, {  57,  83 }, {  46, -12 }, {  69,  81 },
+
  {  48,   0 }, {  49,   0 }, {  50,   0 }, {  51,   0 }, {  52,   0 },
  {  53,   0 }, {  54,   0 }, {  55,   0 }, {  56,   0 }, {  57,   0 },
  {   0,   0 }, {   0, 283 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {  69,  59 }, {   0,  13 }, {   0, 271 }, {   0,   0 },
+ {   0,   0 }, {  69,  59 }, {   0,  10 }, {   0, 271 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
-
  {   0,   0 }, { 101,  81 }, {   0,   0 }, {   0, 261 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- { 108,  10 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,  13 },
- {   0, 249 }, { 101,   9 }, {   0,   0 }, { 101,   9 }, {   0,   0 },
- { 108,   7 }, { 117,  11 }, { 115,  10 }, { 101,  59 }, {  43,  22 },
- {   0,   0 }, {  45,  22 }, {   0,  13 }, {   0, 236 }, {  48,  34 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,  10 },
+ {   0, 249 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, { 101,  59 }, {  43,  22 },
+ {   0,   0 }, {  45,  22 }, {   0,  10 }, {   0, 236 }, {  48,  34 },
  {  49,  34 }, {  50,  34 }, {  51,  34 }, {  52,  34 }, {  53,  34 },
  {  54,  34 }, {  55,  34 }, {  56,  34 }, {  57,  34 }, {   0,   0 },
  {   0,   0 }, {  48,  35 }, {  49,  35 }, {  50,  35 }, {  51,  35 },
  {  52,  35 }, {  53,  35 }, {  54,  35 }, {  55,  35 }, {  56,  35 },
-
  {  57,  35 }, {  48,  12 }, {  49,  12 }, {  50,  12 }, {  51,  12 },
  {  52,  12 }, {  53,  12 }, {  54,  12 }, {  55,  12 }, {  56,  12 },
  {  57,  12 }, {   0,   0 }, {  69,  94 }, {  48,  84 }, {  49,  84 },
  {  50,  84 }, {  51,  84 }, {  52,  84 }, {  53,  84 }, {  54,  84 },
+
  {  55,  84 }, {  56,  84 }, {  57,  84 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {  48,   0 }, {  49,   0 }, {  50,   0 }, {  51,   0 },
  {  52,   0 }, {  53,   0 }, {  54,   0 }, {  55,   0 }, {  56,   0 },
  {  57,   0 }, {   0,   0 }, {   0, 177 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, { 101,  94 },
- {   0,   0 }, {   0,   0 }, {  69,  59 }, {   0,  13 }, {   0, 165 },
-
+ {   0,   0 }, {   0,   0 }, {  69,  59 }, {   0,  10 }, {   0, 165 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0, 155 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,  13 }, {   0, 145 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,  10 }, {   0, 145 },
+
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, { 101,  59 },
- {  43,  22 }, {   0,   0 }, {  45,  22 }, {   0,  13 }, {   0, 130 },
+ {  43,  22 }, {   0,   0 }, {  45,  22 }, {   0,  10 }, {   0, 130 },
  {  48,  32 }, {  49,  32 }, {  50,  32 }, {  51,  32 }, {  52,  32 },
  {  53,  32 }, {  54,  32 }, {  55,  32 }, {  56,  32 }, {  57,  32 },
  {   0,   0 }, {   0,   0 }, {  48,   0 }, {  49,   0 }, {  50,   0 },
-
  {  51,   0 }, {  52,   0 }, {  53,   0 }, {  54,   0 }, {  55,   0 },
  {  56,   0 }, {  57,   0 }, {  48,  10 }, {  49,  10 }, {  50,  10 },
  {  51,  10 }, {  52,  10 }, {  53,  10 }, {  54,  10 }, {  55,  10 },
  {  56,  10 }, {  57,  10 }, {  48,  15 }, {  49,  15 }, {  50,  15 },
+
  {  51,  15 }, {  52,  15 }, {  53,  15 }, {  54,  15 }, {  55,  15 },
  {  56,  15 }, {  57,  15 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {  48,   0 }, {  49,   0 }, {  50,   0 },
  {  51,   0 }, {  52,   0 }, {  53,   0 }, {  54,   0 }, {  55,   0 },
  {  56,   0 }, {  57,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
-
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
@@ -829,7 +818,13 @@ static const struct yy_trans_info yy_transition[1291] =
 
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
  {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
- {   0,   0 }, {   0,   0 }, {   0,   0 }, { 129,  17 }, {   1,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 }, {   0,   0 },
+ {   0,   0 }, {   0,   0 }, {   0,   0 }, { 129,  14 }, {   1,   0 },
     };
 
 static const struct yy_trans_info *yy_start_state_list[3] =
@@ -840,9 +835,9 @@ static const struct yy_trans_info *yy_start_state_list[3] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[17] =
+static const flex_int32_t yy_rule_can_match_eol[14] =
     {   0,
-1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
 
 /* The intent behind this definition is that it'll catch
  * any uses of REJECT which flex missed.
@@ -851,14 +846,18 @@ static const flex_int32_t yy_rule_can_match_eol[17] =
 #define yymore() yymore_used_but_not_detected
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
-#line 1 "../../src/pt_json_lex.l"
+#line 1 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 #define YY_NO_INPUT 1
 #define YY_NO_UNISTD_H 1
-#line 16 "../../src/pt_json_lex.l"
+#line 15 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
     /* https://westes.github.io/flex/manual/Start-Conditions.html#Start-Conditions */
     /* https://westes.github.io/flex/manual/Patterns.html#Patterns */
     /* https://www.crockford.com/mckeeman.html */
-#line 862 "../../src/pt_json_lex.inl"
+    /* Ignore whitespace */
+    /* keywords */
+    /* string literal */
+    /* Split */
+#line 861 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 #define INITIAL 0
 
@@ -1100,11 +1099,11 @@ YY_DECL
 		}
 
 	{
-#line 43 "../../src/pt_json_lex.l"
+#line 62 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 
     /* bugs for yylineno */
     /* ("\r\n") compatible WS \r */
-#line 1108 "../../src/pt_json_lex.inl"
+#line 1107 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1171,7 +1170,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 46 "../../src/pt_json_lex.l"
+#line 65 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     (yycolumn) = 0;
 }
@@ -1179,80 +1178,58 @@ YY_RULE_SETUP
 /* ignore whitespace */
 case 2:
 YY_RULE_SETUP
-#line 51 "../../src/pt_json_lex.l"
+#line 70 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
     
-    }
+}
 	YY_BREAK
 /* split */
 case 3:
 YY_RULE_SETUP
-#line 56 "../../src/pt_json_lex.l"
+#line 75 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_LEFTBRACE;
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 60 "../../src/pt_json_lex.l"
+#line 79 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_RIGHTBRACE;
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 64 "../../src/pt_json_lex.l"
+#line 83 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_COLON;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 68 "../../src/pt_json_lex.l"
+#line 87 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_LEFTBRACKET;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 72 "../../src/pt_json_lex.l"
+#line 91 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_RIGHTBRACKET;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 76 "../../src/pt_json_lex.l"
+#line 95 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_COMMA;
     }
 	YY_BREAK
-/* keywords */
+/* literal values */
 case 9:
 YY_RULE_SETUP
-#line 81 "../../src/pt_json_lex.l"
-{
-    return YYTOKEN_TRUE;
-    }
-	YY_BREAK
-case 10:
-YY_RULE_SETUP
-#line 85 "../../src/pt_json_lex.l"
-{
-    return YYTOKEN_FALSE;
-    }
-	YY_BREAK
-case 11:
-YY_RULE_SETUP
-#line 89 "../../src/pt_json_lex.l"
-{
-    return YYTOKEN_JSON_NULL;
-    }
-	YY_BREAK
-/* literal values */
-case 12:
-YY_RULE_SETUP
-#line 94 "../../src/pt_json_lex.l"
+#line 100 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
     char *endptr = NULL;
     lvalp->_valueint = strtol((yytext), &endptr, 10);
@@ -1260,9 +1237,9 @@ YY_RULE_SETUP
     return YYTOKEN_NUMBER_INT; 
     }
 	YY_BREAK
-case 13:
+case 10:
 YY_RULE_SETUP
-#line 101 "../../src/pt_json_lex.l"
+#line 107 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
     char *endptr = NULL;
     lvalp->_valuefloat = strtof((yytext), &endptr);
@@ -1271,18 +1248,54 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 /* string literal */
-case 14:
+case 11:
 YY_RULE_SETUP
-#line 109 "../../src/pt_json_lex.l"
+#line 115 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
-    lvalp->_stdstring = JsonParser_Std_String_Create((yyextra), (yytext), (yyleng));
-    return YYTOKEN_STRING;
+    /* keywords */
+    static char const ASSET[] = "\"asset\"";
+    static int const ASSET_LENG = sizeof(ASSET) / sizeof(ASSET[0]) - 1;
+    static char const COPYRIGHT[] = "\"copyright\"";
+    static int const COPYRIGHT_LENG = sizeof(COPYRIGHT) / sizeof(COPYRIGHT[0]) - 1;
+    static char const GENERATOR[] = "\"generator\"";
+    static int const GENERATOR_LENG = sizeof(GENERATOR) / sizeof(GENERATOR[0]) - 1;
+    static char const VERSION[] = "\"version\"";
+    static int const VERSION_LENG = sizeof(VERSION) / sizeof(VERSION[0]) - 1;
+    static char const MINVERSION[] = "\"minversion\"";
+    static int const MINVERSION_LENG = sizeof(MINVERSION) / sizeof(MINVERSION[0]) - 1;
+    if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
+    {
+        return YYTOKEN_ASSET;
     }
+    else if (0 == gltf_lex_memcmp_callback((yytext), COPYRIGHT, (((yyleng) < COPYRIGHT_LENG) ? (yyleng) : COPYRIGHT_LENG), (yyextra)))
+    {
+        return YYTOKEN_COPYRIGHT;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), GENERATOR, (((yyleng) < GENERATOR_LENG) ? (yyleng) : GENERATOR_LENG), (yyextra)))
+    {
+        return YYTOKEN_GENERATOR;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), VERSION, (((yyleng) < VERSION_LENG) ? (yyleng) : VERSION_LENG), (yyextra)))
+    {
+        return YYTOKEN_VERSION;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MINVERSION, (((yyleng) < MINVERSION_LENG) ? (yyleng) : MINVERSION_LENG), (yyextra)))
+    {
+        return YYTOKEN_MINVERSION;
+    }
+    else
+    {
+        assert(((yyleng) + 1) <= YY_TOKEN_STRING_BUFFER_SIZE);
+        gltf_lex_memcpy_callback(lvalp->m_token_string, (yytext), (yyleng), (yyextra));
+        lvalp->m_token_string[(yyleng)] = '\0';
+        return YYTOKEN_STRING;
+    }
+}
 	YY_BREAK
 /* catch-all rule for any other single characters */
-case 15:
+case 12:
 YY_RULE_SETUP
-#line 115 "../../src/pt_json_lex.l"
+#line 157 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
         char msg_fatal_error[4096];
         assert(((yyleng) == 1));
@@ -1291,21 +1304,21 @@ YY_RULE_SETUP
     }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 122 "../../src/pt_json_lex.l"
+#line 164 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
-    json_llpop_buffer_state(yyscanner);
-    if(!YY_CURRENT_BUFFER)
-    {
-        return YYTOKEN_EOF; //yyterminate
-    }
+        yypop_buffer_state(yyscanner);
+        if(!YY_CURRENT_BUFFER)
+        {
+            return YYEOF; //yyterminate
+        }
     }
 	YY_BREAK
-case 16:
+case 13:
 YY_RULE_SETUP
-#line 130 "../../src/pt_json_lex.l"
+#line 172 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 ECHO;
 	YY_BREAK
-#line 1309 "../../src/pt_json_lex.inl"
+#line 1322 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2406,5 +2419,5 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 130 "../../src/pt_json_lex.l"
+#line 172 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 

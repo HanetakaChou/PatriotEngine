@@ -17,29 +17,29 @@
 
 
 // Define the terminal symbols.
-%token TRUE "true"
-%token FALSE "false"
-%token JSON_NULL "null"
-%token LEFTBRACE "{"
-%token RIGHTBRACE "}"
-%token COLON ":"
-%token LEFTBRACKET "["
-%token RIGHTBRACKET "]"
-%token COMMA ","
+%token TRUE
+%token FALSE
+%token JSON_NULL
+%token LEFTBRACE
+%token RIGHTBRACE
+%token COLON 
+%token LEFTBRACKET 
+%token RIGHTBRACKET 
+%token COMMA 
 %token <_stdstring> STRING
 %token <_valueint> NUMBER_INT
 %token <_valuefloat> NUMBER_FLOAT
-%token PSEUDO_LEX_ERROR "[A lex error has occurred!]"
+%token PSEUDO_LEX_ERROR 
 
 // Define the nonterminals 
-%type <_jsonvalue> json 
-%type <_jsonvalue> value 
-%type <_jsonvalue> object
-%type <_jsonvalue> members
-%type <_jsonmember> member
-%type <_jsonvalue> array
-%type <_jsonvalue> elements
-%type <_jsonvalue> element 
+%type <m_json_value> json 
+%type <m_json_value> value 
+%type <m_json_value> object
+%type <m_json_value> members
+%type <m_json_member> member
+%type <m_json_value> array
+%type <m_json_value> elements
+%type <m_json_value> element 
 
 // Define the starting nonterminal
 %start json
@@ -95,7 +95,7 @@ members: member {
 	$$ = _jsonobject;
     };
 
-member: STRING ':' value { 
+member: STRING COLON value { 
 	$$._stdstring = $1;
 	$$._jsonvalue = $3;
     };

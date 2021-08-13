@@ -25,8 +25,12 @@
 #include <assert.h>
 #include <new>
 
+extern bool gltf_parse_input_stream(char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+
 bool gfx_mesh_vk::read_input_stream(class gfx_connection_common *gfx_connection_base, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
 {
+    gltf_parse_input_stream(initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_destroy_callback);
+
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
     // How to implement pipeline "serial - parallel - serial"

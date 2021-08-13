@@ -22,9 +22,9 @@
 
 union YYSTYPE
 {
-    char string[YYSTYPE_MAX_STRING_SIZE];
-    long number_int;
-    float number_float;
+    char m_string[YYSTYPE_MAX_STRING_SIZE];
+    long m_number_int;
+    float m_number_float;
 };
 
 #endif

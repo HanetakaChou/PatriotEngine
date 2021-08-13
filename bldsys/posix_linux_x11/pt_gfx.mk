@@ -34,6 +34,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base_gltf.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
@@ -57,11 +58,33 @@ LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_gfx.def
 
 LOCAL_LDLIBS += -lvulkan 
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_math
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_math libpt_gfx_mesh_base_gltf_lex_yacc
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
 include $(BUILD_SHARED_LIBRARY)
+
+# -xc / libpt_gfx_mesh_base_json_lex_yacc
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := libpt_gfx_mesh_base_gltf_lex_yacc
+
+LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base_gltf_lex_yacc.c \
+
+#LOCAL_CFLAGS += -fdiagnostics-format=msvc
+LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
+LOCAL_CFLAGS += -Wall
+	
+LOCAL_CPPFLAGS += -xc	
+#LOCAL_CPPFLAGS += -std=c++11
+
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
+
+include $(BUILD_STATIC_LIBRARY)
 
 # pt_gfx_malloc_test
 
