@@ -173,7 +173,7 @@ bool gfx_texture_vk::read_input_stream(
     {
         // race condition with the "streaming_done"
         // inevitable since the "transfer_dst_and_sampled_image_alloc" nervertheless races with the "streaming_done"
-        this->streaming_cancel(gfx_connection_base);
+        this->streaming_destroy_callback(gfx_connection_base);
     }
 
     return true;
@@ -393,7 +393,7 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
             // leave the "steaming_cancel" to the third stage
             // tracker by "slob_lock_busy_count"
 #if 0
-            task_data->m_gfx_texture->streaming_cancel();
+            task_data->m_gfx_texture->streaming_destroy_callback();
 #else
             // pass to the third stage
             {
@@ -462,7 +462,7 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
     }
 }
 
-void gfx_texture_vk::streaming_cancel(class gfx_connection_common *gfx_connection_base)
+void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_common *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 

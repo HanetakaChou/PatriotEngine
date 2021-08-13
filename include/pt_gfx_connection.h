@@ -83,6 +83,10 @@ extern "C"
     // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
     // but must be after the return of the "gfx_connection_create_texture"
     PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
+
+    //TLS //node
+    //BLS //mesh
+
 #ifdef __cplusplus
 }
 #endif

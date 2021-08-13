@@ -64,7 +64,7 @@ class gfx_texture_vk final : public gfx_texture_common
 
     void destroy(class gfx_connection_common *gfx_connection) override;
 
-    void streaming_cancel(class gfx_connection_common *gfx_connection) override;
+    void streaming_destroy_callback(class gfx_connection_common *gfx_connection) override;
 
     struct specific_header_vk_t
     {

@@ -26,7 +26,10 @@ LOCAL_MODULE := libpt_gfx
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_vk.cpp \
@@ -34,9 +37,6 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_vk.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8

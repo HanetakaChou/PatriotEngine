@@ -17,6 +17,7 @@ wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 
 int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 {
+#if 0
     std::vector<gfx_texture_ref> my_textures;
 
     unsigned rand_buf = (unsigned)time(NULL);
@@ -63,7 +64,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     {
         gfx_texture_destroy(my_gfx_connection, my_texture);
     }
-
+#endif
     return 0;
 }
 

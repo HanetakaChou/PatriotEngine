@@ -45,7 +45,8 @@ protected:
 
     inline gfx_streaming_object() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false), m_spin_lock_streaming_done(0U) {}
 
-public:
+    virtual void streaming_destroy_callback(class gfx_connection_common *gfx_connection) = 0;
+
     inline void streaming_done_lock()
     {
         while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_done, 1U))
@@ -53,9 +54,10 @@ public:
             mcrt_os_yield();
         }
     }
-    void streaming_done(class gfx_connection_common *gfx_connection);
+
     inline void streaming_done_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U); }
-    virtual void streaming_cancel(class gfx_connection_common *gfx_connection) = 0;
+public:
+    void streaming_done(class gfx_connection_common *gfx_connection);
 };
 
 #endif

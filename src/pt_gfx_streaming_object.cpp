@@ -34,7 +34,7 @@ void gfx_streaming_object::streaming_done(class gfx_connection_common *gfx_conne
     }
     else
     {
-        this->streaming_cancel(gfx_connection);
+        this->streaming_destroy_callback(gfx_connection);
     }
 
     this->streaming_done_unlock();

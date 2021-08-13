@@ -63,7 +63,7 @@ class gfx_buffer_vk final : public gfx_buffer_base
 
     void destroy(class gfx_connection_common *gfx_connection) override;
 
-    void streaming_cancel(class gfx_connection_common *gfx_connection) override;
+    void streaming_destroy_callback(class gfx_connection_common *gfx_connection) override;
 
 public:
     inline gfx_buffer_vk() : gfx_buffer_base(), m_buffer(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
