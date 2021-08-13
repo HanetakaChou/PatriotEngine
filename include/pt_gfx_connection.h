@@ -39,6 +39,8 @@ enum
 
 typedef struct _gfx_buffer_t_ *gfx_buffer_ref;
 
+typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
+
 typedef struct _gfx_texture_t_ *gfx_texture_ref;
 
 #ifdef __cplusplus
@@ -75,6 +77,12 @@ extern "C"
     PT_ATTR_GFX bool PT_CALL gfx_buffer_read_vertex_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t input_stream_offset, int64_t input_stream_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
     PT_ATTR_GFX bool PT_CALL gfx_buffer_read_index_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t input_stream_offset, int64_t input_stream_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
     PT_ATTR_GFX void PT_CALL gfx_buffer_destroy(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer);
+
+    // We may share the texture but we scarcely share the buffer
+    // Thus we don't support buffer
+    PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+    PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh);
 
     PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
     // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"

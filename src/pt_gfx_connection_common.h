@@ -46,6 +46,8 @@ public:
 
     virtual class gfx_buffer_base *create_buffer() = 0;
 
+    virtual class gfx_mesh_base *create_mesh() = 0;
+
     virtual class gfx_texture_common *create_texture() = 0;
 
     virtual void on_wsi_resized(float width, float height) = 0;

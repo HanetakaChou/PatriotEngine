@@ -17,6 +17,10 @@ wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 
 int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 {
+    gfx_mesh_ref my_mesh = gfx_connection_create_mesh(my_gfx_connection);
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_destroy(my_gfx_connection, my_mesh);
+
 #if 0
     std::vector<gfx_texture_ref> my_textures;
 

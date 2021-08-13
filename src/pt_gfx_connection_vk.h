@@ -210,6 +210,7 @@ class gfx_connection_vk final : public gfx_connection_common
 
     friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     class gfx_buffer_base *create_buffer() override;
+    class gfx_mesh_base *create_mesh() override;
     class gfx_texture_common *create_texture() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
