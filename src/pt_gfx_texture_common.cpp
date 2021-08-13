@@ -110,7 +110,7 @@ inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { 
 inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
 
-PT_ATTR_GFX bool gfx_texture_read_input_stream(
+PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
     gfx_connection_ref gfx_connection,
     gfx_texture_ref texture,
     char const *initial_filename,
@@ -122,7 +122,7 @@ PT_ATTR_GFX bool gfx_texture_read_input_stream(
     return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
 }
 
-PT_ATTR_GFX void gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture)
+PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture)
 {
     return unwrap(texture)->destroy(unwrap(gfx_connection));
 }

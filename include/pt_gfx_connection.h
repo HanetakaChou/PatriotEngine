@@ -48,8 +48,6 @@ extern "C"
 
     PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
-    PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
-
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
     PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height);
@@ -70,6 +68,8 @@ extern "C"
     // due to the limit of the tbb task arena, "gfx_connection_wsi_on_redraw_needed_acquire" must be called by the same thread as "gfx_connection_init"
     PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
+
+    PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
 
     PT_ATTR_GFX gfx_buffer_ref PT_CALL gfx_connection_create_buffer(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX bool PT_CALL gfx_buffer_read_vertex_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t input_stream_offset, int64_t input_stream_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
