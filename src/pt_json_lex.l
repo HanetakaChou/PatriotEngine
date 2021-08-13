@@ -37,7 +37,7 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
 
 TRUE ("true")
 FALSE ("false")
-JSONNULL ("null")
+JSON_NULL ("null")
 
 %%
     /* bugs for yylineno */
@@ -49,12 +49,6 @@ JSONNULL ("null")
     /* ignore whitespace */
 {WS} { 
     
-    }
-
-     /* string literal */
-{STRING} {
-    lvalp->_stdstring = JsonParser_Std_String_Create((yyextra), (yytext), (yyleng));
-    return YYTOKEN_STRING;
     }
 
     /* split */
@@ -91,8 +85,8 @@ JSONNULL ("null")
     return YYTOKEN_FALSE;
     }
 
-{JSONNULL} {
-    return YYTOKEN_JSONNULL;
+{JSON_NULL} {
+    return YYTOKEN_JSON_NULL;
     }
 
     /* literal values */
@@ -109,6 +103,12 @@ JSONNULL ("null")
     assert(endptr <= ((yytext) + (yyleng)));
     return YYTOKEN_NUMBER_FLOAT; 
 }
+
+     /* string literal */
+{STRING} {
+    lvalp->_stdstring = JsonParser_Std_String_Create((yyextra), (yytext), (yyleng));
+    return YYTOKEN_STRING;
+    }
 
     /* catch-all rule for any other single characters */
 (.) { 

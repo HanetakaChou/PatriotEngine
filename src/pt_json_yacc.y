@@ -19,7 +19,7 @@
 // Define the terminal symbols.
 %token TRUE "true"
 %token FALSE "false"
-%token JSONNULL "null"
+%token JSON_NULL "null"
 %token LEFTBRACE "{"
 %token RIGHTBRACE "}"
 %token COLON ":"
@@ -55,7 +55,7 @@ value: array {
 	$$ = $1; 
 	};
 value: STRING { 
-	$$ = JsonParser_Json_String_Create(pUserData, $1); 
+	$$ = json_string_JsonParser_Json_String_Create(pUserData, $1); 
 	JsonParser_Std_String_Dispose(pUserData, $1); 
 	};
 value: NUMBER_INT { 
@@ -70,7 +70,7 @@ value: TRUE {
 value: FALSE { 
 	$$ = JsonParser_Json_False_Create(pUserData); 
 	};
-value: JSONNULL { 
+value: JSON_NULL { 
 	$$ = JsonParser_Json_Null_Create(pUserData); 
 	};
 
