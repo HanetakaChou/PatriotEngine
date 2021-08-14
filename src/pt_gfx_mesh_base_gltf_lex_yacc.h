@@ -32,27 +32,46 @@ extern "C"
     void gltf_lex_memcpy_callback(char *dest, char const *src, int count, void *user_defined);
 
     void gltf_yacc_error_callback(int line, int column, char const *msg, void *user_defined);
+    struct temp_int_array_version_t *gltf_yacc_temp_int_array_init_callback(void *user_defined);
+    void gltf_yacc_temp_int_array_push_callback(struct temp_int_array_version_t *temp_int_array_version, int int_element, void *user_defined);
+    void gltf_yacc_temp_int_array_destroy_callback(struct temp_int_array_version_t *temp_int_array_version, void *user_defined);
+    struct temp_float_array_version_t *gltf_yacc_temp_float_array_init_callback(void *user_defined);
+    void gltf_yacc_temp_float_array_push_callback(struct temp_float_array_version_t *temp_float_array_version, float float_element, void *user_defined);
+    void gltf_yacc_temp_float_array_destroy_callback(struct temp_float_array_version_t *temp_float_array_version, void *user_defined);
     void gltf_yacc_set_default_scene_index_callback(int default_scene_index, void *user_defined);
     int gltf_yacc_scene_push_callback(void *user_defined);
-    void gltf_yacc_scene_set_nodes_callback(int scene_index, int const *nodes_data, int nodes_size, void *user_defined);
+    void gltf_yacc_scene_set_nodes_callback(int scene_index, struct temp_int_array_version_t *temp_int_array_version, void *user_defined);
     void gltf_yacc_scene_set_name_callback(int scene_index, char const *name_data, int name_size, void *user_defined);
     int gltf_yacc_scene_size_callback(void *user_defined);
     int gltf_yacc_node_push_callback(void *user_defined);
     void gltf_yacc_node_set_camera_callback(int node_index, int camera_index, void *user_defined);
-    void gltf_yacc_node_set_children_callback(int node_index, int const *nodes_data, int nodes_size, void *user_defined);
+    void gltf_yacc_node_set_children_callback(int node_index, struct temp_int_array_version_t *temp_int_array_version, void *user_defined);
     void gltf_yacc_node_set_skin_callback(int node_index, int skin_index, void *user_defined);
     void gltf_yacc_node_set_matrix_callback(int node_index, float mat4x4[16], void *user_defined);
     void gltf_yacc_node_set_mesh_callback(int node_index, int mesh_index, void *user_defined);
     void gltf_yacc_node_set_rotation_callback(int node_index, float vec4[4], void *user_defined);
     void gltf_yacc_node_set_scale_callback(int node_index, float vec3[3], void *user_defined);
     void gltf_yacc_node_set_translation_callback(int node_index, float vec3[3], void *user_defined);
-    void gltf_yacc_node_set_weights_callback(int node_index, float *weights_data, int weights_size, void *user_defined);
+    void gltf_yacc_node_set_weights_callback(int node_index, struct temp_float_array_version_t *temp_float_array_version, void *user_defined);
     void gltf_yacc_node_set_name_callback(int node_index, char const *name_data, int name_size, void *user_defined);
     int gltf_yacc_node_size_callback(void *user_defined);
     int gltf_yacc_buffer_push_callback(void *user_defined);
-    void gltf_yacc_buffer_set_bufferlength_callback(int buffer_index, int bufferlength, void *user_defined);
+    void gltf_yacc_buffer_set_bytelength_callback(int buffer_index, int bytelength, void *user_defined);
     void gltf_yacc_buffer_set_url_callback(int buffer_index, char const *name_data, int name_size, void *user_defined);
     int gltf_yacc_buffer_size_callback(void *user_defined);
+    int gltf_yacc_bufferview_push_callback(void *user_defined);
+    void gltf_yacc_bufferview_set_buffer_callback(int bufferview_index, int buffer_index, void *user_defined);
+    void gltf_yacc_bufferview_set_byteoffset_callback(int bufferview_index, int byteoffset, void *user_defined);
+    void gltf_yacc_bufferview_set_bytelength_callback(int bufferview_index, int bytelength, void *user_defined);
+    void gltf_yacc_bufferview_set_bytestride_callback(int bufferview_index, int bytestride, void *user_defined);
+    void gltf_yacc_bufferview_set_target_callback(int bufferview_index, int target, void *user_defined);
+    int gltf_yacc_bufferview_size_callback(void *user_defined);
+    int gltf_yacc_accessor_push_callback(void *user_defined);
+    void gltf_yacc_accessor_set_bufferview_callback(int accessor_index, int bufferview_index, void *user_defined);
+    void gltf_yacc_accessor_set_byteoffset_callback(int accessor_index, int byteoffset, void *user_defined);
+    void gltf_yacc_accessor_set_componenttype_callback(int accessor_index, int componenttype, void *user_defined);
+    void gltf_yacc_accessor_set_normalized_callback(int accessor_index, bool normalized, void *user_defined);
+    int gltf_yacc_accessor_size_callback(void *user_defined);
 #ifdef __cplusplus
 }
 #endif

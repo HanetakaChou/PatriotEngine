@@ -132,21 +132,34 @@ extern int gltf_yydebug;
     YYTOKEN_TRANSLATION = 276,     /* YYTOKEN_TRANSLATION  */
     YYTOKEN_WEIGHTS = 277,         /* YYTOKEN_WEIGHTS  */
     YYTOKEN_BUFFERS = 278,         /* YYTOKEN_BUFFERS  */
-    YYTOKEN_BUFFERLENGTH = 279,    /* YYTOKEN_BUFFERLENGTH  */
+    YYTOKEN_BYTELENGTH = 279,      /* YYTOKEN_BYTELENGTH  */
     YYTOKEN_URI = 280,             /* YYTOKEN_URI  */
-    YYTOKEN_TRUE = 281,            /* YYTOKEN_TRUE  */
-    YYTOKEN_FALSE = 282,           /* YYTOKEN_FALSE  */
-    YYTOKEN_NULL = 283,            /* YYTOKEN_NULL  */
-    YYTOKEN_LEFTBRACE = 284,       /* YYTOKEN_LEFTBRACE  */
-    YYTOKEN_RIGHTBRACE = 285,      /* YYTOKEN_RIGHTBRACE  */
-    YYTOKEN_COLON = 286,           /* YYTOKEN_COLON  */
-    YYTOKEN_LEFTBRACKET = 287,     /* YYTOKEN_LEFTBRACKET  */
-    YYTOKEN_RIGHTBRACKET = 288,    /* YYTOKEN_RIGHTBRACKET  */
-    YYTOKEN_COMMA = 289,           /* YYTOKEN_COMMA  */
-    YYTOKEN_STRING = 290,          /* YYTOKEN_STRING  */
-    YYTOKEN_NUMBER_INT = 291,      /* YYTOKEN_NUMBER_INT  */
-    YYTOKEN_NUMBER_FLOAT = 292,    /* YYTOKEN_NUMBER_FLOAT  */
-    PSEUDO_LEX_ERROR = 293         /* PSEUDO_LEX_ERROR  */
+    YYTOKEN_BUFFERVIEWS = 281,     /* YYTOKEN_BUFFERVIEWS  */
+    YYTOKEN_BUFFER = 282,          /* YYTOKEN_BUFFER  */
+    YYTOKEN_BYTEOFFSET = 283,      /* YYTOKEN_BYTEOFFSET  */
+    YYTOKEN_BYTESTRIDE = 284,      /* YYTOKEN_BYTESTRIDE  */
+    YYTOKEN_TARGET = 285,          /* YYTOKEN_TARGET  */
+    YYTOKEN_ACCESSORS = 286,       /* YYTOKEN_ACCESSORS  */
+    YYTOKEN_BUFFERVIEW = 287,      /* YYTOKEN_BUFFERVIEW  */
+    YYTOKEN_COMPONENTTYPE = 288,   /* YYTOKEN_COMPONENTTYPE  */
+    YYTOKEN_NORMALIZED = 289,      /* YYTOKEN_NORMALIZED  */
+    YYTOKEN_COUNT = 290,           /* YYTOKEN_COUNT  */
+    YYTOKEN_TYPE = 291,            /* YYTOKEN_TYPE  */
+    YYTOKEN_MAX = 292,             /* YYTOKEN_MAX  */
+    YYTOKEN_MIN = 293,             /* YYTOKEN_MIN  */
+    YYTOKEN_TRUE = 294,            /* YYTOKEN_TRUE  */
+    YYTOKEN_FALSE = 295,           /* YYTOKEN_FALSE  */
+    YYTOKEN_NULL = 296,            /* YYTOKEN_NULL  */
+    YYTOKEN_LEFTBRACE = 297,       /* YYTOKEN_LEFTBRACE  */
+    YYTOKEN_RIGHTBRACE = 298,      /* YYTOKEN_RIGHTBRACE  */
+    YYTOKEN_COLON = 299,           /* YYTOKEN_COLON  */
+    YYTOKEN_LEFTBRACKET = 300,     /* YYTOKEN_LEFTBRACKET  */
+    YYTOKEN_RIGHTBRACKET = 301,    /* YYTOKEN_RIGHTBRACKET  */
+    YYTOKEN_COMMA = 302,           /* YYTOKEN_COMMA  */
+    YYTOKEN_STRING = 303,          /* YYTOKEN_STRING  */
+    YYTOKEN_NUMBER_INT = 304,      /* YYTOKEN_NUMBER_INT  */
+    YYTOKEN_NUMBER_FLOAT = 305,    /* YYTOKEN_NUMBER_FLOAT  */
+    PSEUDO_LEX_ERROR = 306         /* PSEUDO_LEX_ERROR  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -205,62 +218,84 @@ enum yysymbol_kind_t
   YYSYMBOL_YYTOKEN_TRANSLATION = 21,       /* YYTOKEN_TRANSLATION  */
   YYSYMBOL_YYTOKEN_WEIGHTS = 22,           /* YYTOKEN_WEIGHTS  */
   YYSYMBOL_YYTOKEN_BUFFERS = 23,           /* YYTOKEN_BUFFERS  */
-  YYSYMBOL_YYTOKEN_BUFFERLENGTH = 24,      /* YYTOKEN_BUFFERLENGTH  */
+  YYSYMBOL_YYTOKEN_BYTELENGTH = 24,        /* YYTOKEN_BYTELENGTH  */
   YYSYMBOL_YYTOKEN_URI = 25,               /* YYTOKEN_URI  */
-  YYSYMBOL_YYTOKEN_TRUE = 26,              /* YYTOKEN_TRUE  */
-  YYSYMBOL_YYTOKEN_FALSE = 27,             /* YYTOKEN_FALSE  */
-  YYSYMBOL_YYTOKEN_NULL = 28,              /* YYTOKEN_NULL  */
-  YYSYMBOL_YYTOKEN_LEFTBRACE = 29,         /* YYTOKEN_LEFTBRACE  */
-  YYSYMBOL_YYTOKEN_RIGHTBRACE = 30,        /* YYTOKEN_RIGHTBRACE  */
-  YYSYMBOL_YYTOKEN_COLON = 31,             /* YYTOKEN_COLON  */
-  YYSYMBOL_YYTOKEN_LEFTBRACKET = 32,       /* YYTOKEN_LEFTBRACKET  */
-  YYSYMBOL_YYTOKEN_RIGHTBRACKET = 33,      /* YYTOKEN_RIGHTBRACKET  */
-  YYSYMBOL_YYTOKEN_COMMA = 34,             /* YYTOKEN_COMMA  */
-  YYSYMBOL_YYTOKEN_STRING = 35,            /* YYTOKEN_STRING  */
-  YYSYMBOL_YYTOKEN_NUMBER_INT = 36,        /* YYTOKEN_NUMBER_INT  */
-  YYSYMBOL_YYTOKEN_NUMBER_FLOAT = 37,      /* YYTOKEN_NUMBER_FLOAT  */
-  YYSYMBOL_PSEUDO_LEX_ERROR = 38,          /* PSEUDO_LEX_ERROR  */
-  YYSYMBOL_YYACCEPT = 39,                  /* $accept  */
-  YYSYMBOL_gltf_object = 40,               /* gltf_object  */
-  YYSYMBOL_gltf_members = 41,              /* gltf_members  */
-  YYSYMBOL_gltf_member = 42,               /* gltf_member  */
-  YYSYMBOL_asset_object = 43,              /* asset_object  */
-  YYSYMBOL_asset_members = 44,             /* asset_members  */
-  YYSYMBOL_asset_member = 45,              /* asset_member  */
-  YYSYMBOL_scenes_array = 46,              /* scenes_array  */
-  YYSYMBOL_scene_objects = 47,             /* scene_objects  */
-  YYSYMBOL_scene_object = 48,              /* scene_object  */
-  YYSYMBOL_scene_properties = 49,          /* scene_properties  */
-  YYSYMBOL_scene_property_nodes = 50,      /* scene_property_nodes  */
-  YYSYMBOL_scene_property_nodes_elements = 51, /* scene_property_nodes_elements  */
-  YYSYMBOL_nodes_array = 52,               /* nodes_array  */
-  YYSYMBOL_node_objects = 53,              /* node_objects  */
-  YYSYMBOL_node_object = 54,               /* node_object  */
-  YYSYMBOL_node_properties = 55,           /* node_properties  */
-  YYSYMBOL_node_property_children = 56,    /* node_property_children  */
-  YYSYMBOL_node_property_children_elements = 57, /* node_property_children_elements  */
-  YYSYMBOL_node_property_matrix = 58,      /* node_property_matrix  */
-  YYSYMBOL_node_property_matrix_element = 59, /* node_property_matrix_element  */
-  YYSYMBOL_node_property_rotation = 60,    /* node_property_rotation  */
-  YYSYMBOL_node_property_rotation_element = 61, /* node_property_rotation_element  */
-  YYSYMBOL_node_property_scale = 62,       /* node_property_scale  */
-  YYSYMBOL_node_property_scale_element = 63, /* node_property_scale_element  */
-  YYSYMBOL_node_property_translation = 64, /* node_property_translation  */
-  YYSYMBOL_node_property_translation_element = 65, /* node_property_translation_element  */
-  YYSYMBOL_node_property_weights = 66,     /* node_property_weights  */
-  YYSYMBOL_node_property_weights_elements = 67, /* node_property_weights_elements  */
-  YYSYMBOL_buffers_array = 68,             /* buffers_array  */
-  YYSYMBOL_buffer_objects = 69,            /* buffer_objects  */
-  YYSYMBOL_buffer_object = 70,             /* buffer_object  */
-  YYSYMBOL_buffer_properties = 71,         /* buffer_properties  */
-  YYSYMBOL_json_string = 72,               /* json_string  */
-  YYSYMBOL_json_value = 73,                /* json_value  */
-  YYSYMBOL_json_object = 74,               /* json_object  */
-  YYSYMBOL_json_members = 75,              /* json_members  */
-  YYSYMBOL_json_member = 76,               /* json_member  */
-  YYSYMBOL_json_array = 77,                /* json_array  */
-  YYSYMBOL_json_elements = 78,             /* json_elements  */
-  YYSYMBOL_json_element = 79               /* json_element  */
+  YYSYMBOL_YYTOKEN_BUFFERVIEWS = 26,       /* YYTOKEN_BUFFERVIEWS  */
+  YYSYMBOL_YYTOKEN_BUFFER = 27,            /* YYTOKEN_BUFFER  */
+  YYSYMBOL_YYTOKEN_BYTEOFFSET = 28,        /* YYTOKEN_BYTEOFFSET  */
+  YYSYMBOL_YYTOKEN_BYTESTRIDE = 29,        /* YYTOKEN_BYTESTRIDE  */
+  YYSYMBOL_YYTOKEN_TARGET = 30,            /* YYTOKEN_TARGET  */
+  YYSYMBOL_YYTOKEN_ACCESSORS = 31,         /* YYTOKEN_ACCESSORS  */
+  YYSYMBOL_YYTOKEN_BUFFERVIEW = 32,        /* YYTOKEN_BUFFERVIEW  */
+  YYSYMBOL_YYTOKEN_COMPONENTTYPE = 33,     /* YYTOKEN_COMPONENTTYPE  */
+  YYSYMBOL_YYTOKEN_NORMALIZED = 34,        /* YYTOKEN_NORMALIZED  */
+  YYSYMBOL_YYTOKEN_COUNT = 35,             /* YYTOKEN_COUNT  */
+  YYSYMBOL_YYTOKEN_TYPE = 36,              /* YYTOKEN_TYPE  */
+  YYSYMBOL_YYTOKEN_MAX = 37,               /* YYTOKEN_MAX  */
+  YYSYMBOL_YYTOKEN_MIN = 38,               /* YYTOKEN_MIN  */
+  YYSYMBOL_YYTOKEN_TRUE = 39,              /* YYTOKEN_TRUE  */
+  YYSYMBOL_YYTOKEN_FALSE = 40,             /* YYTOKEN_FALSE  */
+  YYSYMBOL_YYTOKEN_NULL = 41,              /* YYTOKEN_NULL  */
+  YYSYMBOL_YYTOKEN_LEFTBRACE = 42,         /* YYTOKEN_LEFTBRACE  */
+  YYSYMBOL_YYTOKEN_RIGHTBRACE = 43,        /* YYTOKEN_RIGHTBRACE  */
+  YYSYMBOL_YYTOKEN_COLON = 44,             /* YYTOKEN_COLON  */
+  YYSYMBOL_YYTOKEN_LEFTBRACKET = 45,       /* YYTOKEN_LEFTBRACKET  */
+  YYSYMBOL_YYTOKEN_RIGHTBRACKET = 46,      /* YYTOKEN_RIGHTBRACKET  */
+  YYSYMBOL_YYTOKEN_COMMA = 47,             /* YYTOKEN_COMMA  */
+  YYSYMBOL_YYTOKEN_STRING = 48,            /* YYTOKEN_STRING  */
+  YYSYMBOL_YYTOKEN_NUMBER_INT = 49,        /* YYTOKEN_NUMBER_INT  */
+  YYSYMBOL_YYTOKEN_NUMBER_FLOAT = 50,      /* YYTOKEN_NUMBER_FLOAT  */
+  YYSYMBOL_PSEUDO_LEX_ERROR = 51,          /* PSEUDO_LEX_ERROR  */
+  YYSYMBOL_YYACCEPT = 52,                  /* $accept  */
+  YYSYMBOL_gltf_object = 53,               /* gltf_object  */
+  YYSYMBOL_gltf_members = 54,              /* gltf_members  */
+  YYSYMBOL_gltf_member = 55,               /* gltf_member  */
+  YYSYMBOL_asset_object = 56,              /* asset_object  */
+  YYSYMBOL_asset_properties = 57,          /* asset_properties  */
+  YYSYMBOL_scenes_array = 58,              /* scenes_array  */
+  YYSYMBOL_scene_objects = 59,             /* scene_objects  */
+  YYSYMBOL_scene_object = 60,              /* scene_object  */
+  YYSYMBOL_scene_properties = 61,          /* scene_properties  */
+  YYSYMBOL_scene_property_nodes = 62,      /* scene_property_nodes  */
+  YYSYMBOL_scene_property_nodes_elements = 63, /* scene_property_nodes_elements  */
+  YYSYMBOL_nodes_array = 64,               /* nodes_array  */
+  YYSYMBOL_node_objects = 65,              /* node_objects  */
+  YYSYMBOL_node_object = 66,               /* node_object  */
+  YYSYMBOL_node_properties = 67,           /* node_properties  */
+  YYSYMBOL_node_property_children = 68,    /* node_property_children  */
+  YYSYMBOL_node_property_children_elements = 69, /* node_property_children_elements  */
+  YYSYMBOL_node_property_matrix = 70,      /* node_property_matrix  */
+  YYSYMBOL_node_property_matrix_element = 71, /* node_property_matrix_element  */
+  YYSYMBOL_node_property_rotation = 72,    /* node_property_rotation  */
+  YYSYMBOL_node_property_rotation_element = 73, /* node_property_rotation_element  */
+  YYSYMBOL_node_property_scale = 74,       /* node_property_scale  */
+  YYSYMBOL_node_property_scale_element = 75, /* node_property_scale_element  */
+  YYSYMBOL_node_property_translation = 76, /* node_property_translation  */
+  YYSYMBOL_node_property_translation_element = 77, /* node_property_translation_element  */
+  YYSYMBOL_node_property_weights = 78,     /* node_property_weights  */
+  YYSYMBOL_node_property_weights_elements = 79, /* node_property_weights_elements  */
+  YYSYMBOL_node_property_weights_element = 80, /* node_property_weights_element  */
+  YYSYMBOL_buffers_array = 81,             /* buffers_array  */
+  YYSYMBOL_buffer_objects = 82,            /* buffer_objects  */
+  YYSYMBOL_buffer_object = 83,             /* buffer_object  */
+  YYSYMBOL_buffer_properties = 84,         /* buffer_properties  */
+  YYSYMBOL_bufferviews_array = 85,         /* bufferviews_array  */
+  YYSYMBOL_bufferview_objects = 86,        /* bufferview_objects  */
+  YYSYMBOL_bufferview_object = 87,         /* bufferview_object  */
+  YYSYMBOL_bufferview_properties = 88,     /* bufferview_properties  */
+  YYSYMBOL_accessors_array = 89,           /* accessors_array  */
+  YYSYMBOL_accessor_objects = 90,          /* accessor_objects  */
+  YYSYMBOL_accessor_object = 91,           /* accessor_object  */
+  YYSYMBOL_accessor_properties = 92,       /* accessor_properties  */
+  YYSYMBOL_json_string = 93,               /* json_string  */
+  YYSYMBOL_json_boolean = 94,              /* json_boolean  */
+  YYSYMBOL_json_value = 95,                /* json_value  */
+  YYSYMBOL_json_object = 96,               /* json_object  */
+  YYSYMBOL_json_members = 97,              /* json_members  */
+  YYSYMBOL_json_member = 98,               /* json_member  */
+  YYSYMBOL_json_array = 99,                /* json_array  */
+  YYSYMBOL_json_elements = 100,            /* json_elements  */
+  YYSYMBOL_json_element = 101              /* json_element  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -272,7 +307,7 @@ typedef enum yysymbol_kind_t yysymbol_kind_t;
     int yylex(union YYSTYPE *lvalp, YYLTYPE *llocp, void *user_defined, void *yyscanner);
     void yyerror(YYLTYPE *llocp, void *user_defined, void *yyscanner, const char *msg);
 
-#line 276 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 311 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
 
 #ifdef short
 # undef short
@@ -590,21 +625,21 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  10
+#define YYFINAL  12
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   297
+#define YYLAST   463
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  39
+#define YYNTOKENS  52
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  41
+#define YYNNTS  50
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  118
+#define YYNRULES  168
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  293
+#define YYNSTATES  403
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   293
+#define YYMAXUTOK   306
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -647,25 +682,31 @@ static const yytype_int8 yytranslate[] =
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
       25,    26,    27,    28,    29,    30,    31,    32,    33,    34,
-      35,    36,    37,    38
+      35,    36,    37,    38,    39,    40,    41,    42,    43,    44,
+      45,    46,    47,    48,    49,    50,    51
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   105,   105,   109,   116,   124,   128,   132,   136,   140,
-     144,   148,   155,   163,   167,   171,   175,   179,   183,   187,
-     191,   195,   199,   203,   207,   211,   215,   219,   224,   229,
-     233,   241,   245,   250,   255,   259,   263,   267,   271,   275,
-     279,   283,   287,   291,   295,   299,   303,   307,   311,   315,
-     319,   324,   329,   334,   339,   344,   349,   354,   359,   364,
-     369,   377,   381,   386,   391,   410,   414,   418,   425,   429,
-     433,   439,   443,   447,   453,   457,   461,   469,   473,   478,
-     483,   487,   491,   495,   499,   503,   507,   511,   516,   521,
-     527,   531,   535,   539,   543,   547,   551,   555,   559,   563,
-     567,   571,   574,   577,   580,   583,   586,   589,   592,   595,
-     598,   601,   604,   607,   610,   613,   616,   619,   622
+       0,   131,   131,   135,   142,   150,   154,   158,   162,   166,
+     170,   174,   178,   182,   186,   190,   194,   198,   202,   206,
+     210,   214,   218,   222,   226,   230,   234,   238,   242,   246,
+     251,   255,   259,   265,   270,   274,   278,   282,   286,   291,
+     295,   299,   303,   307,   311,   315,   319,   324,   328,   332,
+     336,   340,   344,   348,   353,   357,   362,   368,   373,   378,
+     383,   388,   393,   398,   404,   409,   413,   417,   421,   426,
+     445,   449,   453,   460,   464,   468,   474,   478,   482,   488,
+     492,   496,   500,   504,   508,   514,   518,   523,   527,   531,
+     535,   539,   543,   547,   551,   556,   561,   566,   570,   574,
+     578,   582,   586,   590,   594,   598,   602,   606,   610,   615,
+     620,   625,   630,   635,   639,   643,   647,   651,   655,   659,
+     663,   667,   671,   675,   680,   685,   690,   695,   699,   703,
+     707,   711,   715,   719,   723,   727,   731,   735,   739,   743,
+     747,   751,   755,   759,   763,   767,   771,   775,   779,   783,
+     787,   791,   795,   799,   803,   807,   811,   815,   819,   823,
+     827,   831,   835,   839,   843,   847,   851,   855,   859
 };
 #endif
 
@@ -688,13 +729,17 @@ static const char *const yytname[] =
   "YYTOKEN_CAMERA", "YYTOKEN_CHILDREN", "YYTOKEN_SKIN", "YYTOKEN_MATRIX",
   "YYTOKEN_MESH", "YYTOKEN_ROTATION", "YYTOKEN_SCALE",
   "YYTOKEN_TRANSLATION", "YYTOKEN_WEIGHTS", "YYTOKEN_BUFFERS",
-  "YYTOKEN_BUFFERLENGTH", "YYTOKEN_URI", "YYTOKEN_TRUE", "YYTOKEN_FALSE",
-  "YYTOKEN_NULL", "YYTOKEN_LEFTBRACE", "YYTOKEN_RIGHTBRACE",
-  "YYTOKEN_COLON", "YYTOKEN_LEFTBRACKET", "YYTOKEN_RIGHTBRACKET",
-  "YYTOKEN_COMMA", "YYTOKEN_STRING", "YYTOKEN_NUMBER_INT",
-  "YYTOKEN_NUMBER_FLOAT", "PSEUDO_LEX_ERROR", "$accept", "gltf_object",
-  "gltf_members", "gltf_member", "asset_object", "asset_members",
-  "asset_member", "scenes_array", "scene_objects", "scene_object",
+  "YYTOKEN_BYTELENGTH", "YYTOKEN_URI", "YYTOKEN_BUFFERVIEWS",
+  "YYTOKEN_BUFFER", "YYTOKEN_BYTEOFFSET", "YYTOKEN_BYTESTRIDE",
+  "YYTOKEN_TARGET", "YYTOKEN_ACCESSORS", "YYTOKEN_BUFFERVIEW",
+  "YYTOKEN_COMPONENTTYPE", "YYTOKEN_NORMALIZED", "YYTOKEN_COUNT",
+  "YYTOKEN_TYPE", "YYTOKEN_MAX", "YYTOKEN_MIN", "YYTOKEN_TRUE",
+  "YYTOKEN_FALSE", "YYTOKEN_NULL", "YYTOKEN_LEFTBRACE",
+  "YYTOKEN_RIGHTBRACE", "YYTOKEN_COLON", "YYTOKEN_LEFTBRACKET",
+  "YYTOKEN_RIGHTBRACKET", "YYTOKEN_COMMA", "YYTOKEN_STRING",
+  "YYTOKEN_NUMBER_INT", "YYTOKEN_NUMBER_FLOAT", "PSEUDO_LEX_ERROR",
+  "$accept", "gltf_object", "gltf_members", "gltf_member", "asset_object",
+  "asset_properties", "scenes_array", "scene_objects", "scene_object",
   "scene_properties", "scene_property_nodes",
   "scene_property_nodes_elements", "nodes_array", "node_objects",
   "node_object", "node_properties", "node_property_children",
@@ -703,9 +748,12 @@ static const char *const yytname[] =
   "node_property_rotation_element", "node_property_scale",
   "node_property_scale_element", "node_property_translation",
   "node_property_translation_element", "node_property_weights",
-  "node_property_weights_elements", "buffers_array", "buffer_objects",
-  "buffer_object", "buffer_properties", "json_string", "json_value",
-  "json_object", "json_members", "json_member", "json_array",
+  "node_property_weights_elements", "node_property_weights_element",
+  "buffers_array", "buffer_objects", "buffer_object", "buffer_properties",
+  "bufferviews_array", "bufferview_objects", "bufferview_object",
+  "bufferview_properties", "accessors_array", "accessor_objects",
+  "accessor_object", "accessor_properties", "json_string", "json_boolean",
+  "json_value", "json_object", "json_members", "json_member", "json_array",
   "json_elements", "json_element", YY_NULLPTR
 };
 
@@ -724,11 +772,13 @@ static const yytype_int16 yytoknum[] =
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
      275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
-     285,   286,   287,   288,   289,   290,   291,   292,   293
+     285,   286,   287,   288,   289,   290,   291,   292,   293,   294,
+     295,   296,   297,   298,   299,   300,   301,   302,   303,   304,
+     305,   306
 };
 #endif
 
-#define YYPACT_NINF (-214)
+#define YYPACT_NINF (-324)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -742,93 +792,115 @@ static const yytype_int16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
-     -25,    42,    27,   -18,    40,    52,    61,    89,    39,  -214,
-    -214,     5,    41,   103,   105,   122,  -214,    42,   118,  -214,
-    -214,     4,  -214,    46,  -214,    74,  -214,  -214,   156,   157,
-     158,   159,   160,    96,  -214,    11,  -214,    24,  -214,   128,
-    -214,    79,  -214,    91,  -214,   119,  -214,    93,    93,    93,
-      93,    82,  -214,   118,   161,   162,   163,  -214,    99,  -214,
-     166,   165,   167,   168,   169,   170,   171,   172,   173,   174,
-     175,  -214,   102,  -214,   178,   177,   179,  -214,   104,  -214,
-     180,  -214,  -214,  -214,  -214,  -214,  -214,  -214,  -214,  -214,
-    -214,  -214,  -214,  -214,  -214,  -214,  -214,  -214,  -214,    -9,
-       3,  -214,  -214,  -214,  -214,  -214,  -214,  -214,    82,   181,
-      93,  -214,    47,  -214,    93,   176,   182,   183,   184,   185,
-     186,   188,   190,   191,  -214,   147,  -214,   189,    93,  -214,
-     132,  -214,  -214,   193,   121,  -214,  -214,  -214,   138,  -214,
-    -214,    -8,  -214,  -214,   195,   196,   197,  -214,  -214,    13,
-    -214,  -214,   137,  -214,  -214,   139,  -214,   141,  -214,   143,
-    -214,    15,  -214,   198,   199,   200,   201,   202,   203,   204,
-     205,   206,   207,  -214,  -214,   208,   209,    82,  -214,   210,
-    -214,    82,  -214,  -214,   148,    82,   181,    93,  -214,  -214,
-     150,  -214,  -214,   212,  -214,  -214,   213,  -214,  -214,   214,
-    -214,  -214,   215,  -214,  -214,   152,    93,   216,   182,   217,
-     184,   218,   186,   188,   190,   191,   219,    93,  -214,  -214,
-    -214,  -214,   220,  -214,  -214,  -214,  -214,   221,   137,   139,
-     141,   143,  -214,   222,  -214,  -214,  -214,  -214,  -214,  -214,
-    -214,  -214,  -214,  -214,  -214,  -214,  -214,  -214,   225,   226,
-     227,   228,  -214,   137,   139,   141,   143,   229,   230,   164,
-     211,   137,   139,  -214,  -214,   231,   233,   137,  -214,   234,
-     137,   235,   137,   236,   137,   237,   137,   238,   137,   239,
-     137,   240,   137,   241,   137,   242,   137,   243,   137,   244,
-     137,   246,  -214
+     -28,    87,    31,   -11,    73,   109,   128,   136,   167,   195,
+      -4,  -324,  -324,     9,    40,    85,    99,   142,   190,   226,
+    -324,    87,   100,  -324,  -324,    16,  -324,    28,  -324,   144,
+    -324,   153,  -324,   154,  -324,  -324,   229,   230,   231,   236,
+     239,     6,    23,  -324,    92,  -324,    65,  -324,   124,  -324,
+      13,  -324,   171,  -324,    17,  -324,   173,  -324,    60,  -324,
+     175,  -324,     4,     4,     4,     4,   237,  -324,   172,   240,
+     244,   245,  -324,    86,  -324,   248,   247,   249,   250,   251,
+     252,   253,   254,   255,   256,   257,  -324,   159,  -324,   260,
+     259,   261,  -324,   160,  -324,   262,   263,   264,   265,   266,
+     267,  -324,   161,  -324,   270,   269,   271,   272,  -324,   162,
+    -324,   275,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,
+    -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,
+    -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,
+    -324,  -324,     7,   143,  -324,  -324,  -324,  -324,  -324,  -324,
+    -324,   274,   276,   277,   278,   279,   237,   227,     4,  -324,
+     103,  -324,     4,   232,   280,   243,   281,   282,   283,   284,
+     285,   287,  -324,   106,  -324,   286,     4,  -324,   199,  -324,
+     288,   289,   290,   291,   292,  -324,   107,  -324,   293,   294,
+      62,  -324,   141,  -324,  -324,   300,   169,  -324,  -324,  -324,
+     179,  -324,     4,     4,     4,     4,   237,  -324,    45,  -324,
+    -324,   301,   302,   303,  -324,  -324,   164,  -324,  -324,   178,
+    -324,  -324,   180,  -324,   182,  -324,   184,  -324,   148,  -324,
+     304,   305,   306,   307,   308,   309,   310,   311,   312,   313,
+    -324,  -324,   314,   315,  -324,  -324,  -324,  -324,  -324,   316,
+     317,   318,   319,   320,  -324,  -324,  -324,  -324,   321,   322,
+     323,   324,   237,  -324,   258,  -324,   237,  -324,  -324,  -324,
+    -324,  -324,  -324,  -324,   191,   237,   227,     4,  -324,  -324,
+     217,  -324,  -324,   325,  -324,  -324,   326,  -324,  -324,   327,
+    -324,  -324,   328,  -324,  -324,  -324,   219,  -324,     4,   329,
+     280,   330,   281,   331,   283,   284,   285,   287,   332,     4,
+     333,   334,   335,   336,   337,   338,   339,   340,   228,  -324,
+    -324,  -324,  -324,   341,  -324,  -324,  -324,  -324,   342,   178,
+     180,   182,   184,  -324,   220,  -324,  -324,  -324,  -324,  -324,
+    -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,
+    -324,  -324,  -324,  -324,  -324,  -324,  -324,  -324,   345,   346,
+     347,   348,  -324,   178,   180,   182,   184,   349,   350,   268,
+     273,   178,   180,  -324,  -324,   351,   353,   178,  -324,   354,
+     178,   355,   178,   356,   178,   357,   178,   358,   178,   359,
+     178,   360,   178,   361,   178,   362,   178,   363,   178,   364,
+     178,   366,  -324
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
      Performed when YYTABLE does not specify something else to do.  Zero
      means the default is an error.  */
-static const yytype_int8 yydefact[] =
+static const yytype_uint8 yydefact[] =
 {
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     4,
-       1,     0,     0,     0,     0,     0,     2,     0,     0,     5,
-       6,     0,     7,     0,     8,     0,     9,     3,     0,     0,
-       0,     0,     0,     0,    12,     0,    19,     0,    21,     0,
-      35,     0,    37,     0,    81,     0,    83,     0,     0,     0,
-       0,     0,    10,     0,     0,     0,     0,    23,     0,    18,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,    39,     0,    34,     0,     0,     0,    85,     0,    80,
-       0,    91,    92,    93,    94,    95,    96,    97,    98,    99,
-     100,    90,    13,    14,    15,    16,   106,   107,   108,     0,
-       0,   104,   105,   103,    17,   101,   102,    11,     0,     0,
-       0,    22,     0,    20,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,    38,     0,    36,     0,     0,    84,
-       0,    82,   110,     0,     0,   112,   115,   118,     0,   117,
-      29,     0,    27,    28,     0,     0,     0,    59,    50,     0,
-      51,    52,     0,    53,    54,     0,    55,     0,    56,     0,
-      57,     0,    58,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    88,    89,     0,     0,     0,   109,     0,
-     114,     0,    31,    33,     0,     0,     0,     0,    61,    63,
-       0,    66,    65,     0,    69,    68,     0,    72,    71,     0,
-      75,    74,     0,    77,    79,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,     0,   113,   111,
-     116,    30,     0,    26,    24,    25,    60,     0,     0,     0,
-       0,     0,    76,     0,    49,    40,    41,    42,    43,    44,
-      45,    46,    47,    48,    86,    87,    32,    62,     0,     0,
-       0,     0,    78,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,    70,    73,     0,     0,     0,    67,     0,
+       0,     4,     1,     0,     0,     0,     0,     0,     0,     0,
+       2,     0,     0,     5,     6,     0,     7,     0,     8,     0,
+       9,     0,    10,     0,    11,     3,     0,     0,     0,     0,
+       0,     0,     0,    24,     0,    26,     0,    40,     0,    42,
+       0,    88,     0,    90,     0,    98,     0,   100,     0,   114,
+       0,   116,     0,     0,     0,     0,     0,    12,     0,     0,
+       0,     0,    28,     0,    23,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,    44,     0,    39,     0,
+       0,     0,    92,     0,    87,     0,     0,     0,     0,     0,
+       0,   102,     0,    97,     0,     0,     0,     0,   118,     0,
+     113,     0,   128,   129,   130,   131,   132,   133,   134,   135,
+     136,   137,   138,   139,   140,   141,   142,   143,   144,   145,
+     146,   147,   148,   149,   127,    18,    19,    20,    21,   150,
+     151,   158,     0,     0,   155,   156,   154,   157,    22,   152,
+     153,     0,     0,     0,     0,     0,     0,     0,     0,    27,
+       0,    25,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,    43,     0,    41,     0,     0,    91,     0,    89,
+       0,     0,     0,     0,     0,   101,     0,    99,     0,     0,
+       0,   117,     0,   115,   160,     0,     0,   162,   165,   168,
+       0,   167,     0,     0,     0,     0,     0,    34,     0,    32,
+      33,     0,     0,     0,    64,    55,     0,    56,    57,     0,
+      58,    59,     0,    60,     0,    61,     0,    62,     0,    63,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+      95,    96,     0,     0,   110,   108,   109,   111,   112,     0,
+       0,     0,     0,     0,   124,   123,   125,   126,     0,     0,
+       0,     0,     0,   159,     0,   164,     0,    13,    14,    15,
+      16,    17,    36,    38,     0,     0,     0,     0,    66,    68,
+       0,    71,    70,     0,    74,    73,     0,    77,    76,     0,
+      80,    79,     0,    82,    86,    85,     0,    84,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,   163,
+     161,   166,    35,     0,    31,    29,    30,    65,     0,     0,
+       0,     0,     0,    81,     0,    54,    45,    46,    47,    48,
+      49,    50,    51,    52,    53,    93,    94,   105,   103,   104,
+     106,   107,   120,   119,   121,   122,    37,    67,     0,     0,
+       0,     0,    83,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,    75,    78,     0,     0,     0,    72,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
        0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,    64
+       0,     0,    69
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int16 yypgoto[] =
 {
-    -214,  -214,  -214,   194,  -214,  -214,   232,  -214,  -214,   155,
-    -214,    31,  -214,  -214,  -214,   223,  -214,    33,  -214,    32,
-    -206,    38,  -212,    30,  -211,    37,  -213,    65,  -214,  -214,
-    -214,   187,  -214,   -47,   -46,  -214,  -214,   107,  -214,  -214,
-     100
+    -324,  -324,  -324,   379,  -324,  -324,  -324,  -324,   295,  -324,
+      48,  -324,  -324,  -324,   238,  -324,    33,  -324,    32,  -323,
+      67,  -300,    64,  -297,    30,  -290,    69,  -324,    43,  -324,
+    -324,   343,  -324,  -324,  -324,   344,  -324,  -324,  -324,   352,
+    -324,   -62,  -186,   -61,  -324,  -324,   149,  -324,  -324,   150
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_uint8 yydefgoto[] =
+static const yytype_int16 yydefgoto[] =
 {
-       0,     2,     8,     9,    19,    33,    34,    22,    37,    38,
-      58,   142,   184,    24,    41,    42,    72,   150,   190,   153,
-     193,   156,   196,   158,   199,   160,   202,   162,   205,    26,
-      45,    46,    78,   103,   137,   105,   134,   135,   106,   138,
-     139
+       0,     2,    10,    11,    23,    41,    26,    44,    45,    73,
+     209,   274,    28,    48,    49,    87,   217,   280,   220,   283,
+     223,   286,   225,   289,   227,   292,   229,   296,   297,    30,
+      52,    53,    93,    32,    56,    57,   102,    34,    60,    61,
+     109,   146,   147,   199,   149,   196,   197,   150,   200,   201
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -836,137 +908,192 @@ static const yytype_uint8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
-      92,    93,    94,    95,     1,   104,    81,    82,    83,    84,
-      85,    86,    87,    11,    88,    89,    90,   249,   251,   250,
-      54,   132,   248,    55,    56,   182,   133,    10,   183,    96,
-      97,    98,    99,    35,    18,   100,   136,    36,    91,   101,
-     102,    57,   258,   260,   259,     3,   188,   257,   203,   189,
-     266,   204,     4,     5,     6,   265,   144,    59,    60,   145,
-     146,   269,   140,   143,   271,     7,   273,   147,   275,    16,
-     277,    12,   279,    17,   281,    39,   283,    20,   285,    40,
-     287,   174,   289,    13,   291,    81,    82,    83,    84,    85,
-      86,    87,    14,    88,    89,    90,    81,    82,    83,    84,
-      85,    86,    87,    43,    88,    89,    90,    44,    96,    97,
-      98,    99,    73,    74,   100,    75,    76,    91,   101,   102,
-      15,    77,    28,    29,    30,    31,    52,    32,    91,   111,
-      53,   218,   124,   112,   129,    21,   125,    23,   130,   223,
-     225,    61,    62,    63,    64,    65,    66,    67,    68,    69,
-      70,   178,    79,    80,    25,   179,   175,   176,    71,   234,
-     163,   164,   165,   166,   167,   168,   169,   170,   171,   172,
-     245,   180,   181,   191,   192,   194,   195,   197,   198,   200,
-     201,   221,   222,   226,   227,   232,   233,    47,    48,    49,
-      50,    51,   108,   109,   110,    35,   114,   263,   115,   116,
-     117,   118,   119,   120,   121,   122,   123,    39,   127,    43,
-     128,    27,   148,   141,   149,   113,   152,   224,   155,   151,
-     157,   154,   159,   161,   177,   173,   185,   186,   187,   206,
-     207,   208,   209,   210,   211,   212,   213,   214,   215,   216,
-     217,   236,   238,   241,   264,   133,   228,   229,   230,   231,
-     240,   242,   235,   237,   239,   244,   246,   247,   252,   253,
-     254,   255,   256,   261,   262,   267,   268,   131,   270,   272,
-     274,   276,   278,   280,   282,   284,   286,   288,   290,   292,
-     243,   220,     0,     0,     0,   107,   219,     0,     0,     0,
-       0,     0,     0,     0,     0,     0,     0,   126
+     135,   136,   137,   138,   257,   148,   358,   112,   113,   114,
+     115,   116,   117,   118,     1,   119,   120,   121,   122,   123,
+     124,   125,   126,   127,   128,   129,   130,   131,   132,   133,
+     359,    12,    69,    13,   360,    70,    71,    90,    91,    20,
+     367,    96,   361,    21,    97,    98,    99,   100,   375,    67,
+     194,    22,   134,    68,   379,   195,    92,   381,    42,   383,
+     101,   385,    43,   387,   368,   389,    72,   391,   369,   393,
+      46,   395,   376,   397,    47,   399,   370,   401,    76,    77,
+      78,    79,    80,    81,    82,    83,    84,    85,   105,    24,
+       3,   272,   106,   107,   273,   207,   210,     4,     5,     6,
+     214,   139,   140,   108,    36,    37,    38,    39,    86,    40,
+       7,   256,   211,     8,   241,   212,   213,    14,     9,   230,
+     231,   232,   233,   234,   235,   236,   237,   238,   239,   159,
+      25,   249,   355,   160,   250,   251,   252,   253,    74,    75,
+     267,   268,   269,   270,    27,   271,   112,   113,   114,   115,
+     116,   117,   118,    15,   119,   120,   121,   122,   123,   124,
+     125,   126,   127,   128,   129,   130,   131,   132,   133,   258,
+      88,    89,    16,   259,   260,   261,   151,   152,   153,   154,
+      17,   155,   139,   140,   141,   142,    50,    29,   143,   198,
+      51,   134,   144,   145,   293,    54,    58,   294,   295,    55,
+      59,   319,   172,   177,   185,   191,   173,   178,   186,   192,
+     278,    18,   263,   279,   324,   326,   264,    94,    95,   103,
+     104,   110,   111,   242,   243,   265,   266,   281,   282,   284,
+     285,   287,   288,   290,   291,    31,   335,   322,   323,    19,
+     112,   113,   114,   115,   116,   117,   118,   346,   119,   120,
+     121,   122,   123,   124,   125,   126,   127,   128,   129,   130,
+     131,   132,   133,   327,   328,   333,   334,   139,   140,   294,
+     295,    33,   208,    62,    63,    64,   139,   140,   141,   142,
+      65,   215,   143,    66,   156,   134,   144,   145,   157,   158,
+      42,   162,   218,   163,   164,   165,   166,   167,   168,   169,
+     170,   171,    46,   175,    50,   176,   195,   180,   181,   182,
+     183,   184,    54,   188,   373,   189,   190,    58,   202,   374,
+     203,   204,   205,   206,   325,   216,   219,   174,   222,   224,
+     226,   221,   228,   337,   339,   240,   343,   244,   245,   246,
+     247,   248,   254,   255,   262,   275,   276,   277,   298,   299,
+     300,   301,   302,   303,   304,   305,   306,   307,   308,   309,
+     310,   311,   312,   313,   314,   315,   316,   317,   318,   342,
+     161,   341,   329,   330,   331,   332,   344,   362,   336,   338,
+     340,   345,   347,   348,   349,   350,   351,   352,   353,   354,
+     356,   357,   363,   364,   365,   366,   371,   372,   377,   378,
+      35,   380,   382,   384,   386,   388,   390,   392,   394,   396,
+     398,   400,   402,   320,     0,     0,   321,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,   179,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,   187,     0,
+       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
+       0,     0,     0,   193
 };
 
 static const yytype_int16 yycheck[] =
 {
-      47,    48,    49,    50,    29,    51,     3,     4,     5,     6,
-       7,     8,     9,    31,    11,    12,    13,   229,   231,   230,
-       9,    30,   228,    12,    13,    33,    35,     0,    36,    26,
-      27,    28,    29,    29,    29,    32,    33,    33,    35,    36,
-      37,    30,   254,   256,   255,     3,    33,   253,    33,    36,
-     262,    36,    10,    11,    12,   261,     9,    33,    34,    12,
-      13,   267,   108,   110,   270,    23,   272,   114,   274,    30,
-     276,    31,   278,    34,   280,    29,   282,    36,   284,    33,
-     286,   128,   288,    31,   290,     3,     4,     5,     6,     7,
-       8,     9,    31,    11,    12,    13,     3,     4,     5,     6,
-       7,     8,     9,    29,    11,    12,    13,    33,    26,    27,
-      28,    29,    33,    34,    32,    24,    25,    35,    36,    37,
-      31,    30,     4,     5,     6,     7,    30,     9,    35,    30,
-      34,   177,    30,    34,    30,    32,    34,    32,    34,   185,
-     187,    13,    14,    15,    16,    17,    18,    19,    20,    21,
-      22,    30,    33,    34,    32,    34,    24,    25,    30,   206,
+      62,    63,    64,    65,   190,    66,   329,     3,     4,     5,
+       6,     7,     8,     9,    42,    11,    12,    13,    14,    15,
+      16,    17,    18,    19,    20,    21,    22,    23,    24,    25,
+     330,     0,     9,    44,   331,    12,    13,    24,    25,    43,
+     363,    24,   332,    47,    27,    28,    29,    30,   371,    43,
+      43,    42,    48,    47,   377,    48,    43,   380,    42,   382,
+      43,   384,    46,   386,   364,   388,    43,   390,   365,   392,
+      42,   394,   372,   396,    46,   398,   366,   400,    13,    14,
+      15,    16,    17,    18,    19,    20,    21,    22,    28,    49,
+       3,    46,    32,    33,    49,   156,   158,    10,    11,    12,
+     162,    39,    40,    43,     4,     5,     6,     7,    43,     9,
+      23,    49,     9,    26,   176,    12,    13,    44,    31,    13,
+      14,    15,    16,    17,    18,    19,    20,    21,    22,    43,
+      45,    24,   318,    47,    27,    28,    29,    30,    46,    47,
+     202,   203,   204,   205,    45,   206,     3,     4,     5,     6,
+       7,     8,     9,    44,    11,    12,    13,    14,    15,    16,
+      17,    18,    19,    20,    21,    22,    23,    24,    25,    28,
+      46,    47,    44,    32,    33,    34,     4,     5,     6,     7,
+      44,     9,    39,    40,    41,    42,    42,    45,    45,    46,
+      46,    48,    49,    50,    46,    42,    42,    49,    50,    46,
+      46,   262,    43,    43,    43,    43,    47,    47,    47,    47,
+      46,    44,    43,    49,   275,   277,    47,    46,    47,    46,
+      47,    46,    47,    24,    25,    46,    47,    49,    50,    49,
+      50,    49,    50,    49,    50,    45,   298,    46,    47,    44,
+       3,     4,     5,     6,     7,     8,     9,   309,    11,    12,
       13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
-     217,    33,    34,    36,    37,    36,    37,    36,    37,    36,
-      37,    33,    34,    33,    34,    33,    34,    31,    31,    31,
-      31,    31,    31,    31,    31,    29,    31,    33,    31,    31,
-      31,    31,    31,    31,    31,    31,    31,    29,    31,    29,
-      31,    17,    36,    32,    32,    60,    32,   186,    32,    36,
-      32,    36,    32,    32,    31,    36,    31,    31,    31,    31,
-      31,    31,    31,    31,    31,    31,    31,    31,    31,    31,
-      31,   208,   210,   213,    33,    35,    34,    34,    34,    34,
-     212,   214,    36,    36,    36,    36,    36,    36,    36,    34,
-      34,    34,    34,    34,    34,    34,    33,    80,    34,    34,
-      34,    34,    34,    34,    34,    34,    34,    34,    34,    33,
-     215,   181,    -1,    -1,    -1,    53,   179,    -1,    -1,    -1,
-      -1,    -1,    -1,    -1,    -1,    -1,    -1,    74
+      23,    24,    25,    46,    47,    46,    47,    39,    40,    49,
+      50,    45,    45,    44,    44,    44,    39,    40,    41,    42,
+      44,    49,    45,    44,    44,    48,    49,    50,    44,    44,
+      42,    44,    49,    44,    44,    44,    44,    44,    44,    44,
+      44,    44,    42,    44,    42,    44,    48,    44,    44,    44,
+      44,    44,    42,    44,    46,    44,    44,    42,    44,    46,
+      44,    44,    44,    44,   276,    45,    45,    89,    45,    45,
+      45,    49,    45,   300,   302,    49,   306,    49,    49,    49,
+      49,    49,    49,    49,    44,    44,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,    44,    44,   305,
+      75,   304,    47,    47,    47,    47,   307,   334,    49,    49,
+      49,    49,    49,    49,    49,    49,    49,    49,    49,    49,
+      49,    49,    47,    47,    47,    47,    47,    47,    47,    46,
+      21,    47,    47,    47,    47,    47,    47,    47,    47,    47,
+      47,    47,    46,   264,    -1,    -1,   266,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    95,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,   104,    -1,
+      -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,    -1,
+      -1,    -1,    -1,   111
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    29,    40,     3,    10,    11,    12,    23,    41,    42,
-       0,    31,    31,    31,    31,    31,    30,    34,    29,    43,
-      36,    32,    46,    32,    52,    32,    68,    42,     4,     5,
-       6,     7,     9,    44,    45,    29,    33,    47,    48,    29,
-      33,    53,    54,    29,    33,    69,    70,    31,    31,    31,
-      31,    31,    30,    34,     9,    12,    13,    30,    49,    33,
-      34,    13,    14,    15,    16,    17,    18,    19,    20,    21,
-      22,    30,    55,    33,    34,    24,    25,    30,    71,    33,
-      34,     3,     4,     5,     6,     7,     8,     9,    11,    12,
-      13,    35,    72,    72,    72,    72,    26,    27,    28,    29,
-      32,    36,    37,    72,    73,    74,    77,    45,    31,    31,
-      31,    30,    34,    48,    31,    31,    31,    31,    31,    31,
-      31,    31,    31,    31,    30,    34,    54,    31,    31,    30,
-      34,    70,    30,    35,    75,    76,    33,    73,    78,    79,
-      73,    32,    50,    72,     9,    12,    13,    72,    36,    32,
-      56,    36,    32,    58,    36,    32,    60,    32,    62,    32,
-      64,    32,    66,    13,    14,    15,    16,    17,    18,    19,
-      20,    21,    22,    36,    72,    24,    25,    31,    30,    34,
-      33,    34,    33,    36,    51,    31,    31,    31,    33,    36,
-      57,    36,    37,    59,    36,    37,    61,    36,    37,    63,
-      36,    37,    65,    33,    36,    67,    31,    31,    31,    31,
-      31,    31,    31,    31,    31,    31,    31,    31,    73,    76,
-      79,    33,    34,    73,    50,    72,    33,    34,    34,    34,
-      34,    34,    33,    34,    72,    36,    56,    36,    58,    36,
-      60,    62,    64,    66,    36,    72,    36,    36,    59,    61,
-      63,    65,    36,    34,    34,    34,    34,    59,    61,    63,
-      65,    34,    34,    33,    33,    59,    61,    34,    33,    59,
-      34,    59,    34,    59,    34,    59,    34,    59,    34,    59,
-      34,    59,    34,    59,    34,    59,    34,    59,    34,    59,
-      34,    59,    33
+       0,    42,    53,     3,    10,    11,    12,    23,    26,    31,
+      54,    55,     0,    44,    44,    44,    44,    44,    44,    44,
+      43,    47,    42,    56,    49,    45,    58,    45,    64,    45,
+      81,    45,    85,    45,    89,    55,     4,     5,     6,     7,
+       9,    57,    42,    46,    59,    60,    42,    46,    65,    66,
+      42,    46,    82,    83,    42,    46,    86,    87,    42,    46,
+      90,    91,    44,    44,    44,    44,    44,    43,    47,     9,
+      12,    13,    43,    61,    46,    47,    13,    14,    15,    16,
+      17,    18,    19,    20,    21,    22,    43,    67,    46,    47,
+      24,    25,    43,    84,    46,    47,    24,    27,    28,    29,
+      30,    43,    88,    46,    47,    28,    32,    33,    43,    92,
+      46,    47,     3,     4,     5,     6,     7,     8,     9,    11,
+      12,    13,    14,    15,    16,    17,    18,    19,    20,    21,
+      22,    23,    24,    25,    48,    93,    93,    93,    93,    39,
+      40,    41,    42,    45,    49,    50,    93,    94,    95,    96,
+      99,     4,     5,     6,     7,     9,    44,    44,    44,    43,
+      47,    60,    44,    44,    44,    44,    44,    44,    44,    44,
+      44,    44,    43,    47,    66,    44,    44,    43,    47,    83,
+      44,    44,    44,    44,    44,    43,    47,    87,    44,    44,
+      44,    43,    47,    91,    43,    48,    97,    98,    46,    95,
+     100,   101,    44,    44,    44,    44,    44,    95,    45,    62,
+      93,     9,    12,    13,    93,    49,    45,    68,    49,    45,
+      70,    49,    45,    72,    45,    74,    45,    76,    45,    78,
+      13,    14,    15,    16,    17,    18,    19,    20,    21,    22,
+      49,    93,    24,    25,    49,    49,    49,    49,    49,    24,
+      27,    28,    29,    30,    49,    49,    49,    94,    28,    32,
+      33,    34,    44,    43,    47,    46,    47,    93,    93,    93,
+      93,    95,    46,    49,    63,    44,    44,    44,    46,    49,
+      69,    49,    50,    71,    49,    50,    73,    49,    50,    75,
+      49,    50,    77,    46,    49,    50,    79,    80,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,    44,    44,    44,
+      44,    44,    44,    44,    44,    44,    44,    44,    44,    95,
+      98,   101,    46,    47,    95,    62,    93,    46,    47,    47,
+      47,    47,    47,    46,    47,    93,    49,    68,    49,    70,
+      49,    72,    74,    76,    78,    49,    93,    49,    49,    49,
+      49,    49,    49,    49,    49,    94,    49,    49,    71,    73,
+      75,    77,    80,    47,    47,    47,    47,    71,    73,    75,
+      77,    47,    47,    46,    46,    71,    73,    47,    46,    71,
+      47,    71,    47,    71,    47,    71,    47,    71,    47,    71,
+      47,    71,    47,    71,    47,    71,    47,    71,    47,    71,
+      47,    71,    46
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    39,    40,    41,    41,    42,    42,    42,    42,    42,
-      43,    44,    44,    45,    45,    45,    45,    45,    46,    46,
-      47,    47,    48,    48,    49,    49,    49,    49,    49,    49,
-      50,    50,    51,    51,    52,    52,    53,    53,    54,    54,
-      55,    55,    55,    55,    55,    55,    55,    55,    55,    55,
-      55,    55,    55,    55,    55,    55,    55,    55,    55,    55,
-      56,    56,    57,    57,    58,    59,    59,    60,    61,    61,
-      62,    63,    63,    64,    65,    65,    66,    66,    67,    67,
-      68,    68,    69,    69,    70,    70,    71,    71,    71,    71,
-      72,    72,    72,    72,    72,    72,    72,    72,    72,    72,
-      72,    73,    73,    73,    73,    73,    73,    73,    73,    74,
-      74,    75,    75,    76,    77,    77,    78,    78,    79
+       0,    52,    53,    54,    54,    55,    55,    55,    55,    55,
+      55,    55,    56,    57,    57,    57,    57,    57,    57,    57,
+      57,    57,    57,    58,    58,    59,    59,    60,    60,    61,
+      61,    61,    61,    61,    61,    62,    62,    63,    63,    64,
+      64,    65,    65,    66,    66,    67,    67,    67,    67,    67,
+      67,    67,    67,    67,    67,    67,    67,    67,    67,    67,
+      67,    67,    67,    67,    67,    68,    68,    69,    69,    70,
+      71,    71,    72,    73,    73,    74,    75,    75,    76,    77,
+      77,    78,    78,    79,    79,    80,    80,    81,    81,    82,
+      82,    83,    83,    84,    84,    84,    84,    85,    85,    86,
+      86,    87,    87,    88,    88,    88,    88,    88,    88,    88,
+      88,    88,    88,    89,    89,    90,    90,    91,    91,    92,
+      92,    92,    92,    92,    92,    92,    92,    93,    93,    93,
+      93,    93,    93,    93,    93,    93,    93,    93,    93,    93,
+      93,    93,    93,    93,    93,    93,    93,    93,    93,    93,
+      94,    94,    95,    95,    95,    95,    95,    95,    95,    96,
+      96,    97,    97,    98,    99,    99,   100,   100,   101
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     3,     3,     1,     3,     3,     3,     3,     3,
-       3,     3,     1,     3,     3,     3,     3,     3,     3,     2,
-       3,     1,     3,     2,     5,     5,     5,     3,     3,     3,
-       3,     2,     3,     1,     3,     2,     3,     1,     3,     2,
-       5,     5,     5,     5,     5,     5,     5,     5,     5,     5,
-       3,     3,     3,     3,     3,     3,     3,     3,     3,     3,
-       3,     2,     3,     1,    33,     1,     1,     9,     1,     1,
-       7,     1,     1,     7,     1,     1,     3,     2,     3,     1,
-       3,     2,     3,     1,     3,     2,     5,     5,     3,     3,
+       3,     3,     3,     5,     5,     5,     5,     5,     3,     3,
+       3,     3,     3,     3,     2,     3,     1,     3,     2,     5,
+       5,     5,     3,     3,     3,     3,     2,     3,     1,     3,
+       2,     3,     1,     3,     2,     5,     5,     5,     5,     5,
+       5,     5,     5,     5,     5,     3,     3,     3,     3,     3,
+       3,     3,     3,     3,     3,     3,     2,     3,     1,    33,
+       1,     1,     9,     1,     1,     7,     1,     1,     7,     1,
+       1,     3,     2,     3,     1,     1,     1,     3,     2,     3,
+       1,     3,     2,     5,     5,     3,     3,     3,     2,     3,
+       1,     3,     2,     5,     5,     5,     5,     5,     3,     3,
+       3,     3,     3,     3,     2,     3,     1,     3,     2,     5,
+       5,     5,     5,     3,     3,     3,     3,     1,     1,     1,
+       1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     1,
        1,     1,     1,     1,     1,     1,     1,     1,     1,     3,
        2,     3,     1,     3,     3,     2,     3,     1,     1
@@ -1815,541 +1942,570 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* gltf_object: YYTOKEN_LEFTBRACE gltf_members YYTOKEN_RIGHTBRACE  */
-#line 105 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+#line 131 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                 { 
 	//$$ = $2;
 }
-#line 1823 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 1950 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
   case 3: /* gltf_members: gltf_members YYTOKEN_COMMA gltf_member  */
-#line 109 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+#line 135 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                      { 
 	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
 	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = $1;
 }
-#line 1834 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 1961 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
   case 4: /* gltf_members: gltf_member  */
-#line 116 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+#line 142 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                           { 
     //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
 	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
 	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = _jsonobject;
-    }
-#line 1846 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 5: /* gltf_member: YYTOKEN_ASSET YYTOKEN_COLON asset_object  */
-#line 124 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                      {
-	//$$ = $3;
-	}
-#line 1854 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 6: /* gltf_member: YYTOKEN_SCENE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 128 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                            {
-	gltf_yacc_set_default_scene_index_callback((yyvsp[0].m_token_numberint), user_defined);
-}
-#line 1862 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 7: /* gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array  */
-#line 132 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                       {
-	//$$ = $3;
-	}
-#line 1870 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 8: /* gltf_member: YYTOKEN_NODES YYTOKEN_COLON nodes_array  */
-#line 136 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                     {
-	//$$ = $3;
-	}
-#line 1878 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 9: /* gltf_member: YYTOKEN_BUFFERS YYTOKEN_COLON buffers_array  */
-#line 140 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                         {
-	//$$ = $3;
-	}
-#line 1886 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 10: /* asset_object: YYTOKEN_LEFTBRACE asset_members YYTOKEN_RIGHTBRACE  */
-#line 144 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                  { 
-	//$$ = $2;
-	}
-#line 1894 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 11: /* asset_members: asset_members YYTOKEN_COMMA asset_member  */
-#line 148 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                        { 
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
-	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = $1;
-    }
-#line 1905 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 12: /* asset_members: asset_member  */
-#line 155 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            { 
-    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
-	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = _jsonobject;
-    }
-#line 1917 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 13: /* asset_member: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string  */
-#line 163 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                          { 
-	//$$._jsonvalue = $3;
-    }
-#line 1925 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 14: /* asset_member: YYTOKEN_GENERATOR YYTOKEN_COLON json_string  */
-#line 167 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                          { 
-	//$$._jsonvalue = $3;
-    }
-#line 1933 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 15: /* asset_member: YYTOKEN_VERSION YYTOKEN_COLON json_string  */
-#line 171 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                        { 
-	//$$._jsonvalue = $3;
-    }
-#line 1941 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 16: /* asset_member: YYTOKEN_MINVERSION YYTOKEN_COLON json_string  */
-#line 175 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                           { 
-	//$$._jsonvalue = $3;
-    }
-#line 1949 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 17: /* asset_member: YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
-#line 179 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                      { 
-	//$$._jsonvalue = $3;
-    }
-#line 1957 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 18: /* scenes_array: YYTOKEN_LEFTBRACKET scene_objects YYTOKEN_RIGHTBRACKET  */
-#line 183 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                     { 
-
-}
-#line 1965 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 19: /* scenes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 187 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                       {
-
 }
 #line 1973 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 20: /* scene_objects: scene_objects YYTOKEN_COMMA scene_object  */
-#line 191 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                        { 
-	assert(-1 == (yyvsp[0].m_scene_index) || gltf_yacc_scene_size_callback(user_defined) == ((yyvsp[0].m_scene_index) + 1));
+  case 5: /* gltf_member: YYTOKEN_ASSET YYTOKEN_COLON asset_object  */
+#line 150 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                      {
+	//$$ = $3;
 }
 #line 1981 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 21: /* scene_objects: scene_object  */
-#line 195 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            {
-	assert(-1 == (yyvsp[0].m_scene_index) || gltf_yacc_scene_size_callback(user_defined) == ((yyvsp[0].m_scene_index) + 1));
+  case 6: /* gltf_member: YYTOKEN_SCENE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 154 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                            {
+	gltf_yacc_set_default_scene_index_callback((yyvsp[0].m_token_numberint), user_defined);
 }
 #line 1989 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 22: /* scene_object: YYTOKEN_LEFTBRACE scene_properties YYTOKEN_RIGHTBRACE  */
-#line 199 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                    {
-	(yyval.m_scene_index) = (yyvsp[-1].m_scene_index);
+  case 7: /* gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array  */
+#line 158 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                       {
+
 }
 #line 1997 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 23: /* scene_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
-#line 203 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                   { 
-	(yyval.m_scene_index) = -1;
+  case 8: /* gltf_member: YYTOKEN_NODES YYTOKEN_COLON nodes_array  */
+#line 162 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                     {
+
 }
 #line 2005 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 24: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes  */
-#line 207 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                  {
-	gltf_yacc_scene_set_nodes_callback((yyval.m_scene_index), (yyvsp[0].m_int_array).m_data, (yyvsp[0].m_int_array).m_size, user_defined);
+  case 9: /* gltf_member: YYTOKEN_BUFFERS YYTOKEN_COLON buffers_array  */
+#line 166 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                         {
+
 }
 #line 2013 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 25: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string  */
-#line 211 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                        {
-	gltf_yacc_scene_set_name_callback((yyval.m_scene_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+  case 10: /* gltf_member: YYTOKEN_BUFFERVIEWS YYTOKEN_COLON bufferviews_array  */
+#line 170 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                 {
+
 }
 #line 2021 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 26: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
-#line 215 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                         { 
-	// ignore
+  case 11: /* gltf_member: YYTOKEN_ACCESSORS YYTOKEN_COLON accessors_array  */
+#line 174 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                             {
+
 }
 #line 2029 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 27: /* scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes  */
-#line 219 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                   { 
-	(yyval.m_scene_index) = gltf_yacc_scene_push_callback(user_defined);
-	gltf_yacc_scene_set_nodes_callback((yyval.m_scene_index), (yyvsp[0].m_int_array).m_data, (yyvsp[0].m_int_array).m_size, user_defined);
+  case 12: /* asset_object: YYTOKEN_LEFTBRACE asset_properties YYTOKEN_RIGHTBRACE  */
+#line 178 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                     { 
+	
 }
-#line 2038 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2037 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 28: /* scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string  */
-#line 224 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                         {
-	(yyval.m_scene_index) = gltf_yacc_scene_push_callback(user_defined);
-	gltf_yacc_scene_set_name_callback((yyval.m_scene_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+  case 13: /* asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string  */
+#line 182 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                             { 
+
 }
-#line 2047 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2045 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 29: /* scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
-#line 229 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                          { 
-	// ignore
+  case 14: /* asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_GENERATOR YYTOKEN_COLON json_string  */
+#line 186 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                             { 
+
 }
-#line 2055 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2053 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 30: /* scene_property_nodes: YYTOKEN_LEFTBRACKET scene_property_nodes_elements YYTOKEN_RIGHTBRACKET  */
-#line 233 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                             {
-	for (int i = 0; i < (yyvsp[-1].m_int_array).m_size; ++i)
-	{
-		(yyval.m_int_array).m_data[i] = (yyvsp[-1].m_int_array).m_data[i];
-	}
-	(yyval.m_int_array).m_size = (yyvsp[-1].m_int_array).m_size;
+  case 15: /* asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_VERSION YYTOKEN_COLON json_string  */
+#line 190 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                           { 
+
 }
-#line 2067 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2061 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 31: /* scene_property_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 241 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                               { 
-    (yyval.m_int_array).m_size = 0;
+  case 16: /* asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_MINVERSION YYTOKEN_COLON json_string  */
+#line 194 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                              { 
+
 }
-#line 2075 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2069 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 32: /* scene_property_nodes_elements: scene_property_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT  */
-#line 245 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                              {
-	(yyval.m_int_array).m_data[(yyval.m_int_array).m_size] = (yyvsp[0].m_token_numberint);
-	++(yyval.m_int_array).m_size;
+  case 17: /* asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
+#line 198 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                         { 
+
 }
-#line 2084 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2077 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 33: /* scene_property_nodes_elements: YYTOKEN_NUMBER_INT  */
-#line 250 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                   {
-	(yyval.m_int_array).m_data[0] = (yyvsp[0].m_token_numberint);
-	(yyval.m_int_array).m_size = 1;
+  case 18: /* asset_properties: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string  */
+#line 202 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                              { 
+
+}
+#line 2085 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 19: /* asset_properties: YYTOKEN_GENERATOR YYTOKEN_COLON json_string  */
+#line 206 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                              { 
+
 }
 #line 2093 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 34: /* nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET  */
-#line 255 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                   {
+  case 20: /* asset_properties: YYTOKEN_VERSION YYTOKEN_COLON json_string  */
+#line 210 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                            { 
 
 }
 #line 2101 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 35: /* nodes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 259 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                      {
+  case 21: /* asset_properties: YYTOKEN_MINVERSION YYTOKEN_COLON json_string  */
+#line 214 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               { 
 
 }
 #line 2109 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 36: /* node_objects: node_objects YYTOKEN_COMMA node_object  */
-#line 263 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                     { 
-   	assert(-1 == (yyvsp[0].m_node_index) || gltf_yacc_node_size_callback(user_defined) == ((yyvsp[0].m_node_index) + 1));
+  case 22: /* asset_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
+#line 218 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                          { 
+
 }
 #line 2117 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 37: /* node_objects: node_object  */
-#line 267 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                          { 
-	assert(-1 == (yyvsp[0].m_node_index) || gltf_yacc_node_size_callback(user_defined) == ((yyvsp[0].m_node_index) + 1));
+  case 23: /* scenes_array: YYTOKEN_LEFTBRACKET scene_objects YYTOKEN_RIGHTBRACKET  */
+#line 222 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                     { 
+
 }
 #line 2125 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 38: /* node_object: YYTOKEN_LEFTBRACE node_properties YYTOKEN_RIGHTBRACE  */
-#line 271 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                  {
-	(yyval.m_node_index) = (yyvsp[-1].m_node_index);
+  case 24: /* scenes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 226 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                       {
+
 }
 #line 2133 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 39: /* node_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
-#line 275 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                  { 
-	(yyval.m_node_index) = -1;
+  case 25: /* scene_objects: scene_objects YYTOKEN_COMMA scene_object  */
+#line 230 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                        { 
+	assert(-1 == (yyvsp[0].m_scene_index) || gltf_yacc_scene_size_callback(user_defined) == ((yyvsp[0].m_scene_index) + 1));
 }
 #line 2141 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 40: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 279 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                               {
-	gltf_yacc_node_set_camera_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+  case 26: /* scene_objects: scene_object  */
+#line 234 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+	assert(-1 == (yyvsp[0].m_scene_index) || gltf_yacc_scene_size_callback(user_defined) == ((yyvsp[0].m_scene_index) + 1));
 }
 #line 2149 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 41: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children  */
-#line 283 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                     {
-	gltf_yacc_node_set_children_callback((yyval.m_node_index), (yyvsp[0].m_int_array).m_data, (yyvsp[0].m_int_array).m_size, user_defined);
+  case 27: /* scene_object: YYTOKEN_LEFTBRACE scene_properties YYTOKEN_RIGHTBRACE  */
+#line 238 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                    {
+	(yyval.m_scene_index) = (yyvsp[-1].m_scene_index);
 }
 #line 2157 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 42: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 287 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                             {
-	gltf_yacc_node_set_skin_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+  case 28: /* scene_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 242 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                   { 
+	(yyval.m_scene_index) = -1;
 }
 #line 2165 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 43: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix  */
-#line 291 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                 {
-	gltf_yacc_node_set_matrix_callback((yyval.m_node_index), (yyvsp[0].m_mat4x4), user_defined);
+  case 29: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes  */
+#line 246 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                  {
+	gltf_yacc_scene_set_nodes_callback((yyval.m_scene_index), (yyvsp[0].m_temp_int_array_version), user_defined);
+	gltf_yacc_temp_int_array_destroy_callback((yyvsp[0].m_temp_int_array_version), user_defined);
 }
-#line 2173 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2174 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 44: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 295 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 30: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string  */
+#line 251 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                        {
+	gltf_yacc_scene_set_name_callback((yyval.m_scene_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+}
+#line 2182 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 31: /* scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
+#line 255 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                         { 
+	// ignore
+}
+#line 2190 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 32: /* scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes  */
+#line 259 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                   { 
+	(yyval.m_scene_index) = gltf_yacc_scene_push_callback(user_defined);
+	gltf_yacc_scene_set_nodes_callback((yyval.m_scene_index), (yyvsp[0].m_temp_int_array_version), user_defined);
+	gltf_yacc_temp_int_array_destroy_callback((yyvsp[0].m_temp_int_array_version), user_defined);
+}
+#line 2200 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 33: /* scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string  */
+#line 265 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                         {
+	(yyval.m_scene_index) = gltf_yacc_scene_push_callback(user_defined);
+	gltf_yacc_scene_set_name_callback((yyval.m_scene_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+}
+#line 2209 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 34: /* scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value  */
+#line 270 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                          { 
+
+}
+#line 2217 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 35: /* scene_property_nodes: YYTOKEN_LEFTBRACKET scene_property_nodes_elements YYTOKEN_RIGHTBRACKET  */
+#line 274 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                              {
-	gltf_yacc_node_set_mesh_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+	(yyval.m_temp_int_array_version) = (yyvsp[-1].m_temp_int_array_version);
 }
-#line 2181 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2225 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 45: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation  */
-#line 299 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                     {
-	gltf_yacc_node_set_rotation_callback((yyval.m_node_index), (yyvsp[0].m_vec4), user_defined);
+  case 36: /* scene_property_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 278 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               { 
+	(yyval.m_temp_int_array_version) = gltf_yacc_temp_int_array_init_callback(user_defined);
 }
-#line 2189 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2233 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 46: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SCALE YYTOKEN_COLON node_property_scale  */
-#line 303 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                               {
-	gltf_yacc_node_set_scale_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+  case 37: /* scene_property_nodes_elements: scene_property_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT  */
+#line 282 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                              {
+	gltf_yacc_temp_int_array_push_callback((yyval.m_temp_int_array_version), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2197 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2241 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 47: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation  */
-#line 307 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                           {
-	gltf_yacc_node_set_translation_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+  case 38: /* scene_property_nodes_elements: YYTOKEN_NUMBER_INT  */
+#line 286 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                   {
+	(yyval.m_temp_int_array_version) = gltf_yacc_temp_int_array_init_callback(user_defined);
+	gltf_yacc_temp_int_array_push_callback((yyval.m_temp_int_array_version), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2205 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2250 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 48: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights  */
-#line 311 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                   {
-	gltf_yacc_node_set_weights_callback((yyval.m_node_index), (yyvsp[0].m_float_array).m_data, (yyvsp[0].m_float_array).m_size, user_defined);
-}
-#line 2213 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 49: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string  */
-#line 315 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                      {
-	gltf_yacc_node_set_name_callback((yyval.m_node_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
-}
-#line 2221 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 50: /* node_properties: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 319 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                 {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_camera_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
-}
-#line 2230 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 51: /* node_properties: YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children  */
-#line 324 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                       {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_children_callback((yyval.m_node_index), (yyvsp[0].m_int_array).m_data, (yyvsp[0].m_int_array).m_size, user_defined);
-}
-#line 2239 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 52: /* node_properties: YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 329 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                               {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_skin_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
-}
-#line 2248 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 53: /* node_properties: YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix  */
-#line 334 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 39: /* nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET  */
+#line 291 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                    {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_matrix_callback((yyval.m_node_index), (yyvsp[0].m_mat4x4), user_defined);
+
 }
-#line 2257 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2258 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 54: /* node_properties: YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 339 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                               {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_mesh_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+  case 40: /* nodes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 295 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                      {
+
 }
 #line 2266 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 55: /* node_properties: YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation  */
-#line 344 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                       {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_rotation_callback((yyval.m_node_index), (yyvsp[0].m_vec4), user_defined);
+  case 41: /* node_objects: node_objects YYTOKEN_COMMA node_object  */
+#line 299 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                     { 
+   	assert(-1 == (yyvsp[0].m_node_index) || gltf_yacc_node_size_callback(user_defined) == ((yyvsp[0].m_node_index) + 1));
 }
-#line 2275 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2274 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 56: /* node_properties: YYTOKEN_SCALE YYTOKEN_COLON node_property_scale  */
-#line 349 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                 {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_scale_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+  case 42: /* node_objects: node_object  */
+#line 303 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                          { 
+	assert(-1 == (yyvsp[0].m_node_index) || gltf_yacc_node_size_callback(user_defined) == ((yyvsp[0].m_node_index) + 1));
 }
-#line 2284 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2282 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 57: /* node_properties: YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation  */
-#line 354 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                             {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_translation_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+  case 43: /* node_object: YYTOKEN_LEFTBRACE node_properties YYTOKEN_RIGHTBRACE  */
+#line 307 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                  {
+	(yyval.m_node_index) = (yyvsp[-1].m_node_index);
 }
-#line 2293 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2290 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 58: /* node_properties: YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights  */
-#line 359 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                     {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_weights_callback((yyval.m_node_index), (yyvsp[0].m_float_array).m_data, (yyvsp[0].m_float_array).m_size, user_defined);
+  case 44: /* node_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 311 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                  { 
+	(yyval.m_node_index) = -1;
 }
-#line 2302 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2298 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 59: /* node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string  */
-#line 364 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                        {
-	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_name_callback((yyval.m_node_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+  case 45: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 315 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                               {
+	gltf_yacc_node_set_camera_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2311 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2306 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 60: /* node_property_children: YYTOKEN_LEFTBRACKET node_property_children_elements YYTOKEN_RIGHTBRACKET  */
-#line 369 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                 {
-	for (int i = 0; i < (yyvsp[-1].m_int_array).m_size; ++i)
-	{
-		(yyval.m_int_array).m_data[i] = (yyvsp[-1].m_int_array).m_data[i];
-	}
-	(yyval.m_int_array).m_size = (yyvsp[-1].m_int_array).m_size;
+  case 46: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children  */
+#line 319 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                     {
+	gltf_yacc_node_set_children_callback((yyval.m_node_index), (yyvsp[0].m_temp_int_array_version), user_defined);
+	gltf_yacc_temp_int_array_destroy_callback((yyvsp[0].m_temp_int_array_version), user_defined);
+}
+#line 2315 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 47: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 324 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                             {
+	gltf_yacc_node_set_skin_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
 }
 #line 2323 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 61: /* node_property_children: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 377 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                 { 
-    (yyval.m_int_array).m_size = 0;
+  case 48: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix  */
+#line 328 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                 {
+	gltf_yacc_node_set_matrix_callback((yyval.m_node_index), (yyvsp[0].m_mat4x4), user_defined);
 }
 #line 2331 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 62: /* node_property_children_elements: node_property_children_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT  */
-#line 381 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 49: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 332 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                             {
+	gltf_yacc_node_set_mesh_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2339 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 50: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation  */
+#line 336 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                     {
+	gltf_yacc_node_set_rotation_callback((yyval.m_node_index), (yyvsp[0].m_vec4), user_defined);
+}
+#line 2347 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 51: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SCALE YYTOKEN_COLON node_property_scale  */
+#line 340 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                               {
+	gltf_yacc_node_set_scale_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+}
+#line 2355 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 52: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation  */
+#line 344 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_node_set_translation_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+}
+#line 2363 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 53: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights  */
+#line 348 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                   {
+	gltf_yacc_node_set_weights_callback((yyval.m_node_index), (yyvsp[0].m_temp_float_array_version), user_defined);
+	gltf_yacc_temp_float_array_destroy_callback((yyvsp[0].m_temp_float_array_version), user_defined);
+}
+#line 2372 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 54: /* node_properties: node_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string  */
+#line 353 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                      {
+	gltf_yacc_node_set_name_callback((yyval.m_node_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+}
+#line 2380 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 55: /* node_properties: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 357 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                 {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_camera_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2389 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 56: /* node_properties: YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children  */
+#line 362 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_children_callback((yyval.m_node_index), (yyvsp[0].m_temp_int_array_version), user_defined);
+	gltf_yacc_temp_int_array_destroy_callback((yyvsp[0].m_temp_int_array_version), user_defined);
+}
+#line 2399 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 57: /* node_properties: YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 368 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_skin_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2408 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 58: /* node_properties: YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix  */
+#line 373 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                   {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_matrix_callback((yyval.m_node_index), (yyvsp[0].m_mat4x4), user_defined);
+}
+#line 2417 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 59: /* node_properties: YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 378 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_mesh_callback((yyval.m_node_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2426 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 60: /* node_properties: YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation  */
+#line 383 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_rotation_callback((yyval.m_node_index), (yyvsp[0].m_vec4), user_defined);
+}
+#line 2435 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 61: /* node_properties: YYTOKEN_SCALE YYTOKEN_COLON node_property_scale  */
+#line 388 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                 {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_scale_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+}
+#line 2444 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 62: /* node_properties: YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation  */
+#line 393 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                             {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_translation_callback((yyval.m_node_index), (yyvsp[0].m_vec3), user_defined);
+}
+#line 2453 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 63: /* node_properties: YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights  */
+#line 398 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                     {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_weights_callback((yyval.m_node_index), (yyvsp[0].m_temp_float_array_version), user_defined);
+	gltf_yacc_temp_float_array_destroy_callback((yyvsp[0].m_temp_float_array_version), user_defined);
+}
+#line 2463 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 64: /* node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string  */
+#line 404 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                        {
+	(yyval.m_node_index) = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_name_callback((yyval.m_node_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
+}
+#line 2472 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 65: /* node_property_children: YYTOKEN_LEFTBRACKET node_property_children_elements YYTOKEN_RIGHTBRACKET  */
+#line 409 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                 {
+	(yyval.m_temp_int_array_version) = (yyvsp[-1].m_temp_int_array_version);
+}
+#line 2480 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 66: /* node_property_children: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 413 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                 { 
+    (yyval.m_temp_int_array_version) = gltf_yacc_temp_int_array_init_callback(user_defined);
+}
+#line 2488 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 67: /* node_property_children_elements: node_property_children_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT  */
+#line 417 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                   {
-	(yyval.m_int_array).m_data[(yyval.m_int_array).m_size] = (yyvsp[0].m_token_numberint);
-	++(yyval.m_int_array).m_size;
+	gltf_yacc_temp_int_array_push_callback((yyval.m_temp_int_array_version), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2340 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2496 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 63: /* node_property_children_elements: YYTOKEN_NUMBER_INT  */
-#line 386 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 68: /* node_property_children_elements: YYTOKEN_NUMBER_INT  */
+#line 421 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                      {
-	(yyval.m_int_array).m_data[0] = (yyvsp[0].m_token_numberint);
-	(yyval.m_int_array).m_size = 1;
+	(yyval.m_temp_int_array_version) = gltf_yacc_temp_int_array_init_callback(user_defined);
+	gltf_yacc_temp_int_array_push_callback((yyval.m_temp_int_array_version), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2349 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2505 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 64: /* node_property_matrix: YYTOKEN_LEFTBRACKET node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_RIGHTBRACKET  */
-#line 391 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 69: /* node_property_matrix: YYTOKEN_LEFTBRACKET node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_RIGHTBRACKET  */
+#line 426 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  {
 	(yyval.m_mat4x4)[0] = (yyvsp[-31].m_token_numberfloat);
 	(yyval.m_mat4x4)[1] = (yyvsp[-29].m_token_numberfloat);
@@ -2368,441 +2524,822 @@ yyreduce:
 	(yyval.m_mat4x4)[14] = (yyvsp[-3].m_token_numberfloat);
 	(yyval.m_mat4x4)[15] = (yyvsp[-1].m_token_numberfloat);
 }
-#line 2372 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2528 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 65: /* node_property_matrix_element: YYTOKEN_NUMBER_FLOAT  */
-#line 410 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 70: /* node_property_matrix_element: YYTOKEN_NUMBER_FLOAT  */
+#line 445 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                    {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberfloat);
 }
-#line 2380 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2536 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 66: /* node_property_matrix_element: YYTOKEN_NUMBER_INT  */
-#line 414 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 71: /* node_property_matrix_element: YYTOKEN_NUMBER_INT  */
+#line 449 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                  {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberint);
 }
-#line 2388 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2544 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 67: /* node_property_rotation: YYTOKEN_LEFTBRACKET node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_RIGHTBRACKET  */
-#line 418 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 72: /* node_property_rotation: YYTOKEN_LEFTBRACKET node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_RIGHTBRACKET  */
+#line 453 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                                                                                                                                                        {
 	(yyval.m_vec4)[0] = (yyvsp[-7].m_token_numberfloat);
 	(yyval.m_vec4)[1] = (yyvsp[-5].m_token_numberfloat);
 	(yyval.m_vec4)[2] = (yyvsp[-3].m_token_numberfloat);
 	(yyval.m_vec4)[3] = (yyvsp[-1].m_token_numberfloat);
 }
-#line 2399 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2555 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 68: /* node_property_rotation_element: YYTOKEN_NUMBER_FLOAT  */
-#line 425 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 73: /* node_property_rotation_element: YYTOKEN_NUMBER_FLOAT  */
+#line 460 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                      {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberfloat);
 }
-#line 2407 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2563 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 69: /* node_property_rotation_element: YYTOKEN_NUMBER_INT  */
-#line 429 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 74: /* node_property_rotation_element: YYTOKEN_NUMBER_INT  */
+#line 464 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                    {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberint);
 }
-#line 2415 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2571 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 70: /* node_property_scale: YYTOKEN_LEFTBRACKET node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_RIGHTBRACKET  */
-#line 433 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 75: /* node_property_scale: YYTOKEN_LEFTBRACKET node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_RIGHTBRACKET  */
+#line 468 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                                                                                               {
 	(yyval.m_vec3)[0] = (yyvsp[-5].m_token_numberfloat);
 	(yyval.m_vec3)[1] = (yyvsp[-3].m_token_numberfloat);
 	(yyval.m_vec3)[2] = (yyvsp[-1].m_token_numberfloat);
 }
-#line 2425 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2581 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 71: /* node_property_scale_element: YYTOKEN_NUMBER_FLOAT  */
-#line 439 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 76: /* node_property_scale_element: YYTOKEN_NUMBER_FLOAT  */
+#line 474 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                   {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberfloat);
 }
-#line 2433 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2589 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 72: /* node_property_scale_element: YYTOKEN_NUMBER_INT  */
-#line 443 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 77: /* node_property_scale_element: YYTOKEN_NUMBER_INT  */
+#line 478 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                 {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberint);
 }
-#line 2441 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2597 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 73: /* node_property_translation: YYTOKEN_LEFTBRACKET node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_RIGHTBRACKET  */
-#line 447 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 78: /* node_property_translation: YYTOKEN_LEFTBRACKET node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_RIGHTBRACKET  */
+#line 482 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                                                                                                                       {
 	(yyval.m_vec3)[0] = (yyvsp[-5].m_token_numberfloat);
 	(yyval.m_vec3)[1] = (yyvsp[-3].m_token_numberfloat);
 	(yyval.m_vec3)[2] = (yyvsp[-1].m_token_numberfloat);
 }
-#line 2451 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2607 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 74: /* node_property_translation_element: YYTOKEN_NUMBER_FLOAT  */
-#line 453 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 79: /* node_property_translation_element: YYTOKEN_NUMBER_FLOAT  */
+#line 488 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                         {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberfloat);
 }
-#line 2459 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2615 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 75: /* node_property_translation_element: YYTOKEN_NUMBER_INT  */
-#line 457 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 80: /* node_property_translation_element: YYTOKEN_NUMBER_INT  */
+#line 492 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                       {
 	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberint);
 }
-#line 2467 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2623 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 76: /* node_property_weights: YYTOKEN_LEFTBRACKET node_property_weights_elements YYTOKEN_RIGHTBRACKET  */
-#line 461 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 81: /* node_property_weights: YYTOKEN_LEFTBRACKET node_property_weights_elements YYTOKEN_RIGHTBRACKET  */
+#line 496 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                                                {
-	for (int i = 0; i < (yyvsp[-1].m_float_array).m_size; ++i)
-	{
-		(yyval.m_float_array).m_data[i] = (yyvsp[-1].m_float_array).m_data[i];
-	}
-	(yyval.m_float_array).m_size = (yyvsp[-1].m_float_array).m_size;
+	(yyval.m_temp_float_array_version) = (yyvsp[-1].m_temp_float_array_version);
 }
-#line 2479 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2631 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 77: /* node_property_weights: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 469 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 82: /* node_property_weights: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 500 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                 { 
-    (yyval.m_float_array).m_size = 0;
+    (yyval.m_temp_float_array_version) = gltf_yacc_temp_float_array_init_callback(user_defined);
 }
-#line 2487 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2639 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 78: /* node_property_weights_elements: node_property_weights_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT  */
-#line 473 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                {
-	(yyval.m_float_array).m_data[(yyval.m_float_array).m_size] = (yyvsp[0].m_token_numberint);
-	++(yyval.m_float_array).m_size;
+  case 83: /* node_property_weights_elements: node_property_weights_elements YYTOKEN_COMMA node_property_weights_element  */
+#line 504 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_temp_float_array_push_callback((yyval.m_temp_float_array_version), (yyvsp[0].m_token_numberfloat), user_defined);
 }
-#line 2496 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2647 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 79: /* node_property_weights_elements: YYTOKEN_NUMBER_INT  */
-#line 478 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 84: /* node_property_weights_elements: node_property_weights_element  */
+#line 508 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               {
+	(yyval.m_temp_float_array_version) = gltf_yacc_temp_float_array_init_callback(user_defined);
+	gltf_yacc_temp_float_array_push_callback((yyval.m_temp_float_array_version), (yyvsp[0].m_token_numberfloat), user_defined);
+}
+#line 2656 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 85: /* node_property_weights_element: YYTOKEN_NUMBER_FLOAT  */
+#line 514 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                     {
-	(yyval.m_float_array).m_data[0] = (yyvsp[0].m_token_numberint);
-	(yyval.m_float_array).m_size = 1;
+	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberfloat);
 }
-#line 2505 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2664 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 80: /* buffers_array: YYTOKEN_LEFTBRACKET buffer_objects YYTOKEN_RIGHTBRACKET  */
-#line 483 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 86: /* node_property_weights_element: YYTOKEN_NUMBER_INT  */
+#line 518 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                  {
+	(yyval.m_token_numberfloat) = (yyvsp[0].m_token_numberint);
+}
+#line 2672 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 87: /* buffers_array: YYTOKEN_LEFTBRACKET buffer_objects YYTOKEN_RIGHTBRACKET  */
+#line 523 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                                        {
 
 }
-#line 2513 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2680 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 81: /* buffers_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 487 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 88: /* buffers_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 527 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                         {
 
 }
-#line 2521 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2688 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 82: /* buffer_objects: buffer_objects YYTOKEN_COMMA buffer_object  */
-#line 491 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+  case 89: /* buffer_objects: buffer_objects YYTOKEN_COMMA buffer_object  */
+#line 531 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
                                                            { 
    	assert(-1 == (yyvsp[0].m_buffer_index) || gltf_yacc_buffer_size_callback(user_defined) == ((yyvsp[0].m_buffer_index) + 1));
-}
-#line 2529 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 83: /* buffer_objects: buffer_object  */
-#line 495 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                              { 
-	assert(-1 == (yyvsp[0].m_buffer_index) || gltf_yacc_buffer_size_callback(user_defined) == ((yyvsp[0].m_buffer_index) + 1));
-}
-#line 2537 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 84: /* buffer_object: YYTOKEN_LEFTBRACE buffer_properties YYTOKEN_RIGHTBRACE  */
-#line 499 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                      {
-	(yyval.m_buffer_index) = (yyvsp[-1].m_buffer_index);
-}
-#line 2545 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 85: /* buffer_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
-#line 503 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                    { 
-	(yyval.m_buffer_index) = -1;
-}
-#line 2553 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 86: /* buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 507 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                                         {
-	gltf_yacc_buffer_set_bufferlength_callback((yyval.m_buffer_index), (yyvsp[0].m_token_numberint), user_defined);
-}
-#line 2561 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 87: /* buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON json_string  */
-#line 511 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                                         {
-	gltf_yacc_buffer_set_url_callback((yyval.m_buffer_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
-}
-#line 2569 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 88: /* buffer_properties: YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
-#line 516 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                         {
-	(yyval.m_buffer_index) = gltf_yacc_buffer_push_callback(user_defined);
-	gltf_yacc_buffer_set_bufferlength_callback((yyval.m_buffer_index), (yyvsp[0].m_token_numberint), user_defined);
-}
-#line 2578 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 89: /* buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string  */
-#line 521 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                         {
-	(yyval.m_buffer_index) = gltf_yacc_buffer_push_callback(user_defined);
-	gltf_yacc_buffer_set_url_callback((yyval.m_buffer_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
-}
-#line 2587 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 90: /* json_string: YYTOKEN_STRING  */
-#line 527 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            {
-
-}
-#line 2595 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 91: /* json_string: YYTOKEN_ASSET  */
-#line 531 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                           {
-
-}
-#line 2603 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 92: /* json_string: YYTOKEN_COPYRIGHT  */
-#line 535 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                               {
-
-}
-#line 2611 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 93: /* json_string: YYTOKEN_GENERATOR  */
-#line 539 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                               {
-
-}
-#line 2619 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 94: /* json_string: YYTOKEN_VERSION  */
-#line 543 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                             {
-
-}
-#line 2627 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 95: /* json_string: YYTOKEN_MINVERSION  */
-#line 547 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                {
-
-}
-#line 2635 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 96: /* json_string: YYTOKEN_EXTENSIONS  */
-#line 551 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                {
-
-}
-#line 2643 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 97: /* json_string: YYTOKEN_EXTRAS  */
-#line 555 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            {
-
-}
-#line 2651 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 98: /* json_string: YYTOKEN_SCENES  */
-#line 559 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            {
-
-}
-#line 2659 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 99: /* json_string: YYTOKEN_NODES  */
-#line 563 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                           {
-
-}
-#line 2667 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 100: /* json_string: YYTOKEN_NAME  */
-#line 567 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                          {
-
-}
-#line 2675 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 101: /* json_value: json_object  */
-#line 571 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                        { 
-}
-#line 2682 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 102: /* json_value: json_array  */
-#line 574 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                       { 
-}
-#line 2689 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 103: /* json_value: json_string  */
-#line 577 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                        { 
 }
 #line 2696 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 104: /* json_value: YYTOKEN_NUMBER_INT  */
-#line 580 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                               { 
+  case 90: /* buffer_objects: buffer_object  */
+#line 535 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                              { 
+	assert(-1 == (yyvsp[0].m_buffer_index) || gltf_yacc_buffer_size_callback(user_defined) == ((yyvsp[0].m_buffer_index) + 1));
 }
-#line 2703 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2704 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 105: /* json_value: YYTOKEN_NUMBER_FLOAT  */
-#line 583 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                 { 
+  case 91: /* buffer_object: YYTOKEN_LEFTBRACE buffer_properties YYTOKEN_RIGHTBRACE  */
+#line 539 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                      {
+	(yyval.m_buffer_index) = (yyvsp[-1].m_buffer_index);
 }
-#line 2710 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2712 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 106: /* json_value: YYTOKEN_TRUE  */
-#line 586 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                         { 
+  case 92: /* buffer_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 543 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                    { 
+	(yyval.m_buffer_index) = -1;
 }
-#line 2717 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2720 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 107: /* json_value: YYTOKEN_FALSE  */
-#line 589 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                          { 
+  case 93: /* buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 547 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                       {
+	gltf_yacc_buffer_set_bytelength_callback((yyval.m_buffer_index), (yyvsp[0].m_token_numberint), user_defined);
 }
-#line 2724 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2728 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 108: /* json_value: YYTOKEN_NULL  */
-#line 592 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                         { 
+  case 94: /* buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON json_string  */
+#line 551 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                         {
+	gltf_yacc_buffer_set_url_callback((yyval.m_buffer_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
 }
-#line 2731 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2736 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 109: /* json_object: YYTOKEN_LEFTBRACE json_members YYTOKEN_RIGHTBRACE  */
-#line 595 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                               { 
-}
-#line 2738 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 110: /* json_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
-#line 598 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                  { 
+  case 95: /* buffer_properties: YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 556 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       {
+	(yyval.m_buffer_index) = gltf_yacc_buffer_push_callback(user_defined);
+	gltf_yacc_buffer_set_bytelength_callback((yyval.m_buffer_index), (yyvsp[0].m_token_numberint), user_defined);
 }
 #line 2745 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 111: /* json_members: json_members YYTOKEN_COMMA json_member  */
-#line 601 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                     { 
+  case 96: /* buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string  */
+#line 561 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                         {
+	(yyval.m_buffer_index) = gltf_yacc_buffer_push_callback(user_defined);
+	gltf_yacc_buffer_set_url_callback((yyval.m_buffer_index), (yyvsp[0].m_token_string).m_data, (yyvsp[0].m_token_string).m_size, user_defined);
 }
-#line 2752 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2754 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 112: /* json_members: json_member  */
-#line 604 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                          { 
+  case 97: /* bufferviews_array: YYTOKEN_LEFTBRACKET bufferview_objects YYTOKEN_RIGHTBRACKET  */
+#line 566 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                               {
+
 }
-#line 2759 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2762 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 113: /* json_member: YYTOKEN_STRING YYTOKEN_COLON json_value  */
-#line 607 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                     { 
+  case 98: /* bufferviews_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 570 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                            {
+
 }
-#line 2766 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2770 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 114: /* json_array: YYTOKEN_LEFTBRACKET json_elements YYTOKEN_RIGHTBRACKET  */
-#line 610 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                                   { 
+  case 99: /* bufferview_objects: bufferview_objects YYTOKEN_COMMA bufferview_object  */
+#line 574 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       { 
+   	assert(-1 == (yyvsp[0].m_bufferview_index) || gltf_yacc_bufferview_size_callback(user_defined) == ((yyvsp[0].m_bufferview_index) + 1));
 }
-#line 2773 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2778 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 115: /* json_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
-#line 613 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                     { 
+  case 100: /* bufferview_objects: bufferview_object  */
+#line 578 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                      { 
+	assert(-1 == (yyvsp[0].m_bufferview_index) || gltf_yacc_bufferview_size_callback(user_defined) == ((yyvsp[0].m_bufferview_index) + 1));
 }
-#line 2780 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+#line 2786 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 116: /* json_elements: json_elements YYTOKEN_COMMA json_element  */
-#line 616 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                                                        { 
-}
-#line 2787 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
-    break;
-
-  case 117: /* json_elements: json_element  */
-#line 619 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                            { 
+  case 101: /* bufferview_object: YYTOKEN_LEFTBRACE bufferview_properties YYTOKEN_RIGHTBRACE  */
+#line 582 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                              {
+	(yyval.m_bufferview_index) = (yyvsp[-1].m_bufferview_index);
 }
 #line 2794 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
-  case 118: /* json_element: json_value  */
-#line 622 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-                         {
-	
+  case 102: /* bufferview_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 586 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                        { 
+	(yyval.m_bufferview_index) = -1;
 }
 #line 2802 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
     break;
 
+  case 103: /* bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BUFFER YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 590 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_bufferview_set_buffer_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2810 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
 
-#line 2806 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+  case 104: /* bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 594 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                               {
+	gltf_yacc_bufferview_set_byteoffset_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2818 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 105: /* bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 598 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                               {
+	gltf_yacc_bufferview_set_bytelength_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2826 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 106: /* bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTESTRIDE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 602 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                               {
+	gltf_yacc_bufferview_set_bytestride_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2834 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 107: /* bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_TARGET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 606 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_bufferview_set_target_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2842 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 108: /* bufferview_properties: YYTOKEN_BUFFER YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 610 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       {
+	(yyval.m_bufferview_index) = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_buffer_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2851 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 109: /* bufferview_properties: YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 615 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                           {
+	(yyval.m_bufferview_index) = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_byteoffset_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2860 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 110: /* bufferview_properties: YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 620 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                           {
+	(yyval.m_bufferview_index) = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_bytelength_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2869 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 111: /* bufferview_properties: YYTOKEN_BYTESTRIDE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 625 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                           {
+	(yyval.m_bufferview_index) = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_bytestride_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2878 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 112: /* bufferview_properties: YYTOKEN_TARGET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 630 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                       {
+	(yyval.m_bufferview_index) = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_target_callback((yyval.m_bufferview_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2887 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 113: /* accessors_array: YYTOKEN_LEFTBRACKET accessor_objects YYTOKEN_RIGHTBRACKET  */
+#line 635 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                           {
+
+}
+#line 2895 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 114: /* accessors_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 639 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                          {
+
+}
+#line 2903 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 115: /* accessor_objects: accessor_objects YYTOKEN_COMMA accessor_object  */
+#line 643 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                 { 
+   	assert(-1 == (yyvsp[0].m_accessor_index) || gltf_yacc_accessor_size_callback(user_defined) == ((yyvsp[0].m_accessor_index) + 1));
+}
+#line 2911 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 116: /* accessor_objects: accessor_object  */
+#line 647 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                  { 
+	assert(-1 == (yyvsp[0].m_accessor_index) || gltf_yacc_accessor_size_callback(user_defined) == ((yyvsp[0].m_accessor_index) + 1));
+}
+#line 2919 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 117: /* accessor_object: YYTOKEN_LEFTBRACE accessor_properties YYTOKEN_RIGHTBRACE  */
+#line 651 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                          {
+	(yyval.m_accessor_index) = (yyvsp[-1].m_accessor_index);
+}
+#line 2927 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 118: /* accessor_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 655 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                      { 
+	(yyval.m_accessor_index) = -1;
+}
+#line 2935 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 119: /* accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 659 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_accessor_set_bufferview_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2943 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 120: /* accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 663 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                           {
+	gltf_yacc_accessor_set_byteoffset_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2951 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 121: /* accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COMPONENTTYPE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 667 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                              {
+	gltf_yacc_accessor_set_componenttype_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2959 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 122: /* accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_NORMALIZED YYTOKEN_COLON json_boolean  */
+#line 671 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                                                     {
+	gltf_yacc_accessor_set_normalized_callback((yyval.m_accessor_index), (yyvsp[0].m_type_boolean), user_defined);
+}
+#line 2967 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 123: /* accessor_properties: YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 675 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                         {
+	(yyval.m_accessor_index) = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_bufferview_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2976 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 124: /* accessor_properties: YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 680 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                         {
+	(yyval.m_accessor_index) = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_byteoffset_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2985 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 125: /* accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON YYTOKEN_NUMBER_INT  */
+#line 685 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                            {
+	(yyval.m_accessor_index) = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_componenttype_callback((yyval.m_accessor_index), (yyvsp[0].m_token_numberint), user_defined);
+}
+#line 2994 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 126: /* accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON json_boolean  */
+#line 690 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                      {
+	(yyval.m_accessor_index) = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_normalized_callback((yyval.m_accessor_index), (yyvsp[0].m_type_boolean), user_defined);
+}
+#line 3003 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 127: /* json_string: YYTOKEN_STRING  */
+#line 695 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+
+}
+#line 3011 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 128: /* json_string: YYTOKEN_ASSET  */
+#line 699 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                           {
+
+}
+#line 3019 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 129: /* json_string: YYTOKEN_COPYRIGHT  */
+#line 703 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                               {
+
+}
+#line 3027 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 130: /* json_string: YYTOKEN_GENERATOR  */
+#line 707 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                               {
+
+}
+#line 3035 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 131: /* json_string: YYTOKEN_VERSION  */
+#line 711 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                             {
+
+}
+#line 3043 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 132: /* json_string: YYTOKEN_MINVERSION  */
+#line 715 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                {
+
+}
+#line 3051 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 133: /* json_string: YYTOKEN_EXTENSIONS  */
+#line 719 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                {
+
+}
+#line 3059 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 134: /* json_string: YYTOKEN_EXTRAS  */
+#line 723 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+
+}
+#line 3067 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 135: /* json_string: YYTOKEN_SCENES  */
+#line 727 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+
+}
+#line 3075 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 136: /* json_string: YYTOKEN_NODES  */
+#line 731 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                           {
+
+}
+#line 3083 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 137: /* json_string: YYTOKEN_NAME  */
+#line 735 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                          {
+
+}
+#line 3091 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 138: /* json_string: YYTOKEN_CAMERA  */
+#line 739 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+
+}
+#line 3099 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 139: /* json_string: YYTOKEN_CHILDREN  */
+#line 743 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                              {
+
+}
+#line 3107 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 140: /* json_string: YYTOKEN_SKIN  */
+#line 747 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                          {
+
+}
+#line 3115 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 141: /* json_string: YYTOKEN_MATRIX  */
+#line 751 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+
+}
+#line 3123 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 142: /* json_string: YYTOKEN_MESH  */
+#line 755 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                          {
+
+}
+#line 3131 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 143: /* json_string: YYTOKEN_ROTATION  */
+#line 759 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                              {
+
+}
+#line 3139 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 144: /* json_string: YYTOKEN_SCALE  */
+#line 763 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                           {
+
+}
+#line 3147 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 145: /* json_string: YYTOKEN_TRANSLATION  */
+#line 767 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                 {
+
+}
+#line 3155 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 146: /* json_string: YYTOKEN_WEIGHTS  */
+#line 771 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                             {
+
+}
+#line 3163 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 147: /* json_string: YYTOKEN_BUFFERS  */
+#line 775 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                             {
+
+}
+#line 3171 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 148: /* json_string: YYTOKEN_BYTELENGTH  */
+#line 779 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                {
+
+}
+#line 3179 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 149: /* json_string: YYTOKEN_URI  */
+#line 783 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                         {
+
+}
+#line 3187 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 150: /* json_boolean: YYTOKEN_TRUE  */
+#line 787 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                           {
+	(yyval.m_type_boolean) = true;
+}
+#line 3195 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 151: /* json_boolean: YYTOKEN_FALSE  */
+#line 791 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            {
+	(yyval.m_type_boolean) = false;
+}
+#line 3203 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 152: /* json_value: json_object  */
+#line 795 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                        { 
+
+}
+#line 3211 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 153: /* json_value: json_array  */
+#line 799 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                       { 
+
+}
+#line 3219 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 154: /* json_value: json_string  */
+#line 803 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                        { 
+
+}
+#line 3227 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 155: /* json_value: YYTOKEN_NUMBER_INT  */
+#line 807 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                               { 
+
+}
+#line 3235 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 156: /* json_value: YYTOKEN_NUMBER_FLOAT  */
+#line 811 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                 { 
+
+}
+#line 3243 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 157: /* json_value: json_boolean  */
+#line 815 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                         { 
+
+}
+#line 3251 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 158: /* json_value: YYTOKEN_NULL  */
+#line 819 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                         { 
+
+}
+#line 3259 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 159: /* json_object: YYTOKEN_LEFTBRACE json_members YYTOKEN_RIGHTBRACE  */
+#line 823 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                               { 
+
+}
+#line 3267 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 160: /* json_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE  */
+#line 827 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                  { 
+
+}
+#line 3275 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 161: /* json_members: json_members YYTOKEN_COMMA json_member  */
+#line 831 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                     { 
+
+}
+#line 3283 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 162: /* json_members: json_member  */
+#line 835 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                          { 
+
+}
+#line 3291 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 163: /* json_member: YYTOKEN_STRING YYTOKEN_COLON json_value  */
+#line 839 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                     { 
+
+}
+#line 3299 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 164: /* json_array: YYTOKEN_LEFTBRACKET json_elements YYTOKEN_RIGHTBRACKET  */
+#line 843 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                                   { 
+
+}
+#line 3307 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 165: /* json_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET  */
+#line 847 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                     { 
+
+}
+#line 3315 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 166: /* json_elements: json_elements YYTOKEN_COMMA json_element  */
+#line 851 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                                                        { 
+
+}
+#line 3323 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 167: /* json_elements: json_element  */
+#line 855 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                            { 
+
+}
+#line 3331 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+  case 168: /* json_element: json_value  */
+#line 859 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+                         {
+	
+}
+#line 3339 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
+    break;
+
+
+#line 3343 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.inl"
 
       default: break;
     }
@@ -3032,5 +3569,5 @@ yyreturn:
   return yyresult;
 }
 
-#line 626 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+#line 863 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_yacc.y"
 

@@ -56,6 +56,7 @@
 //    2          | . NUMBER
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -65,7 +66,6 @@
 
 // For YACC
 #define YY_TOKEN_STRING_MAX_SIZE 4096
-#define YY_TYPE_INT_ARRAY_MAX_SIZE 512
 #define YY_TYPE_FLOAT_ARRAY_MAX_SIZE 512
 
 union YYSTYPE
@@ -81,20 +81,17 @@ union YYSTYPE
     int m_scene_index;
     int m_node_index;
     int m_buffer_index;
+    int m_bufferview_index;
+    int m_accessor_index;
 
-    struct
-    {
-        int m_data[YY_TYPE_INT_ARRAY_MAX_SIZE];
-        int m_size;
-    } m_int_array;
-    struct
-    {
-        float m_data[YY_TYPE_FLOAT_ARRAY_MAX_SIZE];
-        int m_size;
-    } m_float_array;
+    struct temp_int_array_version_t *m_temp_int_array_version;
+    struct temp_float_array_version_t *m_temp_float_array_version;
+
     float m_mat4x4[16];
     float m_vec4[4];
     float m_vec3[3];
+
+    bool m_type_boolean;
 };
 
 #define YYMALLOC(size) (gltf_alloc_callback((size), (user_defined)))

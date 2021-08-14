@@ -78,9 +78,10 @@ LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_GFX=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
-	
+LOCAL_CFLAGS += -std=c99
+
 LOCAL_CPPFLAGS += -xc	
-#LOCAL_CPPFLAGS += -std=c++11
+LOCAL_CPPFLAGS += -std=c99
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 

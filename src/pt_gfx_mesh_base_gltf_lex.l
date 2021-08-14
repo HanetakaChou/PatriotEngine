@@ -22,9 +22,6 @@
 WS ([ \r\t](([ \r\t])*))
 
     /* keywords */
-TRUE ("true")
-FALSE ("false")
-YYTOKEN_NULL ("null")
 EXTENSIONS ("extensions")
 EXTRAS ("extras")
 
@@ -139,10 +136,43 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     static int const WEIGHTS_LENG = sizeof(WEIGHTS) / sizeof(WEIGHTS[0]) - 1;
     static char const BUFFERS[] = "\"buffers\"";
     static int const BUFFERS_LENG = sizeof(BUFFERS) / sizeof(BUFFERS[0]) - 1;
-    static char const BUFFERLENGTH[] = "\"byteLength\"";
-    static int const BUFFERLENGTH_LENG = sizeof(BUFFERLENGTH) / sizeof(BUFFERLENGTH[0]) - 1;
+    static char const BYTELENGTH[] = "\"byteLength\"";
+    static int const BYTELENGTH_LENG = sizeof(BYTELENGTH) / sizeof(BYTELENGTH[0]) - 1;
     static char const URI[] = "\"uri\"";
     static int const URI_LENG = sizeof(URI) / sizeof(URI[0]) - 1;
+    static char const BUFFERVIEWS[] = "\"bufferViews\"";
+    static int const BUFFERVIEWS_LENG = sizeof(BUFFERVIEWS) / sizeof(BUFFERVIEWS[0]) - 1;
+    static char const BUFFER[] = "\"buffer\"";
+    static int const BUFFER_LENG = sizeof(BUFFER) / sizeof(BUFFER[0]) - 1;
+    static char const BYTEOFFSET[] = "\"byteOffset\"";
+    static int const BYTEOFFSET_LENG = sizeof(BYTEOFFSET) / sizeof(BYTEOFFSET[0]) - 1;
+    static char const BYTESTRIDE[] = "\"byteStride\"";
+    static int const BYTESTRIDE_LENG = sizeof(BYTESTRIDE) / sizeof(BYTESTRIDE[0]) - 1;
+    static char const TARGET[] = "\"target\"";
+    static int const TARGET_LENG = sizeof(TARGET) / sizeof(TARGET[0]) - 1;
+    static char const ACCESSORS[] = "\"accessors\"";
+    static int const ACCESSORS_LENG = sizeof(ACCESSORS) / sizeof(ACCESSORS[0]) - 1;
+    static char const BUFFERVIEW[] = "\"bufferView\"";
+    static int const BUFFERVIEW_LENG = sizeof(BUFFERVIEW) / sizeof(BUFFERVIEW[0]) - 1;
+    static char const COMPONENTTYPE[] = "\"componentType\"";
+    static int const COMPONENTTYPE_LENG = sizeof(COMPONENTTYPE) / sizeof(COMPONENTTYPE[0]) - 1;
+    static char const NORMALIZED[] = "\"normalized\"";
+    static int const NORMALIZED_LENG = sizeof(NORMALIZED) / sizeof(NORMALIZED[0]) - 1;
+    static char const COUNT[] = "\"count\"";
+    static int const COUNT_LENG = sizeof(COUNT) / sizeof(COUNT[0]) - 1;
+    static char const TYPE[] = "\"type\"";
+    static int const TYPE_LENG = sizeof(TYPE) / sizeof(TYPE[0]) - 1;
+    static char const MAX[] = "\"max\"";
+    static int const MAX_LENG = sizeof(MAX) / sizeof(MAX[0]) - 1;
+    static char const MIN[] = "\"min\"";
+    static int const MIN_LENG = sizeof(MIN) / sizeof(MIN[0]) - 1;
+    static char const TRUE[] = "\"true\"";
+    static int const TRUE_LENG = sizeof(TRUE) / sizeof(TRUE[0]) - 1;
+    static char const FALSE[] = "\"false\"";
+    static int const FALSE_LENG = sizeof(FALSE) / sizeof(FALSE[0]) - 1;
+    static char const TOKEN_NULL[] = "\"null\"";
+    static int const TOKEN_NULL_LENG = sizeof(TOKEN_NULL) / sizeof(TOKEN_NULL[0]) - 1;
+
     if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
     {
         return YYTOKEN_ASSET;
@@ -219,13 +249,77 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     {
         return YYTOKEN_BUFFERS;
     }
-    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFERLENGTH, (((yyleng) < BUFFERLENGTH_LENG) ? (yyleng) : BUFFERLENGTH_LENG), (yyextra)))
+    else if (0 == gltf_lex_memcmp_callback((yytext), BYTELENGTH, (((yyleng) < BYTELENGTH_LENG) ? (yyleng) : BYTELENGTH_LENG), (yyextra)))
     {
-        return YYTOKEN_BUFFERLENGTH;
+        return YYTOKEN_BYTELENGTH;
     }
     else if (0 == gltf_lex_memcmp_callback((yytext), URI, (((yyleng) < URI_LENG) ? (yyleng) : URI_LENG), (yyextra)))
     {
         return YYTOKEN_URI;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFERVIEWS, (((yyleng) < BUFFERVIEWS_LENG) ? (yyleng) : BUFFERVIEWS_LENG), (yyextra)))
+    {
+        return YYTOKEN_BUFFERVIEWS;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFER, (((yyleng) < BUFFER_LENG) ? (yyleng) : BUFFER_LENG), (yyextra)))
+    {
+        return YYTOKEN_BUFFER;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BYTEOFFSET, (((yyleng) < BYTEOFFSET_LENG) ? (yyleng) : BYTEOFFSET_LENG), (yyextra)))
+    {
+        return YYTOKEN_BYTEOFFSET;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BYTESTRIDE, (((yyleng) < BYTESTRIDE_LENG) ? (yyleng) : BYTESTRIDE_LENG), (yyextra)))
+    {
+        return YYTOKEN_BYTESTRIDE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), TARGET, (((yyleng) < TARGET_LENG) ? (yyleng) : TARGET_LENG), (yyextra)))
+    {
+        return YYTOKEN_TARGET;
+    }
+        else if (0 == gltf_lex_memcmp_callback((yytext), ACCESSORS, (((yyleng) < ACCESSORS_LENG) ? (yyleng) : ACCESSORS_LENG), (yyextra)))
+    {
+        return YYTOKEN_ACCESSORS;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFERVIEW, (((yyleng) < BUFFERVIEW_LENG) ? (yyleng) : BUFFERVIEW_LENG), (yyextra)))
+    {
+        return YYTOKEN_BUFFERVIEW;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), COMPONENTTYPE, (((yyleng) < COMPONENTTYPE_LENG) ? (yyleng) : COMPONENTTYPE_LENG), (yyextra)))
+    {
+        return YYTOKEN_COMPONENTTYPE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), NORMALIZED, (((yyleng) < NORMALIZED_LENG) ? (yyleng) : NORMALIZED_LENG), (yyextra)))
+    {
+        return YYTOKEN_NORMALIZED;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), COUNT, (((yyleng) < COUNT_LENG) ? (yyleng) : COUNT_LENG), (yyextra)))
+    {
+        return YYTOKEN_COUNT;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), TYPE, (((yyleng) < TYPE_LENG) ? (yyleng) : TYPE_LENG), (yyextra)))
+    {
+        return YYTOKEN_TYPE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MAX, (((yyleng) < MAX_LENG) ? (yyleng) : MAX_LENG), (yyextra)))
+    {
+        return YYTOKEN_MAX;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MIN, (((yyleng) < MIN_LENG) ? (yyleng) : MIN_LENG), (yyextra)))
+    {
+        return YYTOKEN_MIN;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), TRUE, (((yyleng) < TRUE_LENG) ? (yyleng) : TRUE_LENG), (yyextra)))
+    {
+        return YYTOKEN_TRUE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), FALSE, (((yyleng) < FALSE_LENG) ? (yyleng) : FALSE_LENG), (yyextra)))
+    {
+        return YYTOKEN_FALSE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), TOKEN_NULL, (((yyleng) < TOKEN_NULL_LENG) ? (yyleng) : TOKEN_NULL_LENG), (yyextra)))
+    {
+        return YYTOKEN_NULL;
     }
     else
     {

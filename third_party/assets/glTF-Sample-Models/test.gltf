@@ -20,6 +20,14 @@
                 -1.000000,
                 0.000000,
                 0.000000
+            ],
+            "children": [
+                1,
+                0
+            ],
+            "weights": [
+                1,
+                1.0
             ]
         }
     ],
@@ -27,6 +35,163 @@
         {
             "byteLength": 1860,
             "uri": "AnimatedCube.bin"
+        }
+    ],
+    "bufferViews": [
+        {
+            "buffer": 0,
+            "byteLength": 12,
+            "byteOffset": 0
+        },
+        {
+            "buffer": 0,
+            "byteLength": 48,
+            "byteOffset": 12
+        },
+        {
+            "buffer": 0,
+            "byteLength": 72,
+            "byteOffset": 60,
+            "target": 34963
+        },
+        {
+            "buffer": 0,
+            "byteLength": 432,
+            "byteOffset": 132,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteLength": 432,
+            "byteOffset": 564,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteLength": 576,
+            "byteOffset": 996,
+            "target": 34962
+        },
+        {
+            "buffer": 0,
+            "byteLength": 288,
+            "byteOffset": 1572,
+            "target": 34962
+        }
+    ],
+    "accessors": [
+        {
+            "bufferView": 0,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                2.000000
+            ],
+            "min": [
+                0.000000
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 1,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 3,
+            "max": [
+                0.000000,
+                1.000000,
+                0.000000,
+                1.000000
+            ],
+            "min": [
+                0.000000,
+                -8.742278e-008,
+                0.000000,
+                -1.000000
+            ],
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 2,
+            "byteOffset": 0,
+            "componentType": 5123,
+            "count": 36,
+            "max": [
+                35
+            ],
+            "min": [
+                0
+            ],
+            "type": "SCALAR"
+        },
+        {
+            "bufferView": 3,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 36,
+            "max": [
+                1.000000,
+                1.000000,
+                1.000001
+            ],
+            "min": [
+                -1.000000,
+                -1.000000,
+                -1.000000
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 4,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 36,
+            "max": [
+                1.000000,
+                1.000000,
+                1.000000
+            ],
+            "min": [
+                -1.000000,
+                -1.000000,
+                -1.000000
+            ],
+            "type": "VEC3"
+        },
+        {
+            "bufferView": 5,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 36,
+            "max": [
+                1.000000,
+                -0.000000,
+                -0.000000,
+                1.000000
+            ],
+            "min": [
+                0.000000,
+                -0.000000,
+                -1.000000,
+                -1.000000
+            ],
+            "type": "VEC4"
+        },
+        {
+            "bufferView": 6,
+            "byteOffset": 0,
+            "componentType": 5126,
+            "count": 36,
+            "max": [
+                1.000000,
+                1.000000
+            ],
+            "min": [
+                -1.000000,
+                -1.000000
+            ],
+            "type": "VEC2"
         }
     ]
 }

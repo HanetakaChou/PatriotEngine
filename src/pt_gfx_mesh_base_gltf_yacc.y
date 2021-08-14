@@ -38,8 +38,22 @@
 %token YYTOKEN_TRANSLATION
 %token YYTOKEN_WEIGHTS
 %token YYTOKEN_BUFFERS
-%token YYTOKEN_BUFFERLENGTH
+%token YYTOKEN_BYTELENGTH
 %token YYTOKEN_URI
+%token YYTOKEN_BUFFERVIEWS
+%token YYTOKEN_BUFFER
+%token YYTOKEN_BYTEOFFSET
+%token YYTOKEN_BYTESTRIDE
+%token YYTOKEN_TARGET
+%token YYTOKEN_ACCESSORS
+%token YYTOKEN_BUFFERVIEW
+%token YYTOKEN_COMPONENTTYPE
+%token YYTOKEN_NORMALIZED
+%token YYTOKEN_COUNT
+%token YYTOKEN_TYPE
+%token YYTOKEN_MAX
+%token YYTOKEN_MIN
+
 %token YYTOKEN_TRUE 
 %token YYTOKEN_FALSE 
 %token YYTOKEN_NULL 
@@ -49,9 +63,11 @@
 %token YYTOKEN_LEFTBRACKET 
 %token YYTOKEN_RIGHTBRACKET 
 %token YYTOKEN_COMMA
+
 %token <m_token_string> YYTOKEN_STRING
 %token <m_token_numberint> YYTOKEN_NUMBER_INT
 %token <m_token_numberfloat> YYTOKEN_NUMBER_FLOAT
+
 %token PSEUDO_LEX_ERROR
 
 // Define the nonterminals 
@@ -59,20 +75,19 @@
 %type gltf_members
 %type gltf_member
 %type asset_object
-%type asset_members
-%type asset_member
+%type asset_properties
 %type scenes_array
 %type scene_objects
 %type <m_scene_index> scene_object
 %type <m_scene_index> scene_properties
-%type <m_int_array> scene_property_nodes
-%type <m_int_array> scene_property_nodes_elements
+%type <m_temp_int_array_version> scene_property_nodes
+%type <m_temp_int_array_version> scene_property_nodes_elements
 %type nodes_array
 %type node_objects
 %type <m_node_index> node_object
 %type <m_node_index> node_properties
-%type <m_int_array> node_property_children
-%type <m_int_array> node_property_children_elements
+%type <m_temp_int_array_version> node_property_children
+%type <m_temp_int_array_version> node_property_children_elements
 %type <m_mat4x4> node_property_matrix
 %type <m_token_numberfloat> node_property_matrix_element
 %type <m_vec4> node_property_rotation
@@ -81,14 +96,25 @@
 %type <m_token_numberfloat> node_property_scale_element
 %type <m_vec3> node_property_translation
 %type <m_token_numberfloat> node_property_translation_element
-%type <m_float_array> node_property_weights
-%type <m_float_array> node_property_weights_elements
+%type <m_temp_float_array_version> node_property_weights
+%type <m_temp_float_array_version> node_property_weights_elements
+%type <m_token_numberfloat> node_property_weights_element
 %type buffers_array
 %type buffer_objects
 %type <m_buffer_index> buffer_object
 %type <m_buffer_index> buffer_properties
+%type bufferviews_array
+%type bufferview_objects
+%type <m_bufferview_index> bufferview_object
+%type <m_bufferview_index> bufferview_properties
+%type accessors_array
+%type accessor_objects
+%type <m_accessor_index> accessor_object
+%type <m_accessor_index> accessor_properties
+
 
 %type <m_token_string> json_string
+%type <m_type_boolean> json_boolean
 %type json_value 
 %type json_object
 %type json_members
@@ -119,66 +145,79 @@ gltf_members: gltf_member {
 	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = _jsonobject;
-    };
+};
 
 gltf_member: YYTOKEN_ASSET YYTOKEN_COLON asset_object {
 	//$$ = $3;
-	};
+};
 
 gltf_member: YYTOKEN_SCENE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 	gltf_yacc_set_default_scene_index_callback($3, user_defined);
 };
 
 gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array {
-	//$$ = $3;
-	};
+
+};
 
 gltf_member: YYTOKEN_NODES YYTOKEN_COLON nodes_array {
-	//$$ = $3;
-	};
+
+};
 
 gltf_member: YYTOKEN_BUFFERS YYTOKEN_COLON buffers_array {
-	//$$ = $3;
-	};
 
-asset_object : YYTOKEN_LEFTBRACE asset_members YYTOKEN_RIGHTBRACE { 
-	//$$ = $2;
-	};	
+};
 
-asset_members: asset_members YYTOKEN_COMMA asset_member { 
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
-	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = $1;
-    };
+gltf_member: YYTOKEN_BUFFERVIEWS YYTOKEN_COLON bufferviews_array {
 
-asset_members: asset_member { 
-    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
-	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = _jsonobject;
-    };
+};
 
-asset_member: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
-	//$$._jsonvalue = $3;
-    };
+gltf_member: YYTOKEN_ACCESSORS YYTOKEN_COLON accessors_array {
 
-asset_member: YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
-	//$$._jsonvalue = $3;
-    };
+};
 
-asset_member: YYTOKEN_VERSION YYTOKEN_COLON json_string { 
-	//$$._jsonvalue = $3;
-    };
+asset_object : YYTOKEN_LEFTBRACE asset_properties YYTOKEN_RIGHTBRACE { 
+	
+};	
 
-asset_member: YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
-	//$$._jsonvalue = $3;
-    };
+asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
 
-asset_member: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
-	//$$._jsonvalue = $3;
-    };	
+};
+
+asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_VERSION YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
+
+};
+
+asset_properties: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: YYTOKEN_VERSION YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
+
+};
+
+asset_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
+
+};
 
 scenes_array: YYTOKEN_LEFTBRACKET scene_objects YYTOKEN_RIGHTBRACKET { 
 
@@ -205,7 +244,8 @@ scene_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE {
 };
 
 scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes {
-	gltf_yacc_scene_set_nodes_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_scene_set_nodes_callback($$, $5, user_defined);
+	gltf_yacc_temp_int_array_destroy_callback($5, user_defined);
 };
 
 scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
@@ -218,7 +258,8 @@ scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON js
 
 scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes { 
 	$$ = gltf_yacc_scene_push_callback(user_defined);
-	gltf_yacc_scene_set_nodes_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_scene_set_nodes_callback($$, $3, user_defined);
+	gltf_yacc_temp_int_array_destroy_callback($3, user_defined);
 };
 
 scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
@@ -227,29 +268,24 @@ scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
 };
 
 scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
-	// ignore
+
 };
 
 scene_property_nodes: YYTOKEN_LEFTBRACKET scene_property_nodes_elements YYTOKEN_RIGHTBRACKET {
-	for (int i = 0; i < $2.m_size; ++i)
-	{
-		$$.m_data[i] = $2.m_data[i];
-	}
-	$$.m_size = $2.m_size;
+	$$ = $2;
 };
 
 scene_property_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    $$.m_size = 0;
+	$$ = gltf_yacc_temp_int_array_init_callback(user_defined);
 };
 
 scene_property_nodes_elements: scene_property_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
-	$$.m_data[$$.m_size] = $3;
-	++$$.m_size;
+	gltf_yacc_temp_int_array_push_callback($$, $3, user_defined);
 };
 
 scene_property_nodes_elements : YYTOKEN_NUMBER_INT {
-	$$.m_data[0] = $1;
-	$$.m_size = 1;
+	$$ = gltf_yacc_temp_int_array_init_callback(user_defined);
+	gltf_yacc_temp_int_array_push_callback($$, $1, user_defined);
 };
 
 nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET {
@@ -281,7 +317,8 @@ node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CAMERA YYTOKEN_COLON YYTO
 };
 
 node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children {
-	gltf_yacc_node_set_children_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_node_set_children_callback($$, $5, user_defined);
+	gltf_yacc_temp_int_array_destroy_callback($5, user_defined);
 };
 
 node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT {
@@ -309,7 +346,8 @@ node_properties: node_properties YYTOKEN_COMMA YYTOKEN_TRANSLATION YYTOKEN_COLON
 };
 
 node_properties: node_properties YYTOKEN_COMMA YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights {
-	gltf_yacc_node_set_weights_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_node_set_weights_callback($$, $5, user_defined);
+	gltf_yacc_temp_float_array_destroy_callback($5, user_defined);
 };
 
 node_properties: node_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
@@ -323,7 +361,8 @@ node_properties: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 
 node_properties: YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children {
 	$$ = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_children_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_node_set_children_callback($$, $3, user_defined);
+	gltf_yacc_temp_int_array_destroy_callback($3, user_defined);
 };
 
 node_properties: YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT {
@@ -358,7 +397,8 @@ node_properties: YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation {
 
 node_properties: YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights {
 	$$ = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_weights_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_node_set_weights_callback($$, $3, user_defined);
+	gltf_yacc_temp_float_array_destroy_callback($3, user_defined);
 };
 
 node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
@@ -367,25 +407,20 @@ node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
 };
 
 node_property_children: YYTOKEN_LEFTBRACKET node_property_children_elements YYTOKEN_RIGHTBRACKET {
-	for (int i = 0; i < $2.m_size; ++i)
-	{
-		$$.m_data[i] = $2.m_data[i];
-	}
-	$$.m_size = $2.m_size;
+	$$ = $2;
 };
 
 node_property_children: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    $$.m_size = 0;
+    $$ = gltf_yacc_temp_int_array_init_callback(user_defined);
 };
 
 node_property_children_elements: node_property_children_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
-	$$.m_data[$$.m_size] = $3;
-	++$$.m_size;
+	gltf_yacc_temp_int_array_push_callback($$, $3, user_defined);
 };
 
 node_property_children_elements : YYTOKEN_NUMBER_INT {
-	$$.m_data[0] = $1;
-	$$.m_size = 1;
+	$$ = gltf_yacc_temp_int_array_init_callback(user_defined);
+	gltf_yacc_temp_int_array_push_callback($$, $1, user_defined);
 };
 
 node_property_matrix: YYTOKEN_LEFTBRACKET node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_RIGHTBRACKET {
@@ -459,26 +494,31 @@ node_property_translation_element: YYTOKEN_NUMBER_INT {
 }
 
 node_property_weights: YYTOKEN_LEFTBRACKET node_property_weights_elements YYTOKEN_RIGHTBRACKET {
-	for (int i = 0; i < $2.m_size; ++i)
-	{
-		$$.m_data[i] = $2.m_data[i];
-	}
-	$$.m_size = $2.m_size;
+	$$ = $2;
 };
 
 node_property_weights: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    $$.m_size = 0;
+    $$ = gltf_yacc_temp_float_array_init_callback(user_defined);
 };
 
-node_property_weights_elements: node_property_weights_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
-	$$.m_data[$$.m_size] = $3;
-	++$$.m_size;
+node_property_weights_elements: node_property_weights_elements YYTOKEN_COMMA node_property_weights_element {
+	gltf_yacc_temp_float_array_push_callback($$, $3, user_defined);
 };
 
-node_property_weights_elements : YYTOKEN_NUMBER_INT {
-	$$.m_data[0] = $1;
-	$$.m_size = 1;
+node_property_weights_elements : node_property_weights_element {
+	$$ = gltf_yacc_temp_float_array_init_callback(user_defined);
+	gltf_yacc_temp_float_array_push_callback($$, $1, user_defined);
 };
+
+
+node_property_weights_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+node_property_weights_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
 
 buffers_array: YYTOKEN_LEFTBRACKET buffer_objects YYTOKEN_RIGHTBRACKET {
 
@@ -504,8 +544,8 @@ buffer_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE {
 	$$ = -1;
 };
 
-buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
-	gltf_yacc_buffer_set_bufferlength_callback($$, $5, user_defined);
+buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_buffer_set_bytelength_callback($$, $5, user_defined);
 };
 
 buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON json_string {
@@ -513,9 +553,9 @@ buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON jso
 };
 
 
-buffer_properties: YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+buffer_properties: YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 	$$ = gltf_yacc_buffer_push_callback(user_defined);
-	gltf_yacc_buffer_set_bufferlength_callback($$, $3, user_defined);
+	gltf_yacc_buffer_set_bytelength_callback($$, $3, user_defined);
 };
 
 buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string {
@@ -523,6 +563,134 @@ buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string {
 	gltf_yacc_buffer_set_url_callback($$, $3.m_data, $3.m_size, user_defined);
 };
 
+bufferviews_array: YYTOKEN_LEFTBRACKET bufferview_objects YYTOKEN_RIGHTBRACKET {
+
+};
+
+bufferviews_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
+
+};
+
+bufferview_objects: bufferview_objects YYTOKEN_COMMA bufferview_object { 
+   	assert(-1 == $3 || gltf_yacc_bufferview_size_callback(user_defined) == ($3 + 1));
+};
+
+bufferview_objects: bufferview_object { 
+	assert(-1 == $1 || gltf_yacc_bufferview_size_callback(user_defined) == ($1 + 1));
+};
+
+bufferview_object: YYTOKEN_LEFTBRACE bufferview_properties YYTOKEN_RIGHTBRACE {
+	$$ = $2;
+};
+
+bufferview_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+	$$ = -1;
+};
+
+bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BUFFER YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_bufferview_set_buffer_callback($$, $5, user_defined);
+};
+
+bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_bufferview_set_byteoffset_callback($$, $5, user_defined);
+};
+
+bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_bufferview_set_bytelength_callback($$, $5, user_defined);
+};
+
+bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_BYTESTRIDE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_bufferview_set_bytestride_callback($$, $5, user_defined);
+};
+
+bufferview_properties: bufferview_properties YYTOKEN_COMMA YYTOKEN_TARGET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_bufferview_set_target_callback($$, $5, user_defined);
+};
+
+bufferview_properties: YYTOKEN_BUFFER YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_buffer_callback($$, $3, user_defined);
+};
+
+bufferview_properties: YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_byteoffset_callback($$, $3, user_defined);
+};
+
+bufferview_properties: YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_bytelength_callback($$, $3, user_defined);
+};
+
+bufferview_properties: YYTOKEN_BYTESTRIDE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_bytestride_callback($$, $3, user_defined);
+};
+
+bufferview_properties: YYTOKEN_TARGET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_bufferview_push_callback(user_defined);
+	gltf_yacc_bufferview_set_target_callback($$, $3, user_defined);
+};
+
+accessors_array: YYTOKEN_LEFTBRACKET accessor_objects YYTOKEN_RIGHTBRACKET {
+
+};
+
+accessors_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
+
+};
+
+accessor_objects: accessor_objects YYTOKEN_COMMA accessor_object { 
+   	assert(-1 == $3 || gltf_yacc_accessor_size_callback(user_defined) == ($3 + 1));
+};
+
+accessor_objects: accessor_object { 
+	assert(-1 == $1 || gltf_yacc_accessor_size_callback(user_defined) == ($1 + 1));
+};
+
+accessor_object: YYTOKEN_LEFTBRACE accessor_properties YYTOKEN_RIGHTBRACE {
+	$$ = $2;
+};
+
+accessor_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+	$$ = -1;
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_accessor_set_bufferview_callback($$, $5, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_accessor_set_byteoffset_callback($$, $5, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COMPONENTTYPE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_accessor_set_componenttype_callback($$, $5, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_NORMALIZED YYTOKEN_COLON json_boolean {
+	gltf_yacc_accessor_set_normalized_callback($$, $5, user_defined);
+};
+
+accessor_properties: YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_bufferview_callback($$, $3, user_defined);
+};
+
+accessor_properties: YYTOKEN_BYTEOFFSET YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_byteoffset_callback($$, $3, user_defined);
+};
+
+accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_componenttype_callback($$, $3, user_defined);
+};
+
+accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON json_boolean {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_normalized_callback($$, $3, user_defined);
+};
 
 json_string: YYTOKEN_STRING {
 
@@ -568,55 +736,124 @@ json_string: YYTOKEN_NAME {
 
 };
 
+json_string: YYTOKEN_CAMERA {
+
+};
+
+json_string: YYTOKEN_CHILDREN {
+
+};
+
+json_string: YYTOKEN_SKIN {
+
+};
+
+json_string: YYTOKEN_MATRIX {
+
+};
+
+json_string: YYTOKEN_MESH {
+
+};
+
+json_string: YYTOKEN_ROTATION {
+
+};
+
+json_string: YYTOKEN_SCALE {
+
+};
+
+json_string: YYTOKEN_TRANSLATION {
+
+};
+
+json_string: YYTOKEN_WEIGHTS {
+
+};
+
+json_string: YYTOKEN_BUFFERS {
+
+};
+
+json_string: YYTOKEN_BYTELENGTH {
+
+};
+
+json_string: YYTOKEN_URI {
+
+};
+
+json_boolean: YYTOKEN_TRUE {
+	$$ = true;
+};
+
+json_boolean: YYTOKEN_FALSE {
+	$$ = false;
+};
+
 json_value: json_object { 
+
 };
 
 json_value: json_array { 
+
 };
 
 json_value: json_string { 
+
 };
 
 json_value: YYTOKEN_NUMBER_INT { 
+
 };
 
 json_value: YYTOKEN_NUMBER_FLOAT { 
+
 };
 
-json_value: YYTOKEN_TRUE { 
-};
+json_value: json_boolean { 
 
-json_value: YYTOKEN_FALSE { 
 };
 
 json_value: YYTOKEN_NULL { 
+
 };
 
 json_object: YYTOKEN_LEFTBRACE json_members YYTOKEN_RIGHTBRACE { 
+
 };
 
 json_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+
 };
 
 json_members: json_members YYTOKEN_COMMA json_member { 
+
 };
 
 json_members: json_member { 
+
 };
 
 json_member: YYTOKEN_STRING YYTOKEN_COLON json_value { 
+
 };
 
 json_array: YYTOKEN_LEFTBRACKET json_elements YYTOKEN_RIGHTBRACKET { 
+
 };
 
 json_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
+
 };
 
 json_elements: json_elements YYTOKEN_COMMA json_element { 
+
 };
 
 json_elements: json_element { 
+
 };
 
 json_element: json_value {
