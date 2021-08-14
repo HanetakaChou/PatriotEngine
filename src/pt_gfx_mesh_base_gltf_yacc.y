@@ -47,7 +47,7 @@
 %token YYTOKEN_RIGHTBRACKET 
 %token YYTOKEN_COMMA
 %token <_stdstring> YYTOKEN_STRING
-%token <_valueint> YYTOKEN_NUMBER_INT
+%token <m_token_numberint> YYTOKEN_NUMBER_INT
 %token <_valuefloat> YYTOKEN_NUMBER_FLOAT
 %token PSEUDO_LEX_ERROR
 
@@ -58,13 +58,12 @@
 %type <m_json_object> asset_object
 %type <m_json_object> asset_members
 %type <m_json_object> asset_member
-%type <m_json_object> scenes_array
-%type <m_json_object> scene_objects
-%type <m_json_object> scene_object
-%type <m_json_object> scene_members
-%type <m_json_object> scene_member
-%type <m_json_object> scene_nodes
-%type <m_json_object> scene_root_node_indices
+%type scenes_array
+%type scene_objects
+%type <m_scene_index> scene_object
+%type <m_scene_index> scene_properties
+%type <m_int_array> scene_nodes
+%type <m_int_array> scene_nodes_elements
 %type <m_json_object> nodes_array
 %type <m_json_object> node_objects
 %type <m_json_object> node_object
@@ -87,14 +86,14 @@
 %%
 gltf_object : YYTOKEN_LEFTBRACE gltf_members YYTOKEN_RIGHTBRACE { 
 	//$$ = $2;
-	};
+};
 
 gltf_members: gltf_members YYTOKEN_COMMA gltf_member { 
 	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
 	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = $1;
-    };
+};
 
 gltf_members: gltf_member { 
     //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
@@ -107,6 +106,10 @@ gltf_members: gltf_member {
 gltf_member: YYTOKEN_ASSET YYTOKEN_COLON asset_object {
 	//$$ = $3;
 	};
+
+gltf_member: YYTOKEN_SCENE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_set_default_scene_index_callback($3, user_defined);
+};
 
 gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array {
 	//$$ = $3;
@@ -164,61 +167,83 @@ scenes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
     };
 
 scene_objects: scene_objects YYTOKEN_COMMA scene_object { 
-    //JsonParser_Json_Array_AddElement(pUserData, $1, $3);
-    //$$ = $1;
+	assert(-1 == $1 || gltf_yacc_scene_size_callback(user_defined) == ($1 + 1));
     };
 
-scene_objects: scene_object { 
-    //void *_jsonarray = JsonParser_Json_Array_Create(pUserData);
-	//JsonParser_Json_Array_AddElement(pUserData, _jsonarray, $1); 
-	//$$ = _jsonarray;
-    };
+scene_objects: scene_object {
+	assert(-1 == $1 || gltf_yacc_scene_size_callback(user_defined) == ($1 + 1));
+};
 
-scene_object: scene_members YYTOKEN_COMMA scene_member { 
+scene_object: YYTOKEN_LEFTBRACE scene_properties YYTOKEN_RIGHTBRACE {
+	$$ = $2;
+};
+
+scene_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+	$$ = -1;
+};
+
+scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_nodes {
+	gltf_yacc_scene_set_nodes_callback($$, $5.m_data, $5.m_size, user_defined);
+};
+
+scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON string_value { 
 	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
 	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = $1;
-    };
 
-scene_members: scene_member { 
+};	
+
+scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
+	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
+	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
+	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
+	//$$ = $1;
+
+};	
+
+scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_nodes { 
+	$$ = gltf_yacc_scene_push_callback(user_defined);
+	gltf_yacc_scene_set_nodes_callback($$, $3.m_data, $3.m_size, user_defined);
+};
+
+scene_properties: YYTOKEN_NAME YYTOKEN_COLON string_value { 
     //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
 	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
 	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
 	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
 	//$$ = _jsonobject;
-    };
+};
 
-scene_member: YYTOKEN_NODES YYTOKEN_COLON scene_nodes { 
-	//$$._jsonvalue = $3;
-    };
+scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
+    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
+	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
+	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
+	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
+	//$$ = _jsonobject;
+};
 
-scene_nodes: YYTOKEN_LEFTBRACKET scene_root_node_indices YYTOKEN_RIGHTBRACKET { 
-    //$$ = $2;
-    };
+scene_nodes: YYTOKEN_LEFTBRACKET scene_nodes_elements YYTOKEN_RIGHTBRACKET {
+	for (int i = 0; i < $2.m_size; ++i)
+	{
+		$$.m_data[i] = $2.m_data[i];
+	}
+	$$.m_size = $2.m_size;
+};
 
 scene_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    //$$ = JsonParser_Json_Array_Create(pUserData); 
-    };
+    $$.m_size = 0;
+};
 
-scene_root_node_indices: scene_root_node_indices YYTOKEN_COMMA YYTOKEN_NUMBER_INT { 
-    //JsonParser_Json_Array_AddElement(pUserData, $1, $3);
-    //$$ = $1;
-    };
+scene_nodes_elements: scene_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
+	$$.m_data[$$.m_size] = $3;
+	++$$.m_size;
+};
 
-scene_root_node_indices: YYTOKEN_NUMBER_INT { 
-    //void *_jsonarray = JsonParser_Json_Array_Create(pUserData);
-	//JsonParser_Json_Array_AddElement(pUserData, _jsonarray, $1); 
-	//$$ = _jsonarray;
-    };
-
-scene_member: YYTOKEN_NAME YYTOKEN_COLON string_value { 
-	//$$._jsonvalue = $3;
-    };
-
-scene_member: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
-	//$$._jsonvalue = $3;
-    };	
+scene_nodes_elements : YYTOKEN_NUMBER_INT {
+	$$.m_data[0] = $1;
+	$$.m_size = 1;
+};
 
 nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET { 
     //$$ = $2;

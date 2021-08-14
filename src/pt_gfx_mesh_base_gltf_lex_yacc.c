@@ -7,15 +7,24 @@
 #include "pt_gfx_mesh_base_gltf_lex_yacc.h"
 
 // For YACC
-#define YY_TOKEN_STRING_BUFFER_SIZE 4096
+#define YY_TOKEN_STRING_MAX_SIZE 4096
+
+#define YY_TYPE_INT_ARRAY_MAX_SIZE 512
 
 union YYSTYPE
 {
-    char m_token_string[YY_TOKEN_STRING_BUFFER_SIZE];
+    char m_token_string[YY_TOKEN_STRING_MAX_SIZE];
+    int m_token_numberint;
+
+    int m_scene_index;
+
+    struct
+    {
+        int m_data[YY_TYPE_INT_ARRAY_MAX_SIZE];
+        int m_size;
+    } m_int_array;
 
     void *_stdstring;
-
-    long _valueint;
 
     float _valuefloat;
 

@@ -28,11 +28,14 @@ extern "C"
 
     ptrdiff_t gltf_lex_input_callback(void *input_stream, void *buf, size_t size, void *user_defined);
     void gltf_lex_fatal_error_callback(int line, int column, char const *msg, void *user_defined);
-
     int gltf_lex_memcmp_callback(void const *ptr1, void const *ptr2, size_t num, void *user_defined);
     void gltf_lex_memcpy_callback(char *dest, char const *src, int count, void *user_defined);
 
     void gltf_yacc_error_callback(int line, int column, char const *msg, void *user_defined);
+    void gltf_yacc_set_default_scene_index_callback(int default_scene_index, void *user_defined);
+    int gltf_yacc_scene_push_callback(void *user_defined);
+    int gltf_yacc_scene_size_callback(void *user_defined);
+    void gltf_yacc_scene_set_nodes_callback(int scene_index, int const *nodes_data, int nodes_size, void *user_defined);
 #ifdef __cplusplus
 }
 #endif

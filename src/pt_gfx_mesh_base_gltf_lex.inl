@@ -1099,7 +1099,7 @@ YY_DECL
 		}
 
 	{
-#line 62 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 60 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 
     /* bugs for yylineno */
     /* ("\r\n") compatible WS \r */
@@ -1170,7 +1170,7 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 65 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 63 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     (yycolumn) = 0;
 }
@@ -1178,7 +1178,7 @@ YY_RULE_SETUP
 /* ignore whitespace */
 case 2:
 YY_RULE_SETUP
-#line 70 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 68 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
     
 }
@@ -1186,42 +1186,42 @@ YY_RULE_SETUP
 /* split */
 case 3:
 YY_RULE_SETUP
-#line 75 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 73 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_LEFTBRACE;
 }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 79 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 77 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_RIGHTBRACE;
 }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 83 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 81 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_COLON;
 }
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 87 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 85 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_LEFTBRACKET;
 }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 91 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 89 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_RIGHTBRACKET;
 }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 95 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 93 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     return YYTOKEN_COMMA;
     }
@@ -1229,17 +1229,18 @@ YY_RULE_SETUP
 /* literal values */
 case 9:
 YY_RULE_SETUP
-#line 100 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
-{ 
+#line 98 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+{
     char *endptr = NULL;
-    lvalp->_valueint = strtol((yytext), &endptr, 10);
+    long numberlong = strtol((yytext), &endptr, 10);
     assert(endptr <= ((yytext) + (yyleng)));
-    return YYTOKEN_NUMBER_INT; 
-    }
+    lvalp->m_token_numberint = numberlong;
+    return YYTOKEN_NUMBER_INT;
+}
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 107 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 106 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
     char *endptr = NULL;
     lvalp->_valuefloat = strtof((yytext), &endptr);
@@ -1250,7 +1251,7 @@ YY_RULE_SETUP
 /* string literal */
 case 11:
 YY_RULE_SETUP
-#line 115 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 114 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
     /* keywords */
     static char const ASSET[] = "\"asset\"";
@@ -1263,6 +1264,12 @@ YY_RULE_SETUP
     static int const VERSION_LENG = sizeof(VERSION) / sizeof(VERSION[0]) - 1;
     static char const MINVERSION[] = "\"minversion\"";
     static int const MINVERSION_LENG = sizeof(MINVERSION) / sizeof(MINVERSION[0]) - 1;
+    static char const SCENE[] = "\"scene\"";
+    static int const SCENE_LENG = sizeof(SCENE) / sizeof(SCENE[0]) - 1;
+    static char const SCENES[] = "\"scenes\"";
+    static int const SCENES_LENG = sizeof(SCENES) / sizeof(SCENES[0]) - 1;
+    static char const NODES[] = "\"nodes\"";
+    static int const NODES_LENG = sizeof(NODES) / sizeof(NODES[0]) - 1;
     if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
     {
         return YYTOKEN_ASSET;
@@ -1283,9 +1290,21 @@ YY_RULE_SETUP
     {
         return YYTOKEN_MINVERSION;
     }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCENE, (((yyleng) < SCENE_LENG) ? (yyleng) : SCENE_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCENE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCENES, (((yyleng) < SCENES_LENG) ? (yyleng) : SCENES_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCENES;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), NODES, (((yyleng) < NODES_LENG) ? (yyleng) : NODES_LENG), (yyextra)))
+    {
+        return YYTOKEN_NODES;
+    }
     else
     {
-        assert(((yyleng) + 1) <= YY_TOKEN_STRING_BUFFER_SIZE);
+        assert(((yyleng) + 1) <= YY_TOKEN_STRING_MAX_SIZE);
         gltf_lex_memcpy_callback(lvalp->m_token_string, (yytext), (yyleng), (yyextra));
         lvalp->m_token_string[(yyleng)] = '\0';
         return YYTOKEN_STRING;
@@ -1295,7 +1314,7 @@ YY_RULE_SETUP
 /* catch-all rule for any other single characters */
 case 12:
 YY_RULE_SETUP
-#line 157 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 174 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
         char msg_fatal_error[4096];
         assert(((yyleng) == 1));
@@ -1304,7 +1323,7 @@ YY_RULE_SETUP
     }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 164 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 181 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
         yypop_buffer_state(yyscanner);
         if(!YY_CURRENT_BUFFER)
@@ -1315,10 +1334,10 @@ case YY_STATE_EOF(INITIAL):
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 172 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 189 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 ECHO;
 	YY_BREAK
-#line 1322 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
+#line 1341 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2419,5 +2438,5 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 172 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 189 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 

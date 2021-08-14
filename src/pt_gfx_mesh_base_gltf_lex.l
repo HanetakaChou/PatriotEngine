@@ -27,9 +27,7 @@ FALSE ("false")
 YYTOKEN_NULL ("null")
 EXTENSIONS ("extensions")
 EXTRAS ("extras")
-SCENE ("scene")
-SCENES ("scenes")
-NODES ("nodes")
+
 NAME ("name")
 CAMERA ("camera")
 CHILDREN ("children")
@@ -96,12 +94,13 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     }
 
     /* literal values */
-{NUMBER_INT} { 
+{NUMBER_INT} {
     char *endptr = NULL;
-    lvalp->_valueint = strtol((yytext), &endptr, 10);
+    long numberlong = strtol((yytext), &endptr, 10);
     assert(endptr <= ((yytext) + (yyleng)));
-    return YYTOKEN_NUMBER_INT; 
-    }
+    lvalp->m_token_numberint = numberlong;
+    return YYTOKEN_NUMBER_INT;
+}
 
 {NUMBER_FLOAT} { 
     char *endptr = NULL;
@@ -123,6 +122,12 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     static int const VERSION_LENG = sizeof(VERSION) / sizeof(VERSION[0]) - 1;
     static char const MINVERSION[] = "\"minversion\"";
     static int const MINVERSION_LENG = sizeof(MINVERSION) / sizeof(MINVERSION[0]) - 1;
+    static char const SCENE[] = "\"scene\"";
+    static int const SCENE_LENG = sizeof(SCENE) / sizeof(SCENE[0]) - 1;
+    static char const SCENES[] = "\"scenes\"";
+    static int const SCENES_LENG = sizeof(SCENES) / sizeof(SCENES[0]) - 1;
+    static char const NODES[] = "\"nodes\"";
+    static int const NODES_LENG = sizeof(NODES) / sizeof(NODES[0]) - 1;
     if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
     {
         return YYTOKEN_ASSET;
@@ -143,9 +148,21 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     {
         return YYTOKEN_MINVERSION;
     }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCENE, (((yyleng) < SCENE_LENG) ? (yyleng) : SCENE_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCENE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCENES, (((yyleng) < SCENES_LENG) ? (yyleng) : SCENES_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCENES;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), NODES, (((yyleng) < NODES_LENG) ? (yyleng) : NODES_LENG), (yyextra)))
+    {
+        return YYTOKEN_NODES;
+    }
     else
     {
-        assert(((yyleng) + 1) <= YY_TOKEN_STRING_BUFFER_SIZE);
+        assert(((yyleng) + 1) <= YY_TOKEN_STRING_MAX_SIZE);
         gltf_lex_memcpy_callback(lvalp->m_token_string, (yytext), (yyleng), (yyextra));
         lvalp->m_token_string[(yyleng)] = '\0';
         return YYTOKEN_STRING;
