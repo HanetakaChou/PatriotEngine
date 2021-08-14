@@ -20,6 +20,25 @@
 
 #include <pt_math_common.h>
 
+struct math_vec3
+{
+    float x;
+    float y;
+    float z;
+};
+
+struct math_vec4
+{
+    float x;
+    float y;
+    float z;
+    float w;
+};
+
+struct alignas(16) math_alignas16_vec4 : public math_vec4
+{
+};
+
 struct math_mat4x4
 {
     union
@@ -58,8 +77,15 @@ struct math_simd_mat
 extern "C"
 {
 #endif
+    PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source);
+    PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source);
+    PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *source, math_simd_vec v);
+    PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *source, math_simd_vec v);
+    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
+    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
     PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
+    PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
 #ifdef __cplusplus
 }
 #endif

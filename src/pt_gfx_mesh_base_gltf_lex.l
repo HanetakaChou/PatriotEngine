@@ -28,17 +28,6 @@ YYTOKEN_NULL ("null")
 EXTENSIONS ("extensions")
 EXTRAS ("extras")
 
-NAME ("name")
-CAMERA ("camera")
-CHILDREN ("children")
-SKIN ("skin")
-MATRIX ("matrix")
-MESH ("mesh")
-ROTATION ("rotation")
-SCALE ("scale")
-TRANSLATION ("translation")
-WEIGHTS ("weights")
-
     /* string literal */
 STRING (\"(\\.|[^\\"\n])*\")
 
@@ -104,7 +93,7 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
 
 {NUMBER_FLOAT} { 
     char *endptr = NULL;
-    lvalp->_valuefloat = strtof((yytext), &endptr);
+    lvalp->m_token_numberfloat = strtof((yytext), &endptr);
     assert(endptr <= ((yytext) + (yyleng)));
     return YYTOKEN_NUMBER_FLOAT; 
 }
@@ -128,6 +117,26 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     static int const SCENES_LENG = sizeof(SCENES) / sizeof(SCENES[0]) - 1;
     static char const NODES[] = "\"nodes\"";
     static int const NODES_LENG = sizeof(NODES) / sizeof(NODES[0]) - 1;
+    static char const NAME[] = "\"name\"";
+    static int const NAME_LENG = sizeof(NAME) / sizeof(NAME[0]) - 1;
+    static char const CAMERA[] = "\"camera\"";
+    static int const CAMERA_LENG = sizeof(CAMERA) / sizeof(CAMERA[0]) - 1;
+    static char const CHILDREN[] = "\"children\"";
+    static int const CHILDREN_LENG = sizeof(CHILDREN) / sizeof(CHILDREN[0]) - 1;
+    static char const SKIN[] = "\"skin\"";
+    static int const SKIN_LENG = sizeof(SKIN) / sizeof(SKIN[0]) - 1;
+    static char const MATRIX[] = "\"matrix\"";
+    static int const MATRIX_LENG = sizeof(MATRIX) / sizeof(MATRIX[0]) - 1;
+    static char const MESH[] = "\"mesh\"";
+    static int const MESH_LENG = sizeof(MESH) / sizeof(MESH[0]) - 1;
+    static char const ROTATION[] = "\"rotation\"";
+    static int const ROTATION_LENG = sizeof(ROTATION) / sizeof(ROTATION[0]) - 1;
+    static char const SCALE[] = "\"scale\"";
+    static int const SCALE_LENG = sizeof(SCALE) / sizeof(SCALE[0]) - 1;
+    static char const TRANSLATION[] = "\"translation\"";
+    static int const TRANSLATION_LENG = sizeof(TRANSLATION) / sizeof(TRANSLATION[0]) - 1;
+    static char const WEIGHTS[] = "\"weights\"";
+    static int const WEIGHTS_LENG = sizeof(WEIGHTS) / sizeof(WEIGHTS[0]) - 1;
     if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
     {
         return YYTOKEN_ASSET;
@@ -160,11 +169,52 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     {
         return YYTOKEN_NODES;
     }
+    else if (0 == gltf_lex_memcmp_callback((yytext), NAME, (((yyleng) < NAME_LENG) ? (yyleng) : NAME_LENG), (yyextra)))
+    {
+        return YYTOKEN_NAME;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), CAMERA, (((yyleng) < CAMERA_LENG) ? (yyleng) : CAMERA_LENG), (yyextra)))
+    {
+        return YYTOKEN_CAMERA;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), CHILDREN, (((yyleng) < CHILDREN_LENG) ? (yyleng) : CHILDREN_LENG), (yyextra)))
+    {
+        return YYTOKEN_CHILDREN;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SKIN, (((yyleng) < SKIN_LENG) ? (yyleng) : SKIN_LENG), (yyextra)))
+    {
+        return YYTOKEN_SKIN;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MATRIX, (((yyleng) < MATRIX_LENG) ? (yyleng) : MATRIX_LENG), (yyextra)))
+    {
+        return YYTOKEN_MATRIX;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MESH, (((yyleng) < MESH_LENG) ? (yyleng) : MESH_LENG), (yyextra)))
+    {
+        return YYTOKEN_MESH;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), ROTATION, (((yyleng) < ROTATION_LENG) ? (yyleng) : ROTATION_LENG), (yyextra)))
+    {
+        return YYTOKEN_ROTATION;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCALE, (((yyleng) < SCALE_LENG) ? (yyleng) : SCALE_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCALE;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), TRANSLATION, (((yyleng) < TRANSLATION_LENG) ? (yyleng) : TRANSLATION_LENG), (yyextra)))
+    {
+        return YYTOKEN_TRANSLATION;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), WEIGHTS, (((yyleng) < WEIGHTS_LENG) ? (yyleng) : WEIGHTS_LENG), (yyextra)))
+    {
+        return YYTOKEN_WEIGHTS;
+    }
     else
     {
         assert(((yyleng) + 1) <= YY_TOKEN_STRING_MAX_SIZE);
-        gltf_lex_memcpy_callback(lvalp->m_token_string, (yytext), (yyleng), (yyextra));
-        lvalp->m_token_string[(yyleng)] = '\0';
+        gltf_lex_memcpy_callback(lvalp->m_token_string.m_data, (yytext), (yyleng), (yyextra));
+        lvalp->m_token_string.m_data[(yyleng)] = '\0';
+        lvalp->m_token_string.m_size = (yyleng);
         return YYTOKEN_STRING;
     }
 }

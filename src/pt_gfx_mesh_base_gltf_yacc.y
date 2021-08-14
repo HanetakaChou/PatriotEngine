@@ -46,38 +46,49 @@
 %token YYTOKEN_LEFTBRACKET 
 %token YYTOKEN_RIGHTBRACKET 
 %token YYTOKEN_COMMA
-%token <_stdstring> YYTOKEN_STRING
+%token <m_token_string> YYTOKEN_STRING
 %token <m_token_numberint> YYTOKEN_NUMBER_INT
-%token <_valuefloat> YYTOKEN_NUMBER_FLOAT
+%token <m_token_numberfloat> YYTOKEN_NUMBER_FLOAT
 %token PSEUDO_LEX_ERROR
 
 // Define the nonterminals 
-%type <m_json_object> gltf_object
-%type <m_json_object> gltf_members
-%type <m_json_object> gltf_member
-%type <m_json_object> asset_object
-%type <m_json_object> asset_members
-%type <m_json_object> asset_member
+%type gltf_object
+%type gltf_members
+%type gltf_member
+%type asset_object
+%type asset_members
+%type asset_member
 %type scenes_array
 %type scene_objects
 %type <m_scene_index> scene_object
 %type <m_scene_index> scene_properties
-%type <m_int_array> scene_nodes
-%type <m_int_array> scene_nodes_elements
-%type <m_json_object> nodes_array
-%type <m_json_object> node_objects
-%type <m_json_object> node_object
-%type <m_json_object> node_members
-%type <m_json_object> node_member
-%type <m_json_object> string_value
+%type <m_int_array> scene_property_nodes
+%type <m_int_array> scene_property_nodes_elements
+%type nodes_array
+%type node_objects
+%type <m_node_index> node_object
+%type <m_node_index> node_properties
+%type <m_int_array> node_property_children
+%type <m_int_array> node_property_children_elements
+%type <m_mat4x4> node_property_matrix
+%type <m_token_numberfloat> node_property_matrix_element
+%type <m_vec4> node_property_rotation
+%type <m_token_numberfloat> node_property_rotation_element
+%type <m_vec3> node_property_scale
+%type <m_token_numberfloat> node_property_scale_element
+%type <m_vec3> node_property_translation
+%type <m_token_numberfloat> node_property_translation_element
+%type <m_float_array> node_property_weights
+%type <m_float_array> node_property_weights_elements
 
-%type <m_json_value> json_value 
-%type <m_json_value> json_object
-%type <m_json_value> json_members
-%type <m_json_member> json_member
-%type <m_json_value> json_array
-%type <m_json_value> json_elements
-%type <m_json_value> json_element 
+%type <m_token_string> json_string
+%type json_value 
+%type json_object
+%type json_members
+%type json_member
+%type json_array
+%type json_elements
+%type json_element 
 
 
 // Define the starting nonterminal
@@ -138,19 +149,19 @@ asset_members: asset_member {
 	//$$ = _jsonobject;
     };
 
-asset_member: YYTOKEN_COPYRIGHT YYTOKEN_COLON string_value { 
+asset_member: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
 	//$$._jsonvalue = $3;
     };
 
-asset_member: YYTOKEN_GENERATOR YYTOKEN_COLON string_value { 
+asset_member: YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
 	//$$._jsonvalue = $3;
     };
 
-asset_member: YYTOKEN_VERSION YYTOKEN_COLON string_value { 
+asset_member: YYTOKEN_VERSION YYTOKEN_COLON json_string { 
 	//$$._jsonvalue = $3;
     };
 
-asset_member: YYTOKEN_MINVERSION YYTOKEN_COLON string_value { 
+asset_member: YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
 	//$$._jsonvalue = $3;
     };
 
@@ -159,16 +170,16 @@ asset_member: YYTOKEN_EXTRAS YYTOKEN_COLON json_value {
     };	
 
 scenes_array: YYTOKEN_LEFTBRACKET scene_objects YYTOKEN_RIGHTBRACKET { 
-    //$$ = $2;
-    };
 
-scenes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    //$$ = JsonParser_Json_Array_Create(pUserData); 
-    };
+};
+
+scenes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
+
+};
 
 scene_objects: scene_objects YYTOKEN_COMMA scene_object { 
-	assert(-1 == $1 || gltf_yacc_scene_size_callback(user_defined) == ($1 + 1));
-    };
+	assert(-1 == $3 || gltf_yacc_scene_size_callback(user_defined) == ($3 + 1));
+};
 
 scene_objects: scene_object {
 	assert(-1 == $1 || gltf_yacc_scene_size_callback(user_defined) == ($1 + 1));
@@ -182,48 +193,33 @@ scene_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE {
 	$$ = -1;
 };
 
-scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_nodes {
+scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes {
 	gltf_yacc_scene_set_nodes_callback($$, $5.m_data, $5.m_size, user_defined);
 };
 
-scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON string_value { 
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
-	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = $1;
-
-};	
+scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
+	gltf_yacc_scene_set_name_callback($$, $5.m_data, $5.m_size, user_defined);
+};
 
 scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
-	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = $1;
-
+	// ignore
 };	
 
-scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_nodes { 
+scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes { 
 	$$ = gltf_yacc_scene_push_callback(user_defined);
 	gltf_yacc_scene_set_nodes_callback($$, $3.m_data, $3.m_size, user_defined);
 };
 
-scene_properties: YYTOKEN_NAME YYTOKEN_COLON string_value { 
-    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
-	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = _jsonobject;
+scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
+	$$ = gltf_yacc_scene_push_callback(user_defined);
+	gltf_yacc_scene_set_name_callback($$, $3.m_data, $3.m_size, user_defined);
 };
 
 scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
-    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
-	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = _jsonobject;
+	// ignore
 };
 
-scene_nodes: YYTOKEN_LEFTBRACKET scene_nodes_elements YYTOKEN_RIGHTBRACKET {
+scene_property_nodes: YYTOKEN_LEFTBRACKET scene_property_nodes_elements YYTOKEN_RIGHTBRACKET {
 	for (int i = 0; i < $2.m_size; ++i)
 	{
 		$$.m_data[i] = $2.m_data[i];
@@ -231,98 +227,289 @@ scene_nodes: YYTOKEN_LEFTBRACKET scene_nodes_elements YYTOKEN_RIGHTBRACKET {
 	$$.m_size = $2.m_size;
 };
 
-scene_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
+scene_property_nodes: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
     $$.m_size = 0;
 };
 
-scene_nodes_elements: scene_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
+scene_property_nodes_elements: scene_property_nodes_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
 	$$.m_data[$$.m_size] = $3;
 	++$$.m_size;
 };
 
-scene_nodes_elements : YYTOKEN_NUMBER_INT {
+scene_property_nodes_elements : YYTOKEN_NUMBER_INT {
 	$$.m_data[0] = $1;
 	$$.m_size = 1;
 };
 
-nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET { 
-    //$$ = $2;
-    };
+nodes_array: YYTOKEN_LEFTBRACKET node_objects YYTOKEN_RIGHTBRACKET {
 
-nodes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
-    //$$ = JsonParser_Json_Array_Create(pUserData); 
-    };
+};
+
+nodes_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
+
+};
 
 node_objects: node_objects YYTOKEN_COMMA node_object { 
-    //JsonParser_Json_Array_AddElement(pUserData, $1, $3);
-    //$$ = $1;
-    };
+   	assert(-1 == $3 || gltf_yacc_node_size_callback(user_defined) == ($3 + 1));
+};
 
 node_objects: node_object { 
-    //void *_jsonarray = JsonParser_Json_Array_Create(pUserData);
-	//JsonParser_Json_Array_AddElement(pUserData, _jsonarray, $1); 
-	//$$ = _jsonarray;
-    };
+	assert(-1 == $1 || gltf_yacc_node_size_callback(user_defined) == ($1 + 1));
+};
 
-node_object: node_members YYTOKEN_COMMA node_member { 
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, $1, $3._stdstring, $3._jsonvalue); 
-	//JsonParser_Std_String_Dispose(pUserData, $3._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = $1;
-    };
+node_object: YYTOKEN_LEFTBRACE node_properties YYTOKEN_RIGHTBRACE {
+	$$ = $2;
+};
 
-node_members: node_member { 
-    //void *_jsonobject = JsonParser_Json_Object_Create(pUserData);
-	//bool _res_addmember = JsonParser_Json_Object_AddMember(pUserData, _jsonobject, $1._stdstring, $1._jsonvalue);
-	//JsonParser_Std_String_Dispose(pUserData, $1._stdstring);
-	//if(!_res_addmember) { yyerror(&yylloc, pUserData, pScanner, "Duplicate object key"); }
-	//$$ = _jsonobject;
-    };
+node_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+	$$ = -1;
+};
 
-node_member: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT { 
-    };
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_node_set_camera_callback($$, $5, user_defined);
+};
 
-string_value: YYTOKEN_STRING {
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children {
+	gltf_yacc_node_set_children_callback($$, $5.m_data, $5.m_size, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_node_set_skin_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix {
+	gltf_yacc_node_set_matrix_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_node_set_mesh_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation {
+	gltf_yacc_node_set_rotation_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_SCALE YYTOKEN_COLON node_property_scale {
+	gltf_yacc_node_set_scale_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation {
+	gltf_yacc_node_set_translation_callback($$, $5, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights {
+	gltf_yacc_node_set_weights_callback($$, $5.m_data, $5.m_size, user_defined);
+};
+
+node_properties: node_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
+	gltf_yacc_node_set_name_callback($$, $5.m_data, $5.m_size, user_defined);
+};
+
+node_properties: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_camera_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_CHILDREN YYTOKEN_COLON node_property_children {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_children_callback($$, $3.m_data, $3.m_size, user_defined);
+};
+
+node_properties: YYTOKEN_SKIN YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_skin_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_MATRIX YYTOKEN_COLON node_property_matrix {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_matrix_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_MESH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_mesh_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_ROTATION YYTOKEN_COLON node_property_rotation {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_rotation_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_SCALE YYTOKEN_COLON node_property_scale {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_scale_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_TRANSLATION YYTOKEN_COLON node_property_translation {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_translation_callback($$, $3, user_defined);
+};
+
+node_properties: YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_weights_callback($$, $3.m_data, $3.m_size, user_defined);
+};
+
+node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
+	$$ = gltf_yacc_node_push_callback(user_defined);
+	gltf_yacc_node_set_name_callback($$, $3.m_data, $3.m_size, user_defined);
+};
+
+node_property_children: YYTOKEN_LEFTBRACKET node_property_children_elements YYTOKEN_RIGHTBRACKET {
+	for (int i = 0; i < $2.m_size; ++i)
+	{
+		$$.m_data[i] = $2.m_data[i];
+	}
+	$$.m_size = $2.m_size;
+};
+
+node_property_children: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
+    $$.m_size = 0;
+};
+
+node_property_children_elements: node_property_children_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
+	$$.m_data[$$.m_size] = $3;
+	++$$.m_size;
+};
+
+node_property_children_elements : YYTOKEN_NUMBER_INT {
+	$$.m_data[0] = $1;
+	$$.m_size = 1;
+};
+
+node_property_matrix: YYTOKEN_LEFTBRACKET node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_COMMA node_property_matrix_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = $10;
+	$$[5] = $12;
+	$$[6] = $14;
+	$$[7] = $16;
+	$$[8] = $18;
+	$$[9] = $20;
+	$$[10] = $22;
+	$$[11] = $24;
+	$$[12] = $26;
+	$$[13] = $28;
+	$$[14] = $30;
+	$$[15] = $32;
+}
+
+node_property_matrix_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+node_property_matrix_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
+node_property_rotation: YYTOKEN_LEFTBRACKET node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_COMMA node_property_rotation_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+}
+
+node_property_rotation_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+node_property_rotation_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
+node_property_scale: YYTOKEN_LEFTBRACKET node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_COMMA node_property_scale_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+}
+
+node_property_scale_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+node_property_scale_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
+node_property_translation: YYTOKEN_LEFTBRACKET node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_COMMA node_property_translation_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+}
+
+node_property_translation_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+node_property_translation_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
+node_property_weights: YYTOKEN_LEFTBRACKET node_property_weights_elements YYTOKEN_RIGHTBRACKET {
+	for (int i = 0; i < $2.m_size; ++i)
+	{
+		$$.m_data[i] = $2.m_data[i];
+	}
+	$$.m_size = $2.m_size;
+};
+
+node_property_weights: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET { 
+    $$.m_size = 0;
+};
+
+node_property_weights_elements: node_property_weights_elements YYTOKEN_COMMA YYTOKEN_NUMBER_INT {
+	$$.m_data[$$.m_size] = $3;
+	++$$.m_size;
+};
+
+node_property_weights_elements : YYTOKEN_NUMBER_INT {
+	$$.m_data[0] = $1;
+	$$.m_size = 1;
+};
+
+json_string: YYTOKEN_STRING {
 
 };
 
-string_value: YYTOKEN_ASSET {
+json_string: YYTOKEN_ASSET {
 
 };
 
-string_value: YYTOKEN_COPYRIGHT {
+json_string: YYTOKEN_COPYRIGHT {
 
 };
 
-string_value: YYTOKEN_GENERATOR {
+json_string: YYTOKEN_GENERATOR {
 
 };
 
-string_value: YYTOKEN_VERSION {
+json_string: YYTOKEN_VERSION {
 
 };
 
-string_value: YYTOKEN_MINVERSION {
+json_string: YYTOKEN_MINVERSION {
 
 };
 
-string_value: YYTOKEN_EXTENSIONS {
+json_string: YYTOKEN_EXTENSIONS {
 
 };
 
-string_value: YYTOKEN_EXTRAS {
+json_string: YYTOKEN_EXTRAS {
 
 };
 
-string_value: YYTOKEN_SCENES {
+json_string: YYTOKEN_SCENES {
 
 };
 
-string_value: YYTOKEN_NODES {
+json_string: YYTOKEN_NODES {
 
 };
 
-string_value: YYTOKEN_NAME {
+json_string: YYTOKEN_NAME {
 
 };
 
@@ -332,7 +519,7 @@ json_value: json_object {
 json_value: json_array { 
 };
 
-json_value: YYTOKEN_STRING { 
+json_value: json_string { 
 };
 
 json_value: YYTOKEN_NUMBER_INT { 
