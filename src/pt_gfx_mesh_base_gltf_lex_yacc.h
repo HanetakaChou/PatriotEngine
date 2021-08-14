@@ -71,6 +71,8 @@ extern "C"
     void gltf_yacc_accessor_set_byteoffset_callback(int accessor_index, int byteoffset, void *user_defined);
     void gltf_yacc_accessor_set_componenttype_callback(int accessor_index, int componenttype, void *user_defined);
     void gltf_yacc_accessor_set_normalized_callback(int accessor_index, bool normalized, void *user_defined);
+    void gltf_yacc_accessor_set_count_callback(int accessor_index, int count, void *user_defined);
+    void gltf_yacc_accessor_set_type_callback(int accessor_index, int type, void *user_defined);
     int gltf_yacc_accessor_size_callback(void *user_defined);
 #ifdef __cplusplus
 }

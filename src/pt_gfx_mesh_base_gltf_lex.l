@@ -166,6 +166,20 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     static int const MAX_LENG = sizeof(MAX) / sizeof(MAX[0]) - 1;
     static char const MIN[] = "\"min\"";
     static int const MIN_LENG = sizeof(MIN) / sizeof(MIN[0]) - 1;
+    static char const SCALAR[] = "\"SCALAR\"";
+    static int const SCALAR_LENG = sizeof(SCALAR) / sizeof(SCALAR[0]) - 1;
+    static char const VEC2[] = "\"VEC2\"";
+    static int const VEC2_LENG = sizeof(VEC2) / sizeof(VEC2[0]) - 1;
+    static char const VEC3[] = "\"VEC3\"";
+    static int const VEC3_LENG = sizeof(VEC3) / sizeof(VEC3[0]) - 1;
+    static char const VEC4[] = "\"VEC4\"";
+    static int const VEC4_LENG = sizeof(VEC4) / sizeof(VEC4[0]) - 1;
+    static char const MAT2[] = "\"MAT2\"";
+    static int const MAT2_LENG = sizeof(MAT2) / sizeof(MAT2[0]) - 1;
+    static char const MAT3[] = "\"MAT3\"";
+    static int const MAT3_LENG = sizeof(MAT3) / sizeof(MAT3[0]) - 1;
+    static char const MAT4[] = "\"MAT4\"";
+    static int const MAT4_LENG = sizeof(MAT4) / sizeof(MAT4[0]) - 1;
     static char const TRUE[] = "\"true\"";
     static int const TRUE_LENG = sizeof(TRUE) / sizeof(TRUE[0]) - 1;
     static char const FALSE[] = "\"false\"";
@@ -308,6 +322,34 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     else if (0 == gltf_lex_memcmp_callback((yytext), MIN, (((yyleng) < MIN_LENG) ? (yyleng) : MIN_LENG), (yyextra)))
     {
         return YYTOKEN_MIN;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SCALAR, (((yyleng) < SCALAR_LENG) ? (yyleng) : SCALAR_LENG), (yyextra)))
+    {
+        return YYTOKEN_SCALAR;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), VEC2, (((yyleng) < VEC2_LENG) ? (yyleng) : VEC2_LENG), (yyextra)))
+    {
+        return YYTOKEN_VEC2;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), VEC3, (((yyleng) < VEC3_LENG) ? (yyleng) : VEC3_LENG), (yyextra)))
+    {
+        return YYTOKEN_VEC3;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), VEC4, (((yyleng) < VEC4_LENG) ? (yyleng) : VEC4_LENG), (yyextra)))
+    {
+        return YYTOKEN_VEC4;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MAT2, (((yyleng) < MAT2_LENG) ? (yyleng) : MAT2_LENG), (yyextra)))
+    {
+        return YYTOKEN_MAT2;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MAT3, (((yyleng) < MAT3_LENG) ? (yyleng) : MAT3_LENG), (yyextra)))
+    {
+        return YYTOKEN_MAT3;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MAT4, (((yyleng) < MAT4_LENG) ? (yyleng) : MAT4_LENG), (yyextra)))
+    {
+        return YYTOKEN_MAT4;
     }
     else if (0 == gltf_lex_memcmp_callback((yytext), TRUE, (((yyleng) < TRUE_LENG) ? (yyleng) : TRUE_LENG), (yyextra)))
     {

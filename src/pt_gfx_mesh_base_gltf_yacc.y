@@ -53,6 +53,13 @@
 %token YYTOKEN_TYPE
 %token YYTOKEN_MAX
 %token YYTOKEN_MIN
+%token YYTOKEN_SCALAR 
+%token YYTOKEN_VEC2
+%token YYTOKEN_VEC3
+%token YYTOKEN_VEC4
+%token YYTOKEN_MAT2
+%token YYTOKEN_MAT3
+%token YYTOKEN_MAT4
 
 %token YYTOKEN_TRUE 
 %token YYTOKEN_FALSE 
@@ -672,6 +679,38 @@ accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_NORMALIZED YYTOKE
 	gltf_yacc_accessor_set_normalized_callback($$, $5, user_defined);
 };
 
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_accessor_set_count_callback($$, $5, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_SCALAR {
+	gltf_yacc_accessor_set_type_callback($$, 1, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC2 {
+	gltf_yacc_accessor_set_type_callback($$, 2, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC3 {
+	gltf_yacc_accessor_set_type_callback($$, 3, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC4 {
+	gltf_yacc_accessor_set_type_callback($$, 4, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT2 {
+	gltf_yacc_accessor_set_type_callback($$, 5, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT3 {
+	gltf_yacc_accessor_set_type_callback($$, 9, user_defined);
+};
+
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT4 {
+	gltf_yacc_accessor_set_type_callback($$, 16, user_defined);
+};
+
 accessor_properties: YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
 	gltf_yacc_accessor_set_bufferview_callback($$, $3, user_defined);
@@ -690,6 +729,46 @@ accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 accessor_properties: YYTOKEN_COMPONENTTYPE YYTOKEN_COLON json_boolean {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
 	gltf_yacc_accessor_set_normalized_callback($$, $3, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_count_callback($$, $3, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_SCALAR {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 1, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC2 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 2, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC3 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 3, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC4 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 4, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT2 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 5, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT3 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 9, user_defined);
+};
+
+accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT4 {
+	$$ = gltf_yacc_accessor_push_callback(user_defined);
+	gltf_yacc_accessor_set_type_callback($$, 16, user_defined);
 };
 
 json_string: YYTOKEN_STRING {

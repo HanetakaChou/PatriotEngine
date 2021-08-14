@@ -116,10 +116,11 @@ struct gltf_accessor
     int m_byteoffset;
     enum gltf_component_type m_componenttype;
     bool m_normalized;
+    int m_count;
     enum gltf_type m_type;
     float m_max[16];
     float m_min[16];
-    inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
+    inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_count(-1), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
 };
 
 struct gltf_root
@@ -578,6 +579,22 @@ void gltf_yacc_accessor_set_normalized_callback(int accessor_index, bool normali
     assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
     assert(false == user_defined->m_gltf_root->m_accessors[accessor_index].m_normalized);
     user_defined->m_gltf_root->m_accessors[accessor_index].m_normalized = normalized;
+}
+
+void gltf_yacc_accessor_set_count_callback(int accessor_index, int count, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
+    assert(-1 == user_defined->m_gltf_root->m_accessors[accessor_index].m_count);
+    user_defined->m_gltf_root->m_accessors[accessor_index].m_count = count;
+}
+
+void gltf_yacc_accessor_set_type_callback(int accessor_index, int type, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
+    assert(GLTF_TYPE_UNKNOWN == user_defined->m_gltf_root->m_accessors[accessor_index].m_type);
+    user_defined->m_gltf_root->m_accessors[accessor_index].m_type = static_cast<enum gltf_type>(type);
 }
 
 int gltf_yacc_accessor_size_callback(void *user_defined_void)
