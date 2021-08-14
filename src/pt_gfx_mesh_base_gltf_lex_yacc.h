@@ -49,6 +49,10 @@ extern "C"
     void gltf_yacc_node_set_weights_callback(int node_index, float *weights_data, int weights_size, void *user_defined);
     void gltf_yacc_node_set_name_callback(int node_index, char const *name_data, int name_size, void *user_defined);
     int gltf_yacc_node_size_callback(void *user_defined);
+    int gltf_yacc_buffer_push_callback(void *user_defined);
+    void gltf_yacc_buffer_set_bufferlength_callback(int buffer_index, int bufferlength, void *user_defined);
+    void gltf_yacc_buffer_set_url_callback(int buffer_index, char const *name_data, int name_size, void *user_defined);
+    int gltf_yacc_buffer_size_callback(void *user_defined);
 #ifdef __cplusplus
 }
 #endif

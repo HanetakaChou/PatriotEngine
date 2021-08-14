@@ -21,4 +21,4 @@ MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"
 
 flex -o "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_lex.inl" -X --prefix=gltf_yy "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_lex.l" 
 # bison -L C -p gltf_yy -y -o "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.inl" "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.y"
-bison -L C -p gltf_yy -r all -o "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.inl" "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.y"
+bison -L C -p gltf_yy  -o "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.inl" "${MY_DIR}/../../src/pt_gfx_mesh_base_gltf_yacc.y"

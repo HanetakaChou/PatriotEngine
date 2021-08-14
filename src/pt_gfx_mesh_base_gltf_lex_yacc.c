@@ -31,7 +31,7 @@
 // expession: NUMBER
 // %%
 
-// bison 
+// bison
 // add "-r all" option and generate the "*.output" file
 
 // when there is a "%type"(nonterminal) right after the "."
@@ -40,7 +40,7 @@
 // the shift and reduce can exist at the same time as long as they can be distinguished by the first "%token"(the LA(1))
 
 // search "State * conflicts: * shift/reduce" in "*.output" file
-// in this case, we have "State 5 conflicts: 1 shift/reduce"  
+// in this case, we have "State 5 conflicts: 1 shift/reduce"
 
 // search "State 5", we have "State 4" --expession--> "State 5"
 // search "State 4", we have "State 2" --PLUS--> "State 4"
@@ -75,28 +75,23 @@ union YYSTYPE
         char m_data[YY_TOKEN_STRING_MAX_SIZE];
         int m_size;
     } m_token_string;
-
     int m_token_numberint;
-
     int m_token_numberfloat;
 
-
     int m_scene_index;
-
     int m_node_index;
+    int m_buffer_index;
 
     struct
     {
         int m_data[YY_TYPE_INT_ARRAY_MAX_SIZE];
         int m_size;
     } m_int_array;
-
-     struct
+    struct
     {
         float m_data[YY_TYPE_FLOAT_ARRAY_MAX_SIZE];
         int m_size;
     } m_float_array;
-
     float m_mat4x4[16];
     float m_vec4[4];
     float m_vec3[3];

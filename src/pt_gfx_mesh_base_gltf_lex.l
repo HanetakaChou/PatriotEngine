@@ -137,6 +137,12 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     static int const TRANSLATION_LENG = sizeof(TRANSLATION) / sizeof(TRANSLATION[0]) - 1;
     static char const WEIGHTS[] = "\"weights\"";
     static int const WEIGHTS_LENG = sizeof(WEIGHTS) / sizeof(WEIGHTS[0]) - 1;
+    static char const BUFFERS[] = "\"buffers\"";
+    static int const BUFFERS_LENG = sizeof(BUFFERS) / sizeof(BUFFERS[0]) - 1;
+    static char const BUFFERLENGTH[] = "\"byteLength\"";
+    static int const BUFFERLENGTH_LENG = sizeof(BUFFERLENGTH) / sizeof(BUFFERLENGTH[0]) - 1;
+    static char const URI[] = "\"uri\"";
+    static int const URI_LENG = sizeof(URI) / sizeof(URI[0]) - 1;
     if (0 == gltf_lex_memcmp_callback((yytext), ASSET, (((yyleng) < ASSET_LENG) ? (yyleng) : ASSET_LENG), (yyextra)))
     {
         return YYTOKEN_ASSET;
@@ -208,6 +214,18 @@ NUMBER_FLOAT (({INTERGER}{FRACTION})|({INTERGER}{EXPONENT})|({INTERGER}{FRACTION
     else if (0 == gltf_lex_memcmp_callback((yytext), WEIGHTS, (((yyleng) < WEIGHTS_LENG) ? (yyleng) : WEIGHTS_LENG), (yyextra)))
     {
         return YYTOKEN_WEIGHTS;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFERS, (((yyleng) < BUFFERS_LENG) ? (yyleng) : BUFFERS_LENG), (yyextra)))
+    {
+        return YYTOKEN_BUFFERS;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), BUFFERLENGTH, (((yyleng) < BUFFERLENGTH_LENG) ? (yyleng) : BUFFERLENGTH_LENG), (yyextra)))
+    {
+        return YYTOKEN_BUFFERLENGTH;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), URI, (((yyleng) < URI_LENG) ? (yyleng) : URI_LENG), (yyextra)))
+    {
+        return YYTOKEN_URI;
     }
     else
     {

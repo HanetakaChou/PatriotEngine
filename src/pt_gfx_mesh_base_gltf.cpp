@@ -67,11 +67,20 @@ struct gltf_node
     inline gltf_node() : m_camera(-1), m_skin(-1), m_matrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, m_mesh(-1), m_rotation{0.0f, 0.0f, 0.0f, 1.0f}, m_scale{1.0f, 1.0f, 1.0f}, m_translation{0.0f, 0.0f, 0.0f} {}
 };
 
+struct gltf_buffer
+{
+    int m_byteLength;
+    mcrt_string m_url;
+
+    inline gltf_buffer() : m_byteLength(-1) {}
+};
+
 struct gltf_root
 {
     int default_scene_index;
     mcrt_vector<struct gltf_scene> m_scenes;
     mcrt_vector<struct gltf_node> m_nodes;
+    mcrt_vector<struct gltf_buffer> m_buffers;
 };
 
 struct gltf_yy_extra_type
@@ -338,4 +347,35 @@ int gltf_yacc_node_size_callback(void *user_defined_void)
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     int node_index = user_defined->m_gltf_root->m_nodes.size();
     return node_index;
+}
+
+int gltf_yacc_buffer_push_callback(void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    int buffer_index = user_defined->m_gltf_root->m_buffers.size();
+    user_defined->m_gltf_root->m_buffers.emplace_back();
+    return buffer_index;
+}
+
+void gltf_yacc_buffer_set_bufferlength_callback(int buffer_index, int bufferlength, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(buffer_index < user_defined->m_gltf_root->m_buffers.size());
+    assert(-1 == user_defined->m_gltf_root->m_buffers[buffer_index].m_byteLength);
+    user_defined->m_gltf_root->m_buffers[buffer_index].m_byteLength = bufferlength;
+}
+
+void gltf_yacc_buffer_set_url_callback(int buffer_index, char const *name_data, int name_size, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(buffer_index < user_defined->m_gltf_root->m_buffers.size());
+    assert(0 == user_defined->m_gltf_root->m_buffers[buffer_index].m_url.length());
+    user_defined->m_gltf_root->m_buffers[buffer_index].m_url.assign(name_data, name_size);
+}
+
+int gltf_yacc_buffer_size_callback(void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    int buffer_index = user_defined->m_gltf_root->m_buffers.size();
+    return buffer_index;
 }

@@ -37,6 +37,9 @@
 %token YYTOKEN_SCALE
 %token YYTOKEN_TRANSLATION
 %token YYTOKEN_WEIGHTS
+%token YYTOKEN_BUFFERS
+%token YYTOKEN_BUFFERLENGTH
+%token YYTOKEN_URI
 %token YYTOKEN_TRUE 
 %token YYTOKEN_FALSE 
 %token YYTOKEN_NULL 
@@ -80,6 +83,10 @@
 %type <m_token_numberfloat> node_property_translation_element
 %type <m_float_array> node_property_weights
 %type <m_float_array> node_property_weights_elements
+%type buffers_array
+%type buffer_objects
+%type <m_buffer_index> buffer_object
+%type <m_buffer_index> buffer_properties
 
 %type <m_token_string> json_string
 %type json_value 
@@ -127,6 +134,10 @@ gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array {
 	};
 
 gltf_member: YYTOKEN_NODES YYTOKEN_COLON nodes_array {
+	//$$ = $3;
+	};
+
+gltf_member: YYTOKEN_BUFFERS YYTOKEN_COLON buffers_array {
 	//$$ = $3;
 	};
 
@@ -468,6 +479,50 @@ node_property_weights_elements : YYTOKEN_NUMBER_INT {
 	$$.m_data[0] = $1;
 	$$.m_size = 1;
 };
+
+buffers_array: YYTOKEN_LEFTBRACKET buffer_objects YYTOKEN_RIGHTBRACKET {
+
+};
+
+buffers_array: YYTOKEN_LEFTBRACKET YYTOKEN_RIGHTBRACKET {
+
+};
+
+buffer_objects: buffer_objects YYTOKEN_COMMA buffer_object { 
+   	assert(-1 == $3 || gltf_yacc_buffer_size_callback(user_defined) == ($3 + 1));
+};
+
+buffer_objects: buffer_object { 
+	assert(-1 == $1 || gltf_yacc_buffer_size_callback(user_defined) == ($1 + 1));
+};
+
+buffer_object: YYTOKEN_LEFTBRACE buffer_properties YYTOKEN_RIGHTBRACE {
+	$$ = $2;
+};
+
+buffer_object: YYTOKEN_LEFTBRACE YYTOKEN_RIGHTBRACE { 
+	$$ = -1;
+};
+
+buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	gltf_yacc_buffer_set_bufferlength_callback($$, $5, user_defined);
+};
+
+buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON json_string {
+	gltf_yacc_buffer_set_url_callback($$, $5.m_data, $5.m_size, user_defined);
+};
+
+
+buffer_properties: YYTOKEN_BUFFERLENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
+	$$ = gltf_yacc_buffer_push_callback(user_defined);
+	gltf_yacc_buffer_set_bufferlength_callback($$, $3, user_defined);
+};
+
+buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string {
+	$$ = gltf_yacc_buffer_push_callback(user_defined);
+	gltf_yacc_buffer_set_url_callback($$, $3.m_data, $3.m_size, user_defined);
+};
+
 
 json_string: YYTOKEN_STRING {
 

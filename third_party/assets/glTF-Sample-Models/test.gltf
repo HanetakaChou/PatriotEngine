@@ -22,5 +22,11 @@
                 0.000000
             ]
         }
+    ],
+    "buffers": [
+        {
+            "byteLength": 1860,
+            "uri": "AnimatedCube.bin"
+        }
     ]
 }
