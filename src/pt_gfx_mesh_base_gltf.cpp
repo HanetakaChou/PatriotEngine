@@ -288,7 +288,7 @@ void gltf_yacc_temp_int_array_destroy_callback(struct temp_int_array_version_t *
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert((reinterpret_cast<uintptr_t>(temp_int_array_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_int_array_version));
-    assert(0 == user_defined->m_temp_int_array.size()); //swap
+    assert(0 != user_defined->m_temp_int_array.size());
     user_defined->m_temp_int_array.clear();
 }
 
@@ -310,7 +310,7 @@ void gltf_yacc_temp_float_array_destroy_callback(struct temp_float_array_version
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert((reinterpret_cast<uintptr_t>(temp_float_array_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_float_array_version));
-    assert(0 == user_defined->m_temp_float_array.size()); //swap
+    assert(0 != user_defined->m_temp_float_array.size());
     user_defined->m_temp_float_array.clear();
 }
 
@@ -336,6 +336,9 @@ void gltf_yacc_scene_set_nodes_callback(int scene_index, struct temp_int_array_v
     assert((reinterpret_cast<uintptr_t>(temp_int_array_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_int_array_version));
     assert(0 != user_defined->m_temp_int_array.size());
     user_defined->m_gltf_root->m_scenes[scene_index].m_nodes.swap(user_defined->m_temp_int_array);
+#ifndef NDEBUG
+    user_defined->m_temp_int_array.assign({-1, -1, -1, -1, -1, -1, -1});
+#endif
 }
 
 void gltf_yacc_scene_set_name_callback(int scene_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
@@ -382,6 +385,9 @@ void gltf_yacc_node_set_children_callback(int node_index, struct temp_int_array_
     assert((reinterpret_cast<uintptr_t>(temp_int_array_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_int_array_version));
     assert(0 != user_defined->m_temp_int_array.size());
     user_defined->m_gltf_root->m_nodes[node_index].m_children.swap(user_defined->m_temp_int_array);
+#ifndef NDEBUG
+    user_defined->m_temp_int_array.assign({-1, -1, -1, -1, -1, -1, -1});
+#endif
 }
 
 void gltf_yacc_node_set_skin_callback(int node_index, int skin_index, void *user_defined_void)
@@ -462,6 +468,9 @@ void gltf_yacc_node_set_weights_callback(int node_index, struct temp_float_array
     assert((reinterpret_cast<uintptr_t>(temp_float_array_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_float_array_version));
     assert(0 != user_defined->m_temp_float_array.size());
     user_defined->m_gltf_root->m_nodes[node_index].m_weights.swap(user_defined->m_temp_float_array);
+#ifndef NDEBUG
+    user_defined->m_temp_float_array.assign({-1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f});
+#endif
 }
 
 void gltf_yacc_node_set_name_callback(int node_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
