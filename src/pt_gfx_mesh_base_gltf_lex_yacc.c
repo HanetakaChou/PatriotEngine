@@ -68,7 +68,7 @@
 union YYSTYPE
 {
     int m_token_numberint;
-    int m_token_numberfloat;
+    float m_token_numberfloat;
 
     int m_scene_index;
     int m_node_index;
