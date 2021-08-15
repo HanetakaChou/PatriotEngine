@@ -15,22 +15,15 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_MCRT_MEMCPY_H_
-#define _PT_MCRT_MEMCPY_H_ 1
-
 #include <stddef.h>
-#include "pt_common.h"
-#include "pt_mcrt_common.h"
+#include <stdint.h>
+#include <pt_common.h>
+#include <pt_mcrt_common.h>
+#include <pt_mcrt_memcmp.h>
+#include <string.h>
 
-#ifdef __cplusplus
-extern "C"
+PT_ATTR_MCRT int PT_CALL mcrt_memcmp(void const *ptr1, void const *ptr2, size_t num)
 {
-#endif
-
-    PT_ATTR_MCRT void *PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
-
-#ifdef __cplusplus
+    //TODO //SSE //NEON
+    return memcmp(ptr1, ptr2, num);
 }
-#endif
-
-#endif

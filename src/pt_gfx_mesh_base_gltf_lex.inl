@@ -1318,10 +1318,6 @@ YY_RULE_SETUP
     static int const COUNT_LENG = sizeof(COUNT) / sizeof(COUNT[0]) - 1;
     static char const TYPE[] = "\"type\"";
     static int const TYPE_LENG = sizeof(TYPE) / sizeof(TYPE[0]) - 1;
-    static char const MAX[] = "\"max\"";
-    static int const MAX_LENG = sizeof(MAX) / sizeof(MAX[0]) - 1;
-    static char const MIN[] = "\"min\"";
-    static int const MIN_LENG = sizeof(MIN) / sizeof(MIN[0]) - 1;
     static char const SCALAR[] = "\"SCALAR\"";
     static int const SCALAR_LENG = sizeof(SCALAR) / sizeof(SCALAR[0]) - 1;
     static char const VEC2[] = "\"VEC2\"";
@@ -1336,6 +1332,12 @@ YY_RULE_SETUP
     static int const MAT3_LENG = sizeof(MAT3) / sizeof(MAT3[0]) - 1;
     static char const MAT4[] = "\"MAT4\"";
     static int const MAT4_LENG = sizeof(MAT4) / sizeof(MAT4[0]) - 1;
+    static char const MAX[] = "\"max\"";
+    static int const MAX_LENG = sizeof(MAX) / sizeof(MAX[0]) - 1;
+    static char const MIN[] = "\"min\"";
+    static int const MIN_LENG = sizeof(MIN) / sizeof(MIN[0]) - 1;
+    static char const SPARSE[] = "\"sparse\"";
+    static int const SPARSE_LENG = sizeof(SPARSE) / sizeof(SPARSE[0]) - 1;
     static char const TRUE[] = "\"true\"";
     static int const TRUE_LENG = sizeof(TRUE) / sizeof(TRUE[0]) - 1;
     static char const FALSE[] = "\"false\"";
@@ -1471,14 +1473,6 @@ YY_RULE_SETUP
     {
         return YYTOKEN_TYPE;
     }
-    else if (0 == gltf_lex_memcmp_callback((yytext), MAX, (((yyleng) < MAX_LENG) ? (yyleng) : MAX_LENG), (yyextra)))
-    {
-        return YYTOKEN_MAX;
-    }
-    else if (0 == gltf_lex_memcmp_callback((yytext), MIN, (((yyleng) < MIN_LENG) ? (yyleng) : MIN_LENG), (yyextra)))
-    {
-        return YYTOKEN_MIN;
-    }
     else if (0 == gltf_lex_memcmp_callback((yytext), SCALAR, (((yyleng) < SCALAR_LENG) ? (yyleng) : SCALAR_LENG), (yyextra)))
     {
         return YYTOKEN_SCALAR;
@@ -1507,6 +1501,18 @@ YY_RULE_SETUP
     {
         return YYTOKEN_MAT4;
     }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MAX, (((yyleng) < MAX_LENG) ? (yyleng) : MAX_LENG), (yyextra)))
+    {
+        return YYTOKEN_MAX;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), MIN, (((yyleng) < MIN_LENG) ? (yyleng) : MIN_LENG), (yyextra)))
+    {
+        return YYTOKEN_MIN;
+    }
+    else if (0 == gltf_lex_memcmp_callback((yytext), SPARSE, (((yyleng) < SPARSE_LENG) ? (yyleng) : SPARSE_LENG), (yyextra)))
+    {
+        return YYTOKEN_SPARSE;
+    }
     else if (0 == gltf_lex_memcmp_callback((yytext), TRUE, (((yyleng) < TRUE_LENG) ? (yyleng) : TRUE_LENG), (yyextra)))
     {
         return YYTOKEN_TRUE;
@@ -1521,10 +1527,8 @@ YY_RULE_SETUP
     }
     else
     {
-        assert(((yyleng) + 1) <= YY_TOKEN_STRING_MAX_SIZE);
-        gltf_lex_memcpy_callback(lvalp->m_token_string.m_data, (yytext), (yyleng), (yyextra));
-        lvalp->m_token_string.m_data[(yyleng)] = '\0';
-        lvalp->m_token_string.m_size = (yyleng);
+        lvalp->m_temp_string_version = gltf_lex_yacc_temp_string_init_callback((yyextra));
+        gltf_lex_yacc_temp_string_set_callback(lvalp->m_temp_string_version, (yytext), (yyleng), (yyextra));
         return YYTOKEN_STRING;
     }
 }
@@ -1532,7 +1536,7 @@ YY_RULE_SETUP
 /* catch-all rule for any other single characters */
 case 12:
 YY_RULE_SETUP
-#line 378 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 382 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 { 
         char msg_fatal_error[4096];
         assert(((yyleng) == 1));
@@ -1541,7 +1545,7 @@ YY_RULE_SETUP
     }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 385 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 389 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 {
         yypop_buffer_state(yyscanner);
         if(!YY_CURRENT_BUFFER)
@@ -1552,10 +1556,10 @@ case YY_STATE_EOF(INITIAL):
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 393 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 397 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 ECHO;
 	YY_BREAK
-#line 1559 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
+#line 1563 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.inl"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2656,5 +2660,5 @@ static int yy_flex_strlen (const char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 393 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
+#line 397 "/home/HanetakaYuminaga/Documents/PatriotEngine/bldsys/posix_linux_x11/../../src/pt_gfx_mesh_base_gltf_lex.l"
 

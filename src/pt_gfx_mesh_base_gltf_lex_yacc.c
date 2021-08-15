@@ -65,16 +65,8 @@
 #include "pt_gfx_mesh_base_gltf_lex_yacc.h"
 
 // For YACC
-#define YY_TOKEN_STRING_MAX_SIZE 4096
-#define YY_TYPE_FLOAT_ARRAY_MAX_SIZE 512
-
 union YYSTYPE
 {
-    struct
-    {
-        char m_data[YY_TOKEN_STRING_MAX_SIZE];
-        int m_size;
-    } m_token_string;
     int m_token_numberint;
     int m_token_numberfloat;
 
@@ -84,19 +76,19 @@ union YYSTYPE
     int m_bufferview_index;
     int m_accessor_index;
 
+    struct temp_string_version_t *m_temp_string_version;
     struct temp_int_array_version_t *m_temp_int_array_version;
     struct temp_float_array_version_t *m_temp_float_array_version;
 
     float m_mat4x4[16];
     float m_vec4[4];
     float m_vec3[3];
-
-    bool m_type_boolean;
+    bool m_boolean;
 };
 
-#define YYMALLOC(size) (gltf_alloc_callback((size), (user_defined)))
-#define YYREALLOC(ptr, size) (gltf_realloc_callback((ptr), (size), (user_defined)))
-#define YYFREE(ptr) (gltf_free_callback((ptr), (user_defined)))
+#define YYMALLOC(size) (gltf_lex_yacc_alloc_callback((size), (user_defined)))
+#define YYREALLOC(ptr, size) (gltf_lex_yacc_realloc_callback((ptr), (size), (user_defined)))
+#define YYFREE(ptr) (gltf_lex_yacc_free_callback((ptr), (user_defined)))
 
 //https://www.gnu.org/software/bison/manual/html_node/Table-of-Symbols.html
 //#define YYSTACK_USE_ALLOCA 1
@@ -148,17 +140,17 @@ void yyerror(YYLTYPE *llocp, void *user_defined, void *yyscanner, const char *ms
 
 void *gltf_lex_yyalloc(size_t size, yyscan_t yyscanner)
 {
-    return gltf_alloc_callback(size, (yyget_extra(yyscanner)));
+    return gltf_lex_yacc_alloc_callback(size, (yyget_extra(yyscanner)));
 }
 
 void *gltf_lex_yyrealloc(void *ptr, size_t size, yyscan_t yyscanner)
 {
-    return gltf_realloc_callback(ptr, size, (yyget_extra(yyscanner)));
+    return gltf_lex_yacc_realloc_callback(ptr, size, (yyget_extra(yyscanner)));
 }
 
 void gltf_lex_yyfree(void *ptr, yyscan_t yyscanner)
 {
-    return gltf_free_callback(ptr, (yyget_extra(yyscanner)));
+    return gltf_lex_yacc_free_callback(ptr, (yyget_extra(yyscanner)));
 }
 
 //https://westes.github.io/flex/manual/Generated-Scanner.html#Generated-Scanner

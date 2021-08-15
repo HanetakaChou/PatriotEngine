@@ -27,6 +27,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcmp.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_log.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc

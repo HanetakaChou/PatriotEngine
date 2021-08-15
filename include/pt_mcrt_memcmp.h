@@ -27,7 +27,7 @@ extern "C"
 {
 #endif
 
-    PT_ATTR_MCRT void *PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count);
+    PT_ATTR_MCRT int PT_CALL mcrt_memcmp(void const *ptr1, void const *ptr2, size_t num);
 
 #ifdef __cplusplus
 }

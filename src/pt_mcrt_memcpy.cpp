@@ -34,15 +34,13 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
 #error Unknown Architecture
 #endif
 
-PT_ATTR_MCRT bool PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+PT_ATTR_MCRT void *PT_CALL mcrt_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    rte_memcpy(dest, src, count);
-    return true;
+    return rte_memcpy(dest, src, count);
 }
 
 #if defined(PT_X64) || defined(PT_X86)
 #include <string.h>
-static bool rte_memcpy_cpuid_done = false;
 static bool rte_memcpy_support_avx512f = false;
 static bool rte_memcpy_support_avx = false;
 static bool rte_memcpy_support_ssse3 = false;
@@ -50,7 +48,7 @@ extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict sr
 extern void *rte_memcpy_avx(void *__restrict dest, void const *__restrict src, size_t count);
 extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
 
-static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restrict src, size_t count)
+static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
     if (rte_memcpy_support_avx512f)
     {
@@ -70,13 +68,9 @@ static inline void *rte_memcpy_helper(void *__restrict dest, void const *__restr
     }
 }
 
-static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
+struct rte_memcpy_verify_cpu_support
 {
-    if (PT_LIKELY(rte_memcpy_cpuid_done))
-    {
-        return rte_memcpy_helper(dest, src, count);
-    }
-    else
+    inline rte_memcpy_verify_cpu_support()
     {
         //https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex
         uint32_t f_1_ECX_ = 0;
@@ -103,11 +97,9 @@ static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src
         rte_memcpy_support_avx512f = (((f_7_EBX_ & (1U << 16U)) != 0) ? true : false);
         rte_memcpy_support_avx = (((f_1_ECX_ & (1U << 28U)) != 0) ? true : false);
         rte_memcpy_support_ssse3 = (((f_1_ECX_ & (1U << 9U)) != 0) ? true : false);
-        rte_memcpy_cpuid_done = true;
-
-        return rte_memcpy_helper(dest, src, count);
     }
-}
+};
+static struct rte_memcpy_verify_cpu_support instance_rte_memcpy_verify_cpu_support;
 
 #elif defined(PT_ARM)
 

@@ -19,15 +19,14 @@
 #include <stdint.h>
 #include <pt_gfx_connection.h>
 #include <pt_mcrt_malloc.h>
-#include <pt_mcrt_memcpy.h>
-#include <pt_mcrt_log.h>
 #include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_memcmp.h>
+#include <pt_math.h>
+#include <pt_mcrt_log.h>
 #include <vector>
 #include <string>
 #include "pt_gfx_mesh_base_gltf_lex_yacc.h"
-#include <string.h>
 #include <assert.h>
-#include <pt_math.h>
 
 static_assert(sizeof(math_vec3) == sizeof(float[3]), "");
 static_assert(alignof(math_vec3) == alignof(float[3]), "");
@@ -120,12 +119,13 @@ struct gltf_accessor
     enum gltf_type m_type;
     float m_max[16];
     float m_min[16];
+    mcrt_string m_name;
     inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_count(-1), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
 };
 
 struct gltf_root
 {
-    int default_scene_index;
+    int m_scene_index;
     mcrt_vector<struct gltf_scene> m_scenes;
     mcrt_vector<struct gltf_node> m_nodes;
     mcrt_vector<struct gltf_buffer> m_buffers;
@@ -137,6 +137,8 @@ struct gltf_yy_extra_type
 {
     char const *m_initial_filename;
     intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
+    mcrt_string m_temp_string;
+    uintptr_t m_temp_string_version;
     mcrt_vector<int> m_temp_int_array;
     uintptr_t m_temp_int_array_version;
     mcrt_vector<float> m_temp_float_array;
@@ -176,14 +178,15 @@ bool gltf_parse_input_stream(char const *initial_filename, gfx_input_stream_ref(
             }
         } instance_internal_input_stream_guard(&input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
 
-        struct gltf_root gltf_root;
+        struct gltf_root my_gltf_root;
 
         struct gltf_yy_extra_type user_defined;
         user_defined.m_initial_filename = initial_filename;
         user_defined.m_input_stream_read_callback = input_stream_read_callback;
+        user_defined.m_temp_string_version = 0;
         user_defined.m_temp_int_array_version = 0;
         user_defined.m_temp_float_array_version = 0;
-        user_defined.m_gltf_root = &gltf_root;
+        user_defined.m_gltf_root = &my_gltf_root;
 
         void *yyscanner;
         gltf_yylex_init_extra(&user_defined, &yyscanner);
@@ -204,19 +207,41 @@ bool gltf_parse_input_stream(char const *initial_filename, gfx_input_stream_ref(
     return true;
 }
 
-void *gltf_alloc_callback(size_t size, void *user_defined)
+void *gltf_lex_yacc_alloc_callback(size_t size, void *user_defined)
 {
     return mcrt_aligned_malloc(size, alignof(uint8_t));
 }
 
-void *gltf_realloc_callback(void *ptr, size_t size, void *user_defined)
+void *gltf_lex_yacc_realloc_callback(void *ptr, size_t size, void *user_defined)
 {
     return mcrt_aligned_realloc(ptr, size, alignof(uint8_t));
 }
 
-void gltf_free_callback(void *ptr, void *user_defined)
+void gltf_lex_yacc_free_callback(void *ptr, void *user_defined)
 {
     return mcrt_aligned_free(ptr);
+}
+
+struct temp_string_version_t *gltf_lex_yacc_temp_string_init_callback(void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(0 == user_defined->m_temp_string.length());
+    return reinterpret_cast<struct temp_string_version_t *>(user_defined->m_temp_string_version++);
+}
+
+void gltf_lex_yacc_temp_string_set_callback(struct temp_string_version_t *temp_string_version, char const *text, int length, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    user_defined->m_temp_string.assign(text, length);
+}
+
+void gltf_lex_yacc_temp_string_destroy_callback(struct temp_string_version_t *temp_string_version, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    assert(0 != user_defined->m_temp_string.size());
+    user_defined->m_temp_string.clear();
 }
 
 ptrdiff_t gltf_lex_input_callback(void *input_stream_void, void *buf, size_t size, void *user_defined_void)
@@ -235,13 +260,7 @@ void gltf_lex_fatal_error_callback(int line, int column, char const *msg, void *
 
 int gltf_lex_memcmp_callback(void const *ptr1, void const *ptr2, size_t num, void *user_defined)
 {
-    return memcmp(ptr1, ptr2, num);
-}
-
-void gltf_lex_memcpy_callback(char *dest, char const *src, int count, void *user_defined)
-{
-    mcrt_memcpy(dest, src, count);
-    return;
+    return mcrt_memcmp(ptr1, ptr2, num);
 }
 
 void gltf_yacc_error_callback(int line, int column, char const *msg, void *user_defined_void)
@@ -295,10 +314,10 @@ void gltf_yacc_temp_float_array_destroy_callback(struct temp_float_array_version
     user_defined->m_temp_float_array.clear();
 }
 
-void gltf_yacc_set_default_scene_index_callback(int default_scene_index, void *user_defined_void)
+void gltf_yacc_gltf_set_scene_index_callback(int scene_index, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
-    user_defined->m_gltf_root->default_scene_index = default_scene_index;
+    user_defined->m_gltf_root->m_scene_index = scene_index;
 }
 
 int gltf_yacc_scene_push_callback(void *user_defined_void)
@@ -319,12 +338,17 @@ void gltf_yacc_scene_set_nodes_callback(int scene_index, struct temp_int_array_v
     user_defined->m_gltf_root->m_scenes[scene_index].m_nodes.swap(user_defined->m_temp_int_array);
 }
 
-void gltf_yacc_scene_set_name_callback(int scene_index, char const *name_data, int name_size, void *user_defined_void)
+void gltf_yacc_scene_set_name_callback(int scene_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert(scene_index < user_defined->m_gltf_root->m_scenes.size());
     assert(0 == user_defined->m_gltf_root->m_scenes[scene_index].m_name.length());
-    user_defined->m_gltf_root->m_scenes[scene_index].m_name.assign(name_data, name_size);
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    assert(0 != user_defined->m_temp_string.length());
+    user_defined->m_gltf_root->m_scenes[scene_index].m_name.swap(user_defined->m_temp_string);
+#ifndef NDEBUG
+    user_defined->m_temp_string.assign("debug_string");
+#endif
 }
 
 int gltf_yacc_scene_size_callback(void *user_defined_void)
@@ -440,12 +464,17 @@ void gltf_yacc_node_set_weights_callback(int node_index, struct temp_float_array
     user_defined->m_gltf_root->m_nodes[node_index].m_weights.swap(user_defined->m_temp_float_array);
 }
 
-void gltf_yacc_node_set_name_callback(int node_index, char const *name_data, int name_size, void *user_defined_void)
+void gltf_yacc_node_set_name_callback(int node_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert(node_index < user_defined->m_gltf_root->m_scenes.size());
     assert(0 == user_defined->m_gltf_root->m_nodes[node_index].m_name.length());
-    user_defined->m_gltf_root->m_nodes[node_index].m_name.assign(name_data, name_size);
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    assert(0 != user_defined->m_temp_string.length());
+    user_defined->m_gltf_root->m_nodes[node_index].m_name.swap(user_defined->m_temp_string);
+#ifndef NDEBUG
+    user_defined->m_temp_string.assign("debug_string");
+#endif
 }
 
 int gltf_yacc_node_size_callback(void *user_defined_void)
@@ -471,12 +500,17 @@ void gltf_yacc_buffer_set_bytelength_callback(int buffer_index, int byteLength, 
     user_defined->m_gltf_root->m_buffers[buffer_index].m_byteLength = byteLength;
 }
 
-void gltf_yacc_buffer_set_url_callback(int buffer_index, char const *name_data, int name_size, void *user_defined_void)
+void gltf_yacc_buffer_set_url_callback(int buffer_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert(buffer_index < user_defined->m_gltf_root->m_buffers.size());
     assert(0 == user_defined->m_gltf_root->m_buffers[buffer_index].m_url.length());
-    user_defined->m_gltf_root->m_buffers[buffer_index].m_url.assign(name_data, name_size);
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    assert(0 != user_defined->m_temp_string.length());
+    user_defined->m_gltf_root->m_buffers[buffer_index].m_url.swap(user_defined->m_temp_string);
+#ifndef NDEBUG
+    user_defined->m_temp_string.assign("debug_string");
+#endif
 }
 
 int gltf_yacc_buffer_size_callback(void *user_defined_void)
@@ -595,6 +629,65 @@ void gltf_yacc_accessor_set_type_callback(int accessor_index, int type, void *us
     assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
     assert(GLTF_TYPE_UNKNOWN == user_defined->m_gltf_root->m_accessors[accessor_index].m_type);
     user_defined->m_gltf_root->m_accessors[accessor_index].m_type = static_cast<enum gltf_type>(type);
+}
+
+void gltf_yacc_accessor_set_max_callback(int accessor_index, float max[16], void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[0]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[1]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[2]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[3]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[4]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[5]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[6]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[7]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[8]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[9]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[10]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[11]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[12]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[13]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[14]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[15]);
+    math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_max), math_load_mat4x4(unwrap_mat4x4(max)));
+}
+
+void gltf_yacc_accessor_set_min_callback(int accessor_index, float min[16], void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[0]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[1]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[2]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[3]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[4]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[5]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[6]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[7]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[8]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[9]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[10]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[11]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[12]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[13]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[14]);
+    assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[15]);
+    math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_min), math_load_mat4x4(unwrap_mat4x4(min)));
+}
+
+void gltf_yacc_accessor_set_name_callback(int accessor_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)
+{
+    struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
+    assert(accessor_index < user_defined->m_gltf_root->m_accessors.size());
+    assert(0 == user_defined->m_gltf_root->m_accessors[accessor_index].m_name.length());
+    assert((reinterpret_cast<uintptr_t>(temp_string_version) + 1) == reinterpret_cast<uintptr_t>(user_defined->m_temp_string_version));
+    assert(0 != user_defined->m_temp_string.length());
+    user_defined->m_gltf_root->m_accessors[accessor_index].m_name.swap(user_defined->m_temp_string);
+#ifndef NDEBUG
+    user_defined->m_temp_string.assign("debug_string");
+#endif
 }
 
 int gltf_yacc_accessor_size_callback(void *user_defined_void)

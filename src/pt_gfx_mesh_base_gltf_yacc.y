@@ -51,8 +51,6 @@
 %token YYTOKEN_NORMALIZED
 %token YYTOKEN_COUNT
 %token YYTOKEN_TYPE
-%token YYTOKEN_MAX
-%token YYTOKEN_MIN
 %token YYTOKEN_SCALAR 
 %token YYTOKEN_VEC2
 %token YYTOKEN_VEC3
@@ -60,6 +58,9 @@
 %token YYTOKEN_MAT2
 %token YYTOKEN_MAT3
 %token YYTOKEN_MAT4
+%token YYTOKEN_MAX
+%token YYTOKEN_MIN
+%token YYTOKEN_SPARSE
 
 %token YYTOKEN_TRUE 
 %token YYTOKEN_FALSE 
@@ -71,7 +72,7 @@
 %token YYTOKEN_RIGHTBRACKET 
 %token YYTOKEN_COMMA
 
-%token <m_token_string> YYTOKEN_STRING
+%token <m_temp_string_version> YYTOKEN_STRING
 %token <m_token_numberint> YYTOKEN_NUMBER_INT
 %token <m_token_numberfloat> YYTOKEN_NUMBER_FLOAT
 
@@ -118,10 +119,14 @@
 %type accessor_objects
 %type <m_accessor_index> accessor_object
 %type <m_accessor_index> accessor_properties
+%type <m_token_numberint> accessor_property_type
+%type <m_mat4x4> accessor_property_max
+%type <m_token_numberfloat> accessor_property_max_element
+%type <m_mat4x4> accessor_property_min
+%type <m_token_numberfloat> accessor_property_min_element
 
-
-%type <m_token_string> json_string
-%type <m_type_boolean> json_boolean
+%type <m_temp_string_version> json_string
+%type <m_boolean> json_boolean
 %type json_value 
 %type json_object
 %type json_members
@@ -159,7 +164,7 @@ gltf_member: YYTOKEN_ASSET YYTOKEN_COLON asset_object {
 };
 
 gltf_member: YYTOKEN_SCENE YYTOKEN_COLON YYTOKEN_NUMBER_INT {
-	gltf_yacc_set_default_scene_index_callback($3, user_defined);
+	gltf_yacc_gltf_set_scene_index_callback($3, user_defined);
 };
 
 gltf_member: YYTOKEN_SCENES YYTOKEN_COLON scenes_array {
@@ -187,19 +192,19 @@ asset_object : YYTOKEN_LEFTBRACE asset_properties YYTOKEN_RIGHTBRACE {
 };	
 
 asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_VERSION YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
@@ -207,19 +212,19 @@ asset_properties: asset_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON js
 };
 
 asset_properties: YYTOKEN_COPYRIGHT YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 asset_properties: YYTOKEN_GENERATOR YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 asset_properties: YYTOKEN_VERSION YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 asset_properties: YYTOKEN_MINVERSION YYTOKEN_COLON json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 asset_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
@@ -256,7 +261,8 @@ scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NODES YYTOKEN_COLON sce
 };
 
 scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
-	gltf_yacc_scene_set_name_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_scene_set_name_callback($$, $5, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 scene_properties: scene_properties YYTOKEN_COMMA YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
@@ -271,7 +277,8 @@ scene_properties: YYTOKEN_NODES YYTOKEN_COLON scene_property_nodes {
 
 scene_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
 	$$ = gltf_yacc_scene_push_callback(user_defined);
-	gltf_yacc_scene_set_name_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_scene_set_name_callback($$, $3, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 scene_properties: YYTOKEN_EXTRAS YYTOKEN_COLON json_value { 
@@ -358,7 +365,8 @@ node_properties: node_properties YYTOKEN_COMMA YYTOKEN_WEIGHTS YYTOKEN_COLON nod
 };
 
 node_properties: node_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
-	gltf_yacc_node_set_name_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_node_set_name_callback($$, $5, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 node_properties: YYTOKEN_CAMERA YYTOKEN_COLON YYTOKEN_NUMBER_INT {
@@ -410,7 +418,8 @@ node_properties: YYTOKEN_WEIGHTS YYTOKEN_COLON node_property_weights {
 
 node_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
 	$$ = gltf_yacc_node_push_callback(user_defined);
-	gltf_yacc_node_set_name_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_node_set_name_callback($$, $3, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 node_property_children: YYTOKEN_LEFTBRACKET node_property_children_elements YYTOKEN_RIGHTBRACKET {
@@ -556,7 +565,8 @@ buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_BYTELENGTH YYTOKEN_CO
 };
 
 buffer_properties: buffer_properties YYTOKEN_COMMA YYTOKEN_URI YYTOKEN_COLON json_string {
-	gltf_yacc_buffer_set_url_callback($$, $5.m_data, $5.m_size, user_defined);
+	gltf_yacc_buffer_set_url_callback($$, $5, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 
@@ -567,7 +577,8 @@ buffer_properties: YYTOKEN_BYTELENGTH YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 
 buffer_properties: YYTOKEN_URI YYTOKEN_COLON json_string {
 	$$ = gltf_yacc_buffer_push_callback(user_defined);
-	gltf_yacc_buffer_set_url_callback($$, $3.m_data, $3.m_size, user_defined);
+	gltf_yacc_buffer_set_url_callback($$, $3, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
 bufferviews_array: YYTOKEN_LEFTBRACKET bufferview_objects YYTOKEN_RIGHTBRACKET {
@@ -683,32 +694,25 @@ accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COL
 	gltf_yacc_accessor_set_count_callback($$, $5, user_defined);
 };
 
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_SCALAR {
-	gltf_yacc_accessor_set_type_callback($$, 1, user_defined);
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_TYPE YYTOKEN_COLON accessor_property_type {
+	gltf_yacc_accessor_set_type_callback($$, $5, user_defined);
 };
 
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC2 {
-	gltf_yacc_accessor_set_type_callback($$, 2, user_defined);
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_MAX YYTOKEN_COLON accessor_property_max {
+	gltf_yacc_accessor_set_max_callback($$, $5, user_defined);
 };
 
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC3 {
-	gltf_yacc_accessor_set_type_callback($$, 3, user_defined);
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_MIN YYTOKEN_COLON accessor_property_min {
+	gltf_yacc_accessor_set_min_callback($$, $5, user_defined);
 };
 
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC4 {
-	gltf_yacc_accessor_set_type_callback($$, 4, user_defined);
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_SPARSE YYTOKEN_COLON json_value {
+	//ignore
 };
 
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT2 {
-	gltf_yacc_accessor_set_type_callback($$, 5, user_defined);
-};
-
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT3 {
-	gltf_yacc_accessor_set_type_callback($$, 9, user_defined);
-};
-
-accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT4 {
-	gltf_yacc_accessor_set_type_callback($$, 16, user_defined);
+accessor_properties: accessor_properties YYTOKEN_COMMA YYTOKEN_NAME YYTOKEN_COLON json_string {
+	gltf_yacc_accessor_set_name_callback($$, $5, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($5, user_defined);
 };
 
 accessor_properties: YYTOKEN_BUFFERVIEW YYTOKEN_COLON YYTOKEN_NUMBER_INT {
@@ -736,43 +740,305 @@ accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_NUMBER_INT {
 	gltf_yacc_accessor_set_count_callback($$, $3, user_defined);
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_SCALAR {
+accessor_properties: YYTOKEN_TYPE YYTOKEN_COLON accessor_property_type {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 1, user_defined);
+	gltf_yacc_accessor_set_type_callback($$, $3, user_defined);
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC2 {
+accessor_properties: YYTOKEN_MAX YYTOKEN_COLON accessor_property_max {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 2, user_defined);
+	gltf_yacc_accessor_set_max_callback($$, $3, user_defined);
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC3 {
+accessor_properties: YYTOKEN_MIN YYTOKEN_COLON accessor_property_min {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 3, user_defined);
+	gltf_yacc_accessor_set_min_callback($$, $3, user_defined);
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_VEC4 {
-	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 4, user_defined);
+accessor_properties: YYTOKEN_SPARSE YYTOKEN_COLON json_value {
+	//ignore
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT2 {
+accessor_properties: YYTOKEN_NAME YYTOKEN_COLON json_string {
 	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 5, user_defined);
+	gltf_yacc_accessor_set_name_callback($$, $3, user_defined);
+	gltf_lex_yacc_temp_string_destroy_callback($3, user_defined);
 };
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT3 {
-	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 9, user_defined);
-};
+accessor_property_type : YYTOKEN_SCALAR {
+	$$ = 1;
+}
 
-accessor_properties: YYTOKEN_COUNT YYTOKEN_COLON YYTOKEN_MAT4 {
-	$$ = gltf_yacc_accessor_push_callback(user_defined);
-	gltf_yacc_accessor_set_type_callback($$, 16, user_defined);
-};
+accessor_property_type : YYTOKEN_VEC2 {
+	$$ = 2;
+}
+
+accessor_property_type : YYTOKEN_VEC3 {
+	$$ = 3;
+}
+
+accessor_property_type : YYTOKEN_VEC4 {
+	$$ = 4;
+}
+
+accessor_property_type : YYTOKEN_MAT2 {
+	$$ = 5;
+}
+
+accessor_property_type : YYTOKEN_MAT3 {
+	$$ = 9;
+}
+
+accessor_property_type : YYTOKEN_MAT4 {
+	$$ = 16;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = $10;
+	$$[5] = $12;
+	$$[6] = $14;
+	$$[7] = $16;
+	$$[8] = $18;
+	$$[9] = $20;
+	$$[10] = $22;
+	$$[11] = $24;
+	$$[12] = $26;
+	$$[13] = $28;
+	$$[14] = $30;
+	$$[15] = $32;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = $10;
+	$$[5] = $12;
+	$$[6] = $14;
+	$$[7] = $16;
+	$$[8] = $18;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_COMMA accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = 0.0f;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_max: YYTOKEN_LEFTBRACKET accessor_property_max_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = 0.0f;
+	$$[2] = 0.0f;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_max_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+accessor_property_max_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = $10;
+	$$[5] = $12;
+	$$[6] = $14;
+	$$[7] = $16;
+	$$[8] = $18;
+	$$[9] = $20;
+	$$[10] = $22;
+	$$[11] = $24;
+	$$[12] = $26;
+	$$[13] = $28;
+	$$[14] = $30;
+	$$[15] = $32;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = $10;
+	$$[5] = $12;
+	$$[6] = $14;
+	$$[7] = $16;
+	$$[8] = $18;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = $8;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = $6;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_COMMA accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = $4;
+	$$[2] = 0.0f;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_min: YYTOKEN_LEFTBRACKET accessor_property_min_element YYTOKEN_RIGHTBRACKET {
+	$$[0] = $2;
+	$$[1] = 0.0f;
+	$$[2] = 0.0f;
+	$$[3] = 0.0f;
+	$$[4] = 0.0f;
+	$$[5] = 0.0f;
+	$$[6] = 0.0f;
+	$$[7] = 0.0f;
+	$$[8] = 0.0f;
+	$$[9] = 0.0f;
+	$$[10] = 0.0f;
+	$$[11] = 0.0f;
+	$$[12] = 0.0f;
+	$$[13] = 0.0f;
+	$$[14] = 0.0f;
+	$$[15] = 0.0f;
+}
+
+accessor_property_min_element: YYTOKEN_NUMBER_FLOAT {
+	$$ = $1;
+}
+
+accessor_property_min_element: YYTOKEN_NUMBER_INT {
+	$$ = $1;
+}
 
 json_string: YYTOKEN_STRING {
-
+	$$ = $1;
 };
 
 json_string: YYTOKEN_ASSET {
@@ -880,7 +1146,7 @@ json_value: json_array {
 };
 
 json_value: json_string { 
-
+	gltf_lex_yacc_temp_string_destroy_callback($1, user_defined);
 };
 
 json_value: YYTOKEN_NUMBER_INT { 
@@ -915,8 +1181,8 @@ json_members: json_member {
 
 };
 
-json_member: YYTOKEN_STRING YYTOKEN_COLON json_value { 
-
+json_member: json_string YYTOKEN_COLON json_value { 
+	gltf_lex_yacc_temp_string_destroy_callback($1, user_defined);
 };
 
 json_array: YYTOKEN_LEFTBRACKET json_elements YYTOKEN_RIGHTBRACKET { 
