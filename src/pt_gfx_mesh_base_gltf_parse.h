@@ -108,6 +108,39 @@ struct gltf_accessor
     inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_count(-1), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
 };
 
+struct gltf_attributes
+{
+    int m_position;
+    int m_normal;
+    int m_tangent;
+    int m_texcoord_0;
+    int m_texcoord_1;
+    int m_color_0;
+    int m_joints_0;
+    int m_weights_0;
+    inline gltf_attributes() : m_position(-1), m_normal(-1), m_tangent(-1), m_texcoord_0(-1), m_texcoord_1(-1), m_color_0(-1), m_joints_0(-1), m_weights_0(-1) {}
+};
+
+enum gltf_mode
+{
+    GLTF_MODE_POINTS = 0,
+    GLTF_MODE_LINES = 1,
+    GLTF_MODE_LINE_LOOP = 2,
+    GLTF_MODE_LINE_STRIP = 3,
+    GLTF_MODE_TRIANGLES = 4,
+    GLTF_MODE_TRIANGLE_STRIP = 5,
+    GLTF_MODE_TRIANGLE_FAN = 6
+};
+
+struct gltf_primitive
+{
+    struct gltf_attributes m_attributes;
+    int m_indices;
+    int m_material;
+    enum gltf_mode m_mode;
+    
+};
+
 struct gltf_root
 {
     int m_scene_index;

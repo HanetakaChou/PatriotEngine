@@ -84,6 +84,18 @@ union YYSTYPE
     float m_vec4[4];
     float m_vec3[3];
     bool m_boolean;
+
+    struct
+    {
+        int m_position;
+        int m_normal;
+        int m_tangent;
+        int m_texcoord_0;
+        int m_texcoord_1;
+        int m_color_0;
+        int m_joints_0;
+        int m_weights_0;
+    } m_attributes;
 };
 
 #define YYMALLOC(size) (gltf_lex_yacc_alloc_callback((size), (user_defined)))
