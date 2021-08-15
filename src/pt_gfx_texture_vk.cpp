@@ -467,14 +467,14 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
         //
         // race condition with the "streaming_done"
 
-        if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
-        {
-            gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
-        }
-
         if (VK_NULL_HANDLE != this->m_image)
         {
             gfx_connection->destroy_image(this->m_image);
+        }
+
+        if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
+        {
+            gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
         }
 
         this->~gfx_texture_vk();
@@ -489,14 +489,14 @@ void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_common *gfx
     PT_MAYBE_UNUSED bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
     assert(streaming_cancel);
 
-    if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
-    {
-        gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
-    }
-
     if (VK_NULL_HANDLE != this->m_image)
     {
         gfx_connection->destroy_image(this->m_image);
+    }
+
+    if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
+    {
+        gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
     }
 
     this->~gfx_texture_vk();

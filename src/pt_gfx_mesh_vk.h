@@ -29,11 +29,19 @@
 
 class gfx_mesh_vk final : public gfx_mesh_base
 {
-    VkBuffer m_vertex_buffer;
-    uint64_t m_vertex_gfx_malloc_offset;
-    uint64_t m_vertex_gfx_malloc_size;
-    void *m_vertex_gfx_malloc_page_handle;
-    VkDeviceMemory m_vertex_gfx_malloc_device_memory;
+    // mali IDVS
+    // seperate position and varying
+    VkBuffer m_vertex_position_buffer;
+    uint64_t m_vertex_position_gfx_malloc_offset;
+    uint64_t m_vertex_position_gfx_malloc_size;
+    void *m_vertex_position_gfx_malloc_page_handle;
+    VkDeviceMemory m_vertex_position_gfx_malloc_device_memory;
+
+    VkBuffer m_vertex_varying_buffer;
+    uint64_t m_vertex_varying_gfx_malloc_offset;
+    uint64_t m_vertex_varying_gfx_malloc_size;
+    void *m_vertex_varying_gfx_malloc_page_handle;
+    VkDeviceMemory m_vertex_varying_gfx_malloc_device_memory;
 
     VkBuffer m_index_buffer;
     uint64_t m_index_gfx_malloc_offset;
@@ -67,7 +75,12 @@ class gfx_mesh_vk final : public gfx_mesh_base
     void streaming_destroy_callback(class gfx_connection_common *gfx_connection) override;
 
 public:
-    inline gfx_mesh_vk() : gfx_mesh_base(), m_vertex_buffer(VK_NULL_HANDLE), m_vertex_gfx_malloc_offset(uint64_t(-1)), m_vertex_gfx_malloc_size(uint64_t(-1)), m_vertex_gfx_malloc_page_handle(NULL), m_vertex_gfx_malloc_device_memory(VK_NULL_HANDLE), m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_mesh_vk() : gfx_mesh_base(),
+                           m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_position_gfx_malloc_offset(uint64_t(-1)), m_vertex_position_gfx_malloc_size(uint64_t(-1)), m_vertex_position_gfx_malloc_page_handle(NULL), m_vertex_position_gfx_malloc_device_memory(VK_NULL_HANDLE),
+                           m_vertex_varying_buffer(VK_NULL_HANDLE), m_vertex_varying_gfx_malloc_offset(uint64_t(-1)), m_vertex_varying_gfx_malloc_size(uint64_t(-1)), m_vertex_varying_gfx_malloc_page_handle(NULL), m_vertex_varying_gfx_malloc_device_memory(VK_NULL_HANDLE),
+                           m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE)
+    {
+    }
 };
 
 #endif

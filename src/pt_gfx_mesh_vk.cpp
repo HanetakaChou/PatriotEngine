@@ -168,24 +168,35 @@ void gfx_mesh_vk::destroy(class gfx_connection_common *gfx_connection_base)
 
         //
         // race condition with the "streaming_done"
-        if (VK_NULL_HANDLE != this->m_vertex_gfx_malloc_device_memory)
+
+        if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
         {
-            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_gfx_malloc_page_handle, this->m_vertex_gfx_malloc_offset, this->m_vertex_gfx_malloc_size, this->m_vertex_gfx_malloc_device_memory);
+            gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
         }
 
-        if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
+        if (VK_NULL_HANDLE != this->m_vertex_varying_buffer)
         {
-            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
-        }
-
-        if (VK_NULL_HANDLE != this->m_vertex_buffer)
-        {
-            gfx_connection->destroy_buffer(this->m_vertex_buffer);
+            gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
         }
 
         if (VK_NULL_HANDLE != this->m_index_buffer)
         {
             gfx_connection->destroy_buffer(this->m_index_buffer);
+        }
+
+        if (VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory)
+        {
+            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_position_gfx_malloc_page_handle, this->m_vertex_position_gfx_malloc_offset, this->m_vertex_position_gfx_malloc_size, this->m_vertex_position_gfx_malloc_device_memory);
+        }
+
+        if (VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory)
+        {
+            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_varying_gfx_malloc_page_handle, this->m_vertex_varying_gfx_malloc_offset, this->m_vertex_varying_gfx_malloc_size, this->m_vertex_varying_gfx_malloc_device_memory);
+        }
+
+        if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
+        {
+            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
         }
 
         this->~gfx_mesh_vk();
@@ -200,24 +211,34 @@ void gfx_mesh_vk::streaming_destroy_callback(class gfx_connection_common *gfx_co
     PT_MAYBE_UNUSED bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
     assert(streaming_cancel);
 
-    if (VK_NULL_HANDLE != this->m_vertex_gfx_malloc_device_memory)
+    if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
     {
-        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_gfx_malloc_page_handle, this->m_vertex_gfx_malloc_offset, this->m_vertex_gfx_malloc_size, this->m_vertex_gfx_malloc_device_memory);
+        gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
     }
 
-    if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
+    if (VK_NULL_HANDLE != this->m_vertex_varying_buffer)
     {
-        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
-    }
-
-    if (VK_NULL_HANDLE != this->m_vertex_buffer)
-    {
-        gfx_connection->destroy_buffer(this->m_vertex_buffer);
+        gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
     }
 
     if (VK_NULL_HANDLE != this->m_index_buffer)
     {
         gfx_connection->destroy_buffer(this->m_index_buffer);
+    }
+
+    if (VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory)
+    {
+        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_position_gfx_malloc_page_handle, this->m_vertex_position_gfx_malloc_offset, this->m_vertex_position_gfx_malloc_size, this->m_vertex_position_gfx_malloc_device_memory);
+    }
+
+    if (VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory)
+    {
+        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_varying_gfx_malloc_page_handle, this->m_vertex_varying_gfx_malloc_offset, this->m_vertex_varying_gfx_malloc_size, this->m_vertex_varying_gfx_malloc_device_memory);
+    }
+
+    if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
+    {
+        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
     }
 
     this->~gfx_mesh_vk();
