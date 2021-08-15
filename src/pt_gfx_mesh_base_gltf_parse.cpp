@@ -19,12 +19,9 @@
 #include <stdint.h>
 #include <pt_gfx_connection.h>
 #include <pt_mcrt_malloc.h>
-#include <pt_mcrt_scalable_allocator.h>
 #include <pt_mcrt_memcmp.h>
 #include <pt_math.h>
-#include <pt_mcrt_log.h>
-#include <vector>
-#include <string>
+#include "pt_gfx_mesh_base_gltf_parse.h"
 #include "pt_gfx_mesh_base_gltf_lex_yacc.h"
 #include <assert.h>
 
@@ -39,104 +36,11 @@ inline math_vec3 *unwrap_vec3(float vec3[3]) { return reinterpret_cast<math_vec3
 inline math_vec4 *unwrap_vec4(float vec4[4]) { return reinterpret_cast<math_vec4 *>(vec4); }
 inline math_mat4x4 *unwrap_mat4x4(float mat4x4[16]) { return reinterpret_cast<math_mat4x4 *>(mat4x4); }
 
-template <typename T>
-using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
-struct gltf_scene
-{
-    mcrt_vector<int> m_nodes;
-    mcrt_string m_name;
-};
-
-struct gltf_node
-{
-    int m_camera;
-    mcrt_vector<int> m_children;
-    int m_skin;
-    float m_matrix[16];
-    int m_mesh;
-    float m_rotation[4];
-    float m_scale[3];
-    float m_translation[3];
-    mcrt_vector<float> m_weights;
-    mcrt_string m_name;
-
-    inline gltf_node() : m_camera(-1), m_skin(-1), m_matrix{1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f}, m_mesh(-1), m_rotation{0.0f, 0.0f, 0.0f, 1.0f}, m_scale{1.0f, 1.0f, 1.0f}, m_translation{0.0f, 0.0f, 0.0f} {}
-};
-
-struct gltf_buffer
-{
-    int m_byteLength;
-    mcrt_string m_url;
-
-    inline gltf_buffer() : m_byteLength(-1) {}
-};
-
-struct gltf_bufferview
-{
-    int m_buffer;
-    int m_byteOffset;
-    int m_byteLength;
-    int m_byteStride;
-    int m_target;
-    mcrt_string m_name;
-
-    inline gltf_bufferview() : m_buffer(-1), m_byteOffset(0), m_byteLength(-1), m_byteStride(-1), m_target(-1) {}
-};
-
-enum gltf_component_type
-{
-    GLTF_COMPONENT_TYPE_UNKNOWN = -1,
-    GLTF_COMPONENT_TYPE_BYTE = 0X1400,
-    GLTF_COMPONENT_TYPE_UNSIGNED_BYTE = 0X1401,
-    GLTF_COMPONENT_TYPE_SHORT = 0X1402,
-    GLTF_COMPONENT_TYPE_UNSIGNED_SHORT = 0X1403,
-    GLTF_COMPONENT_TYPE_UNSIGNED_INT = 0X1405,
-    GLTF_COMPONENT_TYPE_FLOAT = 0X1406
-};
-
-enum gltf_type
-{
-    GLTF_TYPE_UNKNOWN = -1,
-    GLTF_TYPE_SCALAR = 1,
-    GLTF_TYPE_VEC2 = 2,
-    GLTF_TYPE_VEC3 = 3,
-    GLTF_TYPE_VEC4 = 4,
-    GLTF_TYPE_MAT2 = 5,
-    GLTF_TYPE_MAT3 = 9,
-    GLTF_TYPE_MAT4 = 16
-};
-
-struct gltf_accessor
-{
-    int m_bufferview;
-    int m_byteoffset;
-    enum gltf_component_type m_componenttype;
-    bool m_normalized;
-    int m_count;
-    enum gltf_type m_type;
-    float m_max[16];
-    float m_min[16];
-    mcrt_string m_name;
-    inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_count(-1), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
-};
-
-struct gltf_root
-{
-    int m_scene_index;
-    mcrt_vector<struct gltf_scene> m_scenes;
-    mcrt_vector<struct gltf_node> m_nodes;
-    mcrt_vector<struct gltf_buffer> m_buffers;
-    mcrt_vector<struct gltf_bufferview> m_bufferviews;
-    mcrt_vector<struct gltf_accessor> m_accessors;
-};
-
 struct gltf_yy_extra_type
 {
-    char const *m_initial_filename;
     intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
+    void *m_error_callback_data;
+    void (*m_error_callback)(int line, int column, char const *msg, void *error_callback_data);
     mcrt_string m_temp_string;
     uintptr_t m_temp_string_version;
     mcrt_vector<int> m_temp_int_array;
@@ -146,65 +50,35 @@ struct gltf_yy_extra_type
     struct gltf_root *m_gltf_root;
 };
 
-// Lex Yacc
+// Exported by Lex Yacc
 extern "C" int gltf_yylex_init_extra(void *user_defined, void **yyscanner);
 extern "C" void gltf_yyset_in(gfx_input_stream_ref input_stream, void *yyscanner);
 extern "C" int gltf_yylex_destroy(void *yyscanner);
 extern "C" int gltf_yyparse(void *user_defined, void *yyscanner);
 
-bool gltf_parse_input_stream(char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data))
 {
-    gfx_input_stream_ref input_stream;
-    {
-        class internal_input_stream_guard
-        {
-            gfx_input_stream_ref *const m_input_stream;
-            void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+    struct gltf_yy_extra_type user_defined;
+    user_defined.m_input_stream_read_callback = input_stream_read_callback;
+    user_defined.m_error_callback_data = error_callback_data;
+    user_defined.m_error_callback = error_callback;
+    user_defined.m_temp_string_version = 0;
+    user_defined.m_temp_int_array_version = 0;
+    user_defined.m_temp_float_array_version = 0;
+    user_defined.m_gltf_root = out_gltf_root;
 
-        public:
-            inline internal_input_stream_guard(
-                gfx_input_stream_ref *input_stream,
-                char const *initial_filename,
-                gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
-                : m_input_stream(input_stream),
-                  m_input_stream_destroy_callback(input_stream_destroy_callback)
-            {
-                (*m_input_stream) = input_stream_init_callback(initial_filename);
-            }
-            inline ~internal_input_stream_guard()
-            {
-                m_input_stream_destroy_callback((*m_input_stream));
-            }
-        } instance_internal_input_stream_guard(&input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
+    void *yyscanner;
+    int res_yylex_init_extra = gltf_yylex_init_extra(&user_defined, &yyscanner);
+    assert(0 == res_yylex_init_extra);
 
-        struct gltf_root my_gltf_root;
+    gltf_yyset_in(input_stream, yyscanner);
 
-        struct gltf_yy_extra_type user_defined;
-        user_defined.m_initial_filename = initial_filename;
-        user_defined.m_input_stream_read_callback = input_stream_read_callback;
-        user_defined.m_temp_string_version = 0;
-        user_defined.m_temp_int_array_version = 0;
-        user_defined.m_temp_float_array_version = 0;
-        user_defined.m_gltf_root = &my_gltf_root;
+    int res_yyparse = gltf_yyparse(&user_defined, yyscanner);
 
-        void *yyscanner;
-        gltf_yylex_init_extra(&user_defined, &yyscanner);
+    int res_yylex_destroy = gltf_yylex_destroy(yyscanner);
+    assert(0 == res_yylex_destroy);
 
-        gltf_yyset_in(input_stream, yyscanner);
-
-        int res_parse = gltf_yyparse(&user_defined, yyscanner);
-
-        gltf_yylex_destroy(yyscanner);
-    }
-
-    //if ((error_out != NULL) && (!_jsonparser.m_msg_error.str().empty()))
-    //{
-    //	strncpy(error_out, _jsonparser.m_msg_error.str().c_str(), error_maxsize);
-    //}
-
-    //return (_res_parse == 0) ? _jsonparser.m_root_value : NULL;
-    return true;
+    return (res_yyparse == 0) ? true : false;
 }
 
 void *gltf_lex_yacc_alloc_callback(size_t size, void *user_defined)
@@ -254,7 +128,7 @@ ptrdiff_t gltf_lex_input_callback(void *input_stream_void, void *buf, size_t siz
 void gltf_lex_fatal_error_callback(int line, int column, char const *msg, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
-    mcrt_log_print("%s:%i:%i: error: %s", user_defined->m_initial_filename, line, column, msg);
+    user_defined->m_error_callback(line, column, msg, user_defined->m_error_callback_data);
     return;
 }
 
@@ -266,7 +140,7 @@ int gltf_lex_memcmp_callback(void const *ptr1, void const *ptr2, size_t num, voi
 void gltf_yacc_error_callback(int line, int column, char const *msg, void *user_defined_void)
 {
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
-    mcrt_log_print("%s:%i:%i: error: %s", user_defined->m_initial_filename, line, column, msg);
+    user_defined->m_error_callback(line, column, msg, user_defined->m_error_callback_data);
     return;
 }
 

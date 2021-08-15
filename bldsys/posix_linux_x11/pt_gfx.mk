@@ -34,7 +34,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base_gltf.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base_gltf_parse.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \

@@ -56,8 +56,8 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "g++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_gltf.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_gltf.o",
-        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_gltf.cpp"
+        "command": "g++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_gltf_parse.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_gltf_parse.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_gltf_parse.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",

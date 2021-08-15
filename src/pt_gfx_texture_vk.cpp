@@ -53,27 +53,36 @@ bool gfx_texture_vk::read_input_stream(
     {
         gfx_input_stream_ref input_stream;
         {
-            class gfx_input_stream_guard
+            class internal_input_stream_guard
             {
-                gfx_input_stream_ref &m_input_stream;
+                gfx_input_stream_ref *const m_input_stream;
                 void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
 
             public:
-                inline gfx_input_stream_guard(
-                    gfx_input_stream_ref &input_stream,
+                inline internal_input_stream_guard(
+                    gfx_input_stream_ref *input_stream,
                     char const *initial_filename,
                     gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
                     void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
                     : m_input_stream(input_stream),
                       m_input_stream_destroy_callback(input_stream_destroy_callback)
                 {
-                    m_input_stream = input_stream_init_callback(initial_filename);
+                    (*m_input_stream) = input_stream_init_callback(initial_filename);
                 }
-                inline ~gfx_input_stream_guard()
+                inline ~internal_input_stream_guard()
                 {
-                    m_input_stream_destroy_callback(m_input_stream);
+                    if (gfx_input_stream_ref(-1) != (*m_input_stream))
+                    {
+                        m_input_stream_destroy_callback((*m_input_stream));
+                    }
                 }
-            } input_stream_guard(input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
+            } instance_internal_input_stream_guard(&input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
+
+            if (PT_UNLIKELY(gfx_input_stream_ref(-1) == input_stream))
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+                return false;
+            }
 
             struct common_header_t common_header;
             {
@@ -122,7 +131,7 @@ bool gfx_texture_vk::read_input_stream(
                 assert(VK_SUCCESS == res);
             }
         }
-        
+
         assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
         {
             VkMemoryRequirements memory_requirements;
@@ -263,27 +272,38 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
         {
             gfx_input_stream_ref input_stream;
             {
-                class gfx_input_stream_guard
+                class internal_input_stream_guard
                 {
-                    gfx_input_stream_ref &m_input_stream;
+                    gfx_input_stream_ref *const m_input_stream;
                     void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
 
                 public:
-                    inline gfx_input_stream_guard(
-                        gfx_input_stream_ref &input_stream,
+                    inline internal_input_stream_guard(
+                        gfx_input_stream_ref *input_stream,
                         char const *initial_filename,
                         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
                         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
                         : m_input_stream(input_stream),
                           m_input_stream_destroy_callback(input_stream_destroy_callback)
                     {
-                        m_input_stream = input_stream_init_callback(initial_filename);
+                        (*m_input_stream) = input_stream_init_callback(initial_filename);
                     }
-                    inline ~gfx_input_stream_guard()
+                    inline ~internal_input_stream_guard()
                     {
-                        m_input_stream_destroy_callback(m_input_stream);
+                        if (gfx_input_stream_ref(-1) != (*m_input_stream))
+                        {
+                            m_input_stream_destroy_callback((*m_input_stream));
+                        }
                     }
-                } input_stream_guard(input_stream, task_data->m_initial_filename.c_str(), task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
+                } instance_internal_input_stream_guard(&input_stream, task_data->m_initial_filename.c_str(), task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
+
+                if (PT_UNLIKELY(gfx_input_stream_ref(-1) == input_stream))
+                {
+                    mcrt_atomic_store(&task_data->m_gfx_texture->m_streaming_error, true);
+                    (*output_streaming_throttling_index) = streaming_throttling_index;
+                    (*output_recycle) = false;
+                    return NULL;
+                }
 
                 struct common_header_t common_header;
                 size_t common_data_offset;

@@ -24,13 +24,11 @@
 #include <vulkan/vulkan.h>
 #include <assert.h>
 #include <new>
-
-extern bool gltf_parse_input_stream(char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+#include "pt_gfx_mesh_base_gltf_parse.h"
+#include <pt_mcrt_log.h>
 
 bool gfx_mesh_vk::read_input_stream(class gfx_connection_common *gfx_connection_base, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
 {
-    gltf_parse_input_stream(initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_destroy_callback);
-
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
     // How to implement pipeline "serial - parallel - serial"
@@ -50,6 +48,50 @@ bool gfx_mesh_vk::read_input_stream(class gfx_connection_common *gfx_connection_
 
     if (!streaming_cancel)
     {
+        gfx_input_stream_ref input_stream;
+        {
+            class internal_input_stream_guard
+            {
+                gfx_input_stream_ref *const m_input_stream;
+                void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+
+            public:
+                inline internal_input_stream_guard(
+                    gfx_input_stream_ref *input_stream,
+                    char const *initial_filename,
+                    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+                    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+                    : m_input_stream(input_stream),
+                      m_input_stream_destroy_callback(input_stream_destroy_callback)
+                {
+                    (*m_input_stream) = input_stream_init_callback(initial_filename);
+                }
+                inline ~internal_input_stream_guard()
+                {
+                    if (gfx_input_stream_ref(-1) != (*m_input_stream))
+                    {
+                        m_input_stream_destroy_callback((*m_input_stream));
+                    }
+                }
+            } instance_internal_input_stream_guard(&input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
+
+            if (PT_UNLIKELY(gfx_input_stream_ref(-1) == input_stream))
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+                return false;
+            }
+
+            struct gltf_root my_gltf_root;
+            if (PT_UNLIKELY(!gltf_parse_input_stream(
+                    &my_gltf_root,
+                    input_stream, input_stream_read_callback,
+                    const_cast<void *>(static_cast<void const *>(initial_filename)), [](int line, int column, char const *msg, void *error_callback_data) -> void
+                    { mcrt_log_print("%s:%i:%i: error: %s", static_cast<char const *>(error_callback_data), line, column, msg); })))
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+                return false;
+            }
+        }
 
         // pass to the second stage
         {
