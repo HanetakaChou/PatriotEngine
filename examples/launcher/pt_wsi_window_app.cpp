@@ -8,6 +8,7 @@
 static gfx_connection_ref my_gfx_connection = NULL;
 //static gfx_texture_ref my_texture1 = NULL;
 //static gfx_texture_ref my_texture2 = NULL;
+static gfx_mesh_ref my_mesh = NULL;
 
 wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 {
@@ -17,10 +18,12 @@ wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 
 int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 {
-    gfx_mesh_ref my_mesh = gfx_connection_create_mesh(my_gfx_connection);
+    my_mesh = gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
     gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
-    gfx_mesh_destroy(my_gfx_connection, my_mesh);
+    //gfx_mesh_destroy(my_gfx_connection, my_mesh);
+
+    gfx_connection_test_set_mesh(my_gfx_connection, my_mesh);
 
 #if 0
     std::vector<gfx_texture_ref> my_textures;
@@ -94,6 +97,7 @@ void wsi_window_app_handle_event(wsi_window_app_ref wsi_window_app, struct wsi_w
 
 void wsi_window_app_destroy(wsi_window_app_ref wsi_window_app)
 {
+    gfx_mesh_destroy(my_gfx_connection, my_mesh);
     //gfx_texture_destroy(my_texture1);
     //gfx_texture_destroy(my_texture2);
 }

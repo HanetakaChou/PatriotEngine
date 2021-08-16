@@ -25,5 +25,5 @@ layout(location = 0) out highp vec4 uFragColor;
 
 void main()
 {
-   uFragColor = texture(tex, texcoord);
+   uFragColor = vec4(1.0, 0.0, 0.0, 1.0); //texture(tex, texcoord);
 }

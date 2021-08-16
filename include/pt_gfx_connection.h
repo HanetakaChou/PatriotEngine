@@ -93,7 +93,10 @@ extern "C"
     PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
 
     //TLS //node
+    // gfx_connection_create_node
+    // gfx_node_set_mesh
     //BLS //mesh
+    PT_ATTR_GFX void gfx_connection_test_set_mesh(gfx_connection_ref gfx_connection, gfx_mesh_ref gfx_mesh);
 
 #ifdef __cplusplus
 }

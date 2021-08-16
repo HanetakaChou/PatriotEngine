@@ -425,6 +425,11 @@ inline mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute_internal(uint32
                     } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
                 }
 
+                // pass to the third stage
+                {
+                    task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_mesh);
+                }
+
                 // load
                 int vetex_position_offset = 0;
                 int vetex_texture_0_offset = input_vetex_position_length;

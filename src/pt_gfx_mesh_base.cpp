@@ -36,3 +36,8 @@ PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx
 {
     return unwrap(mesh)->destroy(unwrap(gfx_connection));
 }
+
+PT_ATTR_GFX void gfx_connection_test_set_mesh(gfx_connection_ref gfx_connection, gfx_mesh_ref gfx_mesh)
+{
+    return unwrap(gfx_connection)->test_set_mesh(unwrap(gfx_mesh));
+}

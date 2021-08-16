@@ -18,7 +18,7 @@
 #include <assert.h>
 #include "pt_gfx_streaming_object.h"
 
-void gfx_streaming_object::streaming_done(class gfx_connection_common *gfx_connection)
+void gfx_streaming_object::set_streaming_done(class gfx_connection_common *gfx_connection)
 {
     this->streaming_done_lock();
 

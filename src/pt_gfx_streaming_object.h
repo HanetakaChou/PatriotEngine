@@ -56,8 +56,11 @@ protected:
     }
 
     inline void streaming_done_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U); }
+
 public:
-    void streaming_done(class gfx_connection_common *gfx_connection);
+    void set_streaming_done(class gfx_connection_common *gfx_connection);
+
+    inline bool is_streaming_done() { return STREAMING_STATUS_DONE == this->m_streaming_status; }
 };
 
 #endif

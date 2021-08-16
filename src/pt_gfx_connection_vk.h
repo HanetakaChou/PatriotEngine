@@ -216,6 +216,10 @@ class gfx_connection_vk final : public gfx_connection_common
     void on_wsi_redraw_needed_release() override;
     void destroy() override;
 
+    class gfx_mesh_vk *m_test_gfx_mesh;
+
+    void test_set_mesh(class gfx_mesh_base *gfx_mesh) override;
+
     inline void copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
 
 public:

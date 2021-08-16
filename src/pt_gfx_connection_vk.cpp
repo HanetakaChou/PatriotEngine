@@ -82,6 +82,8 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
         return false;
     }
 
+    this->m_test_gfx_mesh = NULL;
+
     return true;
 }
 
@@ -897,7 +899,7 @@ void gfx_connection_vk::reduce_streaming_task()
             uint32_t streaming_object_linear_list_count = this->m_streaming_object_linear_list_count[streaming_throttling_index];
             for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_linear_list_count; ++streaming_object_index)
             {
-                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index]->streaming_done(this);
+                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index]->set_streaming_done(this);
                 this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index] = NULL;
             }
             this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
@@ -915,7 +917,7 @@ void gfx_connection_vk::reduce_streaming_task()
             struct streaming_object_link_list *streaming_object_link_list_node = this->m_streaming_object_link_list_head[streaming_throttling_index];
             while (streaming_object_link_list_node != NULL)
             {
-                streaming_object_link_list_node->m_streaming_object->streaming_done(this);
+                streaming_object_link_list_node->m_streaming_object->set_streaming_done(this);
 
                 struct streaming_object_link_list *streaming_object_link_list_next = streaming_object_link_list_node->m_next;
                 mcrt_aligned_free(streaming_object_link_list_node);
@@ -1784,6 +1786,11 @@ inline void gfx_connection_vk::release_frame()
         this->m_device.cmd_set_scissor(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0U, 1U, scissors);
     }
 
+    if (NULL != this->m_test_gfx_mesh && this->m_test_gfx_mesh->is_streaming_done())
+    {
+        int huhu = 0;
+    }
+
     //this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index],0U,1U,)
     //pushconstant
     //binddescriptorset
@@ -1885,6 +1892,11 @@ void gfx_connection_vk::destroy()
     this->~gfx_connection_vk();
 
     mcrt_aligned_free(this);
+}
+
+void gfx_connection_vk::test_set_mesh(class gfx_mesh_base *gfx_mesh)
+{
+    this->m_test_gfx_mesh = static_cast<class gfx_mesh_vk *>(gfx_mesh);
 }
 
 inline gfx_connection_vk::~gfx_connection_vk()

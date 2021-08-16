@@ -32,6 +32,7 @@
         gfx_connection_create_texture;
         gfx_texture_read_input_stream;
         gfx_texture_destroy;
+        gfx_connection_test_set_mesh;
     local:
         *;
 };
