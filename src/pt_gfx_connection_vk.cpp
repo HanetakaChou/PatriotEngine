@@ -314,7 +314,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
     return this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer;
 }
 
-void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
+inline void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
 {
     if (this->m_device.has_dedicated_transfer_queue())
     {
@@ -347,8 +347,8 @@ void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_
                     VkBufferMemoryBarrier command_buffer_release_ownership[1];
                     command_buffer_release_ownership[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                     command_buffer_release_ownership[0].pNext = NULL;
-                    command_buffer_release_ownership[0].srcAccessMask = 0U;
-                    command_buffer_release_ownership[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                    command_buffer_release_ownership[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                    command_buffer_release_ownership[0].dstAccessMask = 0U;
                     command_buffer_release_ownership[0].srcQueueFamilyIndex = this->m_device.queue_transfer_family_index();
                     command_buffer_release_ownership[0].dstQueueFamilyIndex = this->m_device.queue_graphics_family_index();
                     command_buffer_release_ownership[0].buffer = dst_buffer;
@@ -408,8 +408,8 @@ void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_
                 VkBufferMemoryBarrier buffer_memory_barrier_transfer_dst_to_attribute_read[1];
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].pNext = NULL;
-                buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcAccessMask = 0U;
-                buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+                buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+                buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstAccessMask = dst_access_mask;
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].buffer = dst_buffer;
@@ -447,8 +447,8 @@ void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_
             VkBufferMemoryBarrier buffer_memory_barrier_transfer_dst_to_attribute_read[1];
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].pNext = NULL;
-            buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcAccessMask = 0U;
-            buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstAccessMask = dst_access_mask;
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].buffer = dst_buffer;
@@ -458,6 +458,16 @@ void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_
             m_device.cmd_pipeline_barrier(command_buffer_graphics, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 1, buffer_memory_barrier_transfer_dst_to_attribute_read, 0, NULL);
         }
     }
+}
+
+void gfx_connection_vk::copy_vertex_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
+{
+    return this->copy_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, src_buffer, dst_buffer, region_count, regions);
+}
+
+void gfx_connection_vk::copy_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
+{
+    return this->copy_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_INDEX_READ_BIT, src_buffer, dst_buffer, region_count, regions);
 }
 
 void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
@@ -560,7 +570,7 @@ void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index
                 VkImageMemoryBarrier image_memory_barrier_transfer_dst_to_shader_read_only[1] = {
                     {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                      NULL,
-                     0,
+                     VK_ACCESS_TRANSFER_WRITE_BIT,
                      VK_ACCESS_SHADER_READ_BIT,
                      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
@@ -602,7 +612,7 @@ void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index
             VkImageMemoryBarrier image_memory_barrier_transfer_dst_to_shader_read_only[1] = {
                 {VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
                  NULL,
-                 0,
+                 VK_ACCESS_TRANSFER_WRITE_BIT,
                  VK_ACCESS_SHADER_READ_BIT,
                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,

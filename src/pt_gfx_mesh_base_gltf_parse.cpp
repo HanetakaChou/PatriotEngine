@@ -448,7 +448,7 @@ void gltf_yacc_bufferview_set_target_callback(int bufferview_index, int target, 
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     assert(bufferview_index < user_defined->m_gltf_root->m_bufferviews.size());
     assert(-1 == user_defined->m_gltf_root->m_bufferviews[bufferview_index].m_target);
-    user_defined->m_gltf_root->m_bufferviews[bufferview_index].m_target = target;
+    user_defined->m_gltf_root->m_bufferviews[bufferview_index].m_target = static_cast<enum gltf_target>(target);
 }
 
 int gltf_yacc_bufferview_size_callback(void *user_defined_void)

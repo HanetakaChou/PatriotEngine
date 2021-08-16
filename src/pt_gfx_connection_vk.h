@@ -60,7 +60,7 @@ class gfx_connection_vk final : public gfx_connection_common
     uint32_t m_frame_thread_count;
 
     // secondary command
-    VkCommandBuffer *m_frame_graphics_submit_info_command_buffers; 
+    VkCommandBuffer *m_frame_graphics_submit_info_command_buffers;
 
     uint32_t swapchain_image_index[FRAME_THROTTLING_COUNT];
 
@@ -70,7 +70,6 @@ class gfx_connection_vk final : public gfx_connection_common
         VkCommandBuffer m_frame_graphics_command_buffer;
     };
     //struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
-
 
     VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
     VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
@@ -140,7 +139,7 @@ class gfx_connection_vk final : public gfx_connection_common
 #endif
 
     mcrt_task_ref m_streaming_task_respawn_root;
-    
+
     uint32_t m_streaming_thread_count;
 
     VkCommandBuffer *m_streaming_transfer_submit_info_command_buffers;
@@ -204,7 +203,7 @@ class gfx_connection_vk final : public gfx_connection_common
     inline bool init_pipeline();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
     inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
-    
+
     inline void destroy_streaming();
     inline ~gfx_connection_vk();
 
@@ -216,6 +215,8 @@ class gfx_connection_vk final : public gfx_connection_common
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
     void destroy() override;
+
+    inline void copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
 
 public:
     //uniform buffer
@@ -257,7 +258,8 @@ public:
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
 
-    void copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
+    void copy_vertex_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
+    void copy_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 
     void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);

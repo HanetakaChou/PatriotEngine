@@ -1,4 +1,76 @@
 {
+   "asset": {
+      "generator": "VKTS glTF 2.0 exporter",
+      "version": "2.0"
+   },
+   "scene": 0,
+   "scenes": [
+      {
+         "nodes": [
+            0
+         ]
+      }
+   ],
+   "nodes": [
+      {
+         "mesh": 0,
+         "name": "AnimatedCube",
+         "rotation": [
+            0.000000,
+            -1.000000,
+            0.000000,
+            0.000000
+         ]
+      }
+   ],
+   "buffers": [
+      {
+         "byteLength": 1860,
+         "uri": "AnimatedCube.bin"
+      }
+   ],
+   "bufferViews": [
+      {
+         "buffer": 0,
+         "byteLength": 12,
+         "byteOffset": 0
+      },
+      {
+         "buffer": 0,
+         "byteLength": 48,
+         "byteOffset": 12
+      },
+      {
+         "buffer": 0,
+         "byteLength": 72,
+         "byteOffset": 60,
+         "target": 34963
+      },
+      {
+         "buffer": 0,
+         "byteLength": 432,
+         "byteOffset": 132,
+         "target": 34962
+      },
+      {
+         "buffer": 0,
+         "byteLength": 432,
+         "byteOffset": 564,
+         "target": 34962
+      },
+      {
+         "buffer": 0,
+         "byteLength": 576,
+         "byteOffset": 996,
+         "target": 34962
+      },
+      {
+         "buffer": 0,
+         "byteLength": 288,
+         "byteOffset": 1572,
+         "target": 34962
+      }
+   ],
    "accessors": [
       {
          "bufferView": 0,
@@ -114,6 +186,24 @@
          "type": "VEC2"
       }
    ],
+   "meshes": [
+      {
+         "name": "AnimatedCube",
+         "primitives": [
+            {
+               "attributes": {
+                  "NORMAL": 4,
+                  "POSITION": 3,
+                  "TANGENT": 5,
+                  "TEXCOORD_0": 6
+               },
+               "indices": 2,
+               "material": 0,
+               "mode": 4
+            }
+         ]
+      }
+   ],
    "animations": [
       {
          "channels": [
@@ -133,58 +223,6 @@
                "output": 1
             }
          ]
-      }
-   ],
-   "asset": {
-      "generator": "VKTS glTF 2.0 exporter",
-      "version": "2.0"
-   },
-   "bufferViews": [
-      {
-         "buffer": 0,
-         "byteLength": 12,
-         "byteOffset": 0
-      },
-      {
-         "buffer": 0,
-         "byteLength": 48,
-         "byteOffset": 12
-      },
-      {
-         "buffer": 0,
-         "byteLength": 72,
-         "byteOffset": 60,
-         "target": 34963
-      },
-      {
-         "buffer": 0,
-         "byteLength": 432,
-         "byteOffset": 132,
-         "target": 34962
-      },
-      {
-         "buffer": 0,
-         "byteLength": 432,
-         "byteOffset": 564,
-         "target": 34962
-      },
-      {
-         "buffer": 0,
-         "byteLength": 576,
-         "byteOffset": 996,
-         "target": 34962
-      },
-      {
-         "buffer": 0,
-         "byteLength": 288,
-         "byteOffset": 1572,
-         "target": 34962
-      }
-   ],
-   "buffers": [
-      {
-         "byteLength": 1860,
-         "uri": "AnimatedCube.bin"
       }
    ],
    "images": [
@@ -208,46 +246,8 @@
          }
       }
    ],
-   "meshes": [
-      {
-         "name": "AnimatedCube",
-         "primitives": [
-            {
-               "attributes": {
-                  "NORMAL": 4,
-                  "POSITION": 3,
-                  "TANGENT": 5,
-                  "TEXCOORD_0": 6
-               },
-               "indices": 2,
-               "material": 0,
-               "mode": 4
-            }
-         ]
-      }
-   ],
-   "nodes": [
-      {
-         "mesh": 0,
-         "name": "AnimatedCube",
-         "rotation": [
-            0.000000,
-            -1.000000,
-            0.000000,
-            0.000000
-         ]
-      }
-   ],
    "samplers": [
       {}
-   ],
-   "scene": 0,
-   "scenes": [
-      {
-         "nodes": [
-            0
-         ]
-      }
    ],
    "textures": [
       {

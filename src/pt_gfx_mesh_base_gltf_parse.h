@@ -59,27 +59,34 @@ struct gltf_buffer
     inline gltf_buffer() : m_byteLength(-1) {}
 };
 
+enum gltf_target
+{
+    GLTF_TARGET_UNKNOWN = -1,
+    GLTF_TARGET_ARRAY_BUFFER = 34962,        //vertex
+    GLTF_TARGET_ELEMENT_ARRAY_BUFFER = 34963 //index
+};
+
 struct gltf_bufferview
 {
     int m_buffer;
     int m_byteOffset;
     int m_byteLength;
     int m_byteStride;
-    int m_target;
+    enum gltf_target m_target;
     mcrt_string m_name;
 
-    inline gltf_bufferview() : m_buffer(-1), m_byteOffset(0), m_byteLength(-1), m_byteStride(-1), m_target(-1) {}
+    inline gltf_bufferview() : m_buffer(-1), m_byteOffset(0), m_byteLength(-1), m_byteStride(-1), m_target(GLTF_TARGET_UNKNOWN) {}
 };
 
 enum gltf_component_type
 {
     GLTF_COMPONENT_TYPE_UNKNOWN = -1,
-    GLTF_COMPONENT_TYPE_BYTE = 0X1400,
-    GLTF_COMPONENT_TYPE_UNSIGNED_BYTE = 0X1401,
-    GLTF_COMPONENT_TYPE_SHORT = 0X1402,
-    GLTF_COMPONENT_TYPE_UNSIGNED_SHORT = 0X1403,
-    GLTF_COMPONENT_TYPE_UNSIGNED_INT = 0X1405,
-    GLTF_COMPONENT_TYPE_FLOAT = 0X1406
+    GLTF_COMPONENT_TYPE_BYTE = 5120,
+    GLTF_COMPONENT_TYPE_UNSIGNED_BYTE = 5121,
+    GLTF_COMPONENT_TYPE_SHORT = 5122,
+    GLTF_COMPONENT_TYPE_UNSIGNED_SHORT = 5123,
+    GLTF_COMPONENT_TYPE_UNSIGNED_INT = 5125,
+    GLTF_COMPONENT_TYPE_FLOAT = 5126
 };
 
 enum gltf_type
@@ -104,6 +111,7 @@ struct gltf_accessor
     enum gltf_type m_type;
     float m_max[16];
     float m_min[16];
+    // sparse
     mcrt_string m_name;
     inline gltf_accessor() : m_bufferview(-1), m_byteoffset(0), m_componenttype(GLTF_COMPONENT_TYPE_UNKNOWN), m_normalized(false), m_count(-1), m_type(GLTF_TYPE_UNKNOWN), m_max{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f}, m_min{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f} {}
 };
@@ -138,7 +146,14 @@ struct gltf_primitive
     int m_indices;
     int m_material;
     enum gltf_mode m_mode;
-    
+    // targets
+};
+
+struct gltf_mesh
+{
+    mcrt_vector<struct gltf_primitive> m_primitives;
+    mcrt_vector<float> m_weights;
+    mcrt_string m_name;
 };
 
 struct gltf_root
@@ -149,6 +164,7 @@ struct gltf_root
     mcrt_vector<struct gltf_buffer> m_buffers;
     mcrt_vector<struct gltf_bufferview> m_bufferviews;
     mcrt_vector<struct gltf_accessor> m_accessors;
+    mcrt_vector<struct gltf_mesh> m_meshes;
 };
 
 bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data));

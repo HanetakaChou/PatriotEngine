@@ -297,7 +297,7 @@ inline mcrt_task_ref gfx_buffer_vk::read_input_stream_task_execute_internal(uint
                     regions[0].srcOffset = base_offset;
                     regions[0].dstOffset = 0U;
                     regions[0].size = task_data->m_input_stream_length;
-                    task_data->m_gfx_connection->copy_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, task_data->m_gfx_buffer->m_buffer, 1U, regions);
+                    task_data->m_gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, task_data->m_gfx_buffer->m_buffer, 1U, regions);
                 }
 
                 mcrt_atomic_store(&task_data->m_gfx_buffer->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
