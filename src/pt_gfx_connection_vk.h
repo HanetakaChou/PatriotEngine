@@ -151,8 +151,7 @@ class gfx_connection_vk final : public gfx_connection_base
     uint32_t m_streaming_throttling_index;
     mcrt_rwlock_t m_rwlock_streaming_throttling_index;
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    uint32_t m_streaming_task_executing_count[STREAMING_THROTTLING_COUNT];
-    bool m_streaming_task_reducing[STREAMING_THROTTLING_COUNT];
+    mcrt_asset_rwlock_t m_asset_rwlock_streaming_task[STREAMING_THROTTLING_COUNT];
 #endif
 
     mcrt_task_ref m_streaming_task_respawn_root;

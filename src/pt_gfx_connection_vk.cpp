@@ -100,8 +100,7 @@ inline bool gfx_connection_vk::init_streaming()
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        this->m_streaming_task_executing_count[streaming_throttling_index] = 0;
-        this->m_streaming_task_reducing[streaming_throttling_index] = false;
+        mcrt_asset_rwlock_init(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 #endif
         this->m_transfer_src_buffer_begin[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
         this->m_transfer_src_buffer_end[streaming_throttling_index] = this->m_transfer_src_buffer_begin[streaming_throttling_index];
@@ -188,14 +187,12 @@ inline bool gfx_connection_vk::init_streaming()
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
 void gfx_connection_vk::streaming_task_debug_executing_begin(uint32_t streaming_throttling_index)
 {
-    MCRT_ASSERT(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
-    mcrt_atomic_inc_u32(&this->m_streaming_task_executing_count[streaming_throttling_index]);
+    mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 }
 
 void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_throttling_index)
 {
-    MCRT_ASSERT(!mcrt_atomic_load(&this->m_streaming_task_reducing[streaming_throttling_index]));
-    mcrt_atomic_dec_u32(&this->m_streaming_task_executing_count[streaming_throttling_index]);
+    mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 }
 #endif
 
@@ -652,9 +649,7 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    // ensure mutex
-    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
-    mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], true);
+    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 #endif
 
     // submit
@@ -822,16 +817,15 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    // ensure mutex
-    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
-    mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], false);
+    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 #endif
 
+    // The new index
+    streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
     // wait the Fence
     // Submit ensures EndCommandBuffer
     // Fence ensures "Completed by GPU"
     // safe to ResetCommandPool
-    streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
@@ -840,9 +834,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    // ensure mutex
-    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
-    mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], true);
+    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 #endif
 
     // free transfer_src buffer memory
@@ -936,9 +928,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    // ensure mutex
-    MCRT_ASSERT(0U == mcrt_atomic_load(&this->m_streaming_task_executing_count[streaming_throttling_index]));
-    mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], false);
+    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 #endif
     return;
 }

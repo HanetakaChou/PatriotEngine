@@ -29,6 +29,12 @@ inline void mcrt_rwlock_wrlock(struct mcrt_rwlock_t *rwlock);
 inline void mcrt_rwlock_rdunlock(struct mcrt_rwlock_t *rwlock);
 inline void mcrt_rwlock_wrunlock(struct mcrt_rwlock_t *rwlock);
 
+inline void mcrt_asset_rwlock_init(struct mcrt_asset_rwlock_t *rwlock);
+inline void mcrt_asset_rwlock_rdlock(struct mcrt_asset_rwlock_t *rwlock);
+inline void mcrt_asset_rwlock_wrlock(struct mcrt_asset_rwlock_t *rwlock);
+inline void mcrt_asset_rwlock_rdunlock(struct mcrt_asset_rwlock_t *rwlock);
+inline void mcrt_asset_rwlock_wrunlock(struct mcrt_asset_rwlock_t *rwlock);
+
 #include "pt_mcrt_rwlock.inl"
 
 #endif
