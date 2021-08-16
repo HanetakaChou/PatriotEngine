@@ -17,7 +17,7 @@
 
 #include <stddef.h>
 #include <assert.h>
-#include "pt_gfx_texture_common.h"
+#include "pt_gfx_texture_base.h"
 #include <algorithm>
 
 //--------------------------------------------------------------------------------------
@@ -440,7 +440,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     return true;
 }
 
-bool gfx_texture_common::load_dds_header_from_input_stream(
+bool gfx_texture_base::load_dds_header_from_input_stream(
     struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
@@ -475,7 +475,7 @@ bool gfx_texture_common::load_dds_header_from_input_stream(
     }
 }
 
-bool gfx_texture_common::load_dds_data_from_input_stream(
+bool gfx_texture_base::load_dds_data_from_input_stream(
     struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
@@ -1257,7 +1257,7 @@ static inline size_t BitsPerPixel(uint32_t fmt)
     }
 }
 
-inline enum gfx_texture_common::gfx_texture_common_type_t gfx_texture_common::dds_get_common_type(uint32_t dds_type)
+inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::dds_get_common_type(uint32_t dds_type)
 {
     static enum gfx_texture_common_type_t const dds_to_common_type_map[] = {
         PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED,
@@ -1272,7 +1272,7 @@ inline enum gfx_texture_common::gfx_texture_common_type_t gfx_texture_common::dd
     return dds_to_common_type_map[dds_type];
 }
 
-inline enum gfx_texture_common::gfx_texture_common_format_t gfx_texture_common::dds_get_common_format(uint32_t dds_format)
+inline enum gfx_texture_base::gfx_texture_common_format_t gfx_texture_base::dds_get_common_format(uint32_t dds_format)
 {
     static enum gfx_texture_common_format_t const dds_to_common_format_map[] = {
         PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN

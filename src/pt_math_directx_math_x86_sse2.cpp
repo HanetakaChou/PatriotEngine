@@ -84,6 +84,11 @@ math_simd_mat PT_VECTORCALL directx_math_x86_sse2_load_mat4x4(math_mat4x4 *sourc
     return wrap(DirectX::XMLoadFloat4x4(unwrap(source)));
 }
 
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_identity()
+{
+    return wrap(DirectX::XMMatrixIdentity());
+}
+
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));

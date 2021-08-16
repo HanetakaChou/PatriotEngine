@@ -27,7 +27,7 @@ class gfx_connection_proxy
     //channel buffer
 };
 
-class gfx_connection_common
+class gfx_connection_base
 {
 
     // proxy -> stub
@@ -46,9 +46,11 @@ public:
 
     virtual class gfx_buffer_base *create_buffer() = 0;
 
+    virtual class gfx_node_base *create_node() = 0;
+
     virtual class gfx_mesh_base *create_mesh() = 0;
 
-    virtual class gfx_texture_common *create_texture() = 0;
+    virtual class gfx_texture_base *create_texture() = 0;
 
     virtual void on_wsi_resized(float width, float height) = 0;
 
@@ -59,6 +61,6 @@ public:
     virtual void test_set_mesh(class gfx_mesh_base *gfx_mesh) = 0;
 };
 
-class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
 #endif

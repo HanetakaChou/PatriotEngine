@@ -15,10 +15,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stddef.h>
-#include "pt_gfx_connection_d3d12.h"
+#ifndef _PT_GFX_NODE_VK_H_
+#define _PT_GFX_NODE_VK_H_ 1
 
-class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_gfx_node_base.h"
+
+class gfx_node_vk final : public gfx_node_base
 {
-    return NULL;
-}
+    void destroy(class gfx_connection_base *gfx_connection) override;
+
+public:
+    inline gfx_node_vk() : gfx_node_base(){};
+};
+
+#endif

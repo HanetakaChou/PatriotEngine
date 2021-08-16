@@ -20,14 +20,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_connection_common.h"
+#include "pt_gfx_connection_base.h"
 #include "pt_gfx_api_mtl.h"
 
-class gfx_connection_mtl : public gfx_connection_common
+class gfx_connection_mtl : public gfx_connection_base
 {
     class gfx_api_mtl m_api_mtl;
 
-    class gfx_texture_common *create_texture() override;
+    class gfx_texture_base *create_texture() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
@@ -37,11 +37,11 @@ class gfx_connection_mtl : public gfx_connection_common
     bool init(wsi_window_ref wsi_window);
     void destroy() override;
 
-    friend class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+    friend class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 public:
 };
 
-class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 
 #endif

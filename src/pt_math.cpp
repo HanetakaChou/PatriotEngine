@@ -156,6 +156,28 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
 #endif
 }
 
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
+{
+    #if defined(PT_X64) || defined(PT_X86)
+    if (math_support_avx2)
+    {
+        return directx_math_x86_avx2_mat_identity();
+    }
+    else if (math_support_avx)
+    {
+        return directx_math_x86_avx_mat_identity();
+    }
+    else
+    {
+        return directx_math_x86_sse2_mat_identity();
+    }
+#elif defined(PT_ARM64) || defined(PT_ARM)
+        return directx_math_arm_neon_mat_identity();
+#else
+#error Unknown Architecture
+#endif
+}
+
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
 #if defined(PT_X64) || defined(PT_X86)

@@ -16,7 +16,7 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_texture_common.h"
+#include "pt_gfx_texture_base.h"
 
 static inline constexpr uint32_t Common_MakeFourCC(char ch0, char ch1, char ch2, char ch3)
 {
@@ -31,7 +31,7 @@ enum
     PVR_HEADER_V3 = Common_MakeFourCC('P', 'V', 'R', 3)
 };
 
-bool gfx_texture_common::load_header_from_input_stream(
+bool gfx_texture_base::load_header_from_input_stream(
     struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
@@ -67,7 +67,7 @@ bool gfx_texture_common::load_header_from_input_stream(
     }
 }
 
-bool gfx_texture_common::load_data_from_input_stream(
+bool gfx_texture_base::load_data_from_input_stream(
     struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     void *_staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
@@ -104,11 +104,11 @@ bool gfx_texture_common::load_data_from_input_stream(
 
 //--- export ---
 
-inline gfx_connection_ref wrap(class gfx_connection_common *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_common *>(gfx_connection); }
+inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
-inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
+inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
+inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
 PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
     gfx_connection_ref gfx_connection,

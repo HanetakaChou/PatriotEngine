@@ -21,11 +21,12 @@
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_buffer_vk.h"
+#include "pt_gfx_node_vk.h"
 #include "pt_gfx_mesh_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <new>
 
-class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
     if (connection->init(wsi_connection, wsi_visual, wsi_window))
@@ -90,7 +91,7 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
 inline bool gfx_connection_vk::init_streaming()
 {
     this->m_streaming_throttling_index = 0U;
-    this->m_spin_lock_streaming_throttling_index = 0U;
+    mcrt_rwlock_init(&this->m_rwlock_streaming_throttling_index);
     this->m_streaming_task_respawn_root = this->m_task_unused;
     this->m_streaming_thread_count = this->m_task_arena_thread_count;
     this->m_streaming_transfer_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
@@ -641,9 +642,9 @@ void gfx_connection_vk::reduce_streaming_task()
     // gfx_texture_vk::read_input_stream
     uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
 
-    this->streaming_throttling_index_lock();
+    mcrt_rwlock_wrlock(&this->m_rwlock_streaming_throttling_index);
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
-    this->streaming_throttling_index_unlock();
+    mcrt_rwlock_wrunlock(&this->m_rwlock_streaming_throttling_index);
 
     // sync by TBB
     // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
@@ -1765,7 +1766,7 @@ inline void gfx_connection_vk::release_frame()
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         command_buffer_begin_info.pNext = NULL;
         command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        command_buffer_begin_info.pInheritanceInfo = NULL; 
+        command_buffer_begin_info.pInheritanceInfo = NULL;
 
         PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
@@ -2036,13 +2037,19 @@ class gfx_buffer_base *gfx_connection_vk::create_buffer()
     return buffer;
 }
 
+class gfx_node_base *gfx_connection_vk::create_node()
+{
+    gfx_node_vk *node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk();
+    return node;
+}
+
 class gfx_mesh_base *gfx_connection_vk::create_mesh()
 {
     gfx_mesh_vk *mesh = new (mcrt_aligned_malloc(sizeof(gfx_mesh_vk), alignof(gfx_mesh_vk))) gfx_mesh_vk();
     return mesh;
 }
 
-class gfx_texture_common *gfx_connection_vk::create_texture()
+class gfx_texture_base *gfx_connection_vk::create_texture()
 {
     gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
     return texture;

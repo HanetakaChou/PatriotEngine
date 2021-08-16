@@ -22,13 +22,13 @@
 #include <stdint.h>
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_scalable_allocator.h>
-#include "pt_gfx_texture_common.h"
+#include "pt_gfx_texture_base.h"
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 #include <string>
 
 
-class gfx_texture_vk final : public gfx_texture_common
+class gfx_texture_vk final : public gfx_texture_base
 {
     VkImage m_image;
 
@@ -40,7 +40,7 @@ class gfx_texture_vk final : public gfx_texture_common
     using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 
     bool read_input_stream(
-        class gfx_connection_common *gfx_connection,
+        class gfx_connection_base *gfx_connection,
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
@@ -62,9 +62,9 @@ class gfx_texture_vk final : public gfx_texture_common
 
     static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
 
-    void destroy(class gfx_connection_common *gfx_connection) override;
+    void destroy(class gfx_connection_base *gfx_connection) override;
 
-    void streaming_destroy_callback(class gfx_connection_common *gfx_connection) override;
+    void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     struct specific_header_vk_t
     {
@@ -172,7 +172,7 @@ class gfx_texture_vk final : public gfx_texture_common
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk() : gfx_texture_common(), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk() : gfx_texture_base(), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
 };
 
 #endif

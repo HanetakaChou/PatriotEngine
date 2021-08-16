@@ -17,27 +17,30 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_mesh_base.h"
+#include "pt_gfx_node_base.h"
+
+void gfx_node_base::set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh)
+{
+    this->m_mesh = gfx_mesh;
+}
 
 //--- export ---
 
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
+inline gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<gfx_node_ref>(node); }
+inline class gfx_node_base *unwrap(gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
+
 inline gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<gfx_mesh_ref>(mesh); }
 inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref node, gfx_mesh_ref gfx_mesh)
 {
-    return unwrap(mesh)->read_input_stream(unwrap(gfx_connection), mesh_index, material_index, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
+    return unwrap(node)->set_mesh(unwrap(gfx_connection), unwrap(gfx_mesh));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh)
+PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref node)
 {
-    return unwrap(mesh)->destroy(unwrap(gfx_connection));
-}
-
-PT_ATTR_GFX void gfx_connection_test_set_mesh(gfx_connection_ref gfx_connection, gfx_mesh_ref gfx_mesh)
-{
-    return unwrap(gfx_connection)->test_set_mesh(unwrap(gfx_mesh));
+    return unwrap(node)->destroy(unwrap(gfx_connection));
 }

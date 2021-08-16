@@ -20,9 +20,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_atomic.h>
-#include <pt_mcrt_thread.h>
-#include "pt_gfx_connection_common.h"
+#include <pt_mcrt_spinlock.h>
+#include "pt_gfx_connection_base.h"
 
 class gfx_streaming_object
 {
@@ -41,24 +40,27 @@ protected:
     bool m_streaming_error;
     bool m_streaming_cancel;
 
-    uint32_t m_spin_lock_streaming_done;
+    mcrt_spinlock_t m_spinlock_streaming_done;
 
-    inline gfx_streaming_object() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false), m_spin_lock_streaming_done(0U) {}
+    inline gfx_streaming_object() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false)
+    {
+        mcrt_spin_init(&this->m_spinlock_streaming_done);
+    }
 
-    virtual void streaming_destroy_callback(class gfx_connection_common *gfx_connection) = 0;
+    virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
     inline void streaming_done_lock()
     {
-        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_done, 1U))
-        {
-            mcrt_os_yield();
-        }
+        mcrt_spin_lock(&this->m_spinlock_streaming_done);
     }
 
-    inline void streaming_done_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_done, 0U); }
+    inline void streaming_done_unlock()
+    {
+        mcrt_spin_unlock(&this->m_spinlock_streaming_done);
+    }
 
 public:
-    void set_streaming_done(class gfx_connection_common *gfx_connection);
+    void set_streaming_done(class gfx_connection_base *gfx_connection);
 
     inline bool is_streaming_done() { return STREAMING_STATUS_DONE == this->m_streaming_status; }
 };

@@ -25,7 +25,7 @@
 #include <new>
 
 bool gfx_texture_vk::read_input_stream(
-    class gfx_connection_common *gfx_connection_base,
+    class gfx_connection_base *gfx_connection_base,
     char const *initial_filename,
     gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
     intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
@@ -430,7 +430,7 @@ inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uin
     return NULL;
 }
 
-void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
+void gfx_texture_vk::destroy(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
@@ -482,7 +482,7 @@ void gfx_texture_vk::destroy(class gfx_connection_common *gfx_connection_base)
     }
 }
 
-void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_common *gfx_connection_base)
+void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
@@ -525,7 +525,7 @@ inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(enum gfx
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(gfx_texture_common::PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
+    static_assert(gfx_texture_base::PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
@@ -718,7 +718,7 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(gfx_texture_common::PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
+    static_assert(gfx_texture_base::PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];

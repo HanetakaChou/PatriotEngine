@@ -20,26 +20,26 @@
 
 #include <pt_math_common.h>
 
-struct math_vec3
+typedef struct math_vec3
 {
     float x;
     float y;
     float z;
-};
+} math_vec3;
 
-struct math_vec4
+typedef struct math_vec4
 {
     float x;
     float y;
     float z;
     float w;
-};
+} math_vec4;
 
-struct alignas(16) math_alignas16_vec4 : public math_vec4
+typedef struct alignas(16) math_alignas16_vec4 : public math_vec4
 {
-};
+} math_alignas16_vec4;
 
-struct math_mat4x4
+typedef struct math_mat4x4
 {
     union
     {
@@ -52,11 +52,11 @@ struct math_mat4x4
         };
         float m[4][4];
     };
-};
+} math_mat4x4;
 
-struct alignas(16) math_alignas16_mat4x4 : public math_mat4x4
+typedef struct alignas(16) math_alignas16_mat4x4 : public math_mat4x4
 {
-};
+} math_alignas16_mat4x4;
 
 #if defined(PT_X64) || defined(PT_X86)
 #include <xmmintrin.h>
@@ -83,6 +83,7 @@ extern "C"
     PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *source, math_simd_vec v);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source);
+    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity();
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
     PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
     PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);

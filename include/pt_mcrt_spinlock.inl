@@ -15,10 +15,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stddef.h>
-#include "pt_gfx_connection_d3d12.h"
+#if defined(_PT_MCRT_SPINLOCK_H_) && !defined(_PT_MCRT_SPINLOCK_INL_)
+#define _PT_MCRT_SPINLOCK_INL_ 1
 
-class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+#include "pt_mcrt_atomic.h"
+#include "pt_mcrt_thread.h"
+
+struct mcrt_spinlock_t
 {
-    return NULL;
+    uint32_t m_lock;
+};
+
+inline void mcrt_spin_init(struct mcrt_spinlock_t *lock)
+{
+    lock->m_lock = 0U;
 }
+
+inline void mcrt_spin_lock(struct mcrt_spinlock_t *lock)
+{
+    while (0U != mcrt_atomic_xchg_u32(&lock->m_lock, 1U))
+    {
+        mcrt_os_yield();
+    }
+}
+
+inline void mcrt_spin_unlock(struct mcrt_spinlock_t *lock)
+{
+    mcrt_atomic_store(&lock->m_lock, 0U);
+}
+
+#else
+#error "Never use <pt_mcrt_spinlock.inl> directly; include <pt_mcrt_spinlock.h> instead."
+#endif

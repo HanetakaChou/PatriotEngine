@@ -19,13 +19,13 @@
 #define _PT_GFX_CONNECTION_D3D12_H_ 1
 
 #include <pt_gfx_connection.h>
-#include "pt_gfx_connection_common.h"
+#include "pt_gfx_connection_base.h"
 
-class gfx_connection_d3d12 : public gfx_connection_common
+class gfx_connection_d3d12 : public gfx_connection_base
 {
 public:
 };
 
-class gfx_connection_common *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
 #endif

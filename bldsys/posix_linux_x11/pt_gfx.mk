@@ -24,7 +24,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_gfx
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_common.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_connection_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_x11.cpp \
@@ -33,12 +33,14 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_vk.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_node_base.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_node_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base_gltf_parse.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_dds.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_common_load_pvr.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base_load_dds.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base_load_pvr.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc

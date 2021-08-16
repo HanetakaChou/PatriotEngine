@@ -25,7 +25,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     gfx_connection_test_set_mesh(my_gfx_connection, my_mesh);
 
-#if 0
+#if 1
     std::vector<gfx_texture_ref> my_textures;
 
     unsigned rand_buf = (unsigned)time(NULL);

@@ -20,17 +20,21 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_mcrt_task.h>
+#include <pt_mcrt_rwlock.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <pt_math.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
-#include <pt_mcrt_task.h>
-#include <pt_math.h>
-#include "pt_gfx_connection_common.h"
+#include "pt_gfx_connection_base.h"
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc_vk.h"
 #include "pt_gfx_streaming_object.h"
+#include "pt_gfx_node_vk.h"
 #include <vulkan/vulkan.h>
+#include <vector>
 
-class gfx_connection_vk final : public gfx_connection_common
+class gfx_connection_vk final : public gfx_connection_base
 {
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
@@ -83,7 +87,6 @@ class gfx_connection_vk final : public gfx_connection_common
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
 
-
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
     VkRenderPass m_render_pass;
@@ -132,13 +135,21 @@ class gfx_connection_vk final : public gfx_connection_common
     VkImageView *m_swapchain_image_views;
     VkSwapchainKHR m_swapchain;
 
+    // Scene
+    // TODO Parallel List
+    template <typename T>
+    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    uint32_t m_spin_lock_node_list;
+    mcrt_vector<class gfx_node_vk *> m_node_list;
+    mcrt_vector<size_t> m_node_list_free_index;
+
     inline void acquire_frame();
     inline void release_frame();
 
     // Streaming
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
     uint32_t m_streaming_throttling_index;
-    uint32_t m_spin_lock_streaming_throttling_index;
+    mcrt_rwlock_t m_rwlock_streaming_throttling_index;
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     uint32_t m_streaming_task_executing_count[STREAMING_THROTTLING_COUNT];
     bool m_streaming_task_reducing[STREAMING_THROTTLING_COUNT];
@@ -214,10 +225,11 @@ class gfx_connection_vk final : public gfx_connection_common
     inline void destroy_streaming();
     inline ~gfx_connection_vk();
 
-    friend class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     class gfx_buffer_base *create_buffer() override;
+    class gfx_node_base *create_node() override;
     class gfx_mesh_base *create_mesh() override;
-    class gfx_texture_common *create_texture() override;
+    class gfx_texture_base *create_texture() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
@@ -246,13 +258,13 @@ public:
 
     inline void streaming_throttling_index_lock()
     {
-        while (0U != mcrt_atomic_xchg_u32(&this->m_spin_lock_streaming_throttling_index, 1U))
-        {
-            mcrt_os_yield();
-        }
+        mcrt_rwlock_rdlock(&this->m_rwlock_streaming_throttling_index);
     }
     inline uint32_t streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
-    inline void streaming_throttling_index_unlock() { mcrt_atomic_store(&this->m_spin_lock_streaming_throttling_index, 0U); }
+    inline void streaming_throttling_index_unlock()
+    {
+        mcrt_rwlock_rdunlock(&this->m_rwlock_streaming_throttling_index);
+    }
 
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
@@ -292,7 +304,7 @@ public:
     inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
 };
 
-class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
 // Streaming in CryEngine - StatObj
 

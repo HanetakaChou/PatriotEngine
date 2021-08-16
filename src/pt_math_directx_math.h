@@ -20,40 +20,44 @@
 
 #include <pt_math.h>
 
-math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec3(math_vec3 *source);
 math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_vec3(math_vec3 *source);
+math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec3(math_vec3 *source);
 math_simd_vec PT_VECTORCALL directx_math_x86_sse2_load_vec3(math_vec3 *source);
 
-math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec4(math_vec4 *source);
 math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_vec4(math_vec4 *source);
+math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec4(math_vec4 *source);
 math_simd_vec PT_VECTORCALL directx_math_x86_sse2_load_vec4(math_vec4 *source);
 
-void PT_VECTORCALL directx_math_x86_avx_store_vec3(math_vec3 *source, math_simd_vec v);
 void PT_VECTORCALL directx_math_x86_avx2_store_vec3(math_vec3 *source, math_simd_vec v);
+void PT_VECTORCALL directx_math_x86_avx_store_vec3(math_vec3 *source, math_simd_vec v);
 void PT_VECTORCALL directx_math_x86_sse2_store_vec3(math_vec3 *source, math_simd_vec v);
 
-void PT_VECTORCALL directx_math_x86_avx_store_vec4(math_vec4 *source, math_simd_vec v);
 void PT_VECTORCALL directx_math_x86_avx2_store_vec4(math_vec4 *source, math_simd_vec v);
+void PT_VECTORCALL directx_math_x86_avx_store_vec4(math_vec4 *source, math_simd_vec v);
 void PT_VECTORCALL directx_math_x86_sse2_store_vec4(math_vec4 *source, math_simd_vec v);
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
 math_simd_mat PT_VECTORCALL directx_math_x86_avx2_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_mat4x4(math_mat4x4 *source);
 math_simd_mat PT_VECTORCALL directx_math_x86_avx2_load_mat4x4(math_mat4x4 *source);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_mat4x4(math_mat4x4 *source);
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_load_mat4x4(math_mat4x4 *source);
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_identity();
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_identity();
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_identity();
+
 math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
 
-void PT_VECTORCALL directx_math_x86_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
 void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
+void PT_VECTORCALL directx_math_x86_avx_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
 void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
 
-void PT_VECTORCALL directx_math_x86_avx_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
 void PT_VECTORCALL directx_math_x86_avx2_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
+void PT_VECTORCALL directx_math_x86_avx_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
 void PT_VECTORCALL directx_math_x86_sse2_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
 
 #endif

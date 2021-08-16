@@ -16,23 +16,23 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_connection_common.h"
+#include "pt_gfx_connection_base.h"
 
 #if defined(PT_WIN32)
-extern class gfx_connection_common *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+extern class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 #endif
 
 #if 0 && defined(PT_POSIX_MACH)
-extern class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+extern class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window);
 #endif
 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
-    extern class gfx_connection_common *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 #endif
 
-class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    class gfx_connection_common *gfx_connection = NULL;
+    class gfx_connection_base *gfx_connection = NULL;
 
 #if defined(PT_WIN32)
     if (NULL == gfx_connection)
@@ -60,14 +60,17 @@ class gfx_connection_common *gfx_connection_common_init(wsi_connection_ref wsi_c
 
 //--- export ---
 
-inline gfx_connection_ref wrap(class gfx_connection_common *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_common *>(gfx_connection); }
+inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+
+inline gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<gfx_node_ref>(node); }
+inline class gfx_node_base *unwrap(gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
 
 inline gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<gfx_mesh_ref>(mesh); }
 inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-inline gfx_texture_ref wrap(class gfx_texture_common *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
-inline class gfx_texture_common *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_common *>(texture); }
+inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
+inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
 inline gfx_buffer_ref wrap(class gfx_buffer_base *buffer) { return reinterpret_cast<gfx_buffer_ref>(buffer); }
 inline class gfx_buffer_base *unwrap(gfx_buffer_ref buffer) { return reinterpret_cast<class gfx_buffer_base *>(buffer); }
@@ -90,6 +93,11 @@ PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_acquire(gfx_connect
 PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_redraw_needed_release();
+}
+
+PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection)
+{
+    return wrap(unwrap(gfx_connection)->create_node());
 }
 
 PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection)

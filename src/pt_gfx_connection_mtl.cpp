@@ -35,7 +35,7 @@ void gfx_connection_mtl::destroy()
 {
 }
 
-class gfx_texture_common *gfx_connection_mtl::create_texture()
+class gfx_texture_base *gfx_connection_mtl::create_texture()
 {
     //gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk(this);
     //return texture;
@@ -54,7 +54,7 @@ void gfx_connection_mtl::on_wsi_redraw_needed_release()
 {
 }
 
-class gfx_connection_common *gfx_connection_mtl_init(wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window)
 {
     //class gfx_connection_mtl *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_mtl), alignof(gfx_connection_mtl))) gfx_connection_mtl();
     //if (connection->init(wsi_window))

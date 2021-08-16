@@ -21,8 +21,8 @@
 
 //--- export ---
 
-inline gfx_connection_ref wrap(class gfx_connection_common *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_common *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_common *>(gfx_connection); }
+inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
 inline gfx_buffer_ref wrap(class gfx_buffer_base *buffer) { return reinterpret_cast<gfx_buffer_ref>(buffer); }
 inline class gfx_buffer_base *unwrap(gfx_buffer_ref buffer) { return reinterpret_cast<class gfx_buffer_base *>(buffer); }

@@ -17,7 +17,7 @@
 
 #include <stddef.h>
 #include <assert.h>
-#include "pt_gfx_texture_common.h"
+#include "pt_gfx_texture_base.h"
 #include <algorithm>
 
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/FileDefinesPVR.h
@@ -448,7 +448,7 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream_r
     }
 }
 
-bool gfx_texture_common::load_pvr_header_from_input_stream(
+bool gfx_texture_base::load_pvr_header_from_input_stream(
     struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
@@ -483,7 +483,7 @@ bool gfx_texture_common::load_pvr_header_from_input_stream(
     return true;
 }
 
-bool gfx_texture_common::load_pvr_data_from_input_stream(
+bool gfx_texture_base::load_pvr_data_from_input_stream(
     struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
@@ -913,7 +913,7 @@ static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
     }
 }
 
-inline enum gfx_texture_common::gfx_texture_common_type_t gfx_texture_common::pvr_get_common_type(uint32_t height, uint32_t depth)
+inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::pvr_get_common_type(uint32_t height, uint32_t depth)
 {
     assert(0 != height);
     assert(0 != depth);
@@ -943,7 +943,7 @@ inline enum gfx_texture_common::gfx_texture_common_type_t gfx_texture_common::pv
     }
 }
 
-inline enum gfx_texture_common::gfx_texture_common_format_t gfx_texture_common::pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
+inline enum gfx_texture_base::gfx_texture_common_format_t gfx_texture_base::pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
 {
     static enum gfx_texture_common_format_t const pvr_compressed_to_common_format_map[][2] = {
         {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGB

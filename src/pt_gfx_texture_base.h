@@ -23,7 +23,7 @@
 #include <pt_gfx_connection.h>
 #include "pt_gfx_streaming_object.h"
 
-class gfx_texture_common : public gfx_streaming_object
+class gfx_texture_base : public gfx_streaming_object
 {
 protected:
     enum gfx_texture_common_type_t
@@ -287,18 +287,18 @@ protected:
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
-    inline gfx_texture_common() : gfx_streaming_object() {}
+    inline gfx_texture_base() : gfx_streaming_object() {}
 
 public:
     virtual bool read_input_stream(
-        class gfx_connection_common *gfx_connection,
+        class gfx_connection_base *gfx_connection,
         char const *initial_filename,
         gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) = 0;
 
-    virtual void destroy(class gfx_connection_common *gfx_connection) = 0;
+    virtual void destroy(class gfx_connection_base *gfx_connection) = 0;
 };
 
 #endif

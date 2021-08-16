@@ -26,10 +26,7 @@ typedef struct _wsi_connection_t_ *wsi_connection_ref;
 typedef struct _wsi_visual_t_ *wsi_visual_ref;
 typedef struct _wsi_window_t_ *wsi_window_ref;
 
-typedef struct _gfx_connection_t *gfx_connection_ref;
-
 typedef struct _gfx_input_stream_t_ *gfx_input_stream_ref;
-
 enum
 {
     PT_GFX_INPUT_STREAM_SEEK_SET = 0,
@@ -37,11 +34,11 @@ enum
     PT_GFX_INPUT_STREAM_SEEK_END = 2
 };
 
+typedef struct _gfx_connection_t *gfx_connection_ref;
 typedef struct _gfx_buffer_t_ *gfx_buffer_ref;
-
 typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
-
 typedef struct _gfx_texture_t_ *gfx_texture_ref;
+typedef struct _gfx_node_t_ *gfx_node_ref;
 
 #ifdef __cplusplus
 extern "C"
@@ -95,6 +92,12 @@ extern "C"
     // gfx_node_set_mesh
     //BLS //mesh
     PT_ATTR_GFX void gfx_connection_test_set_mesh(gfx_connection_ref gfx_connection, gfx_mesh_ref gfx_mesh);
+
+    // Top Level Structure - Node
+    // Bottom Level Structure - Mesh
+    PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref node, gfx_mesh_ref gfx_mesh);
+    PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref node);
 
 #ifdef __cplusplus
 }

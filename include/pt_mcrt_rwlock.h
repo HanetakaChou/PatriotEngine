@@ -15,10 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include <stddef.h>
-#include "pt_gfx_connection_d3d12.h"
+#ifndef _PT_MCRT_RWLOCK_H_
+#define _PT_MCRT_RWLOCK_H_ 1
 
-class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
-{
-    return NULL;
-}
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_common.h"
+#include "pt_mcrt_common.h"
+
+inline void mcrt_rwlock_init(struct mcrt_rwlock_t *rwlock);
+inline void mcrt_rwlock_rdlock(struct mcrt_rwlock_t *rwlock);
+inline void mcrt_rwlock_wrlock(struct mcrt_rwlock_t *rwlock);
+inline void mcrt_rwlock_rdunlock(struct mcrt_rwlock_t *rwlock);
+inline void mcrt_rwlock_wrunlock(struct mcrt_rwlock_t *rwlock);
+
+#include "pt_mcrt_rwlock.inl"
+
+#endif

@@ -16,9 +16,12 @@
  */
 
 #include <stddef.h>
-#include "pt_gfx_connection_d3d12.h"
+#include <stdint.h>
+#include <pt_mcrt_malloc.h>
+#include "pt_gfx_node_vk.h"
 
-class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+void gfx_node_vk::destroy(class gfx_connection_base *gfx_connection_base)
 {
-    return NULL;
+    this->~gfx_node_vk();
+    mcrt_aligned_free(this);
 }
