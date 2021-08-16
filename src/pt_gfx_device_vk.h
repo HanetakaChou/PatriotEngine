@@ -102,6 +102,7 @@ class gfx_device_vk
     PFN_vkAcquireNextImageKHR m_vk_acquire_next_image;
     PFN_vkQueuePresentKHR m_vk_queue_present;
     PFN_vkCmdBeginRenderPass m_vk_cmd_begin_render_pass;
+    PFN_vkCmdExecuteCommands m_vk_cmd_execute_commands;
     PFN_vkCmdBindPipeline m_vk_cmd_bind_pipeline;
     PFN_vkCmdSetViewport m_vk_cmd_set_viewport;
     PFN_vkCmdSetScissor m_vk_cmd_set_scissor;
@@ -207,6 +208,7 @@ public:
     inline VkResult queue_present(VkQueue queue, VkPresentInfoKHR const *present_info) { return this->m_vk_queue_present(queue, present_info); }
 
     inline void cmd_begin_render_pass(VkCommandBuffer command_buffer, VkRenderPassBeginInfo const *render_pass_begin, VkSubpassContents contents) { return this->m_vk_cmd_begin_render_pass(command_buffer, render_pass_begin, contents); }
+    inline void cmd_execute_commands(VkCommandBuffer command_buffer, uint32_t command_buffer_count, VkCommandBuffer const *command_buffers) { return this->m_vk_cmd_execute_commands(command_buffer, command_buffer_count, command_buffers); }
     inline void cmd_bind_pipeline(VkCommandBuffer command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipeline pipeline) { return this->m_vk_cmd_bind_pipeline(command_buffer, pipeline_bind_point, pipeline); }
     inline void cmd_set_viewport(VkCommandBuffer command_buffer, uint32_t first_viewport, uint32_t viewport_count, VkViewport const *viewports) { return this->m_vk_cmd_set_viewport(command_buffer, first_viewport, viewport_count, viewports); }
     inline void cmd_set_scissor(VkCommandBuffer command_buffer, uint32_t first_scissor, uint32_t scissor_count, VkRect2D const *scissors) { return this->m_vk_cmd_set_scissor(command_buffer, first_scissor, scissor_count, scissors); }

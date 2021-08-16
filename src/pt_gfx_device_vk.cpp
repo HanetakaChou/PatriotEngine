@@ -579,6 +579,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_cmd_begin_render_pass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(vk_get_device_proc_addr(m_device, "vkCmdBeginRenderPass"));
     assert(NULL != this->m_vk_cmd_begin_render_pass);
 
+    this->m_vk_cmd_execute_commands = reinterpret_cast<PFN_vkCmdExecuteCommands>(vk_get_device_proc_addr(m_device, "vkCmdExecuteCommands"));
+    assert(NULL != this->m_vk_cmd_execute_commands);
+
     this->m_vk_cmd_bind_pipeline = reinterpret_cast<PFN_vkCmdBindPipeline>(vk_get_device_proc_addr(m_device, "vkCmdBindPipeline"));
     assert(NULL != this->m_vk_cmd_bind_pipeline);
 

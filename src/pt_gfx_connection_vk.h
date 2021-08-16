@@ -64,19 +64,25 @@ class gfx_connection_vk final : public gfx_connection_common
 
     uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
 
-    struct frame_thread_block
-    {
-        VkCommandPool m_frame_graphics_commmand_pool;
-        VkCommandBuffer m_frame_graphics_command_buffer;
-    };
-    //struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
-
     VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
     VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
+
+    VkCommandBuffer *m_frame_graphcis_execute_command_buffers;
 
     VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
     VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
     VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
+
+    struct frame_thread_block
+    {
+        VkCommandPool m_frame_graphics_commmand_pool;
+        VkCommandBuffer m_frame_graphics_command_buffer;
+        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_commmand_pool) + sizeof(m_frame_graphics_command_buffer))];
+    };
+    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_command_buffer)), "");
+    static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
+    struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
+
 
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
@@ -204,6 +210,7 @@ class gfx_connection_vk final : public gfx_connection_common
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
     inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
 
+    inline void destroy_frame();
     inline void destroy_streaming();
     inline ~gfx_connection_vk();
 
