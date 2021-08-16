@@ -316,7 +316,7 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
     return this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer;
 }
 
-inline void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
+inline void gfx_connection_vk::copy_vertex_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
 {
     if (this->m_device.has_dedicated_transfer_queue())
     {
@@ -418,7 +418,7 @@ inline void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, 
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].offset = 0U;
                 buffer_memory_barrier_transfer_dst_to_attribute_read[0].size = VK_WHOLE_SIZE;
 
-                m_device.cmd_pipeline_barrier(command_buffer_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 1, buffer_memory_barrier_transfer_dst_to_attribute_read, 0, NULL);
+                m_device.cmd_pipeline_barrier(command_buffer_transfer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 1, buffer_memory_barrier_transfer_dst_to_attribute_read, 0, NULL);
             }
         }
     }
@@ -457,19 +457,19 @@ inline void gfx_connection_vk::copy_buffer(uint32_t streaming_throttling_index, 
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].offset = 0U;
             buffer_memory_barrier_transfer_dst_to_attribute_read[0].size = VK_WHOLE_SIZE;
 
-            m_device.cmd_pipeline_barrier(command_buffer_graphics, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 1, buffer_memory_barrier_transfer_dst_to_attribute_read, 0, NULL);
+            m_device.cmd_pipeline_barrier(command_buffer_graphics, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, NULL, 1, buffer_memory_barrier_transfer_dst_to_attribute_read, 0, NULL);
         }
     }
 }
 
 void gfx_connection_vk::copy_vertex_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
 {
-    return this->copy_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, src_buffer, dst_buffer, region_count, regions);
+    return this->copy_vertex_index_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, src_buffer, dst_buffer, region_count, regions);
 }
 
 void gfx_connection_vk::copy_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions)
 {
-    return this->copy_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_INDEX_READ_BIT, src_buffer, dst_buffer, region_count, regions);
+    return this->copy_vertex_index_buffer(streaming_throttling_index, streaming_thread_index, VK_ACCESS_INDEX_READ_BIT, src_buffer, dst_buffer, region_count, regions);
 }
 
 void gfx_connection_vk::copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions)
@@ -1299,7 +1299,7 @@ inline bool gfx_connection_vk::update_framebuffer()
             image_create_info.arrayLayers = 1U;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-            image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; //| VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+            image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
             image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             image_create_info.queueFamilyIndexCount = 0U;
             image_create_info.pQueueFamilyIndices = NULL;
@@ -1589,7 +1589,7 @@ inline bool gfx_connection_vk::init_pipeline()
         multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         multisample_state.sampleShadingEnable = VK_FALSE;
         multisample_state.minSampleShading = 0.0f;
-        multisample_state.pSampleMask = NULL;
+        multisample_state.pSampleMask = sample_mask;
         multisample_state.alphaToCoverageEnable = VK_FALSE;
         multisample_state.alphaToOneEnable = VK_FALSE;
 
@@ -1740,8 +1740,6 @@ inline void gfx_connection_vk::release_frame()
         assert(VK_SUCCESS == res_begin_command_buffer);
     }
 
-    assert(this->m_swapchain_image_index[frame_throttling_index] == frame_throttling_index);
-
     {
         VkClearValue clear_values[2];
         clear_values[0].color.float32[0] = 0.0f;
@@ -1749,7 +1747,6 @@ inline void gfx_connection_vk::release_frame()
         clear_values[0].color.float32[2] = 0.0f;
         clear_values[0].color.float32[3] = 0.0f;
         clear_values[1].depthStencil.depth = m_z_farthest;
-        //clear_values[1].depthStencil.stencil = 0U;
 
         VkRenderPassBeginInfo render_pass_begin;
         render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
