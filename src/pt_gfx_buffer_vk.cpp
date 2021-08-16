@@ -116,7 +116,7 @@ bool gfx_buffer_vk::read_input_stream_internal(class gfx_connection_common *gfx_
 
             // different master task doesn't share the task_arena
             // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-            //mcrt_task_spawn(task);
+            // mcrt_task_spawn(task);
             mcrt_task_enqueue(task, gfx_connection->task_arena());
         }
     }

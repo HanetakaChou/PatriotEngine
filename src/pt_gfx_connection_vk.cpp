@@ -645,11 +645,6 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_atomic_store(&this->m_streaming_throttling_index, ((this->m_streaming_throttling_index + 1U) < STREAMING_THROTTLING_COUNT) ? (this->m_streaming_throttling_index + 1U) : 0U);
     this->streaming_throttling_index_unlock();
 
-    // different master task doesn't share the task_arena
-    // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-    assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
-    assert(mcrt_task_arena_internal_arena(this->m_task_arena) == mcrt_this_task_arena_internal_arena());
-
     // sync by TBB
     // int ref_count = mcrt_task_ref_count(this->m_streaming_task_root[streaming_throttling_index]);
     mcrt_task_wait_for_all(this->m_streaming_task_root[streaming_throttling_index]);
@@ -785,8 +780,10 @@ void gfx_connection_vk::reduce_streaming_task()
             uint32_t streaming_task_respawn_linear_list_count = this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index];
             for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_linear_list_count; ++streaming_task_respawn_index)
             {
-                //TODO different master task doesn't share the task_arena
-                mcrt_task_spawn(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index]);
+                // different master task doesn't share the task_arena
+                // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+                // mcrt_task_spawn(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index]);
+                mcrt_task_enqueue(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index], this->task_arena());
                 this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
             }
             this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index] = 0U;
@@ -804,8 +801,8 @@ void gfx_connection_vk::reduce_streaming_task()
             struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_node = this->m_streaming_task_respawn_link_list_head[streaming_throttling_index];
             while (streaming_task_respawn_link_list_node != NULL)
             {
-                mcrt_task_spawn(streaming_task_respawn_link_list_node->m_task);
-
+                // mcrt_task_spawn(streaming_task_respawn_link_list_node->m_task);
+                mcrt_task_enqueue(streaming_task_respawn_link_list_node->m_task, this->task_arena());
                 struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_next = streaming_task_respawn_link_list_node->m_next;
                 mcrt_aligned_free(streaming_task_respawn_link_list_node);
 
