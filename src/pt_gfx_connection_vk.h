@@ -62,7 +62,7 @@ class gfx_connection_vk final : public gfx_connection_common
     // secondary command
     VkCommandBuffer *m_frame_graphics_submit_info_command_buffers;
 
-    uint32_t swapchain_image_index[FRAME_THROTTLING_COUNT];
+    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
 
     struct frame_thread_block
     {

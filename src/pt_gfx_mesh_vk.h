@@ -31,19 +31,28 @@ class gfx_mesh_vk final : public gfx_mesh_base
 {
     // mali IDVS
     // seperate position and varying
+public:
     VkBuffer m_vertex_position_buffer;
+
+private:
     uint64_t m_vertex_position_gfx_malloc_offset;
     uint64_t m_vertex_position_gfx_malloc_size;
     void *m_vertex_position_gfx_malloc_page_handle;
     VkDeviceMemory m_vertex_position_gfx_malloc_device_memory;
 
+public:
     VkBuffer m_vertex_varying_buffer;
+
+private:
     uint64_t m_vertex_varying_gfx_malloc_offset;
     uint64_t m_vertex_varying_gfx_malloc_size;
     void *m_vertex_varying_gfx_malloc_page_handle;
     VkDeviceMemory m_vertex_varying_gfx_malloc_device_memory;
 
+public:
     VkBuffer m_index_buffer;
+
+private:
     uint64_t m_index_gfx_malloc_offset;
     uint64_t m_index_gfx_malloc_size;
     void *m_index_gfx_malloc_page_handle;

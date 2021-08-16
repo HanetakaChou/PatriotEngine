@@ -24,6 +24,37 @@ layout(location = 0) out highp vec2 texcoord;
 
 void main()
 {
-        gl_Position = vec4(position, 1.0f); //VP * M2 * vec4(position, 1.0f);
-        texcoord = attr;
+        //gl_Position = vec4(position.xy, 0.5, 1.0f); //VP * M2 * vec4(position, 1.0f);
+        //texcoord = attr;
+        
+        if(0 == gl_VertexIndex)
+        {
+                gl_Position = vec4(1.0f,1.0f,0.5f,1.0f);
+                texcoord = vec2(1.0f, 1.0f);
+        }
+        else if(1 == gl_VertexIndex)
+        {
+                gl_Position = vec4(1.0f,-1.0f,0.5f,1.0f);
+                texcoord = vec2(1.0f, 0.0f);
+        }
+        else if(2 == gl_VertexIndex)
+        {
+                gl_Position = vec4(-1.0f,-1.0f,0.5f,1.0f);
+                texcoord = vec2(0.0f, 0.0f);
+        }
+        else if(3 == gl_VertexIndex)
+        {
+                gl_Position = vec4(-1.0f,-1.0f,0.5f,1.0f);
+                texcoord = vec2(0.0f, 0.0f);
+        }
+        else if(4 == gl_VertexIndex)
+        {
+                gl_Position = vec4(-1.0f,1.0f,0.5f,1.0f);
+                texcoord = vec2(0.0f, 1.0f);
+        }
+        else if(5 == gl_VertexIndex)
+        {
+                gl_Position = vec4(1.0f,1.0f,0.5f,1.0f);
+                texcoord = vec2(1.0f, 1.0f);
+        }
 }

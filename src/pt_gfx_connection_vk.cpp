@@ -1299,7 +1299,7 @@ inline bool gfx_connection_vk::update_framebuffer()
             image_create_info.arrayLayers = 1U;
             image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
             image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-            image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
+            image_create_info.usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT; //| VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
             image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             image_create_info.queueFamilyIndexCount = 0U;
             image_create_info.pQueueFamilyIndices = NULL;
@@ -1571,7 +1571,7 @@ inline bool gfx_connection_vk::init_pipeline()
         rasterization_state.depthClampEnable = VK_FALSE;
         rasterization_state.rasterizerDiscardEnable = VK_FALSE;
         rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
+        rasterization_state.cullMode = VK_CULL_MODE_NONE; //VK_CULL_MODE_BACK_BIT;
         rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterization_state.depthBiasEnable = VK_FALSE;
         rasterization_state.depthBiasConstantFactor = 0.0f;
@@ -1589,7 +1589,7 @@ inline bool gfx_connection_vk::init_pipeline()
         multisample_state.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         multisample_state.sampleShadingEnable = VK_FALSE;
         multisample_state.minSampleShading = 0.0f;
-        multisample_state.pSampleMask = sample_mask;
+        multisample_state.pSampleMask = NULL;
         multisample_state.alphaToCoverageEnable = VK_FALSE;
         multisample_state.alphaToOneEnable = VK_FALSE;
 
@@ -1686,7 +1686,7 @@ inline void gfx_connection_vk::acquire_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
 
-    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->swapchain_image_index[frame_throttling_index]);
+    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
 
     if (VK_SUCCESS == res_acquire_next_image)
@@ -1740,6 +1740,8 @@ inline void gfx_connection_vk::release_frame()
         assert(VK_SUCCESS == res_begin_command_buffer);
     }
 
+    assert(this->m_swapchain_image_index[frame_throttling_index] == frame_throttling_index);
+
     {
         VkClearValue clear_values[2];
         clear_values[0].color.float32[0] = 0.0f;
@@ -1747,13 +1749,13 @@ inline void gfx_connection_vk::release_frame()
         clear_values[0].color.float32[2] = 0.0f;
         clear_values[0].color.float32[3] = 0.0f;
         clear_values[1].depthStencil.depth = m_z_farthest;
-        clear_values[1].depthStencil.stencil = 0U;
+        //clear_values[1].depthStencil.stencil = 0U;
 
         VkRenderPassBeginInfo render_pass_begin;
         render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         render_pass_begin.pNext = NULL;
         render_pass_begin.renderPass = this->m_render_pass;
-        render_pass_begin.framebuffer = this->m_framebuffers[frame_throttling_index];
+        render_pass_begin.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
         render_pass_begin.renderArea.offset.x = 0U;
         render_pass_begin.renderArea.offset.y = 0U;
         render_pass_begin.renderArea.extent.width = this->m_framebuffer_width;
@@ -1788,7 +1790,11 @@ inline void gfx_connection_vk::release_frame()
 
     if (NULL != this->m_test_gfx_mesh && this->m_test_gfx_mesh->is_streaming_done())
     {
-        int huhu = 0;
+        VkBuffer buffers[2] = {this->m_test_gfx_mesh->m_vertex_position_buffer, this->m_test_gfx_mesh->m_vertex_varying_buffer};
+        VkDeviceSize offsets[2] = {0U,0U};
+        this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0, 2, buffers, offsets);
+
+        this->m_device.cmd_draw(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 36U, 1U, 0U, 0U);
     }
 
     //this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index],0U,1U,)
@@ -1827,7 +1833,7 @@ inline void gfx_connection_vk::release_frame()
         present_info.pWaitSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
         present_info.swapchainCount = 1U;
         present_info.pSwapchains = &this->m_swapchain;
-        present_info.pImageIndices = &this->swapchain_image_index[frame_throttling_index];
+        present_info.pImageIndices = &this->m_swapchain_image_index[frame_throttling_index];
         present_info.pResults = NULL;
 
         PT_MAYBE_UNUSED VkResult res_queue_present = this->m_device.queue_present(this->m_device.queue_graphics(), &present_info);
