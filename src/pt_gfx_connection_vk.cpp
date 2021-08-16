@@ -116,7 +116,7 @@ inline bool gfx_connection_vk::init_streaming()
                     VkCommandPoolCreateInfo command_pool_create_info = {
                         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                         NULL,
-                        0U,
+                        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
                         m_device.queue_transfer_family_index()};
                     PT_MAYBE_UNUSED VkResult res_create_command_pool = this->m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool);
                     assert(VK_SUCCESS == res_create_command_pool);
@@ -129,7 +129,7 @@ inline bool gfx_connection_vk::init_streaming()
                     VkCommandPoolCreateInfo command_pool_create_info = {
                         VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                         NULL,
-                        0U,
+                        VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
                         m_device.queue_graphics_family_index()};
                     PT_MAYBE_UNUSED VkResult res_create_command_pool = this->m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
                     assert(VK_SUCCESS == res_create_command_pool);
@@ -143,7 +143,7 @@ inline bool gfx_connection_vk::init_streaming()
                 VkCommandPoolCreateInfo command_pool_create_info = {
                     VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                     NULL,
-                    0U,
+                    VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
                     m_device.queue_graphics_family_index()};
                 PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
                 assert(VK_SUCCESS == res_create_command_pool);
@@ -844,7 +844,7 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_atomic_store(&this->m_streaming_task_reducing[streaming_throttling_index], true);
 #endif
 
-    // free memory
+    // free transfer_src buffer memory
     {
         uint64_t transfer_src_buffer_begin = this->m_transfer_src_buffer_begin[streaming_throttling_index];
         uint64_t transfer_src_buffer_end = this->m_transfer_src_buffer_end[streaming_throttling_index];
@@ -859,6 +859,7 @@ void gfx_connection_vk::reduce_streaming_task()
 #endif
     }
 
+    // free command buffer memory
     if (this->m_device.has_dedicated_transfer_queue())
     {
         if (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())
@@ -947,8 +948,11 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     {
         this->m_frame_throttling_index = 0U;
         this->m_frame_thread_count = this->m_task_arena_thread_count;
-        this->m_frame_graphcis_execute_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_frame_thread_count, alignof(VkCommandBuffer)));
-        this->m_frame_graphics_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_frame_thread_count, alignof(VkCommandBuffer)));
+
+        for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
+        {
+            this->m_frame_graphcis_execute_command_buffers[subpass_index] = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_frame_thread_count, alignof(VkCommandBuffer)));
+        }
 
         for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
         {
@@ -959,7 +963,7 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                 VkCommandPoolCreateInfo command_pool_create_info = {
                     VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                     NULL,
-                    0U,
+                    VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
                     m_device.queue_graphics_family_index()};
                 PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_primary_commmand_pool[frame_throttling_index]);
                 assert(VK_SUCCESS == res_create_command_pool);
@@ -990,6 +994,22 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                 fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
                 PT_MAYBE_UNUSED VkResult res_create_fence = this->m_device.create_fence(&fence_create_info, &this->m_frame_fence[frame_throttling_index]);
                 assert(VK_SUCCESS == res_create_fence);
+            }
+
+            for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
+            {
+                VkCommandPoolCreateInfo command_pool_create_info = {
+                    VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+                    NULL,
+                    VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
+                    m_device.queue_graphics_family_index()};
+                PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool);
+                assert(VK_SUCCESS == res_create_command_pool);
+
+                for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
+                {
+                    this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index] = VK_NULL_HANDLE;
+                }
             }
         }
     }
@@ -1706,6 +1726,8 @@ inline void gfx_connection_vk::acquire_frame()
 inline void gfx_connection_vk::release_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+
+    // wait the Fence
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
@@ -1713,8 +1735,16 @@ inline void gfx_connection_vk::release_frame()
         assert(VK_SUCCESS == res_reset_fences);
     }
 
+    // free primary command buffer memory
     {
         PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_frame_graphics_primary_commmand_pool[frame_throttling_index], 0U);
+        assert(VK_SUCCESS == res_reset_command_pool);
+    }
+
+    // free secondary command buffer memory
+    for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
+    {
+        PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool, 0U);
         assert(VK_SUCCESS == res_reset_command_pool);
     }
 
@@ -1731,21 +1761,11 @@ inline void gfx_connection_vk::release_frame()
     }
 
     {
-        VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
-        command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        command_buffer_inheritance_info.pNext = NULL;
-        command_buffer_inheritance_info.renderPass = this->m_render_pass;
-        command_buffer_inheritance_info.subpass = 0;
-        command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
-        command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
-        command_buffer_inheritance_info.queryFlags = 0U;
-        command_buffer_inheritance_info.pipelineStatistics = 0U;
-
         VkCommandBufferBeginInfo command_buffer_begin_info;
         command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         command_buffer_begin_info.pNext = NULL;
-        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-        command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
+        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        command_buffer_begin_info.pInheritanceInfo = NULL; 
 
         PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
@@ -1774,7 +1794,42 @@ inline void gfx_connection_vk::release_frame()
         this->m_device.cmd_begin_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &render_pass_begin, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
     }
 
-    this->m_device.cmd_bind_pipeline(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], VK_PIPELINE_BIND_POINT_GRAPHICS, this->m_pipeline_mesh);
+    uint32_t frame_thread_index = 0U;
+
+    {
+        VkCommandBufferAllocateInfo command_buffer_allocate_info;
+        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        command_buffer_allocate_info.pNext = NULL;
+        command_buffer_allocate_info.commandPool = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool;
+        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        command_buffer_allocate_info.commandBufferCount = SUBPASS_COUNT;
+
+        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer);
+        assert(VK_SUCCESS == res_allocate_command_buffers);
+    }
+
+    {
+        VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
+        command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        command_buffer_inheritance_info.pNext = NULL;
+        command_buffer_inheritance_info.renderPass = this->m_render_pass;
+        command_buffer_inheritance_info.subpass = 0;
+        command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
+        command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
+        command_buffer_inheritance_info.queryFlags = 0U;
+        command_buffer_inheritance_info.pipelineStatistics = 0U;
+
+        VkCommandBufferBeginInfo command_buffer_begin_info;
+        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        command_buffer_begin_info.pNext = NULL;
+        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+        command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
+
+        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], &command_buffer_begin_info);
+        assert(VK_SUCCESS == res_begin_command_buffer);
+    }
+
+    this->m_device.cmd_bind_pipeline(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], VK_PIPELINE_BIND_POINT_GRAPHICS, this->m_pipeline_mesh);
 
     {
         VkViewport viewports[1];
@@ -1784,7 +1839,7 @@ inline void gfx_connection_vk::release_frame()
         viewports[0].height = this->m_framebuffer_height;
         viewports[0].minDepth = 0.0f;
         viewports[0].maxDepth = 1.0f;
-        this->m_device.cmd_set_viewport(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0U, 1U, viewports);
+        this->m_device.cmd_set_viewport(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0U, 1U, viewports);
     }
 
     {
@@ -1793,22 +1848,40 @@ inline void gfx_connection_vk::release_frame()
         scissors[0].offset.y = 0;
         scissors[0].extent.width = this->m_framebuffer_width;
         scissors[0].extent.height = this->m_framebuffer_height;
-        this->m_device.cmd_set_scissor(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0U, 1U, scissors);
+        this->m_device.cmd_set_scissor(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0U, 1U, scissors);
     }
 
     if (NULL != this->m_test_gfx_mesh && this->m_test_gfx_mesh->is_streaming_done())
     {
         VkBuffer buffers[2] = {this->m_test_gfx_mesh->m_vertex_position_buffer, this->m_test_gfx_mesh->m_vertex_varying_buffer};
-        VkDeviceSize offsets[2] = {0U,0U};
-        this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 0, 2, buffers, offsets);
+        VkDeviceSize offsets[2] = {0U, 0U};
+        this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0, 2, buffers, offsets);
 
-        this->m_device.cmd_draw(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 36U, 1U, 0U, 0U);
+        this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 36U, 1U, 0U, 0U);
     }
 
-    //this->m_device.cmd_bind_vertex_buffers(this->m_frame_graphics_primary_command_buffer[frame_throttling_index],0U,1U,)
+    //this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX],0U,1U,)
     //pushconstant
     //binddescriptorset
-    //this->m_device.cmd_draw(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], 3U, 1U, 0U, 0U);
+    //this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 3U, 1U, 0U, 0U);
+
+    // reduce and execute
+    {
+        uint32_t command_buffer_count = 0U;
+        for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
+        {
+            if (VK_NULL_HANDLE != this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX])
+            {
+                this->m_device.end_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX]);
+
+                this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX][command_buffer_count] = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX];
+                ++command_buffer_count;
+
+                this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX] = VK_NULL_HANDLE;
+            }
+        }
+        this->m_device.cmd_execute_commands(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], command_buffer_count, this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX]);
+    }
 
     this->m_device.cmd_end_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
 
@@ -1869,8 +1942,7 @@ inline void gfx_connection_vk::destroy_frame()
 
         for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
         {
-
-            this->m_device.destroy_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_commmand_pool);
+            this->m_device.destroy_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool);
         }
     }
 

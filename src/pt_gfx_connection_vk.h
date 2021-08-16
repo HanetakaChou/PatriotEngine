@@ -59,27 +59,27 @@ class gfx_connection_vk final : public gfx_connection_common
 
     uint32_t m_frame_thread_count;
 
-    // secondary command
-    VkCommandBuffer *m_frame_graphics_submit_info_command_buffers;
-
     uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
 
     VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
     VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
 
-    VkCommandBuffer *m_frame_graphcis_execute_command_buffers;
-
     VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
     VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
     VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
 
+    static uint32_t const SUBPASS_COUNT = 1U;
+    static uint32_t const OPAQUE_SUBPASS_INDEX = 0U;
+
+    VkCommandBuffer *m_frame_graphcis_execute_command_buffers[SUBPASS_COUNT];
+
     struct frame_thread_block
     {
-        VkCommandPool m_frame_graphics_commmand_pool;
-        VkCommandBuffer m_frame_graphics_command_buffer;
-        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_commmand_pool) + sizeof(m_frame_graphics_command_buffer))];
+        VkCommandPool m_frame_graphics_secondary_commmand_pool;
+        VkCommandBuffer m_frame_graphics_secondary_command_buffer[SUBPASS_COUNT];
+        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_secondary_commmand_pool) + sizeof(m_frame_graphics_secondary_command_buffer))];
     };
-    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_command_buffer)), "");
+    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_secondary_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer)), "");
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
 
