@@ -199,11 +199,11 @@ inline mcrt_task_ref gfx_buffer_vk::read_input_stream_task_execute_internal(uint
             inline internal_streaming_task_debug_executing_guard(uint32_t streaming_throttling_index, class gfx_connection_vk *gfx_connection)
                 : m_streaming_throttling_index(streaming_throttling_index), m_gfx_connection(gfx_connection)
             {
-                m_gfx_connection->streaming_task_debug_executing_begin(m_streaming_throttling_index);
+                m_gfx_connection->streaming_task_mark_executing_begin(m_streaming_throttling_index);
             }
             inline ~internal_streaming_task_debug_executing_guard()
             {
-                m_gfx_connection->streaming_task_debug_executing_end(m_streaming_throttling_index);
+                m_gfx_connection->streaming_task_mark_executing_end(m_streaming_throttling_index);
             }
         } instance_internal_streaming_task_debug_executing_guard(streaming_throttling_index, task_data->m_gfx_connection);
 #endif

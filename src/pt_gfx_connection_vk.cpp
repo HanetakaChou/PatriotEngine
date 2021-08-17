@@ -44,6 +44,82 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
+template <typename T, uint32_t LINEAR_LIST_COUNT>
+inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::init()
+{
+    this->m_linear_list_count = 0U;
+    this->m_link_list_head = NULL;
+}
+
+template <typename T, uint32_t LINEAR_LIST_COUNT>
+inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T const value)
+{
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock);
+#endif
+
+    uint32_t linear_list_index = mcrt_atomic_inc_u32(&this->m_linear_list_count) - 1U;
+    if (linear_list_index < LINEAR_LIST_COUNT)
+    {
+        this->m_linear_list[linear_list_index] = value;
+    }
+    else
+    {
+        mcrt_atomic_dec_u32(&this->m_linear_list_count);
+
+        // performance issue
+
+        // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
+        // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
+
+        // ABA safe since the fence ensures that there is no consumer
+        struct link_list *link_list_node = new (mcrt_aligned_malloc(sizeof(struct link_list), alignof(struct link_list))) link_list{};
+        link_list_node->m_value = value;
+
+        struct link_list *link_list_head;
+        do
+        {
+            link_list_head = mcrt_atomic_load(&this->m_link_list_head);
+            link_list_node->m_next = link_list_head;
+        } while (link_list_head != mcrt_atomic_cas_ptr(&this->m_link_list_head, link_list_node, link_list_head));
+    }
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock);
+#endif
+}
+
+template <typename T, uint32_t LINEAR_LIST_COUNT>
+inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T const value, void *user_defined), void *user_defined)
+{
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock);
+#endif
+
+    // list
+    for (uint32_t linear_list_index = 0U; linear_list_index < this->m_linear_list_count; ++linear_list_index)
+    {
+        consume_callback(this->m_linear_list[linear_list_index], user_defined);
+    }
+    this->m_linear_list_count = 0U;
+
+    // link list
+    struct link_list *link_list_node = this->m_link_list_head;
+    while (link_list_node != NULL)
+    {
+        consume_callback(link_list_node->m_value, user_defined);
+        struct link_list *link_list_next = link_list_node->m_next;
+        mcrt_aligned_free(link_list_node);
+
+        link_list_node = link_list_next;
+    }
+    this->m_link_list_head = NULL;
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock);
+#endif
+}
+
 inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     if (!m_device.init(wsi_connection, wsi_visual, wsi_window))
@@ -174,23 +250,21 @@ inline bool gfx_connection_vk::init_streaming()
         this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL);
         mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
-        this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index] = 0U;
-        this->m_streaming_task_respawn_link_list_head[streaming_throttling_index] = NULL;
+        this->m_streaming_task_respawn_list[streaming_throttling_index].init();
 
-        this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
-        this->m_streaming_object_link_list_head[streaming_throttling_index] = NULL;
+        this->m_streaming_object_list[streaming_throttling_index].init();
     }
 
     return true;
 }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-void gfx_connection_vk::streaming_task_debug_executing_begin(uint32_t streaming_throttling_index)
+void gfx_connection_vk::streaming_task_mark_executing_begin(uint32_t streaming_throttling_index)
 {
     mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 }
 
-void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_throttling_index)
+void gfx_connection_vk::streaming_task_mark_executing_end(uint32_t streaming_throttling_index)
 {
     mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
 }
@@ -198,57 +272,12 @@ void gfx_connection_vk::streaming_task_debug_executing_end(uint32_t streaming_th
 
 void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
 {
-    uint32_t streaming_object_index = mcrt_atomic_inc_u32(&this->m_streaming_object_linear_list_count[streaming_throttling_index]) - 1U;
-    if (streaming_object_index < STREAMING_OBJECT_LINEAR_LIST_COUNT)
-    {
-        this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index] = streaming_object;
-    }
-    else
-    {
-        mcrt_atomic_dec_u32(&this->m_streaming_object_linear_list_count[streaming_throttling_index]);
-
-        // performance issue
-
-        // ABA safe since the fence ensures that there is no consumer
-        struct streaming_object_link_list *streaming_object_link_list_node = new (mcrt_aligned_malloc(sizeof(struct streaming_object_link_list), alignof(struct streaming_object_link_list))) streaming_object_link_list{};
-        streaming_object_link_list_node->m_streaming_object = streaming_object;
-
-        struct streaming_object_link_list *streaming_object_link_list_head;
-        do
-        {
-            streaming_object_link_list_head = mcrt_atomic_load(&this->m_streaming_object_link_list_head[streaming_throttling_index]);
-            streaming_object_link_list_node->m_next = streaming_object_link_list_head;
-        } while (streaming_object_link_list_head != mcrt_atomic_cas_ptr(&this->m_streaming_object_link_list_head[streaming_throttling_index], streaming_object_link_list_node, streaming_object_link_list_head));
-    }
+    this->m_streaming_object_list[streaming_throttling_index].produce(streaming_object);
 }
 
 void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task)
 {
-    uint32_t streaming_task_respawn_index = mcrt_atomic_inc_u32(&this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index]) - 1U;
-    if (streaming_task_respawn_index < STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT)
-    {
-        this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index] = streaming_task;
-    }
-    else
-    {
-        mcrt_atomic_dec_u32(&this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index]);
-
-        // performance issue
-
-        // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
-        // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
-
-        // ABA safe since the fence ensures that there is no consumer
-        struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_node = new (mcrt_aligned_malloc(sizeof(struct streaming_task_respawn_task_respawn_link_list), alignof(struct streaming_task_respawn_task_respawn_link_list))) streaming_task_respawn_task_respawn_link_list{};
-        streaming_task_respawn_link_list_node->m_task = streaming_task;
-
-        struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_head;
-        do
-        {
-            streaming_task_respawn_link_list_head = mcrt_atomic_load(&this->m_streaming_task_respawn_link_list_head[streaming_throttling_index]);
-            streaming_task_respawn_link_list_node->m_next = streaming_task_respawn_link_list_head;
-        } while (streaming_task_respawn_link_list_head != mcrt_atomic_cas_ptr(&this->m_streaming_task_respawn_link_list_head[streaming_throttling_index], streaming_task_respawn_link_list_node, streaming_task_respawn_link_list_head));
-    }
+    this->m_streaming_task_respawn_list[streaming_throttling_index].produce(streaming_task);
 }
 
 inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
@@ -771,49 +800,13 @@ void gfx_connection_vk::reduce_streaming_task()
 
     // respawn task
     {
-        // list
-        {
-            uint32_t streaming_task_respawn_linear_list_count = this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index];
-            for (uint32_t streaming_task_respawn_index = 0U; streaming_task_respawn_index < streaming_task_respawn_linear_list_count; ++streaming_task_respawn_index)
+        this->m_streaming_task_respawn_list[streaming_throttling_index].consume_and_clear(
+            [](mcrt_task_ref const value, void *user_defined_void) -> void
             {
-                // different master task doesn't share the task_arena
-                // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-                // mcrt_task_spawn(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index]);
-                mcrt_task_enqueue(this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index], this->task_arena());
-                this->m_streaming_task_respawn_linear_list[streaming_throttling_index][streaming_task_respawn_index] = NULL;
-            }
-            this->m_streaming_task_respawn_linear_list_count[streaming_throttling_index] = 0U;
-#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_task_respawn_linear_list_count > 0U)
-            {
-                mcrt_log_print("index %i: streaming_task_respawn_linear_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_linear_list_count));
-            }
-#endif
-        }
-
-        // link list
-        {
-            uint32_t streaming_task_respawn_link_list_count = 0U;
-            struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_node = this->m_streaming_task_respawn_link_list_head[streaming_throttling_index];
-            while (streaming_task_respawn_link_list_node != NULL)
-            {
-                // mcrt_task_spawn(streaming_task_respawn_link_list_node->m_task);
-                mcrt_task_enqueue(streaming_task_respawn_link_list_node->m_task, this->task_arena());
-                struct streaming_task_respawn_task_respawn_link_list *streaming_task_respawn_link_list_next = streaming_task_respawn_link_list_node->m_next;
-                mcrt_aligned_free(streaming_task_respawn_link_list_node);
-
-                streaming_task_respawn_link_list_node = streaming_task_respawn_link_list_next;
-
-                ++streaming_task_respawn_link_list_count;
-            }
-            this->m_streaming_task_respawn_link_list_head[streaming_throttling_index] = NULL;
-#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_task_respawn_link_list_count > 0U)
-            {
-                mcrt_log_print("index %i: streaming_task_respawn_link_list_count %i \n", int(streaming_throttling_index), int(streaming_task_respawn_link_list_count));
-            }
-#endif
-        }
+                class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
+                mcrt_task_enqueue(value, user_defined->task_arena());
+            },
+            this);
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
@@ -885,46 +878,13 @@ void gfx_connection_vk::reduce_streaming_task()
 
     // streaming_object // the third stage
     {
-        // link
-        {
-            uint32_t streaming_object_linear_list_count = this->m_streaming_object_linear_list_count[streaming_throttling_index];
-            for (uint32_t streaming_object_index = 0U; streaming_object_index < streaming_object_linear_list_count; ++streaming_object_index)
+        this->m_streaming_object_list[streaming_throttling_index].consume_and_clear(
+            [](class gfx_streaming_object *const value, void *user_defined_void) -> void
             {
-                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index]->set_streaming_done(this);
-                this->m_streaming_object_linear_list[streaming_throttling_index][streaming_object_index] = NULL;
-            }
-            this->m_streaming_object_linear_list_count[streaming_throttling_index] = 0U;
-#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_object_linear_list_count > 0U)
-            {
-                mcrt_log_print("index %i: streaming_object_linear_list_count %i \n", int(streaming_throttling_index), int(streaming_object_linear_list_count));
-            }
-#endif
-        }
-
-        // link list
-        {
-            uint32_t streaming_object_link_list_count = 0U;
-            struct streaming_object_link_list *streaming_object_link_list_node = this->m_streaming_object_link_list_head[streaming_throttling_index];
-            while (streaming_object_link_list_node != NULL)
-            {
-                streaming_object_link_list_node->m_streaming_object->set_streaming_done(this);
-
-                struct streaming_object_link_list *streaming_object_link_list_next = streaming_object_link_list_node->m_next;
-                mcrt_aligned_free(streaming_object_link_list_node);
-
-                streaming_object_link_list_node = streaming_object_link_list_next;
-
-                ++streaming_object_link_list_count;
-            }
-            this->m_streaming_object_link_list_head[streaming_throttling_index] = NULL;
-#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-            if (streaming_object_link_list_count > 0U)
-            {
-                mcrt_log_print("index %i: streaming_object_link_list_count %i \n", int(streaming_throttling_index), int(streaming_object_link_list_count));
-            }
-#endif
-        }
+                class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
+                value->set_streaming_done(user_defined);
+            },
+            this);
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

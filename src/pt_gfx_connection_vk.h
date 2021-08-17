@@ -57,6 +57,30 @@ class gfx_connection_vk final : public gfx_connection_base
 #error Unknown Architecture
 #endif
 
+    template <typename T, uint32_t LINEAR_LIST_COUNT>
+    struct mplist
+    {
+        static_assert(std::is_pod<T>::value, "");
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+        mcrt_asset_rwlock_t m_asset_rwlock;
+#endif
+
+        uint32_t m_linear_list_count;
+        T m_linear_list[LINEAR_LIST_COUNT];
+
+        struct link_list
+        {
+            struct link_list *m_next;
+            T m_value;
+        };
+        struct link_list *m_link_list_head;
+
+        inline void init();
+        inline void produce(T const value);
+        inline void consume_and_clear(void (*consume_callback)(T const value, void *user_defined), void *user_defined);
+    };
+
     // Frame
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throttling_index;
@@ -139,9 +163,11 @@ class gfx_connection_vk final : public gfx_connection_base
     // TODO Parallel List
     template <typename T>
     using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    uint32_t m_spin_lock_node_list;
     mcrt_vector<class gfx_node_vk *> m_node_list;
-    mcrt_vector<size_t> m_node_list_free_index;
+    mcrt_vector<size_t> m_node_free_index_list;
+
+    //static uint32_t const NODE_INIT_LIST_COUNT = 32U;
+    //struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_node_init_list[FRAME_THROTTLING_COUNT];
 
     inline void acquire_frame();
     inline void release_frame();
@@ -185,24 +211,10 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
 
     static uint32_t const STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U;
-    uint32_t m_streaming_task_respawn_linear_list_count[STREAMING_THROTTLING_COUNT];
-    mcrt_task_ref m_streaming_task_respawn_linear_list[STREAMING_THROTTLING_COUNT][STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT];
-    struct streaming_task_respawn_task_respawn_link_list
-    {
-        struct streaming_task_respawn_task_respawn_link_list *m_next;
-        mcrt_task_ref m_task;
-    };
-    struct streaming_task_respawn_task_respawn_link_list *m_streaming_task_respawn_link_list_head[STREAMING_THROTTLING_COUNT];
+    struct mplist<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
 
     static uint32_t const STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U;
-    uint32_t m_streaming_object_linear_list_count[STREAMING_THROTTLING_COUNT];
-    class gfx_streaming_object *m_streaming_object_linear_list[STREAMING_THROTTLING_COUNT][STREAMING_OBJECT_LINEAR_LIST_COUNT];
-    struct streaming_object_link_list
-    {
-        struct streaming_object_link_list *m_next;
-        class gfx_streaming_object *m_streaming_object;
-    };
-    struct streaming_object_link_list *m_streaming_object_link_list_head[STREAMING_THROTTLING_COUNT];
+    struct mplist<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
     inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
@@ -251,8 +263,8 @@ public:
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    void streaming_task_debug_executing_begin(uint32_t streaming_throttling_index);
-    void streaming_task_debug_executing_end(uint32_t streaming_throttling_index);
+    void streaming_task_mark_executing_begin(uint32_t streaming_throttling_index);
+    void streaming_task_mark_executing_end(uint32_t streaming_throttling_index);
 #endif
 
     inline void streaming_throttling_index_lock()
