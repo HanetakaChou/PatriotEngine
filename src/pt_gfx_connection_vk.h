@@ -84,6 +84,7 @@ class gfx_connection_vk final : public gfx_connection_base
     // Frame
     static uint32_t const FRAME_THROTTLING_COUNT = 3U;
     uint32_t m_frame_throttling_index;
+    mcrt_rwlock_t m_rwlock_frame_throttling_index;
 
     uint32_t m_frame_thread_count;
 
@@ -166,8 +167,21 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_vector<class gfx_node_vk *> m_node_list;
     mcrt_vector<size_t> m_node_free_index_list;
 
-    //static uint32_t const NODE_INIT_LIST_COUNT = 32U;
-    //struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_node_init_list[FRAME_THROTTLING_COUNT];
+    static uint32_t const NODE_INIT_LIST_COUNT = 32U;
+    struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
+
+    static uint32_t const NODE_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
+
+    static uint32_t const MESH_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
+
+    static uint32_t const TEXTURE_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
+
+    mcrt_vector<class gfx_mesh_vk *> m_mesh_unused_list;
+    
+    mcrt_vector<class gfx_texture_vk *> m_texture_unused_list;
 
     inline void acquire_frame();
     inline void release_frame();
@@ -260,6 +274,8 @@ public:
     inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
 
     // Frame
+    void frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh);
+    void frame_texture_destroy_list_push(class gfx_texture_vk *texture);
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

@@ -435,7 +435,7 @@ inline mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute_internal(uint32
                 int vetex_texture_0_offset = input_vetex_position_length;
                 int index_offset = (input_vetex_position_length + input_vetex_texture_0_length);
 
-                // vertex position 
+                // vertex position
                 {
                     int64_t res_seek = task_data->m_input_stream_seek_callback(input_stream, input_vetex_position_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
                     if (res_seek == -1 || res_seek != input_vetex_position_offset)
@@ -551,81 +551,70 @@ inline mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute_internal(uint32
 void gfx_mesh_vk::destroy(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    this->release(gfx_connection);
+}
 
-    bool streaming_done;
+void gfx_mesh_vk::addref(class gfx_connection_vk *gfx_connection)
+{
+    PT_MAYBE_UNUSED uint32_t ref_count = mcrt_atomic_inc_u32(&this->m_ref_count);
+    // can't set_mesh after destory
+    assert(1U < ref_count);
+}
+
+void gfx_mesh_vk::release(class gfx_connection_vk *gfx_connection)
+{
+    if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
     {
-        // make sure this function happens before or after the gfx_streaming_object::streaming_done
-        this->streaming_done_lock();
-
-        streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
-
-        if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+        bool streaming_done;
         {
-            mcrt_atomic_store(&this->m_streaming_cancel, true);
-            streaming_done = false;
-        }
-        else if (STREAMING_STATUS_DONE == streaming_status)
-        {
-            streaming_done = true;
-        }
-        else
-        {
-            assert(0);
-            streaming_done = false;
-        }
+            // make sure this function happens before or after the gfx_streaming_object::streaming_done
+            this->streaming_done_lock();
 
-        this->streaming_done_unlock();
-    }
+            streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
 
-    if (streaming_done)
-    {
-        //TODO: the object is used by the rendering system
-        //
+            if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+            {
+                mcrt_atomic_store(&this->m_streaming_cancel, true);
+                streaming_done = false;
+            }
+            else if (STREAMING_STATUS_DONE == streaming_status)
+            {
+                streaming_done = true;
+            }
+            else
+            {
+                assert(0);
+                streaming_done = false;
+            }
 
-        //
-        // race condition with the "streaming_done"
-
-        if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
-        {
-            gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
+            this->streaming_done_unlock();
         }
 
-        if (VK_NULL_HANDLE != this->m_vertex_varying_buffer)
+        if (streaming_done)
         {
-            gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
+            // the object is used by the rendering system
+            gfx_connection->frame_mesh_destroy_list_push(this);
         }
-
-        if (VK_NULL_HANDLE != this->m_index_buffer)
-        {
-            gfx_connection->destroy_buffer(this->m_index_buffer);
-        }
-
-        if (VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory)
-        {
-            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_position_gfx_malloc_page_handle, this->m_vertex_position_gfx_malloc_offset, this->m_vertex_position_gfx_malloc_size, this->m_vertex_position_gfx_malloc_device_memory);
-        }
-
-        if (VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory)
-        {
-            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_varying_gfx_malloc_page_handle, this->m_vertex_varying_gfx_malloc_offset, this->m_vertex_varying_gfx_malloc_size, this->m_vertex_varying_gfx_malloc_device_memory);
-        }
-
-        if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
-        {
-            gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
-        }
-
-        this->~gfx_mesh_vk();
-        mcrt_aligned_free(this);
     }
 }
 
 void gfx_mesh_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-
     PT_MAYBE_UNUSED bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
     assert(streaming_cancel);
+
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    this->process_destory(gfx_connection);
+}
+
+void gfx_mesh_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
+{
+    this->process_destory(gfx_connection);
+}
+
+inline void gfx_mesh_vk::process_destory(class gfx_connection_vk *gfx_connection)
+{
+    assert(0U == mcrt_atomic_load(&this->m_ref_count));
 
     if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
     {

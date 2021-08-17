@@ -29,6 +29,7 @@
 
 class gfx_mesh_vk final : public gfx_mesh_base
 {
+    uint32_t m_ref_count;
     // mali IDVS
     // seperate position and varying
 public:
@@ -83,8 +84,17 @@ private:
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
+    inline void process_destory(class gfx_connection_vk *gfx_connection);
+
 public:
+    void addref(class gfx_connection_vk *gfx_connection);
+
+    void release(class gfx_connection_vk *gfx_connection);
+
+    void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
+
     inline gfx_mesh_vk() : gfx_mesh_base(),
+                           m_ref_count(1U),
                            m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_position_gfx_malloc_offset(uint64_t(-1)), m_vertex_position_gfx_malloc_size(uint64_t(-1)), m_vertex_position_gfx_malloc_page_handle(NULL), m_vertex_position_gfx_malloc_device_memory(VK_NULL_HANDLE),
                            m_vertex_varying_buffer(VK_NULL_HANDLE), m_vertex_varying_gfx_malloc_offset(uint64_t(-1)), m_vertex_varying_gfx_malloc_size(uint64_t(-1)), m_vertex_varying_gfx_malloc_page_handle(NULL), m_vertex_varying_gfx_malloc_device_memory(VK_NULL_HANDLE),
                            m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE)

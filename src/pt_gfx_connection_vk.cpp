@@ -898,6 +898,7 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     //Frame Throttling
     {
         this->m_frame_throttling_index = 0U;
+        mcrt_rwlock_init(&this->m_rwlock_frame_throttling_index);
         this->m_frame_thread_count = this->m_task_arena_thread_count;
 
         for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
@@ -915,7 +916,7 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                     VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
                     NULL,
                     VK_COMMAND_POOL_CREATE_TRANSIENT_BIT,
-                    m_device.queue_graphics_family_index()};
+                    this->m_device.queue_graphics_family_index()};
                 PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_frame_graphics_primary_commmand_pool[frame_throttling_index]);
                 assert(VK_SUCCESS == res_create_command_pool);
             }
@@ -962,6 +963,11 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
                     this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index] = VK_NULL_HANDLE;
                 }
             }
+
+            this->m_frame_node_init_list[frame_throttling_index].init();
+            this->m_frame_node_destory_list[frame_throttling_index].init();
+            this->m_frame_mesh_destory_list[frame_throttling_index].init();
+            this->m_frame_texture_destory_list[frame_throttling_index].init();
         }
     }
 
@@ -1654,9 +1660,29 @@ inline bool gfx_connection_vk::init_pipeline()
     return true;
 }
 
+void gfx_connection_vk::frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh)
+{
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_mesh_destory_list[frame_throttling_index].produce(mesh);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
+}
+
+void gfx_connection_vk::frame_texture_destroy_list_push(class gfx_texture_vk *texture)
+{
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_texture_destory_list[frame_throttling_index].produce(texture);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
+}
+
 inline void gfx_connection_vk::acquire_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+
+    mcrt_rwlock_wrlock(&this->m_rwlock_frame_throttling_index);
+    mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
+    mcrt_rwlock_wrunlock(&this->m_rwlock_frame_throttling_index);
 
     VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
@@ -1677,6 +1703,8 @@ inline void gfx_connection_vk::acquire_frame()
 inline void gfx_connection_vk::release_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    // We add the frame index in acquire
+    frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U); 
 
     // wait the Fence
     {
@@ -1990,6 +2018,10 @@ class gfx_buffer_base *gfx_connection_vk::create_buffer()
 class gfx_node_base *gfx_connection_vk::create_node()
 {
     gfx_node_vk *node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk();
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_node_init_list[frame_throttling_index].produce(node);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
     return node;
 }
 

@@ -27,9 +27,10 @@
 #include <vulkan/vulkan.h>
 #include <string>
 
-
 class gfx_texture_vk final : public gfx_texture_base
 {
+    uint32_t m_ref_count;
+
     VkImage m_image;
 
     uint64_t m_gfx_malloc_offset;
@@ -66,6 +67,16 @@ class gfx_texture_vk final : public gfx_texture_base
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
+    inline void process_destory(class gfx_connection_vk *gfx_connection);
+
+public:
+    void addref(class gfx_connection_vk *gfx_connection);
+
+    void release(class gfx_connection_vk *gfx_connection);
+
+    void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
+
+private:
     struct specific_header_vk_t
     {
         bool isCubeCompatible;
@@ -172,7 +183,7 @@ class gfx_texture_vk final : public gfx_texture_base
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk() : gfx_texture_base(), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk() : gfx_texture_base(), m_ref_count(1U), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
 };
 
 #endif
