@@ -52,7 +52,7 @@ inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::init()
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T const value)
+inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T value)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock);
@@ -90,7 +90,7 @@ inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T const val
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T const value, void *user_defined), void *user_defined)
+inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock);
@@ -801,7 +801,7 @@ void gfx_connection_vk::reduce_streaming_task()
     // respawn task
     {
         this->m_streaming_task_respawn_list[streaming_throttling_index].consume_and_clear(
-            [](mcrt_task_ref const value, void *user_defined_void) -> void
+            [](mcrt_task_ref value, void *user_defined_void) -> void
             {
                 class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
                 mcrt_task_enqueue(value, user_defined->task_arena());
@@ -879,7 +879,7 @@ void gfx_connection_vk::reduce_streaming_task()
     // streaming_object // the third stage
     {
         this->m_streaming_object_list[streaming_throttling_index].consume_and_clear(
-            [](class gfx_streaming_object *const value, void *user_defined_void) -> void
+            [](class gfx_streaming_object * value, void *user_defined_void) -> void
             {
                 class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
                 value->set_streaming_done(user_defined);
@@ -1679,10 +1679,29 @@ void gfx_connection_vk::frame_texture_destroy_list_push(class gfx_texture_vk *te
 inline void gfx_connection_vk::acquire_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    uint32_t frame_throttling_index_last = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
 
     mcrt_rwlock_wrlock(&this->m_rwlock_frame_throttling_index);
     mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
     mcrt_rwlock_wrunlock(&this->m_rwlock_frame_throttling_index);
+
+    assert(0U == this->m_frame_mesh_unused_list[frame_throttling_index_last].size());
+    this->m_frame_mesh_destory_list[frame_throttling_index].consume_and_clear(
+        [](class gfx_mesh_vk *value, void *user_defined_void) -> void
+        {
+            mcrt_vector<class gfx_mesh_vk *> *user_defined = static_cast<mcrt_vector<class gfx_mesh_vk *> *>(user_defined_void);
+            user_defined->push_back(value);
+        },
+        &this->m_frame_mesh_unused_list[frame_throttling_index_last]);
+
+    assert(0U == this->m_frame_texture_unused_list[frame_throttling_index_last].size());
+    this->m_frame_texture_destory_list[frame_throttling_index].consume_and_clear(
+        [](class gfx_texture_vk *value, void *user_defined_void) -> void
+        {
+            mcrt_vector<class gfx_texture_vk *> *user_defined = static_cast<mcrt_vector<class gfx_texture_vk *> *>(user_defined_void);
+            user_defined->push_back(value);
+        },
+        &this->m_frame_texture_unused_list[frame_throttling_index_last]);
 
     VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
@@ -1713,6 +1732,20 @@ inline void gfx_connection_vk::release_frame()
         PT_MAYBE_UNUSED VkResult res_reset_fences = this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
         assert(VK_SUCCESS == res_reset_fences);
     }
+
+    // free unused mesh
+    for (class gfx_mesh_vk *mesh : this->m_frame_mesh_unused_list[frame_throttling_index])
+    {
+        mesh->frame_destroy_callback(this);
+    }
+    this->m_frame_mesh_unused_list[frame_throttling_index].clear();
+
+    // free unused texture
+    for(class gfx_texture_vk *texture : this->m_frame_texture_unused_list[frame_throttling_index])
+    {
+        texture->frame_destroy_callback(this);
+    }
+    this->m_frame_texture_unused_list[frame_throttling_index].clear();
 
     // free primary command buffer memory
     {

@@ -77,8 +77,8 @@ class gfx_connection_vk final : public gfx_connection_base
         struct link_list *m_link_list_head;
 
         inline void init();
-        inline void produce(T const value);
-        inline void consume_and_clear(void (*consume_callback)(T const value, void *user_defined), void *user_defined);
+        inline void produce(T value);
+        inline void consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined);
     };
 
     // Frame
@@ -179,9 +179,9 @@ class gfx_connection_vk final : public gfx_connection_base
     static uint32_t const TEXTURE_DESTROY_LIST_COUNT = 32U;
     struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
 
-    mcrt_vector<class gfx_mesh_vk *> m_mesh_unused_list;
+    mcrt_vector<class gfx_mesh_vk *> m_frame_mesh_unused_list[FRAME_THROTTLING_COUNT];
     
-    mcrt_vector<class gfx_texture_vk *> m_texture_unused_list;
+    mcrt_vector<class gfx_texture_vk *> m_frame_texture_unused_list[FRAME_THROTTLING_COUNT];
 
     inline void acquire_frame();
     inline void release_frame();
