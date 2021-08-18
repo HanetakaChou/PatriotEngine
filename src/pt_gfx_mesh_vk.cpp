@@ -238,8 +238,8 @@ bool gfx_mesh_vk::read_input_stream(class gfx_connection_base *gfx_connection_ba
         // pass to the second stage
         {
             mcrt_task_ref task = mcrt_task_allocate_root(read_input_stream_task_execute);
-            static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-            read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(task));
+            static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
+            struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(task));
             // There is no constructor of the POD "mcrt_task_user_data_t"
             new (&task_data->m_initial_filename) mcrt_string(initial_filename);
             task_data->m_input_stream_init_callback = input_stream_init_callback;
@@ -278,8 +278,8 @@ mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
     if (!recycle)
     {
-        static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-        read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+        static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
+        struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(self));
 
         PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&task_data->m_gfx_mesh->m_streaming_status);
         PT_MAYBE_UNUSED bool streaming_error = mcrt_atomic_load(&task_data->m_gfx_mesh->m_streaming_error);
@@ -303,8 +303,8 @@ mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
 inline mcrt_task_ref gfx_mesh_vk::read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self)
 {
-    static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-    read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+    static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
+    struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(self));
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique

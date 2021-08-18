@@ -166,7 +166,8 @@ inline bool gfx_connection_vk::init_streaming()
 {
     this->m_streaming_throttling_index = 0U;
     mcrt_rwlock_init(&this->m_rwlock_streaming_throttling_index);
-    this->m_streaming_task_respawn_root = this->m_task_unused;
+    this->m_streaming_task_respawn_root = mcrt_task_allocate_root(NULL);
+    mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
     this->m_streaming_thread_count = this->m_task_arena_thread_count;
     this->m_streaming_transfer_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
     this->m_streaming_graphics_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
@@ -897,6 +898,8 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     {
         this->m_frame_throttling_index = 0U;
         mcrt_rwlock_init(&this->m_rwlock_frame_throttling_index);
+        this->m_frame_task_root = mcrt_task_allocate_root(NULL);
+        mcrt_task_set_ref_count(this->m_frame_task_root, 1U);
         this->m_frame_thread_count = this->m_task_arena_thread_count;
 
         for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
@@ -1682,6 +1685,51 @@ void gfx_connection_vk::frame_texture_destroy_list_push(class gfx_texture_vk *te
     mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
 }
 
+inline VkCommandBuffer gfx_connection_vk::frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index)
+{
+    assert(uint32_t(-1) != frame_thread_index);
+    assert(frame_thread_index < this->m_frame_thread_count);
+
+    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]))
+    {
+
+        {
+            VkCommandBufferAllocateInfo command_buffer_allocate_info;
+            command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            command_buffer_allocate_info.pNext = NULL;
+            command_buffer_allocate_info.commandPool = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool;
+            command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+            command_buffer_allocate_info.commandBufferCount = 1U;
+
+            PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]);
+            assert(VK_SUCCESS == res_allocate_command_buffers);
+        }
+
+        {
+            VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
+            command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+            command_buffer_inheritance_info.pNext = NULL;
+            command_buffer_inheritance_info.renderPass = this->m_render_pass;
+            command_buffer_inheritance_info.subpass = 0;
+            command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
+            command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
+            command_buffer_inheritance_info.queryFlags = 0U;
+            command_buffer_inheritance_info.pipelineStatistics = 0U;
+
+            VkCommandBufferBeginInfo command_buffer_begin_info;
+            command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            command_buffer_begin_info.pNext = NULL;
+            command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+            command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
+
+            PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index], &command_buffer_begin_info);
+            assert(VK_SUCCESS == res_begin_command_buffer);
+        }
+    }
+
+    return this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index];
+}
+
 inline void gfx_connection_vk::acquire_frame()
 {
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
@@ -1695,26 +1743,26 @@ inline void gfx_connection_vk::acquire_frame()
     {
         struct frame_node_init_list_user_defined
         {
-            mcrt_vector<class gfx_node_vk *> *const m_frame_node_list;
-            mcrt_vector<size_t> *const m_frame_node_free_index_list;
-        } user_defined = {&this->m_frame_node_list, &this->m_frame_node_free_index_list};
+            mcrt_vector<class gfx_node_vk *> *const m_scene_node_list;
+            mcrt_vector<size_t> *const m_scene_node_list_free_index_list;
+        } user_defined = {&this->m_scene_node_list, &this->m_scene_node_list_free_index_list};
 
         this->m_frame_node_init_list[frame_throttling_index].consume_and_clear(
             [](class gfx_node_vk *node, void *user_defined_void) -> void
             {
                 struct frame_node_init_list_user_defined *user_defined = static_cast<struct frame_node_init_list_user_defined *>(user_defined_void);
-                if ((*user_defined->m_frame_node_free_index_list).size() > 0U)
+                if ((*user_defined->m_scene_node_list_free_index_list).size() > 0U)
                 {
-                    size_t frame_node_index = (*(*user_defined->m_frame_node_free_index_list).end());
-                    (*user_defined->m_frame_node_free_index_list).pop_back();
-                    assert(NULL == (*user_defined->m_frame_node_list)[frame_node_index]);
-                    (*user_defined->m_frame_node_list)[frame_node_index] = node;
+                    size_t frame_node_index = (*(*user_defined->m_scene_node_list_free_index_list).end());
+                    (*user_defined->m_scene_node_list_free_index_list).pop_back();
+                    assert(NULL == (*user_defined->m_scene_node_list)[frame_node_index]);
+                    (*user_defined->m_scene_node_list)[frame_node_index] = node;
                     node->m_frame_node_index = frame_node_index;
                 }
                 else
                 {
-                    (*user_defined->m_frame_node_list).push_back(node);
-                    node->m_frame_node_index = (*user_defined->m_frame_node_list).size() - 1U;
+                    (*user_defined->m_scene_node_list).push_back(node);
+                    node->m_frame_node_index = (*user_defined->m_scene_node_list).size() - 1U;
                 }
             },
             &user_defined);
@@ -1724,18 +1772,18 @@ inline void gfx_connection_vk::acquire_frame()
     {
         struct frame_node_destory_list_user_defined
         {
-            mcrt_vector<class gfx_node_vk *> *const m_frame_node_list;
-            mcrt_vector<size_t> *const m_frame_node_free_index_list;
+            mcrt_vector<class gfx_node_vk *> *const m_scene_node_list;
+            mcrt_vector<size_t> *const m_scene_node_list_free_index_list;
             class gfx_connection_vk *m_gfx_connection;
-        } user_defined = {&this->m_frame_node_list, &this->m_frame_node_free_index_list, this};
+        } user_defined = {&this->m_scene_node_list, &this->m_scene_node_list_free_index_list, this};
 
         this->m_frame_node_destory_list[frame_throttling_index].consume_and_clear(
             [](class gfx_node_vk *node, void *user_defined_void) -> void
             {
                 struct frame_node_destory_list_user_defined *user_defined = static_cast<struct frame_node_destory_list_user_defined *>(user_defined_void);
-                assert(node == (*user_defined->m_frame_node_list)[node->m_frame_node_index]);
-                (*user_defined->m_frame_node_list)[node->m_frame_node_index] = NULL;
-                (*user_defined->m_frame_node_free_index_list).push_back(node->m_frame_node_index);
+                assert(node == (*user_defined->m_scene_node_list)[node->m_frame_node_index]);
+                (*user_defined->m_scene_node_list)[node->m_frame_node_index] = NULL;
+                (*user_defined->m_scene_node_list_free_index_list).push_back(node->m_frame_node_index);
                 node->frame_destroy_callback(user_defined->m_gfx_connection);
             },
             &user_defined);
@@ -1774,7 +1822,6 @@ inline void gfx_connection_vk::acquire_frame()
     }
     else
     {
-
     }
 
     // wait the Fence
@@ -1816,6 +1863,23 @@ inline void gfx_connection_vk::acquire_frame()
 
 inline void gfx_connection_vk::release_frame()
 {
+    // multi-thread draw
+    {
+        mcrt_task_ref task = mcrt_task_allocate_root(opaque_subpass_task_execute);
+        static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
+        struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(task));
+        // There is no constructor of the POD "mcrt_task_user_data_t"
+        task_data->m_gfx_connection = this;
+
+        mcrt_task_increment_ref_count(this->m_frame_task_root);
+        mcrt_task_set_parent(task, this->m_frame_task_root);
+
+        // different master task doesn't share the task_arena
+        // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+        // mcrt_task_spawn(task);
+        mcrt_task_enqueue(task, this->task_arena());
+    }
+
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
     // We add the frame index in acquire
     frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
@@ -1866,83 +1930,9 @@ inline void gfx_connection_vk::release_frame()
         this->m_device.cmd_begin_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &render_pass_begin, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
     }
 
-    uint32_t frame_thread_index = 0U;
-
-    {
-        VkCommandBufferAllocateInfo command_buffer_allocate_info;
-        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool;
-        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        command_buffer_allocate_info.commandBufferCount = SUBPASS_COUNT;
-
-        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer);
-        assert(VK_SUCCESS == res_allocate_command_buffers);
-    }
-
-    {
-        VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
-        command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-        command_buffer_inheritance_info.pNext = NULL;
-        command_buffer_inheritance_info.renderPass = this->m_render_pass;
-        command_buffer_inheritance_info.subpass = 0;
-        command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
-        command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
-        command_buffer_inheritance_info.queryFlags = 0U;
-        command_buffer_inheritance_info.pipelineStatistics = 0U;
-
-        VkCommandBufferBeginInfo command_buffer_begin_info;
-        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        command_buffer_begin_info.pNext = NULL;
-        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-        command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
-
-        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], &command_buffer_begin_info);
-        assert(VK_SUCCESS == res_begin_command_buffer);
-    }
-
-    this->m_device.cmd_bind_pipeline(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], VK_PIPELINE_BIND_POINT_GRAPHICS, this->m_pipeline_mesh);
-
-    {
-        VkViewport viewports[1];
-        viewports[0].x = 0.0f;
-        viewports[0].y = 0.0f;
-        viewports[0].width = this->m_framebuffer_width;
-        viewports[0].height = this->m_framebuffer_height;
-        viewports[0].minDepth = 0.0f;
-        viewports[0].maxDepth = 1.0f;
-        this->m_device.cmd_set_viewport(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0U, 1U, viewports);
-    }
-
-    {
-        VkRect2D scissors[1];
-        scissors[0].offset.x = 0;
-        scissors[0].offset.y = 0;
-        scissors[0].extent.width = this->m_framebuffer_width;
-        scissors[0].extent.height = this->m_framebuffer_height;
-        this->m_device.cmd_set_scissor(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0U, 1U, scissors);
-    }
-
-    for (class gfx_node_vk *node : this->m_frame_node_list)
-    {
-        if (NULL != node)
-        {
-            class gfx_mesh_vk *mesh = node->get_mesh();
-            if (NULL != mesh && mesh->is_streaming_done())
-            {
-                VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
-                VkDeviceSize offsets[2] = {0U, 0U};
-                this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0, 2, buffers, offsets);
-
-                this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 36U, 1U, 0U, 0U);
-            }
-        }
-    }
-
-    //this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX],0U,1U,)
-    //pushconstant
-    //binddescriptorset
-    //this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 3U, 1U, 0U, 0U);
+    // sync by TBB
+    mcrt_task_wait_for_all(this->m_frame_task_root);
+    mcrt_task_set_ref_count(this->m_frame_task_root, 1U);
 
     // reduce and execute
     {
@@ -2001,6 +1991,74 @@ inline void gfx_connection_vk::release_frame()
     }
 
     mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
+}
+
+mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
+{
+    static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
+    struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(self));
+
+    // different master task doesn't share the task_arena
+    // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+    assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()));
+    assert(mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+
+    uint32_t frame_throttling_index = mcrt_atomic_load(&task_data->m_gfx_connection->m_frame_throttling_index);
+    // We add the frame index in acquire
+    frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
+
+    uint32_t frame_thread_index = mcrt_this_task_arena_current_thread_index();
+
+    VkCommandBuffer secondary_command_buffer = task_data->m_gfx_connection->frame_task_get_secondary_command_buffer(frame_throttling_index, frame_thread_index, OPAQUE_SUBPASS_INDEX);
+
+    // bind pipeline
+    task_data->m_gfx_connection->m_device.cmd_bind_pipeline(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_mesh);
+
+    // set viewport
+    {
+        VkViewport viewports[1];
+        viewports[0].x = 0.0f;
+        viewports[0].y = 0.0f;
+        viewports[0].width = task_data->m_gfx_connection->m_framebuffer_width;
+        viewports[0].height = task_data->m_gfx_connection->m_framebuffer_height;
+        viewports[0].minDepth = 0.0f;
+        viewports[0].maxDepth = 1.0f;
+        task_data->m_gfx_connection->m_device.cmd_set_viewport(secondary_command_buffer, 0U, 1U, viewports);
+    }
+
+    // set scissor
+    {
+        VkRect2D scissors[1];
+        scissors[0].offset.x = 0;
+        scissors[0].offset.y = 0;
+        scissors[0].extent.width = task_data->m_gfx_connection->m_framebuffer_width;
+        scissors[0].extent.height = task_data->m_gfx_connection->m_framebuffer_height;
+        task_data->m_gfx_connection->m_device.cmd_set_scissor(secondary_command_buffer, 0U, 1U, scissors);
+    }
+
+    // draw
+    for (class gfx_node_vk *node : task_data->m_gfx_connection->m_scene_node_list)
+    {
+        if (NULL != node)
+        {
+            class gfx_mesh_vk *mesh = node->get_mesh();
+            if (NULL != mesh && mesh->is_streaming_done())
+            {
+                VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
+                VkDeviceSize offsets[2] = {0U, 0U};
+                task_data->m_gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
+
+                task_data->m_gfx_connection->m_device.cmd_draw(secondary_command_buffer, 36U, 1U, 0U, 0U);
+            }
+        }
+    }
+
+    //this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX],0U,1U,)
+    //pushconstant
+    //binddescriptorset
+    //this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 3U, 1U, 0U, 0U);
+
+    return NULL;
 }
 
 inline void gfx_connection_vk::destroy_frame()

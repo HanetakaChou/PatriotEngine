@@ -88,14 +88,7 @@ class gfx_connection_vk final : public gfx_connection_base
 
     uint32_t m_frame_thread_count;
 
-    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
-
-    VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
-    VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
-
-    VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
-    VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
-    VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
+    mcrt_task_ref m_frame_task_root;
 
     static uint32_t const SUBPASS_COUNT = 1U;
     static uint32_t const OPAQUE_SUBPASS_INDEX = 0U;
@@ -111,6 +104,43 @@ class gfx_connection_vk final : public gfx_connection_base
     static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_secondary_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer)), "");
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
+
+    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
+
+    VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
+    VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
+
+    VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
+    VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
+    VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
+
+    // Scene
+    template <typename T>
+    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    mcrt_vector<class gfx_node_vk *> m_scene_node_list;
+    mcrt_vector<size_t> m_scene_node_list_free_index_list;
+
+    mcrt_vector<class gfx_mesh_vk *> m_frame_mesh_unused_list[FRAME_THROTTLING_COUNT];
+    mcrt_vector<class gfx_texture_vk *> m_frame_texture_unused_list[FRAME_THROTTLING_COUNT];
+
+    static uint32_t const NODE_INIT_LIST_COUNT = 32U;
+    struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
+    static uint32_t const NODE_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
+    static uint32_t const MESH_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
+    static uint32_t const TEXTURE_DESTROY_LIST_COUNT = 32U;
+    struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
+
+    inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
+    inline void acquire_frame();
+    inline void release_frame();
+
+    struct opaque_subpass_task_data
+    {
+        class gfx_connection_vk *m_gfx_connection;
+    };
+    static mcrt_task_ref opaque_subpass_task_execute(mcrt_task_ref self);
 
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
@@ -159,32 +189,6 @@ class gfx_connection_vk final : public gfx_connection_base
     VkImage *m_swapchain_images;
     VkImageView *m_swapchain_image_views;
     VkSwapchainKHR m_swapchain;
-
-    // Scene
-    // TODO Parallel List
-    template <typename T>
-    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    mcrt_vector<class gfx_node_vk *> m_frame_node_list;
-    mcrt_vector<size_t> m_frame_node_free_index_list;
-
-    static uint32_t const NODE_INIT_LIST_COUNT = 32U;
-    struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
-
-    static uint32_t const NODE_DESTROY_LIST_COUNT = 32U;
-    struct mplist<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-
-    static uint32_t const MESH_DESTROY_LIST_COUNT = 32U;
-    struct mplist<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
-
-    static uint32_t const TEXTURE_DESTROY_LIST_COUNT = 32U;
-    struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
-
-    mcrt_vector<class gfx_mesh_vk *> m_frame_mesh_unused_list[FRAME_THROTTLING_COUNT];
-    
-    mcrt_vector<class gfx_texture_vk *> m_frame_texture_unused_list[FRAME_THROTTLING_COUNT];
-
-    inline void acquire_frame();
-    inline void release_frame();
 
     // Streaming
     static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
@@ -273,8 +277,6 @@ public:
     void frame_node_destroy_list_push(class gfx_node_vk *node);
     void frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh);
     void frame_texture_destroy_list_push(class gfx_texture_vk *texture);
-
-    static mcrt_task_ref opaque_task_execute(mcrt_task_ref self);
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
