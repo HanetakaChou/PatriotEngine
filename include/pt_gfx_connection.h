@@ -79,6 +79,8 @@ extern "C"
     // [glTF 2.0: PBR Materials](https://www.khronos.org/assets/uploads/developers/library/2017-gtc/glTF-2.0-and-PBR-GTC_May17.pdf) // https://github.com/KhronosGroup/glTF
     // [Conversion between metallic-roughness and specular-glossiness workflows](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples)
 
+    // PBR Guide 2018 version.pdf - Substance 3D
+
     // diffusecolor = albedo // The constant reflectance value of a Lambertian BRDF is typically referred to as the diffuse color cdiff or the albedo ρ.
     // specularcolor = fresnel(0)
     // 
