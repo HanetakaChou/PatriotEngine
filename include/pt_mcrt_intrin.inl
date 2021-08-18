@@ -86,7 +86,8 @@ inline bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 {
     //DirectX::XMVectorEqualIntR
     __m128i v = _mm_cmpeq_epi8(a, b);
-    return (0XFFFF == _mm_movemask_epi8(v));
+    int mask = _mm_movemask_epi8(v);
+    return (0XFFFF == mask);
 }
 #elif defined(PT_ARM64) || defined(PT_ARM)
 #else

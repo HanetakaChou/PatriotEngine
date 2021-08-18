@@ -2069,6 +2069,8 @@ inline void gfx_connection_vk::destroy_frame()
 
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
     {
+        this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
+
         this->m_device.destroy_fence(this->m_frame_fence[frame_throttling_index]);
 
         this->m_device.destroy_semaphore(this->m_frame_semaphore_queue_submit[frame_throttling_index]);
@@ -2088,6 +2090,13 @@ inline void gfx_connection_vk::destroy_frame()
 
 inline void gfx_connection_vk::destroy_streaming()
 {
+    // wait fence
+    {
+        uint32_t streaming_throttling_index = mcrt_atomic_load(&this->m_streaming_throttling_index);
+        streaming_throttling_index = (streaming_throttling_index > 0U) ? (streaming_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
+        this->m_device.wait_for_fences(1U, &this->m_streaming_fence[streaming_throttling_index], VK_TRUE, UINT64_MAX);
+    }
+
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
         this->m_device.destroy_fence(this->m_streaming_fence[streaming_throttling_index]);
@@ -2342,6 +2351,13 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
     PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
     assert(VK_SUCCESS == res_get_pipeline_cache_data);
     assert(pipeline_cache_size_before == pipeline_cache_size);
+
+    PT_MAYBE_UNUSED uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
+    PT_MAYBE_UNUSED uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 4);
+    PT_MAYBE_UNUSED uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 8);
+    PT_MAYBE_UNUSED uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 12);
+    PT_MAYBE_UNUSED mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 16);
+    assert(header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()));
 
     PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
     assert(res_write == pipeline_cache_size);

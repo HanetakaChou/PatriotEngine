@@ -75,8 +75,21 @@ extern "C"
 
     // We may share the texture but we scarcely share the buffer
     // Thus we don't support buffer
+
+    // [glTF 2.0: PBR Materials](https://www.khronos.org/assets/uploads/developers/library/2017-gtc/glTF-2.0-and-PBR-GTC_May17.pdf) // https://github.com/KhronosGroup/glTF
+    // [Conversion between metallic-roughness and specular-glossiness workflows](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples)
+
+    // diffusecolor = albedo // The constant reflectance value of a Lambertian BRDF is typically referred to as the diffuse color cdiff or the albedo ρ.
+    // specularcolor = fresnel(0)
+    // 
+    // metallic-roughness -> specular-glossiness
+    // specularcolor = lerp((0.4,0.4,0.4), basecolor, metallic) //(0.4,0.4,0.4) specular for Insulator/Dielectric
+    // diffusecolor = 1 - specularcolor
+    // glossiness = 1 - roughness
+
     PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+    PT_ATTR_GFX void PT_CALL gfx_mesh_set_texture(uint32_t texture_index, gfx_texture_ref texture);
     PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh);
 
     PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
@@ -86,11 +99,6 @@ extern "C"
     // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
     // but must be after the return of the "gfx_connection_create_texture"
     PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
-
-    //TLS //node
-    // gfx_connection_create_node
-    // gfx_node_set_mesh
-    //BLS //mesh
 
     // Top Level Structure - Node
     // Bottom Level Structure - Mesh

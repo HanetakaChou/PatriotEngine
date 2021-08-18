@@ -25,6 +25,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     gfx_node_ref my_node = gfx_connection_create_node(my_gfx_connection);
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
+    
 #if 1
     std::vector<gfx_texture_ref> my_textures;
 
@@ -66,7 +67,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         }
     }
 
-    sleep(20);
+    sleep(5);
+    //sleep(20);
 
     for (gfx_texture_ref my_texture : my_textures)
     {

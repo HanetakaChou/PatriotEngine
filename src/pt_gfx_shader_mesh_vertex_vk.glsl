@@ -24,6 +24,10 @@ layout(location = 0) out highp vec2 texcoord;
 
 void main()
 {
-        gl_Position = vec4(position, 1.1f); //VP * M2 * vec4(position, 1.0f);
+        //1.01 depth clip
+        vec4 position = vec4(position, 1.01f); //VP * M2 * vec4(position, 1.0f);
+       
+        gl_Position = position;
+
         texcoord = attr;
 }
