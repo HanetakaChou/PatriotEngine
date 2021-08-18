@@ -26,13 +26,15 @@
         gfx_buffer_read_vertex_input_stream;
         gfx_buffer_read_index_input_stream;
         gfx_buffer_destroy;
+        gfx_connection_create_node;
+        gfx_node_set_mesh;
+        gfx_node_destroy;
         gfx_connection_create_mesh;
         gfx_mesh_read_input_stream;
         gfx_mesh_destroy;
         gfx_connection_create_texture;
         gfx_texture_read_input_stream;
         gfx_texture_destroy;
-        gfx_connection_test_set_mesh;
     local:
         *;
 };

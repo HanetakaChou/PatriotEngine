@@ -27,13 +27,12 @@
 class gfx_node_base
 {
     math_alignas16_mat4x4 m_mat_m;
-    class gfx_mesh_base *m_mesh;
 
 protected:
-    inline gfx_node_base() : m_mesh(NULL) { math_store_mat4x4(&this->m_mat_m, math_mat_identity()); }
+    inline gfx_node_base() { math_store_mat4x4(&this->m_mat_m, math_mat_identity()); }
 
 public:
-    virtual void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh);
+    virtual void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh) = 0;
     virtual void destroy(class gfx_connection_base *gfx_connection) = 0;
 };
 

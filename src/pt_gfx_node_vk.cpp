@@ -19,8 +19,34 @@
 #include <stdint.h>
 #include <pt_mcrt_malloc.h>
 #include "pt_gfx_node_vk.h"
+#include "pt_gfx_mesh_vk.h"
+
+void gfx_node_vk::set_mesh(class gfx_connection_base *gfx_connection_base, class gfx_mesh_base *gfx_mesh_base)
+{
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    class gfx_mesh_vk *gfx_mesh = static_cast<class gfx_mesh_vk *>(gfx_mesh_base);
+
+    if (NULL != gfx_mesh)
+    {
+        gfx_mesh->addref();
+    }
+
+    if (NULL != this->m_gfx_mesh)
+    {
+        m_gfx_mesh->release(gfx_connection);
+    }
+
+    this->m_gfx_mesh = gfx_mesh;
+}
 
 void gfx_node_vk::destroy(class gfx_connection_base *gfx_connection_base)
+{
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    this->m_gfx_mesh->release(gfx_connection);
+    gfx_connection->frame_node_destroy_list_push(this);
+}
+
+void gfx_node_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
 {
     this->~gfx_node_vk();
     mcrt_aligned_free(this);

@@ -57,8 +57,6 @@ public:
     virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling
 
     virtual void on_wsi_redraw_needed_release() = 0;
-
-    virtual void test_set_mesh(class gfx_mesh_base *gfx_mesh) = 0;
 };
 
 class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

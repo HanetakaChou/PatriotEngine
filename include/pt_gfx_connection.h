@@ -91,7 +91,6 @@ extern "C"
     // gfx_connection_create_node
     // gfx_node_set_mesh
     //BLS //mesh
-    PT_ATTR_GFX void gfx_connection_test_set_mesh(gfx_connection_ref gfx_connection, gfx_mesh_ref gfx_mesh);
 
     // Top Level Structure - Node
     // Bottom Level Structure - Mesh

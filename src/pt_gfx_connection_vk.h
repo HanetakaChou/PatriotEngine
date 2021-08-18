@@ -164,8 +164,8 @@ class gfx_connection_vk final : public gfx_connection_base
     // TODO Parallel List
     template <typename T>
     using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-    mcrt_vector<class gfx_node_vk *> m_node_list;
-    mcrt_vector<size_t> m_node_free_index_list;
+    mcrt_vector<class gfx_node_vk *> m_frame_node_list;
+    mcrt_vector<size_t> m_frame_node_free_index_list;
 
     static uint32_t const NODE_INIT_LIST_COUNT = 32U;
     struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
@@ -260,10 +260,6 @@ class gfx_connection_vk final : public gfx_connection_base
     void on_wsi_redraw_needed_release() override;
     void destroy() override;
 
-    class gfx_mesh_vk *m_test_gfx_mesh;
-
-    void test_set_mesh(class gfx_mesh_base *gfx_mesh) override;
-
     inline void copy_vertex_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
 
 public:
@@ -274,8 +270,11 @@ public:
     inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
 
     // Frame
+    void frame_node_destroy_list_push(class gfx_node_vk *node);
     void frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh);
     void frame_texture_destroy_list_push(class gfx_texture_vk *texture);
+
+    static mcrt_task_ref opaque_task_execute(mcrt_task_ref self);
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

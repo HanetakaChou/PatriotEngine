@@ -87,7 +87,7 @@ private:
     inline void process_destory(class gfx_connection_vk *gfx_connection);
 
 public:
-    void addref(class gfx_connection_vk *gfx_connection);
+    void addref();
 
     void release(class gfx_connection_vk *gfx_connection);
 

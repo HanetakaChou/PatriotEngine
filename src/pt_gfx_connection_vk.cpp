@@ -159,8 +159,6 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
         return false;
     }
 
-    this->m_test_gfx_mesh = NULL;
-
     return true;
 }
 
@@ -879,7 +877,7 @@ void gfx_connection_vk::reduce_streaming_task()
     // streaming_object // the third stage
     {
         this->m_streaming_object_list[streaming_throttling_index].consume_and_clear(
-            [](class gfx_streaming_object * value, void *user_defined_void) -> void
+            [](class gfx_streaming_object *value, void *user_defined_void) -> void
             {
                 class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
                 value->set_streaming_done(user_defined);
@@ -1546,7 +1544,7 @@ inline bool gfx_connection_vk::init_pipeline()
         rasterization_state.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterization_state.pNext = NULL;
         rasterization_state.flags = 0U;
-        rasterization_state.depthClampEnable = VK_FALSE;
+        rasterization_state.depthClampEnable = VK_FALSE; //VkPipelineRasterizationDepthClipStateCreateInfoEXT
         rasterization_state.rasterizerDiscardEnable = VK_FALSE;
         rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
         rasterization_state.cullMode = VK_CULL_MODE_NONE; //VK_CULL_MODE_BACK_BIT;
@@ -1660,6 +1658,14 @@ inline bool gfx_connection_vk::init_pipeline()
     return true;
 }
 
+void gfx_connection_vk::frame_node_destroy_list_push(class gfx_node_vk *node)
+{
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_node_destory_list[frame_throttling_index].produce(node);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
+}
+
 void gfx_connection_vk::frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh)
 {
     mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
@@ -1685,6 +1691,57 @@ inline void gfx_connection_vk::acquire_frame()
     mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
     mcrt_rwlock_wrunlock(&this->m_rwlock_frame_throttling_index);
 
+    // frame_node_init_list
+    {
+        struct frame_node_init_list_user_defined
+        {
+            mcrt_vector<class gfx_node_vk *> *const m_frame_node_list;
+            mcrt_vector<size_t> *const m_frame_node_free_index_list;
+        } user_defined = {&this->m_frame_node_list, &this->m_frame_node_free_index_list};
+
+        this->m_frame_node_init_list[frame_throttling_index].consume_and_clear(
+            [](class gfx_node_vk *node, void *user_defined_void) -> void
+            {
+                struct frame_node_init_list_user_defined *user_defined = static_cast<struct frame_node_init_list_user_defined *>(user_defined_void);
+                if ((*user_defined->m_frame_node_free_index_list).size() > 0U)
+                {
+                    size_t frame_node_index = (*(*user_defined->m_frame_node_free_index_list).end());
+                    (*user_defined->m_frame_node_free_index_list).pop_back();
+                    assert(NULL == (*user_defined->m_frame_node_list)[frame_node_index]);
+                    (*user_defined->m_frame_node_list)[frame_node_index] = node;
+                    node->m_frame_node_index = frame_node_index;
+                }
+                else
+                {
+                    (*user_defined->m_frame_node_list).push_back(node);
+                    node->m_frame_node_index = (*user_defined->m_frame_node_list).size() - 1U;
+                }
+            },
+            &user_defined);
+    }
+
+    // frame_node_destory_list
+    {
+        struct frame_node_destory_list_user_defined
+        {
+            mcrt_vector<class gfx_node_vk *> *const m_frame_node_list;
+            mcrt_vector<size_t> *const m_frame_node_free_index_list;
+            class gfx_connection_vk *m_gfx_connection;
+        } user_defined = {&this->m_frame_node_list, &this->m_frame_node_free_index_list, this};
+
+        this->m_frame_node_destory_list[frame_throttling_index].consume_and_clear(
+            [](class gfx_node_vk *node, void *user_defined_void) -> void
+            {
+                struct frame_node_destory_list_user_defined *user_defined = static_cast<struct frame_node_destory_list_user_defined *>(user_defined_void);
+                assert(node == (*user_defined->m_frame_node_list)[node->m_frame_node_index]);
+                (*user_defined->m_frame_node_list)[node->m_frame_node_index] = NULL;
+                (*user_defined->m_frame_node_free_index_list).push_back(node->m_frame_node_index);
+                node->frame_destroy_callback(user_defined->m_gfx_connection);
+            },
+            &user_defined);
+    }
+
+    // move frame_mesh_destory_list to frame_mesh_unused_list
     assert(0U == this->m_frame_mesh_unused_list[frame_throttling_index_last].size());
     this->m_frame_mesh_destory_list[frame_throttling_index].consume_and_clear(
         [](class gfx_mesh_vk *value, void *user_defined_void) -> void
@@ -1694,6 +1751,7 @@ inline void gfx_connection_vk::acquire_frame()
         },
         &this->m_frame_mesh_unused_list[frame_throttling_index_last]);
 
+    // move frame_texture_destory_list to frame_texture_unused_list
     assert(0U == this->m_frame_texture_unused_list[frame_throttling_index_last].size());
     this->m_frame_texture_destory_list[frame_throttling_index].consume_and_clear(
         [](class gfx_texture_vk *value, void *user_defined_void) -> void
@@ -1716,16 +1774,11 @@ inline void gfx_connection_vk::acquire_frame()
     }
     else
     {
-    }
-}
 
-inline void gfx_connection_vk::release_frame()
-{
-    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    // We add the frame index in acquire
-    frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U); 
+    }
 
     // wait the Fence
+    // the time between acquire and release is accurate
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
@@ -1741,7 +1794,7 @@ inline void gfx_connection_vk::release_frame()
     this->m_frame_mesh_unused_list[frame_throttling_index].clear();
 
     // free unused texture
-    for(class gfx_texture_vk *texture : this->m_frame_texture_unused_list[frame_throttling_index])
+    for (class gfx_texture_vk *texture : this->m_frame_texture_unused_list[frame_throttling_index])
     {
         texture->frame_destroy_callback(this);
     }
@@ -1759,6 +1812,13 @@ inline void gfx_connection_vk::release_frame()
         PT_MAYBE_UNUSED VkResult res_reset_command_pool = this->m_device.reset_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool, 0U);
         assert(VK_SUCCESS == res_reset_command_pool);
     }
+}
+
+inline void gfx_connection_vk::release_frame()
+{
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    // We add the frame index in acquire
+    frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
 
     {
         VkCommandBufferAllocateInfo command_buffer_allocate_info;
@@ -1863,13 +1923,20 @@ inline void gfx_connection_vk::release_frame()
         this->m_device.cmd_set_scissor(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0U, 1U, scissors);
     }
 
-    if (NULL != this->m_test_gfx_mesh && this->m_test_gfx_mesh->is_streaming_done())
+    for (class gfx_node_vk *node : this->m_frame_node_list)
     {
-        VkBuffer buffers[2] = {this->m_test_gfx_mesh->m_vertex_position_buffer, this->m_test_gfx_mesh->m_vertex_varying_buffer};
-        VkDeviceSize offsets[2] = {0U, 0U};
-        this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0, 2, buffers, offsets);
+        if (NULL != node)
+        {
+            class gfx_mesh_vk *mesh = node->get_mesh();
+            if (NULL != mesh && mesh->is_streaming_done())
+            {
+                VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
+                VkDeviceSize offsets[2] = {0U, 0U};
+                this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 0, 2, buffers, offsets);
 
-        this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 36U, 1U, 0U, 0U);
+                this->m_device.cmd_draw(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX], 36U, 1U, 0U, 0U);
+            }
+        }
     }
 
     //this->m_device.cmd_bind_vertex_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX],0U,1U,)
@@ -2014,11 +2081,6 @@ void gfx_connection_vk::destroy()
     this->~gfx_connection_vk();
 
     mcrt_aligned_free(this);
-}
-
-void gfx_connection_vk::test_set_mesh(class gfx_mesh_base *gfx_mesh)
-{
-    this->m_test_gfx_mesh = static_cast<class gfx_mesh_vk *>(gfx_mesh);
 }
 
 inline gfx_connection_vk::~gfx_connection_vk()

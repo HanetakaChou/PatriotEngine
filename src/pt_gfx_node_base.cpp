@@ -19,11 +19,6 @@
 #include <stdint.h>
 #include "pt_gfx_node_base.h"
 
-void gfx_node_base::set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh)
-{
-    this->m_mesh = gfx_mesh;
-}
-
 //--- export ---
 
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }

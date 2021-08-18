@@ -554,7 +554,7 @@ void gfx_mesh_vk::destroy(class gfx_connection_base *gfx_connection_base)
     this->release(gfx_connection);
 }
 
-void gfx_mesh_vk::addref(class gfx_connection_vk *gfx_connection)
+void gfx_mesh_vk::addref()
 {
     PT_MAYBE_UNUSED uint32_t ref_count = mcrt_atomic_inc_u32(&this->m_ref_count);
     // can't set_mesh after destory
