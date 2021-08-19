@@ -39,13 +39,6 @@ class gfx_connection_vk final : public gfx_connection_base
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
-    // The unique uniform buffer.
-    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
-    // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
-    //VkBuffer m_uniform_buffer;
-    //uint64_t m_uniform_buffer_ring_buffer_begin;
-    //uint64_t m_uniform_buffer_ring_buffer_end;
-
     // MCRT
     mcrt_task_arena_ref m_task_arena;
     mcrt_task_ref m_task_unused;
@@ -110,14 +103,14 @@ class gfx_connection_vk final : public gfx_connection_base
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
 
-    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
-
     VkCommandPool m_frame_graphics_primary_commmand_pool[FRAME_THROTTLING_COUNT];
     VkCommandBuffer m_frame_graphics_primary_command_buffer[FRAME_THROTTLING_COUNT];
 
     VkSemaphore m_frame_semaphore_acquire_next_image[FRAME_THROTTLING_COUNT];
     VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
     VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
+
+    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
 
     // Scene
     template <typename T>
@@ -149,6 +142,15 @@ class gfx_connection_vk final : public gfx_connection_base
         class gfx_connection_vk *m_gfx_connection;
     };
     static mcrt_task_ref opaque_subpass_task_execute(mcrt_task_ref self);
+
+
+    // The unique uniform buffer.
+    // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
+    // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
+    // BoneMatrix
+    // VkBuffer m_uniform_buffer;
+    // uint64_t m_uniform_buffer_ring_buffer_begin;
+    // uint64_t m_uniform_buffer_ring_buffer_end;
 
     // RenderPass
     // Ideally, we can use only one renderpass by using the preserve attachments
@@ -208,20 +210,11 @@ class gfx_connection_vk final : public gfx_connection_base
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_asset_rwlock_t m_asset_rwlock_streaming_task[STREAMING_THROTTLING_COUNT];
 #endif
-
     mcrt_task_ref m_streaming_task_respawn_root;
-
     uint32_t m_streaming_thread_count;
 
     VkCommandBuffer *m_streaming_transfer_submit_info_command_buffers;
     VkCommandBuffer *m_streaming_graphics_submit_info_command_buffers;
-
-    // Staging Buffer
-    // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
-    uint64_t m_transfer_src_buffer_begin[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
-
     struct streaming_thread_block
     {
         VkCommandPool m_streaming_transfer_command_pool;
@@ -246,6 +239,12 @@ class gfx_connection_vk final : public gfx_connection_base
     };
     struct mplist<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
     struct mplist<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
+
+    // Staging Buffer
+    // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
+    uint64_t m_transfer_src_buffer_begin[STREAMING_THROTTLING_COUNT];
+    uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
+    uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
     inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);

@@ -20,7 +20,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 {
     my_mesh = gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
     //gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
     gfx_node_ref my_node = gfx_connection_create_node(my_gfx_connection);
@@ -38,13 +38,13 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_rgba.pvr");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_rgba.pvr");
             my_textures.push_back(my_texture);
         }
         else if (4 == r1 % 9 || 5 == r1 % 9 || 6 == r1 % 9 || 7 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_directx_tex.dds");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
             my_textures.push_back(my_texture);
         }
         else
@@ -61,7 +61,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             else
             {
                 gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-                gfx_texture_read_file(my_gfx_connection, my_texture, "third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
+                gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
                 my_textures.push_back(my_texture);
             }
         }
