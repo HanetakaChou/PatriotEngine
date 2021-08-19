@@ -81,22 +81,26 @@ extern "C"
 
     // PBR Guide 2018 version.pdf - Substance 3D
 
-    // diffusecolor = albedo // The constant reflectance value of a Lambertian BRDF is typically referred to as the diffuse color cdiff or the albedo ρ.
-    // specularcolor = fresnel(0)
+    // diffusecolor
+    // specularcolor = fresnel(0) = F0
  
-    // metallic-roughness -> specular-glossiness
-    // specularcolor = lerp((0.4,0.4,0.4), basecolor, metallic) //(0.4,0.4,0.4) specular for Insulator/Dielectric
+    // convert "metallic-roughness" to "specular-glossiness"
+    // specularcolor = lerp((0.4,0.4,0.4), basecolor, metallic) //(0.4,0.4,0.4) specularcolor for dielectric(/insulator/non-metal) // evidently, "metallic-roughness"workflow can't control the specularcolor of the dielectric
     // diffusecolor = 1 - specularcolor
     // glossiness = 1 - roughness
 
+    // technically, "albedo" means "diffusecolor" // The constant reflectance value of a Lambertian BRDF is typically referred to as the diffuse color cdiff or the albedo ρ.
+    // in Unity3D, "albedo" means "basecolor" in "metallic-roughness"workflow and means "diffusecolor" in "specular-glossiness" workflow
+
     enum
     {
-        DIFFUSE_COLOR_TEXTURE_INDEX,
-        SPECULAR_COLOR_TEXTURE_INDEX,
-        GLOSSINESS_TEXTURE_INDEX,
-        AMBIENT_OCCLUSION_TEXTURE_INDEX,
-        HEIGHT_TEXTURE_INDEX,
-        NORMAL_TEXTURE_INDEX
+        DIFFUSE_COLOR_TEXTURE_INDEX = 0,
+        SPECULAR_COLOR_TEXTURE_INDEX = 1,
+        GLOSSINESS_TEXTURE_INDEX = 2,
+        AMBIENT_OCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
+        HEIGHT_TEXTURE_INDEX = 4,            // Parallax
+        NORMAL_TEXTURE_INDEX = 5,            // Bump
+        TEXTURE_COUNT = 6
     };
 
     PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);

@@ -50,9 +50,10 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_task_arena_ref m_task_arena;
     mcrt_task_ref m_task_unused;
     uint32_t m_task_arena_thread_count;
-#if defined(PT_X64) || defined(PT_X86) || defined(PT_ARM64) || defined(PT_ARM)
+
     // avoid false sharing
-    static uint32_t const ESTIMATED_CACHE_LINE_SIZE = 64U;
+#if defined(PT_X64) || defined(PT_X86) || defined(PT_ARM64) || defined(PT_ARM)
+    enum {ESTIMATED_CACHE_LINE_SIZE = 64U};
 #else
 #error Unknown Architecture
 #endif
@@ -82,7 +83,10 @@ class gfx_connection_vk final : public gfx_connection_base
     };
 
     // Frame
-    static uint32_t const FRAME_THROTTLING_COUNT = 3U;
+    enum
+    {
+        FRAME_THROTTLING_COUNT = 3U
+    };
     uint32_t m_frame_throttling_index;
     mcrt_rwlock_t m_rwlock_frame_throttling_index;
 
@@ -90,11 +94,12 @@ class gfx_connection_vk final : public gfx_connection_base
 
     mcrt_task_ref m_frame_task_root;
 
-    static uint32_t const SUBPASS_COUNT = 1U;
-    static uint32_t const OPAQUE_SUBPASS_INDEX = 0U;
-
+    enum
+    {
+        OPAQUE_SUBPASS_INDEX = 0U,
+        SUBPASS_COUNT = 1U
+    };
     VkCommandBuffer *m_frame_graphcis_execute_command_buffers[SUBPASS_COUNT];
-
     struct frame_thread_block
     {
         VkCommandPool m_frame_graphics_secondary_commmand_pool;
@@ -123,13 +128,16 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_vector<class gfx_mesh_vk *> m_frame_mesh_unused_list[FRAME_THROTTLING_COUNT];
     mcrt_vector<class gfx_texture_vk *> m_frame_texture_unused_list[FRAME_THROTTLING_COUNT];
 
-    static uint32_t const NODE_INIT_LIST_COUNT = 32U;
+    enum
+    {
+        NODE_INIT_LIST_COUNT = 32U,
+        NODE_DESTROY_LIST_COUNT = 32U,
+        MESH_DESTROY_LIST_COUNT = 32U,
+        TEXTURE_DESTROY_LIST_COUNT = 32U
+    };
     struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
-    static uint32_t const NODE_DESTROY_LIST_COUNT = 32U;
     struct mplist<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-    static uint32_t const MESH_DESTROY_LIST_COUNT = 32U;
     struct mplist<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
-    static uint32_t const TEXTURE_DESTROY_LIST_COUNT = 32U;
     struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
 
     inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
@@ -191,7 +199,10 @@ class gfx_connection_vk final : public gfx_connection_base
     VkSwapchainKHR m_swapchain;
 
     // Streaming
-    static uint32_t const STREAMING_THROTTLING_COUNT = 3U;
+    enum
+    {
+        STREAMING_THROTTLING_COUNT = 3U
+    };
     uint32_t m_streaming_throttling_index;
     mcrt_rwlock_t m_rwlock_streaming_throttling_index;
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
@@ -228,10 +239,12 @@ class gfx_connection_vk final : public gfx_connection_base
 
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
 
-    static uint32_t const STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U;
+    enum
+    {
+        STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U,
+        STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U
+    };
     struct mplist<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
-
-    static uint32_t const STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U;
     struct mplist<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
