@@ -83,11 +83,21 @@ extern "C"
 
     // diffusecolor = albedo // The constant reflectance value of a Lambertian BRDF is typically referred to as the diffuse color cdiff or the albedo ρ.
     // specularcolor = fresnel(0)
-    // 
+ 
     // metallic-roughness -> specular-glossiness
     // specularcolor = lerp((0.4,0.4,0.4), basecolor, metallic) //(0.4,0.4,0.4) specular for Insulator/Dielectric
     // diffusecolor = 1 - specularcolor
     // glossiness = 1 - roughness
+
+    enum
+    {
+        DIFFUSE_COLOR_TEXTURE_INDEX,
+        SPECULAR_COLOR_TEXTURE_INDEX,
+        GLOSSINESS_TEXTURE_INDEX,
+        AMBIENT_OCCLUSION_TEXTURE_INDEX,
+        HEIGHT_TEXTURE_INDEX,
+        NORMAL_TEXTURE_INDEX
+    };
 
     PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
