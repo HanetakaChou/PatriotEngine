@@ -1387,21 +1387,71 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         assert(VK_SUCCESS == res_create_descriptor_set_layout);
     }
 
+    // immutable sampler
+    {
+        VkSamplerCreateInfo sampler_create_info;
+        sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        sampler_create_info.pNext = NULL;
+        sampler_create_info.flags = 0U;
+        sampler_create_info.magFilter = VK_FILTER_NEAREST;
+        sampler_create_info.minFilter = VK_FILTER_NEAREST;
+        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.mipLodBias = 0.0f;
+        sampler_create_info.anisotropyEnable = VK_FALSE,
+        sampler_create_info.maxAnisotropy = 1U;
+        sampler_create_info.compareEnable = VK_FALSE,
+        sampler_create_info.compareOp = VK_COMPARE_OP_NEVER;
+        sampler_create_info.minLod = 0.0f,
+        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE,
+        sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        sampler_create_info.unnormalizedCoordinates = VK_FALSE;
+        PT_MAYBE_UNUSED VkResult res_create_sampler = this->m_device.create_sampler(&sampler_create_info, &this->m_immutable_sampler);
+        assert(VK_SUCCESS == res_create_sampler);
+    }
+
     // the related "descriptor_set" is owned by the object
     // material
     {
-        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_dynamic_bindings[1];
-        descriptor_set_layout_each_object_dynamic_bindings[0].binding = 0;
-        descriptor_set_layout_each_object_dynamic_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_dynamic_bindings[0].descriptorCount = 1U;
-        descriptor_set_layout_each_object_dynamic_bindings[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_dynamic_bindings[0].pImmutableSamplers = NULL;
+        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_dynamic_bindings[TEXTURE_COUNT];
+        descriptor_set_layout_each_object_dynamic_bindings[DIFFUSECOLOR_TEXTURE_INDEX].binding = DIFFUSECOLOR_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[DIFFUSECOLOR_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[DIFFUSECOLOR_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
+        descriptor_set_layout_each_object_dynamic_bindings[SPECULARCOLOR_TEXTURE_INDEX].binding = SPECULARCOLOR_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[SPECULARCOLOR_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[SPECULARCOLOR_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[SPECULARCOLOR_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[SPECULARCOLOR_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
+        descriptor_set_layout_each_object_dynamic_bindings[GLOSSINESS_TEXTURE_INDEX].binding = GLOSSINESS_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[GLOSSINESS_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[GLOSSINESS_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[GLOSSINESS_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[GLOSSINESS_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
+        descriptor_set_layout_each_object_dynamic_bindings[AMBIENT_OCCLUSION_TEXTURE_INDEX].binding = AMBIENT_OCCLUSION_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[AMBIENT_OCCLUSION_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[AMBIENT_OCCLUSION_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[AMBIENT_OCCLUSION_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[AMBIENT_OCCLUSION_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
+        descriptor_set_layout_each_object_dynamic_bindings[HEIGHT_TEXTURE_INDEX].binding = HEIGHT_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[HEIGHT_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[HEIGHT_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[HEIGHT_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[HEIGHT_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
+        descriptor_set_layout_each_object_dynamic_bindings[NORMAL_TEXTURE_INDEX].binding = NORMAL_TEXTURE_INDEX;
+        descriptor_set_layout_each_object_dynamic_bindings[NORMAL_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_set_layout_each_object_dynamic_bindings[NORMAL_TEXTURE_INDEX].descriptorCount = 1U;
+        descriptor_set_layout_each_object_dynamic_bindings[NORMAL_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+        descriptor_set_layout_each_object_dynamic_bindings[NORMAL_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
 
         VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_dynamic_create_info;
         descriptor_set_layout_each_object_dynamic_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptor_set_layout_each_object_dynamic_create_info.pNext = NULL;
         descriptor_set_layout_each_object_dynamic_create_info.flags = 0U;
-        descriptor_set_layout_each_object_dynamic_create_info.bindingCount = 1U;
+        descriptor_set_layout_each_object_dynamic_create_info.bindingCount = TEXTURE_COUNT;
         descriptor_set_layout_each_object_dynamic_create_info.pBindings = descriptor_set_layout_each_object_dynamic_bindings;
 
         PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_dynamic_create_info, &this->m_descriptor_set_layout_each_object_dynamic);

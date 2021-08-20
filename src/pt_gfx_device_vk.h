@@ -92,6 +92,8 @@ class gfx_device_vk
     PFN_vkDestroyImageView m_vk_destory_image_view;
     PFN_vkCreateFramebuffer m_vk_create_framebuffer;
     PFN_vkDestroyFramebuffer m_vk_destory_framebuffer;
+    PFN_vkCreateSampler m_vk_create_sampler;
+    PFN_vkDestroySampler m_vk_destroy_sampler;
     PFN_vkCreateDescriptorSetLayout m_vk_create_descriptor_set_layout;
     PFN_vkCreatePipelineLayout m_vk_create_pipeline_layout;
     PFN_vkCreateShaderModule m_vk_create_shader_module;
@@ -190,6 +192,9 @@ public:
 
     inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_vk_create_image_view(this->m_device, create_info, &this->m_allocator_callbacks, view); }
     inline void destroy_image_view(VkImageView image_view) { return this->m_vk_destory_image_view(this->m_device, image_view, &this->m_allocator_callbacks); }
+
+    inline VkResult create_sampler(VkSamplerCreateInfo const *create_info, VkSampler *sampler) { return this->m_vk_create_sampler(this->m_device, create_info, &this->m_allocator_callbacks, sampler); }
+    inline void destroy_sampler(VkSampler sampler) { return this->m_vk_destroy_sampler(this->m_device, sampler, &this->m_allocator_callbacks); }
 
     inline VkResult create_framebuffer(VkFramebufferCreateInfo const *create_info, VkFramebuffer *framebuffer) { return this->m_vk_create_framebuffer(this->m_device, create_info, &this->m_allocator_callbacks, framebuffer); }
     inline void destroy_framebuffer(VkFramebuffer framebuffer) { return this->m_vk_destory_framebuffer(this->m_device, framebuffer, &this->m_allocator_callbacks); }

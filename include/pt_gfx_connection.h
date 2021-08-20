@@ -94,8 +94,8 @@ extern "C"
 
     enum
     {
-        DIFFUSE_COLOR_TEXTURE_INDEX = 0,
-        SPECULAR_COLOR_TEXTURE_INDEX = 1,
+        DIFFUSECOLOR_TEXTURE_INDEX = 0,
+        SPECULARCOLOR_TEXTURE_INDEX = 1,
         GLOSSINESS_TEXTURE_INDEX = 2,
         AMBIENT_OCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
         HEIGHT_TEXTURE_INDEX = 4,            // Parallax

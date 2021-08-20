@@ -549,6 +549,12 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_destory_framebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(vk_get_device_proc_addr(m_device, "vkDestroyFramebuffer"));
     assert(NULL != this->m_vk_destory_framebuffer);
 
+    this->m_vk_create_sampler = reinterpret_cast<PFN_vkCreateSampler>(vk_get_device_proc_addr(m_device, "vkCreateSampler"));
+    assert(NULL != this->m_vk_create_sampler);
+
+    this->m_vk_destroy_sampler = reinterpret_cast<PFN_vkDestroySampler>(vk_get_device_proc_addr(m_device, "vkDestroySampler"));
+    assert(NULL != this->m_vk_destroy_sampler);
+
     this->m_vk_create_descriptor_set_layout = reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(vk_get_device_proc_addr(m_device, "vkCreateDescriptorSetLayout"));
     assert(NULL != this->m_vk_create_descriptor_set_layout);
 

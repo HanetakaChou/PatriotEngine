@@ -166,6 +166,9 @@ class gfx_connection_vk final : public gfx_connection_base
     math_alignas16_mat4x4 m_mat_vp;
     math_alignas16_mat4x4 m_mat_m;
 
+    //
+    VkSampler m_immutable_sampler;
+
     // Descriptor
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_immutable;
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_dynamic;
