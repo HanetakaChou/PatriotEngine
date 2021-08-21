@@ -30,10 +30,10 @@ extern "C"
 
     typedef struct _mcrt_task_t_ *mcrt_task_ref;
 
-    struct mcrt_task_user_data_t
+    typedef struct mcrt_task_user_data_t
     {
-        uint8_t m_user_data[128]; // use mcrt_intrin_round_up
-    };
+        uint8_t m_user_data[256]; // use mcrt_intrin_round_up
+    } mcrt_task_user_data_t;
 
     typedef struct _mcrt_task_arena_t_ *mcrt_task_arena_ref;
 

@@ -28,21 +28,50 @@
 
 class gfx_streaming_object_base
 {
-    virtual bool streaming_stage_first_parse_header_callback(
+protected:
+    struct specific_streaming_stage_second_task_data_t
+    {
+        uint8_t m_user_defined_data[128];
+    };
+
+private:
+    virtual bool streaming_stage_first_populate_task_data_pre_callback(
         gfx_input_stream_ref input_stream,
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        char const *initial_filename,
-        void *user_defined) { return false; };
-
-    struct streaming_stage_second_task_data_specific_t
-    {
-        uint8_t m_user_defined_data[64];
-    };
+        void *streaming_stage_first_thread_stack_data_user_defined) { return false; }
 
     virtual void streaming_stage_first_populate_task_data_callback(
-        struct streaming_stage_second_task_data_specific_t *user_defined_data_specific,
-        void *user_defined) {};
+        void *streaming_stage_first_thread_stack_data_user_defined,
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined)
+    {
+    }
+
+    virtual bool streaming_stage_second_calculate_total_size_pre_callback(
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined) { return false; }
+
+    virtual size_t streaming_stage_second_calculate_total_size_callback(
+        uint64_t base_offset,
+        class gfx_connection_base *gfx_connection,
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined)
+    {
+        return 0U;
+    }
+
+    virtual bool streaming_stage_second_calculate_total_size_post_callback(
+        bool allocate_success,
+        class gfx_connection_base *gfx_connection,
+        uint32_t streaming_throttling_index,
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined)
+    {
+        return false;
+    }
 
     virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
@@ -56,11 +85,12 @@ class gfx_streaming_object_base
         int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
         void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
         class gfx_connection_base *m_gfx_connection;
-        struct streaming_stage_second_task_data_specific_t m_user_defined_data_specific;
+        class gfx_streaming_object_base *m_streaming_object;
+        struct specific_streaming_stage_second_task_data_t m_task_data_user_defined;
     };
     static_assert(sizeof(struct streaming_stage_second_task_data_base_t) <= sizeof(mcrt_task_user_data_t), "");
 
-    static mcrt_task_ref streaming_stage_second_task_execute(mcrt_task_ref self) { return NULL; };
+    static mcrt_task_ref streaming_stage_second_task_execute(mcrt_task_ref self);
 
     static inline mcrt_task_ref streaming_stage_second_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
 
@@ -103,7 +133,7 @@ public:
         intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream),
-        void *user_defined);
+        void *streaming_stage_first_thread_stack_data_user_defined);
 
     void set_streaming_done(class gfx_connection_base *gfx_connection);
 

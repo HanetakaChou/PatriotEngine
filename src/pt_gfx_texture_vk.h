@@ -39,8 +39,6 @@ class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_objec
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
 
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
     bool read_input_stream(
         class gfx_connection_base *gfx_connection,
         char const *initial_filename,
@@ -49,20 +47,56 @@ class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_objec
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
-    struct texture_read_input_stream_task_data_t
+    struct specific_header_vk_t
     {
-        mcrt_string m_initial_filename;
-        gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
-        intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-        int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-        void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
-        class gfx_connection_vk *m_gfx_connection;
-        class gfx_texture_vk *m_gfx_texture;
+        bool isCubeCompatible;
+        VkImageType imageType;
+        VkFormat format;
+        VkExtent3D extent;
+        uint32_t mipLevels;
+        uint32_t arrayLayers;
     };
 
-    static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
+    struct texture_streaming_stage_second_task_data_t
+    {
+        struct load_memcpy_dest_t *m_memcpy_dest;
+        VkBufferImageCopy *m_cmdcopy_dest;
+        struct common_header_t m_common_header;
+        size_t m_common_data_offset;
+        struct specific_header_vk_t m_specific_header_vk;
+        uint32_t m_num_subresource;
+    };
+    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(struct specific_streaming_stage_second_task_data_t), "");
 
-    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
+    bool streaming_stage_first_populate_task_data_pre_callback(
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        void *thread_stack_user_defined) override;
+
+    void streaming_stage_first_populate_task_data_callback(
+        void *thread_stack_user_defined,
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined) override;
+
+    bool streaming_stage_second_calculate_total_size_pre_callback(
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined) override;
+
+    size_t streaming_stage_second_calculate_total_size_callback(
+        uint64_t base_offset,
+        class gfx_connection_base *gfx_connection,
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined) override;
+
+    bool streaming_stage_second_calculate_total_size_post_callback(
+        bool allocate_success,
+        class gfx_connection_base *gfx_connection,
+        uint32_t streaming_throttling_index,
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct specific_streaming_stage_second_task_data_t *task_data_user_defined) override;
 
     void destroy(class gfx_connection_base *gfx_connection) override;
 
@@ -78,16 +112,6 @@ public:
     void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
 
 private:
-    struct specific_header_vk_t
-    {
-        bool isCubeCompatible;
-        VkImageType imageType;
-        VkFormat format;
-        VkExtent3D extent;
-        uint32_t mipLevels;
-        uint32_t arrayLayers;
-    };
-
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
 
     static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type);
