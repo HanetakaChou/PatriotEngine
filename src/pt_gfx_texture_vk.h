@@ -24,10 +24,11 @@
 #include <pt_mcrt_scalable_allocator.h>
 #include "pt_gfx_texture_base.h"
 #include "pt_gfx_connection_vk.h"
+#include "pt_gfx_streaming_object_base.h"
 #include <vulkan/vulkan.h>
 #include <string>
 
-class gfx_texture_vk final : public gfx_texture_base
+class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_object_base
 {
     uint32_t m_ref_count;
 
@@ -48,7 +49,7 @@ class gfx_texture_vk final : public gfx_texture_base
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
-    struct read_input_stream_task_data
+    struct texture_read_input_stream_task_data_t
     {
         mcrt_string m_initial_filename;
         gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
@@ -183,7 +184,7 @@ private:
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk() : gfx_texture_base(), m_ref_count(1U), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk() : gfx_texture_base(), gfx_streaming_object_base(), m_ref_count(1U), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
 };
 
 #endif

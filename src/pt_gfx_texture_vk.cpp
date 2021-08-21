@@ -159,8 +159,8 @@ bool gfx_texture_vk::read_input_stream(
         // pass to the second stage
         {
             mcrt_task_ref task = mcrt_task_allocate_root(read_input_stream_task_execute);
-            static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-            struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(task));
+            static_assert(sizeof(struct texture_read_input_stream_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+            struct texture_read_input_stream_task_data_t *task_data = reinterpret_cast<struct texture_read_input_stream_task_data_t *>(mcrt_task_get_user_data(task));
             // There is no constructor of the POD "mcrt_task_user_data_t"
             new (&task_data->m_initial_filename) mcrt_string(initial_filename);
             task_data->m_input_stream_init_callback = input_stream_init_callback;
@@ -197,8 +197,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
     if (!recycle)
     {
-        static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-        struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+        static_assert(sizeof(struct texture_read_input_stream_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+        struct texture_read_input_stream_task_data_t *task_data = reinterpret_cast<struct texture_read_input_stream_task_data_t *>(mcrt_task_get_user_data(self));
 
         PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_status);
         PT_MAYBE_UNUSED bool streaming_error = mcrt_atomic_load(&task_data->m_gfx_texture->m_streaming_error);
@@ -210,8 +210,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
     }
     else
     {
-        static_assert(sizeof(read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-        read_input_stream_task_data *task_data = reinterpret_cast<read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+        static_assert(sizeof(texture_read_input_stream_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+        texture_read_input_stream_task_data_t *task_data = reinterpret_cast<texture_read_input_stream_task_data_t *>(mcrt_task_get_user_data(self));
 
         // tally_completion_of_predecessor manually
         mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
@@ -222,8 +222,8 @@ mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute(mcrt_task_ref self)
 
 inline mcrt_task_ref gfx_texture_vk::read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self)
 {
-    static_assert(sizeof(struct read_input_stream_task_data) <= sizeof(mcrt_task_user_data_t), "");
-    struct read_input_stream_task_data *task_data = reinterpret_cast<struct read_input_stream_task_data *>(mcrt_task_get_user_data(self));
+    static_assert(sizeof(struct texture_read_input_stream_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+    struct texture_read_input_stream_task_data_t *task_data = reinterpret_cast<struct texture_read_input_stream_task_data_t *>(mcrt_task_get_user_data(self));
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
@@ -450,7 +450,7 @@ void gfx_texture_vk::release(class gfx_connection_vk *gfx_connection)
 
         bool streaming_done;
         {
-            // make sure this function happens before or after the gfx_streaming_object::streaming_done
+            // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
             this->streaming_done_lock();
 
             streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);

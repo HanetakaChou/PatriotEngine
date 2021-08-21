@@ -30,9 +30,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_device_vk_wsi_x11.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_vk.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_base.cpp \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_buffer_vk.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_streaming_object_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_node_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_node_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_mesh_base.cpp \

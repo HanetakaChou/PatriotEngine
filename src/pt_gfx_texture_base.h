@@ -21,9 +21,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
-#include "pt_gfx_streaming_object.h"
 
-class gfx_texture_base : public gfx_streaming_object
+class gfx_texture_base
 {
 protected:
     enum gfx_texture_common_type_t
@@ -287,7 +286,7 @@ protected:
         uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
         gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
-    inline gfx_texture_base() : gfx_streaming_object() {}
+    inline gfx_texture_base() {}
 
 public:
     virtual bool read_input_stream(

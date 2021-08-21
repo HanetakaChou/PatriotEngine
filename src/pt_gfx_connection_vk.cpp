@@ -20,7 +20,6 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
-#include "pt_gfx_buffer_vk.h"
 #include "pt_gfx_node_vk.h"
 #include "pt_gfx_mesh_vk.h"
 #include "pt_gfx_texture_vk.h"
@@ -42,82 +41,6 @@ class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connect
 
 inline gfx_connection_vk::gfx_connection_vk()
 {
-}
-
-template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::init()
-{
-    this->m_linear_list_count = 0U;
-    this->m_link_list_head = NULL;
-}
-
-template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T value)
-{
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock);
-#endif
-
-    uint32_t linear_list_index = mcrt_atomic_inc_u32(&this->m_linear_list_count) - 1U;
-    if (linear_list_index < LINEAR_LIST_COUNT)
-    {
-        this->m_linear_list[linear_list_index] = value;
-    }
-    else
-    {
-        mcrt_atomic_dec_u32(&this->m_linear_list_count);
-
-        // performance issue
-
-        // Hudson 2006 / 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List / freeListPush + repatriatePublicFreeList
-        // "This is ABA safe without concern for versioning because the concurrent data structure is a single consumer (the owning thread) and multiple producers."
-
-        // ABA safe since the fence ensures that there is no consumer
-        struct link_list *link_list_node = new (mcrt_aligned_malloc(sizeof(struct link_list), alignof(struct link_list))) link_list{};
-        link_list_node->m_value = value;
-
-        struct link_list *link_list_head;
-        do
-        {
-            link_list_head = mcrt_atomic_load(&this->m_link_list_head);
-            link_list_node->m_next = link_list_head;
-        } while (link_list_head != mcrt_atomic_cas_ptr(&this->m_link_list_head, link_list_node, link_list_head));
-    }
-
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock);
-#endif
-}
-
-template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
-{
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock);
-#endif
-
-    // list
-    for (uint32_t linear_list_index = 0U; linear_list_index < this->m_linear_list_count; ++linear_list_index)
-    {
-        consume_callback(this->m_linear_list[linear_list_index], user_defined);
-    }
-    this->m_linear_list_count = 0U;
-
-    // link list
-    struct link_list *link_list_node = this->m_link_list_head;
-    while (link_list_node != NULL)
-    {
-        consume_callback(link_list_node->m_value, user_defined);
-        struct link_list *link_list_next = link_list_node->m_next;
-        mcrt_aligned_free(link_list_node);
-
-        link_list_node = link_list_next;
-    }
-    this->m_link_list_head = NULL;
-
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock);
-#endif
 }
 
 inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
@@ -255,28 +178,6 @@ inline bool gfx_connection_vk::init_streaming()
     }
 
     return true;
-}
-
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-void gfx_connection_vk::streaming_task_mark_executing_begin(uint32_t streaming_throttling_index)
-{
-    mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
-}
-
-void gfx_connection_vk::streaming_task_mark_executing_end(uint32_t streaming_throttling_index)
-{
-    mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
-}
-#endif
-
-void gfx_connection_vk::streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object)
-{
-    this->m_streaming_object_list[streaming_throttling_index].produce(streaming_object);
-}
-
-void gfx_connection_vk::streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task)
-{
-    this->m_streaming_task_respawn_list[streaming_throttling_index].produce(streaming_task);
 }
 
 inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index)
@@ -878,7 +779,7 @@ void gfx_connection_vk::reduce_streaming_task()
     // streaming_object // the third stage
     {
         this->m_streaming_object_list[streaming_throttling_index].consume_and_clear(
-            [](class gfx_streaming_object *value, void *user_defined_void) -> void
+            [](class gfx_streaming_object_base *value, void *user_defined_void) -> void
             {
                 class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
                 value->set_streaming_done(user_defined);
@@ -1360,22 +1261,21 @@ inline bool gfx_connection_vk::update_framebuffer()
 
 inline bool gfx_connection_vk::init_pipeline_layout()
 {
-    // bindless texture seems meaningless
     // \[Pettineo 2016\][Matt Pettineo. "Bindless Texturing For Deferred Rendering And Decals." WordPress Blog 2016.](https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/)
-    //
+
+    // bindless texture seems meaningless
     // It's believed that the "vkUpdateDescriptorSets" is heavy while the "vkCmdBindDescriptorSets" is lightweight
     // We may consider "update" as the "init" operation and store the descriptors in advance
     
     // [Direct3D 12](https://docs.microsoft.com/en-us/windows/win32/direct3d12/advanced-use-of-descriptor-tables?redirectedfrom=MSDN#changing-descriptor-table-entries-between-rendering-calls)
 
-
     // \[Kubisch 2016\] [Christoph Kubisch. "Vulkan Shader Resource Binding." NVIDIA GameWorks Blog 2016.](https://developer.nvidia.com/vulkan-shader-resource-binding)
     //
     // bindings happen at different frequencies
-    // each view        // camera, environment...
-    // each shader      // shader control values
-    // each material    // material parameters and textures
-    // each object      // object transforms
+    // each view                            // camera, environment...
+    // each ~shader~ material               // shader control values
+    // each ~material~ materialinstance     // material parameters and textures
+    // each object                          // object transforms
 
     // VkPhysicalDeviceLimits::maxPushConstantsSize // min 128
     // vp 64 byte // each view
@@ -1391,6 +1291,10 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     //  ambientocclusion
     //  height
     //  normal
+
+    // VkPhysicalDeviceLimits::maxPerStageDescriptorSampledImages // min 16
+    // VkPhysicalDeviceLimits::maxPerStageResources
+    // VkPhysicalDeviceLimits::maxDescriptorSetSampledImages
 
     // the related "descriptor_set" is owned by this "gfx_connection"
     // uniform buffer // the joint matrix
@@ -2245,12 +2149,6 @@ void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
     this->release_frame();
     this->reduce_streaming_task();
-}
-
-class gfx_buffer_base *gfx_connection_vk::create_buffer()
-{
-    gfx_buffer_vk *buffer = new (mcrt_aligned_malloc(sizeof(gfx_buffer_vk), alignof(gfx_buffer_vk))) gfx_buffer_vk();
-    return buffer;
 }
 
 class gfx_node_base *gfx_connection_vk::create_node()

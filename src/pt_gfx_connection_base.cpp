@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include "pt_gfx_connection_base.h"
 
+// API
 #if defined(PT_WIN32)
 extern class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 #endif
@@ -30,6 +31,7 @@ extern class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_win
     extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 #endif
 
+// API
 class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     class gfx_connection_base *gfx_connection = NULL;
@@ -58,8 +60,6 @@ class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_con
     return gfx_connection;
 }
 
-//--- export ---
-
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
@@ -71,9 +71,6 @@ inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<
 
 inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
-
-inline gfx_buffer_ref wrap(class gfx_buffer_base *buffer) { return reinterpret_cast<gfx_buffer_ref>(buffer); }
-inline class gfx_buffer_base *unwrap(gfx_buffer_ref buffer) { return reinterpret_cast<class gfx_buffer_base *>(buffer); }
 
 PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
@@ -103,11 +100,6 @@ PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref g
 PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection)
 {
     return wrap(unwrap(gfx_connection)->create_mesh());
-}
-
-PT_ATTR_GFX gfx_buffer_ref PT_CALL gfx_connection_create_buffer(gfx_connection_ref gfx_connection)
-{
-    return wrap(unwrap(gfx_connection)->create_buffer());
 }
 
 PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection)

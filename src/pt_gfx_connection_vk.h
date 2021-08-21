@@ -29,7 +29,7 @@
 #include "pt_gfx_connection_base.h"
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc_vk.h"
-#include "pt_gfx_streaming_object.h"
+#include "pt_gfx_streaming_object_base.h"
 #include "pt_gfx_node_vk.h"
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -40,40 +40,13 @@ class gfx_connection_vk final : public gfx_connection_base
     class gfx_malloc_vk m_malloc;
 
     // MCRT
-    mcrt_task_arena_ref m_task_arena;
-    mcrt_task_ref m_task_unused;
-    uint32_t m_task_arena_thread_count;
 
-    // avoid false sharing
+    // Avoid false sharing
 #if defined(PT_X64) || defined(PT_X86) || defined(PT_ARM64) || defined(PT_ARM)
     enum {ESTIMATED_CACHE_LINE_SIZE = 64U};
 #else
 #error Unknown Architecture
 #endif
-
-    template <typename T, uint32_t LINEAR_LIST_COUNT>
-    struct mpsc_list
-    {
-        static_assert(std::is_pod<T>::value, "");
-
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_asset_rwlock_t m_asset_rwlock; // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
-#endif
-
-        uint32_t m_linear_list_count;
-        T m_linear_list[LINEAR_LIST_COUNT];
-
-        struct link_list
-        {
-            struct link_list *m_next;
-            T m_value;
-        };
-        struct link_list *m_link_list_head;
-
-        inline void init();
-        inline void produce(T value);
-        inline void consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined);
-    };
 
     // Frame
     enum
@@ -204,18 +177,6 @@ class gfx_connection_vk final : public gfx_connection_base
     VkSwapchainKHR m_swapchain;
 
     // Streaming
-    enum
-    {
-        STREAMING_THROTTLING_COUNT = 3U
-    };
-    uint32_t m_streaming_throttling_index;
-    mcrt_rwlock_t m_rwlock_streaming_throttling_index;
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_t m_asset_rwlock_streaming_task[STREAMING_THROTTLING_COUNT];
-#endif
-    mcrt_task_ref m_streaming_task_respawn_root;
-    uint32_t m_streaming_thread_count;
-
     VkCommandBuffer *m_streaming_transfer_submit_info_command_buffers;
     VkCommandBuffer *m_streaming_graphics_submit_info_command_buffers;
     struct streaming_thread_block
@@ -232,22 +193,6 @@ class gfx_connection_vk final : public gfx_connection_base
 
     VkSemaphore m_streaming_semaphore[STREAMING_THROTTLING_COUNT];
     VkFence m_streaming_fence[STREAMING_THROTTLING_COUNT];
-
-    mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
-
-    enum
-    {
-        STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U,
-        STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U
-    };
-    struct mpsc_list<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
-
-    // Staging Buffer
-    // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
-    uint64_t m_transfer_src_buffer_begin[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
 
     inline VkCommandBuffer streaming_task_get_transfer_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
     inline VkCommandBuffer streaming_task_get_graphics_command_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index);
@@ -270,7 +215,6 @@ class gfx_connection_vk final : public gfx_connection_base
     inline ~gfx_connection_vk();
 
     friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
-    class gfx_buffer_base *create_buffer() override;
     class gfx_node_base *create_node() override;
     class gfx_mesh_base *create_mesh() override;
     class gfx_texture_base *create_texture() override;
@@ -285,51 +229,21 @@ public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
-    // MCRT
-    inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
-
     // Frame
     void frame_node_destroy_list_push(class gfx_node_vk *node);
     void frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh);
     void frame_texture_destroy_list_push(class gfx_texture_vk *texture);
 
     // Streaming
-#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    void streaming_task_mark_executing_begin(uint32_t streaming_throttling_index);
-    void streaming_task_mark_executing_end(uint32_t streaming_throttling_index);
-#endif
-
-    inline void streaming_throttling_index_lock()
-    {
-        mcrt_rwlock_rdlock(&this->m_rwlock_streaming_throttling_index);
-    }
-    inline uint32_t streaming_throttling_index() { return mcrt_atomic_load(&this->m_streaming_throttling_index); }
-    inline void streaming_throttling_index_unlock()
-    {
-        mcrt_rwlock_rdunlock(&this->m_rwlock_streaming_throttling_index);
-    }
-
-    inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
-    inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index)
-    {
-        return m_streaming_task_root[streaming_throttling_index];
-    }
-
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
-    inline uint64_t transfer_src_buffer_begin(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_begin[streaming_throttling_index]; }
-    inline uint64_t *transfer_src_buffer_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_end[streaming_throttling_index]; }
-    inline uint64_t transfer_src_buffer_size(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_size[streaming_throttling_index]; }
-
+ 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
 
     void copy_vertex_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
     void copy_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
-
-    void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object *streaming_object);
-    void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task);
 
     inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return this->m_device.create_buffer(create_info, buffer); }
     inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return this->m_device.get_buffer_memory_requirements(buffer, memory_requirements); }

@@ -35,7 +35,6 @@ enum
 };
 
 typedef struct _gfx_connection_t *gfx_connection_ref;
-typedef struct _gfx_buffer_t_ *gfx_buffer_ref;
 typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
 typedef struct _gfx_texture_t_ *gfx_texture_ref;
 typedef struct _gfx_node_t_ *gfx_node_ref;
@@ -67,11 +66,6 @@ extern "C"
     PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection);
 
     PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
-
-    PT_ATTR_GFX gfx_buffer_ref PT_CALL gfx_connection_create_buffer(gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX bool PT_CALL gfx_buffer_read_vertex_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t input_stream_offset, int64_t input_stream_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
-    PT_ATTR_GFX bool PT_CALL gfx_buffer_read_index_input_stream(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer, int64_t input_stream_offset, int64_t input_stream_length, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
-    PT_ATTR_GFX void PT_CALL gfx_buffer_destroy(gfx_connection_ref gfx_connection, gfx_buffer_ref buffer);
 
     // We may share the texture but we scarcely share the buffer
     // Thus we don't support buffer

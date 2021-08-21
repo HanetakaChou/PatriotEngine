@@ -15,22 +15,12 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-{
-    global:
-        gfx_connection_init;
-        gfx_connection_wsi_on_resized;
-        gfx_connection_wsi_on_redraw_needed_acquire;
-        gfx_connection_wsi_on_redraw_needed_release;
-        gfx_connection_destroy;
-        gfx_connection_create_node;
-        gfx_node_set_mesh;
-        gfx_node_destroy;
-        gfx_connection_create_mesh;
-        gfx_mesh_read_input_stream;
-        gfx_mesh_destroy;
-        gfx_connection_create_texture;
-        gfx_texture_read_input_stream;
-        gfx_texture_destroy;
-    local:
-        *;
-};
+#ifndef _PT_GFX_STREAMING_OBJECT_VK_H_
+#define _PT_GFX_STREAMING_OBJECT_VK_H_ 1
+
+#include <stddef.h>
+#include <stdint.h>
+#include "pt_gfx_streaming_object_base.h"
+
+
+#endif
