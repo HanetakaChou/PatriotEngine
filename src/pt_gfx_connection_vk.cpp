@@ -45,14 +45,14 @@ inline gfx_connection_vk::gfx_connection_vk()
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::init()
+inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::init()
 {
     this->m_linear_list_count = 0U;
     this->m_link_list_head = NULL;
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T value)
+inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T value)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock);
@@ -90,7 +90,7 @@ inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::produce(T value)
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_vk::mplist<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
+inline void gfx_connection_vk::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock);

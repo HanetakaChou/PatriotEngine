@@ -52,12 +52,12 @@ class gfx_connection_vk final : public gfx_connection_base
 #endif
 
     template <typename T, uint32_t LINEAR_LIST_COUNT>
-    struct mplist
+    struct mpsc_list
     {
         static_assert(std::is_pod<T>::value, "");
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_asset_rwlock_t m_asset_rwlock;
+        mcrt_asset_rwlock_t m_asset_rwlock; // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
 #endif
 
         uint32_t m_linear_list_count;
@@ -128,10 +128,10 @@ class gfx_connection_vk final : public gfx_connection_base
         MESH_DESTROY_LIST_COUNT = 32U,
         TEXTURE_DESTROY_LIST_COUNT = 32U
     };
-    struct mplist<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
-    struct mplist<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-    struct mplist<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
-    struct mplist<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
 
     inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
     inline void acquire_frame();
@@ -240,8 +240,8 @@ class gfx_connection_vk final : public gfx_connection_base
         STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U,
         STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U
     };
-    struct mplist<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
-    struct mplist<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
+    struct mpsc_list<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_streaming_object *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
 
     // Staging Buffer
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
