@@ -782,7 +782,7 @@ void gfx_connection_vk::reduce_streaming_task()
             [](class gfx_streaming_object_base *value, void *user_defined_void) -> void
             {
                 class gfx_connection_vk *user_defined = static_cast<class gfx_connection_vk *>(user_defined_void);
-                value->set_streaming_done(user_defined);
+                value->streaming_done_execute(user_defined);
             },
             this);
     }

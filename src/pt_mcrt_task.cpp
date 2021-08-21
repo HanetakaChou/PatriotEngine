@@ -54,8 +54,7 @@ public:
 
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
-
-//static_assert(sizeof(mcrt_task_t) <= mcrt::internal::generic_scheduler::quick_task_size, "");
+static_assert(sizeof(mcrt_task_t) <= mcrt::internal::generic_scheduler::quick_task_size, "");
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {

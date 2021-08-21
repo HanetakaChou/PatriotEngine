@@ -44,44 +44,17 @@ bool gfx_streaming_object_base::streaming_stage_first_execute(
 
     if (!streaming_cancel)
     {
-        gfx_input_stream_ref input_stream;
+        gfx_input_stream_ref input_stream = input_stream_init_callback(initial_filename);
+        if (gfx_input_stream_ref(-1) == input_stream)
         {
-            class internal_input_stream_guard
-            {
-                gfx_input_stream_ref *const m_input_stream;
-                void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+            mcrt_atomic_store(&this->m_streaming_error, true);
+            return false;
+        }
 
-            public:
-                inline internal_input_stream_guard(
-                    gfx_input_stream_ref *input_stream,
-                    char const *initial_filename,
-                    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
-                    : m_input_stream(input_stream),
-                      m_input_stream_destroy_callback(input_stream_destroy_callback)
-                {
-                    (*m_input_stream) = input_stream_init_callback(initial_filename);
-                }
-                inline ~internal_input_stream_guard()
-                {
-                    if (gfx_input_stream_ref(-1) != (*m_input_stream))
-                    {
-                        m_input_stream_destroy_callback((*m_input_stream));
-                    }
-                }
-            } instance_internal_input_stream_guard(&input_stream, initial_filename, input_stream_init_callback, input_stream_destroy_callback);
-
-            if (gfx_input_stream_ref(-1) == input_stream)
-            {
-                mcrt_atomic_store(&this->m_streaming_error, true);
-                return false;
-            }
-
-            if (!this->streaming_stage_first_populate_task_data_pre_callback(input_stream, input_stream_read_callback, input_stream_seek_callback, streaming_stage_first_thread_stack_data_user_defined))
-            {
-                mcrt_atomic_store(&this->m_streaming_error, true);
-                return false;
-            }
+        if (!this->streaming_stage_first_pre_populate_task_data_callback(gfx_connection, input_stream, input_stream_read_callback, input_stream_seek_callback, streaming_stage_first_thread_stack_data_user_defined))
+        {
+            mcrt_atomic_store(&this->m_streaming_error, true);
+            return false;
         }
 
         // pass to the second stage
@@ -89,14 +62,12 @@ bool gfx_streaming_object_base::streaming_stage_first_execute(
             mcrt_task_ref task = mcrt_task_allocate_root(streaming_stage_second_task_execute);
             static_assert(sizeof(struct streaming_stage_second_task_data_base_t) <= sizeof(mcrt_task_user_data_t), "");
             struct streaming_stage_second_task_data_base_t *task_data = reinterpret_cast<struct streaming_stage_second_task_data_base_t *>(mcrt_task_get_user_data(task));
-            // There is no constructor of the POD "mcrt_task_user_data_t"
-            new (&task_data->m_initial_filename) mcrt_string(initial_filename);
-            task_data->m_input_stream_init_callback = input_stream_init_callback;
+            task_data->m_streaming_object = this;
+            task_data->m_gfx_connection = gfx_connection;
+            task_data->m_input_stream = input_stream;
             task_data->m_input_stream_read_callback = input_stream_read_callback;
             task_data->m_input_stream_seek_callback = input_stream_seek_callback;
             task_data->m_input_stream_destroy_callback = input_stream_destroy_callback;
-            task_data->m_gfx_connection = gfx_connection;
-            task_data->m_streaming_object = this;
             this->streaming_stage_first_populate_task_data_callback(streaming_stage_first_thread_stack_data_user_defined, &task_data->m_task_data_user_defined);
 
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_SECOND);
@@ -120,7 +91,7 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
 {
     uint32_t streaming_throttling_index;
     bool recycle;
-    // The "streaming_stage_second_task_execute_internal" makes sure that the "mcrt_task_decrement_ref_count" is called after all works are done
+    // The "streaming_stage_second_task_execute_internal" makes sure that the "mcrt_task_decrement_ref_count" is called after all works(include the C++ destructors) are done
     mcrt_task_ref task_bypass = streaming_stage_second_task_execute_internal(&streaming_throttling_index, &recycle, self);
 
     if (!recycle)
@@ -133,8 +104,7 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
         assert(streaming_error || STREAMING_STATUS_STAGE_THIRD == streaming_status);
         assert(!streaming_error || STREAMING_STATUS_STAGE_SECOND == streaming_status);
 
-        // There is no destructor of the POD "mcrt_task_user_data_t"
-        (&task_data->m_initial_filename)->~mcrt_string();
+        task_data->m_input_stream_destroy_callback(task_data->m_input_stream);
     }
     else
     {
@@ -198,105 +168,70 @@ inline mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_exec
 
         if (!streaming_cancel)
         {
-            gfx_input_stream_ref input_stream;
+            // thread stack data
+            struct streaming_stage_second_thread_stack_data_user_defined_t thread_stack_data_user_defined;
+
+            // load header
+            // allocate temp memory for the calculation
+            if (!task_data->m_streaming_object->streaming_stage_second_pre_calculate_total_size_callback(&thread_stack_data_user_defined, task_data->m_input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined))
             {
-                class internal_input_stream_guard
-                {
-                    gfx_input_stream_ref *const m_input_stream;
-                    void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
-
-                public:
-                    inline internal_input_stream_guard(
-                        gfx_input_stream_ref *input_stream,
-                        char const *initial_filename,
-                        gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-                        void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
-                        : m_input_stream(input_stream),
-                          m_input_stream_destroy_callback(input_stream_destroy_callback)
-                    {
-                        (*m_input_stream) = input_stream_init_callback(initial_filename);
-                    }
-                    inline ~internal_input_stream_guard()
-                    {
-                        if (gfx_input_stream_ref(-1) != (*m_input_stream))
-                        {
-                            m_input_stream_destroy_callback((*m_input_stream));
-                        }
-                    }
-                } instance_internal_input_stream_guard(&input_stream, task_data->m_initial_filename.c_str(), task_data->m_input_stream_init_callback, task_data->m_input_stream_destroy_callback);
-
-                if (PT_UNLIKELY(gfx_input_stream_ref(-1) == input_stream))
-                {
-                    mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
-                    (*output_streaming_throttling_index) = streaming_throttling_index;
-                    (*output_recycle) = false;
-                    return NULL;
-                }
-
-                // load header
-                // allocate temp memory for the calculation
-                if (!task_data->m_streaming_object->streaming_stage_second_calculate_total_size_pre_callback(input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined))
-                {
-                    mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
-                    (*output_streaming_throttling_index) = streaming_throttling_index;
-                    (*output_recycle) = false;
-                    return NULL;
-                }
-
-                // try to allocate memory from staging buffer
-                {
-                    uint64_t transfer_src_buffer_begin = task_data->m_gfx_connection->transfer_src_buffer_begin(streaming_throttling_index);
-                    uint64_t transfer_src_buffer_end = uint64_t(-1);
-                    uint64_t transfer_src_buffer_size = task_data->m_gfx_connection->transfer_src_buffer_size(streaming_throttling_index);
-                    uint64_t base_offset = uint64_t(-1);
-
-                    do
-                    {
-                        base_offset = mcrt_atomic_load(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
-
-                        size_t total_size = task_data->m_streaming_object->streaming_stage_second_calculate_total_size_callback(base_offset, task_data->m_gfx_connection, &task_data->m_task_data_user_defined);
-
-                        transfer_src_buffer_end = (base_offset + total_size);
-                        //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
-
-                        // respawn if memory not enough
-                        if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
-                        {
-                            // recycle to prevent free_task
-                            mcrt_task_recycle_as_child_of(self, task_data->m_gfx_connection->streaming_task_respawn_root());
-
-                            task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
-
-                            // release temp memory for the calculation
-                            task_data->m_streaming_object->streaming_stage_second_calculate_total_size_post_callback(false, task_data->m_gfx_connection, streaming_throttling_index, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined);
-
-                            // recycle needs manually tally_completion_of_predecessor
-                            (*output_streaming_throttling_index) = streaming_throttling_index;
-                            (*output_recycle) = true;
-                            return NULL;
-                        }
-
-                    } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
-                }
-
-                // pass to the third stage
-                {
-                    task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
-                }
-
-                // release temp memory for the calculation
-                // load data
-                // GPU copy cmd
-                if (!task_data->m_streaming_object->streaming_stage_second_calculate_total_size_post_callback(true, task_data->m_gfx_connection, streaming_throttling_index, input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined))
-                {
-                    mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
-                    (*output_streaming_throttling_index) = streaming_throttling_index;
-                    (*output_recycle) = false;
-                    return NULL;
-                }
-
-                mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+                mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
+                (*output_streaming_throttling_index) = streaming_throttling_index;
+                (*output_recycle) = false;
+                return NULL;
             }
+
+            // try to allocate memory from staging buffer
+            {
+                uint64_t transfer_src_buffer_begin = task_data->m_gfx_connection->transfer_src_buffer_begin(streaming_throttling_index);
+                uint64_t transfer_src_buffer_end = uint64_t(-1);
+                uint64_t transfer_src_buffer_size = task_data->m_gfx_connection->transfer_src_buffer_size(streaming_throttling_index);
+                uint64_t base_offset = uint64_t(-1);
+
+                do
+                {
+                    base_offset = mcrt_atomic_load(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
+
+                    size_t total_size = task_data->m_streaming_object->streaming_stage_second_calculate_total_size_callback(base_offset, &thread_stack_data_user_defined, task_data->m_gfx_connection, &task_data->m_task_data_user_defined);
+
+                    transfer_src_buffer_end = (base_offset + total_size);
+                    //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+
+                    // respawn if memory not enough
+                    if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
+                    {
+                        // recycle to prevent free_task
+                        mcrt_task_recycle_as_child_of(self, task_data->m_gfx_connection->streaming_task_respawn_root());
+
+                        task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
+
+                        // release temp memory for the calculation
+                        task_data->m_streaming_object->streaming_stage_second_post_calculate_total_size_callback(false, streaming_throttling_index, &thread_stack_data_user_defined, task_data->m_gfx_connection, task_data->m_input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined);
+
+                        // recycle needs manually tally_completion_of_predecessor
+                        (*output_streaming_throttling_index) = streaming_throttling_index;
+                        (*output_recycle) = true;
+                        return NULL;
+                    }
+
+                } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
+            }
+
+            // release temp memory for the calculation
+            // load data
+            // GPU copy cmd
+            if (!task_data->m_streaming_object->streaming_stage_second_post_calculate_total_size_callback(true, streaming_throttling_index, &thread_stack_data_user_defined, task_data->m_gfx_connection, task_data->m_input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined))
+            {
+                mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
+                (*output_streaming_throttling_index) = streaming_throttling_index;
+                (*output_recycle) = false;
+                return NULL;
+            }
+
+            // pass to the third stage
+            task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
+
+            mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
         }
         else
         {
@@ -307,9 +242,7 @@ inline mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_exec
             task_data->m_streaming_object->streaming_destroy_callback();
 #else
             // pass to the third stage
-            {
-                task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
-            }
+            task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
 
             mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
 #endif
@@ -321,7 +254,32 @@ inline mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_exec
     return NULL;
 }
 
-void gfx_streaming_object_base::set_streaming_done(class gfx_connection_base *gfx_connection)
+void gfx_streaming_object_base::streaming_destroy_execute(bool *streaming_done)
+{
+    // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
+    this->streaming_done_lock();
+
+    streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
+
+    if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+    {
+        mcrt_atomic_store(&this->m_streaming_cancel, true);
+        (*streaming_done) = false;
+    }
+    else if (STREAMING_STATUS_DONE == streaming_status)
+    {
+        (*streaming_done) = true;
+    }
+    else
+    {
+        assert(0);
+        (*streaming_done) = false;
+    }
+
+    this->streaming_done_unlock();
+}
+
+void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base *gfx_connection)
 {
     this->streaming_done_lock();
 
@@ -333,7 +291,7 @@ void gfx_streaming_object_base::set_streaming_done(class gfx_connection_base *gf
 
     if (!streaming_cancel)
     {
-        this->m_streaming_status = STREAMING_STATUS_DONE;
+        mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
     }
     else
     {

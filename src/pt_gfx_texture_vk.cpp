@@ -24,11 +24,6 @@
 #include <vulkan/vulkan.h>
 #include <new>
 
-struct texture_streaming_stage_first_thread_stack_user_defined_t
-{
-    class gfx_connection_vk *m_gfx_connection;
-};
-
 bool gfx_texture_vk::read_input_stream(
     class gfx_connection_base *gfx_connection,
     char const *initial_filename,
@@ -37,23 +32,18 @@ bool gfx_texture_vk::read_input_stream(
     int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
     void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
 {
-    struct texture_streaming_stage_first_thread_stack_user_defined_t thread_stack_user_defined;
-    thread_stack_user_defined.m_gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection);
-    return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, &thread_stack_user_defined);
+    return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, NULL);
 }
 
-bool gfx_texture_vk::streaming_stage_first_populate_task_data_pre_callback(gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void *thread_stack_user_defined_void)
+bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
 {
-    struct texture_streaming_stage_first_thread_stack_user_defined_t *thread_stack_user_defined = reinterpret_cast<struct texture_streaming_stage_first_thread_stack_user_defined_t *>(thread_stack_user_defined_void);
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
     struct common_header_t common_header;
+    size_t common_data_offset;
+    if (!load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
-        size_t common_data_offset;
-        bool res_load_header_from_input_stream = this->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback);
-        if (PT_UNLIKELY(!res_load_header_from_input_stream))
-        {
-            return false;
-        }
+        return false;
     }
 
     specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
@@ -62,7 +52,7 @@ bool gfx_texture_vk::streaming_stage_first_populate_task_data_pre_callback(gfx_i
     // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
     {
         struct VkFormatProperties physical_device_format_properties;
-        thread_stack_user_defined->m_gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
+        gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
         if (PT_UNLIKELY(0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)))
         {
             return false;
@@ -87,22 +77,22 @@ bool gfx_texture_vk::streaming_stage_first_populate_task_data_pre_callback(gfx_i
         create_info.queueFamilyIndexCount = 0U;
         create_info.pQueueFamilyIndices = NULL;
         create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        PT_MAYBE_UNUSED VkResult res = thread_stack_user_defined->m_gfx_connection->create_image(&create_info, &this->m_image);
+        PT_MAYBE_UNUSED VkResult res = gfx_connection->create_image(&create_info, &this->m_image);
         assert(VK_SUCCESS == res);
     }
 
     assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
     {
         VkMemoryRequirements memory_requirements;
-        thread_stack_user_defined->m_gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
+        gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
 
         // vkAllocateMemory
         // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-        this->m_gfx_malloc_device_memory = thread_stack_user_defined->m_gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
+        this->m_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
         if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory))
         {
-            thread_stack_user_defined->m_gfx_connection->destroy_image(this->m_image);
+            gfx_connection->destroy_image(this->m_image);
             this->m_image = VK_NULL_HANDLE;
             return false;
         }
@@ -110,85 +100,77 @@ bool gfx_texture_vk::streaming_stage_first_populate_task_data_pre_callback(gfx_i
     assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
 
     {
-        PT_MAYBE_UNUSED VkResult res_bind_image_memory = thread_stack_user_defined->m_gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
+        PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
         assert(VK_SUCCESS == res_bind_image_memory);
     }
 
     return true;
 }
 
-void gfx_texture_vk::streaming_stage_first_populate_task_data_callback(void *thread_stack_user_defined_void, struct specific_streaming_stage_second_task_data_t *task_data_user_defined_void)
+void gfx_texture_vk::streaming_stage_first_populate_task_data_callback(void *thread_stack_user_defined_void, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
 {
-    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(struct specific_streaming_stage_second_task_data_t), "");
-    struct texture_streaming_stage_second_task_data_t *task_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data_user_defined_void);
-    task_data_user_defined->m_memcpy_dest = NULL;
-    task_data_user_defined->m_cmdcopy_dest = NULL;
 }
 
-bool gfx_texture_vk::streaming_stage_second_calculate_total_size_pre_callback(gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), struct specific_streaming_stage_second_task_data_t *task_data_user_defined_void)
+bool gfx_texture_vk::streaming_stage_second_pre_calculate_total_size_callback(struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
 {
-    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(struct specific_streaming_stage_second_task_data_t), "");
-    struct texture_streaming_stage_second_task_data_t *task_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data_user_defined_void);
+    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
+    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
 
-    struct common_header_t common_header;
-    size_t common_data_offset;
-    if (PT_UNLIKELY(!this->load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback)))
+    if (PT_UNLIKELY(!load_header_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback)))
     {
         return false;
     }
 
-    struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
+    thread_stack_data_user_defined->m_specific_header_vk = common_to_specific_header_translate(&thread_stack_data_user_defined->m_common_header);
 
-    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * specific_header_vk.arrayLayers * specific_header_vk.mipLevels;
+    thread_stack_data_user_defined->m_num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * thread_stack_data_user_defined->m_specific_header_vk.arrayLayers * thread_stack_data_user_defined->m_specific_header_vk.mipLevels;
 
-    task_data_user_defined->m_memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
-    task_data_user_defined->m_cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
-
-    task_data_user_defined->m_common_header = common_header;
-    task_data_user_defined->m_common_data_offset = common_data_offset;
-    task_data_user_defined->m_specific_header_vk = specific_header_vk;
-    task_data_user_defined->m_num_subresource = num_subresource;
-
+    thread_stack_data_user_defined->m_memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * thread_stack_data_user_defined->m_num_subresource, alignof(struct load_memcpy_dest_t)));
+    thread_stack_data_user_defined->m_cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * thread_stack_data_user_defined->m_num_subresource, alignof(struct VkBufferImageCopy)));
     return true;
 }
 
-size_t gfx_texture_vk::streaming_stage_second_calculate_total_size_callback(uint64_t base_offset, class gfx_connection_base *gfx_connection_base, struct specific_streaming_stage_second_task_data_t *task_data_user_defined_void)
+size_t gfx_texture_vk::streaming_stage_second_calculate_total_size_callback(uint64_t base_offset, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection_base, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
 {
+    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
+    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(struct specific_streaming_stage_second_task_data_t), "");
-    struct texture_streaming_stage_second_task_data_t *task_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data_user_defined_void);
 
-    size_t total_size = get_copyable_footprints(&task_data_user_defined->m_specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, task_data_user_defined->m_num_subresource, task_data_user_defined->m_memcpy_dest, task_data_user_defined->m_cmdcopy_dest);
+    size_t total_size = get_copyable_footprints(&thread_stack_data_user_defined->m_specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, thread_stack_data_user_defined->m_cmdcopy_dest);
     return total_size;
 }
 
-bool gfx_texture_vk::streaming_stage_second_calculate_total_size_post_callback(bool allocate_success, class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), struct specific_streaming_stage_second_task_data_t *task_data_user_defined_void)
+bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(bool staging_buffer_allocate_success, uint32_t streaming_throttling_index, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
 {
+    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
+    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(struct specific_streaming_stage_second_task_data_t), "");
-    struct texture_streaming_stage_second_task_data_t *task_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data_user_defined_void);
 
-    if (allocate_success)
+    if (staging_buffer_allocate_success)
     {
         // load_data_from_input_stream
+        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, calc_subresource, input_stream, input_stream_read_callback, input_stream_seek_callback))
         {
-            if (!this->load_data_from_input_stream(&task_data_user_defined->m_common_header, &task_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), task_data_user_defined->m_num_subresource, task_data_user_defined->m_memcpy_dest, calc_subresource, input_stream, input_stream_read_callback, input_stream_seek_callback))
-            {
-                return false;
-            }
+            mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
+            mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
+            return false;
         }
+        mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
 
         // copy_buffer_to_image
         {
             uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
             VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
-            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, task_data_user_defined->m_specific_header_vk.mipLevels, 0, 1};
-            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &subresource_range, task_data_user_defined->m_num_subresource, task_data_user_defined->m_cmdcopy_dest);
+            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, 1};
+            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &subresource_range, thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_cmdcopy_dest);
         }
+        mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
     }
-
-    mcrt_aligned_free(task_data_user_defined->m_memcpy_dest);
-    mcrt_aligned_free(task_data_user_defined->m_cmdcopy_dest);
+    else
+    {
+        mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
+        mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
+    }
 
     return true;
 }
@@ -210,31 +192,8 @@ void gfx_texture_vk::release(class gfx_connection_vk *gfx_connection)
 {
     if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
     {
-
         bool streaming_done;
-        {
-            // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
-            this->streaming_done_lock();
-
-            streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
-
-            if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
-            {
-                mcrt_atomic_store(&this->m_streaming_cancel, true);
-                streaming_done = false;
-            }
-            else if (STREAMING_STATUS_DONE == streaming_status)
-            {
-                streaming_done = true;
-            }
-            else
-            {
-                assert(0);
-                streaming_done = false;
-            }
-
-            this->streaming_done_unlock();
-        }
+        this->streaming_destroy_execute(&streaming_done);
 
         if (streaming_done)
         {
@@ -246,20 +205,16 @@ void gfx_texture_vk::release(class gfx_connection_vk *gfx_connection)
 
 void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
-
-    PT_MAYBE_UNUSED bool streaming_cancel = mcrt_atomic_load(&this->m_streaming_cancel);
-    assert(streaming_cancel);
-
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    this->process_destory(gfx_connection);
+    this->destory_execute(gfx_connection);
 }
 
 void gfx_texture_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
 {
-    this->process_destory(gfx_connection);
+    this->destory_execute(gfx_connection);
 }
 
-inline void gfx_texture_vk::process_destory(class gfx_connection_vk *gfx_connection)
+inline void gfx_texture_vk::destory_execute(class gfx_connection_vk *gfx_connection)
 {
     if (VK_NULL_HANDLE != this->m_image)
     {

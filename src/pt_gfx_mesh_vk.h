@@ -60,32 +60,66 @@ private:
     void *m_index_gfx_malloc_page_handle;
     VkDeviceMemory m_index_gfx_malloc_device_memory;
 
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
     bool read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
-    struct mesh_read_input_stream_task_data_t
+    struct mesh_streaming_stage_first_thread_stack_data_t
     {
-        mcrt_string m_initial_filename;
-        gfx_input_stream_ref(PT_PTR *m_input_stream_init_callback)(char const *initial_filename);
-        intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-        int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-        void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
-        class gfx_connection_vk *m_gfx_connection;
         uint32_t m_mesh_index;
         uint32_t m_material_index;
-        class gfx_mesh_vk *m_gfx_mesh;
     };
 
-    static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
+    struct mesh_streaming_stage_second_thread_stack_data_t
+    {
+        uint64_t m_base_offset;
+    };
+    static_assert(sizeof(struct mesh_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
 
-    static inline mcrt_task_ref read_input_stream_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
+    struct mesh_streaming_stage_second_task_data_t
+    {
+        uint32_t m_mesh_index;
+        uint32_t m_material_index;
+    };
+    static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(struct streaming_stage_second_task_data_user_defined_t), "");
+
+    bool streaming_stage_first_pre_populate_task_data_callback(
+        class gfx_connection_base *gfx_connection,
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        void *thread_stack_user_defined) override;
+
+    void streaming_stage_first_populate_task_data_callback(
+        void *thread_stack_user_defined,
+        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
+
+    bool streaming_stage_second_pre_calculate_total_size_callback(
+        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
+
+    size_t streaming_stage_second_calculate_total_size_callback(
+        uint64_t base_offset,
+        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
+        class gfx_connection_base *gfx_connection,
+        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
+
+    bool streaming_stage_second_post_calculate_total_size_callback(
+        bool staging_buffer_allocate_success,
+        uint32_t streaming_throttling_index,
+        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
+        class gfx_connection_base *gfx_connection,
+        gfx_input_stream_ref input_stream,
+        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
 
     void destroy(class gfx_connection_base *gfx_connection) override;
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
-    inline void process_destory(class gfx_connection_vk *gfx_connection);
+    inline void destory_execute(class gfx_connection_vk *gfx_connection);
 
 public:
     void addref();
