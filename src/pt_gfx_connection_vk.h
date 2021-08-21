@@ -170,8 +170,8 @@ class gfx_connection_vk final : public gfx_connection_base
     VkSampler m_immutable_sampler;
 
     // Descriptor
-    VkDescriptorSetLayout m_descriptor_set_layout_each_object_immutable;
-    VkDescriptorSetLayout m_descriptor_set_layout_each_object_dynamic;
+    VkDescriptorSetLayout m_descriptor_set_layout_each_object_shared;
+    VkDescriptorSetLayout m_descriptor_set_layout_each_object_private;
     VkPipelineLayout m_pipeline_layout;
 
     //

@@ -97,7 +97,7 @@ extern "C"
         DIFFUSECOLOR_TEXTURE_INDEX = 0,
         SPECULARCOLOR_TEXTURE_INDEX = 1,
         GLOSSINESS_TEXTURE_INDEX = 2,
-        AMBIENT_OCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
+        AMBIENTOCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
         HEIGHT_TEXTURE_INDEX = 4,            // Parallax
         NORMAL_TEXTURE_INDEX = 5,            // Bump
         TEXTURE_COUNT = 6
