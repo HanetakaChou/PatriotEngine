@@ -193,12 +193,12 @@ void gfx_texture_vk::release(class gfx_connection_vk *gfx_connection)
     if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
     {
         bool streaming_done;
-        this->streaming_destroy_execute(&streaming_done);
+        this->streaming_destroy_request(&streaming_done);
 
         if (streaming_done)
         {
             // the object is used by the rendering system
-            gfx_connection->frame_texture_destroy_list_push(this);
+            this->frame_destroy_request(gfx_connection);
         }
     }
 }
@@ -209,8 +209,9 @@ void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_c
     this->destory_execute(gfx_connection);
 }
 
-void gfx_texture_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
+void gfx_texture_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     this->destory_execute(gfx_connection);
 }
 

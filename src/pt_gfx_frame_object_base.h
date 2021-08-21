@@ -15,12 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef _PT_GFX_STREAMING_OBJECT_VK_H_
-#define _PT_GFX_STREAMING_OBJECT_VK_H_ 1
+#ifndef _PT_GFX_FRAME_OBJECT_BASE_H_
+#define _PT_GFX_FRAME_OBJECT_BASE_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_streaming_object_base.h"
+#include "pt_gfx_connection_base.h"
 
+class gfx_frame_object_base
+{
+    virtual void frame_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
+
+protected:
+    void frame_destroy_request(class gfx_connection_base *gfx_connection);
+
+public:
+    void frame_destroy_execute(class gfx_connection_base *gfx_connection);
+};
 
 #endif

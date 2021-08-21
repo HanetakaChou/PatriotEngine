@@ -254,7 +254,7 @@ inline mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_exec
     return NULL;
 }
 
-void gfx_streaming_object_base::streaming_destroy_execute(bool *streaming_done)
+void gfx_streaming_object_base::streaming_destroy_request(bool *streaming_done)
 {
     // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
     this->streaming_done_lock();

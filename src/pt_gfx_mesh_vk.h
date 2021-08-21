@@ -25,10 +25,11 @@
 #include "pt_gfx_mesh_base.h"
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_streaming_object_base.h"
+#include "pt_gfx_frame_object_base.h"
 #include <vulkan/vulkan.h>
 #include <string>
 
-class gfx_mesh_vk final : public gfx_mesh_base, public gfx_streaming_object_base
+class gfx_mesh_vk final : public gfx_mesh_base, public gfx_streaming_object_base, public gfx_frame_object_base
 {
     uint32_t m_ref_count;
     // mali IDVS
@@ -119,14 +120,14 @@ private:
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
+    void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
+
     inline void destory_execute(class gfx_connection_vk *gfx_connection);
 
 public:
     void addref();
 
     void release(class gfx_connection_vk *gfx_connection);
-
-    void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
 
     inline gfx_mesh_vk() : gfx_mesh_base(),
                            gfx_streaming_object_base(),

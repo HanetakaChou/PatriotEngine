@@ -51,17 +51,6 @@ class gfx_connection_vk final : public gfx_connection_base
     // Frame
     enum
     {
-        FRAME_THROTTLING_COUNT = 3U
-    };
-    uint32_t m_frame_throttling_index;
-    mcrt_rwlock_t m_rwlock_frame_throttling_index;
-
-    uint32_t m_frame_thread_count;
-
-    mcrt_task_ref m_frame_task_root;
-
-    enum
-    {
         OPAQUE_SUBPASS_INDEX = 0U,
         SUBPASS_COUNT = 1U
     };
@@ -91,20 +80,10 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_vector<class gfx_node_vk *> m_scene_node_list;
     mcrt_vector<size_t> m_scene_node_list_free_index_list;
 
-    mcrt_vector<class gfx_mesh_vk *> m_frame_mesh_unused_list[FRAME_THROTTLING_COUNT];
-    mcrt_vector<class gfx_texture_vk *> m_frame_texture_unused_list[FRAME_THROTTLING_COUNT];
+    mcrt_vector<class gfx_frame_object_base *> m_frame_object_unused_list[FRAME_THROTTLING_COUNT];
 
-    enum
-    {
-        NODE_INIT_LIST_COUNT = 32U,
-        NODE_DESTROY_LIST_COUNT = 32U,
-        MESH_DESTROY_LIST_COUNT = 32U,
-        TEXTURE_DESTROY_LIST_COUNT = 32U
-    };
     struct mpsc_list<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
     struct mpsc_list<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_mesh_vk *, MESH_DESTROY_LIST_COUNT> m_frame_mesh_destory_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_texture_vk *, TEXTURE_DESTROY_LIST_COUNT> m_frame_texture_destory_list[FRAME_THROTTLING_COUNT];
 
     inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
     inline void acquire_frame();
@@ -231,8 +210,7 @@ public:
 
     // Frame
     void frame_node_destroy_list_push(class gfx_node_vk *node);
-    void frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh);
-    void frame_texture_destroy_list_push(class gfx_texture_vk *texture);
+
 
     // Streaming
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }

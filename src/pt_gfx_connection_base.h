@@ -26,6 +26,7 @@
 #include <pt_mcrt_malloc.h>
 #include <type_traits>
 #include <new>
+#include "pt_gfx_frame_object_base.h"
 
 class gfx_connection_proxy
 {
@@ -76,6 +77,25 @@ protected:
         inline void consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined);
     };
 
+    // Frame
+    enum
+    {
+        FRAME_THROTTLING_COUNT = 3U
+    };
+    uint32_t m_frame_throttling_index;
+    mcrt_rwlock_t m_rwlock_frame_throttling_index;
+    uint32_t m_frame_thread_count;
+    mcrt_task_ref m_frame_task_root;
+
+    enum
+    {
+        NODE_INIT_LIST_COUNT = 32U,
+        NODE_DESTROY_LIST_COUNT = 32U,
+        FRAME_OBJECT_DESTROY_LIST_COUNT = 32U,
+        TEXTURE_DESTROY_LIST_COUNT = 32U
+    };
+    struct mpsc_list<class gfx_frame_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_frame_object_destory_list[FRAME_THROTTLING_COUNT];
+
     // Streaming
     enum
     {
@@ -108,6 +128,9 @@ public:
     // MCRT
     inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
 
+    // Frame
+    void frame_object_destroy_list_push(class gfx_frame_object_base *frame_object);
+
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     inline void streaming_task_mark_executing_begin(uint32_t streaming_throttling_index)
@@ -126,8 +149,8 @@ public:
     inline mcrt_task_ref streaming_task_root(uint32_t streaming_throttling_index) { return m_streaming_task_root[streaming_throttling_index]; }
     inline mcrt_task_ref streaming_task_respawn_root() { return m_streaming_task_respawn_root; }
 
-    inline void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object_base *streaming_object) { this->m_streaming_object_list[streaming_throttling_index].produce(streaming_object); }
-    inline void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task) { this->m_streaming_task_respawn_list[streaming_throttling_index].produce(streaming_task); }
+    inline void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object_base *streaming_object) { return this->m_streaming_object_list[streaming_throttling_index].produce(streaming_object); }
+    inline void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task) { return this->m_streaming_task_respawn_list[streaming_throttling_index].produce(streaming_task); }
 
     inline uint64_t transfer_src_buffer_begin(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_begin[streaming_throttling_index]; }
     inline uint64_t *transfer_src_buffer_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_end[streaming_throttling_index]; }

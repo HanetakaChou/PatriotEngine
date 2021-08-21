@@ -18,6 +18,14 @@
 #include <stddef.h>
 #include "pt_gfx_connection_base.h"
 
+void gfx_connection_base::frame_object_destroy_list_push(class gfx_frame_object_base *frame_object)
+{
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_object_destory_list[frame_throttling_index].produce(frame_object);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
+}
+
 // API
 #if defined(PT_WIN32)
 extern class gfx_connection_base *gfx_connection_d3d12_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)

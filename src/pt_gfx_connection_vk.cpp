@@ -868,8 +868,7 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
 
             this->m_frame_node_init_list[frame_throttling_index].init();
             this->m_frame_node_destory_list[frame_throttling_index].init();
-            this->m_frame_mesh_destory_list[frame_throttling_index].init();
-            this->m_frame_texture_destory_list[frame_throttling_index].init();
+            this->m_frame_object_destory_list[frame_throttling_index].init();
         }
     }
 
@@ -1649,22 +1648,6 @@ void gfx_connection_vk::frame_node_destroy_list_push(class gfx_node_vk *node)
     mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
 }
 
-void gfx_connection_vk::frame_mesh_destroy_list_push(class gfx_mesh_vk *mesh)
-{
-    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
-    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    this->m_frame_mesh_destory_list[frame_throttling_index].produce(mesh);
-    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
-}
-
-void gfx_connection_vk::frame_texture_destroy_list_push(class gfx_texture_vk *texture)
-{
-    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
-    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    this->m_frame_texture_destory_list[frame_throttling_index].produce(texture);
-    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
-}
-
 inline VkCommandBuffer gfx_connection_vk::frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index)
 {
     assert(uint32_t(-1) != frame_thread_index);
@@ -1769,25 +1752,15 @@ inline void gfx_connection_vk::acquire_frame()
             &user_defined);
     }
 
-    // move frame_mesh_destory_list to frame_mesh_unused_list
-    assert(0U == this->m_frame_mesh_unused_list[frame_throttling_index_last].size());
-    this->m_frame_mesh_destory_list[frame_throttling_index].consume_and_clear(
-        [](class gfx_mesh_vk *value, void *user_defined_void) -> void
+    // move frame_object_destory_list to frame_object_unused_list
+    assert(0U == this->m_frame_object_unused_list[frame_throttling_index_last].size());
+    this->m_frame_object_destory_list[frame_throttling_index].consume_and_clear(
+        [](class gfx_frame_object_base *value, void *user_defined_void) -> void
         {
-            mcrt_vector<class gfx_mesh_vk *> *user_defined = static_cast<mcrt_vector<class gfx_mesh_vk *> *>(user_defined_void);
+            mcrt_vector<class gfx_frame_object_base *> *user_defined = static_cast<mcrt_vector<class gfx_frame_object_base *> *>(user_defined_void);
             user_defined->push_back(value);
         },
-        &this->m_frame_mesh_unused_list[frame_throttling_index_last]);
-
-    // move frame_texture_destory_list to frame_texture_unused_list
-    assert(0U == this->m_frame_texture_unused_list[frame_throttling_index_last].size());
-    this->m_frame_texture_destory_list[frame_throttling_index].consume_and_clear(
-        [](class gfx_texture_vk *value, void *user_defined_void) -> void
-        {
-            mcrt_vector<class gfx_texture_vk *> *user_defined = static_cast<mcrt_vector<class gfx_texture_vk *> *>(user_defined_void);
-            user_defined->push_back(value);
-        },
-        &this->m_frame_texture_unused_list[frame_throttling_index_last]);
+        &this->m_frame_object_unused_list[frame_throttling_index_last]);
 
     VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
@@ -1814,18 +1787,11 @@ inline void gfx_connection_vk::acquire_frame()
     }
 
     // free unused mesh
-    for (class gfx_mesh_vk *mesh : this->m_frame_mesh_unused_list[frame_throttling_index])
+    for (class gfx_frame_object_base *frame_object : this->m_frame_object_unused_list[frame_throttling_index])
     {
-        mesh->frame_destroy_callback(this);
+        frame_object->frame_destroy_execute(this);
     }
-    this->m_frame_mesh_unused_list[frame_throttling_index].clear();
-
-    // free unused texture
-    for (class gfx_texture_vk *texture : this->m_frame_texture_unused_list[frame_throttling_index])
-    {
-        texture->frame_destroy_callback(this);
-    }
-    this->m_frame_texture_unused_list[frame_throttling_index].clear();
+    this->m_frame_object_unused_list[frame_throttling_index].clear();
 
     // free primary command buffer memory
     {

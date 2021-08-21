@@ -20,10 +20,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string>
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_spinlock.h>
-#include <pt_mcrt_scalable_allocator.h>
 #include "pt_gfx_connection_base.h"
 
 class gfx_streaming_object_base
@@ -101,7 +99,7 @@ protected:
 
     bool streaming_stage_first_execute(class gfx_connection_base *gfx_connection, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream), void *streaming_stage_first_thread_stack_data_user_defined);
 
-    void streaming_destroy_execute(bool *streaming_done);
+    void streaming_destroy_request(bool *streaming_done);
 
 public:
     void streaming_done_execute(class gfx_connection_base *gfx_connection);
