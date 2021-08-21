@@ -35,9 +35,14 @@ template <typename T>
 inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp);
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch);
+
 inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch);
+
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch);
-inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch);
+
+template <typename T>
+inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch);
+
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add);
 inline int64_t mcrt_atomic_add_i64(int64_t volatile *dest, int64_t add);
 inline int32_t mcrt_atomic_inc_i32(int32_t volatile *dest);

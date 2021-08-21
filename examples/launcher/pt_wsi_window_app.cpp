@@ -80,6 +80,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);
 
+
+#if 0
     sleep(15);
 
     my_mesh = gfx_connection_create_mesh(my_gfx_connection);
@@ -94,6 +96,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);
+#endif
 
     return 0;
 }

@@ -83,14 +83,15 @@ inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
     return dest_old;
 }
 
-inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch)
+template <typename T>
+inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
 {
-    void *dest_old;
+    uintptr_t dest_old;
     do
     {
-        dest_old = (*dest);
-    } while (__sync_val_compare_and_swap(dest, dest_old, exch) != dest_old);
-    return dest_old;
+        dest_old = (*reinterpret_cast<uintptr_t volatile *>(dest));
+    } while (__sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), dest_old, reinterpret_cast<uintptr_t>(exch)) != dest_old);
+    return reinterpret_cast<T *>(dest_old);
 }
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)
