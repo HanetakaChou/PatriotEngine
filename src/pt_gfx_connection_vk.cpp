@@ -793,6 +793,33 @@ void gfx_connection_vk::reduce_streaming_task()
     return;
 }
 
+bool gfx_connection_vk::allocate_frame_object_descriptor_set(VkDescriptorSet *descriptor_set)
+{
+    if (this->m_descriptor_set_object_private_free_list.size() > 0U)
+    {
+        (*descriptor_set) = this->m_descriptor_set_object_private_free_list.back();
+        this->m_descriptor_set_object_private_free_list.pop_back();
+        return true;
+    }
+    else
+    {
+        VkDescriptorSetAllocateInfo descriptor_set_allocate_info;
+        descriptor_set_allocate_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        descriptor_set_allocate_info.pNext = NULL;
+        descriptor_set_allocate_info.descriptorPool = this->m_descriptor_pool_each_object_private;
+        descriptor_set_allocate_info.descriptorSetCount = 1U;
+        descriptor_set_allocate_info.pSetLayouts = &this->m_descriptor_set_layout_each_object_private;
+
+        VkResult res_allocate_descriptor_sets = this->m_device.allocate_descriptor_sets(&descriptor_set_allocate_info, descriptor_set);
+        return (VK_SUCCESS == res_allocate_descriptor_sets);
+    }
+}
+
+void gfx_connection_vk::free_frame_object_descriptor_set(VkDescriptorSet descriptor_set)
+{
+    this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
+}
+
 inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     //Frame Throttling
@@ -1265,7 +1292,7 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     // bindless texture seems meaningless
     // It's believed that the "vkUpdateDescriptorSets" is heavy while the "vkCmdBindDescriptorSets" is lightweight
     // We may consider "update" as the "init" operation and store the descriptors in advance
-    
+
     // [Direct3D 12](https://docs.microsoft.com/en-us/windows/win32/direct3d12/advanced-use-of-descriptor-tables?redirectedfrom=MSDN#changing-descriptor-table-entries-between-rendering-calls)
 
     // \[Kubisch 2016\] [Christoph Kubisch. "Vulkan Shader Resource Binding." NVIDIA GameWorks Blog 2016.](https://developer.nvidia.com/vulkan-shader-resource-binding)
@@ -1344,7 +1371,7 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     // the related "descriptor_set" is owned by the object
     // material
     {
-        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[TEXTURE_COUNT];
+        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[MATERIAL_TEXTURE_COUNT];
         descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].binding = DIFFUSECOLOR_TEXTURE_INDEX;
         descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorCount = 1U;
@@ -1380,11 +1407,29 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         descriptor_set_layout_each_object_private_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptor_set_layout_each_object_private_create_info.pNext = NULL;
         descriptor_set_layout_each_object_private_create_info.flags = 0U;
-        descriptor_set_layout_each_object_private_create_info.bindingCount = TEXTURE_COUNT;
+        descriptor_set_layout_each_object_private_create_info.bindingCount = MATERIAL_TEXTURE_COUNT;
         descriptor_set_layout_each_object_private_create_info.pBindings = descriptor_set_layout_each_object_private_bindings;
 
         PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_private_create_info, &this->m_descriptor_set_layout_each_object_private);
         assert(VK_SUCCESS == res_create_descriptor_set_layout);
+    }
+
+    // descriptor pool
+    {
+        VkDescriptorPoolSize pool_sizes[1];
+        pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        pool_sizes[0].descriptorCount = MATERIAL_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
+
+        VkDescriptorPoolCreateInfo descriptor_pool_create_info;
+        descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        descriptor_pool_create_info.pNext = NULL;
+        descriptor_pool_create_info.flags = 0U;
+        descriptor_pool_create_info.maxSets = MAX_FRAME_OBJECT_INUSE_COUNT;
+        descriptor_pool_create_info.poolSizeCount = 1U;
+        descriptor_pool_create_info.pPoolSizes = pool_sizes;
+
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_pool = this->m_device.create_descriptor_pool(&descriptor_pool_create_info, &this->m_descriptor_pool_each_object_private);
+        assert(VK_SUCCESS == res_create_descriptor_pool);
     }
 
     // pipeline layout = descriptor layout + push constant
@@ -1716,7 +1761,7 @@ inline void gfx_connection_vk::acquire_frame()
                 struct frame_node_init_list_user_defined *user_defined = static_cast<struct frame_node_init_list_user_defined *>(user_defined_void);
                 if ((*user_defined->m_scene_node_list_free_index_list).size() > 0U)
                 {
-                    size_t frame_node_index = (*(*user_defined->m_scene_node_list_free_index_list).end());
+                    size_t frame_node_index = (*user_defined->m_scene_node_list_free_index_list).back();
                     (*user_defined->m_scene_node_list_free_index_list).pop_back();
                     assert(NULL == (*user_defined->m_scene_node_list)[frame_node_index]);
                     (*user_defined->m_scene_node_list)[frame_node_index] = node;
@@ -1786,7 +1831,7 @@ inline void gfx_connection_vk::acquire_frame()
         assert(VK_SUCCESS == res_reset_fences);
     }
 
-    // free unused mesh
+    // free unused frame object
     for (class gfx_frame_object_base *frame_object : this->m_frame_object_unused_list[frame_throttling_index])
     {
         frame_object->frame_destroy_execute(this);

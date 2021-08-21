@@ -92,7 +92,6 @@ protected:
         NODE_INIT_LIST_COUNT = 32U,
         NODE_DESTROY_LIST_COUNT = 32U,
         FRAME_OBJECT_DESTROY_LIST_COUNT = 32U,
-        TEXTURE_DESTROY_LIST_COUNT = 32U
     };
     struct mpsc_list<class gfx_frame_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_frame_object_destory_list[FRAME_THROTTLING_COUNT];
 

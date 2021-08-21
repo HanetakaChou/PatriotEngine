@@ -91,6 +91,8 @@ private:
 
     virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
+    virtual bool streaming_done_callback(class gfx_connection_base *gfx_connection) = 0;
+
 protected:
     inline gfx_streaming_object_base() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false)
     {

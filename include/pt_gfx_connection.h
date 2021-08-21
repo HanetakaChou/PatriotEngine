@@ -94,7 +94,7 @@ extern "C"
         AMBIENTOCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
         HEIGHT_TEXTURE_INDEX = 4,            // Parallax
         NORMAL_TEXTURE_INDEX = 5,            // Bump
-        TEXTURE_COUNT = 6
+        MATERIAL_TEXTURE_COUNT = 6
     };
 
     PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);

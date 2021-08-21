@@ -9,6 +9,7 @@ static gfx_connection_ref my_gfx_connection = NULL;
 //static gfx_texture_ref my_texture1 = NULL;
 //static gfx_texture_ref my_texture2 = NULL;
 static gfx_mesh_ref my_mesh = NULL;
+static gfx_node_ref my_node = NULL;
 
 wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 {
@@ -23,9 +24,9 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
     //gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
-    gfx_node_ref my_node = gfx_connection_create_node(my_gfx_connection);
+    my_node = gfx_connection_create_node(my_gfx_connection);
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
-    
+
 #if 1
     std::vector<gfx_texture_ref> my_textures;
 
@@ -75,6 +76,21 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         gfx_texture_destroy(my_gfx_connection, my_texture);
     }
 #endif
+
+    gfx_mesh_destroy(my_gfx_connection, my_mesh);
+    gfx_node_destroy(my_gfx_connection, my_node);
+
+    sleep(15);
+
+    my_mesh = gfx_connection_create_mesh(my_gfx_connection);
+    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    //gfx_mesh_destroy(my_gfx_connection, my_mesh);
+
+    my_node = gfx_connection_create_node(my_gfx_connection);
+    gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
+
+    sleep(15);
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);

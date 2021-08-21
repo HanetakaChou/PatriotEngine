@@ -96,6 +96,9 @@ class gfx_device_vk
     PFN_vkDestroySampler m_vk_destroy_sampler;
     PFN_vkCreateDescriptorSetLayout m_vk_create_descriptor_set_layout;
     PFN_vkCreatePipelineLayout m_vk_create_pipeline_layout;
+    PFN_vkCreateDescriptorPool m_vk_create_descriptor_pool;
+    PFN_vkDestroyDescriptorPool m_vk_destroy_descriptor_pool;
+    PFN_vkAllocateDescriptorSets m_vk_allocate_descriptor_sets;
     PFN_vkCreateShaderModule m_vk_create_shader_module;
     PFN_vkDestroyShaderModule m_vk_destroy_shader_module;
     PFN_vkCreateGraphicsPipelines m_vk_create_graphics_pipelines;
@@ -201,6 +204,11 @@ public:
 
     inline VkResult create_descriptor_set_layout(VkDescriptorSetLayoutCreateInfo const *create_info, VkDescriptorSetLayout *set_layout) { return this->m_vk_create_descriptor_set_layout(this->m_device, create_info, &this->m_allocator_callbacks, set_layout); }
     inline VkResult create_pipeline_layout(VkPipelineLayoutCreateInfo const *create_info, VkPipelineLayout *pipeline_layout) { return this->m_vk_create_pipeline_layout(this->m_device, create_info, &this->m_allocator_callbacks, pipeline_layout); }
+
+    inline VkResult create_descriptor_pool(VkDescriptorPoolCreateInfo const *create_info, VkDescriptorPool *descriptor_pool) { return this->m_vk_create_descriptor_pool(this->m_device, create_info, &this->m_allocator_callbacks, descriptor_pool); }
+    inline void destroy_descriptor_pool(VkDescriptorPool descriptor_pool) { return this->m_vk_destroy_descriptor_pool(this->m_device, descriptor_pool, &this->m_allocator_callbacks); }
+
+    inline VkResult allocate_descriptor_sets(VkDescriptorSetAllocateInfo const *allocate_info, VkDescriptorSet *descriptor_sets) { return this->m_vk_allocate_descriptor_sets(this->m_device, allocate_info, descriptor_sets); }
 
     inline VkResult create_shader_module(VkShaderModuleCreateInfo const *create_info, VkShaderModule *shader_module) { return this->m_vk_create_shader_module(this->m_device, create_info, &this->m_allocator_callbacks, shader_module); }
     inline void destroy_shader_module(VkShaderModule shader_module) { return this->m_vk_destroy_shader_module(this->m_device, shader_module, &this->m_allocator_callbacks); }

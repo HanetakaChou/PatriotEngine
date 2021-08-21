@@ -363,19 +363,33 @@ void gfx_mesh_vk::release(class gfx_connection_vk *gfx_connection)
 
 void gfx_mesh_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
+    // first stage parallel // no desciptor_set
+    // third stage serial
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     this->destory_execute(gfx_connection);
 }
 
+bool gfx_mesh_vk::streaming_done_callback(class gfx_connection_base *gfx_connection_base)
+{
+    // execute serial
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    return gfx_connection->allocate_frame_object_descriptor_set(&this->m_desciptor_set);
+}
+
 void gfx_mesh_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
+    // execute serial
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    gfx_connection->free_frame_object_descriptor_set(this->m_desciptor_set);
+    this->m_desciptor_set = VK_NULL_HANDLE;
     this->destory_execute(gfx_connection);
 }
 
 inline void gfx_mesh_vk::destory_execute(class gfx_connection_vk *gfx_connection)
 {
     assert(0U == mcrt_atomic_load(&this->m_ref_count));
+
+    assert(VK_NULL_HANDLE == this->m_desciptor_set);
 
     if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
     {

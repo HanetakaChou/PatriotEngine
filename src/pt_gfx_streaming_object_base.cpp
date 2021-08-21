@@ -291,7 +291,17 @@ void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base
 
     if (!streaming_cancel)
     {
-        mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
+        if (!streaming_error)
+        {
+            if (this->streaming_done_callback(gfx_connection))
+            {
+                mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
+            }
+            else
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+            }
+        }
     }
     else
     {

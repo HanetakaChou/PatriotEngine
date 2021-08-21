@@ -95,7 +95,6 @@ class gfx_connection_vk final : public gfx_connection_base
     };
     static mcrt_task_ref opaque_subpass_task_execute(mcrt_task_ref self);
 
-
     // The unique uniform buffer.
     // \[Gruen 2015\] [Holger Gruen. "Constant Buffers without Constant Pain." NVIDIA GameWorks Blog 2015.](https://developer.nvidia.com/content/constant-buffers-without-constant-pain-0)
     // \[Microsoft\] [Microsoft. "Ring buffer scenario." Microsoft Docs.](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management#ring-buffer-scenario)
@@ -125,6 +124,13 @@ class gfx_connection_vk final : public gfx_connection_base
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_shared;
     VkDescriptorSetLayout m_descriptor_set_layout_each_object_private;
     VkPipelineLayout m_pipeline_layout;
+
+    enum
+    {
+        MAX_FRAME_OBJECT_INUSE_COUNT = 4096U
+    };
+    VkDescriptorPool m_descriptor_pool_each_object_private;
+    mcrt_vector<VkDescriptorSet> m_descriptor_set_object_private_free_list;
 
     //
     VkShaderModule m_shader_module_mesh_vertex;
@@ -211,11 +217,10 @@ public:
     // Frame
     void frame_node_destroy_list_push(class gfx_node_vk *node);
 
-
     // Streaming
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
     inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
- 
+
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
 
@@ -237,6 +242,9 @@ public:
     inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
     inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
+
+    bool allocate_frame_object_descriptor_set(VkDescriptorSet *descriptor_set);
+    void free_frame_object_descriptor_set(VkDescriptorSet descriptor_set);
 };
 
 class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

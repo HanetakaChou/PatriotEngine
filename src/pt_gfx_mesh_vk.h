@@ -61,6 +61,8 @@ private:
     void *m_index_gfx_malloc_page_handle;
     VkDeviceMemory m_index_gfx_malloc_device_memory;
 
+    VkDescriptorSet m_desciptor_set;
+
     bool read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
     struct mesh_streaming_stage_first_thread_stack_data_t
@@ -120,6 +122,8 @@ private:
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
+    bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
+
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     inline void destory_execute(class gfx_connection_vk *gfx_connection);
@@ -134,7 +138,8 @@ public:
                            m_ref_count(1U),
                            m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_position_gfx_malloc_offset(uint64_t(-1)), m_vertex_position_gfx_malloc_size(uint64_t(-1)), m_vertex_position_gfx_malloc_page_handle(NULL), m_vertex_position_gfx_malloc_device_memory(VK_NULL_HANDLE),
                            m_vertex_varying_buffer(VK_NULL_HANDLE), m_vertex_varying_gfx_malloc_offset(uint64_t(-1)), m_vertex_varying_gfx_malloc_size(uint64_t(-1)), m_vertex_varying_gfx_malloc_page_handle(NULL), m_vertex_varying_gfx_malloc_device_memory(VK_NULL_HANDLE),
-                           m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE)
+                           m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE),
+                           m_desciptor_set(VK_NULL_HANDLE)
     {
     }
 };

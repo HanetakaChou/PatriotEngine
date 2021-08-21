@@ -561,6 +561,15 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_create_pipeline_layout = reinterpret_cast<PFN_vkCreatePipelineLayout>(vk_get_device_proc_addr(m_device, "vkCreatePipelineLayout"));
     assert(NULL != this->m_vk_create_pipeline_layout);
 
+    this->m_vk_create_descriptor_pool = reinterpret_cast<PFN_vkCreateDescriptorPool>(vk_get_device_proc_addr(m_device, "vkCreateDescriptorPool"));
+    assert(NULL != this->m_vk_create_descriptor_pool);
+
+    this->m_vk_destroy_descriptor_pool = reinterpret_cast<PFN_vkDestroyDescriptorPool>(vk_get_device_proc_addr(m_device, "vkDestroyDescriptorPool"));
+    assert(NULL != this->m_vk_destroy_descriptor_pool);
+
+    this->m_vk_allocate_descriptor_sets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(vk_get_device_proc_addr(m_device, "vkAllocateDescriptorSets"));
+    assert(NULL != this->m_vk_allocate_descriptor_sets);
+
     this->m_vk_create_shader_module = reinterpret_cast<PFN_vkCreateShaderModule>(vk_get_device_proc_addr(m_device, "vkCreateShaderModule"));
     assert(NULL != this->m_vk_create_shader_module);
 

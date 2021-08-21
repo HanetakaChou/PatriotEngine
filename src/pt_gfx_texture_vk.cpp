@@ -209,6 +209,11 @@ void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_c
     this->destory_execute(gfx_connection);
 }
 
+bool gfx_texture_vk::streaming_done_callback(class gfx_connection_base *gfx_connection_base)
+{
+    return true;
+}
+
 void gfx_texture_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);

@@ -107,6 +107,8 @@ class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_objec
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
+    bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
+
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     inline void destory_execute(class gfx_connection_vk *gfx_connection);
