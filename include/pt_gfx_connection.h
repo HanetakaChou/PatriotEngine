@@ -71,9 +71,9 @@ extern "C"
     // Top Level Structure - Node
     // Bottom Level Structure - Mesh
     PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref node, gfx_mesh_ref gfx_mesh);
-    //node_set_material
-    PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref node);
+    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_mesh_ref gfx_mesh);
+    PT_ATTR_GFX void PT_CALL gfx_node_set_material(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_material_ref gfx_material);
+    PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node);
 
     // We may share the texture but we scarcely share the buffer
     // Thus we don't support buffer

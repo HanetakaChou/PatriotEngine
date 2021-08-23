@@ -35,6 +35,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     my_material = gfx_connection_create_material(my_gfx_connection);
     gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
 
+    gfx_node_set_material(my_gfx_connection, my_node, my_material);
+
 #if 0
     std::vector<gfx_texture_ref> my_textures;
 

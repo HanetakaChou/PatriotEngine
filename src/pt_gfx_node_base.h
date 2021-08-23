@@ -23,16 +23,22 @@
 #include <pt_gfx_connection.h>
 #include <pt_math.h>
 #include "pt_gfx_mesh_base.h"
+#include "pt_gfx_material_base.h"
 
 class gfx_node_base
 {
     math_alignas16_mat4x4 m_mat_m;
+
+    class gfx_material_base *m_gfx_material;
 
 protected:
     inline gfx_node_base() { math_store_mat4x4(&this->m_mat_m, math_mat_identity()); }
 
 public:
     virtual void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh) = 0;
+
+    void set_material(class gfx_connection_base *gfx_connection, class gfx_material_base *gfx_material);
+
     virtual void destroy(class gfx_connection_base *gfx_connection) = 0;
 };
 
