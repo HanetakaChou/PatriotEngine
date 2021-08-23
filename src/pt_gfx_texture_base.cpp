@@ -16,7 +16,38 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
+#include <pt_mcrt_atomic.h>
 #include "pt_gfx_texture_base.h"
+#include <assert.h>
+
+
+void gfx_texture_base::destroy(class gfx_connection_base *gfx_connection)
+{
+    this->release(gfx_connection);
+}
+
+void gfx_texture_base::addref()
+{
+    PT_MAYBE_UNUSED uint32_t ref_count = mcrt_atomic_inc_u32(&this->m_ref_count);
+    // can't set_mesh after destory
+    assert(1U < ref_count);
+}
+
+void gfx_texture_base::release(class gfx_connection_base *gfx_connection)
+{
+    if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
+    {
+        bool streaming_done;
+        this->streaming_destroy_request(&streaming_done);
+
+        if (streaming_done)
+        {
+            // the object is used by the rendering system
+            this->frame_destroy_request(gfx_connection);
+        }
+    }
+}
 
 static inline constexpr uint32_t Common_MakeFourCC(char ch0, char ch1, char ch2, char ch3)
 {

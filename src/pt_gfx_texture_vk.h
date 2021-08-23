@@ -26,16 +26,16 @@
 #include "pt_gfx_frame_object_base.h"
 #include <vulkan/vulkan.h>
 
-class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_object_base, public gfx_frame_object_base
+class gfx_texture_vk final : public gfx_texture_base
 {
-    uint32_t m_ref_count;
-
     VkImage m_image;
 
     uint64_t m_gfx_malloc_offset;
     uint64_t m_gfx_malloc_size;
     void *m_gfx_malloc_page_handle;
     VkDeviceMemory m_gfx_malloc_device_memory;
+
+    VkImageView m_image_view;
 
     bool read_input_stream(
         class gfx_connection_base *gfx_connection,
@@ -100,20 +100,13 @@ class gfx_texture_vk final : public gfx_texture_base, public gfx_streaming_objec
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
 
-    void destroy(class gfx_connection_base *gfx_connection) override;
-
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
 
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
-    inline void destory_execute(class gfx_connection_vk *gfx_connection);
-
-public:
-    void addref(class gfx_connection_vk *gfx_connection);
-
-    void release(class gfx_connection_vk *gfx_connection);
+    inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 private:
     static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
@@ -212,7 +205,18 @@ private:
     static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
-    inline gfx_texture_vk() : gfx_texture_base(), gfx_streaming_object_base(), m_ref_count(1U), m_image(VK_NULL_HANDLE), m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE) {}
+    inline gfx_texture_vk() : gfx_texture_base(),
+                              m_image(VK_NULL_HANDLE),
+                              m_gfx_malloc_offset(uint64_t(-1)), m_gfx_malloc_size(uint64_t(-1)), m_gfx_malloc_page_handle(NULL), m_gfx_malloc_device_memory(VK_NULL_HANDLE),
+                              m_image_view(VK_NULL_HANDLE)
+    {
+    }
+
+    inline VkImageView get_image_view()
+    {
+        assert(this->is_streaming_done());
+        return this->m_image_view;
+    }
 };
 
 #endif

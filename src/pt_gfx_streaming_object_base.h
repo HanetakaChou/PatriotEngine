@@ -23,11 +23,11 @@
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_spinlock.h>
 #include "pt_gfx_connection_base.h"
+#include <assert.h>
 
 class gfx_streaming_object_base
 {
-    // CryEngine
-    // m_eStreamingStatus
+protected:
     enum streaming_status_t
     {
         STREAMING_STATUS_STAGE_FIRST,
@@ -75,8 +75,6 @@ private:
 
     static mcrt_task_ref streaming_stage_second_task_execute(mcrt_task_ref self);
 
-    static inline mcrt_task_ref streaming_stage_second_task_execute_internal(uint32_t *output_streaming_throttling_index, bool *output_recycle, mcrt_task_ref self);
-
     mcrt_spinlock_t m_spinlock_streaming_done;
 
     inline void streaming_done_lock()
@@ -89,8 +87,10 @@ private:
         mcrt_spin_unlock(&this->m_spinlock_streaming_done);
     }
 
+protected:
     virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
+private:
     virtual bool streaming_done_callback(class gfx_connection_base *gfx_connection) = 0;
 
 protected:
@@ -106,7 +106,16 @@ protected:
 public:
     void streaming_done_execute(class gfx_connection_base *gfx_connection);
 
-    inline bool is_streaming_done() { return (STREAMING_STATUS_DONE == mcrt_atomic_load(&this->m_streaming_status)); }
+    inline bool is_streaming_error()
+    {
+        return (mcrt_atomic_load(&this->m_streaming_error));
+    }
+
+    inline bool is_streaming_done()
+    {
+        assert((STREAMING_STATUS_DONE != mcrt_atomic_load(&this->m_streaming_status)) || (!mcrt_atomic_load(&this->m_streaming_error)));
+        return (STREAMING_STATUS_DONE == mcrt_atomic_load(&this->m_streaming_status));
+    }
 };
 
 #endif

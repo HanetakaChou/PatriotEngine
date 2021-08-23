@@ -99,6 +99,7 @@ class gfx_device_vk
     PFN_vkCreateDescriptorPool m_vk_create_descriptor_pool;
     PFN_vkDestroyDescriptorPool m_vk_destroy_descriptor_pool;
     PFN_vkAllocateDescriptorSets m_vk_allocate_descriptor_sets;
+    PFN_vkUpdateDescriptorSets m_vk_update_descriptor_sets;
     PFN_vkCreateShaderModule m_vk_create_shader_module;
     PFN_vkDestroyShaderModule m_vk_destroy_shader_module;
     PFN_vkCreateGraphicsPipelines m_vk_create_graphics_pipelines;
@@ -209,6 +210,8 @@ public:
     inline void destroy_descriptor_pool(VkDescriptorPool descriptor_pool) { return this->m_vk_destroy_descriptor_pool(this->m_device, descriptor_pool, &this->m_allocator_callbacks); }
 
     inline VkResult allocate_descriptor_sets(VkDescriptorSetAllocateInfo const *allocate_info, VkDescriptorSet *descriptor_sets) { return this->m_vk_allocate_descriptor_sets(this->m_device, allocate_info, descriptor_sets); }
+
+    inline void update_descriptor_sets(uint32_t descriptor_write_count, VkWriteDescriptorSet const *descriptor_writes, uint32_t descriptor_copy_count, VkCopyDescriptorSet const *descriptor_copies) { return this->m_vk_update_descriptor_sets(this->m_device, descriptor_write_count, descriptor_writes, descriptor_copy_count, descriptor_copies); }
 
     inline VkResult create_shader_module(VkShaderModuleCreateInfo const *create_info, VkShaderModule *shader_module) { return this->m_vk_create_shader_module(this->m_device, create_info, &this->m_allocator_callbacks, shader_module); }
     inline void destroy_shader_module(VkShaderModule shader_module) { return this->m_vk_destroy_shader_module(this->m_device, shader_module, &this->m_allocator_callbacks); }

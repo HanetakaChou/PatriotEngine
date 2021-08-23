@@ -570,6 +570,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_allocate_descriptor_sets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(vk_get_device_proc_addr(m_device, "vkAllocateDescriptorSets"));
     assert(NULL != this->m_vk_allocate_descriptor_sets);
 
+    this->m_vk_update_descriptor_sets = reinterpret_cast<PFN_vkUpdateDescriptorSets>(vk_get_device_proc_addr(m_device, "vkUpdateDescriptorSets"));
+    assert(NULL != this->m_vk_update_descriptor_sets);
+
     this->m_vk_create_shader_module = reinterpret_cast<PFN_vkCreateShaderModule>(vk_get_device_proc_addr(m_device, "vkCreateShaderModule"));
     assert(NULL != this->m_vk_create_shader_module);
 

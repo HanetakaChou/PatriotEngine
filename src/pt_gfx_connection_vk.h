@@ -30,7 +30,10 @@
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc_vk.h"
 #include "pt_gfx_streaming_object_base.h"
+#include "pt_gfx_frame_object_base.h"
 #include "pt_gfx_node_vk.h"
+#include "pt_gfx_mesh_vk.h"
+#include "pt_gfx_texture_vk.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 
@@ -243,8 +246,12 @@ public:
     inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
     inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
 
-    bool allocate_frame_object_descriptor_set(VkDescriptorSet *descriptor_set);
-    void free_frame_object_descriptor_set(VkDescriptorSet descriptor_set);
+    inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_device.create_image_view(create_info, view); }
+    inline void destroy_image_view(VkImageView image_view) { return this->m_device.destroy_image_view(image_view); }
+
+    bool allocate_descriptor_set(VkDescriptorSet *descriptor_set);
+    void init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base **gfx_textures);
+    void free_descriptor_set(VkDescriptorSet descriptor_set);
 };
 
 class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);

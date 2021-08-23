@@ -20,9 +20,6 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
-#include "pt_gfx_node_vk.h"
-#include "pt_gfx_mesh_vk.h"
-#include "pt_gfx_texture_vk.h"
 #include <new>
 
 class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
@@ -793,7 +790,7 @@ void gfx_connection_vk::reduce_streaming_task()
     return;
 }
 
-bool gfx_connection_vk::allocate_frame_object_descriptor_set(VkDescriptorSet *descriptor_set)
+bool gfx_connection_vk::allocate_descriptor_set(VkDescriptorSet *descriptor_set)
 {
     if (this->m_descriptor_set_object_private_free_list.size() > 0U)
     {
@@ -815,7 +812,33 @@ bool gfx_connection_vk::allocate_frame_object_descriptor_set(VkDescriptorSet *de
     }
 }
 
-void gfx_connection_vk::free_frame_object_descriptor_set(VkDescriptorSet descriptor_set)
+void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base **gfx_textures)
+{
+    assert(texture_count <= GFX_MATERIAL_MAX_TEXTURE_COUNT);
+    VkDescriptorImageInfo descriptor_image_infos[GFX_MATERIAL_MAX_TEXTURE_COUNT];
+    VkWriteDescriptorSet descriptor_writes[GFX_MATERIAL_MAX_TEXTURE_COUNT];
+    for (uint32_t texture_index = 0; texture_index < texture_count; ++texture_index)
+    {
+        descriptor_image_infos[texture_index].sampler = VK_NULL_HANDLE;
+        descriptor_image_infos[texture_index].imageView = static_cast<class gfx_texture_vk *>(gfx_textures[texture_index])->get_image_view();
+        descriptor_image_infos[texture_index].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        descriptor_writes[texture_index].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptor_writes[texture_index].pNext = NULL;
+        descriptor_writes[texture_index].dstSet = descriptor_set;
+        descriptor_writes[texture_index].dstBinding = texture_index;
+        descriptor_writes[texture_index].dstArrayElement = 0U;
+        descriptor_writes[texture_index].descriptorCount = 1U;
+        descriptor_writes[texture_index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        descriptor_writes[texture_index].pImageInfo = &descriptor_image_infos[texture_index];
+        descriptor_writes[texture_index].pBufferInfo = NULL;
+        descriptor_writes[texture_index].pTexelBufferView = NULL;
+    }
+
+    this->m_device.update_descriptor_sets(texture_count, descriptor_writes, 0U, NULL);
+}
+
+void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
 {
     this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
 }

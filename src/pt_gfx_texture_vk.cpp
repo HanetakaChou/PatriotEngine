@@ -97,10 +97,36 @@ bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class
     }
     assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
 
+    // bind memory
     {
         PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
         assert(VK_SUCCESS == res_bind_image_memory);
     }
+
+        // image view
+        {
+            VkImageViewCreateInfo image_view_create_info;
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.pNext = NULL;
+            image_view_create_info.flags = 0U;
+            image_view_create_info.image = this->m_image;
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format = specific_header_vk.format;
+            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_view_create_info.subresourceRange.baseMipLevel = 0U;
+            image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0U;
+            image_view_create_info.subresourceRange.layerCount = specific_header_vk.arrayLayers;
+
+            PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
+            assert(VK_SUCCESS == res_create_image_view);
+        }
+
+
 
     return true;
 }
@@ -159,7 +185,7 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
         {
             uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
             VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
-            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, 1};
+            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers};
             gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &subresource_range, thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_cmdcopy_dest);
         }
         mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
@@ -173,38 +199,12 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
     return true;
 }
 
-void gfx_texture_vk::destroy(class gfx_connection_base *gfx_connection_base)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    this->release(gfx_connection);
-}
 
-void gfx_texture_vk::addref(class gfx_connection_vk *gfx_connection)
-{
-    PT_MAYBE_UNUSED uint32_t ref_count = mcrt_atomic_inc_u32(&this->m_ref_count);
-    // can't set_mesh after destory
-    assert(1U < ref_count);
-}
-
-void gfx_texture_vk::release(class gfx_connection_vk *gfx_connection)
-{
-    if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
-    {
-        bool streaming_done;
-        this->streaming_destroy_request(&streaming_done);
-
-        if (streaming_done)
-        {
-            // the object is used by the rendering system
-            this->frame_destroy_request(gfx_connection);
-        }
-    }
-}
 
 void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    this->destory_execute(gfx_connection);
+    this->unified_destory(gfx_connection);
 }
 
 bool gfx_texture_vk::streaming_done_callback(class gfx_connection_base *gfx_connection_base)
@@ -215,11 +215,16 @@ bool gfx_texture_vk::streaming_done_callback(class gfx_connection_base *gfx_conn
 void gfx_texture_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    this->destory_execute(gfx_connection);
+    this->unified_destory(gfx_connection);
 }
 
-inline void gfx_texture_vk::destory_execute(class gfx_connection_vk *gfx_connection)
+inline void gfx_texture_vk::unified_destory(class gfx_connection_vk *gfx_connection)
 {
+    if(VK_NULL_HANDLE != this->m_image_view)
+    {
+        gfx_connection->destroy_image_view(this->m_image_view);
+    }
+
     if (VK_NULL_HANDLE != this->m_image)
     {
         gfx_connection->destroy_image(this->m_image);
