@@ -2164,24 +2164,30 @@ void gfx_connection_vk::on_wsi_redraw_needed_release()
 
 class gfx_node_base *gfx_connection_vk::create_node()
 {
-    gfx_node_vk *node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk();
+    class gfx_node_vk *gfx_node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk();
     mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    this->m_frame_node_init_list[frame_throttling_index].produce(node);
+    this->m_frame_node_init_list[frame_throttling_index].produce(gfx_node);
     mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
-    return node;
+    return gfx_node;
 }
 
 class gfx_mesh_base *gfx_connection_vk::create_mesh()
 {
-    gfx_mesh_vk *mesh = new (mcrt_aligned_malloc(sizeof(gfx_mesh_vk), alignof(gfx_mesh_vk))) gfx_mesh_vk();
-    return mesh;
+    class gfx_mesh_vk *gfx_mesh = new (mcrt_aligned_malloc(sizeof(gfx_mesh_vk), alignof(gfx_mesh_vk))) gfx_mesh_vk();
+    return gfx_mesh;
+}
+
+class gfx_material_base *gfx_connection_vk::create_material()
+{
+    class gfx_material_vk *gfx_material = new (mcrt_aligned_malloc(sizeof(gfx_material_vk), alignof(gfx_material_vk))) gfx_material_vk();
+    return gfx_material;
 }
 
 class gfx_texture_base *gfx_connection_vk::create_texture()
 {
-    gfx_texture_vk *texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
-    return texture;
+    class gfx_texture_vk *gfx_texture = new (mcrt_aligned_malloc(sizeof(gfx_texture_vk), alignof(gfx_texture_vk))) gfx_texture_vk();
+    return gfx_texture;
 }
 
 #include <unistd.h>

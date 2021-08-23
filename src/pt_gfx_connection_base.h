@@ -159,6 +159,7 @@ public:
     virtual void destroy() = 0;
     virtual class gfx_node_base *create_node() = 0;
     virtual class gfx_mesh_base *create_mesh() = 0;
+    virtual class gfx_material_base *create_material() = 0;
     virtual class gfx_texture_base *create_texture() = 0;
     virtual void on_wsi_resized(float width, float height) = 0;
     virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling

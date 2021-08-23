@@ -10,6 +10,8 @@ static gfx_connection_ref my_gfx_connection = NULL;
 //static gfx_texture_ref my_texture2 = NULL;
 static gfx_mesh_ref my_mesh = NULL;
 static gfx_node_ref my_node = NULL;
+static gfx_texture_ref my_texture = NULL;
+static gfx_material_ref my_material = NULL;
 
 wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 {
@@ -27,7 +29,13 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     my_node = gfx_connection_create_node(my_gfx_connection);
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
 
-#if 1
+    my_texture = gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
+
+    my_material = gfx_connection_create_material(my_gfx_connection);
+    gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
+
+#if 0
     std::vector<gfx_texture_ref> my_textures;
 
     unsigned rand_buf = (unsigned)time(NULL);
@@ -75,11 +83,14 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     {
         gfx_texture_destroy(my_gfx_connection, my_texture);
     }
+#else
+    sleep(20);
 #endif
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);
-
+    gfx_texture_destroy(my_gfx_connection, my_texture);
+    gfx_material_destroy(my_gfx_connection, my_material);
 
 #if 0
     sleep(15);

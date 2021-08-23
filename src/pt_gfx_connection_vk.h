@@ -33,6 +33,7 @@
 #include "pt_gfx_frame_object_base.h"
 #include "pt_gfx_node_vk.h"
 #include "pt_gfx_mesh_vk.h"
+#include "pt_gfx_material_vk.h"
 #include "pt_gfx_texture_vk.h"
 #include <vulkan/vulkan.h>
 #include <vector>
@@ -205,6 +206,7 @@ class gfx_connection_vk final : public gfx_connection_base
     friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     class gfx_node_base *create_node() override;
     class gfx_mesh_base *create_mesh() override;
+    class gfx_material_base *create_material() override;
     class gfx_texture_base *create_texture() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
