@@ -1371,43 +1371,20 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     // the related "descriptor_set" is owned by the object
     // material
     {
-        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[MATERIAL_TEXTURE_COUNT];
-        descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].binding = DIFFUSECOLOR_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[DIFFUSECOLOR_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-        descriptor_set_layout_each_object_private_bindings[SPECULARCOLOR_TEXTURE_INDEX].binding = SPECULARCOLOR_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[SPECULARCOLOR_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[SPECULARCOLOR_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[SPECULARCOLOR_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[SPECULARCOLOR_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-        descriptor_set_layout_each_object_private_bindings[GLOSSINESS_TEXTURE_INDEX].binding = GLOSSINESS_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[GLOSSINESS_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[GLOSSINESS_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[GLOSSINESS_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[GLOSSINESS_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-        descriptor_set_layout_each_object_private_bindings[AMBIENTOCCLUSION_TEXTURE_INDEX].binding = AMBIENTOCCLUSION_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[AMBIENTOCCLUSION_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[AMBIENTOCCLUSION_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[AMBIENTOCCLUSION_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[AMBIENTOCCLUSION_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-        descriptor_set_layout_each_object_private_bindings[HEIGHT_TEXTURE_INDEX].binding = HEIGHT_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[HEIGHT_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[HEIGHT_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[HEIGHT_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[HEIGHT_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-        descriptor_set_layout_each_object_private_bindings[NORMAL_TEXTURE_INDEX].binding = NORMAL_TEXTURE_INDEX;
-        descriptor_set_layout_each_object_private_bindings[NORMAL_TEXTURE_INDEX].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        descriptor_set_layout_each_object_private_bindings[NORMAL_TEXTURE_INDEX].descriptorCount = 1U;
-        descriptor_set_layout_each_object_private_bindings[NORMAL_TEXTURE_INDEX].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-        descriptor_set_layout_each_object_private_bindings[NORMAL_TEXTURE_INDEX].pImmutableSamplers = &this->m_immutable_sampler;
-
+        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[GFX_MATERIAL_MAX_TEXTURE_COUNT];
+        for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)
+        {
+            descriptor_set_layout_each_object_private_bindings[texture_index].binding = texture_index;
+            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorCount = 1U;
+            descriptor_set_layout_each_object_private_bindings[texture_index].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            descriptor_set_layout_each_object_private_bindings[texture_index].pImmutableSamplers = &this->m_immutable_sampler;
+        }
         VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_private_create_info;
         descriptor_set_layout_each_object_private_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         descriptor_set_layout_each_object_private_create_info.pNext = NULL;
         descriptor_set_layout_each_object_private_create_info.flags = 0U;
-        descriptor_set_layout_each_object_private_create_info.bindingCount = MATERIAL_TEXTURE_COUNT;
+        descriptor_set_layout_each_object_private_create_info.bindingCount = GFX_MATERIAL_MAX_TEXTURE_COUNT;
         descriptor_set_layout_each_object_private_create_info.pBindings = descriptor_set_layout_each_object_private_bindings;
 
         PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_private_create_info, &this->m_descriptor_set_layout_each_object_private);
@@ -1418,7 +1395,7 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     {
         VkDescriptorPoolSize pool_sizes[1];
         pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_sizes[0].descriptorCount = MATERIAL_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
+        pool_sizes[0].descriptorCount = GFX_MATERIAL_MAX_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
 
         VkDescriptorPoolCreateInfo descriptor_pool_create_info;
         descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -2187,6 +2164,8 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <string>
 
 inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache)
 {

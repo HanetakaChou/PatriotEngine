@@ -35,9 +35,10 @@ enum
 };
 
 typedef struct _gfx_connection_t *gfx_connection_ref;
-typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
-typedef struct _gfx_texture_t_ *gfx_texture_ref;
 typedef struct _gfx_node_t_ *gfx_node_ref;
+typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
+typedef struct _gfx_material_t_ *gfx_material_ref;
+typedef struct _gfx_texture_t_ *gfx_texture_ref;
 
 #ifdef __cplusplus
 extern "C"
@@ -67,8 +68,28 @@ extern "C"
 
     PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection);
 
+    // Top Level Structure - Node
+    // Bottom Level Structure - Mesh
+    PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref node, gfx_mesh_ref gfx_mesh);
+    //node_set_material
+    PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref node);
+
     // We may share the texture but we scarcely share the buffer
     // Thus we don't support buffer
+
+    PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
+    PT_ATTR_GFX void PT_CALL gfx_mesh_set_texture(uint32_t texture_index, gfx_texture_ref texture);
+    PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh);
+
+    enum
+    {
+        GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS = 1,
+        GFX_MATERIAL_MODEL_COUNT = 2
+    };
+
+    //PBR Specular Glossiness
 
     // [glTF 2.0: PBR Materials](https://www.khronos.org/assets/uploads/developers/library/2017-gtc/glTF-2.0-and-PBR-GTC_May17.pdf) // https://github.com/KhronosGroup/glTF
     // [Conversion between metallic-roughness and specular-glossiness workflows](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples)
@@ -77,7 +98,7 @@ extern "C"
 
     // diffusecolor
     // specularcolor = fresnel(0) = F0
- 
+
     // convert "metallic-roughness" to "specular-glossiness"
     // specularcolor = lerp((0.4,0.4,0.4), basecolor, metallic) //(0.4,0.4,0.4) specularcolor for dielectric(/insulator/non-metal) // evidently, "metallic-roughness"workflow can't control the specularcolor of the dielectric
     // diffusecolor = 1 - specularcolor
@@ -88,19 +109,20 @@ extern "C"
 
     enum
     {
-        DIFFUSECOLOR_TEXTURE_INDEX = 0,
-        SPECULARCOLOR_TEXTURE_INDEX = 1,
-        GLOSSINESS_TEXTURE_INDEX = 2,
-        AMBIENTOCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
-        HEIGHT_TEXTURE_INDEX = 4,            // Parallax
-        NORMAL_TEXTURE_INDEX = 5,            // Bump
-        MATERIAL_TEXTURE_COUNT = 6
+        //PBR Specular Glossiness
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_DIFFUSE_COLOR_TEXTURE_INDEX = 0,
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_SPECULAR_COLOR_TEXTURE_INDEX = 1,
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_GLOSSINESS_TEXTURE_INDEX = 2,
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_AMBIENT_OCCLUSION_TEXTURE_INDEX = 3, // Another UV Channel // Why ??? // For lightmaps, multi-objects share the same map and the UV should not be overlapped.
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_HEIGHT_TEXTURE_INDEX = 4,            // Parallax
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_NORMAL_TEXTURE_INDEX = 5,            // Bump
+        //GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS_TEXTURE_COUNT = 6,
+        GFX_MATERIAL_MAX_TEXTURE_COUNT = 6
     };
 
-    PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
-    PT_ATTR_GFX void PT_CALL gfx_mesh_set_texture(uint32_t texture_index, gfx_texture_ref texture);
-    PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh);
+    PT_ATTR_GFX gfx_material_ref PT_CALL gfx_connection_create_material(gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL gfx_material_init_with_texture(gfx_connection_ref gfx_connection, gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, gfx_texture_ref *gfx_textures);
+    PT_ATTR_GFX void PT_CALL gfx_material_destroy(gfx_connection_ref gfx_connection, gfx_material_ref gfx_material);
 
     PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection);
     // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"
@@ -109,12 +131,6 @@ extern "C"
     // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
     // but must be after the return of the "gfx_connection_create_texture"
     PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture);
-
-    // Top Level Structure - Node
-    // Bottom Level Structure - Mesh
-    PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref node, gfx_mesh_ref gfx_mesh);
-    PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref node);
 
 #ifdef __cplusplus
 }

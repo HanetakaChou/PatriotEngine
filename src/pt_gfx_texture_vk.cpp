@@ -18,10 +18,8 @@
 #include <stddef.h>
 #include <assert.h>
 #include <pt_mcrt_intrin.h>
-#include <pt_mcrt_atomic.h>
 #include <pt_mcrt_malloc.h>
 #include "pt_gfx_texture_vk.h"
-#include <vulkan/vulkan.h>
 #include <new>
 
 bool gfx_texture_vk::read_input_stream(

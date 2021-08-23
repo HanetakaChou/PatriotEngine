@@ -20,14 +20,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_task.h>
-#include <pt_mcrt_scalable_allocator.h>
 #include "pt_gfx_mesh_base.h"
 #include "pt_gfx_connection_vk.h"
 #include "pt_gfx_streaming_object_base.h"
 #include "pt_gfx_frame_object_base.h"
 #include <vulkan/vulkan.h>
-#include <string>
 
 class gfx_mesh_vk final : public gfx_mesh_base, public gfx_streaming_object_base, public gfx_frame_object_base
 {
