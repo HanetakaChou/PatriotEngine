@@ -1420,6 +1420,7 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         pool_sizes[0].descriptorCount = GFX_MATERIAL_MAX_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
 
+        // https://community.arm.com/developer/tools-software/graphics/b/blog/posts/vulkan-descriptor-and-buffer-management
         VkDescriptorPoolCreateInfo descriptor_pool_create_info;
         descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptor_pool_create_info.pNext = NULL;
