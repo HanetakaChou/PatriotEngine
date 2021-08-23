@@ -18,6 +18,14 @@
 #include <stddef.h>
 #include "pt_gfx_connection_base.h"
 
+void gfx_connection_base::frame_node_destroy_list_push(class gfx_node_base *node)
+{
+    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
+    this->m_frame_node_destory_list[frame_throttling_index].produce(node);
+    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
+}
+
 void gfx_connection_base::frame_object_destroy_list_push(class gfx_frame_object_base *frame_object)
 {
     mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);

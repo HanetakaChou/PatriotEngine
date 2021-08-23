@@ -48,12 +48,23 @@ bool gfx_streaming_object_base::streaming_stage_first_execute(
         if (gfx_input_stream_ref(-1) == input_stream)
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
+            mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+            gfx_connection->streaming_throttling_index_lock();
+            uint32_t streaming_throttling_index = gfx_connection->streaming_throttling_index();
+            gfx_connection->streaming_object_list_push(streaming_throttling_index, this);
+            gfx_connection->streaming_throttling_index_unlock();
             return false;
         }
 
         if (!this->streaming_stage_first_pre_populate_task_data_callback(gfx_connection, input_stream, input_stream_read_callback, input_stream_seek_callback, streaming_stage_first_thread_stack_data_user_defined))
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
+            input_stream_destroy_callback(input_stream);
+            mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+            gfx_connection->streaming_throttling_index_lock();
+            uint32_t streaming_throttling_index = gfx_connection->streaming_throttling_index();
+            gfx_connection->streaming_object_list_push(streaming_throttling_index, this);
+            gfx_connection->streaming_throttling_index_unlock();
             return false;
         }
 
@@ -113,7 +124,7 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
     mcrt_task_increment_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_connection->streaming_throttling_index_unlock();
 
-    task_data->m_gfx_connection->streaming_task_mark_executing_begin(streaming_throttling_index);
+    task_data->m_gfx_connection->streaming_task_mark_execute_begin(streaming_throttling_index);
 
     mcrt_task_set_parent(self, task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
@@ -128,7 +139,9 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
         {
             mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
             task_data->m_input_stream_destroy_callback(task_data->m_input_stream);
-            task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+            mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+            task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
+            task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
             return NULL;
         }
 
@@ -160,7 +173,7 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
                     task_data->m_streaming_object->streaming_stage_second_post_calculate_total_size_callback(false, streaming_throttling_index, &thread_stack_data_user_defined, task_data->m_gfx_connection, task_data->m_input_stream, task_data->m_input_stream_read_callback, task_data->m_input_stream_seek_callback, &task_data->m_task_data_user_defined);
 
                     // recycle needs manually tally_completion_of_predecessor
-                    task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+                    task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
                     // the "mcrt_task_decrement_ref_count" must be called after all works(include the C++ destructors) are done
                     mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
                     return NULL;
@@ -176,14 +189,15 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
         {
             mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_error, true);
             task_data->m_input_stream_destroy_callback(task_data->m_input_stream);
-            task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+            mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+            task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
+            task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
             return NULL;
         }
 
         // pass to the third stage
-        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
-
         mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
     }
     else
     {
@@ -194,14 +208,13 @@ mcrt_task_ref gfx_streaming_object_base::streaming_stage_second_task_execute(mcr
             task_data->m_streaming_object->streaming_destroy_callback();
 #else
         // pass to the third stage
-        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
-
         mcrt_atomic_store(&task_data->m_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_streaming_object);
 #endif
     }
 
     task_data->m_input_stream_destroy_callback(task_data->m_input_stream);
-    task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+    task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
     return NULL;
 }
 
@@ -235,21 +248,21 @@ void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base
     this->streaming_done_lock();
 
     PT_MAYBE_UNUSED streaming_status_t streaming_status = this->m_streaming_status;
-    PT_MAYBE_UNUSED bool streaming_error = this->m_streaming_error;
+    bool streaming_error = this->m_streaming_error;
     bool streaming_cancel = this->m_streaming_cancel;
-    assert(!streaming_error);
     assert(STREAMING_STATUS_STAGE_THIRD == streaming_status);
 
     if (!streaming_cancel)
     {
-        if (this->streaming_done_callback(gfx_connection))
+        if (!streaming_error)
         {
-            mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
+            if (!this->streaming_done_callback(gfx_connection))
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+            }
         }
-        else
-        {
-            mcrt_atomic_store(&this->m_streaming_error, true);
-        }
+
+        mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
     }
     else
     {

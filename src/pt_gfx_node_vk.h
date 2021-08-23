@@ -24,20 +24,12 @@
 
 class gfx_node_vk final : public gfx_node_base
 {
-    class gfx_mesh_vk *m_gfx_mesh;
-
-    void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh) override;
-
-    void destroy(class gfx_connection_base *gfx_connection) override;
-
 public:
     size_t m_frame_node_index;
 
     void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
 
-    inline class gfx_mesh_vk *get_mesh() { return m_gfx_mesh; }
-
-    inline gfx_node_vk() : gfx_node_base(), m_gfx_mesh(NULL), m_frame_node_index(-1){};
+    inline gfx_node_vk() : gfx_node_base(), m_frame_node_index(-1){};
 };
 
 #endif

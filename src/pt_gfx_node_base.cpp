@@ -19,6 +19,24 @@
 #include <stdint.h>
 #include "pt_gfx_node_base.h"
 
+void gfx_node_base::set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh)
+{
+    class gfx_mesh_base *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, gfx_mesh);
+
+    if (gfx_mesh != gfx_mesh_old)
+    {
+        if (NULL != gfx_mesh)
+        {
+            gfx_mesh->addref();
+        }
+
+        if (NULL != gfx_mesh_old)
+        {
+            gfx_mesh_old->release(gfx_connection);
+        }
+    }
+}
+
 void gfx_node_base::set_material(class gfx_connection_base *gfx_connection, class gfx_material_base *gfx_material)
 {
     class gfx_material_base *gfx_material_old = mcrt_atomic_xchg_ptr(&this->m_gfx_material, gfx_material);
@@ -35,6 +53,17 @@ void gfx_node_base::set_material(class gfx_connection_base *gfx_connection, clas
             gfx_material_old->release(gfx_connection);
         }
     }
+}
+
+void gfx_node_base::destroy(class gfx_connection_base *gfx_connection)
+{
+    class gfx_mesh_base *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, static_cast<class gfx_mesh_base *>(NULL));
+    gfx_mesh_old->release(gfx_connection);
+
+    class gfx_material_base *gfx_material_old = mcrt_atomic_xchg_ptr(&this->m_gfx_material, static_cast<class gfx_material_base *>(NULL));
+    gfx_material_old->release(gfx_connection);
+
+    gfx_connection->frame_node_destroy_list_push(this);
 }
 
 // API

@@ -22,13 +22,10 @@
 #include <stdint.h>
 #include "pt_gfx_mesh_base.h"
 #include "pt_gfx_connection_vk.h"
-#include "pt_gfx_streaming_object_base.h"
-#include "pt_gfx_frame_object_base.h"
 #include <vulkan/vulkan.h>
 
-class gfx_mesh_vk final : public gfx_mesh_base, public gfx_streaming_object_base, public gfx_frame_object_base
+class gfx_mesh_vk final : public gfx_mesh_base
 {
-    uint32_t m_ref_count;
     // mali IDVS
     // seperate position and varying
 public:
@@ -113,8 +110,6 @@ private:
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
 
-    void destroy(class gfx_connection_base *gfx_connection) override;
-
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
@@ -124,13 +119,7 @@ private:
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 public:
-    void addref();
-
-    void release(class gfx_connection_vk *gfx_connection);
-
     inline gfx_mesh_vk() : gfx_mesh_base(),
-                           gfx_streaming_object_base(),
-                           m_ref_count(1U),
                            m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_position_gfx_malloc_offset(uint64_t(-1)), m_vertex_position_gfx_malloc_size(uint64_t(-1)), m_vertex_position_gfx_malloc_page_handle(NULL), m_vertex_position_gfx_malloc_device_memory(VK_NULL_HANDLE),
                            m_vertex_varying_buffer(VK_NULL_HANDLE), m_vertex_varying_gfx_malloc_offset(uint64_t(-1)), m_vertex_varying_gfx_malloc_size(uint64_t(-1)), m_vertex_varying_gfx_malloc_page_handle(NULL), m_vertex_varying_gfx_malloc_device_memory(VK_NULL_HANDLE),
                            m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE)

@@ -93,6 +93,8 @@ protected:
         NODE_DESTROY_LIST_COUNT = 32U,
         FRAME_OBJECT_DESTROY_LIST_COUNT = 32U,
     };
+    struct mpsc_list<class gfx_node_base *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_node_base *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
     struct mpsc_list<class gfx_frame_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_frame_object_destory_list[FRAME_THROTTLING_COUNT];
 
     // Streaming
@@ -103,7 +105,7 @@ protected:
     uint32_t m_streaming_throttling_index;
     mcrt_rwlock_t m_rwlock_streaming_throttling_index;
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_t m_asset_rwlock_streaming_task[STREAMING_THROTTLING_COUNT];
+    mcrt_asset_rwlock_t m_asset_rwlock_streaming_throttling_index[STREAMING_THROTTLING_COUNT]; // streaming_throttling_index
 #endif
     uint32_t m_streaming_thread_count;
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
@@ -128,15 +130,16 @@ public:
     inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
 
     // Frame
+    void frame_node_destroy_list_push(class gfx_node_base *node);
     void frame_object_destroy_list_push(class gfx_frame_object_base *frame_object);
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    inline void streaming_task_mark_executing_begin(uint32_t streaming_throttling_index)
+    inline void streaming_task_mark_execute_begin(uint32_t streaming_throttling_index)
     {
-        mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+        mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
     }
-    inline void streaming_task_mark_executing_end(uint32_t streaming_throttling_index) { mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]); }
+    inline void streaming_task_mark_executie_end(uint32_t streaming_throttling_index) { mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]); }
 #endif
     inline void streaming_throttling_index_lock()
     {

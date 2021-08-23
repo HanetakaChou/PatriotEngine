@@ -330,34 +330,6 @@ bool gfx_mesh_vk::streaming_stage_second_post_calculate_total_size_callback(bool
     return true;
 }
 
-void gfx_mesh_vk::destroy(class gfx_connection_base *gfx_connection_base)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    this->release(gfx_connection);
-}
-
-void gfx_mesh_vk::addref()
-{
-    PT_MAYBE_UNUSED uint32_t ref_count = mcrt_atomic_inc_u32(&this->m_ref_count);
-    // can't set_mesh after destory
-    assert(1U < ref_count);
-}
-
-void gfx_mesh_vk::release(class gfx_connection_vk *gfx_connection)
-{
-    if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
-    {
-        bool streaming_done;
-        this->streaming_destroy_request(&streaming_done);
-
-        if (streaming_done)
-        {
-            // the object is used by the rendering system
-            this->frame_destroy_request(gfx_connection);
-        }
-    }
-}
-
 void gfx_mesh_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
@@ -377,7 +349,7 @@ void gfx_mesh_vk::frame_destroy_callback(class gfx_connection_base *gfx_connecti
 
 inline void gfx_mesh_vk::unified_destory(class gfx_connection_vk *gfx_connection)
 {
-    assert(0U == mcrt_atomic_load(&this->m_ref_count));
+    //assert(0U == mcrt_atomic_load(&this->m_ref_count));
 
     if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
     {

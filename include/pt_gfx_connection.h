@@ -75,8 +75,31 @@ extern "C"
     PT_ATTR_GFX void PT_CALL gfx_node_set_material(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_material_ref gfx_material);
     PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node);
 
-    // We may share the texture but we scarcely share the buffer
-    // Thus we don't support buffer
+    // We don't support "HdStRenderBuffer" and we support "HdStMesh" instead
+    // Because we scarcely share the "buffer" but we may share "mesh" between the node
+    //
+    // Although the concepts may be limited to the assets, this design allows us reading the data into the staging buffer directly without any temp buffer at all.
+    //
+    // -------------------------------------------------------------------------------------
+    // Hydra Primitives
+    //
+    //  HdBprim //B(uffer) Prim(itive)
+    //  [pxr/imaging/lib/hd/bprim.h\]
+    //  [pxr/imaging/lib/hdSt/renderDelegate.cpp\]
+    //  HdStRenderDelegate::CreateBprim
+    //      HdStTexture HdStRenderBuffer HdStField
+    //
+    //  HdSprim //S(tate) Prim(itive)
+    //  [pxr/imaging/lib/hd/sprim.h\]
+    //  [pxr/imaging/lib/hdSt/renderDelegate.cpp\]
+    //  HdStRenderDelegate::CreateSprim
+    //      HdCamera HdStLight HdStMaterial HdStDrawTarget HdStExtComputation
+    //
+    //  HdRprim //R(enderable) Prim(itive)
+    //  [pxr/imaging/lib/hd/rprim.h\]
+    //  [pxr/imaging/lib/hdSt/renderDelegate.cpp\]
+    //  HdStRenderDelegate::CreateRprim
+    //      HdStMesh HdStBasisCurves HdStPoints HdStVolume
 
     PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection);
     PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream));
@@ -89,7 +112,7 @@ extern "C"
         GFX_MATERIAL_MODEL_COUNT = 2
     };
 
-    //PBR Specular Glossiness
+    // PBR Specular Glossiness
 
     // [glTF 2.0: PBR Materials](https://www.khronos.org/assets/uploads/developers/library/2017-gtc/glTF-2.0-and-PBR-GTC_May17.pdf) // https://github.com/KhronosGroup/glTF
     // [Conversion between metallic-roughness and specular-glossiness workflows](https://github.com/KhronosGroup/glTF/tree/master/extensions/2.0/Khronos/KHR_materials_pbrSpecularGlossiness/examples)
@@ -135,6 +158,7 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
 
 #if 0
 

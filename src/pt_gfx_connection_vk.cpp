@@ -95,7 +95,7 @@ inline bool gfx_connection_vk::init_streaming()
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_asset_rwlock_init(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+        mcrt_asset_rwlock_init(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
         this->m_transfer_src_buffer_begin[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
         this->m_transfer_src_buffer_end[streaming_throttling_index] = this->m_transfer_src_buffer_begin[streaming_throttling_index];
@@ -575,7 +575,7 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // submit
@@ -707,7 +707,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // The new index
@@ -724,7 +724,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // free transfer_src buffer memory
@@ -785,7 +785,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_task[streaming_throttling_index]);
+    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
     return;
 }
@@ -1686,14 +1686,6 @@ inline bool gfx_connection_vk::init_pipeline()
     return true;
 }
 
-void gfx_connection_vk::frame_node_destroy_list_push(class gfx_node_vk *node)
-{
-    mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
-    uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    this->m_frame_node_destory_list[frame_throttling_index].produce(node);
-    mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
-}
-
 inline VkCommandBuffer gfx_connection_vk::frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index)
 {
     assert(uint32_t(-1) != frame_thread_index);
@@ -1757,9 +1749,10 @@ inline void gfx_connection_vk::acquire_frame()
         } user_defined = {&this->m_scene_node_list, &this->m_scene_node_list_free_index_list};
 
         this->m_frame_node_init_list[frame_throttling_index].consume_and_clear(
-            [](class gfx_node_vk *node, void *user_defined_void) -> void
+            [](class gfx_node_base *node_base, void *user_defined_void) -> void
             {
                 struct frame_node_init_list_user_defined *user_defined = static_cast<struct frame_node_init_list_user_defined *>(user_defined_void);
+                class gfx_node_vk *node = static_cast<class gfx_node_vk *>(node_base);
                 if ((*user_defined->m_scene_node_list_free_index_list).size() > 0U)
                 {
                     size_t frame_node_index = (*user_defined->m_scene_node_list_free_index_list).back();
@@ -1787,9 +1780,10 @@ inline void gfx_connection_vk::acquire_frame()
         } user_defined = {&this->m_scene_node_list, &this->m_scene_node_list_free_index_list, this};
 
         this->m_frame_node_destory_list[frame_throttling_index].consume_and_clear(
-            [](class gfx_node_vk *node, void *user_defined_void) -> void
+            [](class gfx_node_base *node_base, void *user_defined_void) -> void
             {
                 struct frame_node_destory_list_user_defined *user_defined = static_cast<struct frame_node_destory_list_user_defined *>(user_defined_void);
+                class gfx_node_vk *node = static_cast<class gfx_node_vk *>(node_base);
                 assert(node == (*user_defined->m_scene_node_list)[node->m_frame_node_index]);
                 (*user_defined->m_scene_node_list)[node->m_frame_node_index] = NULL;
                 (*user_defined->m_scene_node_list_free_index_list).push_back(node->m_frame_node_index);
@@ -2033,7 +2027,7 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
     {
         if (NULL != node)
         {
-            class gfx_mesh_vk *mesh = node->get_mesh();
+            class gfx_mesh_vk *mesh = static_cast<class gfx_mesh_vk *>(node->get_mesh());
             if (NULL != mesh && mesh->is_streaming_done())
             {
                 VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};

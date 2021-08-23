@@ -86,9 +86,6 @@ class gfx_connection_vk final : public gfx_connection_base
 
     mcrt_vector<class gfx_frame_object_base *> m_frame_object_unused_list[FRAME_THROTTLING_COUNT];
 
-    struct mpsc_list<class gfx_node_vk *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_node_vk *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-
     inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
     inline void acquire_frame();
     inline void release_frame();
@@ -218,9 +215,6 @@ class gfx_connection_vk final : public gfx_connection_base
 public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
-
-    // Frame
-    void frame_node_destroy_list_push(class gfx_node_vk *node);
 
     // Streaming
     inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }

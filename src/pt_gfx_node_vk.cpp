@@ -22,34 +22,6 @@
 #include "pt_gfx_node_vk.h"
 #include "pt_gfx_mesh_vk.h"
 
-void gfx_node_vk::set_mesh(class gfx_connection_base *gfx_connection_base, class gfx_mesh_base *gfx_mesh_base)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    class gfx_mesh_vk *gfx_mesh = static_cast<class gfx_mesh_vk *>(gfx_mesh_base);
-
-    class gfx_mesh_vk *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, gfx_mesh);
-
-    if (NULL != gfx_mesh)
-    {
-        gfx_mesh->addref();
-    }
-
-    if (NULL != gfx_mesh_old)
-    {
-        gfx_mesh_old->release(gfx_connection);
-    }
-}
-
-void gfx_node_vk::destroy(class gfx_connection_base *gfx_connection_base)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-
-    class gfx_mesh_vk *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, static_cast<class gfx_mesh_vk *>(NULL));
-    gfx_mesh_old->release(gfx_connection);
-
-    gfx_connection->frame_node_destroy_list_push(this);
-}
-
 void gfx_node_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
 {
     this->~gfx_node_vk();

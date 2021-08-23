@@ -92,7 +92,7 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
     mcrt_task_increment_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_connection->streaming_throttling_index_unlock();
 
-    task_data->m_gfx_connection->streaming_task_mark_executing_begin(streaming_throttling_index);
+    task_data->m_gfx_connection->streaming_task_mark_execute_begin(streaming_throttling_index);
 
     mcrt_task_set_parent(self, task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
@@ -104,7 +104,9 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
             if (task_data->m_gfx_streaming_object->m_gfx_textures[texture_index]->is_streaming_error())
             {
                 mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
-                task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+                mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+                task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
+                task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
                 return NULL;
             }
 
@@ -116,7 +118,7 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
 
                 task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
-                task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+                task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
                 // recycle needs manually tally_completion_of_predecessor
                 // the "mcrt_task_decrement_ref_count" must be called after all works(include the C++ destructors) are done
                 mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
@@ -125,9 +127,8 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
         }
 
         // pass to the third stage
-        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
-
         mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
     }
     else
     {
@@ -138,13 +139,12 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
             task_data->m_streaming_object->streaming_destroy_callback();
 #else
         // pass to the third stage
-        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
-
         mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
+        task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
 #endif
     }
 
-    task_data->m_gfx_connection->streaming_task_mark_executing_end(streaming_throttling_index);
+    task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
     return NULL;
 }
 

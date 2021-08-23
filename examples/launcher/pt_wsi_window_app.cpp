@@ -30,7 +30,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
 
     my_texture = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
+    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds1");
 
     my_material = gfx_connection_create_material(my_gfx_connection);
     gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
@@ -86,7 +86,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         gfx_texture_destroy(my_gfx_connection, my_texture);
     }
 #else
-    sleep(20);
+    sleep(5);
 #endif
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);

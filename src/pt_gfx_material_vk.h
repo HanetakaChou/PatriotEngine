@@ -31,40 +31,6 @@ class gfx_material_vk final : public gfx_material_base
 {
     VkDescriptorSet m_desciptor_set;
 
-    bool streaming_stage_first_pre_populate_task_data_callback(
-        class gfx_connection_base *gfx_connection,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        void *thread_stack_user_defined) override { return false; }
-
-    void streaming_stage_first_populate_task_data_callback(
-        void *thread_stack_user_defined,
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override { return; }
-
-    bool streaming_stage_second_pre_calculate_total_size_callback(
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override { return false; }
-
-    size_t streaming_stage_second_calculate_total_size_callback(
-        uint64_t base_offset,
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        class gfx_connection_base *gfx_connection,
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override { return 0U; }
-
-    bool streaming_stage_second_post_calculate_total_size_callback(
-        bool staging_buffer_allocate_success,
-        uint32_t streaming_throttling_index,
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        class gfx_connection_base *gfx_connection,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override { return false; }
-
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
