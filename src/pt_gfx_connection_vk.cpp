@@ -935,8 +935,8 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
         assert(VK_TRUE == supported);
     }
 #endif
-    this->m_framebuffer_width = 1280U;
-    this->m_framebuffer_height = 720U;
+    this->m_wsi_width = 1280U;
+    this->m_wsi_height = 720U;
     this->m_depth_image = VK_NULL_HANDLE;
     this->m_swapchain_image_count = 0U;
     this->m_swapchain = VK_NULL_HANDLE;
@@ -971,6 +971,22 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
 
 inline bool gfx_connection_vk::update_swapchain()
 {
+    // wait fence
+    if (0U != this->m_swapchain_image_count)
+    {
+        assert(NULL != this->m_swapchain_image_views);
+        assert(NULL != this->m_swapchain_images);
+        assert(NULL != this->m_framebuffers);
+        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
+        {
+            this->m_device.destroy_image_view(this->m_swapchain_image_views[swapchain_image_index]);
+            this->m_device.destroy_framebuffer(this->m_framebuffers[swapchain_image_index]);
+        }
+        mcrt_aligned_free(this->m_swapchain_image_views);
+        mcrt_aligned_free(this->m_swapchain_images);
+        mcrt_aligned_free(this->m_framebuffers);
+    }
+
     //swapchain
     {
         VkSwapchainKHR old_swapchain = this->m_swapchain;
@@ -1029,6 +1045,10 @@ inline bool gfx_connection_vk::update_swapchain()
             {
                 this->m_framebuffer_width = surface_capabilities.currentExtent.width;
             }
+            else
+            {
+                this->m_framebuffer_width = mcrt_atomic_load(&this->m_wsi_width);
+            }
             if (this->m_framebuffer_width < surface_capabilities.minImageExtent.width)
             {
                 this->m_framebuffer_width = surface_capabilities.minImageExtent.width;
@@ -1041,6 +1061,10 @@ inline bool gfx_connection_vk::update_swapchain()
             if (swapchain_create_info.imageExtent.height == 0XFFFFFFFFU)
             {
                 this->m_framebuffer_height = swapchain_create_info.imageExtent.height;
+            }
+            else
+            {
+                this->m_framebuffer_height = mcrt_atomic_load(&this->m_wsi_height);
             }
             if (this->m_framebuffer_height < surface_capabilities.minImageExtent.height)
             {
@@ -1150,56 +1174,6 @@ inline bool gfx_connection_vk::init_renderpass()
 
 inline bool gfx_connection_vk::update_framebuffer()
 {
-    // wait fence
-
-    // swapchain images and views
-    {
-        if (0U != this->m_swapchain_image_count)
-        {
-            assert(NULL != this->m_swapchain_image_views);
-            assert(NULL != this->m_swapchain_images);
-            assert(NULL != this->m_framebuffers);
-            mcrt_aligned_free(this->m_swapchain_image_views);
-            mcrt_aligned_free(this->m_swapchain_images);
-            mcrt_aligned_free(this->m_framebuffers);
-        }
-
-        uint32_t swapchain_image_count_before;
-        PT_MAYBE_UNUSED VkResult res_get_swapchain_images_before = this->m_device.get_swapchain_images(this->m_swapchain, &swapchain_image_count_before, NULL);
-        assert(VK_SUCCESS == res_get_swapchain_images_before);
-
-        this->m_swapchain_image_count = swapchain_image_count_before;
-        this->m_swapchain_images = static_cast<VkImage *>(mcrt_aligned_malloc(sizeof(VkImage) * this->m_swapchain_image_count, alignof(VkImage)));
-        PT_MAYBE_UNUSED VkResult res_get_swapchain_images = this->m_device.get_swapchain_images(this->m_swapchain, &this->m_swapchain_image_count, this->m_swapchain_images);
-        assert(swapchain_image_count_before == this->m_swapchain_image_count);
-        assert(VK_SUCCESS == res_get_swapchain_images);
-
-        this->m_swapchain_image_views = static_cast<VkImageView *>(mcrt_aligned_malloc(sizeof(VkImageView) * this->m_swapchain_image_count, alignof(VkImageView)));
-
-        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
-        {
-            VkImageViewCreateInfo image_view_create_info;
-            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            image_view_create_info.pNext = NULL;
-            image_view_create_info.flags = 0U;
-            image_view_create_info.image = this->m_swapchain_images[swapchain_image_index];
-            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            image_view_create_info.format = this->m_swapchain_image_format;
-            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            image_view_create_info.subresourceRange.baseMipLevel = 0U;
-            image_view_create_info.subresourceRange.levelCount = 1U;
-            image_view_create_info.subresourceRange.baseArrayLayer = 0U;
-            image_view_create_info.subresourceRange.layerCount = 1U;
-
-            PT_MAYBE_UNUSED VkResult res_create_image_view = this->m_device.create_image_view(&image_view_create_info, &this->m_swapchain_image_views[swapchain_image_index]);
-            assert(VK_SUCCESS == res_create_image_view);
-        }
-    }
-
     // depth image and view
     {
         if (NULL != this->m_depth_image)
@@ -1209,8 +1183,6 @@ inline bool gfx_connection_vk::update_framebuffer()
             this->m_device.destroy_image_view(this->m_depth_image_view);
             this->m_device.destroy_image(this->m_depth_image);
             this->m_device.free_memory(this->m_depth_device_memory);
-            mcrt_aligned_free(this->m_swapchain_image_views);
-            mcrt_aligned_free(this->m_swapchain_images);
         }
 
         // depth
@@ -1276,6 +1248,44 @@ inline bool gfx_connection_vk::update_framebuffer()
             image_view_create_info.subresourceRange.layerCount = 1U;
 
             PT_MAYBE_UNUSED VkResult res_create_image_view = this->m_device.create_image_view(&image_view_create_info, &this->m_depth_image_view);
+            assert(VK_SUCCESS == res_create_image_view);
+        }
+    }
+
+    // swapchain images and views
+    {
+        uint32_t swapchain_image_count_before;
+        PT_MAYBE_UNUSED VkResult res_get_swapchain_images_before = this->m_device.get_swapchain_images(this->m_swapchain, &swapchain_image_count_before, NULL);
+        assert(VK_SUCCESS == res_get_swapchain_images_before);
+
+        this->m_swapchain_image_count = swapchain_image_count_before;
+        this->m_swapchain_images = static_cast<VkImage *>(mcrt_aligned_malloc(sizeof(VkImage) * this->m_swapchain_image_count, alignof(VkImage)));
+        PT_MAYBE_UNUSED VkResult res_get_swapchain_images = this->m_device.get_swapchain_images(this->m_swapchain, &this->m_swapchain_image_count, this->m_swapchain_images);
+        assert(swapchain_image_count_before == this->m_swapchain_image_count);
+        assert(VK_SUCCESS == res_get_swapchain_images);
+
+        this->m_swapchain_image_views = static_cast<VkImageView *>(mcrt_aligned_malloc(sizeof(VkImageView) * this->m_swapchain_image_count, alignof(VkImageView)));
+
+        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
+        {
+            VkImageViewCreateInfo image_view_create_info;
+            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+            image_view_create_info.pNext = NULL;
+            image_view_create_info.flags = 0U;
+            image_view_create_info.image = this->m_swapchain_images[swapchain_image_index];
+            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format = this->m_swapchain_image_format;
+            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            image_view_create_info.subresourceRange.baseMipLevel = 0U;
+            image_view_create_info.subresourceRange.levelCount = 1U;
+            image_view_create_info.subresourceRange.baseArrayLayer = 0U;
+            image_view_create_info.subresourceRange.layerCount = 1U;
+
+            PT_MAYBE_UNUSED VkResult res_create_image_view = this->m_device.create_image_view(&image_view_create_info, &this->m_swapchain_image_views[swapchain_image_index]);
             assert(VK_SUCCESS == res_create_image_view);
         }
     }
@@ -1715,7 +1725,7 @@ inline VkCommandBuffer gfx_connection_vk::frame_task_get_secondary_command_buffe
             command_buffer_inheritance_info.pNext = NULL;
             command_buffer_inheritance_info.renderPass = this->m_render_pass;
             command_buffer_inheritance_info.subpass = 0;
-            command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
+            command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_frame_swapchain_image_index[frame_throttling_index]];
             command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
             command_buffer_inheritance_info.queryFlags = 0U;
             command_buffer_inheritance_info.pipelineStatistics = 0U;
@@ -1805,19 +1815,25 @@ inline void gfx_connection_vk::acquire_frame()
         },
         &this->m_frame_object_unused_list[frame_throttling_index_last]);
 
-    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_swapchain_image_index[frame_throttling_index]);
+    VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_frame_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
 
     if (VK_SUCCESS == res_acquire_next_image)
     {
+        this->m_frame_swapchain_image_acquired[frame_throttling_index] = true;
     }
     else if (VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image)
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
+        this->update_swapchain();
+        this->update_framebuffer();
+        this->m_frame_swapchain_image_acquired[frame_throttling_index] = false;
     }
     else
     {
+        assert(0);
+        this->m_frame_swapchain_image_acquired[frame_throttling_index] = false;
     }
 
     // wait the Fence
@@ -1852,134 +1868,150 @@ inline void gfx_connection_vk::acquire_frame()
 
 inline void gfx_connection_vk::release_frame()
 {
-    // multi-thread draw
-    {
-        mcrt_task_ref task = mcrt_task_allocate_root(opaque_subpass_task_execute);
-        static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
-        struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(task));
-        // There is no constructor of the POD "mcrt_task_user_data_t"
-        task_data->m_gfx_connection = this;
-
-        mcrt_task_increment_ref_count(this->m_frame_task_root);
-        mcrt_task_set_parent(task, this->m_frame_task_root);
-
-        // different master task doesn't share the task_arena
-        // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-        // mcrt_task_spawn(task);
-        mcrt_task_enqueue(task, this->task_arena());
-    }
 
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    // We add the frame index in acquire
+    // We increase the "frame_index" in the "acquire_frame"
     frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
 
+    if (this->m_frame_swapchain_image_acquired[frame_throttling_index])
     {
-        VkCommandBufferAllocateInfo command_buffer_allocate_info;
-        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_frame_graphics_primary_commmand_pool[frame_throttling_index];
-        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        command_buffer_allocate_info.commandBufferCount = 1U;
-
-        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
-        assert(VK_SUCCESS == res_allocate_command_buffers);
-    }
-
-    {
-        VkCommandBufferBeginInfo command_buffer_begin_info;
-        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        command_buffer_begin_info.pNext = NULL;
-        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-        command_buffer_begin_info.pInheritanceInfo = NULL;
-
-        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &command_buffer_begin_info);
-        assert(VK_SUCCESS == res_begin_command_buffer);
-    }
-
-    {
-        VkClearValue clear_values[2];
-        clear_values[0].color.float32[0] = 0.0f;
-        clear_values[0].color.float32[1] = 0.0f;
-        clear_values[0].color.float32[2] = 0.0f;
-        clear_values[0].color.float32[3] = 0.0f;
-        clear_values[1].depthStencil.depth = m_z_farthest;
-
-        VkRenderPassBeginInfo render_pass_begin;
-        render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        render_pass_begin.pNext = NULL;
-        render_pass_begin.renderPass = this->m_render_pass;
-        render_pass_begin.framebuffer = this->m_framebuffers[this->m_swapchain_image_index[frame_throttling_index]];
-        render_pass_begin.renderArea.offset.x = 0U;
-        render_pass_begin.renderArea.offset.y = 0U;
-        render_pass_begin.renderArea.extent.width = this->m_framebuffer_width;
-        render_pass_begin.renderArea.extent.height = this->m_framebuffer_height;
-        render_pass_begin.clearValueCount = 2U;
-        render_pass_begin.pClearValues = clear_values;
-
-        this->m_device.cmd_begin_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &render_pass_begin, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
-    }
-
-    // sync by TBB
-    mcrt_task_wait_for_all(this->m_frame_task_root);
-    mcrt_task_set_ref_count(this->m_frame_task_root, 1U);
-
-    // reduce and execute
-    {
-        uint32_t command_buffer_count = 0U;
-        for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
+        // multi-thread draw
         {
-            if (VK_NULL_HANDLE != this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX])
+            mcrt_task_ref task = mcrt_task_allocate_root(opaque_subpass_task_execute);
+            static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
+            struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(task));
+            // There is no constructor of the POD "mcrt_task_user_data_t"
+            task_data->m_gfx_connection = this;
+
+            mcrt_task_increment_ref_count(this->m_frame_task_root);
+            mcrt_task_set_parent(task, this->m_frame_task_root);
+
+            // different master task doesn't share the task_arena
+            // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
+            // mcrt_task_spawn(task);
+            mcrt_task_enqueue(task, this->task_arena());
+        }
+
+        {
+            VkCommandBufferAllocateInfo command_buffer_allocate_info;
+            command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            command_buffer_allocate_info.pNext = NULL;
+            command_buffer_allocate_info.commandPool = this->m_frame_graphics_primary_commmand_pool[frame_throttling_index];
+            command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            command_buffer_allocate_info.commandBufferCount = 1U;
+
+            PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+            assert(VK_SUCCESS == res_allocate_command_buffers);
+        }
+
+        {
+            VkCommandBufferBeginInfo command_buffer_begin_info;
+            command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            command_buffer_begin_info.pNext = NULL;
+            command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+            command_buffer_begin_info.pInheritanceInfo = NULL;
+
+            PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &command_buffer_begin_info);
+            assert(VK_SUCCESS == res_begin_command_buffer);
+        }
+
+        {
+            VkClearValue clear_values[2];
+            clear_values[0].color.float32[0] = 0.0f;
+            clear_values[0].color.float32[1] = 0.0f;
+            clear_values[0].color.float32[2] = 0.0f;
+            clear_values[0].color.float32[3] = 0.0f;
+            clear_values[1].depthStencil.depth = m_z_farthest;
+
+            VkRenderPassBeginInfo render_pass_begin;
+            render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            render_pass_begin.pNext = NULL;
+            render_pass_begin.renderPass = this->m_render_pass;
+            render_pass_begin.framebuffer = this->m_framebuffers[this->m_frame_swapchain_image_index[frame_throttling_index]];
+            render_pass_begin.renderArea.offset.x = 0U;
+            render_pass_begin.renderArea.offset.y = 0U;
+            render_pass_begin.renderArea.extent.width = this->m_framebuffer_width;
+            render_pass_begin.renderArea.extent.height = this->m_framebuffer_height;
+            render_pass_begin.clearValueCount = 2U;
+            render_pass_begin.pClearValues = clear_values;
+
+            this->m_device.cmd_begin_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], &render_pass_begin, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+        }
+
+        // sync by TBB
+        mcrt_task_wait_for_all(this->m_frame_task_root);
+        mcrt_task_set_ref_count(this->m_frame_task_root, 1U);
+
+        // reduce and execute
+        {
+            uint32_t command_buffer_count = 0U;
+            for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
             {
-                this->m_device.end_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX]);
+                if (VK_NULL_HANDLE != this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX])
+                {
+                    this->m_device.end_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX]);
 
-                this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX][command_buffer_count] = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX];
-                ++command_buffer_count;
+                    this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX][command_buffer_count] = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX];
+                    ++command_buffer_count;
 
-                this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX] = VK_NULL_HANDLE;
+                    this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX] = VK_NULL_HANDLE;
+                }
+            }
+            this->m_device.cmd_execute_commands(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], command_buffer_count, this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX]);
+        }
+
+        this->m_device.cmd_end_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+
+        this->m_device.end_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+
+        {
+            VkPipelineStageFlags wait_dst_stage_mask[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+
+            VkSubmitInfo submit_info;
+            submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+            submit_info.pNext = NULL;
+            submit_info.waitSemaphoreCount = 1U;
+            submit_info.pWaitSemaphores = &this->m_frame_semaphore_acquire_next_image[frame_throttling_index];
+            submit_info.pWaitDstStageMask = wait_dst_stage_mask;
+            submit_info.commandBufferCount = 1U;
+            submit_info.pCommandBuffers = &this->m_frame_graphics_primary_command_buffer[frame_throttling_index];
+            submit_info.signalSemaphoreCount = 1U;
+            submit_info.pSignalSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
+
+            PT_MAYBE_UNUSED VkResult res_queue_submit = this->m_device.queue_submit(this->m_device.queue_graphics(), 1U, &submit_info, this->m_frame_fence[frame_throttling_index]);
+            assert(VK_SUCCESS == res_queue_submit);
+        }
+
+        // TODO seperate present queue
+        {
+            VkPresentInfoKHR present_info;
+            present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+            present_info.pNext = NULL;
+            present_info.waitSemaphoreCount = 1U;
+            present_info.pWaitSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
+            present_info.swapchainCount = 1U;
+            present_info.pSwapchains = &this->m_swapchain;
+            present_info.pImageIndices = &this->m_frame_swapchain_image_index[frame_throttling_index];
+            present_info.pResults = NULL;
+
+            PT_MAYBE_UNUSED VkResult res_queue_present = this->m_device.queue_present(this->m_device.queue_graphics(), &present_info);
+            if (VK_SUCCESS == res_queue_present)
+            {
+                //
+            }
+            else if (VK_ERROR_OUT_OF_DATE_KHR == res_queue_present || VK_SUBOPTIMAL_KHR == res_queue_present)
+            {
+                PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
+                assert(VK_SUCCESS == res_wait_for_fences);
+                this->update_swapchain();
+                this->update_framebuffer();
+            }
+            else
+            {
+                assert(0);
             }
         }
-        this->m_device.cmd_execute_commands(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], command_buffer_count, this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX]);
     }
-
-    this->m_device.cmd_end_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
-
-    this->m_device.end_command_buffer(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
-
-    {
-        VkPipelineStageFlags wait_dst_stage_mask[1] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-
-        VkSubmitInfo submit_info;
-        submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submit_info.pNext = NULL;
-        submit_info.waitSemaphoreCount = 1U;
-        submit_info.pWaitSemaphores = &this->m_frame_semaphore_acquire_next_image[frame_throttling_index];
-        submit_info.pWaitDstStageMask = wait_dst_stage_mask;
-        submit_info.commandBufferCount = 1U;
-        submit_info.pCommandBuffers = &this->m_frame_graphics_primary_command_buffer[frame_throttling_index];
-        submit_info.signalSemaphoreCount = 1U;
-        submit_info.pSignalSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
-
-        PT_MAYBE_UNUSED VkResult res_queue_submit = this->m_device.queue_submit(this->m_device.queue_graphics(), 1U, &submit_info, this->m_frame_fence[frame_throttling_index]);
-        assert(VK_SUCCESS == res_queue_submit);
-    }
-
-    // TODO seperate present queue
-    {
-        VkPresentInfoKHR present_info;
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.pNext = NULL;
-        present_info.waitSemaphoreCount = 1U;
-        present_info.pWaitSemaphores = &this->m_frame_semaphore_queue_submit[frame_throttling_index];
-        present_info.swapchainCount = 1U;
-        present_info.pSwapchains = &this->m_swapchain;
-        present_info.pImageIndices = &this->m_swapchain_image_index[frame_throttling_index];
-        present_info.pResults = NULL;
-
-        PT_MAYBE_UNUSED VkResult res_queue_present = this->m_device.queue_present(this->m_device.queue_graphics(), &present_info);
-        assert(VK_SUCCESS == res_queue_present);
-    }
-
-    mcrt_atomic_store(&this->m_frame_throttling_index, ((this->m_frame_throttling_index + 1U) < FRAME_THROTTLING_COUNT) ? (this->m_frame_throttling_index + 1U) : 0U);
 }
 
 mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
@@ -2150,8 +2182,8 @@ inline gfx_connection_vk::~gfx_connection_vk()
 
 void gfx_connection_vk::on_wsi_resized(float width, float height)
 {
-    this->m_framebuffer_width = width;
-    this->m_framebuffer_height = height;
+    mcrt_atomic_store(&this->m_wsi_width, uint32_t(width));
+    mcrt_atomic_store(&this->m_wsi_height, uint32_t(height));
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()

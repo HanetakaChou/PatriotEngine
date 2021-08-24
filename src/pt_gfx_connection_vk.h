@@ -76,7 +76,8 @@ class gfx_connection_vk final : public gfx_connection_base
     VkSemaphore m_frame_semaphore_queue_submit[FRAME_THROTTLING_COUNT];
     VkFence m_frame_fence[FRAME_THROTTLING_COUNT];
 
-    uint32_t m_swapchain_image_index[FRAME_THROTTLING_COUNT];
+    uint32_t m_frame_swapchain_image_index[FRAME_THROTTLING_COUNT];
+    bool m_frame_swapchain_image_acquired[FRAME_THROTTLING_COUNT];
 
     // Scene
     template <typename T>
@@ -151,6 +152,11 @@ class gfx_connection_vk final : public gfx_connection_base
     VkDeviceMemory m_depth_device_memory;
     VkImageView m_depth_image_view;
     VkFramebuffer *m_framebuffers;
+
+
+    // WSI
+    uint32_t m_wsi_width;
+    uint32_t m_wsi_height;
 
     // SwapChain
     VkSurfaceKHR m_surface;
