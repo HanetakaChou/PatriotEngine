@@ -648,7 +648,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 void gfx_device_vk::destroy()
 {
 #ifndef NDEBUG
-    PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(this->m_instance, "vkGetInstanceProcAddr"));
+    PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vkGetInstanceProcAddr(this->m_instance, "vkGetInstanceProcAddr"));
 
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);

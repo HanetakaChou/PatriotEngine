@@ -280,6 +280,13 @@ bool gfx_mesh_vk::streaming_stage_second_post_calculate_total_size_callback(bool
             return false;
         }
         ptrdiff_t res_read = input_stream_read_callback(input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + vetex_texture_0_offset), input_vetex_texture_0_length);
+
+        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + vetex_texture_0_offset);
+        for (int i = 0; i < 72; ++i)
+        {
+            texcoord0[i] = ((texcoord0[i] > 0) ? texcoord0[i] : (-texcoord0[i]));
+        }
+
         if (res_read == -1 || res_read != input_vetex_texture_0_length)
         {
             return false;
