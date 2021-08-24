@@ -46,6 +46,8 @@ public:
 
     void set_material(class gfx_connection_base *gfx_connection, class gfx_material_base *gfx_material);
 
+    inline class gfx_material_base *get_material() const { return this->m_gfx_material; }
+
     void destroy(class gfx_connection_base *gfx_connection);
 };
 

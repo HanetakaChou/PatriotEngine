@@ -31,21 +31,24 @@ class gfx_material_vk final : public gfx_material_base
 {
     VkDescriptorSet m_desciptor_set;
 
-    void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
-
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
+
+    void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
-    inline void unified_destory(class gfx_connection_vk *gfx_connection);
+    inline void unified_destory_execute(class gfx_connection_vk *gfx_connection);
 
 public:
-
-
     inline gfx_material_vk() : gfx_material_base(),
                                m_desciptor_set(VK_NULL_HANDLE)
     {
-       
+    }
+
+    inline VkDescriptorSet get_descriptor_set() const
+    {
+        assert((!this->is_streaming_error()) && this->is_streaming_done());
+        return this->m_desciptor_set;
     }
 };
 

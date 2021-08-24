@@ -212,9 +212,9 @@ public:
     {
     }
 
-    inline VkImageView get_image_view()
+    inline VkImageView get_image_view() const
     {
-        assert(this->is_streaming_done());
+        assert((!this->is_streaming_error()) && this->is_streaming_done());
         return this->m_image_view;
     }
 };

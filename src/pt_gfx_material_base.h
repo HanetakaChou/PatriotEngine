@@ -23,8 +23,9 @@
 #include <pt_gfx_connection.h>
 #include "pt_gfx_texture_base.h"
 #include "pt_gfx_streaming_object_base.h"
+#include <assert.h>
 
-class gfx_material_base : private gfx_streaming_object_base, private gfx_frame_object_base
+class gfx_material_base : public gfx_streaming_object_base, private gfx_frame_object_base
 {
     uint32_t m_ref_count;
 
@@ -62,11 +63,9 @@ class gfx_material_base : private gfx_streaming_object_base, private gfx_frame_o
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override { return false; }
 
-protected:
     uint32_t m_texture_count;
     class gfx_texture_base *m_gfx_textures[GFX_MATERIAL_MAX_TEXTURE_COUNT];
 
-private:
     struct material_streaming_stage_second_task_data_t
     {
         class gfx_material_base *m_gfx_streaming_object;
@@ -77,11 +76,24 @@ private:
     static mcrt_task_ref material_streaming_stage_second_task_execute(mcrt_task_ref self);
 
 protected:
+    inline uint32_t get_texture_count() const { return this->m_texture_count; }
+    inline class gfx_texture_base const *const *get_textures() const { return &this->m_gfx_textures[0]; }
+
+    void unified_destory_execute(class gfx_connection_base *gfx_connection);
+
     inline gfx_material_base() : gfx_streaming_object_base(), gfx_frame_object_base(), m_ref_count(1U), m_texture_count(-1)
     {
         for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)
         {
             this->m_gfx_textures[texture_index] = NULL;
+        }
+    }
+
+    inline ~gfx_material_base()
+    {
+        for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)
+        {
+            assert(NULL == this->m_gfx_textures[texture_index]);
         }
     }
 

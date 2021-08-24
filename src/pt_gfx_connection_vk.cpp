@@ -812,7 +812,7 @@ bool gfx_connection_vk::allocate_descriptor_set(VkDescriptorSet *descriptor_set)
     }
 }
 
-void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base **gfx_textures)
+void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base const *const *gfx_textures)
 {
     assert(texture_count <= GFX_MATERIAL_MAX_TEXTURE_COUNT);
     VkDescriptorImageInfo descriptor_image_infos[GFX_MATERIAL_MAX_TEXTURE_COUNT];
@@ -820,7 +820,7 @@ void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint
     for (uint32_t texture_index = 0; texture_index < texture_count; ++texture_index)
     {
         descriptor_image_infos[texture_index].sampler = VK_NULL_HANDLE;
-        descriptor_image_infos[texture_index].imageView = static_cast<class gfx_texture_vk *>(gfx_textures[texture_index])->get_image_view();
+        descriptor_image_infos[texture_index].imageView = static_cast<class gfx_texture_vk const *>(gfx_textures[texture_index])->get_image_view();
         descriptor_image_infos[texture_index].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         descriptor_writes[texture_index].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -2000,9 +2000,6 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 
     VkCommandBuffer secondary_command_buffer = task_data->m_gfx_connection->frame_task_get_secondary_command_buffer(frame_throttling_index, frame_thread_index, OPAQUE_SUBPASS_INDEX);
 
-    // bind pipeline
-    task_data->m_gfx_connection->m_device.cmd_bind_pipeline(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_mesh);
-
     // set viewport
     {
         VkViewport viewports[1];
@@ -2025,14 +2022,22 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         task_data->m_gfx_connection->m_device.cmd_set_scissor(secondary_command_buffer, 0U, 1U, scissors);
     }
 
+    // bind - each shader
+    task_data->m_gfx_connection->m_device.cmd_bind_pipeline(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_mesh);
+
     // draw
     for (class gfx_node_vk *node : task_data->m_gfx_connection->m_scene_node_list)
     {
         if (NULL != node)
         {
             class gfx_mesh_vk *mesh = static_cast<class gfx_mesh_vk *>(node->get_mesh());
-            if (NULL != mesh && mesh->is_streaming_done())
+            class gfx_material_vk *material = static_cast<class gfx_material_vk *>(node->get_material());
+            if (NULL != mesh && (!mesh->is_streaming_error()) && mesh->is_streaming_done() && NULL != material && (!material->is_streaming_error()) && material->is_streaming_done())
             {
+                // bind - each material
+                VkDescriptorSet descriptor_sets[1] = {material->get_descriptor_set()};
+                task_data->m_gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
+
                 VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
                 VkDeviceSize offsets[2] = {0U, 0U};
                 task_data->m_gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);

@@ -246,7 +246,7 @@ public:
     inline void destroy_image_view(VkImageView image_view) { return this->m_device.destroy_image_view(image_view); }
 
     bool allocate_descriptor_set(VkDescriptorSet *descriptor_set);
-    void init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base **gfx_textures);
+    void init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base const *const *gfx_textures);
     void free_descriptor_set(VkDescriptorSet descriptor_set);
 };
 

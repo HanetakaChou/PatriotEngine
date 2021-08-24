@@ -175,6 +175,18 @@ void gfx_material_base::release(class gfx_connection_base *gfx_connection)
     }
 }
 
+void gfx_material_base::unified_destory_execute(class gfx_connection_base *gfx_connection)
+{
+    for (uint32_t texture_index = 0U; texture_index < this->m_texture_count; ++texture_index)
+    {
+        if (NULL != this->m_gfx_textures[texture_index])
+        {
+            this->m_gfx_textures[texture_index]->release(gfx_connection);
+            this->m_gfx_textures[texture_index] = NULL;
+        }
+    }
+}
+
 // API
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }

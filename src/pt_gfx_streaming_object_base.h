@@ -77,6 +77,7 @@ private:
 
     mcrt_spinlock_t m_spinlock_streaming_done;
 
+protected:
     inline void streaming_done_lock()
     {
         mcrt_spin_lock(&this->m_spinlock_streaming_done);
@@ -87,7 +88,6 @@ private:
         mcrt_spin_unlock(&this->m_spinlock_streaming_done);
     }
 
-protected:
     virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
 private:
@@ -106,14 +106,16 @@ protected:
 public:
     void streaming_done_execute(class gfx_connection_base *gfx_connection);
 
-    inline bool is_streaming_error()
+    inline bool is_streaming_error() const
     {
         return (mcrt_atomic_load(&this->m_streaming_error));
     }
 
-    inline bool is_streaming_done()
+    inline bool is_streaming_done() const
     {
+        // we need to check "is_streaming_error" first
         assert((STREAMING_STATUS_DONE != mcrt_atomic_load(&this->m_streaming_status)) || (!mcrt_atomic_load(&this->m_streaming_error)));
+
         return (STREAMING_STATUS_DONE == mcrt_atomic_load(&this->m_streaming_status));
     }
 };
