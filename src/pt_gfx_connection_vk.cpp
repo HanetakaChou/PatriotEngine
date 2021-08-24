@@ -1421,6 +1421,9 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         pool_sizes[0].descriptorCount = GFX_MATERIAL_MAX_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
 
         // https://community.arm.com/developer/tools-software/graphics/b/blog/posts/vulkan-descriptor-and-buffer-management
+        // https://github.com/ARM-software/vulkan_best_practice_for_mobile_developers
+        // [framework/core/descriptor_pool.h]
+        // MAX_SETS_PER_POOL = 16
         VkDescriptorPoolCreateInfo descriptor_pool_create_info;
         descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
         descriptor_pool_create_info.pNext = NULL;

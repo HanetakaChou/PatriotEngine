@@ -175,8 +175,7 @@ void gfx_material_base::release(class gfx_connection_base *gfx_connection)
     }
 }
 
-//--- export ---
-
+// API
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 

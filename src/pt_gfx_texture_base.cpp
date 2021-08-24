@@ -49,6 +49,8 @@ void gfx_texture_base::release(class gfx_connection_base *gfx_connection)
     }
 }
 
+// Asset
+
 static inline constexpr uint32_t Common_MakeFourCC(char ch0, char ch1, char ch2, char ch3)
 {
     return static_cast<uint32_t>(static_cast<uint8_t>(ch0)) | (static_cast<uint32_t>(static_cast<uint8_t>(ch1)) << 8) | (static_cast<uint32_t>(static_cast<uint8_t>(ch2)) << 16) | (static_cast<uint32_t>(static_cast<uint8_t>(ch3)) << 24);
@@ -133,7 +135,7 @@ bool gfx_texture_base::load_data_from_input_stream(
     }
 }
 
-//--- export ---
+// API
 
 inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
