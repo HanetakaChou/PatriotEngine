@@ -37,7 +37,17 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     gfx_node_set_material(my_gfx_connection, my_node, my_material);
 
-#if 0
+    // material hold the refcount
+    gfx_texture_destroy(my_gfx_connection, my_texture);
+
+    // node hold the material
+    gfx_material_destroy(my_gfx_connection, my_material);
+
+#if 1
+    sleep(3);
+
+    bool has_set = false;
+
     std::vector<gfx_texture_ref> my_textures;
 
     unsigned rand_buf = (unsigned)time(NULL);
@@ -57,6 +67,18 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
             gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
             my_textures.push_back(my_texture);
+
+            if ((i > 200) && (!has_set))
+            {
+                gfx_material_ref my_material = gfx_connection_create_material(my_gfx_connection);
+                gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
+
+                gfx_node_set_material(my_gfx_connection, my_node, my_material);
+
+                gfx_material_destroy(my_gfx_connection, my_material);
+
+                has_set = true;
+            }
         }
         else
         {
@@ -78,21 +100,30 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         }
     }
 
-    sleep(5);
-    //sleep(20);
+    sleep(3);
 
     for (gfx_texture_ref my_texture : my_textures)
     {
         gfx_texture_destroy(my_gfx_connection, my_texture);
     }
-#else
-    sleep(5);
 #endif
+
+    gfx_texture_ref my_texture1 = gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture1, "../third_party/assets/lenna/l_hires_rgba.pvr");
+
+    gfx_material_ref my_material1 = gfx_connection_create_material(my_gfx_connection);
+    gfx_material_init_with_texture(my_gfx_connection, my_material1, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture1);
+
+    gfx_texture_destroy(my_gfx_connection, my_texture1);
+
+    gfx_node_set_material(my_gfx_connection, my_node, my_material1);
+
+    gfx_material_destroy(my_gfx_connection, my_material1);
+
+    sleep(3);
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);
-    gfx_texture_destroy(my_gfx_connection, my_texture);
-    gfx_material_destroy(my_gfx_connection, my_material);
 
 #if 0
     sleep(15);
