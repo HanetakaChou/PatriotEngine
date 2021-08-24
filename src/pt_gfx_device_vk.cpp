@@ -21,7 +21,7 @@
 #include <pt_mcrt_log.h>
 #include <assert.h>
 
-gfx_device_vk::gfx_device_vk()
+gfx_device_vk::gfx_device_vk() : m_debug_report_callback(VK_NULL_HANDLE)
 {
     return;
 }
@@ -40,13 +40,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
     this->m_instance = VK_NULL_HANDLE;
     {
-        PFN_vkCreateInstance vk_create_instance = reinterpret_cast<PFN_vkCreateInstance>(vkGetInstanceProcAddr(NULL, "vkCreateInstance"));
+        PFN_vkCreateInstance vk_create_instance = reinterpret_cast<PFN_vkCreateInstance>(vk_get_instance_proc_addr(NULL, "vkCreateInstance"));
         assert(NULL != vk_create_instance);
 
-        VkInstanceCreateInfo instance_create_info;
-        instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        instance_create_info.pNext = NULL;
-        instance_create_info.flags = 0U;
         VkApplicationInfo application_info;
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = NULL;
@@ -55,6 +51,11 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         application_info.pEngineName = "PatriotEngine";
         application_info.engineVersion = 1;
         application_info.apiVersion = VK_API_VERSION_1_0;
+
+        VkInstanceCreateInfo instance_create_info;
+        instance_create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        instance_create_info.pNext = NULL;
+        instance_create_info.flags = 0U;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
 
@@ -115,9 +116,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     assert(NULL != this->m_vk_get_physical_device_surface_present_modes);
 
 #ifndef NDEBUG
-    this->m_debug_report_callback = VK_NULL_HANDLE;
+    assert(VK_NULL_HANDLE == this->m_debug_report_callback);
     {
-        PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkCreateDebugReportCallbackEXT"));
+        PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkCreateDebugReportCallbackEXT"));
         assert(NULL != vk_create_debug_report_callback_ext);
 
         VkDebugReportCallbackCreateInfoEXT debug_report_callback_create_info;
@@ -363,7 +364,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_device = VK_NULL_HANDLE;
     {
 
-        PFN_vkCreateDevice vk_create_device = reinterpret_cast<PFN_vkCreateDevice>(vkGetInstanceProcAddr(m_instance, "vkCreateDevice"));
+        PFN_vkCreateDevice vk_create_device = reinterpret_cast<PFN_vkCreateDevice>(vk_get_instance_proc_addr(m_instance, "vkCreateDevice"));
         assert(NULL != vk_create_device);
 
         struct VkDeviceCreateInfo device_create_info;
@@ -647,7 +648,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 void gfx_device_vk::destroy()
 {
 #ifndef NDEBUG
-    PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_instance, "vkDestroyDebugReportCallbackEXT"));
+    PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(this->m_instance, "vkGetInstanceProcAddr"));
+
+    PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
     vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, &m_allocator_callbacks);
     m_debug_report_callback = NULL;
@@ -656,7 +659,7 @@ void gfx_device_vk::destroy()
 
 gfx_device_vk::~gfx_device_vk()
 {
-    assert(NULL == m_debug_report_callback);
+    assert(VK_NULL_HANDLE == m_debug_report_callback);
 }
 
 #ifndef NDEBUG
