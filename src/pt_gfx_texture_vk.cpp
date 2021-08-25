@@ -33,6 +33,9 @@ bool gfx_texture_vk::read_input_stream(
     return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, NULL);
 }
 
+
+static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
+
 static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspect_index);
 static inline bool is_format_rgba(VkFormat vk_format);
@@ -44,11 +47,6 @@ static inline uint32_t get_compressed_format_block_width(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
-
-static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
-{
-    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
-}
 
 bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
 {
@@ -642,6 +640,12 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
     }
 
     return TotalBytes;
+}
+
+
+static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+{
+    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
 }
 
 //--------------------------------------------------------------------------------------
