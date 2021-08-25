@@ -57,16 +57,6 @@ static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
 
-struct texture_streaming_stage_second_thread_stack_data_t
-{
-    struct common_header_t m_common_header;
-    size_t m_common_data_offset;
-    struct specific_header_vk_t m_specific_header_vk;
-    struct load_memcpy_dest_t *m_memcpy_dest;
-    VkBufferImageCopy *m_cmdcopy_dest;
-};
-//static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-
 bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct common_header_t const *neutral_header)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
@@ -234,6 +224,16 @@ bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_su
 
     return true;
 }
+
+struct texture_streaming_stage_second_thread_stack_data_t
+{
+    struct common_header_t m_common_header;
+    size_t m_common_data_offset;
+    struct specific_header_vk_t m_specific_header_vk;
+    struct load_memcpy_dest_t *m_memcpy_dest;
+    VkBufferImageCopy *m_cmdcopy_dest;
+};
+//static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
 
 bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
 {
