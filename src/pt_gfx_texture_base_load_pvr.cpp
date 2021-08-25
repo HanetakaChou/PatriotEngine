@@ -22,13 +22,13 @@
 #include <algorithm>
 
 extern bool load_pvr_header_from_input_stream(
-    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 extern bool load_pvr_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/FileDefinesPVR.h
@@ -464,29 +464,29 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream_r
 }
 
 bool load_pvr_header_from_input_stream(
-    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
     struct TextureLoader_PVRHeader pvr_texture_header;
     size_t pvr_texture_data_offset;
     if (internal_load_pvr_header_from_input_stream(gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, &pvr_texture_header, &pvr_texture_data_offset))
     {
-        common_header->type = pvr_get_common_type(pvr_texture_header.height, pvr_texture_header.depth);
-        assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != common_header->type);
+        neutral_header->type = pvr_get_common_type(pvr_texture_header.height, pvr_texture_header.depth);
+        assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != neutral_header->type);
 
-        common_header->format = pvr_get_common_format(pvr_texture_header.pixelFormat, pvr_texture_header.colorSpace, pvr_texture_header.channelType);
-        assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED != common_header->format);
+        neutral_header->format = pvr_get_common_format(pvr_texture_header.pixelFormat, pvr_texture_header.colorSpace, pvr_texture_header.channelType);
+        assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED != neutral_header->format);
 
-        common_header->width = pvr_texture_header.width;
-        common_header->height = pvr_texture_header.height;
-        common_header->depth = pvr_texture_header.depth;
-        common_header->mip_levels = pvr_texture_header.numMipMaps;
-        common_header->array_layers = pvr_texture_header.numFaces * pvr_texture_header.numSurfaces;
+        neutral_header->width = pvr_texture_header.width;
+        neutral_header->height = pvr_texture_header.height;
+        neutral_header->depth = pvr_texture_header.depth;
+        neutral_header->mip_levels = pvr_texture_header.numMipMaps;
+        neutral_header->array_layers = pvr_texture_header.numFaces * pvr_texture_header.numSurfaces;
 
         assert(0 != pvr_texture_header.numFaces);
-        common_header->is_cube_map = (pvr_texture_header.numFaces > 1);
+        neutral_header->is_cube_map = (pvr_texture_header.numFaces > 1);
 
-        (*common_data_offset) = pvr_texture_data_offset;
+        (*neutral_data_offset) = pvr_texture_data_offset;
 
         return true;
     }
@@ -501,7 +501,7 @@ bool load_pvr_header_from_input_stream(
 bool load_pvr_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
     struct TextureLoader_PVRHeader internal_pvr_header;
@@ -606,7 +606,7 @@ bool load_pvr_data_from_input_stream(
                 assert(1 == numberOfPlanes);
                 for (uint32_t plane = 0; plane < numberOfPlanes; ++plane)
                 {
-                    size_t dstSubresource = calc_subresource_index_callback(mipMap, face * surface, plane, internal_pvr_header.numMipMaps, internal_pvr_header.numFaces * internal_pvr_header.numSurfaces);
+                    size_t dstSubresource = calculate_subresource_index_callback(mipMap, face * surface, plane, internal_pvr_header.numMipMaps, internal_pvr_header.numFaces * internal_pvr_header.numSurfaces);
                     assert(dstSubresource < num_subresources);
 
                     assert(inputNumSlices == memcpy_dest[dstSubresource].output_num_slices);

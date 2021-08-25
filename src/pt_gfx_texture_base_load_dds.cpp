@@ -22,13 +22,13 @@
 #include <algorithm>
 
 extern bool load_dds_header_from_input_stream(
-    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 extern bool load_dds_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 //--------------------------------------------------------------------------------------
@@ -456,31 +456,31 @@ static inline bool internal_load_dds_header_from_input_stream(
 }
 
 bool load_dds_header_from_input_stream(
-    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
 
-    assert(common_header != NULL);
-    assert(common_data_offset != NULL);
+    assert(neutral_header != NULL);
+    assert(neutral_data_offset != NULL);
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
     if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
     {
-        common_header->type = dds_get_common_type(internal_dds_header.resDim);
-        assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != common_header->type);
+        neutral_header->type = dds_get_common_type(internal_dds_header.resDim);
+        assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != neutral_header->type);
 
-        common_header->format = dds_get_common_format(internal_dds_header.format);
-        assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED != common_header->format);
+        neutral_header->format = dds_get_common_format(internal_dds_header.format);
+        assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED != neutral_header->format);
 
-        common_header->width = internal_dds_header.width;
-        common_header->height = internal_dds_header.height;
-        common_header->depth = internal_dds_header.depth;
-        common_header->mip_levels = internal_dds_header.mipCount;
-        common_header->array_layers = internal_dds_header.arraySize;
-        common_header->is_cube_map = internal_dds_header.is_cube_map;
+        neutral_header->width = internal_dds_header.width;
+        neutral_header->height = internal_dds_header.height;
+        neutral_header->depth = internal_dds_header.depth;
+        neutral_header->mip_levels = internal_dds_header.mipCount;
+        neutral_header->array_layers = internal_dds_header.arraySize;
+        neutral_header->is_cube_map = internal_dds_header.is_cube_map;
 
-        (*common_data_offset) = dds_data_offset;
+        (*neutral_data_offset) = dds_data_offset;
 
         return true;
     }
@@ -493,7 +493,7 @@ bool load_dds_header_from_input_stream(
 bool load_dds_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
     gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
 
@@ -633,7 +633,7 @@ bool load_dds_data_from_input_stream(
             for (uint32_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
             {
                 // MemcpySubresource d3dx12.h
-                uint32_t dstSubresource = calc_subresource_index_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
+                uint32_t dstSubresource = calculate_subresource_index_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
                 assert(dstSubresource < num_subresources);
 
                 assert(inputNumSlices == memcpy_dest[dstSubresource].output_num_slices);

@@ -38,10 +38,12 @@ class gfx_texture_vk final : public gfx_texture_base
     VkImageView m_image_view;
 
     bool texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_neutral_header_t const *neutral_header) override;
-    bool texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, void **memcpy_dest, void **cmdcopy_dest) override;
-    size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_neutral_header_t const *neutral_header, void *memcpy_dest, void *cmdcopy_dest, uint64_t base_offset) override;
-    void texture_streaming_stage_second_post_calculate_total_size_fail_callback(void *memcpy_dest, void *cmdcopy_dest) override;
-    bool texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_texture_neutral_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest, void *cmdcopy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int)) override;
+
+    void texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, struct gfx_texture_backend_header_t *out_backend_header, uint32_t *out_subresource_num) override;
+    size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset) override;
+    void *texture_streaming_stage_second_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection) override;
+    uint32_t (*texture_streaming_stage_second_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) override;
+    void texture_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest) override;
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
@@ -49,7 +51,6 @@ class gfx_texture_vk final : public gfx_texture_base
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 private:
-   
 public:
     inline gfx_texture_vk() : gfx_texture_base(),
                               m_image(VK_NULL_HANDLE),

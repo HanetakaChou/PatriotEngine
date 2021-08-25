@@ -30,7 +30,7 @@ struct texture_streaming_stage_second_task_data_t
     gfx_input_stream_ref m_gfx_input_stream;
     intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
     int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref );
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref);
 };
 static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 
@@ -40,7 +40,7 @@ bool gfx_texture_base::read_input_stream(
     gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
     intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
     int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
+    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -72,9 +72,9 @@ bool gfx_texture_base::read_input_stream(
         }
 
         //pre populate task data
-        struct gfx_texture_neutral_header_t common_header;
-        size_t common_data_offset;
-        if (!load_header_from_input_stream(&common_header, &common_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback) || !this->texture_streaming_stage_first_pre_populate_task_data_callback(gfx_connection, &common_header))
+        struct gfx_texture_neutral_header_t neutral_header;
+        size_t neutral_data_offset;
+        if (!load_header_from_input_stream(&neutral_header, &neutral_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback) || !this->texture_streaming_stage_first_pre_populate_task_data_callback(gfx_connection, &neutral_header))
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
             gfx_input_stream_destroy_callback(gfx_input_stream);
@@ -148,11 +148,9 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
     if (!streaming_cancel)
     {
         // pre calculate total size
-        struct gfx_texture_neutral_header_t common_header;
-        size_t common_data_offset;
-        void *memcpy_dest;
-        void *cmdcopy_dest;
-        if (PT_UNLIKELY(!load_header_from_input_stream(&common_header, &common_data_offset, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback)) || !task_data->m_gfx_streaming_object->texture_streaming_stage_second_pre_calculate_total_size_callback(&common_header, &memcpy_dest, &cmdcopy_dest))
+        struct gfx_texture_neutral_header_t neutral_header;
+        size_t neutral_data_offset;
+        if (PT_UNLIKELY(!load_header_from_input_stream(&neutral_header, &neutral_data_offset, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback)))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
@@ -161,8 +159,11 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
             task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
             return NULL;
         }
-        assert(NULL != memcpy_dest);
-        assert(NULL != cmdcopy_dest);
+
+        struct gfx_texture_backend_header_t backend_header;
+        uint32_t subresource_num;
+        task_data->m_gfx_streaming_object->texture_streaming_stage_second_pre_calculate_total_size_callback(&neutral_header, &backend_header, &subresource_num);
+        struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest = static_cast<struct gfx_texture_neutral_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct gfx_texture_neutral_memcpy_dest_t) * subresource_num, alignof(struct gfx_texture_neutral_memcpy_dest_t)));
 
         // try to allocate memory from staging buffer
         {
@@ -175,7 +176,7 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
             {
                 base_offset = mcrt_atomic_load(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
 
-                size_t total_size = task_data->m_gfx_streaming_object->texture_streaming_stage_second_calculate_total_size_callback(task_data->m_gfx_connection, &common_header, memcpy_dest, cmdcopy_dest, base_offset);
+                size_t total_size = task_data->m_gfx_streaming_object->texture_streaming_stage_second_calculate_total_size_callback(task_data->m_gfx_connection, &backend_header, subresource_num, memcpy_dest, base_offset);
 
                 transfer_src_buffer_end = (base_offset + total_size);
                 //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
@@ -189,7 +190,7 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
                     task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
                     // release temp memory for the calculation
-                    task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_fail_callback(memcpy_dest, cmdcopy_dest);
+                    mcrt_aligned_free(memcpy_dest);
 
                     // recycle needs manually tally_completion_of_predecessor
                     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
@@ -202,15 +203,20 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
         }
 
         // post calculate total size
-        if (!task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_success_callback(task_data->m_gfx_connection, streaming_throttling_index, &common_header, &common_data_offset, memcpy_dest, cmdcopy_dest, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
+        if (!load_data_from_input_stream(&neutral_header, &neutral_data_offset, task_data->m_gfx_streaming_object->texture_streaming_stage_second_get_staging_buffer_pointer_callback(task_data->m_gfx_connection), subresource_num, memcpy_dest, task_data->m_gfx_streaming_object->texture_streaming_stage_second_get_calculate_subresource_index_callback(), task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
             task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
             task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+            mcrt_aligned_free(memcpy_dest);
             return NULL;
         }
+
+        // cmdcpy
+        task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_callback(task_data->m_gfx_connection, streaming_throttling_index, &backend_header, subresource_num, memcpy_dest);
+        mcrt_aligned_free(memcpy_dest);
 
         // pass to the third stage
         mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -276,7 +282,7 @@ PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
     gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
     intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
     int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
+    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
 {
     return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
