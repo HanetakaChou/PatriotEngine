@@ -20,21 +20,30 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_malloc.h>
 #include "pt_gfx_texture_vk.h"
+#include "pt_gfx_texture_base_load.h"
 #include <new>
 
-bool gfx_texture_vk::read_input_stream(
-    class gfx_connection_base *gfx_connection,
-    char const *initial_filename,
-    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+struct specific_header_vk_t
 {
-    return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, NULL);
-}
+    bool isCubeCompatible;
+    VkImageType imageType;
+    VkFormat format;
+    VkExtent3D extent;
+    uint32_t mipLevels;
+    uint32_t arrayLayers;
+};
+static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
+static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type);
+static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format);
 
+static inline size_t get_copyable_footprints(
+    struct specific_header_vk_t const *specific_header_vk,
+    VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
+    size_t base_offset,
+    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
 
-static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
+static inline uint32_t calc_aspect_subresource_num_vk(uint32_t mip_levels, uint32_t array_layers);
+static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
 
 static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspect_index);
@@ -47,6 +56,27 @@ static inline uint32_t get_compressed_format_block_width(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
+
+struct texture_streaming_stage_second_thread_stack_data_t
+{
+    struct common_header_t m_common_header;
+    size_t m_common_data_offset;
+    struct specific_header_vk_t m_specific_header_vk;
+    struct load_memcpy_dest_t *m_memcpy_dest;
+    VkBufferImageCopy *m_cmdcopy_dest;
+};
+//static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
+
+bool gfx_texture_vk::read_input_stream(
+    class gfx_connection_base *gfx_connection,
+    char const *initial_filename,
+    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
+    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
+    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
+    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+{
+    return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, NULL);
+}
 
 bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
 {
@@ -120,6 +150,15 @@ bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class
 
     // image view
     {
+        VkImageAspectFlags aspect_mask = 0U;
+        {
+            uint32_t aspect_count = get_format_aspect_count(specific_header_vk.format);
+            for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
+            {
+                aspect_mask |= get_format_aspect_mask(specific_header_vk.format, aspect_index);
+            }
+        }
+
         VkImageViewCreateInfo image_view_create_info;
         image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
         image_view_create_info.pNext = NULL;
@@ -131,7 +170,7 @@ bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class
         image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
         image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
         image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_view_create_info.subresourceRange.aspectMask = aspect_mask;
         image_view_create_info.subresourceRange.baseMipLevel = 0U;
         image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
         image_view_create_info.subresourceRange.baseArrayLayer = 0U;
@@ -160,10 +199,10 @@ bool gfx_texture_vk::streaming_stage_second_pre_calculate_total_size_callback(st
 
     thread_stack_data_user_defined->m_specific_header_vk = common_to_specific_header_translate(&thread_stack_data_user_defined->m_common_header);
 
-    thread_stack_data_user_defined->m_num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * thread_stack_data_user_defined->m_specific_header_vk.arrayLayers * thread_stack_data_user_defined->m_specific_header_vk.mipLevels;
+    uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
 
-    thread_stack_data_user_defined->m_memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * thread_stack_data_user_defined->m_num_subresource, alignof(struct load_memcpy_dest_t)));
-    thread_stack_data_user_defined->m_cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * thread_stack_data_user_defined->m_num_subresource, alignof(struct VkBufferImageCopy)));
+    thread_stack_data_user_defined->m_memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
+    thread_stack_data_user_defined->m_cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
     return true;
 }
 
@@ -173,7 +212,9 @@ size_t gfx_texture_vk::streaming_stage_second_calculate_total_size_callback(uint
     struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
-    size_t total_size = get_copyable_footprints(&thread_stack_data_user_defined->m_specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, thread_stack_data_user_defined->m_cmdcopy_dest);
+    uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
+
+    size_t total_size = get_copyable_footprints(&thread_stack_data_user_defined->m_specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, thread_stack_data_user_defined->m_memcpy_dest, thread_stack_data_user_defined->m_cmdcopy_dest);
     return total_size;
 }
 
@@ -185,8 +226,10 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
 
     if (staging_buffer_allocate_success)
     {
+        uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
+
         // load_data_from_input_stream
-        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, vk_calc_subresource_callback, input_stream, input_stream_read_callback, input_stream_seek_callback))
+        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), num_subresource, thread_stack_data_user_defined->m_memcpy_dest, calc_subresource_index_vk, input_stream, input_stream_read_callback, input_stream_seek_callback))
         {
             mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
             mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
@@ -198,8 +241,15 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
         {
             uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
             VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
-            VkImageSubresourceRange subresource_range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers};
-            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &subresource_range, thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_cmdcopy_dest);
+
+            uint32_t aspect_count = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format);
+            for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
+            {
+                VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(thread_stack_data_user_defined->m_specific_header_vk.format, aspect_index), 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers};
+                uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
+                uint32_t aspect_subresource_index = calc_subresource_index_vk(0U, 0U, aspect_index, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers);
+                gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, thread_stack_data_user_defined->m_cmdcopy_dest + aspect_subresource_index);
+            }
         }
         mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
     }
@@ -250,7 +300,9 @@ inline void gfx_texture_vk::unified_destory(class gfx_connection_vk *gfx_connect
     mcrt_aligned_free(this);
 }
 
-inline struct gfx_texture_vk::specific_header_vk_t gfx_texture_vk::common_to_specific_header_translate(struct common_header_t const *common_header)
+
+// Format
+static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header)
 {
     struct specific_header_vk_t specific_header_vk;
 
@@ -266,19 +318,19 @@ inline struct gfx_texture_vk::specific_header_vk_t gfx_texture_vk::common_to_spe
     return specific_header_vk;
 }
 
-inline enum VkImageType gfx_texture_vk::common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type)
+static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type)
 {
     static enum VkImageType const common_to_vulkan_type_map[] = {
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(gfx_texture_base::PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
+    static_assert(PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
 }
 
-inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format)
+static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format)
 {
     static enum VkFormat const common_to_vulkan_format_map[] = {
         VK_FORMAT_R4G4_UNORM_PACK8,
@@ -465,13 +517,21 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(gfx_texture_base::PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
+    static_assert(PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];
 }
 
-inline size_t gfx_texture_vk::get_copyable_footprints(
+// https://source.winehq.org/git/vkd3d.git/
+// libs/vkd3d/device.c
+// d3d12_device_GetCopyableFootprints
+// libs/vkd3d/utils.c
+// vkd3d_formats
+
+// https://github.com/ValveSoftware/dxvk/blob/master/src/dxvk/dxvk_context.cpp
+// DxvkContext::uploadImage
+static inline size_t get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
     size_t base_offset,
@@ -589,7 +649,7 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
                 TotalBytes += (stagingOffset_new - stagingOffset);
                 stagingOffset = stagingOffset_new;
 
-                uint32_t DstSubresource = vk_calc_subresource_callback(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mipLevels, specific_header_vk->arrayLayers);
+                uint32_t DstSubresource = calc_subresource_index_vk(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mipLevels, specific_header_vk->arrayLayers);
                 assert(DstSubresource < num_subresources);
 
                 out_memcpy_dest[DstSubresource].stagingOffset = stagingOffset;
@@ -642,8 +702,12 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
     return TotalBytes;
 }
 
+static inline uint32_t calc_aspect_subresource_num_vk(uint32_t mip_levels, uint32_t array_layers)
+{
+    return mip_levels * array_layers;
+}
 
-static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
 {
     return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
 }

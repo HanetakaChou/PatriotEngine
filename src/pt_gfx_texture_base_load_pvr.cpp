@@ -18,7 +18,18 @@
 #include <stddef.h>
 #include <assert.h>
 #include "pt_gfx_texture_base.h"
+#include "pt_gfx_texture_base_load.h"
 #include <algorithm>
+
+extern bool load_pvr_header_from_input_stream(
+    struct common_header_t *common_header, size_t *common_data_offset,
+    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
+
+extern bool load_pvr_data_from_input_stream(
+    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
+    uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/FileDefinesPVR.h
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/TextureReaderPVR.h
@@ -295,6 +306,10 @@ static inline bool Pvr_GetMinDimensionsForFormat(uint64_t pixelFormat, uint32_t 
 
 static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat);
 
+static inline enum gfx_texture_common_type_t pvr_get_common_type(uint32_t height, uint32_t depth);
+
+static inline enum gfx_texture_common_format_t pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType);
+
 static inline uint32_t pvr_get_format_plane_count(uint64_t pixelFormat);
 
 static inline bool pvr_format_is_depth_stencil(uint64_t pixelFormat);
@@ -448,7 +463,7 @@ static inline bool internal_load_pvr_header_from_input_stream(gfx_input_stream_r
     }
 }
 
-bool gfx_texture_base::load_pvr_header_from_input_stream(
+bool load_pvr_header_from_input_stream(
     struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
@@ -483,10 +498,10 @@ bool gfx_texture_base::load_pvr_header_from_input_stream(
     return true;
 }
 
-bool gfx_texture_base::load_pvr_data_from_input_stream(
+bool load_pvr_data_from_input_stream(
     struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
     struct TextureLoader_PVRHeader internal_pvr_header;
@@ -591,7 +606,7 @@ bool gfx_texture_base::load_pvr_data_from_input_stream(
                 assert(1 == numberOfPlanes);
                 for (uint32_t plane = 0; plane < numberOfPlanes; ++plane)
                 {
-                    size_t dstSubresource = calc_subresource_callback(mipMap, face * surface, plane, internal_pvr_header.numMipMaps, internal_pvr_header.numFaces * internal_pvr_header.numSurfaces);
+                    size_t dstSubresource = calc_subresource_index_callback(mipMap, face * surface, plane, internal_pvr_header.numMipMaps, internal_pvr_header.numFaces * internal_pvr_header.numSurfaces);
                     assert(dstSubresource < num_subresources);
 
                     assert(inputNumSlices == memcpy_dest[dstSubresource].outputNumSlices);
@@ -913,7 +928,7 @@ static inline uint32_t Pvr_GetBitsPerPixel(uint64_t pixelFormat)
     }
 }
 
-inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::pvr_get_common_type(uint32_t height, uint32_t depth)
+static inline enum gfx_texture_common_type_t pvr_get_common_type(uint32_t height, uint32_t depth)
 {
     assert(0 != height);
     assert(0 != depth);
@@ -943,7 +958,7 @@ inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::pvr_ge
     }
 }
 
-inline enum gfx_texture_base::gfx_texture_common_format_t gfx_texture_base::pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
+static inline enum gfx_texture_common_format_t pvr_get_common_format(uint64_t pixelFormat, uint32_t colorSpace, uint32_t channelType)
 {
     static enum gfx_texture_common_format_t const pvr_compressed_to_common_format_map[][2] = {
         {PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED, PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED},                                //Pvr_PixelTypeID_PVRTCI_2bpp_RGB

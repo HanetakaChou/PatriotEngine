@@ -81,6 +81,11 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "g++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base_load.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base_load.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_base_load.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "g++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base_load_dds.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base_load_dds.o",
         "file": "${workspaceFolder}/src/pt_gfx_texture_base_load_dds.cpp"
     },

@@ -18,7 +18,18 @@
 #include <stddef.h>
 #include <assert.h>
 #include "pt_gfx_texture_base.h"
+#include "pt_gfx_texture_base_load.h"
 #include <algorithm>
+
+extern bool load_dds_header_from_input_stream(
+    struct common_header_t *common_header, size_t *common_data_offset,
+    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
+
+extern bool load_dds_data_from_input_stream(
+    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
+    uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
 
 //--------------------------------------------------------------------------------------
 // Macros
@@ -263,6 +274,10 @@ static inline size_t BitsPerPixel(uint32_t fmt);
 
 static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows);
 
+static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type);
+
+static inline enum gfx_texture_common_format_t dds_get_common_format(uint32_t dds_format);
+
 static inline uint32_t dds_get_format_plane_count(uint32_t dds_format);
 
 static inline bool dds_format_is_depth_stencil(uint32_t dds_format);
@@ -440,7 +455,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     return true;
 }
 
-bool gfx_texture_base::load_dds_header_from_input_stream(
+bool load_dds_header_from_input_stream(
     struct common_header_t *common_header, size_t *common_data_offset,
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
@@ -475,10 +490,10 @@ bool gfx_texture_base::load_dds_header_from_input_stream(
     }
 }
 
-bool gfx_texture_base::load_dds_data_from_input_stream(
+bool load_dds_data_from_input_stream(
     struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
     gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
 {
 
@@ -618,7 +633,7 @@ bool gfx_texture_base::load_dds_data_from_input_stream(
             for (uint32_t planeSlice = 0; planeSlice < numberOfPlanes; ++planeSlice)
             {
                 // MemcpySubresource d3dx12.h
-                uint32_t dstSubresource = calc_subresource_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
+                uint32_t dstSubresource = calc_subresource_index_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
                 assert(dstSubresource < num_subresources);
 
                 assert(inputNumSlices == memcpy_dest[dstSubresource].outputNumSlices);
@@ -1257,7 +1272,7 @@ static inline size_t BitsPerPixel(uint32_t fmt)
     }
 }
 
-inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::dds_get_common_type(uint32_t dds_type)
+static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type)
 {
     static enum gfx_texture_common_type_t const dds_to_common_type_map[] = {
         PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED,
@@ -1272,7 +1287,7 @@ inline enum gfx_texture_base::gfx_texture_common_type_t gfx_texture_base::dds_ge
     return dds_to_common_type_map[dds_type];
 }
 
-inline enum gfx_texture_base::gfx_texture_common_format_t gfx_texture_base::dds_get_common_format(uint32_t dds_format)
+static inline enum gfx_texture_common_format_t dds_get_common_format(uint32_t dds_format)
 {
     static enum gfx_texture_common_format_t const dds_to_common_format_map[] = {
         PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN

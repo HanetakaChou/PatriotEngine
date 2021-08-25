@@ -40,6 +40,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_material_base.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_material_vk.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base_load.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base_load_dds.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_base_load_pvr.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_texture_vk.cpp \

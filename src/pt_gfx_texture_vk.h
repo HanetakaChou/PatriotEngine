@@ -45,27 +45,6 @@ class gfx_texture_vk final : public gfx_texture_base
         int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
         void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
 
-    struct specific_header_vk_t
-    {
-        bool isCubeCompatible;
-        VkImageType imageType;
-        VkFormat format;
-        VkExtent3D extent;
-        uint32_t mipLevels;
-        uint32_t arrayLayers;
-    };
-
-    struct texture_streaming_stage_second_thread_stack_data_t
-    {
-        struct common_header_t m_common_header;
-        size_t m_common_data_offset;
-        struct specific_header_vk_t m_specific_header_vk;
-        uint32_t m_num_subresource;
-        struct load_memcpy_dest_t *m_memcpy_dest;
-        VkBufferImageCopy *m_cmdcopy_dest;
-    };
-    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-
     bool streaming_stage_first_pre_populate_task_data_callback(
         class gfx_connection_base *gfx_connection,
         gfx_input_stream_ref input_stream,
@@ -109,26 +88,7 @@ class gfx_texture_vk final : public gfx_texture_base
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 private:
-    static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
-
-    static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type);
-
-    static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format);
-
-    // https://source.winehq.org/git/vkd3d.git/
-    // libs/vkd3d/device.c
-    // d3d12_device_GetCopyableFootprints
-    // libs/vkd3d/utils.c
-    // vkd3d_formats
-
-    // https://github.com/ValveSoftware/dxvk/blob/master/src/dxvk/dxvk_context.cpp
-    // DxvkContext::uploadImage
-    static inline size_t get_copyable_footprints(
-        struct specific_header_vk_t const *specific_header_vk,
-        VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
-        size_t base_offset,
-        size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
-
+   
 public:
     inline gfx_texture_vk() : gfx_texture_base(),
                               m_image(VK_NULL_HANDLE),
