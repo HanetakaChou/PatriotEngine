@@ -1841,8 +1841,11 @@ inline void gfx_connection_vk::acquire_frame()
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
-        PT_MAYBE_UNUSED VkResult res_reset_fences = this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
-        assert(VK_SUCCESS == res_reset_fences);
+        if (this->m_frame_swapchain_image_acquired[frame_throttling_index])
+        {
+            PT_MAYBE_UNUSED VkResult res_reset_fences = this->m_device.reset_fences(1U, &this->m_frame_fence[frame_throttling_index]);
+            assert(VK_SUCCESS == res_reset_fences);
+        }
     }
 
     // free unused frame object
