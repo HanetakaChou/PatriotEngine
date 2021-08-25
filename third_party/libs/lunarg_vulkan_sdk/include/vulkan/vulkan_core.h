@@ -3345,7 +3345,7 @@ typedef struct VkImageSubresourceLayers {
     uint32_t              layerCount;
 } VkImageSubresourceLayers;
 
-typedef struct VkBufferImageCopy {
+typedef VkBufferImageCopy {
     VkDeviceSize                bufferOffset;
     uint32_t                    bufferRowLength;
     uint32_t                    bufferImageHeight;

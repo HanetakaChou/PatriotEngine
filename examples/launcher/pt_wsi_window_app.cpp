@@ -21,6 +21,10 @@ wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
 
 int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 {
+    gfx_mesh_ref my_mesh1 = gfx_connection_create_mesh(my_gfx_connection);
+    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh1, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+
     my_mesh = gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
     gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
@@ -53,6 +57,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     gfx_texture_destroy(my_gfx_connection, my_texture3);
 
+    gfx_mesh_destroy(my_gfx_connection, my_mesh1);
+
 #if 1
     sleep(3);
 
@@ -72,7 +78,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/lena_std_nvidia_texture_tools.dds");
             my_textures.push_back(my_texture);
 
-            if ((i > 200) && (!has_set))
+            if ((i > 100) && (!has_set))
             {
                 gfx_material_ref my_material = gfx_connection_create_material(my_gfx_connection);
                 gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);

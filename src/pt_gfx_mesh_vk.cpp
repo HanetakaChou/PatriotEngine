@@ -21,9 +21,9 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
 #include "pt_gfx_mesh_vk.h"
-#include <assert.h>
 #include "pt_gfx_mesh_base_gltf_parse.h"
 #include "pt_gfx_mesh_base_load.h"
+#include <assert.h>
 
 bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct gfx_mesh_neutral_header_t *const neutral_header)
 {
@@ -176,262 +176,97 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
     return true;
 }
 
-bool gfx_mesh_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
+size_t gfx_mesh_vk::mesh_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest_void, uint64_t base_offset)
+{
+    struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest = static_cast<struct gfx_mesh_neutral_memcpy_dest_t *>(memcpy_dest_void);
+    //VkBufferCopy *cmdcopy_dest = static_cast<VkBufferCopy *>(cmdcopy_dest_void);
+
+    // calculate length
+    uint32_t vertex_position_length = (sizeof(float) * 3U) * neutral_header->vertex_count;
+    uint32_t vertex_varying_length = (sizeof(float) * 2U) * neutral_header->vertex_count;
+    uint32_t index_size;
+    if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT16 == neutral_header->index_type)
+    {
+        index_size = 2U;
+    }
+    else if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT32 == neutral_header->index_type)
+    {
+        index_size = 4U;
+    }
+    else
+    {
+        assert(0);
+        index_size = -1;
+    }
+    uint32_t index_length = index_size * neutral_header->index_count;
+
+    // vertex position
+    memcpy_dest[0].staging_offset = base_offset;
+    memcpy_dest[0].output_size = vertex_position_length;
+    //cmdcopy_dest[0].srcOffset = base_offset;
+    //cmdcopy_dest[0].dstOffset = 0U;
+    //cmdcopy_dest[0].size = vertex_position_length;
+
+    // vertex varying
+    memcpy_dest[1].staging_offset = base_offset + vertex_position_length;
+    memcpy_dest[1].output_size = vertex_varying_length;
+    //cmdcopy_dest[1].srcOffset = base_offset + vertex_position_length;
+    //cmdcopy_dest[1].dstOffset = 0U;
+    //cmdcopy_dest[1].size = vertex_varying_length;
+
+    // index
+    memcpy_dest[2].staging_offset = base_offset + vertex_position_length + vertex_varying_length;
+    memcpy_dest[2].output_size = index_length;
+    //cmdcopy_dest[2].srcOffset = base_offset + vertex_position_length + vertex_varying_length;
+    //cmdcopy_dest[2].dstOffset = 0U;
+    //cmdcopy_dest[2].size = index_length;
+
+    return (vertex_position_length + vertex_varying_length + index_length);
+}
+
+bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
-    //struct gltf_root my_gltf_root;
-    //if (PT_UNLIKELY(!gltf_parse_input_stream(
-    //        &my_gltf_root,
-    //        input_stream, input_stream_read_callback,
-    //        const_cast<void *>(static_cast<void const *>(initial_filename)), [](int line, int column, char const *msg, void *error_callback_data) -> void
-    //        { mcrt_log_print("%s:%i:%i: error: %s", static_cast<char const *>(error_callback_data), line, column, msg); })))
-    //{
-    //    mcrt_atomic_store(&this->m_streaming_error, true);
-    //    return false;
-    //}
+    int input_vertex_position_offset = 132;
+    int input_vertex_position_length = 432;
 
-    //int input_vertex_count = 36;
-    //int vetex_position_type = 12; //float vec3
-    //int input_vetex_position_offset = 132;
-    int input_vetex_position_length = 432;
-    //int m_vetex_texture_0_type = 8; //float vec2
-    //int input_vetex_texture_0_offset = 1572;
-    int input_vetex_texture_0_length = 288;
+    int input_vertex_varying_offset = 1572;
+    int input_vertex_varying_length = 288;
 
-    //int index_type = 2; //uint16
-    //int input_index_count = 36;
-    //int input_index_offset = 60;
-    int input_index_length = 72;
-
-    // Vertex Position
-    {
-        assert(VK_NULL_HANDLE == this->m_vertex_position_buffer);
-        {
-            VkBufferCreateInfo buffer_create_info;
-            buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            buffer_create_info.pNext = NULL;
-            buffer_create_info.flags = 0U;
-            buffer_create_info.size = input_vetex_position_length;
-            buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            buffer_create_info.queueFamilyIndexCount = 0U;
-            buffer_create_info.pQueueFamilyIndices = NULL;
-
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_vertex_position_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_vertex_position_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_vertex_position_buffer, &memory_requirements);
-
-            // vkAllocateMemory
-            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
-            this->m_vertex_position_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_vertex_position_gfx_malloc_page_handle, &this->m_vertex_position_gfx_malloc_offset, &this->m_vertex_position_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_vertex_position_gfx_malloc_device_memory))
-            {
-                gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
-                this->m_vertex_position_buffer = VK_NULL_HANDLE;
-                return false;
-            }
-        }
-        assert(VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_vertex_position_buffer, this->m_vertex_position_gfx_malloc_device_memory, this->m_vertex_position_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
-        }
-    }
-
-    // Vertex Varying
-    {
-        assert(VK_NULL_HANDLE == this->m_vertex_varying_buffer);
-        {
-            VkBufferCreateInfo buffer_create_info;
-            buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            buffer_create_info.pNext = NULL;
-            buffer_create_info.flags = 0U;
-            buffer_create_info.size = input_vetex_texture_0_length;
-            buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-            buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            buffer_create_info.queueFamilyIndexCount = 0U;
-            buffer_create_info.pQueueFamilyIndices = NULL;
-
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_vertex_varying_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_vertex_varying_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_vertex_varying_buffer, &memory_requirements);
-
-            // vkAllocateMemory
-            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
-            this->m_vertex_varying_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_vertex_varying_gfx_malloc_page_handle, &this->m_vertex_varying_gfx_malloc_offset, &this->m_vertex_varying_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_vertex_varying_gfx_malloc_device_memory))
-            {
-                gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
-                this->m_vertex_varying_buffer = VK_NULL_HANDLE;
-                return false;
-            }
-        }
-        assert(VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_vertex_varying_buffer, this->m_vertex_varying_gfx_malloc_device_memory, this->m_vertex_varying_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
-        }
-    }
-
-    // Index
-    {
-        assert(VK_NULL_HANDLE == this->m_index_buffer);
-        {
-            VkBufferCreateInfo buffer_create_info;
-            buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-            buffer_create_info.pNext = NULL;
-            buffer_create_info.flags = 0U;
-            buffer_create_info.size = input_index_length;
-            buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-            buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            buffer_create_info.queueFamilyIndexCount = 0U;
-            buffer_create_info.pQueueFamilyIndices = NULL;
-
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_index_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_index_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_index_buffer, &memory_requirements);
-
-            // vkAllocateMemory
-            // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
-            this->m_index_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_index_gfx_malloc_page_handle, &this->m_index_gfx_malloc_offset, &this->m_index_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_index_gfx_malloc_device_memory))
-            {
-                gfx_connection->destroy_buffer(this->m_index_buffer);
-                this->m_index_buffer = VK_NULL_HANDLE;
-                return false;
-            }
-        }
-        assert(VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_index_buffer, this->m_index_gfx_malloc_device_memory, this->m_index_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
-        }
-    }
-
-    return true;
-}
-
-void gfx_mesh_vk::streaming_stage_first_populate_task_data_callback(void *thread_stack_user_defined_void, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    struct mesh_streaming_stage_first_thread_stack_data_t *thread_stack_user_defined = reinterpret_cast<struct mesh_streaming_stage_first_thread_stack_data_t *>(thread_stack_user_defined_void);
-    static_assert(sizeof(struct mesh_streaming_stage_first_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(struct streaming_stage_second_task_data_user_defined_t), "");
-    struct mesh_streaming_stage_second_task_data_t *task_data_user_defined = reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(task_data_user_defined_void);
-
-    task_data_user_defined->m_mesh_index = thread_stack_user_defined->m_mesh_index;
-    task_data_user_defined->m_material_index = thread_stack_user_defined->m_material_index;
-}
-
-bool gfx_mesh_vk::streaming_stage_second_pre_calculate_total_size_callback(struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    return true;
-}
-
-size_t gfx_mesh_vk::streaming_stage_second_calculate_total_size_callback(uint64_t base_offset, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    static_assert(sizeof(struct mesh_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    struct mesh_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct mesh_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
-
-    //int input_vertex_count = 36;
-    //int m_vetex_position_type = 12; //float vec3
-    //int input_vetex_position_offset = 132;
-    int input_vetex_position_length = 432;
-    //int m_vetex_texture_0_type = 8; //float vec2
-    //int input_vetex_texture_0_offset = 1572;
-    int input_vetex_texture_0_length = 288;
-
-    //int m_index_type = 2; //uint16
-    //int input_index_count = 36;
-    //int input_index_offset = 60;
-    int input_index_length = 72;
-
-    //mode 4 //triangle list
-    //
-
-    size_t total_size = (input_vetex_position_length + input_vetex_texture_0_length + input_index_length);
-    thread_stack_data_user_defined->m_base_offset = base_offset;
-    return total_size;
-}
-
-bool gfx_mesh_vk::streaming_stage_second_post_calculate_total_size_callback(bool staging_buffer_allocate_success, uint32_t streaming_throttling_index, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    static_assert(sizeof(struct mesh_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    struct mesh_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct mesh_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
-
-    //int input_vertex_count = 36;
-    //int m_vetex_position_type = 12; //float vec3
-    int input_vetex_position_offset = 132;
-    int input_vetex_position_length = 432;
-    //int m_vetex_texture_0_type = 8; //float vec2
-    int input_vetex_texture_0_offset = 1572;
-    int input_vetex_texture_0_length = 288;
-
-    //int m_index_type = 2; //uint16
-    //int input_index_count = 36;
     int input_index_offset = 60;
     int input_index_length = 72;
 
-    //mode 4 //triangle list
-    //
-
-    // load
-    int vetex_position_offset = 0;
-    int vetex_texture_0_offset = input_vetex_position_length;
-    int index_offset = (input_vetex_position_length + input_vetex_texture_0_length);
-
     // vertex position
     {
-        int64_t res_seek = input_stream_seek_callback(input_stream, input_vetex_position_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
-        if (res_seek == -1 || res_seek != input_vetex_position_offset)
+        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_vertex_position_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
+        if (res_seek == -1 || res_seek != input_vertex_position_offset)
         {
             return false;
         }
-        ptrdiff_t res_read = input_stream_read_callback(input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + vetex_position_offset), input_vetex_position_length);
-        if (res_read == -1 || res_read != input_vetex_position_length)
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[0].staging_offset), input_vertex_position_length);
+        if (res_read == -1 || res_read != input_vertex_position_length)
         {
             return false;
         }
     }
 
-    // vertex texture_0
+    // vertex varying
     {
-        int64_t res_seek = input_stream_seek_callback(input_stream, input_vetex_texture_0_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
-        if (res_seek == -1 || res_seek != input_vetex_texture_0_offset)
+        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_vertex_varying_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
+        if (res_seek == -1 || res_seek != input_vertex_varying_offset)
         {
             return false;
         }
-        ptrdiff_t res_read = input_stream_read_callback(input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + vetex_texture_0_offset), input_vetex_texture_0_length);
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[1].staging_offset), input_vertex_varying_length);
 
-        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + vetex_texture_0_offset);
+        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[1].staging_offset);
         for (int i = 0; i < 72; ++i)
         {
             texcoord0[i] = ((texcoord0[i] > 0) ? texcoord0[i] : (-texcoord0[i]));
         }
 
-        if (res_read == -1 || res_read != input_vetex_texture_0_length)
+        if (res_read == -1 || res_read != input_vertex_varying_length)
         {
             return false;
         }
@@ -439,12 +274,12 @@ bool gfx_mesh_vk::streaming_stage_second_post_calculate_total_size_callback(bool
 
     // index
     {
-        int64_t res_seek = input_stream_seek_callback(input_stream, input_index_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
+        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_index_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
         if (res_seek == -1 || res_seek != input_index_offset)
         {
             return false;
         }
-        ptrdiff_t res_read = input_stream_read_callback(input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + static_cast<uintptr_t>(thread_stack_data_user_defined->m_base_offset) + index_offset), input_index_length);
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[2].staging_offset), input_index_length);
         if (res_read == -1 || res_read != input_index_length)
         {
             return false;
@@ -457,24 +292,24 @@ bool gfx_mesh_vk::streaming_stage_second_post_calculate_total_size_callback(bool
         VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
         {
             VkBufferCopy regions[1];
-            regions[0].srcOffset = thread_stack_data_user_defined->m_base_offset + vetex_position_offset;
+            regions[0].srcOffset = memcpy_dest[0].staging_offset;
             regions[0].dstOffset = 0U;
-            regions[0].size = input_vetex_position_length;
+            regions[0].size = memcpy_dest[0].output_size;
             gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_vertex_position_buffer, 1U, regions);
         }
         {
             VkBufferCopy regions[1];
-            regions[0].srcOffset = thread_stack_data_user_defined->m_base_offset + vetex_texture_0_offset;
+            regions[0].srcOffset = memcpy_dest[1].staging_offset;
             regions[0].dstOffset = 0U;
-            regions[0].size = input_vetex_texture_0_length;
+            regions[0].size = memcpy_dest[1].output_size;
             gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_vertex_varying_buffer, 1U, regions);
         }
         {
             VkBufferCopy regions[1];
-            regions[0].srcOffset = thread_stack_data_user_defined->m_base_offset + index_offset;
+            regions[0].srcOffset = memcpy_dest[2].staging_offset;
             regions[0].dstOffset = 0U;
-            regions[0].size = input_index_length;
-            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_index_buffer, 1U, regions);
+            regions[0].size = memcpy_dest[2].output_size;
+            gfx_connection->copy_index_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_index_buffer, 1U, regions);
         }
     }
 

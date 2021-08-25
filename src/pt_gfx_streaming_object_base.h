@@ -39,42 +39,6 @@ protected:
     bool m_streaming_error;
     bool m_streaming_cancel;
 
-protected:
-    struct streaming_stage_second_thread_stack_data_user_defined_t
-    {
-        uint8_t m_user_defined_data[128];
-    };
-
-    struct streaming_stage_second_task_data_user_defined_t
-    {
-        uint8_t m_user_defined_data[48];
-    };
-
-private:
-    virtual bool streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *streaming_stage_first_thread_stack_data_user_defined) = 0;
-
-    virtual void streaming_stage_first_populate_task_data_callback(void *streaming_stage_first_thread_stack_data_user_defined, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) = 0;
-
-    virtual bool streaming_stage_second_pre_calculate_total_size_callback(struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) = 0;
-
-    virtual size_t streaming_stage_second_calculate_total_size_callback(uint64_t base_offset, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined, class gfx_connection_base *gfx_connection, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) = 0;
-
-    virtual bool streaming_stage_second_post_calculate_total_size_callback(bool staging_buffer_allocate_success, uint32_t streaming_throttling_index, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined, class gfx_connection_base *gfx_connection, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) = 0;
-
-    struct streaming_stage_second_task_data_base_t
-    {
-        class gfx_streaming_object_base *m_streaming_object;
-        class gfx_connection_base *m_gfx_connection;
-        gfx_input_stream_ref m_input_stream;
-        intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-        int64_t(PT_PTR *m_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-        void(PT_PTR *m_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
-        struct streaming_stage_second_task_data_user_defined_t m_task_data_user_defined;
-    };
-    static_assert(sizeof(struct streaming_stage_second_task_data_base_t) <= sizeof(mcrt_task_user_data_t), "");
-
-    static mcrt_task_ref streaming_stage_second_task_execute(mcrt_task_ref self);
-
     mcrt_spinlock_t m_spinlock_streaming_done;
 
 protected:
@@ -98,8 +62,6 @@ protected:
     {
         mcrt_spin_init(&this->m_spinlock_streaming_done);
     }
-
-    bool streaming_stage_first_execute(class gfx_connection_base *gfx_connection, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream), void *streaming_stage_first_thread_stack_data_user_defined);
 
     void streaming_destroy_request(bool *streaming_done);
 

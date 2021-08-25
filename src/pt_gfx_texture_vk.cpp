@@ -40,7 +40,7 @@ static inline size_t get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
     size_t base_offset,
-    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
+    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest);
 
 static inline uint32_t calc_aspect_subresource_num_vk(uint32_t mip_levels, uint32_t array_layers);
 static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
@@ -162,8 +162,8 @@ bool gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_cal
     uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.arrayLayers, specific_header_vk.mipLevels);
 
     (*memcpy_dest) = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
-    (*cmdcopy_dest) = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
-    
+    (*cmdcopy_dest) = static_cast<VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(VkBufferImageCopy) * num_subresource, alignof(VkBufferImageCopy)));
+
     return true;
 }
 
@@ -171,7 +171,7 @@ size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callb
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(memcpy_dest_void);
-    struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(cmdcopy_dest_void);
+    VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(cmdcopy_dest_void);
     
     struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(neutral_header);
 
@@ -191,7 +191,7 @@ bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_su
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(memcpy_dest_void);
-    struct VkBufferImageCopy *cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(cmdcopy_dest_void);
+    VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(cmdcopy_dest_void);
 
     struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(neutral_header);
 
@@ -221,195 +221,6 @@ bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_su
         }
     }
     mcrt_aligned_free(cmdcopy_dest);
-
-    return true;
-}
-
-struct texture_streaming_stage_second_thread_stack_data_t
-{
-    struct common_header_t m_common_header;
-    size_t m_common_data_offset;
-    struct specific_header_vk_t m_specific_header_vk;
-    struct load_memcpy_dest_t *m_memcpy_dest;
-    VkBufferImageCopy *m_cmdcopy_dest;
-};
-//static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-
-bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-
-    struct common_header_t common_header;
-    size_t common_data_offset;
-    if (!load_header_from_input_stream(&common_header, &common_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
-    {
-        return false;
-    }
-
-    specific_header_vk_t specific_header_vk = common_to_specific_header_translate(&common_header);
-
-    // vkGetPhysicalDeviceFormatProperties
-    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-    {
-        struct VkFormatProperties physical_device_format_properties;
-        gfx_connection->get_physical_device_format_properties(specific_header_vk.format, &physical_device_format_properties);
-        if (PT_UNLIKELY(0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)))
-        {
-            return false;
-        }
-    }
-
-    assert(VK_NULL_HANDLE == this->m_image);
-    {
-        VkImageCreateInfo create_info;
-        create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        create_info.pNext = NULL;
-        create_info.flags = ((!specific_header_vk.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-        create_info.imageType = specific_header_vk.imageType;
-        create_info.format = specific_header_vk.format;
-        create_info.extent = specific_header_vk.extent;
-        create_info.mipLevels = specific_header_vk.mipLevels;
-        create_info.arrayLayers = specific_header_vk.arrayLayers;
-        create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-        create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-        create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        create_info.queueFamilyIndexCount = 0U;
-        create_info.pQueueFamilyIndices = NULL;
-        create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        PT_MAYBE_UNUSED VkResult res = gfx_connection->create_image(&create_info, &this->m_image);
-        assert(VK_SUCCESS == res);
-    }
-
-    assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
-    {
-        VkMemoryRequirements memory_requirements;
-        gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
-
-        // vkAllocateMemory
-        // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
-
-        this->m_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
-        if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory))
-        {
-            gfx_connection->destroy_image(this->m_image);
-            this->m_image = VK_NULL_HANDLE;
-            return false;
-        }
-    }
-    assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
-
-    // bind memory
-    {
-        PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
-        assert(VK_SUCCESS == res_bind_image_memory);
-    }
-
-    // image view
-    {
-        VkImageAspectFlags aspect_mask = 0U;
-        {
-            uint32_t aspect_count = get_format_aspect_count(specific_header_vk.format);
-            for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
-            {
-                aspect_mask |= get_format_aspect_mask(specific_header_vk.format, aspect_index);
-            }
-        }
-
-        VkImageViewCreateInfo image_view_create_info;
-        image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        image_view_create_info.pNext = NULL;
-        image_view_create_info.flags = 0U;
-        image_view_create_info.image = this->m_image;
-        image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        image_view_create_info.format = specific_header_vk.format;
-        image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-        image_view_create_info.subresourceRange.aspectMask = aspect_mask;
-        image_view_create_info.subresourceRange.baseMipLevel = 0U;
-        image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
-        image_view_create_info.subresourceRange.baseArrayLayer = 0U;
-        image_view_create_info.subresourceRange.layerCount = specific_header_vk.arrayLayers;
-
-        PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
-        assert(VK_SUCCESS == res_create_image_view);
-    }
-
-    return true;
-}
-
-void gfx_texture_vk::streaming_stage_first_populate_task_data_callback(void *thread_stack_user_defined_void, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-}
-
-bool gfx_texture_vk::streaming_stage_second_pre_calculate_total_size_callback(struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
-
-    thread_stack_data_user_defined->m_specific_header_vk = common_to_specific_header_translate(&thread_stack_data_user_defined->m_common_header);
-
-    uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
-
-    thread_stack_data_user_defined->m_memcpy_dest = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
-    thread_stack_data_user_defined->m_cmdcopy_dest = static_cast<struct VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(struct VkBufferImageCopy) * num_subresource, alignof(struct VkBufferImageCopy)));
-    return true;
-}
-
-size_t gfx_texture_vk::streaming_stage_second_calculate_total_size_callback(uint64_t base_offset, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection_base, struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-
-    uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
-
-    size_t total_size = get_copyable_footprints(&thread_stack_data_user_defined->m_specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, thread_stack_data_user_defined->m_memcpy_dest, thread_stack_data_user_defined->m_cmdcopy_dest);
-    return total_size;
-}
-
-bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(bool staging_buffer_allocate_success, uint32_t streaming_throttling_index, struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined_void, class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined_void)
-{
-    static_assert(sizeof(struct texture_streaming_stage_second_thread_stack_data_t) <= sizeof(struct streaming_stage_second_thread_stack_data_user_defined_t), "");
-    struct texture_streaming_stage_second_thread_stack_data_t *thread_stack_data_user_defined = reinterpret_cast<struct texture_streaming_stage_second_thread_stack_data_t *>(thread_stack_data_user_defined_void);
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-
-    if (staging_buffer_allocate_success)
-    {
-        uint32_t num_subresource = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format) * calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
-
-        // load_data_from_input_stream
-        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), num_subresource, thread_stack_data_user_defined->m_memcpy_dest, calc_subresource_index_vk, input_stream, input_stream_read_callback, input_stream_seek_callback))
-        {
-            mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
-            mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
-            return false;
-        }
-        mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
-
-        // copy_buffer_to_image
-        {
-            uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-            VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
-
-            uint32_t aspect_count = get_format_aspect_count(thread_stack_data_user_defined->m_specific_header_vk.format);
-            for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
-            {
-                VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(thread_stack_data_user_defined->m_specific_header_vk.format, aspect_index), 0, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, 0, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers};
-                uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(thread_stack_data_user_defined->m_specific_header_vk.arrayLayers, thread_stack_data_user_defined->m_specific_header_vk.mipLevels);
-                uint32_t aspect_subresource_index = calc_subresource_index_vk(0U, 0U, aspect_index, thread_stack_data_user_defined->m_specific_header_vk.mipLevels, thread_stack_data_user_defined->m_specific_header_vk.arrayLayers);
-                gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, thread_stack_data_user_defined->m_cmdcopy_dest + aspect_subresource_index);
-            }
-        }
-        mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
-    }
-    else
-    {
-        mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
-        mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
-    }
 
     return true;
 }

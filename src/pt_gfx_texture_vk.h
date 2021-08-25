@@ -43,46 +43,9 @@ class gfx_texture_vk final : public gfx_texture_base
     void texture_streaming_stage_second_post_calculate_total_size_fail_callback(void *memcpy_dest, void *cmdcopy_dest) override;
     bool texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct common_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest, void *cmdcopy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence)) override;
 
-    bool streaming_stage_first_pre_populate_task_data_callback(
-        class gfx_connection_base *gfx_connection,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        void *thread_stack_user_defined) override;
-
-    void streaming_stage_first_populate_task_data_callback(
-        void *thread_stack_user_defined,
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
-
-    bool streaming_stage_second_pre_calculate_total_size_callback(
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
-
-    size_t streaming_stage_second_calculate_total_size_callback(
-        uint64_t base_offset,
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        class gfx_connection_base *gfx_connection,
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
-
-    bool streaming_stage_second_post_calculate_total_size_callback(
-        bool staging_buffer_allocate_success,
-        uint32_t streaming_throttling_index,
-        struct streaming_stage_second_thread_stack_data_user_defined_t *thread_stack_data_user_defined,
-        class gfx_connection_base *gfx_connection,
-        gfx_input_stream_ref input_stream,
-        intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-        int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-        struct streaming_stage_second_task_data_user_defined_t *task_data_user_defined) override;
-
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
-
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
-
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
-
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 private:

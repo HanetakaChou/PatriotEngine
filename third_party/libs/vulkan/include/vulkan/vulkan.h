@@ -2444,7 +2444,7 @@ typedef struct VkImageBlit {
     VkOffset3D                  dstOffsets[2];
 } VkImageBlit;
 
-typedef struct VkBufferImageCopy {
+typedef VkBufferImageCopy {
     VkDeviceSize                bufferOffset;
     uint32_t                    bufferRowLength;
     uint32_t                    bufferImageHeight;

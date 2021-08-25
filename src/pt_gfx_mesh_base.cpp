@@ -143,8 +143,14 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
     if (!streaming_cancel)
     {
         // pre calculate total size
-#if 0
-        if (PT_UNLIKELY(!load_header_from_input_stream(&common_header, &common_data_offset, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback)) || !task_data->m_gfx_streaming_object->texture_streaming_stage_second_pre_calculate_total_size_callback(&common_header, &memcpy_dest, &cmdcopy_dest))
+        struct gfx_mesh_neutral_header_t neutral_header;
+        neutral_header.vertex_count = 36U;
+        neutral_header.index_type = PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT16;
+        neutral_header.index_count = 36U;
+        struct gfx_mesh_neutral_memcpy_dest_t memcpy_dest[3];
+#if 0        
+        void *cmdcopy_dest;
+        if (!task_data->m_gfx_streaming_object->mesh_streaming_stage_second_pre_calculate_total_size_callback(&neutral_header, &memcpy_dest, &cmdcopy_dest))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
@@ -168,7 +174,7 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
             {
                 base_offset = mcrt_atomic_load(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
 
-                size_t total_size = task_data->m_gfx_streaming_object->texture_streaming_stage_second_calculate_total_size_callback(task_data->m_gfx_connection, &common_header, memcpy_dest, cmdcopy_dest, base_offset);
+                size_t total_size = task_data->m_gfx_streaming_object->mesh_streaming_stage_second_calculate_total_size_callback(task_data->m_gfx_connection, &neutral_header, memcpy_dest, base_offset);
 
                 transfer_src_buffer_end = (base_offset + total_size);
                 //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
@@ -181,9 +187,6 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
 
                     task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
-                    // release temp memory for the calculation
-                    task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_fail_callback(memcpy_dest, cmdcopy_dest);
-
                     // recycle needs manually tally_completion_of_predecessor
                     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
                     // the "mcrt_task_decrement_ref_count" must be called after all works(include the C++ destructors) are done
@@ -195,7 +198,7 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
         }
 
         // post calculate total size
-        if (!task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_success_callback(task_data->m_gfx_connection, streaming_throttling_index, &common_header, &common_data_offset, memcpy_dest, cmdcopy_dest, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
+        if (!task_data->m_gfx_streaming_object->mesh_streaming_stage_second_post_calculate_total_size_success_callback(task_data->m_gfx_connection, streaming_throttling_index, &neutral_header, memcpy_dest, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);

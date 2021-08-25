@@ -24,6 +24,13 @@
 #include "pt_gfx_material_base.h"
 #include <assert.h>
 
+struct material_streaming_stage_second_task_data_t
+{
+    class gfx_material_base *m_gfx_streaming_object;
+    class gfx_connection_base *m_gfx_connection;
+};
+static_assert(sizeof(struct material_streaming_stage_second_task_data_t) <= sizeof(struct mcrt_task_user_data_t), "");
+
 bool gfx_material_base::init_with_texture(class gfx_connection_base *gfx_connection, uint32_t material_model, uint32_t texture_count, class gfx_texture_base **gfx_textures)
 {
     PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);

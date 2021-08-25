@@ -35,4 +35,10 @@ struct gfx_mesh_neutral_header_t
     uint32_t index_count;
 };
 
+struct gfx_mesh_neutral_memcpy_dest_t
+{
+    size_t staging_offset;
+    size_t output_size;
+};
+
 #endif
