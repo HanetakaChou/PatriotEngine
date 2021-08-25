@@ -1076,7 +1076,7 @@ inline bool gfx_connection_vk::update_swapchain()
             }
             swapchain_create_info.imageExtent.height = this->m_framebuffer_height;
 
-            this->m_aspect_ratio = static_cast<float>(this->m_framebuffer_height) / static_cast<float>(this->m_framebuffer_width);
+            this->m_aspect_ratio = static_cast<float>(m_framebuffer_width) / static_cast<float>(this->m_framebuffer_height);
 
             swapchain_create_info.preTransform = surface_capabilities.currentTransform;
 

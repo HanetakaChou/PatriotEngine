@@ -161,7 +161,7 @@ class gfx_connection_vk final : public gfx_connection_base
     uint32_t m_wsi_height;
 
     // Perspective Matraix
-    float m_aspect_ratio; //HbyW
+    float m_aspect_ratio; //width-divide-height
 
     // SwapChain
     VkSurfaceKHR m_surface;
