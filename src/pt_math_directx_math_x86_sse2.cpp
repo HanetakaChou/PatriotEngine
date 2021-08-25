@@ -89,6 +89,16 @@ math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_identity()
     return wrap(DirectX::XMMatrixIdentity());
 }
 
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+{
+    return wrap(DirectX::XMMatrixMultiply(unwrap(m1), unwrap(m2)));
+}
+
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+{
+    return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
+}
+
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
@@ -102,4 +112,5 @@ void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_mat4x4(math_alignas16_m
 void PT_VECTORCALL directx_math_x86_sse2_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4(unwrap(destination),unwrap(m));
+
 }

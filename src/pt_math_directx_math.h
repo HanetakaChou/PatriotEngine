@@ -48,6 +48,14 @@ math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_identity();
 math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_identity();
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_identity();
 
+math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_multiply(math_simd_mat m1, math_simd_mat m2);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_multiply(math_simd_mat m1, math_simd_mat m2);
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_multiply(math_simd_mat m1, math_simd_mat m2);
+
+math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction);
+math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction);
+math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction);
+
 math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
 math_simd_mat PT_VECTORCALL directx_math_x86_avx_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
 math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);

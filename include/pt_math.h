@@ -84,6 +84,8 @@ extern "C"
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity();
+    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2);
+    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction);
     PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
     PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
     PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);

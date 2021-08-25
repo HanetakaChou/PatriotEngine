@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -42,7 +42,7 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
         return directx_math_x86_sse2_load_vec3(source);
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_load_vec3(source);
+    return directx_math_arm_neon_load_vec3(source);
 #else
 #error Unknown Architecture
 #endif
@@ -64,7 +64,7 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
         return directx_math_x86_sse2_load_vec4(source);
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_load_vec4(source);
+    return directx_math_arm_neon_load_vec4(source);
 #else
 #error Unknown Architecture
 #endif
@@ -128,7 +128,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas
         return directx_math_x86_sse2_load_alignas16_mat4x4(source);
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_load_alignas16_mat4x4(source);
+    return directx_math_arm_neon_load_alignas16_mat4x4(source);
 #else
 #error Unknown Architecture
 #endif
@@ -150,7 +150,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
         return directx_math_x86_sse2_load_mat4x4(source);
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_load_mat4x4(source);
+    return directx_math_arm_neon_load_mat4x4(source);
 #else
 #error Unknown Architecture
 #endif
@@ -158,7 +158,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
 {
-    #if defined(PT_X64) || defined(PT_X86)
+#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_mat_identity();
@@ -172,7 +172,51 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
         return directx_math_x86_sse2_mat_identity();
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_mat_identity();
+    return directx_math_arm_neon_mat_identity();
+#else
+#error Unknown Architecture
+#endif
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+{
+#if defined(PT_X64) || defined(PT_X86)
+    if (math_support_avx2)
+    {
+        return directx_math_x86_avx2_mat_multiply(m1, m2);
+    }
+    else if (math_support_avx)
+    {
+        return directx_math_x86_avx_mat_multiply(m1, m2);
+    }
+    else
+    {
+        return directx_math_x86_sse2_mat_multiply(m1, m2);
+    }
+#elif defined(PT_ARM64) || defined(PT_ARM)
+    return directx_math_arm_neon_mat_multiply(m1, m2);
+#else
+#error Unknown Architecture
+#endif
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+{
+#if defined(PT_X64) || defined(PT_X86)
+    if (math_support_avx2)
+    {
+        return directx_math_x86_avx2_mat_look_to_rh(eye_position, eye_direction, up_direction);
+    }
+    else if (math_support_avx)
+    {
+        return directx_math_x86_avx_mat_look_to_rh(eye_position, eye_direction, up_direction);
+    }
+    else
+    {
+        return directx_math_x86_sse2_mat_look_to_rh(eye_position, eye_direction, up_direction);
+    }
+#elif defined(PT_ARM64) || defined(PT_ARM)
+    return directx_math_arm_neon_mat_look_to_rh(eye_position, eye_direction, up_direction);
 #else
 #error Unknown Architecture
 #endif
@@ -194,7 +238,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_a
         return directx_math_x86_sse2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
     }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-        return directx_math_arm_neon_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
+    return directx_math_arm_neon_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
 #else
 #error Unknown Architecture
 #endif
@@ -223,7 +267,7 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x
 
 PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
 {
-    #if defined(PT_X64) || defined(PT_X86)
+#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_store_mat4x4(destination, m);

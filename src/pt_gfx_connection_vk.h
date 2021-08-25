@@ -116,8 +116,10 @@ class gfx_connection_vk final : public gfx_connection_base
     static uint32_t const m_limit_max_min_uniform_buffer_offset_alignment = 256U;
 
     // push constant
-    math_alignas16_mat4x4 m_mat_vp;
-    math_alignas16_mat4x4 m_mat_m;
+    uint32_t m_push_constant_mat_vp_offset;
+    uint32_t m_push_constant_mat_vp_size;
+    uint32_t m_push_constant_mat_m_offset;
+    uint32_t m_push_constant_mat_m_size;
 
     //
     VkSampler m_immutable_sampler;
@@ -157,6 +159,9 @@ class gfx_connection_vk final : public gfx_connection_base
     // WSI
     uint32_t m_wsi_width;
     uint32_t m_wsi_height;
+
+    // Perspective Matraix
+    float m_aspect_ratio; //HbyW
 
     // SwapChain
     VkSurfaceKHR m_surface;

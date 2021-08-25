@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -1076,6 +1076,8 @@ inline bool gfx_connection_vk::update_swapchain()
             }
             swapchain_create_info.imageExtent.height = this->m_framebuffer_height;
 
+            this->m_aspect_ratio = static_cast<float>(this->m_framebuffer_height) / static_cast<float>(this->m_framebuffer_width);
+
             swapchain_create_info.preTransform = surface_capabilities.currentTransform;
 
             VkCompositeAlphaFlagBitsKHR composite_alphas[] = {
@@ -1450,10 +1452,15 @@ inline bool gfx_connection_vk::init_pipeline_layout()
     {
         VkDescriptorSetLayout set_layouts[2] = {this->m_descriptor_set_layout_each_object_shared, this->m_descriptor_set_layout_each_object_private};
 
+        this->m_push_constant_mat_vp_offset = 0U;
+        this->m_push_constant_mat_vp_size = sizeof(math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_offset = sizeof(math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_size = sizeof(math_alignas16_mat4x4);
+
         VkPushConstantRange push_constant_ranges[1];
         push_constant_ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
         push_constant_ranges[0].offset = 0U;
-        push_constant_ranges[0].size = sizeof(this->m_mat_vp) + sizeof(this->m_mat_m);
+        push_constant_ranges[0].size = this->m_push_constant_mat_vp_size + this->m_push_constant_mat_m_size;
         assert(push_constant_ranges[0].size <= m_limit_min_max_push_constants_size);
 
         VkPipelineLayoutCreateInfo pipeline_layout_create_info;
@@ -2021,30 +2028,31 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 {
     static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
     struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(self));
+    class gfx_connection_vk *gfx_connection = task_data->m_gfx_connection;
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-    assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()));
-    assert(mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+    assert(NULL != mcrt_task_arena_internal_arena(gfx_connection->task_arena()));
+    assert(mcrt_task_arena_internal_arena(gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
 
-    uint32_t frame_throttling_index = mcrt_atomic_load(&task_data->m_gfx_connection->m_frame_throttling_index);
+    uint32_t frame_throttling_index = mcrt_atomic_load(&gfx_connection->m_frame_throttling_index);
     // We add the frame index in acquire
     frame_throttling_index = (frame_throttling_index > 0U) ? (frame_throttling_index - 1U) : (STREAMING_THROTTLING_COUNT - 1U);
 
     uint32_t frame_thread_index = mcrt_this_task_arena_current_thread_index();
 
-    VkCommandBuffer secondary_command_buffer = task_data->m_gfx_connection->frame_task_get_secondary_command_buffer(frame_throttling_index, frame_thread_index, OPAQUE_SUBPASS_INDEX);
+    VkCommandBuffer secondary_command_buffer = gfx_connection->frame_task_get_secondary_command_buffer(frame_throttling_index, frame_thread_index, OPAQUE_SUBPASS_INDEX);
 
     // set viewport
     {
         VkViewport viewports[1];
         viewports[0].x = 0.0f;
         viewports[0].y = 0.0f;
-        viewports[0].width = task_data->m_gfx_connection->m_framebuffer_width;
-        viewports[0].height = task_data->m_gfx_connection->m_framebuffer_height;
+        viewports[0].width = gfx_connection->m_framebuffer_width;
+        viewports[0].height = gfx_connection->m_framebuffer_height;
         viewports[0].minDepth = 0.0f;
         viewports[0].maxDepth = 1.0f;
-        task_data->m_gfx_connection->m_device.cmd_set_viewport(secondary_command_buffer, 0U, 1U, viewports);
+        gfx_connection->m_device.cmd_set_viewport(secondary_command_buffer, 0U, 1U, viewports);
     }
 
     // set scissor
@@ -2052,16 +2060,34 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         VkRect2D scissors[1];
         scissors[0].offset.x = 0;
         scissors[0].offset.y = 0;
-        scissors[0].extent.width = task_data->m_gfx_connection->m_framebuffer_width;
-        scissors[0].extent.height = task_data->m_gfx_connection->m_framebuffer_height;
-        task_data->m_gfx_connection->m_device.cmd_set_scissor(secondary_command_buffer, 0U, 1U, scissors);
+        scissors[0].extent.width = gfx_connection->m_framebuffer_width;
+        scissors[0].extent.height = gfx_connection->m_framebuffer_height;
+        gfx_connection->m_device.cmd_set_scissor(secondary_command_buffer, 0U, 1U, scissors);
+    }
+
+    // bind - each view
+    {
+        
+        math_vec3 eye_position = {0.0f, 3.0f, 5.0f};
+        math_vec3 eye_direction = {0.0f, -3.0f, -5.0f};
+        math_vec3 up_direction = {0.0f, 1.0f, 0.0};
+        math_simd_mat mat_v = math_mat_look_to_rh(math_load_vec3(&eye_position), math_load_vec3(&eye_direction), math_load_vec3(&up_direction));
+        
+        math_simd_mat mat_p = math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f);
+
+        math_alignas16_mat4x4 mat_vp;
+        math_store_alignas16_mat4x4(&mat_vp, math_mat_multiply(mat_v, mat_p));
+
+        // directxmath row vector + row major
+        // glsl colum_major equivalent transpose
+
+        gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_vp_offset, gfx_connection->m_push_constant_mat_vp_size, &mat_vp);
     }
 
     // bind - each shader
-    task_data->m_gfx_connection->m_device.cmd_bind_pipeline(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_mesh);
+    gfx_connection->m_device.cmd_bind_pipeline(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gfx_connection->m_pipeline_mesh);
 
-    // draw
-    for (class gfx_node_vk *node : task_data->m_gfx_connection->m_scene_node_list)
+    for (class gfx_node_vk *node : gfx_connection->m_scene_node_list)
     {
         if (NULL != node)
         {
@@ -2069,16 +2095,20 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
             class gfx_material_vk *material = static_cast<class gfx_material_vk *>(node->get_material());
             if (NULL != mesh && (!mesh->is_streaming_error()) && mesh->is_streaming_done() && NULL != material && (!material->is_streaming_error()) && material->is_streaming_done())
             {
-                // bind - each material
+                // bind - each material // sort multiple mesh share the same material
                 VkDescriptorSet descriptor_sets[1] = {material->get_descriptor_set()};
-                task_data->m_gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, task_data->m_gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
+                gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
+
+                // bind - each object
+                math_alignas16_mat4x4 mat_m = node->get_transform();
+                gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
 
                 VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
                 VkDeviceSize offsets[2] = {0U, 0U};
-                task_data->m_gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
-                task_data->m_gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, mesh->m_index_buffer, 0U, mesh->m_indexType);
+                gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
+                gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, mesh->m_index_buffer, 0U, mesh->m_indexType);
 
-                task_data->m_gfx_connection->m_device.cmd_draw(secondary_command_buffer, 36U, 1U, 0U, 0U);
+                gfx_connection->m_device.cmd_draw(secondary_command_buffer, 36U, 1U, 0U, 0U);
             }
         }
     }

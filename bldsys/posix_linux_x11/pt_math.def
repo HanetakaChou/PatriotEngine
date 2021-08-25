@@ -24,6 +24,8 @@
         math_load_alignas16_mat4x4;
         math_load_mat4x4;
         math_mat_identity;
+        math_mat_multiply;
+        math_mat_look_to_rh;
         math_mat_perspective_fov_rh;
         math_store_alignas16_mat4x4;
         math_store_mat4x4;

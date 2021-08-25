@@ -31,7 +31,7 @@ layout(push_constant, column_major) uniform _unused_name_uniform_buffer
 void main()
 {
         //1.01 depth clip
-        vec4 position = vec4(position, 1.01f); //VP * M2 * vec4(position, 1.0f);
+        vec4 position = VP * M * vec4(position, 1.01f); //VP * M2 * vec4(position, 1.0f);
 
         gl_Position = position;
 
