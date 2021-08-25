@@ -33,6 +33,7 @@ struct texture_streaming_stage_second_task_data_t
     void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref);
 };
 static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+inline struct texture_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_data_t *task_data) { return reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data); }
 
 bool gfx_texture_base::read_input_stream(
     class gfx_connection_base *gfx_connection,
@@ -89,8 +90,7 @@ bool gfx_texture_base::read_input_stream(
         // pass to the second stage
         {
             mcrt_task_ref task = mcrt_task_allocate_root(texture_streaming_stage_second_task_execute);
-            static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
-            struct texture_streaming_stage_second_task_data_t *task_data = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(mcrt_task_get_user_data(task));
+            struct texture_streaming_stage_second_task_data_t *task_data = unwrap(mcrt_task_get_user_data(task));
             task_data->m_gfx_streaming_object = this;
             task_data->m_gfx_connection = gfx_connection;
             task_data->m_gfx_input_stream = gfx_input_stream;
@@ -117,8 +117,7 @@ bool gfx_texture_base::read_input_stream(
 
 mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt_task_ref self)
 {
-    static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
-    struct texture_streaming_stage_second_task_data_t *task_data = reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(mcrt_task_get_user_data(self));
+    struct texture_streaming_stage_second_task_data_t *task_data = unwrap(mcrt_task_get_user_data(self));
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique

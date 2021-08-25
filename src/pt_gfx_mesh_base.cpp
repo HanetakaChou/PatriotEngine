@@ -32,6 +32,7 @@ struct mesh_streaming_stage_second_task_data_t
     void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref );
 };
 static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
+inline struct mesh_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_data_t *task_data) { return reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(task_data); }
 
 bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
 {
@@ -84,8 +85,7 @@ bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection,
         // pass to the second stage
         {
             mcrt_task_ref task = mcrt_task_allocate_root(mesh_streaming_stage_second_task_execute);
-            static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
-            struct mesh_streaming_stage_second_task_data_t *task_data = reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(mcrt_task_get_user_data(task));
+            struct mesh_streaming_stage_second_task_data_t *task_data = unwrap(mcrt_task_get_user_data(task));
             task_data->m_gfx_streaming_object = this;
             task_data->m_gfx_connection = gfx_connection;
             task_data->m_gfx_input_stream = gfx_input_stream;
@@ -112,8 +112,7 @@ bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection,
 
 mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_ref self)
 {
-    static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
-    struct mesh_streaming_stage_second_task_data_t *task_data = reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(mcrt_task_get_user_data(self));
+    struct mesh_streaming_stage_second_task_data_t *task_data = unwrap(mcrt_task_get_user_data(self));
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
@@ -198,7 +197,7 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
         }
 
         // post calculate total size
-        if (!task_data->m_gfx_streaming_object->mesh_streaming_stage_second_post_calculate_total_size_success_callback(task_data->m_gfx_connection, streaming_throttling_index, &neutral_header, memcpy_dest, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
+        if (!task_data->m_gfx_streaming_object->mesh_streaming_stage_second_post_calculate_total_size_callback(task_data->m_gfx_connection, streaming_throttling_index, &neutral_header, memcpy_dest, task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);

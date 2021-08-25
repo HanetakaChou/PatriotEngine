@@ -33,8 +33,9 @@ struct gfx_texture_vk_header_t
     uint32_t array_layers;
 };
 static_assert(sizeof(struct gfx_texture_vk_header_t) <= sizeof(struct gfx_texture_backend_header_t), "");
-inline struct gfx_texture_vk_header_t *wrap(struct gfx_texture_backend_header_t *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t *>(vk_header); }
-inline struct gfx_texture_vk_header_t const *wrap(struct gfx_texture_backend_header_t const *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t const *>(vk_header); }
+inline struct gfx_texture_vk_header_t *unwrap(struct gfx_texture_backend_header_t *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t *>(vk_header); }
+inline struct gfx_texture_vk_header_t const *unwrap(struct gfx_texture_backend_header_t const *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t const *>(vk_header); }
+
 static inline struct gfx_texture_vk_header_t common_to_specific_header_translate(struct gfx_texture_neutral_header_t const *neutral_header);
 static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_neutral_type_t common_type);
 static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_neutral_format_t common_format);
@@ -157,7 +158,7 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
 
 void gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, struct gfx_texture_backend_header_t *out_backend_header, uint32_t *out_subresource_num)
 {
-    struct gfx_texture_vk_header_t *vk_header = wrap(out_backend_header);
+    struct gfx_texture_vk_header_t *vk_header = unwrap(out_backend_header);
     (*vk_header) = common_to_specific_header_translate(neutral_header);
     (*out_subresource_num) = get_format_aspect_count(vk_header->format) * calc_aspect_subresource_num_vk(vk_header->array_layers, vk_header->mip_levels);
 }
@@ -165,7 +166,7 @@ void gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_cal
 size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct gfx_texture_vk_header_t const *vk_header = wrap(backend_header);
+    struct gfx_texture_vk_header_t const *vk_header = unwrap(backend_header);
     size_t total_size = get_copyable_footprints_memcpy(vk_header, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, subresource_num, memcpy_dest);
     return total_size;
 }
@@ -184,7 +185,7 @@ uint32_t (*gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_s
 void gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct gfx_texture_vk_header_t const *vk_header = wrap(backend_header);
+    struct gfx_texture_vk_header_t const *vk_header = unwrap(backend_header);
 
     // copy_buffer_to_image
     {

@@ -38,7 +38,6 @@ class gfx_texture_vk final : public gfx_texture_base
     VkImageView m_image_view;
 
     bool texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_neutral_header_t const *neutral_header) override;
-
     void texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, struct gfx_texture_backend_header_t *out_backend_header, uint32_t *out_subresource_num) override;
     size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset) override;
     void *texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection) override;
@@ -50,7 +49,6 @@ class gfx_texture_vk final : public gfx_texture_base
     void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
-private:
 public:
     inline gfx_texture_vk() : gfx_texture_base(),
                               m_image(VK_NULL_HANDLE),
