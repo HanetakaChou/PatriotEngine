@@ -2067,18 +2067,43 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 
     // bind - each view
     {
-        math_vec3 eye_position = {0.0f, 3.0f, 5.0f};
-        math_vec3 eye_direction = {0.0f, -3.0f, -5.0f};
+        // https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#coordinate-system-and-units
+        // RH
+        // +Y up
+        // +Z front
+
+        math_vec3 eye_position = {0.0f, 3.0f, -5.0f};
+        math_vec3 eye_direction = {0.0f, -0.5f, 1.0f};
         math_vec3 up_direction = {0.0f, 1.0f, 0.0};
+        // eye_direction = focus_position - eye_position
+        // focus_position = eye_direction + eye_position
         math_simd_mat mat_v = math_mat_look_to_rh(math_load_vec3(&eye_position), math_load_vec3(&eye_direction), math_load_vec3(&up_direction));
 
-        math_simd_mat mat_p = math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f);
+        // vulkan viewport flip y
+        math_alignas16_mat4x4 mat_vk_y;
+        mat_vk_y.m[0][0] = 1.0f;
+        mat_vk_y.m[0][1] = 0.0f;
+        mat_vk_y.m[0][2] = 0.0f;
+        mat_vk_y.m[0][3] = 0.0f;
+        mat_vk_y.m[1][0] = 0.0f;
+        mat_vk_y.m[1][1] = -1.0f;
+        mat_vk_y.m[1][2] = 0.0f;
+        mat_vk_y.m[1][3] = 0.0f;
+        mat_vk_y.m[2][0] = 0.0f;
+        mat_vk_y.m[2][1] = 0.0f;
+        mat_vk_y.m[2][2] = 1.0f;
+        mat_vk_y.m[2][3] = 0.0f;
+        mat_vk_y.m[3][0] = 0.0f;
+        mat_vk_y.m[3][1] = 0.0f;
+        mat_vk_y.m[3][2] = 0.0f;
+        mat_vk_y.m[3][3] = 1.0f;
+        math_simd_mat mat_p = math_mat_multiply(math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f), math_load_alignas16_mat4x4(&mat_vk_y));
 
+
+        // directxmath // row vector + row major
+        // glsl // colum_major equivalent transpose
         math_alignas16_mat4x4 mat_vp;
         math_store_alignas16_mat4x4(&mat_vp, math_mat_multiply(mat_v, mat_p));
-
-        // directxmath row vector + row major
-        // glsl colum_major equivalent transpose
 
         gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_vp_offset, gfx_connection->m_push_constant_mat_vp_size, &mat_vp);
     }
