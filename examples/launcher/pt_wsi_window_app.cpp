@@ -29,8 +29,14 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     my_node = gfx_connection_create_node(my_gfx_connection);
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
 
+    gfx_texture_ref my_texture2 = gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture2, "../third_party/assets/lenna/lena_std_directx_tex.dds");
+
     my_texture = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
+    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
+
+    gfx_texture_ref my_texture3 = gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture3, "../third_party/assets/lenna/lena_std_rgba.pvr");
 
     my_material = gfx_connection_create_material(my_gfx_connection);
     gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
@@ -42,6 +48,10 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 
     // node hold the material
     gfx_material_destroy(my_gfx_connection, my_material);
+
+    gfx_texture_destroy(my_gfx_connection, my_texture2);
+
+    gfx_texture_destroy(my_gfx_connection, my_texture3);
 
 #if 1
     sleep(3);
@@ -59,7 +69,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_rgba.pvr");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/lena_std_nvidia_texture_tools.dds");
             my_textures.push_back(my_texture);
 
             if ((i > 200) && (!has_set))
