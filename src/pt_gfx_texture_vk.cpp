@@ -33,6 +33,23 @@ bool gfx_texture_vk::read_input_stream(
     return this->streaming_stage_first_execute(gfx_connection, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback, NULL);
 }
 
+static inline uint32_t get_format_aspect_count(VkFormat vk_format);
+static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspect_index);
+static inline bool is_format_rgba(VkFormat vk_format);
+static inline bool is_format_depth_stencil(VkFormat vk_format);
+static inline bool is_format_compressed(VkFormat vk_format);
+static inline uint32_t get_rgba_format_pixel_bytes(VkFormat vk_format);
+static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspect_index);
+static inline uint32_t get_compressed_format_block_width(VkFormat vk_format);
+static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
+static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
+static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
+
+static inline uint32_t vk_calc_subresource_callback(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+{
+    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
+}
+
 bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void *thread_stack_user_defined_void)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
@@ -103,30 +120,28 @@ bool gfx_texture_vk::streaming_stage_first_pre_populate_task_data_callback(class
         assert(VK_SUCCESS == res_bind_image_memory);
     }
 
-        // image view
-        {
-            VkImageViewCreateInfo image_view_create_info;
-            image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-            image_view_create_info.pNext = NULL;
-            image_view_create_info.flags = 0U;
-            image_view_create_info.image = this->m_image;
-            image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-            image_view_create_info.format = specific_header_vk.format;
-            image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-            image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-            image_view_create_info.subresourceRange.baseMipLevel = 0U;
-            image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
-            image_view_create_info.subresourceRange.baseArrayLayer = 0U;
-            image_view_create_info.subresourceRange.layerCount = specific_header_vk.arrayLayers;
+    // image view
+    {
+        VkImageViewCreateInfo image_view_create_info;
+        image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        image_view_create_info.pNext = NULL;
+        image_view_create_info.flags = 0U;
+        image_view_create_info.image = this->m_image;
+        image_view_create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        image_view_create_info.format = specific_header_vk.format;
+        image_view_create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+        image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        image_view_create_info.subresourceRange.baseMipLevel = 0U;
+        image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
+        image_view_create_info.subresourceRange.baseArrayLayer = 0U;
+        image_view_create_info.subresourceRange.layerCount = specific_header_vk.arrayLayers;
 
-            PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
-            assert(VK_SUCCESS == res_create_image_view);
-        }
-
-
+        PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
+        assert(VK_SUCCESS == res_create_image_view);
+    }
 
     return true;
 }
@@ -173,7 +188,7 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
     if (staging_buffer_allocate_success)
     {
         // load_data_from_input_stream
-        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, calc_subresource, input_stream, input_stream_read_callback, input_stream_seek_callback))
+        if (!load_data_from_input_stream(&thread_stack_data_user_defined->m_common_header, &thread_stack_data_user_defined->m_common_data_offset, gfx_connection->transfer_src_buffer_pointer(), thread_stack_data_user_defined->m_num_subresource, thread_stack_data_user_defined->m_memcpy_dest, vk_calc_subresource_callback, input_stream, input_stream_read_callback, input_stream_seek_callback))
         {
             mcrt_aligned_free(thread_stack_data_user_defined->m_memcpy_dest);
             mcrt_aligned_free(thread_stack_data_user_defined->m_cmdcopy_dest);
@@ -199,8 +214,6 @@ bool gfx_texture_vk::streaming_stage_second_post_calculate_total_size_callback(b
     return true;
 }
 
-
-
 void gfx_texture_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
@@ -220,7 +233,7 @@ void gfx_texture_vk::frame_destroy_callback(class gfx_connection_base *gfx_conne
 
 inline void gfx_texture_vk::unified_destory(class gfx_connection_vk *gfx_connection)
 {
-    if(VK_NULL_HANDLE != this->m_image_view)
+    if (VK_NULL_HANDLE != this->m_image_view)
     {
         gfx_connection->destroy_image_view(this->m_image_view);
     }
@@ -460,11 +473,6 @@ inline enum VkFormat gfx_texture_vk::common_to_vulkan_format_translate(enum gfx_
     return common_to_vulkan_format_map[common_format];
 }
 
-inline uint32_t gfx_texture_vk::calc_subresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
-{
-    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
-}
-
 inline size_t gfx_texture_vk::get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
@@ -583,7 +591,7 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
                 TotalBytes += (stagingOffset_new - stagingOffset);
                 stagingOffset = stagingOffset_new;
 
-                uint32_t DstSubresource = calc_subresource(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mipLevels, specific_header_vk->arrayLayers);
+                uint32_t DstSubresource = vk_calc_subresource_callback(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mipLevels, specific_header_vk->arrayLayers);
                 assert(DstSubresource < num_subresources);
 
                 out_memcpy_dest[DstSubresource].stagingOffset = stagingOffset;
@@ -636,183 +644,6 @@ inline size_t gfx_texture_vk::get_copyable_footprints(
     return TotalBytes;
 }
 
-inline uint32_t gfx_texture_vk::get_format_aspect_count(VkFormat vk_format)
-{
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    struct vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    assert(vk_format_info._union_tag == 3 || vk_format_info._union_tag == 1 || vk_format_info._union_tag == 2);
-    if (vk_format_info._union_tag == 3 || vk_format_info._union_tag == 1)
-    {
-        return 1;
-    }
-    else if (vk_format_info._union_tag == 2)
-    {
-        if (vk_format_info.depthstencil.depthBytes == 0 || vk_format_info.depthstencil.stencilBytes == 0)
-        {
-            return 1;
-        }
-        else
-        {
-            return 2;
-        }
-    }
-    else
-    {
-        return 0;
-    }
-}
-
-inline uint32_t gfx_texture_vk::get_format_aspect_mask(VkFormat vk_format, uint32_t aspectIndex)
-{
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    if (vk_format_info._union_tag == 3 || vk_format_info._union_tag == 1)
-    {
-        assert(aspectIndex < 1);
-        VkImageAspectFlagBits aspectMasks[1] = {VK_IMAGE_ASPECT_COLOR_BIT};
-        return aspectMasks[aspectIndex];
-    }
-    else if (vk_format_info._union_tag == 2)
-    {
-        if (vk_format_info.depthstencil.stencilBytes == 0)
-        {
-            assert(aspectIndex < 1);
-            VkImageAspectFlagBits aspectMasks[1] = {VK_IMAGE_ASPECT_DEPTH_BIT};
-            return aspectMasks[aspectIndex];
-        }
-        else if (vk_format_info.depthstencil.depthBytes != 0)
-        {
-            assert(aspectIndex < 2);
-            VkImageAspectFlagBits aspectMasks[2] = {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT};
-            return aspectMasks[aspectIndex];
-        }
-        else
-        {
-            assert(aspectIndex < 1);
-            VkImageAspectFlagBits aspectMasks[1] = {VK_IMAGE_ASPECT_STENCIL_BIT};
-            return aspectMasks[aspectIndex];
-        }
-    }
-    else
-    {
-        return 0x7FFFFFFF;
-    }
-}
-
-inline bool gfx_texture_vk::is_format_compressed(VkFormat vk_format)
-{
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return (vk_format_info._union_tag == 3);
-}
-
-inline bool gfx_texture_vk::is_format_rgba(VkFormat vk_format)
-{
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return (vk_format_info._union_tag == 1);
-}
-
-inline bool gfx_texture_vk::is_format_depth_stencil(VkFormat vk_format)
-{
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return (vk_format_info._union_tag == 2);
-}
-
-inline uint32_t gfx_texture_vk::get_compressed_format_block_width(VkFormat vk_format)
-{
-    assert(is_format_compressed(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return vk_format_info.compressed.compressedBlockWidth;
-}
-
-inline uint32_t gfx_texture_vk::get_compressed_format_block_height(VkFormat vk_format)
-{
-    assert(is_format_compressed(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return vk_format_info.compressed.compressedBlockHeight;
-}
-
-inline uint32_t gfx_texture_vk::get_compressed_format_block_depth(VkFormat vk_format)
-{
-    assert(is_format_compressed(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return vk_format_info.compressed.compressedBlockDepth;
-}
-
-inline uint32_t gfx_texture_vk::get_compressed_format_block_size_in_bytes(VkFormat vk_format)
-{
-    assert(is_format_compressed(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return vk_format_info.compressed.compressedBlockSizeInBytes;
-}
-
-inline uint32_t gfx_texture_vk::get_rgba_format_pixel_bytes(VkFormat vk_format)
-{
-    assert(is_format_rgba(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    return vk_format_info.rgba.pixelBytes;
-}
-
-inline uint32_t gfx_texture_vk::get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex)
-{
-    assert(is_format_depth_stencil(vk_format));
-
-    assert(vk_format < (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])));
-
-    vulkan_format_info_t vk_format_info = vulkan_format_info_table[vk_format];
-
-    if (vk_format_info.depthstencil.stencilBytes == 0)
-    {
-        assert(aspectIndex < 1);
-        uint32_t pixelBytes[1] = {vk_format_info.depthstencil.depthBytes};
-        return pixelBytes[aspectIndex];
-    }
-    else if (vk_format_info.depthstencil.depthBytes != 0)
-    {
-        assert(aspectIndex < 2);
-        uint32_t pixelBytes[2] = {vk_format_info.depthstencil.depthBytes, vk_format_info.depthstencil.stencilBytes};
-        return pixelBytes[aspectIndex];
-    }
-    else
-    {
-        assert(aspectIndex < 1);
-        uint32_t pixelBytes[1] = {vk_format_info.depthstencil.stencilBytes};
-        return pixelBytes[aspectIndex];
-    }
-}
-
 //--------------------------------------------------------------------------------------
 
 // gFormatInfoTable libANGLE/renderer/Format_table_autogen.cpp
@@ -829,193 +660,561 @@ inline uint32_t gfx_texture_vk::get_depth_stencil_format_pixel_bytes(VkFormat vk
 // GetLoadFunctionsLoadFunctionsMap libANGLE/renderer/load_functions_table_autogen.cpp
 // LoadToNative
 // LoadCompressedToNative
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wc99-designator"
-struct gfx_texture_vk::vulkan_format_info_t const gfx_texture_vk::vulkan_format_info_table[] = {
-    {0},                                       //VK_FORMAT_UNDEFINED
-    {1, .rgba = {1}},                          //VK_FORMAT_R4G4_UNORM_PACK8
-    {1, .rgba = {2}},                          //VK_FORMAT_R4G4B4A4_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_B4G4R4A4_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_R5G6B5_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_B5G6R5_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_R5G5B5A1_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_B5G5R5A1_UNORM_PACK16
-    {1, .rgba = {2}},                          //VK_FORMAT_A1R5G5B5_UNORM_PACK16
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_UNORM
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_SNORM
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_USCALED
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_SSCALED
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_UINT
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_SINT
-    {1, .rgba = {1}},                          //VK_FORMAT_R8_SRGB
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_UNORM
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_SNORM
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_USCALED
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_SSCALED
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_UINT
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_SINT
-    {1, .rgba = {2}},                          //VK_FORMAT_R8G8_SRGB
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_UNORM
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_SNORM
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_USCALED
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_SSCALED
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_UINT
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_SINT
-    {1, .rgba = {3}},                          //VK_FORMAT_R8G8B8_SRGB
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_UNORM
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_SNORM
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_USCALED
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_SSCALED
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_UINT
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_SINT
-    {1, .rgba = {3}},                          //VK_FORMAT_B8G8R8_SRGB
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_UNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_SNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_USCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_SSCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_UINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_SINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R8G8B8A8_SRGB
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_UNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_SNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_USCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_SSCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_UINT
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_SINT
-    {1, .rgba = {4}},                          //VK_FORMAT_B8G8R8A8_SRGB
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_UNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_SNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_USCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_SSCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_UINT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_SINT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A8B8G8R8_SRGB_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_UNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_SNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_USCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_SSCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_UINT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2R10G10B10_SINT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_UNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_SNORM_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_USCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_SSCALED_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_UINT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_A2B10G10R10_SINT_PACK32
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_UNORM
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_SNORM
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_USCALED
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_SSCALED
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_UINT
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_SINT
-    {1, .rgba = {2}},                          //VK_FORMAT_R16_SFLOAT
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_UNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_SNORM
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_USCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_SSCALED
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_UINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_SINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R16G16_SFLOAT
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_UNORM
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_SNORM
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_USCALED
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_SSCALED
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_UINT
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_SINT
-    {1, .rgba = {6}},                          //VK_FORMAT_R16G16B16_SFLOAT
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_UNORM
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_SNORM
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_USCALED
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_SSCALED
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_UINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_SINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R16G16B16A16_SFLOAT
-    {1, .rgba = {4}},                          //VK_FORMAT_R32_UINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R32_SINT
-    {1, .rgba = {4}},                          //VK_FORMAT_R32_SFLOAT
-    {1, .rgba = {8}},                          //VK_FORMAT_R32G32_UINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R32G32_SINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R32G32_SFLOAT
-    {1, .rgba = {12}},                         //VK_FORMAT_R32G32B32_UINT
-    {1, .rgba = {12}},                         //VK_FORMAT_R32G32B32_SINT
-    {1, .rgba = {12}},                         //VK_FORMAT_R32G32B32_SFLOAT
-    {1, .rgba = {16}},                         //VK_FORMAT_R32G32B32A32_UINT
-    {1, .rgba = {16}},                         //VK_FORMAT_R32G32B32A32_SINT
-    {1, .rgba = {16}},                         //VK_FORMAT_R32G32B32A32_SFLOAT
-    {1, .rgba = {8}},                          //VK_FORMAT_R64_UINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R64_SINT
-    {1, .rgba = {8}},                          //VK_FORMAT_R64_SFLOAT
-    {1, .rgba = {16}},                         //VK_FORMAT_R64G64_UINT
-    {1, .rgba = {16}},                         //VK_FORMAT_R64G64_SINT
-    {1, .rgba = {16}},                         //VK_FORMAT_R64G64_SFLOAT
-    {1, .rgba = {24}},                         //VK_FORMAT_R64G64B64_UINT
-    {1, .rgba = {24}},                         //VK_FORMAT_R64G64B64_SINT
-    {1, .rgba = {24}},                         //VK_FORMAT_R64G64B64_SFLOAT
-    {1, .rgba = {32}},                         //VK_FORMAT_R64G64B64A64_UINT
-    {1, .rgba = {32}},                         //VK_FORMAT_R64G64B64A64_SINT
-    {1, .rgba = {32}},                         //VK_FORMAT_R64G64B64A64_SFLOAT
-    {1, .rgba = {4}},                          //VK_FORMAT_B10G11R11_UFLOAT_PACK32
-    {1, .rgba = {4}},                          //VK_FORMAT_E5B9G9R9_UFLOAT_PACK32
-    {2, .depthstencil = {2, 0}},               //VK_FORMAT_D16_UNORM
-    {2, .depthstencil = {4, 0}},               //VK_FORMAT_X8_D24_UNORM_PACK32
-    {2, .depthstencil = {4, 0}},               //VK_FORMAT_D32_SFLOAT
-    {2, .depthstencil = {0, 1}},               //VK_FORMAT_S8_UINT
-    {2, .depthstencil = {2, 2}},               //VK_FORMAT_D16_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_D16_UNORM or VK_FORMAT_D16_UNORM_S8_UINT format is tightly packed with one VK_FORMAT_D16_UNORM value per texel.
-    {2, .depthstencil = {4, 4}},               //VK_FORMAT_D24_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D24_UNORM_S8_UINT format is packed with one 32-bit word per texel with the D24 value in the LSBs of the word, and undefined values in the eight MSBs.
-    {2, .depthstencil = {4, 4}},               //VK_FORMAT_D32_SFLOAT_S8_UINT        //data copied to or from the depth aspect of a VK_FORMAT_D32_SFLOAT or VK_FORMAT_D32_SFLOAT_S8_UINT format is tightly packed with one VK_FORMAT_D32_SFLOAT value per texel.
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC2_SRGB_BLOCK
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC3_SRGB_BLOCK
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
-    {3, .compressed = {4, 4, 1, (64 / 8)}},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
-    {3, .compressed = {4, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
-    {3, .compressed = {5, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
-    {3, .compressed = {5, 4, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
-    {3, .compressed = {5, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
-    {3, .compressed = {5, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
-    {3, .compressed = {6, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
-    {3, .compressed = {6, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
-    {3, .compressed = {6, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
-    {3, .compressed = {6, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
-    {3, .compressed = {8, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
-    {3, .compressed = {8, 5, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
-    {3, .compressed = {8, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
-    {3, .compressed = {8, 6, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
-    {3, .compressed = {8, 8, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
-    {3, .compressed = {8, 8, 1, (128 / 8)}},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
-    {3, .compressed = {10, 5, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
-    {3, .compressed = {10, 5, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
-    {3, .compressed = {10, 6, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
-    {3, .compressed = {10, 6, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
-    {3, .compressed = {10, 8, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
-    {3, .compressed = {10, 8, 1, (128 / 8)}},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
-    {3, .compressed = {10, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
-    {3, .compressed = {10, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
-    {3, .compressed = {12, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
-    {3, .compressed = {12, 10, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
-    {3, .compressed = {12, 12, 1, (128 / 8)}}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
-    {3, .compressed = {12, 12, 1, (128 / 8)}}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
-};
-#pragma GCC diagnostic pop
+
+static inline uint32_t get_format_aspect_count(VkFormat vk_format)
+{
+    if (vk_format <= VK_FORMAT_UNDEFINED)
+    {
+        static_assert(0 == VK_FORMAT_UNDEFINED, "");
+        assert(0);
+        return -1;
+    }
+    else if (vk_format <= VK_FORMAT_S8_UINT)
+    {
+        static_assert((VK_FORMAT_UNDEFINED + 1U) == VK_FORMAT_R4G4_UNORM_PACK8, "");
+        return 1U;
+    }
+    else if (vk_format <= VK_FORMAT_D32_SFLOAT_S8_UINT)
+    {
+        static_assert((VK_FORMAT_S8_UINT + 1U) == VK_FORMAT_D16_UNORM_S8_UINT, "");
+        return 2U;
+    }
+    else if (vk_format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK)
+    {
+        static_assert((VK_FORMAT_D32_SFLOAT_S8_UINT + 1U) == VK_FORMAT_BC1_RGB_UNORM_BLOCK, "");
+        return 1U;
+    }
+    else
+    {
+        assert(0);
+        return -1;
+    }
+}
+
+static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspect_index)
+{
+    if (vk_format <= VK_FORMAT_UNDEFINED)
+    {
+        static_assert(0 == VK_FORMAT_UNDEFINED, "");
+        assert(0);
+        return VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+    }
+    else if (vk_format <= VK_FORMAT_E5B9G9R9_UFLOAT_PACK32)
+    {
+        static_assert((VK_FORMAT_UNDEFINED + 1U) == VK_FORMAT_R4G4_UNORM_PACK8, "");
+        assert(aspect_index < 1U);
+        return VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+    else if (vk_format <= VK_FORMAT_D32_SFLOAT)
+    {
+        static_assert((VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 + 1U) == VK_FORMAT_D16_UNORM, "");
+        assert(aspect_index < 1U);
+        return VK_IMAGE_ASPECT_DEPTH_BIT;
+    }
+    else if (vk_format <= VK_FORMAT_S8_UINT)
+    {
+        static_assert((VK_FORMAT_D32_SFLOAT + 1U) == VK_FORMAT_S8_UINT, "");
+        assert(aspect_index < 1U);
+        return VK_IMAGE_ASPECT_STENCIL_BIT;
+    }
+    else if (vk_format <= VK_FORMAT_D32_SFLOAT_S8_UINT)
+    {
+        static_assert((VK_FORMAT_S8_UINT + 1U) == VK_FORMAT_D16_UNORM_S8_UINT, "");
+        assert(aspect_index < 2U);
+        VkImageAspectFlagBits aspect_masks[2] = {VK_IMAGE_ASPECT_DEPTH_BIT, VK_IMAGE_ASPECT_STENCIL_BIT};
+        return aspect_masks[aspect_index];
+    }
+    else if (vk_format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK)
+    {
+        static_assert((VK_FORMAT_D32_SFLOAT_S8_UINT + 1U) == VK_FORMAT_BC1_RGB_UNORM_BLOCK, "");
+        assert(aspect_index < 1U);
+        return VK_IMAGE_ASPECT_COLOR_BIT;
+    }
+    else
+    {
+        assert(0);
+        return VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+    }
+}
+
+static inline bool is_format_rgba(VkFormat vk_format)
+{
+    return (vk_format >= VK_FORMAT_R4G4_UNORM_PACK8 && vk_format <= VK_FORMAT_E5B9G9R9_UFLOAT_PACK32);
+}
+
+static inline bool is_format_depth_stencil(VkFormat vk_format)
+{
+    return (vk_format >= VK_FORMAT_D16_UNORM && vk_format <= VK_FORMAT_D32_SFLOAT_S8_UINT);
+}
+
+static inline bool is_format_compressed(VkFormat vk_format)
+{
+    return (vk_format >= VK_FORMAT_BC1_RGB_UNORM_BLOCK && vk_format <= VK_FORMAT_ASTC_12x12_SRGB_BLOCK);
+}
+
+static inline uint32_t get_rgba_format_pixel_bytes(VkFormat vk_format)
+{
+    assert(is_format_rgba(vk_format));
+
+    static struct
+    {
+        uint32_t m_pixel_bytes;
+
+    } const vulkan_rgba_format_info_table[] = {
+        {1},  //VK_FORMAT_R4G4_UNORM_PACK8
+        {2},  //VK_FORMAT_R4G4B4A4_UNORM_PACK16
+        {2},  //VK_FORMAT_B4G4R4A4_UNORM_PACK16
+        {2},  //VK_FORMAT_R5G6B5_UNORM_PACK16
+        {2},  //VK_FORMAT_B5G6R5_UNORM_PACK16
+        {2},  //VK_FORMAT_R5G5B5A1_UNORM_PACK16
+        {2},  //VK_FORMAT_B5G5R5A1_UNORM_PACK16
+        {2},  //VK_FORMAT_A1R5G5B5_UNORM_PACK16
+        {1},  //VK_FORMAT_R8_UNORM
+        {1},  //VK_FORMAT_R8_SNORM
+        {1},  //VK_FORMAT_R8_USCALED
+        {1},  //VK_FORMAT_R8_SSCALED
+        {1},  //VK_FORMAT_R8_UINT
+        {1},  //VK_FORMAT_R8_SINT
+        {1},  //VK_FORMAT_R8_SRGB
+        {2},  //VK_FORMAT_R8G8_UNORM
+        {2},  //VK_FORMAT_R8G8_SNORM
+        {2},  //VK_FORMAT_R8G8_USCALED
+        {2},  //VK_FORMAT_R8G8_SSCALED
+        {2},  //VK_FORMAT_R8G8_UINT
+        {2},  //VK_FORMAT_R8G8_SINT
+        {2},  //VK_FORMAT_R8G8_SRGB
+        {3},  //VK_FORMAT_R8G8B8_UNORM
+        {3},  //VK_FORMAT_R8G8B8_SNORM
+        {3},  //VK_FORMAT_R8G8B8_USCALED
+        {3},  //VK_FORMAT_R8G8B8_SSCALED
+        {3},  //VK_FORMAT_R8G8B8_UINT
+        {3},  //VK_FORMAT_R8G8B8_SINT
+        {3},  //VK_FORMAT_R8G8B8_SRGB
+        {3},  //VK_FORMAT_B8G8R8_UNORM
+        {3},  //VK_FORMAT_B8G8R8_SNORM
+        {3},  //VK_FORMAT_B8G8R8_USCALED
+        {3},  //VK_FORMAT_B8G8R8_SSCALED
+        {3},  //VK_FORMAT_B8G8R8_UINT
+        {3},  //VK_FORMAT_B8G8R8_SINT
+        {3},  //VK_FORMAT_B8G8R8_SRGB
+        {4},  //VK_FORMAT_R8G8B8A8_UNORM
+        {4},  //VK_FORMAT_R8G8B8A8_SNORM
+        {4},  //VK_FORMAT_R8G8B8A8_USCALED
+        {4},  //VK_FORMAT_R8G8B8A8_SSCALED
+        {4},  //VK_FORMAT_R8G8B8A8_UINT
+        {4},  //VK_FORMAT_R8G8B8A8_SINT
+        {4},  //VK_FORMAT_R8G8B8A8_SRGB
+        {4},  //VK_FORMAT_B8G8R8A8_UNORM
+        {4},  //VK_FORMAT_B8G8R8A8_SNORM
+        {4},  //VK_FORMAT_B8G8R8A8_USCALED
+        {4},  //VK_FORMAT_B8G8R8A8_SSCALED
+        {4},  //VK_FORMAT_B8G8R8A8_UINT
+        {4},  //VK_FORMAT_B8G8R8A8_SINT
+        {4},  //VK_FORMAT_B8G8R8A8_SRGB
+        {4},  //VK_FORMAT_A8B8G8R8_UNORM_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_SNORM_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_USCALED_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_SSCALED_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_UINT_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_SINT_PACK32
+        {4},  //VK_FORMAT_A8B8G8R8_SRGB_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_UNORM_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_SNORM_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_USCALED_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_SSCALED_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_UINT_PACK32
+        {4},  //VK_FORMAT_A2R10G10B10_SINT_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_UNORM_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_SNORM_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_USCALED_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_SSCALED_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_UINT_PACK32
+        {4},  //VK_FORMAT_A2B10G10R10_SINT_PACK32
+        {2},  //VK_FORMAT_R16_UNORM
+        {2},  //VK_FORMAT_R16_SNORM
+        {2},  //VK_FORMAT_R16_USCALED
+        {2},  //VK_FORMAT_R16_SSCALED
+        {2},  //VK_FORMAT_R16_UINT
+        {2},  //VK_FORMAT_R16_SINT
+        {2},  //VK_FORMAT_R16_SFLOAT
+        {4},  //VK_FORMAT_R16G16_UNORM
+        {4},  //VK_FORMAT_R16G16_SNORM
+        {4},  //VK_FORMAT_R16G16_USCALED
+        {4},  //VK_FORMAT_R16G16_SSCALED
+        {4},  //VK_FORMAT_R16G16_UINT
+        {4},  //VK_FORMAT_R16G16_SINT
+        {4},  //VK_FORMAT_R16G16_SFLOAT
+        {6},  //VK_FORMAT_R16G16B16_UNORM
+        {6},  //VK_FORMAT_R16G16B16_SNORM
+        {6},  //VK_FORMAT_R16G16B16_USCALED
+        {6},  //VK_FORMAT_R16G16B16_SSCALED
+        {6},  //VK_FORMAT_R16G16B16_UINT
+        {6},  //VK_FORMAT_R16G16B16_SINT
+        {6},  //VK_FORMAT_R16G16B16_SFLOAT
+        {8},  //VK_FORMAT_R16G16B16A16_UNORM
+        {8},  //VK_FORMAT_R16G16B16A16_SNORM
+        {8},  //VK_FORMAT_R16G16B16A16_USCALED
+        {8},  //VK_FORMAT_R16G16B16A16_SSCALED
+        {8},  //VK_FORMAT_R16G16B16A16_UINT
+        {8},  //VK_FORMAT_R16G16B16A16_SINT
+        {8},  //VK_FORMAT_R16G16B16A16_SFLOAT
+        {4},  //VK_FORMAT_R32_UINT
+        {4},  //VK_FORMAT_R32_SINT
+        {4},  //VK_FORMAT_R32_SFLOAT
+        {8},  //VK_FORMAT_R32G32_UINT
+        {8},  //VK_FORMAT_R32G32_SINT
+        {8},  //VK_FORMAT_R32G32_SFLOAT
+        {12}, //VK_FORMAT_R32G32B32_UINT
+        {12}, //VK_FORMAT_R32G32B32_SINT
+        {12}, //VK_FORMAT_R32G32B32_SFLOAT
+        {16}, //VK_FORMAT_R32G32B32A32_UINT
+        {16}, //VK_FORMAT_R32G32B32A32_SINT
+        {16}, //VK_FORMAT_R32G32B32A32_SFLOAT
+        {8},  //VK_FORMAT_R64_UINT
+        {8},  //VK_FORMAT_R64_SINT
+        {8},  //VK_FORMAT_R64_SFLOAT
+        {16}, //VK_FORMAT_R64G64_UINT
+        {16}, //VK_FORMAT_R64G64_SINT
+        {16}, //VK_FORMAT_R64G64_SFLOAT
+        {24}, //VK_FORMAT_R64G64B64_UINT
+        {24}, //VK_FORMAT_R64G64B64_SINT
+        {24}, //VK_FORMAT_R64G64B64_SFLOAT
+        {32}, //VK_FORMAT_R64G64B64A64_UINT
+        {32}, //VK_FORMAT_R64G64B64A64_SINT
+        {32}, //VK_FORMAT_R64G64B64A64_SFLOAT
+        {4},  //VK_FORMAT_B10G11R11_UFLOAT_PACK32
+        {4}   //VK_FORMAT_E5B9G9R9_UFLOAT_PACK32
+    };
+
+    uint32_t format_info_index = (vk_format - VK_FORMAT_R4G4_UNORM_PACK8);
+    assert(format_info_index < (sizeof(vulkan_rgba_format_info_table) / sizeof(vulkan_rgba_format_info_table[0])));
+
+    return vulkan_rgba_format_info_table[format_info_index].m_pixel_bytes;
+}
+
+static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspect_index)
+{
+    assert(is_format_depth_stencil(vk_format));
+
+    static struct
+    {
+        uint32_t m_depth_bytes;
+        uint32_t m_stencil_bytes;
+    } const vulkan_depth_stencil_format_info_table[] = {
+        {2, 0}, //VK_FORMAT_D16_UNORM
+        {4, 0}, //VK_FORMAT_X8_D24_UNORM_PACK32
+        {4, 0}, //VK_FORMAT_D32_SFLOAT
+        {0, 1}, //VK_FORMAT_S8_UINT
+        {2, 2}, //VK_FORMAT_D16_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_D16_UNORM or VK_FORMAT_D16_UNORM_S8_UINT format is tightly packed with one VK_FORMAT_D16_UNORM value per texel.
+        {4, 4}, //VK_FORMAT_D24_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D24_UNORM_S8_UINT format is packed with one 32-bit word per texel with the D24 value in the LSBs of the word, and undefined values in the eight MSBs.
+        {4, 4}  //VK_FORMAT_D32_SFLOAT_S8_UINT        //data copied to or from the depth aspect of a VK_FORMAT_D32_SFLOAT or VK_FORMAT_D32_SFLOAT_S8_UINT format is tightly packed with one VK_FORMAT_D32_SFLOAT value per texel.
+    };
+
+    uint32_t format_info_index = (vk_format - VK_FORMAT_D16_UNORM);
+    assert(format_info_index < (sizeof(vulkan_depth_stencil_format_info_table) / sizeof(vulkan_depth_stencil_format_info_table[0])));
+
+    if (0U == vulkan_depth_stencil_format_info_table[format_info_index].m_stencil_bytes)
+    {
+        assert(aspect_index < 1);
+        return vulkan_depth_stencil_format_info_table[format_info_index].m_depth_bytes;
+    }
+    else if (0U != vulkan_depth_stencil_format_info_table[format_info_index].m_depth_bytes)
+    {
+        assert(aspect_index < 2);
+        uint32_t pixel_bytes[2] = {vulkan_depth_stencil_format_info_table[format_info_index].m_depth_bytes, vulkan_depth_stencil_format_info_table[format_info_index].m_stencil_bytes};
+        return pixel_bytes[aspect_index];
+    }
+    else
+    {
+        assert(aspect_index < 1);
+        return vulkan_depth_stencil_format_info_table[format_info_index].m_stencil_bytes;
+    }
+}
+
+static inline uint32_t get_compressed_format_block_width(VkFormat vk_format)
+{
+    assert(is_format_compressed(vk_format));
+
+    static struct
+    {
+        uint32_t compressedBlockWidth;
+        uint32_t compressedBlockHeight;
+        uint32_t compressedBlockDepth;
+        uint32_t compressedBlockSizeInBytes;
+    } const vulkan_compressed_format_info_table[] = {
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+    };
+    uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
+    assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
+
+    return vulkan_compressed_format_info_table[format_info_index].compressedBlockWidth;
+}
+
+static inline uint32_t get_compressed_format_block_height(VkFormat vk_format)
+{
+    assert(is_format_compressed(vk_format));
+
+    static struct
+    {
+        uint32_t compressedBlockWidth;
+        uint32_t compressedBlockHeight;
+        uint32_t compressedBlockDepth;
+        uint32_t compressedBlockSizeInBytes;
+    } const vulkan_compressed_format_info_table[] = {
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+    };
+    uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
+    assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
+
+    return vulkan_compressed_format_info_table[format_info_index].compressedBlockHeight;
+}
+
+static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format)
+{
+    assert(is_format_compressed(vk_format));
+
+    static struct
+    {
+        uint32_t compressedBlockWidth;
+        uint32_t compressedBlockHeight;
+        uint32_t compressedBlockDepth;
+        uint32_t compressedBlockSizeInBytes;
+    } const vulkan_compressed_format_info_table[] = {
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+    };
+    uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
+    assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
+
+    return vulkan_compressed_format_info_table[format_info_index].compressedBlockDepth;
+}
+
+static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format)
+{
+    assert(is_format_compressed(vk_format));
+
+    static struct
+    {
+        uint32_t compressedBlockWidth;
+        uint32_t compressedBlockHeight;
+        uint32_t compressedBlockDepth;
+        uint32_t compressedBlockSizeInBytes;
+    } const vulkan_compressed_format_info_table[] = {
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+    };
+    uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
+    assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
+
+    return vulkan_compressed_format_info_table[format_info_index].compressedBlockSizeInBytes;
+}

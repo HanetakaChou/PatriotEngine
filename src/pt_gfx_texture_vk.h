@@ -115,8 +115,6 @@ private:
 
     static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format);
 
-    static inline uint32_t calc_subresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
-
     // https://source.winehq.org/git/vkd3d.git/
     // libs/vkd3d/device.c
     // d3d12_device_GetCopyableFootprints
@@ -130,79 +128,6 @@ private:
         VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
         size_t base_offset,
         size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, struct VkBufferImageCopy *out_cmdcopy_dest);
-
-    struct vk_rgba_format_info_t
-    {
-        uint32_t pixel_bytes;
-    };
-    static struct vk_rgba_format_info_t const vk_rgba_format_info_table[(VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 - VK_FORMAT_R4G4_UNORM_PACK8) + 1];
-
-    struct vk_depth_stencil_format_info_t
-    {
-        uint32_t depth_bytes;
-        uint32_t stencil_bytes;
-    };
-    static struct vk_depth_stencil_format_info_t const vk_depth_stencil_format_info_table[(VK_FORMAT_D32_SFLOAT_S8_UINT - VK_FORMAT_D16_UNORM) + 1];
-    static_assert(VK_FORMAT_D16_UNORM == (VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 + 1), "VK_FORMAT_D16_UNORM == (VK_FORMAT_E5B9G9R9_UFLOAT_PACK32 + 1)");
-
-    struct vk_compressed_format_info_t
-    {
-        uint32_t compressed_block_width;
-        uint32_t compressed_block_height;
-        uint32_t compressed_block_depth;
-        uint32_t compressed_block_size_in_bytes;
-    };
-    static struct vk_compressed_format_info_t const vk_compressed_format_info_table[(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_BC1_RGB_UNORM_BLOCK) + 1];
-    static_assert(VK_FORMAT_BC1_RGB_UNORM_BLOCK == (VK_FORMAT_D32_SFLOAT_S8_UINT + 1), "VK_FORMAT_BC1_RGB_UNORM_BLOCK == (VK_FORMAT_D32_SFLOAT_S8_UINT + 1)");
-
-    struct vulkan_format_info_t
-    {
-        uint32_t _union_tag;
-
-        union
-        {
-            struct
-            {
-                uint32_t pixelBytes;
-            } rgba;
-            struct
-            {
-                uint32_t depthBytes;
-                uint32_t stencilBytes;
-            } depthstencil;
-            struct
-            {
-                uint32_t compressedBlockWidth;
-                uint32_t compressedBlockHeight;
-                uint32_t compressedBlockDepth;
-                uint32_t compressedBlockSizeInBytes;
-            } compressed;
-        };
-    };
-    static struct vulkan_format_info_t const vulkan_format_info_table[(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED) + 1];
-    static_assert(((VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED) + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0])), "(VK_FORMAT_ASTC_12x12_SRGB_BLOCK - VK_FORMAT_UNDEFINED + 1) == (sizeof(vulkan_format_info_table) / sizeof(vulkan_format_info_table[0]))");
-
-    static inline uint32_t get_format_aspect_count(VkFormat vk_format);
-
-    static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspectIndex);
-
-    static inline bool is_format_compressed(VkFormat vk_format);
-
-    static inline bool is_format_rgba(VkFormat vk_format);
-
-    static inline bool is_format_depth_stencil(VkFormat vk_format);
-
-    static inline uint32_t get_compressed_format_block_width(VkFormat vk_format);
-
-    static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
-
-    static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
-
-    static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
-
-    static inline uint32_t get_rgba_format_pixel_bytes(VkFormat vk_format);
-
-    static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, uint32_t aspectIndex);
 
 public:
     inline gfx_texture_vk() : gfx_texture_base(),
