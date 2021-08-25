@@ -2067,12 +2067,11 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 
     // bind - each view
     {
-        
         math_vec3 eye_position = {0.0f, 3.0f, 5.0f};
         math_vec3 eye_direction = {0.0f, -3.0f, -5.0f};
         math_vec3 up_direction = {0.0f, 1.0f, 0.0};
         math_simd_mat mat_v = math_mat_look_to_rh(math_load_vec3(&eye_position), math_load_vec3(&eye_direction), math_load_vec3(&up_direction));
-        
+
         math_simd_mat mat_p = math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f);
 
         math_alignas16_mat4x4 mat_vp;
