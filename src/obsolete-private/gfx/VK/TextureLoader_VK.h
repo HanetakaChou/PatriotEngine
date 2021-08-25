@@ -14,8 +14,8 @@ struct TextureLoader_SpecificHeader
     VkImageType imageType;
     VkFormat format;
     VkExtent3D extent;
-    uint32_t mipLevels;
-    uint32_t arrayLayers;
+    uint32_t mip_levels;
+    uint32_t array_layers;
 };
 
 struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct TextureLoader_NeutralHeader const *neutral_texture_header);

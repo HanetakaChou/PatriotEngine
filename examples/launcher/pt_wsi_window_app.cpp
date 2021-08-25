@@ -75,7 +75,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/lena_std_nvidia_texture_tools.dds");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/lena_std_rgba.pvr");
             my_textures.push_back(my_texture);
 
             if ((i > 100) && (!has_set))

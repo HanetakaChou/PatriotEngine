@@ -29,21 +29,21 @@ struct specific_header_vk_t
     VkImageType imageType;
     VkFormat format;
     VkExtent3D extent;
-    uint32_t mipLevels;
-    uint32_t arrayLayers;
+    uint32_t mip_levels;
+    uint32_t array_layers;
 };
-static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header);
-static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type);
-static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format);
+static inline struct specific_header_vk_t common_to_specific_header_translate(struct gfx_texture_neutral_header_t const *common_header);
+static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_neutral_type_t common_type);
+static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_neutral_format_t common_format);
 
 static inline size_t get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
     size_t base_offset,
-    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest);
+    size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest);
 
 static inline uint32_t calc_aspect_subresource_num_vk(uint32_t mip_levels, uint32_t array_layers);
-static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
+static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers);
 
 static inline uint32_t get_format_aspect_count(VkFormat vk_format);
 static inline uint32_t get_format_aspect_mask(VkFormat vk_format, uint32_t aspect_index);
@@ -57,7 +57,7 @@ static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
 
-bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct common_header_t const *neutral_header)
+bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct gfx_texture_neutral_header_t const *neutral_header)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
@@ -83,8 +83,8 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
         create_info.imageType = specific_header_vk.imageType;
         create_info.format = specific_header_vk.format;
         create_info.extent = specific_header_vk.extent;
-        create_info.mipLevels = specific_header_vk.mipLevels;
-        create_info.arrayLayers = specific_header_vk.arrayLayers;
+        create_info.mipLevels = specific_header_vk.mip_levels;
+        create_info.arrayLayers = specific_header_vk.array_layers;
         create_info.samples = VK_SAMPLE_COUNT_1_BIT;
         create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
         create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
@@ -144,9 +144,9 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
         image_view_create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
         image_view_create_info.subresourceRange.aspectMask = aspect_mask;
         image_view_create_info.subresourceRange.baseMipLevel = 0U;
-        image_view_create_info.subresourceRange.levelCount = specific_header_vk.mipLevels;
+        image_view_create_info.subresourceRange.levelCount = specific_header_vk.mip_levels;
         image_view_create_info.subresourceRange.baseArrayLayer = 0U;
-        image_view_create_info.subresourceRange.layerCount = specific_header_vk.arrayLayers;
+        image_view_create_info.subresourceRange.layerCount = specific_header_vk.array_layers;
 
         PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
         assert(VK_SUCCESS == res_create_image_view);
@@ -155,27 +155,27 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
     return true;
 }
 
-bool gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_callback(struct common_header_t const *neutral_header, void **memcpy_dest, void **cmdcopy_dest)
+bool gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, void **memcpy_dest, void **cmdcopy_dest)
 {
     struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(neutral_header);
 
-    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.arrayLayers, specific_header_vk.mipLevels);
+    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.array_layers, specific_header_vk.mip_levels);
 
-    (*memcpy_dest) = static_cast<struct load_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct load_memcpy_dest_t) * num_subresource, alignof(struct load_memcpy_dest_t)));
+    (*memcpy_dest) = static_cast<struct gfx_texture_neutral_memcpy_dest_t *>(mcrt_aligned_malloc(sizeof(struct gfx_texture_neutral_memcpy_dest_t) * num_subresource, alignof(struct gfx_texture_neutral_memcpy_dest_t)));
     (*cmdcopy_dest) = static_cast<VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(VkBufferImageCopy) * num_subresource, alignof(VkBufferImageCopy)));
 
     return true;
 }
 
-size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, struct common_header_t const *neutral_header, void *memcpy_dest_void, void *cmdcopy_dest_void, uint64_t base_offset)
+size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, struct gfx_texture_neutral_header_t const *neutral_header, void *memcpy_dest_void, void *cmdcopy_dest_void, uint64_t base_offset)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(memcpy_dest_void);
+    struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest = static_cast<struct gfx_texture_neutral_memcpy_dest_t *>(memcpy_dest_void);
     VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(cmdcopy_dest_void);
     
     struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(neutral_header);
 
-    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.arrayLayers, specific_header_vk.mipLevels);
+    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.array_layers, specific_header_vk.mip_levels);
 
     size_t total_size = get_copyable_footprints(&specific_header_vk, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, num_subresource, memcpy_dest, cmdcopy_dest);
     return total_size;
@@ -187,15 +187,15 @@ void gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_fa
     mcrt_aligned_free(cmdcopy_dest);
 }
 
-bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct common_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest_void, void *cmdcopy_dest_void, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
+bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct gfx_texture_neutral_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest_void, void *cmdcopy_dest_void, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct load_memcpy_dest_t *memcpy_dest = static_cast<struct load_memcpy_dest_t *>(memcpy_dest_void);
+    struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest = static_cast<struct gfx_texture_neutral_memcpy_dest_t *>(memcpy_dest_void);
     VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(cmdcopy_dest_void);
 
     struct specific_header_vk_t specific_header_vk = common_to_specific_header_translate(neutral_header);
 
-    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.arrayLayers, specific_header_vk.mipLevels);
+    uint32_t num_subresource = get_format_aspect_count(specific_header_vk.format) * calc_aspect_subresource_num_vk(specific_header_vk.array_layers, specific_header_vk.mip_levels);
 
     // load_data_from_input_stream
     if (!load_data_from_input_stream(neutral_header, neutral_data_offset, gfx_connection->transfer_src_buffer_pointer(), num_subresource, memcpy_dest, calc_subresource_index_vk, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
@@ -214,9 +214,9 @@ bool gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_su
         uint32_t aspect_count = get_format_aspect_count(specific_header_vk.format);
         for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
         {
-            VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(specific_header_vk.format, aspect_index), 0, specific_header_vk.mipLevels, 0, specific_header_vk.arrayLayers};
-            uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(specific_header_vk.arrayLayers, specific_header_vk.mipLevels);
-            uint32_t aspect_subresource_index = calc_subresource_index_vk(0U, 0U, aspect_index, specific_header_vk.mipLevels, specific_header_vk.arrayLayers);
+            VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(specific_header_vk.format, aspect_index), 0, specific_header_vk.mip_levels, 0, specific_header_vk.array_layers};
+            uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(specific_header_vk.array_layers, specific_header_vk.mip_levels);
+            uint32_t aspect_subresource_index = calc_subresource_index_vk(0U, 0U, aspect_index, specific_header_vk.mip_levels, specific_header_vk.array_layers);
             gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, cmdcopy_dest + aspect_subresource_index);
         }
     }
@@ -265,35 +265,35 @@ inline void gfx_texture_vk::unified_destory(class gfx_connection_vk *gfx_connect
 
 
 // Format
-static inline struct specific_header_vk_t common_to_specific_header_translate(struct common_header_t const *common_header)
+static inline struct specific_header_vk_t common_to_specific_header_translate(struct gfx_texture_neutral_header_t const *common_header)
 {
     struct specific_header_vk_t specific_header_vk;
 
-    specific_header_vk.isCubeCompatible = common_header->isCubeMap;
+    specific_header_vk.isCubeCompatible = common_header->is_cube_map;
     specific_header_vk.imageType = common_to_vulkan_type_translate(common_header->type);
     specific_header_vk.format = common_to_vulkan_format_translate(common_header->format);
     specific_header_vk.extent.width = common_header->width;
     specific_header_vk.extent.height = common_header->height;
     specific_header_vk.extent.depth = common_header->depth;
-    specific_header_vk.mipLevels = common_header->mipLevels;
-    specific_header_vk.arrayLayers = common_header->arrayLayers;
+    specific_header_vk.mip_levels = common_header->mip_levels;
+    specific_header_vk.array_layers = common_header->array_layers;
 
     return specific_header_vk;
 }
 
-static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_common_type_t common_type)
+static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_neutral_type_t common_type)
 {
     static enum VkImageType const common_to_vulkan_type_map[] = {
         VK_IMAGE_TYPE_1D,
         VK_IMAGE_TYPE_2D,
         VK_IMAGE_TYPE_3D};
-    static_assert(PT_GFX_TEXTURE_COMMON_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
+    static_assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_RANGE_SIZE == (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])), "");
 
     assert(common_type < (sizeof(common_to_vulkan_type_map) / sizeof(common_to_vulkan_type_map[0])));
     return common_to_vulkan_type_map[common_type];
 }
 
-static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_common_format_t common_format)
+static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_neutral_format_t common_format)
 {
     static enum VkFormat const common_to_vulkan_format_map[] = {
         VK_FORMAT_R4G4_UNORM_PACK8,
@@ -480,7 +480,7 @@ static inline enum VkFormat common_to_vulkan_format_translate(enum gfx_texture_c
         VK_FORMAT_ASTC_12x10_SRGB_BLOCK,
         VK_FORMAT_ASTC_12x12_UNORM_BLOCK,
         VK_FORMAT_ASTC_12x12_SRGB_BLOCK};
-    static_assert(PT_GFX_TEXTURE_COMMON_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
+    static_assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_RANGE_SIZE == (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])), "");
 
     assert(common_format < (sizeof(common_to_vulkan_format_map) / sizeof(common_to_vulkan_format_map[0])));
     return common_to_vulkan_format_map[common_format];
@@ -498,7 +498,7 @@ static inline size_t get_copyable_footprints(
     struct specific_header_vk_t const *specific_header_vk,
     VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment, VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment,
     size_t base_offset,
-    size_t num_subresources, struct load_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest)
+    size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t *out_memcpy_dest, VkBufferImageCopy *out_cmdcopy_dest)
 {
     // Context::texSubImage2D libANGLE/Context.cpp
     // Texture::setSubImage libANGLE/Texture.cpp
@@ -510,23 +510,23 @@ static inline size_t get_copyable_footprints(
 
     uint32_t aspectCount = get_format_aspect_count(specific_header_vk->format);
 
-    size_t stagingOffset = base_offset;
+    size_t staging_offset = base_offset;
     size_t TotalBytes = 0;
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
-        for (uint32_t arrayLayer = 0; arrayLayer < specific_header_vk->arrayLayers; ++arrayLayer)
+        for (uint32_t arrayLayer = 0; arrayLayer < specific_header_vk->array_layers; ++arrayLayer)
         {
             size_t w = specific_header_vk->extent.width;
             size_t h = specific_header_vk->extent.height;
             size_t d = specific_header_vk->extent.depth;
-            for (uint32_t mipLevel = 0; mipLevel < specific_header_vk->mipLevels; ++mipLevel)
+            for (uint32_t mipLevel = 0; mipLevel < specific_header_vk->mip_levels; ++mipLevel)
             {
-                size_t outputRowPitch;
-                size_t outputRowSize;
-                size_t outputNumRows;
-                size_t outputSlicePitch;
-                size_t outputNumSlices;
+                size_t output_row_pitch;
+                size_t output_row_size;
+                size_t output_num_rows;
+                size_t output_slice_pitch;
+                size_t output_num_slices;
 
                 uint32_t bufferRowLength;
                 uint32_t bufferImageHeight;
@@ -537,12 +537,12 @@ static inline size_t get_copyable_footprints(
                 {
                     assert(1 == get_compressed_format_block_depth(specific_header_vk->format));
 
-                    outputRowSize = ((w + get_compressed_format_block_width(specific_header_vk->format) - 1) / get_compressed_format_block_width(specific_header_vk->format)) * get_compressed_format_block_size_in_bytes(specific_header_vk->format);
-                    outputNumRows = (h + get_compressed_format_block_height(specific_header_vk->format) - 1) / get_compressed_format_block_height(specific_header_vk->format);
-                    outputNumSlices = d;
+                    output_row_size = ((w + get_compressed_format_block_width(specific_header_vk->format) - 1) / get_compressed_format_block_width(specific_header_vk->format)) * get_compressed_format_block_size_in_bytes(specific_header_vk->format);
+                    output_num_rows = (h + get_compressed_format_block_height(specific_header_vk->format) - 1) / get_compressed_format_block_height(specific_header_vk->format);
+                    output_num_slices = d;
 
-                    outputRowPitch = mcrt_intrin_round_up(outputRowSize, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
                     // bufferOffset must be a multiple of 4
                     // bufferRowLength must be 0, or greater than or equal to the width member of imageExtent
@@ -569,8 +569,8 @@ static inline size_t get_copyable_footprints(
                     //
                     // ```
 
-                    bufferRowLength = (outputRowPitch / get_compressed_format_block_size_in_bytes(specific_header_vk->format)) * get_compressed_format_block_width(specific_header_vk->format);
-                    bufferImageHeight = outputNumRows * get_compressed_format_block_height(specific_header_vk->format);
+                    bufferRowLength = (output_row_pitch / get_compressed_format_block_size_in_bytes(specific_header_vk->format)) * get_compressed_format_block_width(specific_header_vk->format);
+                    bufferImageHeight = output_num_rows * get_compressed_format_block_height(specific_header_vk->format);
 
                     //bufferRowLength = mcrt_intrin_round_up(specific_header_vk->extent.width, get_compressed_format_block_width(specific_header_vk->format));
                     //bufferImageHeight = mcrt_intrin_round_up(specific_header_vk->extent.height, get_compressed_format_block_height(specific_header_vk->format));
@@ -580,49 +580,49 @@ static inline size_t get_copyable_footprints(
                 else if (is_format_rgba(specific_header_vk->format))
                 {
 
-                    outputRowSize = get_rgba_format_pixel_bytes(specific_header_vk->format) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = get_rgba_format_pixel_bytes(specific_header_vk->format) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = mcrt_intrin_round_up(outputRowSize, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    bufferRowLength = outputRowPitch / get_rgba_format_pixel_bytes(specific_header_vk->format);
-                    bufferImageHeight = outputNumRows;
+                    bufferRowLength = output_row_pitch / get_rgba_format_pixel_bytes(specific_header_vk->format);
+                    bufferImageHeight = output_num_rows;
 
                     texel_block_size = get_rgba_format_pixel_bytes(specific_header_vk->format);
                 }
                 else
                 {
                     assert(is_format_depth_stencil(specific_header_vk->format));
-                    outputRowSize = get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = mcrt_intrin_round_up(outputRowSize, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    bufferRowLength = outputRowPitch / get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex);
-                    bufferImageHeight = outputNumRows;
+                    bufferRowLength = output_row_pitch / get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex);
+                    bufferImageHeight = output_num_rows;
 
                     texel_block_size = get_depth_stencil_format_pixel_bytes(specific_header_vk->format, aspectIndex);
                 }
 
-                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(stagingOffset, size_t(4U)), texel_block_size), physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
-                TotalBytes += (stagingOffset_new - stagingOffset);
-                stagingOffset = stagingOffset_new;
+                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(staging_offset, size_t(4U)), texel_block_size), physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                TotalBytes += (stagingOffset_new - staging_offset);
+                staging_offset = stagingOffset_new;
 
-                uint32_t DstSubresource = calc_subresource_index_vk(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mipLevels, specific_header_vk->arrayLayers);
+                uint32_t DstSubresource = calc_subresource_index_vk(mipLevel, arrayLayer, aspectIndex, specific_header_vk->mip_levels, specific_header_vk->array_layers);
                 assert(DstSubresource < num_subresources);
 
-                out_memcpy_dest[DstSubresource].stagingOffset = stagingOffset;
-                out_memcpy_dest[DstSubresource].outputRowPitch = outputRowPitch;
-                out_memcpy_dest[DstSubresource].outputRowSize = outputRowSize;
-                out_memcpy_dest[DstSubresource].outputNumRows = outputNumRows;
-                out_memcpy_dest[DstSubresource].outputSlicePitch = outputSlicePitch;
-                out_memcpy_dest[DstSubresource].outputNumSlices = outputNumSlices;
+                out_memcpy_dest[DstSubresource].staging_offset = staging_offset;
+                out_memcpy_dest[DstSubresource].output_row_pitch = output_row_pitch;
+                out_memcpy_dest[DstSubresource].output_row_size = output_row_size;
+                out_memcpy_dest[DstSubresource].output_num_rows = output_num_rows;
+                out_memcpy_dest[DstSubresource].output_slice_pitch = output_slice_pitch;
+                out_memcpy_dest[DstSubresource].output_num_slices = output_num_slices;
 
-                out_cmdcopy_dest[DstSubresource].bufferOffset = stagingOffset;
+                out_cmdcopy_dest[DstSubresource].bufferOffset = staging_offset;
                 out_cmdcopy_dest[DstSubresource].bufferRowLength = bufferRowLength;
                 out_cmdcopy_dest[DstSubresource].bufferImageHeight = bufferImageHeight;
 
@@ -638,10 +638,10 @@ static inline size_t get_copyable_footprints(
                 out_cmdcopy_dest[DstSubresource].imageExtent.height = h;
                 out_cmdcopy_dest[DstSubresource].imageExtent.depth = d;
 
-                size_t surfaceSize = (outputSlicePitch * outputNumSlices);
-                stagingOffset += surfaceSize;
+                size_t surfaceSize = (output_slice_pitch * output_num_slices);
+                staging_offset += surfaceSize;
                 TotalBytes += surfaceSize;
-                assert((base_offset + TotalBytes) == stagingOffset);
+                assert((base_offset + TotalBytes) == staging_offset);
 
                 w = w >> 1;
                 h = h >> 1;
@@ -670,9 +670,9 @@ static inline uint32_t calc_aspect_subresource_num_vk(uint32_t mip_levels, uint3
     return mip_levels * array_layers;
 }
 
-static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+static inline uint32_t calc_subresource_index_vk(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers)
 {
-    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
+    return mipLevel + arrayLayer * mip_levels + aspectIndex * mip_levels * array_layers;
 }
 
 //--------------------------------------------------------------------------------------

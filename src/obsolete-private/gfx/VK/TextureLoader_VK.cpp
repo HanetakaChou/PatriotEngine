@@ -2,9 +2,9 @@
 
 #include <assert.h>
 
-uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers)
 {
-    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
+    return mipLevel + arrayLayer * mip_levels + aspectIndex * mip_levels * array_layers;
 }
 
 static inline enum VkImageType _GetVulkanType(uint32_t neutraltype);
@@ -15,14 +15,14 @@ struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct Textur
 {
     struct TextureLoader_SpecificHeader specific_texture_header;
 
-    specific_texture_header.isCubeCompatible = neutral_texture_header->isCubeMap;
+    specific_texture_header.isCubeCompatible = neutral_texture_header->is_cube_map;
     specific_texture_header.imageType = _GetVulkanType(neutral_texture_header->type);
     specific_texture_header.format = _GetVulkanFormat(neutral_texture_header->format);
     specific_texture_header.extent.width = neutral_texture_header->width;
     specific_texture_header.extent.height = neutral_texture_header->height;
     specific_texture_header.extent.depth = neutral_texture_header->depth;
-    specific_texture_header.mipLevels = neutral_texture_header->mipLevels;
-    specific_texture_header.arrayLayers = neutral_texture_header->arrayLayers;
+    specific_texture_header.mip_levels = neutral_texture_header->mip_levels;
+    specific_texture_header.array_layers = neutral_texture_header->array_layers;
 
     return specific_texture_header;
 }
@@ -71,23 +71,23 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
 
     uint32_t aspectCount = TextureLoader_GetFormatAspectCount(vk_texture_header->format);
 
-    size_t stagingOffset = 0;
+    size_t staging_offset = 0;
     size_t TotalBytes = 0;
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
-        for (uint32_t arrayLayer = 0; arrayLayer < vk_texture_header->arrayLayers; ++arrayLayer)
+        for (uint32_t arrayLayer = 0; arrayLayer < vk_texture_header->array_layers; ++arrayLayer)
         {
             size_t w = vk_texture_header->extent.width;
             size_t h = vk_texture_header->extent.height;
             size_t d = vk_texture_header->extent.depth;
-            for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mipLevels; ++mipLevel)
+            for (uint32_t mipLevel = 0; mipLevel < vk_texture_header->mip_levels; ++mipLevel)
             {
-                size_t outputRowPitch;
-                size_t outputRowSize;
-                size_t outputNumRows;
-                size_t outputSlicePitch;
-                size_t outputNumSlices;
+                size_t output_row_pitch;
+                size_t output_row_size;
+                size_t output_num_rows;
+                size_t output_slice_pitch;
+                size_t output_num_slices;
 
                 uint32_t bufferRowLength;
                 uint32_t bufferImageHeight;
@@ -98,12 +98,12 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 {
                     assert(1 == _GetCompressedFormatBlockDepth(vk_texture_header->format));
 
-                    outputRowSize = ((w + _GetCompressedFormatBlockWidth(vk_texture_header->format) - 1) / _GetCompressedFormatBlockWidth(vk_texture_header->format)) * _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format);
-                    outputNumRows = (h + _GetCompressedFormatBlockHeight(vk_texture_header->format) - 1) / _GetCompressedFormatBlockHeight(vk_texture_header->format);
-                    outputNumSlices = d;
+                    output_row_size = ((w + _GetCompressedFormatBlockWidth(vk_texture_header->format) - 1) / _GetCompressedFormatBlockWidth(vk_texture_header->format)) * _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format);
+                    output_num_rows = (h + _GetCompressedFormatBlockHeight(vk_texture_header->format) - 1) / _GetCompressedFormatBlockHeight(vk_texture_header->format);
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
                     // bufferOffset must be a multiple of 4
                     // bufferRowLength must be 0, or greater than or equal to the width member of imageExtent
@@ -130,56 +130,56 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                     //
                     // ```
 
-                    bufferRowLength = (outputRowPitch / _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format)) * _GetCompressedFormatBlockWidth(vk_texture_header->format);
-                    bufferImageHeight = outputNumRows * _GetCompressedFormatBlockHeight(vk_texture_header->format);
+                    bufferRowLength = (output_row_pitch / _GetCompressedFormatBlockSizeInBytes(vk_texture_header->format)) * _GetCompressedFormatBlockWidth(vk_texture_header->format);
+                    bufferImageHeight = output_num_rows * _GetCompressedFormatBlockHeight(vk_texture_header->format);
 
                     //bufferRowLength = roundUp(vk_texture_header->extent.width, _GetCompressedFormatBlockWidth(vk_texture_header->format));
                     //bufferImageHeight = roundUp(vk_texture_header->extent.height, _GetCompressedFormatBlockHeight(vk_texture_header->format));
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
                 else if (_IsFormatRGBA(vk_texture_header->format))
                 {
 
-                    outputRowSize = _GetRGBAFormatPixelBytes(vk_texture_header->format) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = _GetRGBAFormatPixelBytes(vk_texture_header->format) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    bufferRowLength = outputRowPitch / _GetRGBAFormatPixelBytes(vk_texture_header->format);
-                    bufferImageHeight = outputNumRows;
+                    bufferRowLength = output_row_pitch / _GetRGBAFormatPixelBytes(vk_texture_header->format);
+                    bufferImageHeight = output_num_rows;
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
                 else
                 {
                     assert(_IsFormatDepthStencil(vk_texture_header->format));
-                    outputRowSize = _GetDepthStencilFormatPixelBytes(vk_texture_header->format, aspectIndex) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = _GetDepthStencilFormatPixelBytes(vk_texture_header->format, aspectIndex) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    bufferRowLength = outputRowPitch / _GetDepthStencilFormatPixelBytes(vk_texture_header->format, aspectIndex);
-                    bufferImageHeight = outputNumRows;
+                    bufferRowLength = output_row_pitch / _GetDepthStencilFormatPixelBytes(vk_texture_header->format, aspectIndex);
+                    bufferImageHeight = output_num_rows;
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
 
-                uint32_t DstSubresource = TextureLoader_CalcSubresource(mipLevel, arrayLayer, aspectIndex, vk_texture_header->mipLevels, vk_texture_header->arrayLayers);
+                uint32_t DstSubresource = TextureLoader_CalcSubresource(mipLevel, arrayLayer, aspectIndex, vk_texture_header->mip_levels, vk_texture_header->array_layers);
                 assert(DstSubresource < NumSubresources);
 
-                pDest[DstSubresource].stagingOffset = stagingOffset;
-                pDest[DstSubresource].outputRowPitch = outputRowPitch;
-                pDest[DstSubresource].outputRowSize = outputRowSize;
-                pDest[DstSubresource].outputNumRows = outputNumRows;
-                pDest[DstSubresource].outputSlicePitch = outputSlicePitch;
-                pDest[DstSubresource].outputNumSlices = outputNumSlices;
+                pDest[DstSubresource].staging_offset = staging_offset;
+                pDest[DstSubresource].output_row_pitch = output_row_pitch;
+                pDest[DstSubresource].output_row_size = output_row_size;
+                pDest[DstSubresource].output_num_rows = output_num_rows;
+                pDest[DstSubresource].output_slice_pitch = output_slice_pitch;
+                pDest[DstSubresource].output_num_slices = output_num_slices;
 
-                pRegions[DstSubresource].bufferOffset = stagingOffset;
+                pRegions[DstSubresource].bufferOffset = staging_offset;
                 pRegions[DstSubresource].bufferRowLength = bufferRowLength;
                 pRegions[DstSubresource].bufferImageHeight = bufferImageHeight;
 
@@ -195,7 +195,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 pRegions[DstSubresource].imageExtent.height = h;
                 pRegions[DstSubresource].imageExtent.depth = d;
 
-                stagingOffset += allocationSize;
+                staging_offset += allocationSize;
                 TotalBytes += allocationSize;
 
                 w = w >> 1;

@@ -255,7 +255,7 @@ static inline bool IsDepthStencil(uint32_t ddsformat);
 
 struct TextureLoader_DDSHeader
 {
-    bool isCubeMap;
+    bool is_cube_map;
     uint32_t resDim;
     uint32_t format;
     uint32_t width;
@@ -319,7 +319,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
 
     (*texture_data_offset) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
 
-    texture_header->isCubeMap = false;
+    texture_header->is_cube_map = false;
     texture_header->resDim = DDS_DIMENSION_TEXTURE2D;
     texture_header->format = DDS_DXGI_FORMAT_UNKNOWN;
     texture_header->width = header->dwWidth;
@@ -372,7 +372,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
             if (d3d10ext->miscFlag & DDS_RESOURCE_MISC_TEXTURECUBE)
             {
                 texture_header->arraySize *= 6;
-                texture_header->isCubeMap = true;
+                texture_header->is_cube_map = true;
             }
             texture_header->depth = 1;
         }
@@ -412,7 +412,7 @@ static inline bool LoadTextureHeaderFromStream(void const *stream, ptrdiff_t (*s
                 }
 
                 texture_header->arraySize = 6;
-                texture_header->isCubeMap = true;
+                texture_header->is_cube_map = true;
             }
         }
         else
@@ -449,9 +449,9 @@ bool DDSTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
         neutral_texture_header->width = dds_texture_header.width;
         neutral_texture_header->height = dds_texture_header.height;
         neutral_texture_header->depth = dds_texture_header.depth;
-        neutral_texture_header->mipLevels = dds_texture_header.mipCount;
-        neutral_texture_header->arrayLayers = dds_texture_header.arraySize;
-        neutral_texture_header->isCubeMap = dds_texture_header.isCubeMap;
+        neutral_texture_header->mip_levels = dds_texture_header.mipCount;
+        neutral_texture_header->array_layers = dds_texture_header.arraySize;
+        neutral_texture_header->is_cube_map = dds_texture_header.is_cube_map;
 
         (*neutral_header_offset) = dds_texture_data_offset;
 
@@ -477,14 +477,14 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
     }
 
     assert(
-        texture_header.isCubeMap == neutral_texture_header_validate->isCubeMap &&
+        texture_header.is_cube_map == neutral_texture_header_validate->is_cube_map &&
         _GetNeutralType(texture_header.resDim) == neutral_texture_header_validate->type &&
         _GetNeutralFormat(texture_header.format) == neutral_texture_header_validate->format &&
         texture_header.width == neutral_texture_header_validate->width &&
         texture_header.height == neutral_texture_header_validate->height &&
         texture_header.depth == neutral_texture_header_validate->depth &&
-        texture_header.mipCount == neutral_texture_header_validate->mipLevels &&
-        texture_header.arraySize == neutral_texture_header_validate->arrayLayers //
+        texture_header.mipCount == neutral_texture_header_validate->mip_levels &&
+        texture_header.arraySize == neutral_texture_header_validate->array_layers //
     );
     assert(texture_data_offset == (*neutral_header_offset_validate));
 
@@ -510,7 +510,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
         break;
 
     case DDS_DIMENSION_TEXTURE2D:
-        if (!(texture_header.isCubeMap))
+        if (!(texture_header.is_cube_map))
         {
             if ((texture_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
                 (texture_header.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
@@ -608,31 +608,31 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                 uint32_t dstSubresource = TextureLoader_CalcSubresource(mipSlice, arraySlice, planeSlice, texture_header.mipCount, texture_header.arraySize);
                 assert(dstSubresource < NumSubresources);
 
-                assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
-                assert(inputNumRows == pDest[dstSubresource].outputNumRows);
-                assert(inputRowSize == pDest[dstSubresource].outputRowSize);
+                assert(inputNumSlices == pDest[dstSubresource].output_num_slices);
+                assert(inputNumRows == pDest[dstSubresource].output_num_rows);
+                assert(inputRowSize == pDest[dstSubresource].output_row_size);
 
-                if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
+                if (inputSliceSize == pDest[dstSubresource].output_slice_pitch && inputRowSize == pDest[dstSubresource].output_row_pitch)
                 {
                     int64_t offset_cur;
                     assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                    ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
                     if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                     {
                         return false;
                     }
                 }
-                else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
+                else if (inputRowSize == pDest[dstSubresource].output_row_pitch)
                 {
-                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+                    assert(inputSliceSize <= pDest[dstSubresource].output_slice_pitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
                         int64_t offset_cur;
                         assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].staging_offset + pDest[dstSubresource].output_slice_pitch * z), inputSliceSize);
                         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                         {
                             return false;
@@ -641,8 +641,8 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                 }
                 else
                 {
-                    assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
-                    assert(inputRowSize <= pDest[dstSubresource].outputRowPitch);
+                    assert(inputSliceSize <= pDest[dstSubresource].output_slice_pitch);
+                    assert(inputRowSize <= pDest[dstSubresource].output_row_pitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
@@ -651,7 +651,7 @@ bool DDSTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                             int64_t offset_cur;
                             assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].staging_offset + pDest[dstSubresource].output_slice_pitch * z + pDest[dstSubresource].output_row_pitch * y), inputRowSize);
                             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                             {
                                 return false;

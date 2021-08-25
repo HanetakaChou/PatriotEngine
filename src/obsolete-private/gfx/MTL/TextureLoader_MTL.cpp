@@ -3,9 +3,9 @@
 //#include <TargetConditionals.h>
 //__is_target_os
 
-uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers)
+uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers)
 {
-    return mipLevel + arrayLayer * mipLevels + aspectIndex * mipLevels * arrayLayers;
+    return mipLevel + arrayLayer * mip_levels + aspectIndex * mip_levels * array_layers;
 }
 
 static inline MTLTextureType _GetMetalType(bool isCubeCompatible, uint32_t neutraltype, NSUInteger arrayLength);
@@ -16,14 +16,14 @@ struct TextureLoader_SpecificHeader TextureLoader_ToSpecificHeader(struct Textur
 {
     struct TextureLoader_SpecificHeader specific_texture_header;
 
-    specific_texture_header.textureType = _GetMetalType(neutral_texture_header->isCubeMap, neutral_texture_header->type, neutral_texture_header->arrayLayers);
+    specific_texture_header.textureType = _GetMetalType(neutral_texture_header->is_cube_map, neutral_texture_header->type, neutral_texture_header->array_layers);
     specific_texture_header.pixelFormat = _GetMetalFormat(neutral_texture_header->format);
     specific_texture_header.width = neutral_texture_header->width;
     specific_texture_header.height = neutral_texture_header->height;
     specific_texture_header.depth = neutral_texture_header->depth;
-    specific_texture_header.mipmapLevelCount = neutral_texture_header->mipLevels;
-    assert((!neutral_texture_header->isCubeMap) || ((neutral_texture_header->type == TEXTURE_LOADER_TYPE_2D) && ((neutral_texture_header->arrayLayers % 6) == 0)));
-    specific_texture_header.arrayLength = (!neutral_texture_header->isCubeMap) ? neutral_texture_header->arrayLayers : (neutral_texture_header->arrayLayers / 6);
+    specific_texture_header.mipmapLevelCount = neutral_texture_header->mip_levels;
+    assert((!neutral_texture_header->is_cube_map) || ((neutral_texture_header->type == TEXTURE_LOADER_TYPE_2D) && ((neutral_texture_header->array_layers % 6) == 0)));
+    specific_texture_header.arrayLength = (!neutral_texture_header->is_cube_map) ? neutral_texture_header->array_layers : (neutral_texture_header->array_layers / 6);
 
     return specific_texture_header;
 }
@@ -94,7 +94,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
     uint32_t sliceCount = _GetSliceCount(mtl_texture_header->textureType, mtl_texture_header->arrayLength);
 
     size_t TotalBytes = 0;
-    size_t stagingOffset = 0;
+    size_t staging_offset = 0;
 
     for (uint32_t aspectIndex = 0; aspectIndex < aspectCount; ++aspectIndex)
     {
@@ -105,11 +105,11 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
             size_t d = mtl_texture_header->depth;
             for (uint32_t mipLevel = 0; mipLevel < mtl_texture_header->mipmapLevelCount; ++mipLevel)
             {
-                size_t outputRowPitch;
-                size_t outputRowSize;
-                size_t outputNumRows;
-                size_t outputSlicePitch;
-                size_t outputNumSlices;
+                size_t output_row_pitch;
+                size_t output_row_size;
+                size_t output_num_rows;
+                size_t output_slice_pitch;
+                size_t output_num_slices;
 
                 size_t allocationSize;
                 if (_IsFormatCompressed(mtl_texture_header->pixelFormat))
@@ -124,53 +124,53 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
 
                     assert(1 == _GetCompressedFormatBlockDepth(mtl_texture_header->pixelFormat));
 
-                    outputRowSize = ((w + _GetCompressedFormatBlockWidth(mtl_texture_header->pixelFormat) - 1) / _GetCompressedFormatBlockWidth(mtl_texture_header->pixelFormat)) * _GetCompressedFormatBlockSizeInBytes(mtl_texture_header->pixelFormat);
-                    outputNumRows = (h + _GetCompressedFormatBlockHeight(mtl_texture_header->pixelFormat) - 1) / _GetCompressedFormatBlockHeight(mtl_texture_header->pixelFormat);
-                    outputNumSlices = d;
+                    output_row_size = ((w + _GetCompressedFormatBlockWidth(mtl_texture_header->pixelFormat) - 1) / _GetCompressedFormatBlockWidth(mtl_texture_header->pixelFormat)) * _GetCompressedFormatBlockSizeInBytes(mtl_texture_header->pixelFormat);
+                    output_num_rows = (h + _GetCompressedFormatBlockHeight(mtl_texture_header->pixelFormat) - 1) / _GetCompressedFormatBlockHeight(mtl_texture_header->pixelFormat);
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
                 else if (_IsFormatRGBA(mtl_texture_header->pixelFormat))
                 {
 
-                    outputRowSize = _GetRGBAFormatPixelBytes(mtl_texture_header->pixelFormat) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = _GetRGBAFormatPixelBytes(mtl_texture_header->pixelFormat) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
                 else
                 {
                     assert(_IsFormatDepthStencil(mtl_texture_header->pixelFormat));
-                    outputRowSize = _GetDepthStencilFormatPixelBytes(mtl_texture_header->pixelFormat, aspectIndex) * w;
-                    outputNumRows = h;
-                    outputNumSlices = d;
+                    output_row_size = _GetDepthStencilFormatPixelBytes(mtl_texture_header->pixelFormat, aspectIndex) * w;
+                    output_num_rows = h;
+                    output_num_slices = d;
 
-                    outputRowPitch = roundUp(outputRowSize, optimalBufferCopyRowPitchAlignment);
-                    outputSlicePitch = outputRowPitch * outputNumRows;
+                    output_row_pitch = roundUp(output_row_size, optimalBufferCopyRowPitchAlignment);
+                    output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    allocationSize = roundUp(outputSlicePitch * outputNumSlices, optimalBufferCopyOffsetAlignment);
+                    allocationSize = roundUp(output_slice_pitch * output_num_slices, optimalBufferCopyOffsetAlignment);
                 }
 
                 uint32_t DstSubresource = TextureLoader_CalcSubresource(mipLevel, sliceIndex, aspectIndex, mtl_texture_header->mipmapLevelCount, sliceCount);
                 assert(DstSubresource < NumSubresources);
 
-                pDest[DstSubresource].stagingOffset = stagingOffset;
-                pDest[DstSubresource].outputRowPitch = outputRowPitch;
-                pDest[DstSubresource].outputRowSize = outputRowSize;
-                pDest[DstSubresource].outputNumRows = outputNumRows;
-                pDest[DstSubresource].outputSlicePitch = outputSlicePitch;
-                pDest[DstSubresource].outputNumSlices = outputNumSlices;
+                pDest[DstSubresource].staging_offset = staging_offset;
+                pDest[DstSubresource].output_row_pitch = output_row_pitch;
+                pDest[DstSubresource].output_row_size = output_row_size;
+                pDest[DstSubresource].output_num_rows = output_num_rows;
+                pDest[DstSubresource].output_slice_pitch = output_slice_pitch;
+                pDest[DstSubresource].output_num_slices = output_num_slices;
 
-                pRegions[DstSubresource].sourceOffset = stagingOffset;
-                pRegions[DstSubresource].sourceBytesPerRow = outputRowPitch;
-                pRegions[DstSubresource].sourceBytesPerImage = outputSlicePitch;
+                pRegions[DstSubresource].sourceOffset = staging_offset;
+                pRegions[DstSubresource].sourceBytesPerRow = output_row_pitch;
+                pRegions[DstSubresource].sourceBytesPerImage = output_slice_pitch;
                 pRegions[DstSubresource].sourceSize.width = w;
                 pRegions[DstSubresource].sourceSize.height = h;
                 pRegions[DstSubresource].sourceSize.depth = d;
@@ -181,7 +181,7 @@ size_t TextureLoader_GetCopyableFootprints(struct TextureLoader_SpecificHeader c
                 pRegions[DstSubresource].destinationOrigin.z = 0;
 
                 TotalBytes += allocationSize;
-                stagingOffset += TotalBytes;
+                staging_offset += TotalBytes;
 
                 w = w >> 1;
                 h = h >> 1;

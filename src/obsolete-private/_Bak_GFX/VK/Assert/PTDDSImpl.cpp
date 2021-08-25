@@ -8,7 +8,7 @@
 #elif PTX86 || PTX86_64
 #define PTLE32TOH(x) (x)
 #else
-#error 未知的平台
+#error 未知锟斤拷平台
 #endif
 
 #include "../../../../ThirdParty/vulkan/Include/vulkan/vulkan.h"
@@ -68,17 +68,17 @@ void const *DDSParseHeader(void const *pSrcDataCurrent, VkImageCreateInfo *pImag
 			pImageInfo->extent.depth = 1U;
 			if (pDDSHeaderDXT10->MiscFlags&DXT10_RESOURCE_MISC_TEXTURECUBE)
 			{
-				pImageInfo->arrayLayers = pDDSHeaderDXT10->ArraySize * 6U;
+				pImageInfo->array_layers = pDDSHeaderDXT10->ArraySize * 6U;
 			}
 			else
 			{
-				pImageInfo->arrayLayers = pDDSHeaderDXT10->ArraySize;
+				pImageInfo->array_layers = pDDSHeaderDXT10->ArraySize;
 			}
 		}
 		else if (pDDSHeaderDXT10->Dimension == DXT10_DIMENSION_TEXTURE3D)
 		{
 			pImageInfo->imageType = VK_IMAGE_TYPE_3D;
-			pImageInfo->arrayLayers = 1U;
+			pImageInfo->array_layers = 1U;
 			assert(pDDSHeader->dwFlags & DDSD_DEPTH);
 			pImageInfo->extent.depth = pDDSHeader->dwDepth;
 		}
@@ -197,30 +197,30 @@ void const *DDSParseHeader(void const *pSrcDataCurrent, VkImageCreateInfo *pImag
 		{
 			pImageInfo->imageType = VK_IMAGE_TYPE_2D;
 			pImageInfo->extent.depth = 1U;
-			pImageInfo->arrayLayers = 6U;
+			pImageInfo->array_layers = 6U;
 		}
 		else if(pDDSHeader->dwFlags & DDSD_DEPTH)
 		{
 			pImageInfo->imageType = VK_IMAGE_TYPE_3D;
 			pImageInfo->extent.depth = pDDSHeader->dwDepth;
-			pImageInfo->arrayLayers = 1U;
+			pImageInfo->array_layers = 1U;
 		}
 		else
 		{
 			pImageInfo->imageType = VK_IMAGE_TYPE_2D;
 			pImageInfo->extent.depth = 1U;
-			pImageInfo->arrayLayers = 1U;
+			pImageInfo->array_layers = 1U;
 		}
 	}
 
 	//MipLevels
 	if (pDDSHeader->dwFlags&DDSD_MIPMAPCOUNT)
 	{
-		pImageInfo->mipLevels = pDDSHeader->dwMipMapCount;
+		pImageInfo->mip_levels = pDDSHeader->dwMipMapCount;
 	}
 	else
 	{
-		pImageInfo->mipLevels = 1U;
+		pImageInfo->mip_levels = 1U;
 	}
 
 	pImageInfo->extent.width = pDDSHeader->dwWidth;

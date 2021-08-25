@@ -37,11 +37,11 @@ class gfx_texture_vk final : public gfx_texture_base
 
     VkImageView m_image_view;
 
-    bool texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct common_header_t const *neutral_header) override;
-    bool texture_streaming_stage_second_pre_calculate_total_size_callback(struct common_header_t const *neutral_header, void **memcpy_dest, void **cmdcopy_dest) override;
-    size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct common_header_t const *neutral_header, void *memcpy_dest, void *cmdcopy_dest, uint64_t base_offset) override;
+    bool texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_neutral_header_t const *neutral_header) override;
+    bool texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, void **memcpy_dest, void **cmdcopy_dest) override;
+    size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_neutral_header_t const *neutral_header, void *memcpy_dest, void *cmdcopy_dest, uint64_t base_offset) override;
     void texture_streaming_stage_second_post_calculate_total_size_fail_callback(void *memcpy_dest, void *cmdcopy_dest) override;
-    bool texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct common_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest, void *cmdcopy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence)) override;
+    bool texture_streaming_stage_second_post_calculate_total_size_success_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_texture_neutral_header_t const *neutral_header, size_t const *neutral_data_offset, void *memcpy_dest, void *cmdcopy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int)) override;
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;

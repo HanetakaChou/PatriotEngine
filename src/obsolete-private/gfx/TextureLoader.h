@@ -205,24 +205,24 @@ enum
 
 struct TextureLoader_NeutralHeader
 {
-    bool isCubeMap;
+    bool is_cube_map;
     uint32_t type;
     uint32_t format;
     uint32_t width;
     uint32_t height;
     uint32_t depth;
-    uint32_t mipLevels;
-    uint32_t arrayLayers;
+    uint32_t mip_levels;
+    uint32_t array_layers;
 };
 
 struct TextureLoader_MemcpyDest
 {
-    size_t stagingOffset;
-    size_t outputRowPitch;
-    size_t outputRowSize;
-    size_t outputNumRows;
-    size_t outputSlicePitch;
-    size_t outputNumSlices;
+    size_t staging_offset;
+    size_t output_row_pitch;
+    size_t output_row_size;
+    size_t output_num_rows;
+    size_t output_slice_pitch;
+    size_t output_num_slices;
 };
 
 enum
@@ -239,7 +239,7 @@ bool TextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_rea
                                       uint8_t *stagingPointer, size_t NumSubresources, struct TextureLoader_MemcpyDest const *pDest,
                                       struct TextureLoader_NeutralHeader const *neutral_texture_header_validate, size_t const *neutral_header_offset_validate);
 
-uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers);
+uint32_t TextureLoader_CalcSubresource(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers);
 
 #include <string.h>
 

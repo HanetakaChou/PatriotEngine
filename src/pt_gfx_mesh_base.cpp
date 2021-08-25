@@ -27,13 +27,13 @@ struct mesh_streaming_stage_second_task_data_t
     class gfx_mesh_base *m_gfx_streaming_object;
     class gfx_connection_base *m_gfx_connection;
     gfx_input_stream_ref m_gfx_input_stream;
-    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
+    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref );
 };
 static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 
-bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -265,9 +265,9 @@ inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { re
 inline gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<gfx_mesh_ref>(mesh); }
 inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
 {
-    return unwrap(mesh)->read_input_stream(unwrap(gfx_connection), mesh_index, material_index, initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
+    return unwrap(mesh)->read_input_stream(unwrap(gfx_connection), mesh_index, material_index, initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
 
 PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh)

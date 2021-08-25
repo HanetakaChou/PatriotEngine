@@ -822,8 +822,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		CreateInfo.extent.width = 256U;
 		CreateInfo.extent.height = 256U;
 		CreateInfo.extent.depth = 1U;
-		CreateInfo.mipLevels = 1U;
-		CreateInfo.arrayLayers = 1U;
+		CreateInfo.mip_levels = 1U;
+		CreateInfo.array_layers = 1U;
 		CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		//******************************************************************************************************************
 		CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -851,8 +851,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		assert(CreateInfo.extent.width <= ImageFormatProperties.maxExtent.width); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.height <= ImageFormatProperties.maxExtent.height); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.depth <= ImageFormatProperties.maxExtent.depth);
-		assert(CreateInfo.mipLevels <= ImageFormatProperties.maxMipLevels);
-		assert(CreateInfo.arrayLayers <= ImageFormatProperties.maxArrayLayers);
+		assert(CreateInfo.mip_levels <= ImageFormatProperties.maxMipLevels);
+		assert(CreateInfo.array_layers <= ImageFormatProperties.maxArrayLayers);
 		assert(CreateInfo.samples&ImageFormatProperties.sampleCounts); //VkPhysicalDeviceLimits::framebufferColorSampleCounts
 
 		VkImage hImage;
@@ -978,8 +978,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 			CreateInfo.extent.width = 256U;
 			CreateInfo.extent.height = 256U;
 			CreateInfo.extent.depth = 1U;
-			CreateInfo.mipLevels = 1U;
-			CreateInfo.arrayLayers = 1U;
+			CreateInfo.mip_levels = 1U;
+			CreateInfo.array_layers = 1U;
 			CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 			//******************************************************************************************************************
 			CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -1011,8 +1011,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 			assert(CreateInfo.extent.width <= ImageFormatProperties.maxExtent.width); //VkPhysicalDeviceLimits::maxImageDimension2D
 			assert(CreateInfo.extent.height <= ImageFormatProperties.maxExtent.height); //VkPhysicalDeviceLimits::maxImageDimension2D
 			assert(CreateInfo.extent.depth <= ImageFormatProperties.maxExtent.depth);
-			assert(CreateInfo.mipLevels <= ImageFormatProperties.maxMipLevels);
-			assert(CreateInfo.arrayLayers <= ImageFormatProperties.maxArrayLayers);
+			assert(CreateInfo.mip_levels <= ImageFormatProperties.maxMipLevels);
+			assert(CreateInfo.array_layers <= ImageFormatProperties.maxArrayLayers);
 			assert(CreateInfo.samples&ImageFormatProperties.sampleCounts); //VkPhysicalDeviceLimits::framebufferDepthSampleCounts //VkPhysicalDeviceLimits::framebufferStencilSampleCounts
 
 			VkImage hImage;
@@ -1137,8 +1137,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 			CreateInfo.extent.width = 256U;
 			CreateInfo.extent.height = 256U;
 			CreateInfo.extent.depth = 1U;
-			CreateInfo.mipLevels = 1U;
-			CreateInfo.arrayLayers = 1U;
+			CreateInfo.mip_levels = 1U;
+			CreateInfo.array_layers = 1U;
 			CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 			//******************************************************************************************************************
 			CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -1170,8 +1170,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 			assert(CreateInfo.extent.width <= ImageFormatProperties.maxExtent.width); //VkPhysicalDeviceLimits::maxImageDimension2D
 			assert(CreateInfo.extent.height <= ImageFormatProperties.maxExtent.height); //VkPhysicalDeviceLimits::maxImageDimension2D
 			assert(CreateInfo.extent.depth <= ImageFormatProperties.maxExtent.depth);
-			assert(CreateInfo.mipLevels <= ImageFormatProperties.maxMipLevels);
-			assert(CreateInfo.arrayLayers <= ImageFormatProperties.maxArrayLayers);
+			assert(CreateInfo.mip_levels <= ImageFormatProperties.maxMipLevels);
+			assert(CreateInfo.array_layers <= ImageFormatProperties.maxArrayLayers);
 			assert(CreateInfo.samples&ImageFormatProperties.sampleCounts); //VkPhysicalDeviceLimits::framebufferDepthSampleCounts //VkPhysicalDeviceLimits::framebufferStencilSampleCounts
 
 			VkImage hImage;
@@ -1274,8 +1274,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		CreateInfo.extent.width = 256U;
 		CreateInfo.extent.height = 256U;
 		CreateInfo.extent.depth = 1U;
-		CreateInfo.mipLevels = 1U;
-		CreateInfo.arrayLayers = 1U;
+		CreateInfo.mip_levels = 1U;
+		CreateInfo.array_layers = 1U;
 		CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		//******************************************************************************************************************
 		CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -1303,8 +1303,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		assert(CreateInfo.extent.width <= ImageFormatProperties.maxExtent.width); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.height <= ImageFormatProperties.maxExtent.height); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.depth <= ImageFormatProperties.maxExtent.depth);
-		assert(CreateInfo.mipLevels <= ImageFormatProperties.maxMipLevels);
-		assert(CreateInfo.arrayLayers <= ImageFormatProperties.maxArrayLayers);
+		assert(CreateInfo.mip_levels <= ImageFormatProperties.maxMipLevels);
+		assert(CreateInfo.array_layers <= ImageFormatProperties.maxArrayLayers);
 		assert(CreateInfo.samples&ImageFormatProperties.sampleCounts); //VkPhysicalDeviceLimits::framebufferColorSampleCounts
 
 		VkImage hImage;
@@ -1376,8 +1376,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		CreateInfo.extent.width = 256U;
 		CreateInfo.extent.height = 256U;
 		CreateInfo.extent.depth = 1U;
-		CreateInfo.mipLevels = 1U;
-		CreateInfo.arrayLayers = 1U;
+		CreateInfo.mip_levels = 1U;
+		CreateInfo.array_layers = 1U;
 		CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		//******************************************************************************************************************
 		CreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -1405,8 +1405,8 @@ bool PTVD_DeviceMemoryManager::Construct(VkInstanceWrapper &rInstanceWrapper, Vk
 		assert(CreateInfo.extent.width <= ImageFormatProperties.maxExtent.width); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.height <= ImageFormatProperties.maxExtent.height); //VkPhysicalDeviceLimits::maxImageDimension2D
 		assert(CreateInfo.extent.depth <= ImageFormatProperties.maxExtent.depth);
-		assert(CreateInfo.mipLevels <= ImageFormatProperties.maxMipLevels);
-		assert(CreateInfo.arrayLayers <= ImageFormatProperties.maxArrayLayers);
+		assert(CreateInfo.mip_levels <= ImageFormatProperties.maxMipLevels);
+		assert(CreateInfo.array_layers <= ImageFormatProperties.maxArrayLayers);
 		assert(CreateInfo.samples&ImageFormatProperties.sampleCounts); //VkPhysicalDeviceLimits::framebufferColorSampleCounts
 
 		VkImage hImage;

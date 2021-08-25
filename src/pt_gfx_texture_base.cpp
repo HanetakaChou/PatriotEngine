@@ -28,19 +28,19 @@ struct texture_streaming_stage_second_task_data_t
     class gfx_texture_base *m_gfx_streaming_object;
     class gfx_connection_base *m_gfx_connection;
     gfx_input_stream_ref m_gfx_input_stream;
-    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count);
-    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref input_stream);
+    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
+    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref );
 };
 static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 
 bool gfx_texture_base::read_input_stream(
     class gfx_connection_base *gfx_connection,
     char const *initial_filename,
-    gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *initial_filename),
-    intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-    int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+    gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+    intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
+    int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
+    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -72,7 +72,7 @@ bool gfx_texture_base::read_input_stream(
         }
 
         //pre populate task data
-        struct common_header_t common_header;
+        struct gfx_texture_neutral_header_t common_header;
         size_t common_data_offset;
         if (!load_header_from_input_stream(&common_header, &common_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback) || !this->texture_streaming_stage_first_pre_populate_task_data_callback(gfx_connection, &common_header))
         {
@@ -148,7 +148,7 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
     if (!streaming_cancel)
     {
         // pre calculate total size
-        struct common_header_t common_header;
+        struct gfx_texture_neutral_header_t common_header;
         size_t common_data_offset;
         void *memcpy_dest;
         void *cmdcopy_dest;
@@ -273,12 +273,12 @@ PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
     gfx_connection_ref gfx_connection,
     gfx_texture_ref texture,
     char const *initial_filename,
-    gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename),
-    intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count),
-    int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence),
-    void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream))
+    gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+    intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
+    int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
+    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
 {
-    return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
+    return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
 
 PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture)

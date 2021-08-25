@@ -22,14 +22,14 @@
 #include <algorithm>
 
 extern bool load_dds_header_from_input_stream(
-    struct common_header_t *common_header, size_t *common_data_offset,
-    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
+    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 extern bool load_dds_data_from_input_stream(
-    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
-    uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
-    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence));
+    struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
+    uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int));
 
 //--------------------------------------------------------------------------------------
 // Macros
@@ -274,9 +274,9 @@ static inline size_t BitsPerPixel(uint32_t fmt);
 
 static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, size_t *outNumBytes, size_t *outRowBytes, size_t *outNumRows);
 
-static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type);
+static inline enum gfx_texture_neutral_type_t dds_get_common_type(uint32_t dds_type);
 
-static inline enum gfx_texture_common_format_t dds_get_common_format(uint32_t dds_format);
+static inline enum gfx_texture_neutral_format_t dds_get_common_format(uint32_t dds_format);
 
 static inline uint32_t dds_get_format_plane_count(uint32_t dds_format);
 
@@ -284,7 +284,7 @@ static inline bool dds_format_is_depth_stencil(uint32_t dds_format);
 
 struct internal_dds_header_t
 {
-    bool isCubeMap;
+    bool is_cube_map;
     uint32_t resDim;
     uint32_t format;
     uint32_t width;
@@ -296,12 +296,12 @@ struct internal_dds_header_t
 
 static inline bool internal_load_dds_header_from_input_stream(
     struct internal_dds_header_t *internal_dds_header, size_t *dds_data_offset,
-    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
+    gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
     assert(internal_dds_header != NULL);
     assert(dds_data_offset != NULL);
 
-    if (input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    if (gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
     {
         return false;
     }
@@ -309,7 +309,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     uint8_t ddsDataBuf[sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)];
     uint8_t const *ddsData = ddsDataBuf;
     {
-        ptrdiff_t BytesRead = input_stream_read_callback(input_stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
+        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
         {
             return false;
@@ -335,7 +335,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     if ((header->ddspf.dwFlags & DDPF_FOURCC) && (DDS_MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.dwFourCC))
     {
         // Must be long enough for both headers and magic value
-        ptrdiff_t BytesRead = input_stream_read_callback(input_stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
+        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(struct DDS_HEADER_DXT10))
         {
             return false;
@@ -346,7 +346,7 @@ static inline bool internal_load_dds_header_from_input_stream(
 
     (*dds_data_offset) = (d3d10ext != NULL) ? (sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)) : (sizeof(uint32_t) + sizeof(struct DDS_HEADER));
 
-    internal_dds_header->isCubeMap = false;
+    internal_dds_header->is_cube_map = false;
     internal_dds_header->resDim = DDS_DIMENSION_TEXTURE2D;
     internal_dds_header->format = DDS_DXGI_FORMAT_UNKNOWN;
     internal_dds_header->width = header->dwWidth;
@@ -399,7 +399,7 @@ static inline bool internal_load_dds_header_from_input_stream(
             if (d3d10ext->miscFlag & DDS_RESOURCE_MISC_TEXTURECUBE)
             {
                 internal_dds_header->arraySize *= 6;
-                internal_dds_header->isCubeMap = true;
+                internal_dds_header->is_cube_map = true;
             }
             internal_dds_header->depth = 1;
         }
@@ -439,7 +439,7 @@ static inline bool internal_load_dds_header_from_input_stream(
                 }
 
                 internal_dds_header->arraySize = 6;
-                internal_dds_header->isCubeMap = true;
+                internal_dds_header->is_cube_map = true;
             }
         }
         else
@@ -456,8 +456,8 @@ static inline bool internal_load_dds_header_from_input_stream(
 }
 
 bool load_dds_header_from_input_stream(
-    struct common_header_t *common_header, size_t *common_data_offset,
-    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
+    struct gfx_texture_neutral_header_t *common_header, size_t *common_data_offset,
+    gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
 
     assert(common_header != NULL);
@@ -465,20 +465,20 @@ bool load_dds_header_from_input_stream(
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
-    if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
+    if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
     {
         common_header->type = dds_get_common_type(internal_dds_header.resDim);
-        assert(PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED != common_header->type);
+        assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != common_header->type);
 
         common_header->format = dds_get_common_format(internal_dds_header.format);
-        assert(PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED != common_header->format);
+        assert(PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED != common_header->format);
 
         common_header->width = internal_dds_header.width;
         common_header->height = internal_dds_header.height;
         common_header->depth = internal_dds_header.depth;
-        common_header->mipLevels = internal_dds_header.mipCount;
-        common_header->arrayLayers = internal_dds_header.arraySize;
-        common_header->isCubeMap = internal_dds_header.isCubeMap;
+        common_header->mip_levels = internal_dds_header.mipCount;
+        common_header->array_layers = internal_dds_header.arraySize;
+        common_header->is_cube_map = internal_dds_header.is_cube_map;
 
         (*common_data_offset) = dds_data_offset;
 
@@ -491,32 +491,32 @@ bool load_dds_header_from_input_stream(
 }
 
 bool load_dds_data_from_input_stream(
-    struct common_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
-    uint8_t *staging_pointer, size_t num_subresources, struct load_memcpy_dest_t const *memcpy_dest,
-    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mipLevels, uint32_t arrayLayers),
-    gfx_input_stream_ref input_stream, intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence))
+    struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
+    uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
+    uint32_t (*calc_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
+    gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int))
 {
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
-    if (!internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
+    if (!internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
     {
         return false;
     }
 
     assert(
-        internal_dds_header.isCubeMap == common_header_for_validate->isCubeMap &&
+        internal_dds_header.is_cube_map == common_header_for_validate->is_cube_map &&
         dds_get_common_type(internal_dds_header.resDim) == common_header_for_validate->type &&
         dds_get_common_format(internal_dds_header.format) == common_header_for_validate->format &&
         internal_dds_header.width == common_header_for_validate->width &&
         internal_dds_header.height == common_header_for_validate->height &&
         internal_dds_header.depth == common_header_for_validate->depth &&
-        internal_dds_header.mipCount == common_header_for_validate->mipLevels &&
-        internal_dds_header.arraySize == common_header_for_validate->arrayLayers //
+        internal_dds_header.mipCount == common_header_for_validate->mip_levels &&
+        internal_dds_header.arraySize == common_header_for_validate->array_layers //
     );
     assert(dds_data_offset == (*common_data_offset_for_validate));
 
-    //if (input_stream_seek_callback(input_stream, dds_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    //if (gfx_input_stream_seek_callback(gfx_input_stream, dds_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
     //{
     //    return false;
     //}
@@ -538,7 +538,7 @@ bool load_dds_data_from_input_stream(
         break;
 
     case DDS_DIMENSION_TEXTURE2D:
-        if (!(internal_dds_header.isCubeMap))
+        if (!(internal_dds_header.is_cube_map))
         {
             if ((internal_dds_header.arraySize > 2048) || //D3D11_REQ_TEXTURE1D_ARRAY_AXIS_DIMENSION
                 (internal_dds_header.width > 16384) ||    //D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION
@@ -636,35 +636,35 @@ bool load_dds_data_from_input_stream(
                 uint32_t dstSubresource = calc_subresource_index_callback(mipSlice, arraySlice, planeSlice, internal_dds_header.mipCount, internal_dds_header.arraySize);
                 assert(dstSubresource < num_subresources);
 
-                assert(inputNumSlices == memcpy_dest[dstSubresource].outputNumSlices);
-                assert(inputNumRows == memcpy_dest[dstSubresource].outputNumRows);
-                assert(inputRowSize == memcpy_dest[dstSubresource].outputRowSize);
+                assert(inputNumSlices == memcpy_dest[dstSubresource].output_num_slices);
+                assert(inputNumRows == memcpy_dest[dstSubresource].output_num_rows);
+                assert(inputRowSize == memcpy_dest[dstSubresource].output_row_size);
 
-                if (inputSliceSize == memcpy_dest[dstSubresource].outputSlicePitch && inputRowSize == memcpy_dest[dstSubresource].outputRowPitch)
+                if (inputSliceSize == memcpy_dest[dstSubresource].output_slice_pitch && inputRowSize == memcpy_dest[dstSubresource].output_row_pitch)
                 {
                     {
                         PT_MAYBE_UNUSED int64_t offset_cur;
-                        assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                        assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
                     }
 
-                    ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + memcpy_dest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + memcpy_dest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
                     if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                     {
                         return false;
                     }
                 }
-                else if (inputRowSize == memcpy_dest[dstSubresource].outputRowPitch)
+                else if (inputRowSize == memcpy_dest[dstSubresource].output_row_pitch)
                 {
-                    assert(inputSliceSize <= memcpy_dest[dstSubresource].outputSlicePitch);
+                    assert(inputSliceSize <= memcpy_dest[dstSubresource].output_slice_pitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
                         {
                             PT_MAYBE_UNUSED int64_t offset_cur;
-                            assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                            assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
                         }
 
-                        ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z), inputSliceSize);
                         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                         {
                             return false;
@@ -673,8 +673,8 @@ bool load_dds_data_from_input_stream(
                 }
                 else
                 {
-                    assert(inputSliceSize <= memcpy_dest[dstSubresource].outputSlicePitch);
-                    assert(inputRowSize <= memcpy_dest[dstSubresource].outputRowPitch);
+                    assert(inputSliceSize <= memcpy_dest[dstSubresource].output_slice_pitch);
+                    assert(inputRowSize <= memcpy_dest[dstSubresource].output_row_pitch);
 
                     for (size_t z = 0; z < inputNumSlices; ++z)
                     {
@@ -682,10 +682,10 @@ bool load_dds_data_from_input_stream(
                         {
                             {
                                 PT_MAYBE_UNUSED int64_t offset_cur;
-                                assert((offset_cur = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
                             }
 
-                            ptrdiff_t BytesRead = input_stream_read_callback(input_stream, staging_pointer + (memcpy_dest[dstSubresource].stagingOffset + memcpy_dest[dstSubresource].outputSlicePitch * z + memcpy_dest[dstSubresource].outputRowPitch * y), inputRowSize);
+                            ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z + memcpy_dest[dstSubresource].output_row_pitch * y), inputRowSize);
                             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                             {
                                 return false;
@@ -716,7 +716,7 @@ bool load_dds_data_from_input_stream(
     }
 
     PT_MAYBE_UNUSED uint8_t u_assert_only[1];
-    assert(0 == input_stream_read_callback(input_stream, u_assert_only, sizeof(uint8_t)));
+    assert(0 == gfx_input_stream_read_callback(gfx_input_stream, u_assert_only, sizeof(uint8_t)));
     return true;
 }
 
@@ -1272,14 +1272,14 @@ static inline size_t BitsPerPixel(uint32_t fmt)
     }
 }
 
-static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_type)
+static inline enum gfx_texture_neutral_type_t dds_get_common_type(uint32_t dds_type)
 {
-    static enum gfx_texture_common_type_t const dds_to_common_type_map[] = {
-        PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED,
-        PT_GFX_TEXTURE_COMMON_TYPE_UNDEFINED,
-        PT_GFX_TEXTURE_COMMON_TYPE_1D,
-        PT_GFX_TEXTURE_COMMON_TYPE_2D,
-        PT_GFX_TEXTURE_COMMON_TYPE_3D,
+    static enum gfx_texture_neutral_type_t const dds_to_common_type_map[] = {
+        PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED,
+        PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED,
+        PT_GFX_TEXTURE_NEUTRAL_TYPE_1D,
+        PT_GFX_TEXTURE_NEUTRAL_TYPE_2D,
+        PT_GFX_TEXTURE_NEUTRAL_TYPE_3D,
     };
     static_assert(DDS_DIMENSION_RANGE == (sizeof(dds_to_common_type_map) / sizeof(dds_to_common_type_map[0])), "DDS_DIMENSION_RANGE == (sizeof(dds_to_common_type_map) / sizeof(dds_to_common_type_map[0]))");
 
@@ -1287,142 +1287,142 @@ static inline enum gfx_texture_common_type_t dds_get_common_type(uint32_t dds_ty
     return dds_to_common_type_map[dds_type];
 }
 
-static inline enum gfx_texture_common_format_t dds_get_common_format(uint32_t dds_format)
+static inline enum gfx_texture_neutral_format_t dds_get_common_format(uint32_t dds_format)
 {
-    static enum gfx_texture_common_format_t const dds_to_common_format_map[] = {
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_UINT,        //DDS_DXGI_FORMAT_R32G32B32A32_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32A32_SINT,        //DDS_DXGI_FORMAT_R32G32B32A32_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_UINT,           //DDS_DXGI_FORMAT_R32G32B32_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32B32_SINT,           //DDS_DXGI_FORMAT_R32G32B32_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_UNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_UINT,        //DDS_DXGI_FORMAT_R16G16B16A16_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16B16A16_SINT,        //DDS_DXGI_FORMAT_R16G16B16A16_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_UINT,              //DDS_DXGI_FORMAT_R32G32_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32G32_SINT,              //DDS_DXGI_FORMAT_R32G32_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32G8X24_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10A2_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_A2R10G10B10_UINT_PACK32,  //DDS_DXGI_FORMAT_R10G10B10A2_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_B10G11R11_UFLOAT_PACK32,  //DDS_DXGI_FORMAT_R11G11B10_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_UINT,            //DDS_DXGI_FORMAT_R8G8B8A8_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SINT,            //DDS_DXGI_FORMAT_R8G8B8A8_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_UNORM,             //DDS_DXGI_FORMAT_R16G16_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_UINT,              //DDS_DXGI_FORMAT_R16G16_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SNORM,             //DDS_DXGI_FORMAT_R16G16_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16G16_SINT,              //DDS_DXGI_FORMAT_R16G16_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_D32_SFLOAT,               //DDS_DXGI_FORMAT_D32_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32_UINT,                 //DDS_DXGI_FORMAT_R32_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R32_SINT,                 //DDS_DXGI_FORMAT_R32_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24G8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_D24_UNORM_S8_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_UINT,                //DDS_DXGI_FORMAT_R8G8_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_SNORM,               //DDS_DXGI_FORMAT_R8G8_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8_SINT,                //DDS_DXGI_FORMAT_R8G8_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_FLOAT
-        PT_GFX_TEXTURE_COMMON_FORMAT_D16_UNORM,                //DDS_DXGI_FORMAT_D16_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_UNORM,                //DDS_DXGI_FORMAT_R16_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_UINT,                 //DDS_DXGI_FORMAT_R16_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_SNORM,                //DDS_DXGI_FORMAT_R16_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R16_SINT,                 //DDS_DXGI_FORMAT_R16_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_UINT,                  //DDS_DXGI_FORMAT_R8_UINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_SNORM,                 //DDS_DXGI_FORMAT_R8_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_SINT,                  //DDS_DXGI_FORMAT_R8_SINT
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_A8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R1_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_E5B9G9R9_UFLOAT_PACK32,   //DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R8G8_B8G8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_G8R8_G8B8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC1_RGBA_SRGB_BLOCK,      //DDS_DXGI_FORMAT_BC1_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC2_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC2_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC3_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC3_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC4_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC5_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_SNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_B5G6R5_UNORM_PACK16,      //DDS_DXGI_FORMAT_B5G6R5_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_B5G5R5A1_UNORM_PACK16,    //DDS_DXGI_FORMAT_B5G5R5A1_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_UF16
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC6H_SFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_SF16
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_TYPELESS
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_UNORM
-        PT_GFX_TEXTURE_COMMON_FORMAT_BC7_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC7_UNORM_SRGB
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AYUV
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y410
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y416
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV12
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P010
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P016
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_420_OPAQUE
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_YUY2
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y210
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y216
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV11
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AI44
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_IA44
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P8
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_A8P8
-        PT_GFX_TEXTURE_COMMON_FORMAT_B4G4R4A4_UNORM_PACK16,    //DDS_DXGI_FORMAT_B4G4R4A4_UNORM //115
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_116
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_117
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_118
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_119
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_120
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_121
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_122
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_123
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_124
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_125
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_126
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_127
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_128
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_129
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P208 //130
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V208
-        PT_GFX_TEXTURE_COMMON_FORMAT_UNDEFINED                 //DDS_DXGI_FORMAT_V408
+    static enum gfx_texture_neutral_format_t const dds_to_common_format_map[] = {
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_UNKNOWN
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32A32_SFLOAT,      //DDS_DXGI_FORMAT_R32G32B32A32_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32A32_UINT,        //DDS_DXGI_FORMAT_R32G32B32A32_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32A32_SINT,        //DDS_DXGI_FORMAT_R32G32B32A32_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32_SFLOAT,         //DDS_DXGI_FORMAT_R32G32B32_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32_UINT,           //DDS_DXGI_FORMAT_R32G32B32_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32B32_SINT,           //DDS_DXGI_FORMAT_R32G32B32_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_SFLOAT,      //DDS_DXGI_FORMAT_R16G16B16A16_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_UNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_UINT,        //DDS_DXGI_FORMAT_R16G16B16A16_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_SNORM,       //DDS_DXGI_FORMAT_R16G16B16A16_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16B16A16_SINT,        //DDS_DXGI_FORMAT_R16G16B16A16_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32_SFLOAT,            //DDS_DXGI_FORMAT_R32G32_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32_UINT,              //DDS_DXGI_FORMAT_R32G32_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32G32_SINT,              //DDS_DXGI_FORMAT_R32G32_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32G8X24_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_D32_FLOAT_S8X24_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_X32_TYPELESS_G8X24_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT_S8_UINT,       //DDS_DXGI_FORMAT_R10G10B10A2_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10A2_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_A2R10G10B10_UINT_PACK32,  //DDS_DXGI_FORMAT_R10G10B10A2_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B10G11R11_UFLOAT_PACK32,  //DDS_DXGI_FORMAT_R11G11B10_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_UNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_R8G8B8A8_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_UINT,            //DDS_DXGI_FORMAT_R8G8B8A8_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_SNORM,           //DDS_DXGI_FORMAT_R8G8B8A8_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_SINT,            //DDS_DXGI_FORMAT_R8G8B8A8_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_SFLOAT,            //DDS_DXGI_FORMAT_R16G16_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_UNORM,             //DDS_DXGI_FORMAT_R16G16_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_UINT,              //DDS_DXGI_FORMAT_R16G16_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_SNORM,             //DDS_DXGI_FORMAT_R16G16_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16G16_SINT,              //DDS_DXGI_FORMAT_R16G16_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D32_SFLOAT,               //DDS_DXGI_FORMAT_D32_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32_SFLOAT,               //DDS_DXGI_FORMAT_R32_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32_UINT,                 //DDS_DXGI_FORMAT_R32_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R32_SINT,                 //DDS_DXGI_FORMAT_R32_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24G8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_D24_UNORM_S8_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_R24_UNORM_X8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D24_UNORM_S8_UINT,        //DDS_DXGI_FORMAT_X24_TYPELESS_G8_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8_UNORM,               //DDS_DXGI_FORMAT_R8G8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8_UINT,                //DDS_DXGI_FORMAT_R8G8_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8_SNORM,               //DDS_DXGI_FORMAT_R8G8_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8_SINT,                //DDS_DXGI_FORMAT_R8G8_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_SFLOAT,               //DDS_DXGI_FORMAT_R16_FLOAT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_D16_UNORM,                //DDS_DXGI_FORMAT_D16_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_UNORM,                //DDS_DXGI_FORMAT_R16_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_UINT,                 //DDS_DXGI_FORMAT_R16_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_SNORM,                //DDS_DXGI_FORMAT_R16_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R16_SINT,                 //DDS_DXGI_FORMAT_R16_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_R8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_UINT,                  //DDS_DXGI_FORMAT_R8_UINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_SNORM,                 //DDS_DXGI_FORMAT_R8_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_SINT,                  //DDS_DXGI_FORMAT_R8_SINT
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8_UNORM,                 //DDS_DXGI_FORMAT_A8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R1_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_E5B9G9R9_UFLOAT_PACK32,   //DDS_DXGI_FORMAT_R9G9B9E5_SHAREDEXP
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_R8G8_B8G8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_G8R8_G8B8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC1_RGBA_UNORM_BLOCK,     //DDS_DXGI_FORMAT_BC1_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC1_RGBA_SRGB_BLOCK,      //DDS_DXGI_FORMAT_BC1_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC2_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC2_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC2_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC2_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC3_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC3_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC3_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC3_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC4_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC4_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC4_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC5_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC5_SNORM_BLOCK,          //DDS_DXGI_FORMAT_BC5_SNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B5G6R5_UNORM_PACK16,      //DDS_DXGI_FORMAT_B5G6R5_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B5G5R5A1_UNORM_PACK16,    //DDS_DXGI_FORMAT_B5G5R5A1_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_A2R10G10B10_UNORM_PACK32, //DDS_DXGI_FORMAT_R10G10B10_XR_BIAS_A2_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8A8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8A8_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B8G8R8A8_UNORM,           //DDS_DXGI_FORMAT_B8G8R8X8_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_R8G8B8A8_SRGB,            //DDS_DXGI_FORMAT_B8G8R8X8_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC6H_UFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_UF16
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC6H_SFLOAT_BLOCK,        //DDS_DXGI_FORMAT_BC6H_SF16
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_TYPELESS
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC7_UNORM_BLOCK,          //DDS_DXGI_FORMAT_BC7_UNORM
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_BC7_SRGB_BLOCK,           //DDS_DXGI_FORMAT_BC7_UNORM_SRGB
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AYUV
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y410
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y416
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV12
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P010
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P016
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_420_OPAQUE
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_YUY2
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y210
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_Y216
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_NV11
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_AI44
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_IA44
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P8
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_A8P8
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_B4G4R4A4_UNORM_PACK16,    //DDS_DXGI_FORMAT_B4G4R4A4_UNORM //115
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_116
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_117
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_118
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_119
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_120
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_121
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_122
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_123
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_124
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_125
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_126
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_127
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_128
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_129
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_P208 //130
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED,                //DDS_DXGI_FORMAT_V208
+        PT_GFX_TEXTURE_NEUTRAL_FORMAT_UNDEFINED                 //DDS_DXGI_FORMAT_V408
     };
     static_assert(DDS_DXGI_FORMAT_RANGE == (sizeof(dds_to_common_format_map) / sizeof(dds_to_common_format_map[0])), "DDS_DXGI_FORMAT_RANGE == (sizeof(dds_to_common_format_map) / sizeof(dds_to_common_format_map[0]))");
 

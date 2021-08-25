@@ -1223,8 +1223,8 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 						CreateInfo.extent.width = 128U;
 						CreateInfo.extent.height = 128U;
 						CreateInfo.extent.depth = 1U;
-						CreateInfo.mipLevels = 1U;
-						CreateInfo.arrayLayers = 1U;
+						CreateInfo.mip_levels = 1U;
+						CreateInfo.array_layers = 1U;
 						CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 						//-------------------------------------------------------------------
 						//在Direct3D12中
@@ -1295,8 +1295,8 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 						CreateInfo.extent.width = 128U;
 						CreateInfo.extent.height = 128U;
 						CreateInfo.extent.depth = 1U;
-						CreateInfo.mipLevels = 1U;
-						CreateInfo.arrayLayers = 1U;
+						CreateInfo.mip_levels = 1U;
+						CreateInfo.array_layers = 1U;
 						CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 						//-------------------------------------------------------------------
 						//在Direct3D12中
@@ -1349,8 +1349,8 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 						CreateInfo.extent.width = 128U;
 						CreateInfo.extent.height = 128U;
 						CreateInfo.extent.depth = 1U;
-						CreateInfo.mipLevels = 1U;
-						CreateInfo.arrayLayers = 1U;
+						CreateInfo.mip_levels = 1U;
+						CreateInfo.array_layers = 1U;
 						CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 						//-------------------------------------------------------------------
 						//在Direct3D12中
@@ -1404,8 +1404,8 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 						CreateInfo.extent.width = 128U;
 						CreateInfo.extent.height = 128U;
 						CreateInfo.extent.depth = 1U;
-						CreateInfo.mipLevels = 1U;
-						CreateInfo.arrayLayers = 1U;
+						CreateInfo.mip_levels = 1U;
+						CreateInfo.array_layers = 1U;
 						CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 						//-------------------------------------------------------------------
 						//在Direct3D12中
@@ -1459,8 +1459,8 @@ IPTVDInstance *PTCALL PTVDInstance_ForProcess()
 						CreateInfo.extent.width = 128U;
 						CreateInfo.extent.height = 128U;
 						CreateInfo.extent.depth = 1U;
-						CreateInfo.mipLevels = 1U;
-						CreateInfo.arrayLayers = 1U;
+						CreateInfo.mip_levels = 1U;
+						CreateInfo.array_layers = 1U;
 						CreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 						//-------------------------------------------------------------------
 						//在Direct3D12中

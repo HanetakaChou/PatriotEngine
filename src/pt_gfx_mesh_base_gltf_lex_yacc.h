@@ -30,7 +30,7 @@ extern "C"
     void gltf_lex_yacc_temp_string_set_callback(struct temp_string_version_t *temp_string_version, char const *text, int length, void *user_defined);
     void gltf_lex_yacc_temp_string_destroy_callback(struct temp_string_version_t *temp_string_version, void *user_defined);
 
-    ptrdiff_t gltf_lex_input_callback(void *input_stream, void *buf, size_t size, void *user_defined);
+    ptrdiff_t gltf_lex_input_callback(void *gfx_input_stream, void *buf, size_t size, void *user_defined);
     void gltf_lex_fatal_error_callback(int line, int column, char const *msg, void *user_defined);
     int gltf_lex_memcmp_callback(void const *ptr1, void const *ptr2, size_t num, void *user_defined);
     

@@ -454,11 +454,11 @@ bool PVRTextureLoader_LoadHeaderFromStream(void const *stream, ptrdiff_t (*strea
         neutral_texture_header->width = pvr_texture_header.width;
         neutral_texture_header->height = pvr_texture_header.height;
         neutral_texture_header->depth = pvr_texture_header.depth;
-        neutral_texture_header->mipLevels = pvr_texture_header.numMipMaps;
-        neutral_texture_header->arrayLayers = pvr_texture_header.numFaces * pvr_texture_header.numSurfaces;
+        neutral_texture_header->mip_levels = pvr_texture_header.numMipMaps;
+        neutral_texture_header->array_layers = pvr_texture_header.numFaces * pvr_texture_header.numSurfaces;
 
         assert(0 != pvr_texture_header.numFaces);
-        neutral_texture_header->isCubeMap = (pvr_texture_header.numFaces > 1);
+        neutral_texture_header->is_cube_map = (pvr_texture_header.numFaces > 1);
 
         (*neutral_header_offset) = pvr_texture_data_offset;
 
@@ -486,14 +486,14 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
     }
 
     assert(
-        (0 != texture_header.numFaces) && ((texture_header.numFaces > 1) == neutral_texture_header_validate->isCubeMap) &&
+        (0 != texture_header.numFaces) && ((texture_header.numFaces > 1) == neutral_texture_header_validate->is_cube_map) &&
         _GetNeutralType(texture_header.height, texture_header.depth) == neutral_texture_header_validate->type &&
         _GetNeutralFormat(texture_header.pixelFormat, texture_header.colorSpace, texture_header.channelType) == neutral_texture_header_validate->format &&
         texture_header.width == neutral_texture_header_validate->width &&
         texture_header.height == neutral_texture_header_validate->height &&
         texture_header.depth == neutral_texture_header_validate->depth &&
-        texture_header.numMipMaps == neutral_texture_header_validate->mipLevels &&
-        texture_header.numFaces * texture_header.numSurfaces == neutral_texture_header_validate->arrayLayers //
+        texture_header.numMipMaps == neutral_texture_header_validate->mip_levels &&
+        texture_header.numFaces * texture_header.numSurfaces == neutral_texture_header_validate->array_layers //
     );
     assert(texture_data_offset == (*neutral_header_offset_validate));
 
@@ -583,31 +583,31 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                     size_t dstSubresource = TextureLoader_CalcSubresource(mipMap, face * surface, plane, texture_header.numMipMaps, texture_header.numFaces * texture_header.numSurfaces);
                     assert(dstSubresource < NumSubresources);
 
-                    assert(inputNumSlices == pDest[dstSubresource].outputNumSlices);
-                    assert(inputNumRows == pDest[dstSubresource].outputNumRows);
-                    assert(inputRowSize == pDest[dstSubresource].outputRowSize);
+                    assert(inputNumSlices == pDest[dstSubresource].output_num_slices);
+                    assert(inputNumRows == pDest[dstSubresource].output_num_rows);
+                    assert(inputRowSize == pDest[dstSubresource].output_row_size);
 
-                    if (inputSliceSize == pDest[dstSubresource].outputSlicePitch && inputRowSize == pDest[dstSubresource].outputRowPitch)
+                    if (inputSliceSize == pDest[dstSubresource].output_slice_pitch && inputRowSize == pDest[dstSubresource].output_row_pitch)
                     {
                         int64_t offset_cur;
                         assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].stagingOffset, inputSliceSize * inputNumSlices);
+                        ptrdiff_t BytesRead = stream_read(stream, stagingPointer + pDest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
                         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                         {
                             return false;
                         }
                     }
-                    else if (inputRowSize == pDest[dstSubresource].outputRowPitch)
+                    else if (inputRowSize == pDest[dstSubresource].output_row_pitch)
                     {
-                        assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
+                        assert(inputSliceSize <= pDest[dstSubresource].output_slice_pitch);
 
                         for (size_t z = 0; z < inputNumSlices; ++z)
                         {
                             int64_t offset_cur;
                             assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z), inputSliceSize);
+                            ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].staging_offset + pDest[dstSubresource].output_slice_pitch * z), inputSliceSize);
                             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                             {
                                 return false;
@@ -616,8 +616,8 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                     }
                     else
                     {
-                        assert(inputSliceSize <= pDest[dstSubresource].outputSlicePitch);
-                        assert(inputRowSize <= pDest[dstSubresource].outputRowPitch);
+                        assert(inputSliceSize <= pDest[dstSubresource].output_slice_pitch);
+                        assert(inputRowSize <= pDest[dstSubresource].output_row_pitch);
 
                         for (size_t z = 0; z < inputNumSlices; ++z)
                         {
@@ -626,7 +626,7 @@ bool PVRTextureLoader_FillDataFromStream(void const *stream, ptrdiff_t (*stream_
                                 int64_t offset_cur;
                                 assert((offset_cur = stream_seek(stream, 0, TEXTURE_LOADER_STREAM_SEEK_CUR)) && (stream_seek(stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, TEXTURE_LOADER_STREAM_SEEK_SET) == offset_cur));
 
-                                ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].stagingOffset + pDest[dstSubresource].outputSlicePitch * z + pDest[dstSubresource].outputRowPitch * y), inputRowSize);
+                                ptrdiff_t BytesRead = stream_read(stream, stagingPointer + (pDest[dstSubresource].staging_offset + pDest[dstSubresource].output_slice_pitch * z + pDest[dstSubresource].output_row_pitch * y), inputRowSize);
                                 if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                                 {
                                     return false;
