@@ -613,6 +613,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_cmd_bind_vertex_buffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(vk_get_device_proc_addr(m_device, "vkCmdBindVertexBuffers"));
     assert(NULL != this->m_vk_cmd_bind_vertex_buffers);
 
+    this->m_vk_cmd_bind_index_buffer = reinterpret_cast<PFN_vkCmdBindIndexBuffer>(vk_get_device_proc_addr(m_device, "vkCmdBindIndexBuffer"));
+    assert(NULL != this->m_vk_cmd_bind_index_buffer);
+
     this->m_vk_cmd_push_constants = reinterpret_cast<PFN_vkCmdPushConstants>(vk_get_device_proc_addr(m_device, "vkCmdPushConstants"));
     assert(NULL != this->m_vk_cmd_push_constants);
 

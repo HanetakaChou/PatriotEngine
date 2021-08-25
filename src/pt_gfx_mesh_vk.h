@@ -48,14 +48,14 @@ private:
 
 public:
     VkBuffer m_index_buffer;
-
+    VkIndexType m_indexType;
 private:
     uint64_t m_index_gfx_malloc_offset;
     uint64_t m_index_gfx_malloc_size;
     void *m_index_gfx_malloc_page_handle;
     VkDeviceMemory m_index_gfx_malloc_device_memory;
 
-    bool read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *input_stream_init_callback)(char const *initial_filename), intptr_t(PT_PTR *input_stream_read_callback)(gfx_input_stream_ref input_stream, void *buf, size_t count), int64_t(PT_PTR *input_stream_seek_callback)(gfx_input_stream_ref input_stream, int64_t offset, int whence), void(PT_PTR *input_stream_destroy_callback)(gfx_input_stream_ref input_stream)) override;
+    bool mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t *const neutral_header) override;
 
     struct mesh_streaming_stage_first_thread_stack_data_t
     {

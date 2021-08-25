@@ -113,6 +113,7 @@ class gfx_device_vk
     PFN_vkCmdSetViewport m_vk_cmd_set_viewport;
     PFN_vkCmdSetScissor m_vk_cmd_set_scissor;
     PFN_vkCmdBindVertexBuffers m_vk_cmd_bind_vertex_buffers;
+    PFN_vkCmdBindIndexBuffer m_vk_cmd_bind_index_buffer;
     PFN_vkCmdPushConstants m_vk_cmd_push_constants;
     PFN_vkCmdBindDescriptorSets m_vk_cmd_bind_descriptor_sets;
     PFN_vkCmdDraw m_vk_cmd_draw;
@@ -229,6 +230,7 @@ public:
     inline void cmd_set_viewport(VkCommandBuffer command_buffer, uint32_t first_viewport, uint32_t viewport_count, VkViewport const *viewports) { return this->m_vk_cmd_set_viewport(command_buffer, first_viewport, viewport_count, viewports); }
     inline void cmd_set_scissor(VkCommandBuffer command_buffer, uint32_t first_scissor, uint32_t scissor_count, VkRect2D const *scissors) { return this->m_vk_cmd_set_scissor(command_buffer, first_scissor, scissor_count, scissors); }
     inline void cmd_bind_vertex_buffers(VkCommandBuffer command_buffer, uint32_t first_binding, uint32_t binding_count, VkBuffer const *buffers, VkDeviceSize const *offsets) { return this->m_vk_cmd_bind_vertex_buffers(command_buffer, first_binding, binding_count, buffers, offsets); }
+    inline void cmd_bind_index_buffer(VkCommandBuffer command_buffer, VkBuffer buffer, VkDeviceSize offset, VkIndexType index_type) { return this->m_vk_cmd_bind_index_buffer(command_buffer, buffer, offset, index_type); }
     inline void cmd_push_constants(VkCommandBuffer command_buffer, VkPipelineLayout layout, VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size, void const *values) { return this->m_vk_cmd_push_constants(command_buffer, layout, stage_flags, offset, size, values); }
     inline void cmd_bind_descriptor_sets(VkCommandBuffer command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout layout, uint32_t first_set, uint32_t descriptor_set_count, const VkDescriptorSet *descriptor_sets, uint32_t dynamic_offset_count, const uint32_t *dynamic_offsets) { return this->m_vk_cmd_bind_descriptor_sets(command_buffer, pipeline_bind_point, layout, first_set, descriptor_set_count, descriptor_sets, dynamic_offset_count, dynamic_offsets); }
     inline void cmd_draw(VkCommandBuffer command_buffer, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) { return this->m_vk_cmd_draw(command_buffer, vertex_count, instance_count, first_vertex, first_instance); }
