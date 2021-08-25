@@ -30,8 +30,8 @@ class gfx_texture_base : public gfx_streaming_object_base, public gfx_frame_obje
 
     virtual void texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, struct gfx_texture_backend_header_t *out_backend_header, uint32_t *out_subresource_num) = 0;
     virtual size_t texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset) = 0;
-    virtual void *texture_streaming_stage_second_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection) = 0;
-    virtual uint32_t (*texture_streaming_stage_second_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) = 0;
+    virtual void *texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection) = 0;
+    virtual uint32_t (*texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) = 0;
     virtual void texture_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest) = 0;
 
     static mcrt_task_ref texture_streaming_stage_second_task_execute(mcrt_task_ref self);

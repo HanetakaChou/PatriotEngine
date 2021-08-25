@@ -203,7 +203,7 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
         }
 
         // post calculate total size
-        if (!load_data_from_input_stream(&neutral_header, &neutral_data_offset, task_data->m_gfx_streaming_object->texture_streaming_stage_second_get_staging_buffer_pointer_callback(task_data->m_gfx_connection), subresource_num, memcpy_dest, task_data->m_gfx_streaming_object->texture_streaming_stage_second_get_calculate_subresource_index_callback(), task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
+        if (!load_data_from_input_stream(&neutral_header, &neutral_data_offset, task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(task_data->m_gfx_connection), subresource_num, memcpy_dest, task_data->m_gfx_streaming_object->texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback(), task_data->m_gfx_input_stream, task_data->m_gfx_input_stream_read_callback, task_data->m_gfx_input_stream_seek_callback))
         {
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_error, true);
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
