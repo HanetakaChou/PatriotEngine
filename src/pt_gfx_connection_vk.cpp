@@ -62,7 +62,6 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
 
         this->m_task_arena = mcrt_task_arena_attach();
         assert(mcrt_task_arena_is_active(this->m_task_arena));
-        assert(NULL != mcrt_task_arena_internal_arena(this->m_task_arena));
 
         this->m_task_arena_thread_count = mcrt_this_task_arena_max_concurrency();
     }
@@ -2089,8 +2088,8 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-    assert(NULL != mcrt_task_arena_internal_arena(gfx_connection->task_arena()));
-    assert(mcrt_task_arena_internal_arena(gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+    // assert(NULL != mcrt_task_arena_internal_arena(gfx_connection->task_arena()));
+    // assert(mcrt_task_arena_internal_arena(gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
 
     uint32_t frame_throttling_index = mcrt_atomic_load(&gfx_connection->m_frame_throttling_index);
     // We add the frame index in acquire

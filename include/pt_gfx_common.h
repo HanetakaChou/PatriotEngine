@@ -28,4 +28,6 @@
 
 #define PT_GFX_DEBUG_MCRT 1
 
+#define PT_GFX_DEBUG_MALLOC 1
+
 #endif

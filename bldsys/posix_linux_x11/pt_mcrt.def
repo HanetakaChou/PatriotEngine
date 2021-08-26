@@ -37,7 +37,6 @@
         mcrt_task_arena_terminate;
         mcrt_this_task_arena_current_thread_index;
         mcrt_this_task_arena_max_concurrency;
-        mcrt_task_arena_internal_arena;
         mcrt_this_task_arena_internal_arena;
         mcrt_aligned_malloc;
         mcrt_aligned_realloc;

@@ -32,40 +32,9 @@ gfx_device_vk::gfx_device_vk()
     return;
 }
 
-static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
-{
-    void *pMemory = mcrt_aligned_malloc(size, alignment);
-    return pMemory;
-}
-
-static void VKAPI_PTR __internal_free_callback(void *, void *pMemory)
-{
-    if (NULL != pMemory)
-    {
-        return mcrt_aligned_free(pMemory);
-    }
-    else
-    {
-        return;
-    }
-}
-
-static void *VKAPI_PTR __internal_reallocation_callback(void *pUserData, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
-{
-    if (NULL == pOriginal)
-    {
-        return __internal_allocation_callback(pUserData, size, alignment, allocationScope);
-    }
-    else if (0U == size)
-    {
-        __internal_free_callback(pUserData, pOriginal);
-        return NULL;
-    }
-    else
-    {
-        return mcrt_aligned_realloc(pOriginal, size, alignment);
-    }
-}
+static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+static void *VKAPI_PTR __internal_reallocation_callback(void *pUserData, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
+static void VKAPI_PTR __internal_free_callback(void *, void *pMemory);
 
 #ifndef NDEBUG
 static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData)
@@ -96,9 +65,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = NULL;
         application_info.pApplicationName = "PatriotEngine";
-        application_info.applicationVersion = 1;
+        application_info.applicationVersion = 0;
         application_info.pEngineName = "PatriotEngine";
-        application_info.engineVersion = 1;
+        application_info.engineVersion = 0;
         application_info.apiVersion = VK_API_VERSION_1_0;
 
         VkInstanceCreateInfo instance_create_info;
@@ -204,15 +173,15 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 PFN_vkEnumeratePhysicalDevices vk_enumerate_physical_devices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vk_get_instance_proc_addr(instance, "vkEnumeratePhysicalDevices"));
                 assert(NULL != vk_enumerate_physical_devices);
 
-                uint32_t physical_device_count_before = 0U;
-                PT_MAYBE_UNUSED VkResult vk_res_before = vk_enumerate_physical_devices(instance, &physical_device_count_before, NULL);
-                assert(VK_SUCCESS == vk_res_before);
+                uint32_t physical_device_count_before;
+                PT_MAYBE_UNUSED VkResult res_enumerate_physical_devices_before = vk_enumerate_physical_devices(instance, &physical_device_count_before, NULL);
+                assert(VK_SUCCESS == res_enumerate_physical_devices_before);
 
                 (*m_physical_device_count) = physical_device_count_before;
                 (*m_physical_devices) = static_cast<VkPhysicalDevice *>(mcrt_aligned_malloc(sizeof(VkPhysicalDevice) * (*m_physical_device_count), alignof(VkPhysicalDevice)));
-                PT_MAYBE_UNUSED VkResult vk_res = vk_enumerate_physical_devices(instance, m_physical_device_count, (*m_physical_devices));
+                PT_MAYBE_UNUSED VkResult res_enumerate_physical_devices = vk_enumerate_physical_devices(instance, m_physical_device_count, (*m_physical_devices));
                 assert(physical_device_count_before == (*m_physical_device_count));
-                assert(VK_SUCCESS == vk_res);
+                assert(VK_SUCCESS == res_enumerate_physical_devices);
             }
             inline ~internal_physical_devices_guard()
             {
@@ -736,3 +705,127 @@ inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags
     return VK_FALSE;
 }
 #endif
+
+#include <sys/cdefs.h> //__BIONIC__
+//#include <features.h> //__GLIBC__
+
+#if defined(PT_GFX_DEBUG_MALLOC) && PT_GFX_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)
+#include <map>
+#include <utility>
+#include <pt_mcrt_spinlock.h>
+
+#include <dlfcn.h>
+#include <execinfo.h>
+
+class gfx_malloc_verify_support
+{
+    mcrt_spinlock_t m_spin_lock;
+    std::map<void *, void *> m_memory_objects;
+
+public:
+    inline gfx_malloc_verify_support()
+    {
+        mcrt_spin_init(&this->m_spin_lock);
+    }
+
+    inline void insert(void *ptr)
+    {
+        mcrt_spin_lock(&this->m_spin_lock);
+        assert(m_memory_objects.end() == m_memory_objects.find(ptr));
+
+        void *addrs_ptr[3];
+        int num_levels = backtrace(addrs_ptr, 3);
+        if (num_levels >= 3)
+        {
+            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[2]));
+        }
+        else
+        {
+            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(static_cast<void *>(NULL)));
+        }
+
+        mcrt_spin_unlock(&this->m_spin_lock);
+    }
+
+    inline void erase(void *ptr)
+    {
+        mcrt_spin_lock(&this->m_spin_lock);
+        auto iter = this->m_memory_objects.find(ptr);
+        assert(this->m_memory_objects.end() != iter);
+        this->m_memory_objects.erase(iter);
+        mcrt_spin_unlock(&this->m_spin_lock);
+    }
+
+    inline ~gfx_malloc_verify_support()
+    {
+        for (auto const &item : this->m_memory_objects)
+        {
+            void *object_addr = item.first;
+            void *funtion_addr = item.second;
+            // set breakpoint here and the debugger can tell you the name of the function by the address
+            assert(0);
+            object_addr = NULL;
+            funtion_addr = NULL;
+        }
+    }
+
+} instance_mcrt_malloc_verify_support;
+#endif
+
+static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+{
+    if (0U != size)
+    {
+        void *pMemory = mcrt_aligned_malloc(size, alignment);
+        assert(NULL != pMemory);
+#if defined(PT_GFX_DEBUG_MALLOC) && PT_GFX_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)
+        instance_mcrt_malloc_verify_support.insert(pMemory);
+#endif
+        return pMemory;
+    }
+    else
+    {
+        assert(0);
+        return NULL;
+    }
+}
+
+static void *VKAPI_PTR __internal_reallocation_callback(void *pUserData, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+{
+    if (NULL == pOriginal)
+    {
+        if (0U != size)
+        {
+            return __internal_allocation_callback(pUserData, size, alignment, allocationScope);
+        }
+        else
+        {
+            assert(0);
+            return NULL;
+        }
+    }
+    else if (0U == size)
+    {
+        __internal_free_callback(pUserData, pOriginal);
+        return NULL;
+    }
+    else
+    {
+        return mcrt_aligned_realloc(pOriginal, size, alignment);
+    }
+}
+
+static void VKAPI_PTR __internal_free_callback(void *, void *pMemory)
+{
+    if (NULL != pMemory)
+    {
+#if defined(PT_GFX_DEBUG_MALLOC) && PT_GFX_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)
+        instance_mcrt_malloc_verify_support.erase(pMemory);
+#endif
+        return mcrt_aligned_free(pMemory);
+    }
+    else
+    {
+        return;
+    }
+}

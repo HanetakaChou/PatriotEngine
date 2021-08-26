@@ -81,8 +81,8 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
 
     // different master task doesn't share the task_arena
     // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique
-    assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()));
-    assert(mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
+    // assert(NULL != mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()));
+    // assert(mcrt_task_arena_internal_arena(task_data->m_gfx_connection->task_arena()) == mcrt_this_task_arena_internal_arena());
 
     PT_MAYBE_UNUSED streaming_status_t streaming_status = mcrt_atomic_load(&task_data->m_gfx_streaming_object->m_streaming_status);
     PT_MAYBE_UNUSED bool streaming_error = mcrt_atomic_load(&task_data->m_gfx_streaming_object->m_streaming_error);
