@@ -25,6 +25,7 @@ LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_android.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_app.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -38,6 +39,6 @@ LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 LOCAL_LDFLAGS += -landroid
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt 
+LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx
 
 include $(BUILD_SHARED_LIBRARY)
