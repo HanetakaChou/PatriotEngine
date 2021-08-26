@@ -75,7 +75,7 @@ uint32_t gfx_device_vk::platform_surface_extension_count()
     return 2;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index)
 {
     // [33.4.9. iOS Platform](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/chap33.html#platformQuerySupport_ios)
     // On iOS, all physical devices and queue families must be capable of presentation with any layer. As a result there is no iOS-specific query for these capabilities.
@@ -85,6 +85,8 @@ bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevi
 
     return true;
 }
+
+
 
 char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
 {

@@ -47,6 +47,9 @@ extern "C"
 
     PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
 
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_window_created(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_window_destroyed();
+
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
     PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height);

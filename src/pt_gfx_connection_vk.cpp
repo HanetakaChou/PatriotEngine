@@ -922,31 +922,22 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
         }
     }
 
-    // Surface
-    {
-        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
-        assert(VK_SUCCESS == res_platform_create_surface);
-    }
-#ifndef NDEBUG
-    {
-        VkBool32 supported;
-        VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
-        assert(VK_SUCCESS == res_get_physical_device_surface_support);
-        assert(VK_TRUE == supported);
-    }
-#endif
     this->m_wsi_width = 1280U;
     this->m_wsi_height = 720U;
-    this->m_depth_image = VK_NULL_HANDLE;
+
+    this->m_surface = VK_NULL_HANDLE;
+
     this->m_swapchain_image_count = 0U;
     this->m_swapchain = VK_NULL_HANDLE;
+    this->m_swapchain_image_format = VK_FORMAT_UNDEFINED;
+    this->m_render_pass = VK_NULL_HANDLE;
+    this->m_depth_image_view = VK_NULL_HANDLE;
+    this->m_depth_image = VK_NULL_HANDLE;
+    this->m_depth_device_memory = VK_NULL_HANDLE;
+    this->m_swapchain_image_views = NULL;
+    this->m_framebuffers = NULL;
 
-    if (!this->update_swapchain())
-    {
-        return false;
-    }
-
-    if (!this->init_renderpass())
+    if (!this->update_surface(wsi_connection, wsi_visual, wsi_window))
     {
         return false;
     }
@@ -969,25 +960,29 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     return true;
 }
 
-inline bool gfx_connection_vk::update_swapchain()
+inline bool gfx_connection_vk::update_surface(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    // wait fence
-    if (0U != this->m_swapchain_image_count)
+    // Surface
+    assert(VK_NULL_HANDLE == this->m_surface);
     {
-        assert(NULL != this->m_swapchain_image_views);
-        assert(NULL != this->m_swapchain_images);
-        assert(NULL != this->m_framebuffers);
-        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
-        {
-            this->m_device.destroy_image_view(this->m_swapchain_image_views[swapchain_image_index]);
-            this->m_device.destroy_framebuffer(this->m_framebuffers[swapchain_image_index]);
-        }
-        mcrt_aligned_free(this->m_swapchain_image_views);
-        mcrt_aligned_free(this->m_swapchain_images);
-        mcrt_aligned_free(this->m_framebuffers);
+        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
+        assert(VK_SUCCESS == res_platform_create_surface);
     }
+#ifndef NDEBUG
+    {
+        VkBool32 supported;
+        VkResult res_get_physical_device_surface_support = this->m_device.get_physical_device_surface_support(this->m_device.queue_graphics_family_index(), this->m_surface, &supported);
+        assert(VK_SUCCESS == res_get_physical_device_surface_support);
+        assert(VK_TRUE == supported);
+    }
+#endif
+    return true;
+}
 
+inline bool gfx_connection_vk::update_framebuffer()
+{
     //swapchain
+    assert(VK_FORMAT_UNDEFINED == this->m_swapchain_image_format);
     {
         VkSwapchainKHR old_swapchain = this->m_swapchain;
 
@@ -1149,45 +1144,32 @@ inline bool gfx_connection_vk::update_swapchain()
         assert(VK_SUCCESS == res_create_swap_chain);
     }
 
-    return true;
-}
+    // renderpass
+    // format may change?
+    assert(VK_NULL_HANDLE == this->m_render_pass);
+    {
+        VkAttachmentDescription attachments[2] = {
+            {0U, this->m_swapchain_image_format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
+            {0U, this->m_malloc.format_depth(), VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
 
-inline bool gfx_connection_vk::init_renderpass()
-{
-    VkAttachmentDescription attachments[2] = {
-        {0U, this->m_swapchain_image_format, VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_STORE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR},
-        {0U, this->m_malloc.format_depth(), VK_SAMPLE_COUNT_1_BIT, VK_ATTACHMENT_LOAD_OP_CLEAR, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_ATTACHMENT_LOAD_OP_DONT_CARE, VK_ATTACHMENT_STORE_OP_DONT_CARE, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
+        VkAttachmentReference subpass_0_color_attachments[1] = {
+            {0U, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
 
-    VkAttachmentReference subpass_0_color_attachments[1] = {
-        {0U, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}};
+        VkAttachmentReference subpass_0_depth_stencil_attachment = {1U, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
 
-    VkAttachmentReference subpass_0_depth_stencil_attachment = {1U, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+        VkSubpassDescription subpasses[1] = {
+            {0U, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1U, subpass_0_color_attachments, NULL, &subpass_0_depth_stencil_attachment, 0U, NULL}};
 
-    VkSubpassDescription subpasses[1] = {
-        {0U, VK_PIPELINE_BIND_POINT_GRAPHICS, 0, NULL, 1U, subpass_0_color_attachments, NULL, &subpass_0_depth_stencil_attachment, 0U, NULL}};
+        VkRenderPassCreateInfo render_pass_create_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, NULL, 0U, 2U, attachments, 1U, subpasses, 0U, NULL};
 
-    VkRenderPassCreateInfo render_pass_create_info = {VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO, NULL, 0U, 2U, attachments, 1U, subpasses, 0U, NULL};
+        PT_MAYBE_UNUSED VkResult res_create_render_pass = this->m_device.create_render_pass(&render_pass_create_info, &this->m_render_pass);
+        assert(VK_SUCCESS == res_create_render_pass);
+    }
 
-    PT_MAYBE_UNUSED VkResult res_create_render_pass = this->m_device.create_render_pass(&render_pass_create_info, &this->m_render_pass);
-    assert(VK_SUCCESS == res_create_render_pass);
-
-    return true;
-}
-
-inline bool gfx_connection_vk::update_framebuffer()
-{
     // depth image and view
     {
-        if (VK_NULL_HANDLE != this->m_depth_image)
-        {
-            assert(VK_NULL_HANDLE != this->m_depth_image_view);
-            assert(VK_NULL_HANDLE != this->m_depth_device_memory);
-            this->m_device.destroy_image_view(this->m_depth_image_view);
-            this->m_device.destroy_image(this->m_depth_image);
-            this->m_device.free_memory(this->m_depth_device_memory);
-        }
-
         // depth
+        assert(VK_NULL_HANDLE == this->m_depth_image);
         {
             struct VkImageCreateInfo image_create_info;
             image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1213,6 +1195,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         }
 
         // depth memory
+        assert(VK_NULL_HANDLE == this->m_depth_device_memory);
         {
             struct VkMemoryRequirements memory_requirements;
             this->m_device.get_image_memory_requirements(this->m_depth_image, &memory_requirements);
@@ -1231,6 +1214,8 @@ inline bool gfx_connection_vk::update_framebuffer()
         }
 
         // depth view
+        assert(VK_NULL_HANDLE == this->m_depth_image_view);
+
         {
             VkImageViewCreateInfo image_view_create_info;
             image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1266,6 +1251,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         assert(swapchain_image_count_before == this->m_swapchain_image_count);
         assert(VK_SUCCESS == res_get_swapchain_images);
 
+        assert(NULL == this->m_swapchain_image_views);
         this->m_swapchain_image_views = static_cast<VkImageView *>(mcrt_aligned_malloc(sizeof(VkImageView) * this->m_swapchain_image_count, alignof(VkImageView)));
 
         for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
@@ -1294,7 +1280,7 @@ inline bool gfx_connection_vk::update_framebuffer()
 
     // frame buffer
     {
-
+        assert(NULL == this->m_framebuffers);
         this->m_framebuffers = static_cast<VkFramebuffer *>(mcrt_aligned_malloc(sizeof(VkFramebuffer) * this->m_swapchain_image_count, alignof(VkFramebuffer)));
 
         for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
@@ -1318,6 +1304,56 @@ inline bool gfx_connection_vk::update_framebuffer()
     }
 
     return true;
+}
+
+inline void gfx_connection_vk::destory_framebuffer()
+{
+    // wait fence
+    if (0U != this->m_swapchain_image_count)
+    {
+        assert(NULL != this->m_swapchain_image_views);
+        assert(NULL != this->m_framebuffers);
+        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
+        {
+            this->m_device.destroy_image_view(this->m_swapchain_image_views[swapchain_image_index]);
+            this->m_device.destroy_framebuffer(this->m_framebuffers[swapchain_image_index]);
+        }
+        mcrt_aligned_free(this->m_swapchain_image_views);
+        mcrt_aligned_free(this->m_framebuffers);
+        this->m_swapchain_image_views = NULL;
+        this->m_framebuffers = NULL;
+
+        assert(NULL != this->m_swapchain_images);
+        mcrt_aligned_free(this->m_swapchain_images);
+        this->m_swapchain_images = NULL;
+
+        assert(VK_FORMAT_UNDEFINED != this->m_swapchain_image_format);
+        this->m_swapchain_image_format = VK_FORMAT_UNDEFINED;
+
+        assert(VK_NULL_HANDLE != this->m_render_pass);
+        this->m_device.destroy_renderPass(this->m_render_pass);
+        this->m_render_pass = VK_NULL_HANDLE;
+
+        assert(VK_NULL_HANDLE != this->m_depth_image_view);
+        assert(VK_NULL_HANDLE != this->m_depth_image);
+        assert(VK_NULL_HANDLE != this->m_depth_device_memory);
+        this->m_device.destroy_image_view(this->m_depth_image_view);
+        this->m_device.destroy_image(this->m_depth_image);
+        this->m_device.free_memory(this->m_depth_device_memory);
+        this->m_depth_image_view = VK_NULL_HANDLE;
+        this->m_depth_image = VK_NULL_HANDLE;
+        this->m_depth_device_memory = VK_NULL_HANDLE;
+    }
+}
+
+inline void gfx_connection_vk::destory_surface()
+{
+    // wait fence
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->m_device.destroy_surface(this->m_surface);
+        this->m_surface = VK_NULL_HANDLE;
+    }
 }
 
 inline bool gfx_connection_vk::init_pipeline_layout()
@@ -1833,7 +1869,7 @@ inline void gfx_connection_vk::acquire_frame()
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
-        this->update_swapchain();
+        this->destory_framebuffer();
         this->update_framebuffer();
         this->m_frame_swapchain_image_acquired[frame_throttling_index] = false;
     }
@@ -2013,7 +2049,7 @@ inline void gfx_connection_vk::release_frame()
             {
                 PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
                 assert(VK_SUCCESS == res_wait_for_fences);
-                this->update_swapchain();
+                this->destory_framebuffer();
                 this->update_framebuffer();
             }
             else
@@ -2098,7 +2134,6 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         mat_vk_y.m[3][2] = 0.0f;
         mat_vk_y.m[3][3] = 1.0f;
         math_simd_mat mat_p = math_mat_multiply(math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f), math_load_alignas16_mat4x4(&mat_vk_y));
-
 
         // directxmath // row vector + row major
         // glsl // colum_major equivalent transpose

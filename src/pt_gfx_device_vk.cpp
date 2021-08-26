@@ -149,6 +149,12 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_get_physical_device_surface_present_modes = reinterpret_cast<PFN_vkGetPhysicalDeviceSurfacePresentModesKHR>(vk_get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceSurfacePresentModesKHR"));
     assert(NULL != this->m_vk_get_physical_device_surface_present_modes);
 
+    this->m_vk_platform_create_surface = vk_get_instance_proc_addr(this->m_instance, platform_create_surface_function_name());
+    assert(NULL != this->m_vk_platform_create_surface);
+
+    this->m_vk_destroy_surface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(vk_get_instance_proc_addr(this->m_instance, "vkDestroySurfaceKHR"));
+    assert(NULL != this->m_vk_destroy_surface);
+
 #ifndef NDEBUG
     assert(VK_NULL_HANDLE == this->m_debug_report_callback);
     {
@@ -311,7 +317,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         {
             VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
 
-            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(m_physical_device, queue_family_index, wsi_connection, wsi_visual, wsi_window))
+            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(vk_get_instance_proc_addr, m_physical_device, queue_family_index, wsi_connection, wsi_visual, wsi_window))
             {
                 this->m_queue_graphics_family_index = queue_family_index;
                 this->m_queue_graphics_queue_index = 0U;
@@ -568,6 +574,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
     this->m_vk_create_render_pass = reinterpret_cast<PFN_vkCreateRenderPass>(vk_get_device_proc_addr(m_device, "vkCreateRenderPass"));
     assert(NULL != this->m_vk_create_render_pass);
+
+    this->m_vk_destroy_render_pass = reinterpret_cast<PFN_vkDestroyRenderPass>(vk_get_device_proc_addr(m_device, "vkDestroyRenderPass"));
+    assert(NULL != this->m_vk_destroy_render_pass);
 
     this->m_vk_create_image_view = reinterpret_cast<PFN_vkCreateImageView>(vk_get_device_proc_addr(m_device, "vkCreateImageView"));
     assert(NULL != this->m_vk_create_image_view);

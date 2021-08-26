@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -61,6 +61,9 @@ class gfx_device_vk
     PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR m_vk_get_physical_device_surface_capablilities;
     PFN_vkGetPhysicalDeviceSurfaceFormatsKHR m_vk_get_physical_device_surface_formats;
     PFN_vkGetPhysicalDeviceSurfacePresentModesKHR m_vk_get_physical_device_surface_present_modes;
+    PFN_vkVoidFunction m_vk_platform_create_surface;
+    PFN_vkDestroySurfaceKHR m_vk_destroy_surface;
+
     PFN_vkCreateBuffer m_vk_create_buffer;
     PFN_vkCreateImage m_vk_create_image;
     PFN_vkDestroyBuffer m_vk_destroy_buffer;
@@ -92,6 +95,7 @@ class gfx_device_vk
     PFN_vkCreateSwapchainKHR m_vk_create_swapchain;
     PFN_vkGetSwapchainImagesKHR m_vk_get_swapchain_images;
     PFN_vkCreateRenderPass m_vk_create_render_pass;
+    PFN_vkDestroyRenderPass m_vk_destroy_render_pass;
     PFN_vkCreateImageView m_vk_create_image_view;
     PFN_vkDestroyImageView m_vk_destory_image_view;
     PFN_vkCreateFramebuffer m_vk_create_framebuffer;
@@ -124,7 +128,8 @@ class gfx_device_vk
     PFN_vkCmdEndRenderPass m_vk_cmd_end_render_pass;
 
     static char const *platform_surface_extension_name();
-    bool platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    bool platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    static char const *platform_create_surface_function_name();
 
 public:
     gfx_device_vk();
@@ -136,7 +141,10 @@ public:
     inline VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 
-    inline uint32_t physical_device_pipeline_vendor_id() { return m_physical_device_pipeline_vendor_id; }
+    inline uint32_t physical_device_pipeline_vendor_id()
+    {
+        return m_physical_device_pipeline_vendor_id;
+    }
     inline uint32_t physical_device_pipeline_device_id() { return m_physical_device_pipeline_device_id; }
     inline mcrt_uuid physical_device_pipeline_cache_uuid() { return m_physical_device_pipeline_cache_uuid; }
 
@@ -197,6 +205,7 @@ public:
     inline void destroy_semaphore(VkSemaphore semaphore) { return this->m_vk_destroy_semaphore(this->m_device, semaphore, &this->m_allocator_callbacks); }
 
     inline VkResult create_render_pass(VkRenderPassCreateInfo const *create_info, VkRenderPass *renderpass) { return this->m_vk_create_render_pass(this->m_device, create_info, &this->m_allocator_callbacks, renderpass); }
+    inline void destroy_renderPass(VkRenderPass render_pass) { return this->m_vk_destroy_render_pass(this->m_device, render_pass, &this->m_allocator_callbacks); }
 
     inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_vk_create_image_view(this->m_device, create_info, &this->m_allocator_callbacks, view); }
     inline void destroy_image_view(VkImageView image_view) { return this->m_vk_destory_image_view(this->m_device, image_view, &this->m_allocator_callbacks); }
@@ -244,6 +253,9 @@ public:
     inline VkResult get_physical_device_surface_capablilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR *surface_capabilities) { return this->m_vk_get_physical_device_surface_capablilities(this->m_physical_device, surface, surface_capabilities); }
     inline VkResult get_physical_device_surface_formats(VkSurfaceKHR surface, uint32_t *surface_format_count, VkSurfaceFormatKHR *surface_formats) { return this->m_vk_get_physical_device_surface_formats(this->m_physical_device, surface, surface_format_count, surface_formats); }
     inline VkResult get_physical_device_surface_present_modes(VkSurfaceKHR surface, uint32_t *present_mode_count, VkPresentModeKHR *present_modes) { return this->m_vk_get_physical_device_surface_present_modes(this->m_physical_device, surface, present_mode_count, present_modes); }
+
+    inline void destroy_surface(VkSurfaceKHR surface) { return this->m_vk_destroy_surface(m_instance, surface, &this->m_allocator_callbacks); }
+
     inline VkResult create_swapchain(VkSwapchainCreateInfoKHR const *create_info, VkSwapchainKHR *swapchain) { return this->m_vk_create_swapchain(this->m_device, create_info, &this->m_allocator_callbacks, swapchain); }
     inline VkResult get_swapchain_images(VkSwapchainKHR swapchain, uint32_t *swapchain_image_count, VkImage *swapchain_images) { return this->m_vk_get_swapchain_images(this->m_device, swapchain, swapchain_image_count, swapchain_images); }
 };

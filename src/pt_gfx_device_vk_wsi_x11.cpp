@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -33,18 +33,23 @@ char const *gfx_device_vk::platform_surface_extension_name()
     return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR vk_get_physical_device_xcb_presentation_support = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(vkGetInstanceProcAddr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
+    PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR vk_get_physical_device_xcb_presentation_support = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
 
     VkBool32 res_get_physical_device_xcb_presentation_support = vk_get_physical_device_xcb_presentation_support(physical_device, queue_family_index, unwrap(wsi_connection), unwrap(wsi_visual));
 
     return (VK_FALSE != res_get_physical_device_xcb_presentation_support);
 }
 
+char const *gfx_device_vk::platform_create_surface_function_name()
+{
+    return "vkCreateXcbSurfaceKHR";
+}
+
 VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    PFN_vkCreateXcbSurfaceKHR vk_create_xcb_surface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(vkGetInstanceProcAddr(this->m_instance, "vkCreateXcbSurfaceKHR"));
+    PFN_vkCreateXcbSurfaceKHR vk_create_xcb_surface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_xcb_surface);
 
     VkXcbSurfaceCreateInfoKHR xcb_surface_create_info;

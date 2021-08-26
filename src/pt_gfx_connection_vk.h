@@ -201,9 +201,10 @@ class gfx_connection_vk final : public gfx_connection_base
     inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool init_streaming();
-    inline bool update_swapchain();
-    inline bool init_renderpass();
+    inline bool update_surface(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     inline bool update_framebuffer();
+    inline void destory_framebuffer();
+    inline void destory_surface();
     inline bool init_pipeline_layout();
     inline bool init_pipeline();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
