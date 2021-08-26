@@ -44,7 +44,7 @@ static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT
 }
 #endif
 
-bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     this->m_vk_mcrt_allocation_callbacks.pUserData = NULL;
     this->m_vk_mcrt_allocation_callbacks.pfnAllocation = __internal_allocation_callback;
@@ -305,7 +305,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         {
             VkQueueFamilyProperties queue_family_property = queue_family_properties[queue_family_index];
 
-            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(vk_get_instance_proc_addr, m_physical_device, queue_family_index, wsi_connection, wsi_visual, wsi_window))
+            if ((queue_family_property.queueFlags & VK_QUEUE_GRAPHICS_BIT) && platform_physical_device_presentation_support(vk_get_instance_proc_addr, m_physical_device, queue_family_index, wsi_connection, wsi_visual))
             {
                 this->m_queue_graphics_family_index = queue_family_index;
                 this->m_queue_graphics_queue_index = 0U;
@@ -779,11 +779,11 @@ public:
             funtion_addr = NULL;
         }
 
-        void *addrs_ptr[7];
-        int num_levels = backtrace(addrs_ptr, 7);
-        if (num_levels >= 7)
+        void *addrs_ptr[5];
+        int num_levels = backtrace(addrs_ptr, 5);
+        if (num_levels >= 5)
         {
-            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[6]));
+            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[4]));
         }
         else
         {

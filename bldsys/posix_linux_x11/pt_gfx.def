@@ -18,6 +18,8 @@
 {
     global:
         gfx_connection_init;
+        gfx_connection_on_wsi_window_created;
+        gfx_connection_on_wsi_window_destroyed;
         gfx_connection_on_wsi_resized;
         gfx_connection_on_wsi_redraw_needed_acquire;
         gfx_connection_on_wsi_redraw_needed_release;

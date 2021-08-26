@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -44,11 +44,11 @@ extern class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_win
 #endif
 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
-    extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 #endif
 
 // API
-class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     class gfx_connection_base *gfx_connection = NULL;
 
@@ -69,7 +69,7 @@ class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_con
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
     if (NULL == gfx_connection)
     {
-        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual, wsi_window);
+        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual);
     }
 #endif
 
@@ -91,19 +91,19 @@ inline class gfx_material_base *unwrap(gfx_material_ref gfx_material) { return r
 inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
-    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, wsi_window));
+    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_created(gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+PT_ATTR_GFX bool PT_CALL gfx_connection_on_wsi_window_created(gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
 {
-    return unwrap(gfx_connection)->on_wsi_window_created(wsi_connection, wsi_visual, wsi_window);
+    return unwrap(gfx_connection)->on_wsi_window_created(wsi_connection, wsi_window, width, height);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed()
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed(gfx_connection_ref gfx_connection)
 {
-
+    return unwrap(gfx_connection)->on_wsi_window_destroyed();
 }
 
 PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_resized(gfx_connection_ref gfx_connection, float width, float height)
@@ -133,8 +133,7 @@ PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref g
 
 PT_ATTR_GFX gfx_material_ref PT_CALL gfx_connection_create_material(gfx_connection_ref gfx_connection)
 {
-      return wrap(unwrap(gfx_connection)->create_material());
-  
+    return wrap(unwrap(gfx_connection)->create_material());
 }
 
 PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection)

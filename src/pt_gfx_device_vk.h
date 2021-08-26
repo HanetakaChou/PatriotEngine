@@ -134,12 +134,12 @@ class gfx_device_vk
     PFN_vkCmdEndRenderPass m_vk_cmd_end_render_pass;
 
     static char const *platform_surface_extension_name();
-    bool platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    bool platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     static char const *platform_create_surface_function_name();
 
 public:
     gfx_device_vk();
-    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     void destroy();
     ~gfx_device_vk();
 
@@ -260,7 +260,7 @@ public:
     inline void cmd_draw(VkCommandBuffer command_buffer, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) { return this->m_vk_cmd_draw(command_buffer, vertex_count, instance_count, first_vertex, first_instance); }
     inline void cmd_end_render_pass(VkCommandBuffer command_buffer) { return this->m_vk_cmd_end_render_pass(command_buffer); }
 
-    VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    VkResult platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window);
     inline VkResult get_physical_device_surface_support(uint32_t queue_family_index, VkSurfaceKHR surface, VkBool32 *supported) { return this->m_vk_get_physical_device_surface_support(this->m_physical_device, queue_family_index, surface, supported); }
     inline VkResult get_physical_device_surface_capablilities(VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR *surface_capabilities) { return this->m_vk_get_physical_device_surface_capablilities(this->m_physical_device, surface, surface_capabilities); }
     inline VkResult get_physical_device_surface_formats(VkSurfaceKHR surface, uint32_t *surface_format_count, VkSurfaceFormatKHR *surface_formats) { return this->m_vk_get_physical_device_surface_formats(this->m_physical_device, surface, surface_format_count, surface_formats); }

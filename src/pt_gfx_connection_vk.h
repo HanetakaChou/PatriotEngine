@@ -198,13 +198,13 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline gfx_connection_vk();
     inline ~gfx_connection_vk();
-    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     void destroy() override;
 
-    inline bool init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool init_frame();
     inline bool init_pipeline_layout();
     inline bool init_shader();
-    inline bool update_surface(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    inline bool update_surface(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window);
     inline bool update_framebuffer();
     inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
     inline void destroy_frame();
@@ -218,12 +218,13 @@ class gfx_connection_vk final : public gfx_connection_base
     inline void destroy_streaming();
 
 
-    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     class gfx_node_base *create_node() override;
     class gfx_mesh_base *create_mesh() override;
     class gfx_material_base *create_material() override;
     class gfx_texture_base *create_texture() override;
-    void on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window) override;
+    bool on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height) override;
+    void on_wsi_window_destroyed() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
     void on_wsi_redraw_needed_release() override;
@@ -268,7 +269,7 @@ public:
     void free_descriptor_set(VkDescriptorSet descriptor_set);
 };
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
 
 // Streaming in CryEngine - StatObj
 

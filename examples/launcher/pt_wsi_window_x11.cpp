@@ -65,10 +65,12 @@ void wsi_window_x11::init()
                                   XCB_EVENT_MASK_STRUCTURE_NOTIFY |
                                   XCB_EVENT_MASK_FOCUS_CHANGE};
 
+    this->m_window_width = 1280;
+    this->m_window_height = 720;
     xcb_void_cookie_t cookie_create_window = xcb_create_window_checked(m_xcb_connection,
                                                                        m_screen->root_depth,
                                                                        m_window,
-                                                                       m_screen->root, 0, 0, 1280, 720, 0,
+                                                                       m_screen->root, 0, 0, this->m_window_width, this->m_window_height, 0,
                                                                        XCB_WINDOW_CLASS_INPUT_OUTPUT,
                                                                        m_visual,
                                                                        value_mask, value_list);
@@ -174,9 +176,11 @@ void *wsi_window_x11::draw_request_main(void *arg)
 {
     wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual), wrap_wsi_window(self->m_window));
+    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual));
     assert(self->m_gfx_connection != NULL);
     mcrt_atomic_store(&self->m_draw_request_thread_running, true);
+
+    gfx_connection_on_wsi_window_created(self->m_gfx_connection, wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_window(self->m_window), self->m_window_height, self->m_window_width);
 
     while (mcrt_atomic_load(&self->m_loop))
     {
@@ -308,7 +312,9 @@ void wsi_window_x11::run()
             assert(XCB_CONFIGURE_NOTIFY == (event->response_type & (~uint8_t(0X80))));
 
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-            gfx_connection_on_wsi_resized(m_gfx_connection, configure_notify->width, configure_notify->height);
+            this->m_window_width = configure_notify->width;
+            this->m_window_height = configure_notify->height;
+            gfx_connection_on_wsi_resized(m_gfx_connection, this->m_window_width, this->m_window_height);
         }
         break;
         case XCB_MAPPING_NOTIFY:
@@ -367,6 +373,7 @@ void wsi_window_x11::destroy()
     {
         mcrt_os_yield();
     }
+    gfx_connection_on_wsi_window_destroyed(this->m_gfx_connection);
     gfx_connection_destroy(this->m_gfx_connection);
 
     xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);

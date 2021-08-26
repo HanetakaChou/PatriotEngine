@@ -164,7 +164,8 @@ public:
     virtual class gfx_mesh_base *create_mesh() = 0;
     virtual class gfx_material_base *create_material() = 0;
     virtual class gfx_texture_base *create_texture() = 0;
-    virtual void on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window) = 0;
+    virtual bool on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height) = 0;
+    virtual void on_wsi_window_destroyed() = 0;
     virtual void on_wsi_resized(float width, float height) = 0;
     virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling
     virtual void on_wsi_redraw_needed_release() = 0;

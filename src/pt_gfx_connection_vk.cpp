@@ -22,10 +22,10 @@
 #include "pt_gfx_connection_vk.h"
 #include <new>
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    if (connection->init(wsi_connection, wsi_visual, wsi_window))
+    if (connection->init(wsi_connection, wsi_visual))
     {
         return connection;
     }
@@ -40,9 +40,9 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
-inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
-    if (!m_device.init(wsi_connection, wsi_visual, wsi_window))
+    if (!m_device.init(wsi_connection, wsi_visual))
     {
         return false;
     }
@@ -67,7 +67,7 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
     }
 
     // Frame
-    if (!this->init_frame(wsi_connection, wsi_visual, wsi_window))
+    if (!this->init_frame())
     {
         return false;
     }
@@ -842,7 +842,7 @@ void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
     this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
 }
 
-inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::init_frame()
 {
     //Frame Throttling
     {
@@ -948,25 +948,15 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
         return false;
     }
 
-    if (!this->update_surface(wsi_connection, wsi_visual, wsi_window))
-    {
-        return false;
-    }
-
-    if (!this->update_framebuffer())
-    {
-        return false;
-    }
-
     return true;
 }
 
-inline bool gfx_connection_vk::update_surface(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::update_surface(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
 {
     // Surface
     assert(VK_NULL_HANDLE == this->m_surface);
     {
-        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_visual, wsi_window);
+        PT_MAYBE_UNUSED VkResult res_platform_create_surface = this->m_device.platform_create_surface(&this->m_surface, wsi_connection, wsi_window);
         assert(VK_SUCCESS == res_platform_create_surface);
     }
 #ifndef NDEBUG
@@ -1143,6 +1133,11 @@ inline bool gfx_connection_vk::update_framebuffer()
 
         PT_MAYBE_UNUSED VkResult res_create_swap_chain = this->m_device.create_swapchain(&swapchain_create_info, &this->m_swapchain);
         assert(VK_SUCCESS == res_create_swap_chain);
+
+        if (VK_NULL_HANDLE != old_swapchain)
+        {
+            this->m_device.destroy_swapchain(old_swapchain);
+        }
     }
 
     // renderpass
@@ -2234,14 +2229,6 @@ inline void gfx_connection_vk::destroy_frame()
         this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
     }
 
-    this->destory_framebuffer();
-
-    assert(VK_NULL_HANDLE != this->m_swapchain);
-    this->m_device.destroy_swapchain(this->m_swapchain);
-    this->m_swapchain = VK_NULL_HANDLE;
-
-    this->destory_surface();
-
     this->destory_shader();
 
     this->destory_pipeline_layout();
@@ -2334,10 +2321,41 @@ void gfx_connection_vk::destroy()
 
 inline gfx_connection_vk::~gfx_connection_vk()
 {
+
 }
 
-void gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
 {
+    this->m_wsi_width = width;
+    this->m_wsi_height = height;
+
+    if (!this->update_surface(wsi_connection, wsi_window))
+    {
+        return false;
+    }
+
+    if (!this->update_framebuffer())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+void gfx_connection_vk::on_wsi_window_destroyed()
+{
+    for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
+    {
+        this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
+    }
+
+    this->destory_framebuffer();
+
+    assert(VK_NULL_HANDLE != this->m_swapchain);
+    this->m_device.destroy_swapchain(this->m_swapchain);
+    this->m_swapchain = VK_NULL_HANDLE;
+
+    this->destory_surface();
 }
 
 void gfx_connection_vk::on_wsi_resized(float width, float height)
