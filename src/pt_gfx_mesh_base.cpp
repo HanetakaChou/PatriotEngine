@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -29,12 +29,12 @@ struct mesh_streaming_stage_second_task_data_t
     gfx_input_stream_ref m_gfx_input_stream;
     intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
     int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref );
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref);
 };
 static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 inline struct mesh_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_data_t *task_data) { return reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(task_data); }
 
-bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
+bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -135,7 +135,9 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
     mcrt_task_increment_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_connection->streaming_throttling_index_unlock();
 
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     task_data->m_gfx_connection->streaming_task_mark_execute_begin(streaming_throttling_index);
+#endif
 
     mcrt_task_set_parent(self, task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
@@ -186,8 +188,10 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
 
                     task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);
 
-                    // recycle needs manually tally_completion_of_predecessor
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
                     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
+                    // recycle needs manually tally_completion_of_predecessor
                     // the "mcrt_task_decrement_ref_count" must be called after all works(include the C++ destructors) are done
                     mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
                     return NULL;
@@ -203,7 +207,9 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
             task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
             task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
             return NULL;
         }
 
@@ -226,7 +232,9 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
     }
 
     task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
     return NULL;
 }
 
@@ -264,7 +272,7 @@ inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { re
 inline gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<gfx_mesh_ref>(mesh); }
 inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref ))
+PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
 {
     return unwrap(mesh)->read_input_stream(unwrap(gfx_connection), mesh_index, material_index, initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }

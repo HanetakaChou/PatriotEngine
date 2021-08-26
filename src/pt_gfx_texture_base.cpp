@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -140,7 +140,9 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
     mcrt_task_increment_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
     task_data->m_gfx_connection->streaming_throttling_index_unlock();
 
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     task_data->m_gfx_connection->streaming_task_mark_execute_begin(streaming_throttling_index);
+#endif
 
     mcrt_task_set_parent(self, task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
 
@@ -155,7 +157,9 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
             task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
             task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
             return NULL;
         }
 
@@ -191,8 +195,10 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
                     // release temp memory for the calculation
                     mcrt_aligned_free(memcpy_dest);
 
-                    // recycle needs manually tally_completion_of_predecessor
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
                     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
+                    // recycle needs manually tally_completion_of_predecessor
                     // the "mcrt_task_decrement_ref_count" must be called after all works(include the C++ destructors) are done
                     mcrt_task_decrement_ref_count(task_data->m_gfx_connection->streaming_task_root(streaming_throttling_index));
                     return NULL;
@@ -208,7 +214,9 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
             task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
             mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
             task_data->m_gfx_connection->streaming_object_list_push(streaming_throttling_index, task_data->m_gfx_streaming_object);
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
             task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
             mcrt_aligned_free(memcpy_dest);
             return NULL;
         }
@@ -236,7 +244,9 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
     }
 
     task_data->m_gfx_input_stream_destroy_callback(task_data->m_gfx_input_stream);
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     task_data->m_gfx_connection->streaming_task_mark_executie_end(streaming_throttling_index);
+#endif
     return NULL;
 }
 

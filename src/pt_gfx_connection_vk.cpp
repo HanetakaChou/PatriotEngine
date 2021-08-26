@@ -729,7 +729,9 @@ void gfx_connection_vk::reduce_streaming_task()
     // free transfer_src buffer memory
     {
         uint64_t transfer_src_buffer_begin = this->m_transfer_src_buffer_begin[streaming_throttling_index];
+#if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         uint64_t transfer_src_buffer_end = this->m_transfer_src_buffer_end[streaming_throttling_index];
+#endif
         this->m_transfer_src_buffer_end[streaming_throttling_index] = transfer_src_buffer_begin;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         uint64_t transfer_src_buffer_size = this->m_transfer_src_buffer_size[streaming_throttling_index];
