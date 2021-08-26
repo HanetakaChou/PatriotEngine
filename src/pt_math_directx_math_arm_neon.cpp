@@ -35,12 +35,8 @@
 //https://github.com/microsoft/DirectXMath/tree/83634c742a85d1027765af53fbe79506fd72e0c3
 #include <DirectXMath.h>
 
-#ifndef _XM_AVX2_INTRINSICS_
-#error AVX2 not supported
-#endif
-
-#ifndef _XM_FMA3_INTRINSICS_
-#error FMA not supported
+#ifndef _XM_ARM_NEON_INTRINSICS_
+#error NEON not supported
 #endif
 
 static_assert(sizeof(math_vec3) == sizeof(DirectX::XMFLOAT3), "");
@@ -65,62 +61,62 @@ inline DirectX::XMFLOAT4X4A *unwrap(math_alignas16_mat4x4 *alignas16_mat4x4) { r
 inline DirectX::XMMATRIX unwrap(math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
 inline math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<math_simd_mat *>(&simd_mat)); }
 
-math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_vec3(math_vec3 *source)
+math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec3(math_vec3 *source)
 {
     return wrap(DirectX::XMLoadFloat3(unwrap(source)));
 }
 
-math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_vec4(math_vec4 *source)
+math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec4(math_vec4 *source)
 {
     return wrap(DirectX::XMLoadFloat4(unwrap(source)));
 }
 
-void PT_VECTORCALL directx_math_x86_avx2_store_vec3(math_vec3 *source, math_simd_vec v)
+void PT_VECTORCALL directx_math_arm_neon_store_vec3(math_vec3 *source, math_simd_vec v)
 {
     return DirectX::XMStoreFloat3(unwrap(source), unwrap(v));
 }
 
-void PT_VECTORCALL directx_math_x86_avx2_store_vec4(math_vec4 *source, math_simd_vec v)
+void PT_VECTORCALL directx_math_arm_neon_store_vec4(math_vec4 *source, math_simd_vec v)
 {
     return DirectX::XMStoreFloat4(unwrap(source), unwrap(v));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
 {
     return wrap(DirectX::XMLoadFloat4x4A(unwrap(source)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_load_mat4x4(math_mat4x4 *source)
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_mat4x4(math_mat4x4 *source)
 {
     return wrap(DirectX::XMLoadFloat4x4(unwrap(source)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_identity()
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_identity()
 {
     return wrap(DirectX::XMMatrixIdentity());
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_multiply(math_simd_mat m1, math_simd_mat m2)
 {
     return wrap(DirectX::XMMatrixMultiply(unwrap(m1), unwrap(m2)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
 {
     return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
 }
 
-void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+void PT_VECTORCALL directx_math_arm_neon_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4A(unwrap(destination), unwrap(m));
 }
 
-void PT_VECTORCALL directx_math_x86_avx2_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
+void PT_VECTORCALL directx_math_arm_neon_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4(unwrap(destination), unwrap(m));
 }

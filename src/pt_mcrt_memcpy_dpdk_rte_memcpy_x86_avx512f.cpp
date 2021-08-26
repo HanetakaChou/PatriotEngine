@@ -22,7 +22,7 @@
 #define __PT_MCRT_RTE_MEMCPY_AVX512F 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h"
 
-extern void *rte_memcpy_avx512f(void *__restrict dest, void const *__restrict src, size_t count)
+extern void *rte_memcpy_x86_avx512f(void *__restrict dest, void const *__restrict src, size_t count)
 {
     return rte_memcpy(dest, src, count);
 }

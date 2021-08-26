@@ -22,7 +22,7 @@ cd ${MY_DIR}
 
 # ndk-build
 
-if "${MY_DIR}/android-ndk-r14b/ndk-build" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj/debug NDK_LIBS_OUT:=libs/debug/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk; then
+if "${MY_DIR}/android-ndk-r14b/ndk-build" APP_DEBUG:=true NDK_PROJECT_PATH:=null NDK_OUT:=obj/debug NDK_LIBS_OUT:=libs/debug/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Android.mk; then
     echo "ndk-build passed"
 else
     echo "ndk-build failed"
@@ -34,7 +34,7 @@ fi
 mkdir -p "${MY_DIR}/bin"
 
 # help vscode find the symbol
-OUT_BINS=("libpt_mcrt.so" "libpt_launcher_window_android.so")
+OUT_BINS=("libpt_math.so" "libpt_mcrt.so" "libpt_gfx.so" "libpt_launcher.so")
 for i in "${OUT_BINS[@]}"
 do
     # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/arm64-v8a/${i}"

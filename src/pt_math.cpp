@@ -21,14 +21,9 @@
 #if defined(PT_X64) || defined(PT_X86)
 static bool math_support_avx2 = false;
 static bool math_support_avx = false;
-#elif defined(PT_ARM64) || defined(PT_ARM)
-#else
-#error Unknown Architecture
-#endif
 
 PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_load_vec3(source);
@@ -41,16 +36,10 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
     {
         return directx_math_x86_sse2_load_vec3(source);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_load_vec3(source);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_load_vec4(source);
@@ -63,16 +52,10 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
     {
         return directx_math_x86_sse2_load_vec4(source);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_load_vec4(source);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_simd_vec v)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_store_vec3(destination, v);
@@ -85,15 +68,10 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_sim
     {
         return directx_math_x86_sse2_store_vec3(destination, v);
     }
-#else
-    return directx_math_arm_neon_store_vec3(destination, v);
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_simd_vec v)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_store_vec4(destination, v);
@@ -106,15 +84,10 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_sim
     {
         return directx_math_x86_sse2_store_vec4(destination, v);
     }
-#else
-    return directx_math_arm_neon_store_vec4(destination, v);
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_load_alignas16_mat4x4(source);
@@ -127,16 +100,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas
     {
         return directx_math_x86_sse2_load_alignas16_mat4x4(source);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_load_alignas16_mat4x4(source);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_load_mat4x4(source);
@@ -149,16 +116,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
     {
         return directx_math_x86_sse2_load_mat4x4(source);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_load_mat4x4(source);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_mat_identity();
@@ -171,16 +132,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
     {
         return directx_math_x86_sse2_mat_identity();
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_mat_identity();
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_mat_multiply(m1, m2);
@@ -193,16 +148,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, mat
     {
         return directx_math_x86_sse2_mat_multiply(m1, m2);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_mat_multiply(m1, m2);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_mat_look_to_rh(eye_position, eye_direction, up_direction);
@@ -215,16 +164,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_p
     {
         return directx_math_x86_sse2_mat_look_to_rh(eye_position, eye_direction, up_direction);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_mat_look_to_rh(eye_position, eye_direction, up_direction);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
@@ -237,16 +180,10 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_a
     {
         return directx_math_x86_sse2_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
     }
-#elif defined(PT_ARM64) || defined(PT_ARM)
-    return directx_math_arm_neon_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
-#else
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_store_alignas16_mat4x4(destination, m);
@@ -259,15 +196,10 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x
     {
         return directx_math_x86_sse2_store_alignas16_mat4x4(destination, m);
     }
-#else
-    return directx_math_arm_neon_store_alignas16_mat4x4(destination, m);
-#error Unknown Architecture
-#endif
 }
 
 PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
 {
-#if defined(PT_X64) || defined(PT_X86)
     if (math_support_avx2)
     {
         return directx_math_x86_avx2_store_mat4x4(destination, m);
@@ -280,17 +212,12 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math
     {
         return directx_math_x86_sse2_store_mat4x4(destination, m);
     }
-#else
-    return directx_math_arm_neon_store_mat4x4(destination, m);
-#error Unknown Architecture
-#endif
 }
 
-#if defined(PT_X64) || defined(PT_X86)
 #include <pt_mcrt_intrin.h>
-struct math_verify_cpu_support
+struct math_verify_x86_cpu_support
 {
-    inline math_verify_cpu_support()
+    inline math_verify_x86_cpu_support()
     {
         //https://docs.microsoft.com/en-us/cpp/intrinsics/cpuid-cpuidex
         uint32_t f_1_ECX_ = 0;
@@ -315,12 +242,74 @@ struct math_verify_cpu_support
             }
         }
         // math_support_avx512f = ((f_7_EBX_ & (1U << 16U)) != 0);
-        math_support_avx2 = ((f_7_EBX_ & (1U << 5U)) != 0);
-        math_support_avx = ((f_1_ECX_ & (1U << 28U)) != 0);
+        bool support_avx2 = ((f_7_EBX_ & (1U << 5U)) != 0);
+        bool support_fma = ((f_1_ECX_ & (1U << 12U)) != 0);
+        bool support_avx =  ((f_1_ECX_ & (1U << 28U)) != 0);
+        math_support_avx2 = (support_avx2 && support_fma);
+        math_support_avx = support_avx;
     }
 };
-static struct math_verify_cpu_support instance_math_verify_cpu_support;
+static struct math_verify_x86_cpu_support instance_math_verify_x86_cpu_support;
 #elif defined(PT_ARM64) || defined(PT_ARM)
+PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
+{
+    return directx_math_arm_neon_load_vec3(source);
+}
+
+PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
+{
+    return directx_math_arm_neon_load_vec4(source);
+}
+
+PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_simd_vec v)
+{
+    return directx_math_arm_neon_store_vec3(destination, v);
+}
+
+PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_simd_vec v)
+{
+    return directx_math_arm_neon_store_vec4(destination, v);
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
+{
+    return directx_math_arm_neon_load_alignas16_mat4x4(source);
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
+{
+    return directx_math_arm_neon_load_mat4x4(source);
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
+{
+    return directx_math_arm_neon_mat_identity();
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+{
+    return directx_math_arm_neon_mat_multiply(m1, m2);
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+{
+    return directx_math_arm_neon_mat_look_to_rh(eye_position, eye_direction, up_direction);
+}
+
+PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+{
+    return directx_math_arm_neon_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
+}
+
+PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+{
+    return directx_math_arm_neon_store_alignas16_mat4x4(destination, m);
+}
+
+PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
+{
+    return directx_math_arm_neon_store_mat4x4(destination, m);
+}
 #else
 #error Unknown Architecture
 #endif

@@ -18,6 +18,21 @@
 #include <pt_math.h>
 #include "pt_math_directx_math.h"
 
+#if !defined(_MSC_VER)
+//#include "sal.h"
+#define _In_
+#define _In_reads_(expression)
+#define _In_reads_bytes_(expression)
+#define _Out_
+#define _Out_opt_
+#define _Out_writes_(expression)
+#define _Out_writes_bytes_(expression)
+#define _Success_(expression)
+#define _Use_decl_annotations_
+#define _Analysis_assume_(expression)
+#endif
+
+//https://github.com/microsoft/DirectXMath/tree/83634c742a85d1027765af53fbe79506fd72e0c3
 #include <DirectXMath.h>
 
 #ifdef _XM_AVX2_INTRINSICS_

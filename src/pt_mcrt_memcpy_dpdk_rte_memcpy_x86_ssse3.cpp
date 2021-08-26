@@ -22,7 +22,7 @@
 #define __PT_MCRT_RTE_MEMCPY_SSSE3 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h"
 
-extern void *rte_memcpy_ssse3(void *__restrict dest, void const *__restrict src, size_t count)
+extern void *rte_memcpy_x86_ssse3(void *__restrict dest, void const *__restrict src, size_t count)
 {
     return rte_memcpy(dest, src, count);
 }

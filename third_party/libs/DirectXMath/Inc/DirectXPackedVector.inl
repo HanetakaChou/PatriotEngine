@@ -1,18 +1,13 @@
 //-------------------------------------------------------------------------------------
 // DirectXPackedVector.inl -- SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#ifndef _DIRECTX_PACKED_VECTOR_INL_
-#define _DIRECTX_PACKED_VECTOR_INL_ 1
+#pragma once
 
 /****************************************************************************
  *
@@ -20,32 +15,31 @@
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline float XMConvertHalfToFloat(
-    HALF Value)
+inline float XMConvertHalfToFloat(HALF Value) noexcept
 {
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
-    __m128i V1 = _mm_cvtsi32_si128(static_cast<uint32_t>(Value));
+    __m128i V1 = _mm_cvtsi32_si128(static_cast<int>(Value));
     __m128 V2 = _mm_cvtph_ps(V1);
     return _mm_cvtss_f32(V2);
-#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64)) && !defined(_XM_NO_INTRINSICS_)
+#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__) && !defined(_XM_NO_INTRINSICS_)
     uint16x4_t vHalf = vdup_n_u16(Value);
     float32x4_t vFloat = vcvt_f32_f16(vreinterpret_f16_u16(vHalf));
     return vgetq_lane_f32(vFloat, 0);
 #else
-    uint32_t Mantissa = (uint32_t)(Value & 0x03FF);
+    auto Mantissa = static_cast<uint32_t>(Value & 0x03FF);
 
     uint32_t Exponent = (Value & 0x7C00);
     if (Exponent == 0x7C00) // INF/NAN
     {
-        Exponent = (uint32_t)0x8f;
+        Exponent = 0x8f;
     }
-    else if (Exponent != 0) // The value is normalized
+    else if (Exponent != 0)  // The value is normalized
     {
-        Exponent = (uint32_t)((Value >> 10) & 0x1F);
+        Exponent = static_cast<uint32_t>((static_cast<int>(Value) >> 10) & 0x1F);
     }
-    else if (Mantissa != 0) // The value is denormalized
+    else if (Mantissa != 0)     // The value is denormalized
     {
         // Normalize the value in the resulting float
         Exponent = 1;
@@ -58,31 +52,35 @@ inline float XMConvertHalfToFloat(
 
         Mantissa &= 0x03FF;
     }
-    else // The value is zero
+    else                        // The value is zero
     {
-        Exponent = (uint32_t)-112;
+        Exponent = static_cast<uint32_t>(-112);
     }
 
-    uint32_t Result = ((Value & 0x8000) << 16) | // Sign
-                      ((Exponent + 112) << 23) | // Exponent
-                      (Mantissa << 13);          // Mantissa
+    uint32_t Result =
+        ((static_cast<uint32_t>(Value) & 0x8000) << 16) // Sign
+        | ((Exponent + 112) << 23)                      // Exponent
+        | (Mantissa << 13);                             // Mantissa
 
-    return reinterpret_cast<float *>(&Result)[0];
+    return reinterpret_cast<float*>(&Result)[0];
 #endif // !_XM_F16C_INTRINSICS_
 }
 
 //------------------------------------------------------------------------------
 #ifdef _PREFAST_
 #pragma prefast(push)
-#pragma prefast(disable : 26015 26019, "PREfast noise: Esp:1307")
+#pragma prefast(disable : 26015 26019, "PREfast noise: Esp:1307" )
 #endif
 
-_Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
-    float *pOutputStream,
-    size_t OutputStride,
-    const HALF *pInputStream,
-    size_t InputStride,
-    size_t HalfCount)
+_Use_decl_annotations_
+inline float* XMConvertHalfToFloatStream
+(
+    float* pOutputStream,
+    size_t      OutputStride,
+    const HALF* pInputStream,
+    size_t      InputStride,
+    size_t      HalfCount
+) noexcept
 {
     assert(pOutputStream);
     assert(pInputStream);
@@ -94,8 +92,8 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
     _Analysis_assume_(OutputStride >= sizeof(float));
 
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
-    const uint8_t *pHalf = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pFloat = reinterpret_cast<uint8_t *>(pOutputStream);
+    auto pHalf = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pFloat = reinterpret_cast<uint8_t*>(pOutputStream);
 
     size_t i = 0;
     size_t four = HalfCount >> 2;
@@ -105,17 +103,17 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
         {
             if (OutputStride == sizeof(float))
             {
-                if (((uintptr_t)pFloat & 0xF) == 0)
+                if ((reinterpret_cast<uintptr_t>(pFloat) & 0xF) == 0)
                 {
                     // Packed input, aligned & packed output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(pHalf));
+                        __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(pHalf));
                         pHalf += InputStride * 4;
 
                         __m128 FV = _mm_cvtph_ps(HV);
 
-                        XM_STREAM_PS(reinterpret_cast<float *>(pFloat), FV);
+                        XM_STREAM_PS(reinterpret_cast<float*>(pFloat), FV);
                         pFloat += OutputStride * 4;
                         i += 4;
                     }
@@ -125,12 +123,12 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                     // Packed input, packed output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(pHalf));
+                        __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(pHalf));
                         pHalf += InputStride * 4;
 
                         __m128 FV = _mm_cvtph_ps(HV);
 
-                        _mm_storeu_ps(reinterpret_cast<float *>(pFloat), FV);
+                        _mm_storeu_ps(reinterpret_cast<float*>(pFloat), FV);
                         pFloat += OutputStride * 4;
                         i += 4;
                     }
@@ -141,18 +139,18 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                 // Packed input, scattered output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(pHalf));
+                    __m128i HV = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(pHalf));
                     pHalf += InputStride * 4;
 
                     __m128 FV = _mm_cvtph_ps(HV);
 
-                    _mm_store_ss(reinterpret_cast<float *>(pFloat), FV);
+                    _mm_store_ss(reinterpret_cast<float*>(pFloat), FV);
                     pFloat += OutputStride;
-                    *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 1);
+                    *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 1);
                     pFloat += OutputStride;
-                    *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 2);
+                    *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 2);
                     pFloat += OutputStride;
-                    *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 3);
+                    *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 3);
                     pFloat += OutputStride;
                     i += 4;
                 }
@@ -160,18 +158,18 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
         }
         else if (OutputStride == sizeof(float))
         {
-            if (((uintptr_t)pFloat & 0xF) == 0)
+            if ((reinterpret_cast<uintptr_t>(pFloat) & 0xF) == 0)
             {
                 // Scattered input, aligned & packed output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    uint16_t H1 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H1 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H2 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H2 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H3 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H3 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H4 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H4 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
 
                     __m128i HV = _mm_setzero_si128();
@@ -181,7 +179,7 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                     HV = _mm_insert_epi16(HV, H4, 3);
                     __m128 FV = _mm_cvtph_ps(HV);
 
-                    XM_STREAM_PS(reinterpret_cast<float *>(pFloat), FV);
+                    XM_STREAM_PS(reinterpret_cast<float*>(pFloat), FV);
                     pFloat += OutputStride * 4;
                     i += 4;
                 }
@@ -191,13 +189,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                 // Scattered input, packed output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    uint16_t H1 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H1 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H2 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H2 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H3 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H3 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
-                    uint16_t H4 = *reinterpret_cast<const HALF *>(pHalf);
+                    uint16_t H4 = *reinterpret_cast<const HALF*>(pHalf);
                     pHalf += InputStride;
 
                     __m128i HV = _mm_setzero_si128();
@@ -207,7 +205,7 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                     HV = _mm_insert_epi16(HV, H4, 3);
                     __m128 FV = _mm_cvtph_ps(HV);
 
-                    _mm_storeu_ps(reinterpret_cast<float *>(pFloat), FV);
+                    _mm_storeu_ps(reinterpret_cast<float*>(pFloat), FV);
                     pFloat += OutputStride * 4;
                     i += 4;
                 }
@@ -218,13 +216,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
             // Scattered input, scattered output
             for (size_t j = 0; j < four; ++j)
             {
-                uint16_t H1 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H1 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H2 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H2 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H3 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H3 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H4 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H4 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
 
                 __m128i HV = _mm_setzero_si128();
@@ -234,13 +232,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                 HV = _mm_insert_epi16(HV, H4, 3);
                 __m128 FV = _mm_cvtph_ps(HV);
 
-                _mm_store_ss(reinterpret_cast<float *>(pFloat), FV);
+                _mm_store_ss(reinterpret_cast<float*>(pFloat), FV);
                 pFloat += OutputStride;
-                *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 1);
+                *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 1);
                 pFloat += OutputStride;
-                *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 2);
+                *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 2);
                 pFloat += OutputStride;
-                *reinterpret_cast<int *>(pFloat) = _mm_extract_ps(FV, 3);
+                *reinterpret_cast<int*>(pFloat) = _mm_extract_ps(FV, 3);
                 pFloat += OutputStride;
                 i += 4;
             }
@@ -249,7 +247,7 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
 
     for (; i < HalfCount; ++i)
     {
-        *reinterpret_cast<float *>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF *>(pHalf)[0]);
+        *reinterpret_cast<float*>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF*>(pHalf)[0]);
         pHalf += InputStride;
         pFloat += OutputStride;
     }
@@ -257,9 +255,9 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
     XM_SFENCE();
 
     return pOutputStream;
-#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64)) && !defined(_XM_NO_INTRINSICS_)
-    const uint8_t *pHalf = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pFloat = reinterpret_cast<uint8_t *>(pOutputStream);
+#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__) && !defined(_XM_NO_INTRINSICS_)
+    auto pHalf = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pFloat = reinterpret_cast<uint8_t*>(pOutputStream);
 
     size_t i = 0;
     size_t four = HalfCount >> 2;
@@ -272,12 +270,12 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                 // Packed input, packed output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    uint16x4_t vHalf = vld1_u16(reinterpret_cast<const uint16_t *>(pHalf));
+                    uint16x4_t vHalf = vld1_u16(reinterpret_cast<const uint16_t*>(pHalf));
                     pHalf += InputStride * 4;
 
                     float32x4_t vFloat = vcvt_f32_f16(vreinterpret_f16_u16(vHalf));
 
-                    vst1q_f32(reinterpret_cast<float *>(pFloat), vFloat);
+                    vst1q_f32(reinterpret_cast<float*>(pFloat), vFloat);
                     pFloat += OutputStride * 4;
                     i += 4;
                 }
@@ -287,18 +285,18 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
                 // Packed input, scattered output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    uint16x4_t vHalf = vld1_u16(reinterpret_cast<const uint16_t *>(pHalf));
+                    uint16x4_t vHalf = vld1_u16(reinterpret_cast<const uint16_t*>(pHalf));
                     pHalf += InputStride * 4;
 
                     float32x4_t vFloat = vcvt_f32_f16(vreinterpret_f16_u16(vHalf));
 
-                    vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 0);
+                    vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 0);
                     pFloat += OutputStride;
-                    vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 1);
+                    vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 1);
                     pFloat += OutputStride;
-                    vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 2);
+                    vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 2);
                     pFloat += OutputStride;
-                    vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 3);
+                    vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 3);
                     pFloat += OutputStride;
                     i += 4;
                 }
@@ -309,13 +307,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
             // Scattered input, packed output
             for (size_t j = 0; j < four; ++j)
             {
-                uint16_t H1 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H1 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H2 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H2 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H3 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H3 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H4 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H4 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
 
                 uint64_t iHalf = uint64_t(H1) | (uint64_t(H2) << 16) | (uint64_t(H3) << 32) | (uint64_t(H4) << 48);
@@ -323,7 +321,7 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
 
                 float32x4_t vFloat = vcvt_f32_f16(vreinterpret_f16_u16(vHalf));
 
-                vst1q_f32(reinterpret_cast<float *>(pFloat), vFloat);
+                vst1q_f32(reinterpret_cast<float*>(pFloat), vFloat);
                 pFloat += OutputStride * 4;
                 i += 4;
             }
@@ -333,13 +331,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
             // Scattered input, scattered output
             for (size_t j = 0; j < four; ++j)
             {
-                uint16_t H1 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H1 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H2 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H2 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H3 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H3 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
-                uint16_t H4 = *reinterpret_cast<const HALF *>(pHalf);
+                uint16_t H4 = *reinterpret_cast<const HALF*>(pHalf);
                 pHalf += InputStride;
 
                 uint64_t iHalf = uint64_t(H1) | (uint64_t(H2) << 16) | (uint64_t(H3) << 32) | (uint64_t(H4) << 48);
@@ -347,13 +345,13 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
 
                 float32x4_t vFloat = vcvt_f32_f16(vreinterpret_f16_u16(vHalf));
 
-                vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 0);
+                vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 0);
                 pFloat += OutputStride;
-                vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 1);
+                vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 1);
                 pFloat += OutputStride;
-                vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 2);
+                vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 2);
                 pFloat += OutputStride;
-                vst1q_lane_f32(reinterpret_cast<float *>(pFloat), vFloat, 3);
+                vst1q_lane_f32(reinterpret_cast<float*>(pFloat), vFloat, 3);
                 pFloat += OutputStride;
                 i += 4;
             }
@@ -362,19 +360,19 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
 
     for (; i < HalfCount; ++i)
     {
-        *reinterpret_cast<float *>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF *>(pHalf)[0]);
+        *reinterpret_cast<float*>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF*>(pHalf)[0]);
         pHalf += InputStride;
         pFloat += OutputStride;
     }
 
     return pOutputStream;
 #else
-    const uint8_t *pHalf = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pFloat = reinterpret_cast<uint8_t *>(pOutputStream);
+    auto pHalf = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pFloat = reinterpret_cast<uint8_t*>(pOutputStream);
 
     for (size_t i = 0; i < HalfCount; i++)
     {
-        *reinterpret_cast<float *>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF *>(pHalf)[0]);
+        *reinterpret_cast<float*>(pFloat) = XMConvertHalfToFloat(reinterpret_cast<const HALF*>(pHalf)[0]);
         pHalf += InputStride;
         pFloat += OutputStride;
     }
@@ -385,23 +383,22 @@ _Use_decl_annotations_ inline float *XMConvertHalfToFloatStream(
 
 //------------------------------------------------------------------------------
 
-inline HALF XMConvertFloatToHalf(
-    float Value)
+inline HALF XMConvertFloatToHalf(float Value) noexcept
 {
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
     __m128 V1 = _mm_set_ss(Value);
     __m128i V2 = _mm_cvtps_ph(V1, 0);
     return static_cast<HALF>(_mm_cvtsi128_si32(V2));
-#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64)) && !defined(_XM_NO_INTRINSICS_)
+#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__) && !defined(_XM_NO_INTRINSICS_)
     float32x4_t vFloat = vdupq_n_f32(Value);
     float16x4_t vHalf = vcvt_f16_f32(vFloat);
     return vget_lane_u16(vreinterpret_u16_f16(vHalf), 0);
 #else
     uint32_t Result;
 
-    uint32_t IValue = reinterpret_cast<uint32_t *>(&Value)[0];
+    auto IValue = reinterpret_cast<uint32_t*>(&Value)[0];
     uint32_t Sign = (IValue & 0x80000000U) >> 16U;
-    IValue = IValue & 0x7FFFFFFFU; // Hack off the sign
+    IValue = IValue & 0x7FFFFFFFU;      // Hack off the sign
 
     if (IValue > 0x477FE000U)
     {
@@ -414,6 +411,10 @@ inline HALF XMConvertFloatToHalf(
         {
             Result = 0x7C00U; // INF
         }
+    }
+    else if (!IValue)
+    {
+        Result = 0;
     }
     else
     {
@@ -432,17 +433,20 @@ inline HALF XMConvertFloatToHalf(
 
         Result = ((IValue + 0x0FFFU + ((IValue >> 13U) & 1U)) >> 13U) & 0x7FFFU;
     }
-    return (HALF)(Result | Sign);
+    return static_cast<HALF>(Result | Sign);
 #endif // !_XM_F16C_INTRINSICS_
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
-    HALF *pOutputStream,
-    size_t OutputStride,
-    const float *pInputStream,
-    size_t InputStride,
-    size_t FloatCount)
+_Use_decl_annotations_
+inline HALF* XMConvertFloatToHalfStream
+(
+    HALF* pOutputStream,
+    size_t       OutputStride,
+    const float* pInputStream,
+    size_t       InputStride,
+    size_t       FloatCount
+) noexcept
 {
     assert(pOutputStream);
     assert(pInputStream);
@@ -454,8 +458,8 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
     _Analysis_assume_(OutputStride >= sizeof(HALF));
 
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
-    const uint8_t *pFloat = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pHalf = reinterpret_cast<uint8_t *>(pOutputStream);
+    auto pFloat = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pHalf = reinterpret_cast<uint8_t*>(pOutputStream);
 
     size_t i = 0;
     size_t four = FloatCount >> 2;
@@ -465,17 +469,17 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
         {
             if (OutputStride == sizeof(HALF))
             {
-                if (((uintptr_t)pFloat & 0xF) == 0)
+                if ((reinterpret_cast<uintptr_t>(pFloat) & 0xF) == 0)
                 {
                     // Aligned and packed input, packed output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128 FV = _mm_load_ps(reinterpret_cast<const float *>(pFloat));
+                        __m128 FV = _mm_load_ps(reinterpret_cast<const float*>(pFloat));
                         pFloat += InputStride * 4;
 
                         __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                        _mm_storel_epi64(reinterpret_cast<__m128i *>(pHalf), HV);
+                        _mm_storel_epi64(reinterpret_cast<__m128i*>(pHalf), HV);
                         pHalf += OutputStride * 4;
                         i += 4;
                     }
@@ -485,12 +489,12 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
                     // Packed input, packed output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128 FV = _mm_loadu_ps(reinterpret_cast<const float *>(pFloat));
+                        __m128 FV = _mm_loadu_ps(reinterpret_cast<const float*>(pFloat));
                         pFloat += InputStride * 4;
 
                         __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                        _mm_storel_epi64(reinterpret_cast<__m128i *>(pHalf), HV);
+                        _mm_storel_epi64(reinterpret_cast<__m128i*>(pHalf), HV);
                         pHalf += OutputStride * 4;
                         i += 4;
                     }
@@ -498,23 +502,23 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
             }
             else
             {
-                if (((uintptr_t)pFloat & 0xF) == 0)
+                if ((reinterpret_cast<uintptr_t>(pFloat) & 0xF) == 0)
                 {
                     // Aligned & packed input, scattered output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128 FV = _mm_load_ps(reinterpret_cast<const float *>(pFloat));
+                        __m128 FV = _mm_load_ps(reinterpret_cast<const float*>(pFloat));
                         pFloat += InputStride * 4;
 
                         __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
                         pHalf += OutputStride;
                         i += 4;
                     }
@@ -524,18 +528,18 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
                     // Packed input, scattered output
                     for (size_t j = 0; j < four; ++j)
                     {
-                        __m128 FV = _mm_loadu_ps(reinterpret_cast<const float *>(pFloat));
+                        __m128 FV = _mm_loadu_ps(reinterpret_cast<const float*>(pFloat));
                         pFloat += InputStride * 4;
 
                         __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
                         pHalf += OutputStride;
-                        *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
+                        *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
                         pHalf += OutputStride;
                         i += 4;
                     }
@@ -547,16 +551,16 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
             // Scattered input, packed output
             for (size_t j = 0; j < four; ++j)
             {
-                __m128 FV1 = _mm_load_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV1 = _mm_load_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV2 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV2 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV3 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV3 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV4 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV4 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
                 __m128 FV = _mm_blend_ps(FV1, FV2, 0x2);
@@ -565,7 +569,7 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
 
                 __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                _mm_storel_epi64(reinterpret_cast<__m128i *>(pHalf), HV);
+                _mm_storel_epi64(reinterpret_cast<__m128i*>(pHalf), HV);
                 pHalf += OutputStride * 4;
                 i += 4;
             }
@@ -575,16 +579,16 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
             // Scattered input, scattered output
             for (size_t j = 0; j < four; ++j)
             {
-                __m128 FV1 = _mm_load_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV1 = _mm_load_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV2 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV2 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV3 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV3 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
-                __m128 FV4 = _mm_broadcast_ss(reinterpret_cast<const float *>(pFloat));
+                __m128 FV4 = _mm_broadcast_ss(reinterpret_cast<const float*>(pFloat));
                 pFloat += InputStride;
 
                 __m128 FV = _mm_blend_ps(FV1, FV2, 0x2);
@@ -593,13 +597,13 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
 
                 __m128i HV = _mm_cvtps_ph(FV, 0);
 
-                *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
+                *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 0));
                 pHalf += OutputStride;
-                *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
+                *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 1));
                 pHalf += OutputStride;
-                *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
+                *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 2));
                 pHalf += OutputStride;
-                *reinterpret_cast<HALF *>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
+                *reinterpret_cast<HALF*>(pHalf) = static_cast<HALF>(_mm_extract_epi16(HV, 3));
                 pHalf += OutputStride;
                 i += 4;
             }
@@ -608,15 +612,15 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
 
     for (; i < FloatCount; ++i)
     {
-        *reinterpret_cast<HALF *>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float *>(pFloat)[0]);
+        *reinterpret_cast<HALF*>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float*>(pFloat)[0]);
         pFloat += InputStride;
         pHalf += OutputStride;
     }
 
     return pOutputStream;
-#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64)) && !defined(_XM_NO_INTRINSICS_)
-    const uint8_t *pFloat = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pHalf = reinterpret_cast<uint8_t *>(pOutputStream);
+#elif defined(_XM_ARM_NEON_INTRINSICS_) && (defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __aarch64__) && !defined(_XM_NO_INTRINSICS_)
+    auto pFloat = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pHalf = reinterpret_cast<uint8_t*>(pOutputStream);
 
     size_t i = 0;
     size_t four = FloatCount >> 2;
@@ -629,12 +633,12 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
                 // Packed input, packed output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    float32x4_t vFloat = vld1q_f32(reinterpret_cast<const float *>(pFloat));
+                    float32x4_t vFloat = vld1q_f32(reinterpret_cast<const float*>(pFloat));
                     pFloat += InputStride * 4;
 
                     uint16x4_t vHalf = vreinterpret_u16_f16(vcvt_f16_f32(vFloat));
 
-                    vst1_u16(reinterpret_cast<uint16_t *>(pHalf), vHalf);
+                    vst1_u16(reinterpret_cast<uint16_t*>(pHalf), vHalf);
                     pHalf += OutputStride * 4;
                     i += 4;
                 }
@@ -644,18 +648,18 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
                 // Packed input, scattered output
                 for (size_t j = 0; j < four; ++j)
                 {
-                    float32x4_t vFloat = vld1q_f32(reinterpret_cast<const float *>(pFloat));
+                    float32x4_t vFloat = vld1q_f32(reinterpret_cast<const float*>(pFloat));
                     pFloat += InputStride * 4;
 
                     uint16x4_t vHalf = vreinterpret_u16_f16(vcvt_f16_f32(vFloat));
 
-                    vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 0);
+                    vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 0);
                     pHalf += OutputStride;
-                    vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 1);
+                    vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 1);
                     pHalf += OutputStride;
-                    vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 2);
+                    vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 2);
                     pHalf += OutputStride;
-                    vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 3);
+                    vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 3);
                     pHalf += OutputStride;
                     i += 4;
                 }
@@ -667,21 +671,21 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
             for (size_t j = 0; j < four; ++j)
             {
                 float32x4_t vFloat = vdupq_n_f32(0);
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 0);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 0);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 1);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 1);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 2);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 2);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 3);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 3);
                 pFloat += InputStride;
 
                 uint16x4_t vHalf = vreinterpret_u16_f16(vcvt_f16_f32(vFloat));
 
-                vst1_u16(reinterpret_cast<uint16_t *>(pHalf), vHalf);
+                vst1_u16(reinterpret_cast<uint16_t*>(pHalf), vHalf);
                 pHalf += OutputStride * 4;
                 i += 4;
             }
@@ -692,27 +696,27 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
             for (size_t j = 0; j < four; ++j)
             {
                 float32x4_t vFloat = vdupq_n_f32(0);
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 0);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 0);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 1);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 1);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 2);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 2);
                 pFloat += InputStride;
 
-                vFloat = vld1q_lane_f32(reinterpret_cast<const float *>(pFloat), vFloat, 3);
+                vFloat = vld1q_lane_f32(reinterpret_cast<const float*>(pFloat), vFloat, 3);
                 pFloat += InputStride;
 
                 uint16x4_t vHalf = vreinterpret_u16_f16(vcvt_f16_f32(vFloat));
 
-                vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 0);
+                vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 0);
                 pHalf += OutputStride;
-                vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 1);
+                vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 1);
                 pHalf += OutputStride;
-                vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 2);
+                vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 2);
                 pHalf += OutputStride;
-                vst1_lane_u16(reinterpret_cast<float *>(pHalf), vHalf, 3);
+                vst1_lane_u16(reinterpret_cast<float*>(pHalf), vHalf, 3);
                 pHalf += OutputStride;
                 i += 4;
             }
@@ -721,19 +725,19 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
 
     for (; i < FloatCount; ++i)
     {
-        *reinterpret_cast<HALF *>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float *>(pFloat)[0]);
+        *reinterpret_cast<HALF*>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float*>(pFloat)[0]);
         pFloat += InputStride;
         pHalf += OutputStride;
     }
 
     return pOutputStream;
 #else
-    const uint8_t *pFloat = reinterpret_cast<const uint8_t *>(pInputStream);
-    uint8_t *pHalf = reinterpret_cast<uint8_t *>(pOutputStream);
+    auto pFloat = reinterpret_cast<const uint8_t*>(pInputStream);
+    auto pHalf = reinterpret_cast<uint8_t*>(pOutputStream);
 
     for (size_t i = 0; i < FloatCount; i++)
     {
-        *reinterpret_cast<HALF *>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float *>(pFloat)[0]);
+        *reinterpret_cast<HALF*>(pHalf) = XMConvertFloatToHalf(reinterpret_cast<const float*>(pFloat)[0]);
         pFloat += InputStride;
         pHalf += OutputStride;
     }
@@ -753,21 +757,23 @@ _Use_decl_annotations_ inline HALF *XMConvertFloatToHalfStream(
 
 #ifdef _PREFAST_
 #pragma prefast(push)
-#pragma prefast(disable : 28931, "PREfast noise: Esp:1266")
+#pragma prefast(disable:28931, "PREfast noise: Esp:1266")
 #endif
 
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadColor(
-    const XMCOLOR *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadColor(const XMCOLOR* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
     // int32_t -> Float conversions are done in one instruction.
     // uint32_t -> Float calls a runtime function. Keep in int32_t
-    int32_t iColor = (int32_t)(pSource->c);
-    XMVECTORF32 vColor = {{{(float)((iColor >> 16) & 0xFF) * (1.0f / 255.0f),
-                            (float)((iColor >> 8) & 0xFF) * (1.0f / 255.0f),
-                            (float)(iColor & 0xFF) * (1.0f / 255.0f),
-                            (float)((iColor >> 24) & 0xFF) * (1.0f / 255.0f)}}};
+    auto iColor = static_cast<int32_t>(pSource->c);
+    XMVECTORF32 vColor = { { {
+            static_cast<float>((iColor >> 16) & 0xFF)* (1.0f / 255.0f),
+            static_cast<float>((iColor >> 8) & 0xFF)* (1.0f / 255.0f),
+            static_cast<float>(iColor & 0xFF)* (1.0f / 255.0f),
+            static_cast<float>((iColor >> 24) & 0xFF)* (1.0f / 255.0f)
+        } } };
     return vColor.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     uint32_t bgra = pSource->c;
@@ -779,7 +785,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadColor(
     return vmulq_n_f32(R, 1.0f / 255.0f);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries
-    __m128i vInt = _mm_set1_epi32(pSource->c);
+    __m128i vInt = _mm_set1_epi32(static_cast<int>(pSource->c));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vInt = _mm_and_si128(vInt, g_XMMaskA8R8G8B8);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -794,35 +800,39 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadColor(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadHalf2(
-    const XMHALF2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadHalf2(const XMHALF2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
-    __m128 V = _mm_load_ss(reinterpret_cast<const float *>(pSource));
+    __m128 V = _mm_load_ss(reinterpret_cast<const float*>(pSource));
     return _mm_cvtph_ps(_mm_castps_si128(V));
 #else
-    XMVECTORF32 vResult = {{{XMConvertHalfToFloat(pSource->x),
-                             XMConvertHalfToFloat(pSource->y),
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            XMConvertHalfToFloat(pSource->x),
+            XMConvertHalfToFloat(pSource->y),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #endif // !_XM_F16C_INTRINSICS_
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShortN2(
-    const XMSHORTN2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadShortN2(const XMSHORTN2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(pSource->x == -32768) ? -1.f : ((float)pSource->x * (1.0f / 32767.0f)),
-                             (pSource->y == -32768) ? -1.f : ((float)pSource->y * (1.0f / 32767.0f)),
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            (pSource->x == -32768) ? -1.f : (static_cast<float>(pSource->x)* (1.0f / 32767.0f)),
+            (pSource->y == -32768) ? -1.f : (static_cast<float>(pSource->y)* (1.0f / 32767.0f)),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     int32x4_t vInt = vmovl_s16(vreinterpret_s16_u32(vInt16));
     vInt = vandq_s32(vInt, g_XMMaskXY);
     float32x4_t R = vcvtq_f32_s32(vInt);
@@ -831,7 +841,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShortN2(
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the two shorts in all four entries (WORD alignment okay,
     // DWORD alignment preferred)
-    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->x));
+    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0xFFFF, y&0xFFFF0000,z&0,w&0
     vTemp = _mm_and_ps(vTemp, g_XMMaskX16Y16);
     // x needs to be sign extended
@@ -848,25 +858,27 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShortN2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShort2(
-    const XMSHORT2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadShort2(const XMSHORT2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             0.f,
-                             0.f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            0.f,
+            0.f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     int32x4_t vInt = vmovl_s16(vreinterpret_s16_u32(vInt16));
     vInt = vandq_s32(vInt, g_XMMaskXY);
     return vcvtq_f32_s32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the two shorts in all four entries (WORD alignment okay,
     // DWORD alignment preferred)
-    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->x));
+    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0xFFFF, y&0xFFFF0000,z&0,w&0
     vTemp = _mm_and_ps(vTemp, g_XMMaskX16Y16);
     // x needs to be sign extended
@@ -881,29 +893,31 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShort2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShortN2(
-    const XMUSHORTN2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUShortN2(const XMUSHORTN2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x / 65535.0f,
-                             (float)pSource->y / 65535.0f,
-                             0.f,
-                             0.f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x) / 65535.0f,
+            static_cast<float>(pSource->y) / 65535.0f,
+            0.f,
+            0.f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     uint32x4_t vInt = vmovl_u16(vreinterpret_u16_u32(vInt16));
     vInt = vandq_u32(vInt, g_XMMaskXY);
     float32x4_t R = vcvtq_f32_u32(vInt);
     R = vmulq_n_f32(R, 1.0f / 65535.0f);
     return vmaxq_f32(R, vdupq_n_f32(-1.f));
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 FixupY16 = {{{1.0f / 65535.0f, 1.0f / (65535.0f * 65536.0f), 0.0f, 0.0f}}};
-    static const XMVECTORF32 FixaddY16 = {{{0, 32768.0f * 65536.0f, 0, 0}}};
+    static const XMVECTORF32 FixupY16 = { { { 1.0f / 65535.0f, 1.0f / (65535.0f * 65536.0f), 0.0f, 0.0f } } };
+    static const XMVECTORF32 FixaddY16 = { { { 0, 32768.0f * 65536.0f, 0, 0 } } };
     // Splat the two shorts in all four entries (WORD alignment okay,
     // DWORD alignment preferred)
-    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->x));
+    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0xFFFF, y&0xFFFF0000,z&0,w&0
     vTemp = _mm_and_ps(vTemp, g_XMMaskX16Y16);
     // y needs to be sign flipped
@@ -919,26 +933,28 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShortN2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShort2(
-    const XMUSHORT2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUShort2(const XMUSHORT2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             0.f,
-                             0.f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            0.f,
+            0.f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt16 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     uint32x4_t vInt = vmovl_u16(vreinterpret_u16_u32(vInt16));
     vInt = vandq_u32(vInt, g_XMMaskXY);
     return vcvtq_f32_u32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 FixaddY16 = {{{0, 32768.0f, 0, 0}}};
+    static const XMVECTORF32 FixaddY16 = { { { 0, 32768.0f, 0, 0 } } };
     // Splat the two shorts in all four entries (WORD alignment okay,
     // DWORD alignment preferred)
-    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->x));
+    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0xFFFF, y&0xFFFF0000,z&0,w&0
     vTemp = _mm_and_ps(vTemp, g_XMMaskX16Y16);
     // y needs to be sign flipped
@@ -954,18 +970,20 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShort2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByteN2(
-    const XMBYTEN2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadByteN2(const XMBYTEN2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(pSource->x == -128) ? -1.f : ((float)pSource->x * (1.0f / 127.0f)),
-                             (pSource->y == -128) ? -1.f : ((float)pSource->y * (1.0f / 127.0f)),
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            (pSource->x == -128) ? -1.f : (static_cast<float>(pSource->x)* (1.0f / 127.0f)),
+            (pSource->y == -128) ? -1.f : (static_cast<float>(pSource->y)* (1.0f / 127.0f)),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     int16x8_t vInt16 = vmovl_s8(vreinterpret_s8_u16(vInt8));
     int32x4_t vInt = vmovl_s16(vget_low_s16(vInt16));
     vInt = vandq_s32(vInt, g_XMMaskXY);
@@ -973,10 +991,10 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByteN2(
     R = vmulq_n_f32(R, 1.0f / 127.0f);
     return vmaxq_f32(R, vdupq_n_f32(-1.f));
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f / 127.0f, 1.0f / (127.0f * 256.0f), 0, 0}}};
-    static const XMVECTORU32 Mask = {{{0xFF, 0xFF00, 0, 0}}};
+    static const XMVECTORF32 Scale = { { { 1.0f / 127.0f, 1.0f / (127.0f * 256.0f), 0, 0 } } };
+    static const XMVECTORU32 Mask = { { { 0xFF, 0xFF00, 0, 0 } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask
     vTemp = _mm_and_ps(vTemp, Mask);
     // x,y and z are unsigned! Flip the bits to convert the order to signed
@@ -993,27 +1011,29 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByteN2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByte2(
-    const XMBYTE2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadByte2(const XMBYTE2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     int16x8_t vInt16 = vmovl_s8(vreinterpret_s8_u16(vInt8));
     int32x4_t vInt = vmovl_s16(vget_low_s16(vInt16));
     vInt = vandq_s32(vInt, g_XMMaskXY);
     return vcvtq_f32_s32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f)}}};
-    static const XMVECTORU32 Mask = {{{0xFF, 0xFF00, 0, 0}}};
+    static const XMVECTORF32 Scale = { { { 1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f) } } };
+    static const XMVECTORU32 Mask = { { { 0xFF, 0xFF00, 0, 0 } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask
     vTemp = _mm_and_ps(vTemp, Mask);
     // x,y and z are unsigned! Flip the bits to convert the order to signed
@@ -1028,28 +1048,30 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByte2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByteN2(
-    const XMUBYTEN2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUByteN2(const XMUBYTEN2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x * (1.0f / 255.0f),
-                             (float)pSource->y * (1.0f / 255.0f),
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x)* (1.0f / 255.0f),
+            static_cast<float>(pSource->y)* (1.0f / 255.0f),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint16x8_t vInt16 = vmovl_u8(vreinterpret_u8_u16(vInt8));
     uint32x4_t vInt = vmovl_u16(vget_low_u16(vInt16));
     vInt = vandq_u32(vInt, g_XMMaskXY);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_n_f32(R, 1.0f / 255.0f);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f / 255.0f, 1.0f / (255.0f * 256.0f), 0, 0}}};
-    static const XMVECTORU32 Mask = {{{0xFF, 0xFF00, 0, 0}}};
+    static const XMVECTORF32 Scale = { { { 1.0f / 255.0f, 1.0f / (255.0f * 256.0f), 0, 0 } } };
+    static const XMVECTORU32 Mask = { { { 0xFF, 0xFF00, 0, 0 } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask
     vTemp = _mm_and_ps(vTemp, Mask);
     // w is signed! Flip the bits to convert the order to unsigned
@@ -1064,27 +1086,29 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByteN2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByte2(
-    const XMUBYTE2 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUByte2(const XMUBYTE2* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             0.0f,
-                             0.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            0.0f,
+            0.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    uint16x4_t vInt8 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint16x8_t vInt16 = vmovl_u8(vreinterpret_u8_u32(vInt8));
     uint32x4_t vInt = vmovl_u16(vget_low_u16(vInt16));
     vInt = vandq_s32(vInt, g_XMMaskXY);
     return vcvtq_f32_u32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f, 1.0f / 256.0f, 0, 0}}};
-    static const XMVECTORU32 Mask = {{{0xFF, 0xFF00, 0, 0}}};
+    static const XMVECTORF32 Scale = { { { 1.0f, 1.0f / 256.0f, 0, 0 } } };
+    static const XMVECTORU32 Mask = { { { 0xFF, 0xFF00, 0, 0 } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask
     vTemp = _mm_and_ps(vTemp, Mask);
     // w is signed! Flip the bits to convert the order to unsigned
@@ -1099,31 +1123,31 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByte2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadU565(
-    const XMU565 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadU565(const XMU565* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{
-        float(pSource->v & 0x1F),
-        float((pSource->v >> 5) & 0x3F),
-        float((pSource->v >> 11) & 0x1F),
-        0.f,
-    }}};
+    XMVECTORF32 vResult = { { {
+            float(pSource->v & 0x1F),
+            float((pSource->v >> 5) & 0x3F),
+            float((pSource->v >> 11) & 0x1F),
+            0.f,
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORI32 U565And = {{{0x1F, 0x3F << 5, 0x1F << 11, 0}}};
-    static const XMVECTORF32 U565Mul = {{{1.0f, 1.0f / 32.0f, 1.0f / 2048.f, 0}}};
-    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    static const XMVECTORI32 U565And = { { { 0x1F, 0x3F << 5, 0x1F << 11, 0 } } };
+    static const XMVECTORF32 U565Mul = { { { 1.0f, 1.0f / 32.0f, 1.0f / 2048.f, 0 } } };
+    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint32x4_t vInt = vmovl_u16(vInt16);
     vInt = vandq_u32(vInt, U565And);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_f32(R, U565Mul);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORI32 U565And = {{{0x1F, 0x3F << 5, 0x1F << 11, 0}}};
-    static const XMVECTORF32 U565Mul = {{{1.0f, 1.0f / 32.0f, 1.0f / 2048.f, 0}}};
+    static const XMVECTORI32 U565And = { { { 0x1F, 0x3F << 5, 0x1F << 11, 0 } } };
+    static const XMVECTORF32 U565Mul = { { { 1.0f, 1.0f / 32.0f, 1.0f / 2048.f, 0 } } };
     // Get the 32 bit value and splat it
-    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Mask off x, y and z
     vResult = _mm_and_ps(vResult, U565And);
     // Convert to float
@@ -1135,13 +1159,12 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadU565(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
-    const XMFLOAT3PK *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(const XMFLOAT3PK* pSource) noexcept
 {
     assert(pSource);
 
-    XM_ALIGNAS(16)
-    uint32_t Result[4];
+    XM_ALIGNED_DATA(16) uint32_t Result[4];
     uint32_t Mantissa;
     uint32_t Exponent;
 
@@ -1150,7 +1173,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
 
     if (pSource->xe == 0x1f) // INF or NAN
     {
-        Result[0] = 0x7f800000 | (pSource->xm << 17);
+        Result[0] = static_cast<uint32_t>(0x7f800000 | (static_cast<int>(pSource->xm) << 17));
     }
     else
     {
@@ -1173,7 +1196,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
         }
         else // The value is zero
         {
-            Exponent = (uint32_t)-112;
+            Exponent = static_cast<uint32_t>(-112);
         }
 
         Result[0] = ((Exponent + 112) << 23) | (Mantissa << 17);
@@ -1184,7 +1207,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
 
     if (pSource->ye == 0x1f) // INF or NAN
     {
-        Result[1] = 0x7f800000 | (pSource->ym << 17);
+        Result[1] = static_cast<uint32_t>(0x7f800000 | (static_cast<int>(pSource->ym) << 17));
     }
     else
     {
@@ -1207,7 +1230,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
         }
         else // The value is zero
         {
-            Exponent = (uint32_t)-112;
+            Exponent = static_cast<uint32_t>(-112);
         }
 
         Result[1] = ((Exponent + 112) << 23) | (Mantissa << 17);
@@ -1218,7 +1241,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
 
     if (pSource->ze == 0x1f) // INF or NAN
     {
-        Result[2] = 0x7f800000 | (pSource->zm << 17);
+        Result[2] = static_cast<uint32_t>(0x7f800000 | (static_cast<int>(pSource->zm) << 17));
     }
     else
     {
@@ -1241,73 +1264,74 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3PK(
         }
         else // The value is zero
         {
-            Exponent = (uint32_t)-112;
+            Exponent = static_cast<uint32_t>(-112);
         }
 
         Result[2] = ((Exponent + 112) << 23) | (Mantissa << 18);
     }
 
-    return XMLoadFloat3A(reinterpret_cast<const XMFLOAT3A *>(&Result));
+    return XMLoadFloat3A(reinterpret_cast<const XMFLOAT3A*>(&Result));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadFloat3SE(
-    const XMFLOAT3SE *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadFloat3SE(const XMFLOAT3SE* pSource) noexcept
 {
     assert(pSource);
 
-    union
-    {
-        float f;
-        int32_t i;
-    } fi;
+    union { float f; int32_t i; } fi;
     fi.i = 0x33800000 + (pSource->e << 23);
     float Scale = fi.f;
 
-    XMVECTORF32 v = {{{Scale * float(pSource->xm),
-                       Scale * float(pSource->ym),
-                       Scale * float(pSource->zm),
-                       1.0f}}};
+    XMVECTORF32 v = { { {
+            Scale * float(pSource->xm),
+            Scale * float(pSource->ym),
+            Scale * float(pSource->zm),
+            1.0f } } };
     return v;
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadHalf4(
-    const XMHALF4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadHalf4(const XMHALF4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
-    __m128i V = _mm_loadl_epi64(reinterpret_cast<const __m128i *>(pSource));
+    __m128i V = _mm_loadl_epi64(reinterpret_cast<const __m128i*>(pSource));
     return _mm_cvtph_ps(V);
 #else
-    XMVECTORF32 vResult = {{{XMConvertHalfToFloat(pSource->x),
-                             XMConvertHalfToFloat(pSource->y),
-                             XMConvertHalfToFloat(pSource->z),
-                             XMConvertHalfToFloat(pSource->w)}}};
+    XMVECTORF32 vResult = { { {
+            XMConvertHalfToFloat(pSource->x),
+            XMConvertHalfToFloat(pSource->y),
+            XMConvertHalfToFloat(pSource->z),
+            XMConvertHalfToFloat(pSource->w)
+        } } };
     return vResult.v;
 #endif // !_XM_F16C_INTRINSICS_
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShortN4(
-    const XMSHORTN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadShortN4(const XMSHORTN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(pSource->x == -32768) ? -1.f : ((float)pSource->x * (1.0f / 32767.0f)),
-                             (pSource->y == -32768) ? -1.f : ((float)pSource->y * (1.0f / 32767.0f)),
-                             (pSource->z == -32768) ? -1.f : ((float)pSource->z * (1.0f / 32767.0f)),
-                             (pSource->w == -32768) ? -1.f : ((float)pSource->w * (1.0f / 32767.0f))}}};
+    XMVECTORF32 vResult = { { {
+            (pSource->x == -32768) ? -1.f : (static_cast<float>(pSource->x)* (1.0f / 32767.0f)),
+            (pSource->y == -32768) ? -1.f : (static_cast<float>(pSource->y)* (1.0f / 32767.0f)),
+            (pSource->z == -32768) ? -1.f : (static_cast<float>(pSource->z)* (1.0f / 32767.0f)),
+            (pSource->w == -32768) ? -1.f : (static_cast<float>(pSource->w)* (1.0f / 32767.0f))
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    int16x4_t vInt = vld1_s16((const int16_t *)pSource);
+    int16x4_t vInt = vld1_s16(reinterpret_cast<const int16_t*>(pSource));
     int32x4_t V = vmovl_s16(vInt);
     V = vcvtq_f32_s32(V);
     V = vmulq_n_f32(V, 1.0f / 32767.0f);
     return vmaxq_f32(V, vdupq_n_f32(-1.f));
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries (x,z,y,w)
-    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double *>(&pSource->x));
+    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double*>(&pSource->x));
     // Shift x&0ffff,z&0xffff,y&0xffff0000,w&0xffff0000
     __m128 vTemp = _mm_and_ps(_mm_castpd_ps(vIntd), g_XMMaskX16Y16Z16W16);
     // x and z are unsigned! Flip the bits to convert the order to signed
@@ -1326,23 +1350,25 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShortN4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShort4(
-    const XMSHORT4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadShort4(const XMSHORT4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             (float)pSource->z,
-                             (float)pSource->w}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            static_cast<float>(pSource->z),
+            static_cast<float>(pSource->w)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    int16x4_t vInt = vld1_s16((const int16_t *)pSource);
+    int16x4_t vInt = vld1_s16(reinterpret_cast<const int16_t*>(pSource));
     int32x4_t V = vmovl_s16(vInt);
     return vcvtq_f32_s32(V);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries (x,z,y,w)
-    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double *>(&pSource->x));
+    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double*>(&pSource->x));
     // Shift x&0ffff,z&0xffff,y&0xffff0000,w&0xffff0000
     __m128 vTemp = _mm_and_ps(_mm_castpd_ps(vIntd), g_XMMaskX16Y16Z16W16);
     // x and z are unsigned! Flip the bits to convert the order to signed
@@ -1359,26 +1385,28 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadShort4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShortN4(
-    const XMUSHORTN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUShortN4(const XMUSHORTN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x / 65535.0f,
-                             (float)pSource->y / 65535.0f,
-                             (float)pSource->z / 65535.0f,
-                             (float)pSource->w / 65535.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x) / 65535.0f,
+            static_cast<float>(pSource->y) / 65535.0f,
+            static_cast<float>(pSource->z) / 65535.0f,
+            static_cast<float>(pSource->w) / 65535.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt = vld1_u16((const uint16_t *)pSource);
+    uint16x4_t vInt = vld1_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint32x4_t V = vmovl_u16(vInt);
     V = vcvtq_f32_u32(V);
     return vmulq_n_f32(V, 1.0f / 65535.0f);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 FixupY16W16 = {{{1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / (65535.0f * 65536.0f), 1.0f / (65535.0f * 65536.0f)}}};
-    static const XMVECTORF32 FixaddY16W16 = {{{0, 0, 32768.0f * 65536.0f, 32768.0f * 65536.0f}}};
+    static const XMVECTORF32 FixupY16W16 = { { { 1.0f / 65535.0f, 1.0f / 65535.0f, 1.0f / (65535.0f * 65536.0f), 1.0f / (65535.0f * 65536.0f) } } };
+    static const XMVECTORF32 FixaddY16W16 = { { { 0, 0, 32768.0f * 65536.0f, 32768.0f * 65536.0f } } };
     // Splat the color in all four entries (x,z,y,w)
-    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double *>(&pSource->x));
+    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double*>(&pSource->x));
     // Shift x&0ffff,z&0xffff,y&0xffff0000,w&0xffff0000
     __m128 vTemp = _mm_and_ps(_mm_castpd_ps(vIntd), g_XMMaskX16Y16Z16W16);
     // y and w are signed! Flip the bits to convert the order to unsigned
@@ -1395,24 +1423,26 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShortN4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShort4(
-    const XMUSHORT4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUShort4(const XMUSHORT4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             (float)pSource->z,
-                             (float)pSource->w}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            static_cast<float>(pSource->z),
+            static_cast<float>(pSource->w)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint16x4_t vInt = vld1_u16((const uint16_t *)pSource);
+    uint16x4_t vInt = vld1_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint32x4_t V = vmovl_u16(vInt);
     return vcvtq_f32_u32(V);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 FixaddY16W16 = {{{0, 0, 32768.0f, 32768.0f}}};
+    static const XMVECTORF32 FixaddY16W16 = { { { 0, 0, 32768.0f, 32768.0f } } };
     // Splat the color in all four entries (x,z,y,w)
-    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double *>(&pSource->x));
+    __m128d vIntd = _mm_load1_pd(reinterpret_cast<const double*>(&pSource->x));
     // Shift x&0ffff,z&0xffff,y&0xffff0000,w&0xffff0000
     __m128 vTemp = _mm_and_ps(_mm_castpd_ps(vIntd), g_XMMaskX16Y16Z16W16);
     // y and w are signed! Flip the bits to convert the order to unsigned
@@ -1429,24 +1459,26 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUShort4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadXDecN4(
-    const XMXDECN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadXDecN4(const XMXDECN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    static const uint32_t SignExtend[] = {0x00000000, 0xFFFFFC00};
+    static const uint32_t SignExtend[] = { 0x00000000, 0xFFFFFC00 };
 
     uint32_t ElementX = pSource->v & 0x3FF;
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
 
-    XMVECTORF32 vResult = {{{(ElementX == 0x200) ? -1.f : ((float)(int16_t)(ElementX | SignExtend[ElementX >> 9]) / 511.0f),
-                             (ElementY == 0x200) ? -1.f : ((float)(int16_t)(ElementY | SignExtend[ElementY >> 9]) / 511.0f),
-                             (ElementZ == 0x200) ? -1.f : ((float)(int16_t)(ElementZ | SignExtend[ElementZ >> 9]) / 511.0f),
-                             (float)(pSource->v >> 30) / 3.0f}}};
+    XMVECTORF32 vResult = { { {
+            (ElementX == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementX | SignExtend[ElementX >> 9])) / 511.0f),
+            (ElementY == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementY | SignExtend[ElementY >> 9])) / 511.0f),
+            (ElementZ == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementZ | SignExtend[ElementZ >> 9])) / 511.0f),
+            static_cast<float>(pSource->v >> 30) / 3.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskA2B10G10R10);
     vInt = veorq_u32(vInt, g_XMFlipA2B10G10R10);
     float32x4_t R = vcvtq_f32_s32(vreinterpretq_s32_u32(vInt));
@@ -1455,7 +1487,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadXDecN4(
     return vmaxq_f32(R, vdupq_n_f32(-1.0f));
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries
-    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    __m128 vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskA2B10G10R10);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1476,36 +1508,38 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadXDecN4(
 #pragma warning(disable : 4996)
 // C4996: ignore deprecation warning
 
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadXDec4(
-    const XMXDEC4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadXDec4(const XMXDEC4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    static const uint32_t SignExtend[] = {0x00000000, 0xFFFFFC00};
+    static const uint32_t SignExtend[] = { 0x00000000, 0xFFFFFC00 };
 
     uint32_t ElementX = pSource->v & 0x3FF;
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
 
-    XMVECTORF32 vResult = {{{(float)(int16_t)(ElementX | SignExtend[ElementX >> 9]),
-                             (float)(int16_t)(ElementY | SignExtend[ElementY >> 9]),
-                             (float)(int16_t)(ElementZ | SignExtend[ElementZ >> 9]),
-                             (float)(pSource->v >> 30)}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(static_cast<int16_t>(ElementX | SignExtend[ElementX >> 9])),
+            static_cast<float>(static_cast<int16_t>(ElementY | SignExtend[ElementY >> 9])),
+            static_cast<float>(static_cast<int16_t>(ElementZ | SignExtend[ElementZ >> 9])),
+            static_cast<float>(pSource->v >> 30)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORU32 XDec4Xor = {{{0x200, 0x200 << 10, 0x200 << 20, 0x80000000}}};
-    static const XMVECTORF32 XDec4Add = {{{-512.0f, -512.0f * 1024.0f, -512.0f * 1024.0f * 1024.0f, 32768 * 65536.0f}}};
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    static const XMVECTORU32 XDec4Xor = { { { 0x200, 0x200 << 10, 0x200 << 20, 0x80000000 } } };
+    static const XMVECTORF32 XDec4Add = { { { -512.0f, -512.0f * 1024.0f, -512.0f * 1024.0f * 1024.0f, 32768 * 65536.0f } } };
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     vInt = veorq_u32(vInt, XDec4Xor);
     float32x4_t R = vcvtq_f32_s32(vreinterpretq_s32_u32(vInt));
     R = vaddq_f32(R, XDec4Add);
     return vmulq_f32(R, g_XMMulDec4);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORU32 XDec4Xor = {{{0x200, 0x200 << 10, 0x200 << 20, 0x80000000}}};
-    static const XMVECTORF32 XDec4Add = {{{-512.0f, -512.0f * 1024.0f, -512.0f * 1024.0f * 1024.0f, 32768 * 65536.0f}}};
+    static const XMVECTORU32 XDec4Xor = { { { 0x200, 0x200 << 10, 0x200 << 20, 0x80000000 } } };
+    static const XMVECTORF32 XDec4Add = { { { -512.0f, -512.0f * 1024.0f, -512.0f * 1024.0f * 1024.0f, 32768 * 65536.0f } } };
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1523,8 +1557,8 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadXDec4(
 #pragma warning(pop)
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4(
-    const XMUDECN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUDecN4(const XMUDECN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
@@ -1533,22 +1567,24 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4(
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
 
-    XMVECTORF32 vResult = {{{(float)ElementX / 1023.0f,
-                             (float)ElementY / 1023.0f,
-                             (float)ElementZ / 1023.0f,
-                             (float)(pSource->v >> 30) / 3.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(ElementX) / 1023.0f,
+            static_cast<float>(ElementY) / 1023.0f,
+            static_cast<float>(ElementZ) / 1023.0f,
+            static_cast<float>(pSource->v >> 30) / 3.0f
+        } } };
     return vResult.v;
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 UDecN4Mul = {{{1.0f / 1023.0f, 1.0f / (1023.0f * 1024.0f), 1.0f / (1023.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f)}}};
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    static const XMVECTORF32 UDecN4Mul = { { { 1.0f / 1023.0f, 1.0f / (1023.0f * 1024.0f), 1.0f / (1023.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f) } } };
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_f32(R, UDecN4Mul);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 UDecN4Mul = {{{1.0f / 1023.0f, 1.0f / (1023.0f * 1024.0f), 1.0f / (1023.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f)}}};
+    static const XMVECTORF32 UDecN4Mul = { { { 1.0f / 1023.0f, 1.0f / (1023.0f * 1024.0f), 1.0f / (1023.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f) } } };
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1563,9 +1599,10 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4(
 #endif
 }
 
+
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(
-    const XMUDECN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(const XMUDECN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
@@ -1574,17 +1611,19 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(
     int32_t ElementY = (pSource->v >> 10) & 0x3FF;
     int32_t ElementZ = (pSource->v >> 20) & 0x3FF;
 
-    XMVECTORF32 vResult = {{{(float)(ElementX - 0x180) / 510.0f,
-                             (float)(ElementY - 0x180) / 510.0f,
-                             (float)(ElementZ - 0x180) / 510.0f,
-                             (float)(pSource->v >> 30) / 3.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(ElementX - 0x180) / 510.0f,
+            static_cast<float>(ElementY - 0x180) / 510.0f,
+            static_cast<float>(ElementZ - 0x180) / 510.0f,
+            static_cast<float>(pSource->v >> 30) / 3.0f
+        } } };
 
     return vResult.v;
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 XRMul = {{{1.0f / 510.0f, 1.0f / (510.0f * 1024.0f), 1.0f / (510.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f)}}};
-    static const XMVECTORI32 XRBias = {{{0x180, 0x180 * 1024, 0x180 * 1024 * 1024, 0}}};
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    static const XMVECTORF32 XRMul = { { { 1.0f / 510.0f, 1.0f / (510.0f * 1024.0f), 1.0f / (510.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f) } } };
+    static const XMVECTORI32 XRBias = { { { 0x180, 0x180 * 1024, 0x180 * 1024 * 1024, 0 } } };
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     int32x4_t vTemp = vsubq_s32(vreinterpretq_s32_u32(vInt), XRBias);
     vTemp = veorq_u32(vTemp, g_XMFlipW);
@@ -1592,10 +1631,10 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(
     R = vaddq_f32(R, g_XMAddUDec4);
     return vmulq_f32(R, XRMul);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 XRMul = {{{1.0f / 510.0f, 1.0f / (510.0f * 1024.0f), 1.0f / (510.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f)}}};
-    static const XMVECTORI32 XRBias = {{{0x180, 0x180 * 1024, 0x180 * 1024 * 1024, 0}}};
+    static const XMVECTORF32 XRMul = { { { 1.0f / 510.0f, 1.0f / (510.0f * 1024.0f), 1.0f / (510.0f * 1024.0f * 1024.0f), 1.0f / (3.0f * 1024.0f * 1024.0f * 1024.0f) } } };
+    static const XMVECTORI32 XRBias = { { { 0x180, 0x180 * 1024, 0x180 * 1024 * 1024, 0 } } };
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Mask channels
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // Subtract bias
@@ -1611,9 +1650,10 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(
 #endif
 }
 
+
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDec4(
-    const XMUDEC4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUDec4(const XMUDEC4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
@@ -1621,19 +1661,21 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDec4(
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
 
-    XMVECTORF32 vResult = {{{(float)ElementX,
-                             (float)ElementY,
-                             (float)ElementZ,
-                             (float)(pSource->v >> 30)}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(ElementX),
+            static_cast<float>(ElementY),
+            static_cast<float>(ElementZ),
+            static_cast<float>(pSource->v >> 30)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_f32(R, g_XMMulDec4);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1653,27 +1695,29 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUDec4(
 #pragma warning(disable : 4996)
 // C4996: ignore deprecation warning
 
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDecN4(
-    const XMDECN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadDecN4(const XMDECN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    static const uint32_t SignExtend[] = {0x00000000, 0xFFFFFC00};
-    static const uint32_t SignExtendW[] = {0x00000000, 0xFFFFFFFC};
+    static const uint32_t SignExtend[] = { 0x00000000, 0xFFFFFC00 };
+    static const uint32_t SignExtendW[] = { 0x00000000, 0xFFFFFFFC };
 
     uint32_t ElementX = pSource->v & 0x3FF;
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
     uint32_t ElementW = pSource->v >> 30;
 
-    XMVECTORF32 vResult = {{{(ElementX == 0x200) ? -1.f : ((float)(int16_t)(ElementX | SignExtend[ElementX >> 9]) / 511.0f),
-                             (ElementY == 0x200) ? -1.f : ((float)(int16_t)(ElementY | SignExtend[ElementY >> 9]) / 511.0f),
-                             (ElementZ == 0x200) ? -1.f : ((float)(int16_t)(ElementZ | SignExtend[ElementZ >> 9]) / 511.0f),
-                             (ElementW == 0x2) ? -1.f : ((float)(int16_t)(ElementW | SignExtendW[(ElementW >> 1) & 1]))}}};
+    XMVECTORF32 vResult = { { {
+            (ElementX == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementX | SignExtend[ElementX >> 9])) / 511.0f),
+            (ElementY == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementY | SignExtend[ElementY >> 9])) / 511.0f),
+            (ElementZ == 0x200) ? -1.f : (static_cast<float>(static_cast<int16_t>(ElementZ | SignExtend[ElementZ >> 9])) / 511.0f),
+            (ElementW == 0x2) ? -1.f : static_cast<float>(static_cast<int16_t>(ElementW | SignExtendW[(ElementW >> 1) & 1]))
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 DecN4Mul = {{{1.0f / 511.0f, 1.0f / (511.0f * 1024.0f), 1.0f / (511.0f * 1024.0f * 1024.0f), 1.0f / (1024.0f * 1024.0f * 1024.0f)}}};
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    static const XMVECTORF32 DecN4Mul = { { { 1.0f / 511.0f, 1.0f / (511.0f * 1024.0f), 1.0f / (511.0f * 1024.0f * 1024.0f), 1.0f / (1024.0f * 1024.0f * 1024.0f) } } };
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     vInt = veorq_u32(vInt, g_XMXorDec4);
     float32x4_t R = vcvtq_f32_s32(vreinterpretq_s32_u32(vInt));
@@ -1681,9 +1725,9 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDecN4(
     R = vmulq_f32(R, DecN4Mul);
     return vmaxq_f32(R, vdupq_n_f32(-1.0f));
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 DecN4Mul = {{{1.0f / 511.0f, 1.0f / (511.0f * 1024.0f), 1.0f / (511.0f * 1024.0f * 1024.0f), 1.0f / (1024.0f * 1024.0f * 1024.0f)}}};
+    static const XMVECTORF32 DecN4Mul = { { { 1.0f / 511.0f, 1.0f / (511.0f * 1024.0f), 1.0f / (511.0f * 1024.0f * 1024.0f), 1.0f / (1024.0f * 1024.0f * 1024.0f) } } };
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1700,26 +1744,28 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDecN4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDec4(
-    const XMDEC4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadDec4(const XMDEC4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    static const uint32_t SignExtend[] = {0x00000000, 0xFFFFFC00};
-    static const uint32_t SignExtendW[] = {0x00000000, 0xFFFFFFFC};
+    static const uint32_t SignExtend[] = { 0x00000000, 0xFFFFFC00 };
+    static const uint32_t SignExtendW[] = { 0x00000000, 0xFFFFFFFC };
 
     uint32_t ElementX = pSource->v & 0x3FF;
     uint32_t ElementY = (pSource->v >> 10) & 0x3FF;
     uint32_t ElementZ = (pSource->v >> 20) & 0x3FF;
     uint32_t ElementW = pSource->v >> 30;
 
-    XMVECTORF32 vResult = {{{(float)(int16_t)(ElementX | SignExtend[ElementX >> 9]),
-                             (float)(int16_t)(ElementY | SignExtend[ElementY >> 9]),
-                             (float)(int16_t)(ElementZ | SignExtend[ElementZ >> 9]),
-                             (float)(int16_t)(ElementW | SignExtendW[ElementW >> 1])}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(static_cast<int16_t>(ElementX | SignExtend[ElementX >> 9])),
+            static_cast<float>(static_cast<int16_t>(ElementY | SignExtend[ElementY >> 9])),
+            static_cast<float>(static_cast<int16_t>(ElementZ | SignExtend[ElementZ >> 9])),
+            static_cast<float>(static_cast<int16_t>(ElementW | SignExtendW[ElementW >> 1]))
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x4_t vInt = vld1q_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     vInt = vandq_u32(vInt, g_XMMaskDec4);
     vInt = veorq_u32(vInt, g_XMXorDec4);
     float32x4_t R = vcvtq_f32_s32(vreinterpretq_s32_u32(vInt));
@@ -1727,7 +1773,7 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDec4(
     return vmulq_f32(R, g_XMMulDec4);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Splat the color in all four entries
-    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vTemp = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Shift R&0xFF0000, G&0xFF00, B&0xFF, A&0xFF000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskDec4);
     // a is unsigned! Flip the bit to convert the order to signed
@@ -1745,26 +1791,28 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadDec4(
 #pragma warning(pop)
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByteN4(
-    const XMUBYTEN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUByteN4(const XMUBYTEN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x / 255.0f,
-                             (float)pSource->y / 255.0f,
-                             (float)pSource->z / 255.0f,
-                             (float)pSource->w / 255.0f}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x) / 255.0f,
+            static_cast<float>(pSource->y) / 255.0f,
+            static_cast<float>(pSource->z) / 255.0f,
+            static_cast<float>(pSource->w) / 255.0f
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     uint16x8_t vInt16 = vmovl_u8(vreinterpret_u8_u32(vInt8));
     uint32x4_t vInt = vmovl_u16(vget_low_u16(vInt16));
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_n_f32(R, 1.0f / 255.0f);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 LoadUByteN4Mul = {{{1.0f / 255.0f, 1.0f / (255.0f * 256.0f), 1.0f / (255.0f * 65536.0f), 1.0f / (255.0f * 65536.0f * 256.0f)}}};
+    static const XMVECTORF32 LoadUByteN4Mul = { { { 1.0f / 255.0f, 1.0f / (255.0f * 256.0f), 1.0f / (255.0f * 65536.0f), 1.0f / (255.0f * 65536.0f * 256.0f) } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0ff,y&0xff00,z&0xff0000,w&0xff000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskByte4);
     // w is signed! Flip the bits to convert the order to unsigned
@@ -1780,25 +1828,27 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByteN4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByte4(
-    const XMUBYTE4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUByte4(const XMUBYTE4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             (float)pSource->z,
-                             (float)pSource->w}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            static_cast<float>(pSource->z),
+            static_cast<float>(pSource->w)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     uint16x8_t vInt16 = vmovl_u8(vreinterpret_u8_u32(vInt8));
     uint32x4_t vInt = vmovl_u16(vget_low_u16(vInt16));
     return vcvtq_f32_u32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 LoadUByte4Mul = {{{1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f)}}};
+    static const XMVECTORF32 LoadUByte4Mul = { { { 1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f) } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0ff,y&0xff00,z&0xff0000,w&0xff000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskByte4);
     // w is signed! Flip the bits to convert the order to unsigned
@@ -1814,27 +1864,29 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUByte4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByteN4(
-    const XMBYTEN4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadByteN4(const XMBYTEN4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(pSource->x == -128) ? -1.f : ((float)pSource->x / 127.0f),
-                             (pSource->y == -128) ? -1.f : ((float)pSource->y / 127.0f),
-                             (pSource->z == -128) ? -1.f : ((float)pSource->z / 127.0f),
-                             (pSource->w == -128) ? -1.f : ((float)pSource->w / 127.0f)}}};
+    XMVECTORF32 vResult = { { {
+            (pSource->x == -128) ? -1.f : (static_cast<float>(pSource->x) / 127.0f),
+            (pSource->y == -128) ? -1.f : (static_cast<float>(pSource->y) / 127.0f),
+            (pSource->z == -128) ? -1.f : (static_cast<float>(pSource->z) / 127.0f),
+            (pSource->w == -128) ? -1.f : (static_cast<float>(pSource->w) / 127.0f)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     int16x8_t vInt16 = vmovl_s8(vreinterpret_s8_u32(vInt8));
     int32x4_t vInt = vmovl_s16(vget_low_s16(vInt16));
     float32x4_t R = vcvtq_f32_s32(vInt);
     R = vmulq_n_f32(R, 1.0f / 127.0f);
     return vmaxq_f32(R, vdupq_n_f32(-1.f));
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 LoadByteN4Mul = {{{1.0f / 127.0f, 1.0f / (127.0f * 256.0f), 1.0f / (127.0f * 65536.0f), 1.0f / (127.0f * 65536.0f * 256.0f)}}};
+    static const XMVECTORF32 LoadByteN4Mul = { { { 1.0f / 127.0f, 1.0f / (127.0f * 256.0f), 1.0f / (127.0f * 65536.0f), 1.0f / (127.0f * 65536.0f * 256.0f) } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0ff,y&0xff00,z&0xff0000,w&0xff000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskByte4);
     // x,y and z are unsigned! Flip the bits to convert the order to signed
@@ -1851,25 +1903,27 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByteN4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByte4(
-    const XMBYTE4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadByte4(const XMBYTE4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{(float)pSource->x,
-                             (float)pSource->y,
-                             (float)pSource->z,
-                             (float)pSource->w}}};
+    XMVECTORF32 vResult = { { {
+            static_cast<float>(pSource->x),
+            static_cast<float>(pSource->y),
+            static_cast<float>(pSource->z),
+            static_cast<float>(pSource->w)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t *>(pSource));
+    uint32x2_t vInt8 = vld1_dup_u32(reinterpret_cast<const uint32_t*>(pSource));
     int16x8_t vInt16 = vmovl_s8(vreinterpret_s8_u32(vInt8));
     int32x4_t vInt = vmovl_s16(vget_low_s16(vInt16));
     return vcvtq_f32_s32(vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 LoadByte4Mul = {{{1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f)}}};
+    static const XMVECTORF32 LoadByte4Mul = { { { 1.0f, 1.0f / 256.0f, 1.0f / 65536.0f, 1.0f / (65536.0f * 256.0f) } } };
     // Splat the color in all four entries (x,z,y,w)
-    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float *>(&pSource->x));
+    XMVECTOR vTemp = _mm_load1_ps(reinterpret_cast<const float*>(&pSource->x));
     // Mask x&0ff,y&0xff00,z&0xff0000,w&0xff000000
     vTemp = _mm_and_ps(vTemp, g_XMMaskByte4);
     // x,y and z are unsigned! Flip the bits to convert the order to signed
@@ -1885,29 +1939,31 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadByte4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUNibble4(
-    const XMUNIBBLE4 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadUNibble4(const XMUNIBBLE4* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{float(pSource->v & 0xF),
-                             float((pSource->v >> 4) & 0xF),
-                             float((pSource->v >> 8) & 0xF),
-                             float((pSource->v >> 12) & 0xF)}}};
+    XMVECTORF32 vResult = { { {
+            float(pSource->v & 0xF),
+            float((pSource->v >> 4) & 0xF),
+            float((pSource->v >> 8) & 0xF),
+            float((pSource->v >> 12) & 0xF)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORI32 UNibble4And = {{{0xF, 0xF0, 0xF00, 0xF000}}};
-    static const XMVECTORF32 UNibble4Mul = {{{1.0f, 1.0f / 16.f, 1.0f / 256.f, 1.0f / 4096.f}}};
-    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    static const XMVECTORI32 UNibble4And = { { { 0xF, 0xF0, 0xF00, 0xF000 } } };
+    static const XMVECTORF32 UNibble4Mul = { { { 1.0f, 1.0f / 16.f, 1.0f / 256.f, 1.0f / 4096.f } } };
+    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint32x4_t vInt = vmovl_u16(vInt16);
     vInt = vandq_u32(vInt, UNibble4And);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_f32(R, UNibble4Mul);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORI32 UNibble4And = {{{0xF, 0xF0, 0xF00, 0xF000}}};
-    static const XMVECTORF32 UNibble4Mul = {{{1.0f, 1.0f / 16.f, 1.0f / 256.f, 1.0f / 4096.f}}};
+    static const XMVECTORI32 UNibble4And = { { { 0xF, 0xF0, 0xF00, 0xF000 } } };
+    static const XMVECTORF32 UNibble4Mul = { { { 1.0f, 1.0f / 16.f, 1.0f / 256.f, 1.0f / 4096.f } } };
     // Get the 32 bit value and splat it
-    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Mask off x, y and z
     vResult = _mm_and_ps(vResult, UNibble4And);
     // Convert to float
@@ -1919,29 +1975,31 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadUNibble4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadU555(
-    const XMU555 *pSource)
+_Use_decl_annotations_
+inline XMVECTOR XM_CALLCONV XMLoadU555(const XMU555* pSource) noexcept
 {
     assert(pSource);
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{float(pSource->v & 0x1F),
-                             float((pSource->v >> 5) & 0x1F),
-                             float((pSource->v >> 10) & 0x1F),
-                             float((pSource->v >> 15) & 0x1)}}};
+    XMVECTORF32 vResult = { { {
+            float(pSource->v & 0x1F),
+            float((pSource->v >> 5) & 0x1F),
+            float((pSource->v >> 10) & 0x1F),
+            float((pSource->v >> 15) & 0x1)
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORI32 U555And = {{{0x1F, 0x1F << 5, 0x1F << 10, 0x8000}}};
-    static const XMVECTORF32 U555Mul = {{{1.0f, 1.0f / 32.f, 1.0f / 1024.f, 1.0f / 32768.f}}};
-    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t *>(pSource));
+    static const XMVECTORI32 U555And = { { { 0x1F, 0x1F << 5, 0x1F << 10, 0x8000 } } };
+    static const XMVECTORF32 U555Mul = { { { 1.0f, 1.0f / 32.f, 1.0f / 1024.f, 1.0f / 32768.f } } };
+    uint16x4_t vInt16 = vld1_dup_u16(reinterpret_cast<const uint16_t*>(pSource));
     uint32x4_t vInt = vmovl_u16(vInt16);
     vInt = vandq_u32(vInt, U555And);
     float32x4_t R = vcvtq_f32_u32(vInt);
     return vmulq_f32(R, U555Mul);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORI32 U555And = {{{0x1F, 0x1F << 5, 0x1F << 10, 0x8000}}};
-    static const XMVECTORF32 U555Mul = {{{1.0f, 1.0f / 32.f, 1.0f / 1024.f, 1.0f / 32768.f}}};
+    static const XMVECTORI32 U555And = { { { 0x1F, 0x1F << 5, 0x1F << 10, 0x8000 } } };
+    static const XMVECTORF32 U555Mul = { { { 1.0f, 1.0f / 32.f, 1.0f / 1024.f, 1.0f / 32768.f } } };
     // Get the 32 bit value and splat it
-    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float *>(&pSource->v));
+    XMVECTOR vResult = _mm_load_ps1(reinterpret_cast<const float*>(&pSource->v));
     // Mask off x, y and z
     vResult = _mm_and_ps(vResult, U555And);
     // Convert to float
@@ -1961,9 +2019,12 @@ _Use_decl_annotations_ inline XMVECTOR XM_CALLCONV XMLoadU555(
  * Vector and matrix store operations
  *
  ****************************************************************************/
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreColor(
-    XMCOLOR *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreColor
+(
+    XMCOLOR* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -1975,10 +2036,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreColor(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->c = ((uint32_t)tmp.w << 24) |
-                      ((uint32_t)tmp.x << 16) |
-                      ((uint32_t)tmp.y << 8) |
-                      ((uint32_t)tmp.z);
+    pDestination->c = (static_cast<uint32_t>(tmp.w) << 24) |
+        (static_cast<uint32_t>(tmp.x) << 16) |
+        (static_cast<uint32_t>(tmp.y) << 8) |
+        static_cast<uint32_t>(tmp.z);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0));
@@ -2006,19 +2067,22 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreColor(
     // Mash to bytes
     vInt = _mm_packus_epi16(vInt, vInt);
     // Store the color
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->c), _mm_castsi128_ps(vInt));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->c), _mm_castsi128_ps(vInt));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreHalf2(
-    XMHALF2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreHalf2
+(
+    XMHALF2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
     __m128i V1 = _mm_cvtps_ph(V, 0);
-    _mm_store_ss(reinterpret_cast<float *>(pDestination), _mm_castsi128_ps(V1));
+    _mm_store_ss(reinterpret_cast<float*>(pDestination), _mm_castsi128_ps(V1));
 #else
     pDestination->x = XMConvertFloatToHalf(XMVectorGetX(V));
     pDestination->y = XMConvertFloatToHalf(XMVectorGetY(V));
@@ -2026,9 +2090,12 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreHalf2(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN2(
-    XMSHORTN2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreShortN2
+(
+    XMSHORTN2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2040,8 +2107,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
+    pDestination->x = static_cast<int16_t>(tmp.x);
+    pDestination->y = static_cast<int16_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-1.f));
@@ -2056,14 +2123,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN2(
     vResult = _mm_mul_ps(vResult, g_ShortMax);
     __m128i vResulti = _mm_cvtps_epi32(vResult);
     vResulti = _mm_packs_epi32(vResulti, vResulti);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->x), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->x), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort2(
-    XMSHORT2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreShort2
+(
+    XMSHORT2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2074,8 +2144,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
+    pDestination->x = static_cast<int16_t>(tmp.x);
+    pDestination->y = static_cast<int16_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-32767.f));
@@ -2091,14 +2161,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort2(
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // Pack the ints into shorts
     vInt = _mm_packs_epi32(vInt, vInt);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->x), _mm_castsi128_ps(vInt));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->x), _mm_castsi128_ps(vInt));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN2(
-    XMUSHORTN2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUShortN2
+(
+    XMUSHORTN2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2110,8 +2183,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
+    pDestination->x = static_cast<uint16_t>(tmp.x);
+    pDestination->y = static_cast<uint16_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0.f));
@@ -2131,15 +2204,18 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN2(
     __m128i vInt = _mm_cvttps_epi32(vResult);
     // Since the SSE pack instruction clamps using signed rules,
     // manually extract the values to store them to memory
-    pDestination->x = static_cast<int16_t>(_mm_extract_epi16(vInt, 0));
-    pDestination->y = static_cast<int16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    pDestination->y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort2(
-    XMUSHORT2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUShort2
+(
+    XMUSHORT2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2150,8 +2226,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
+    pDestination->x = static_cast<uint16_t>(tmp.x);
+    pDestination->y = static_cast<uint16_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0.f));
@@ -2167,15 +2243,18 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort2(
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // Since the SSE pack instruction clamps using signed rules,
     // manually extract the values to store them to memory
-    pDestination->x = static_cast<int16_t>(_mm_extract_epi16(vInt, 0));
-    pDestination->y = static_cast<int16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    pDestination->y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN2(
-    XMBYTEN2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreByteN2
+(
+    XMBYTEN2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2187,8 +2266,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int8_t)tmp.x;
-    pDestination->y = (int8_t)tmp.y;
+    pDestination->x = static_cast<int8_t>(tmp.x);
+    pDestination->y = static_cast<int8_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-1.f));
@@ -2197,7 +2276,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN2(
     int32x4_t vInt32 = vcvtq_s32_f32(R);
     int16x4_t vInt16 = vqmovn_s32(vInt32);
     int8x8_t vInt8 = vqmovn_s16(vcombine_s16(vInt16, vInt16));
-    vst1_lane_u16(reinterpret_cast<uint16_t *>(pDestination), vreinterpret_u16_s8(vInt8), 0);
+    vst1_lane_u16(reinterpret_cast<uint16_t*>(pDestination), vreinterpret_u16_s8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMNegativeOne);
@@ -2207,16 +2286,19 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN2(
     // Convert to int by rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->v = ((y & 0xFF) << 8) | (x & 0xFF);
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->v = static_cast<uint16_t>(((static_cast<int>(y) & 0xFF) << 8) | (static_cast<int>(x) & 0xFF));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte2(
-    XMBYTE2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreByte2
+(
+    XMBYTE2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2227,8 +2309,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int8_t)tmp.x;
-    pDestination->y = (int8_t)tmp.y;
+    pDestination->x = static_cast<int8_t>(tmp.x);
+    pDestination->y = static_cast<int8_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-127.f));
@@ -2236,7 +2318,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte2(
     int32x4_t vInt32 = vcvtq_s32_f32(R);
     int16x4_t vInt16 = vqmovn_s32(vInt32);
     int8x8_t vInt8 = vqmovn_s16(vcombine_s16(vInt16, vInt16));
-    vst1_lane_u16(reinterpret_cast<uint16_t *>(pDestination), vreinterpret_u16_s8(vInt8), 0);
+    vst1_lane_u16(reinterpret_cast<uint16_t*>(pDestination), vreinterpret_u16_s8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_ByteMin);
@@ -2244,16 +2326,19 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte2(
     // Convert to int by rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->v = ((y & 0xFF) << 8) | (x & 0xFF);
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->v = static_cast<uint16_t>(((static_cast<int>(y) & 0xFF) << 8) | (static_cast<int>(x) & 0xFF));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN2(
-    XMUBYTEN2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUByteN2
+(
+    XMUBYTEN2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2265,8 +2350,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (uint8_t)tmp.x;
-    pDestination->y = (uint8_t)tmp.y;
+    pDestination->x = static_cast<uint8_t>(tmp.x);
+    pDestination->y = static_cast<uint8_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0.f));
@@ -2276,7 +2361,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN2(
     uint32x4_t vInt32 = vcvtq_u32_f32(R);
     uint16x4_t vInt16 = vqmovn_u32(vInt32);
     uint8x8_t vInt8 = vqmovn_u16(vcombine_u16(vInt16, vInt16));
-    vst1_lane_u16(reinterpret_cast<uint16_t *>(pDestination), vreinterpret_u16_u8(vInt8), 0);
+    vst1_lane_u16(reinterpret_cast<uint16_t*>(pDestination), vreinterpret_u16_u8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
@@ -2287,16 +2372,19 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN2(
     // Convert to int
     __m128i vInt = _mm_cvttps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->v = ((y & 0xFF) << 8) | (x & 0xFF);
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->v = static_cast<uint16_t>(((static_cast<int>(y) & 0xFF) << 8) | (static_cast<int>(x) & 0xFF));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte2(
-    XMUBYTE2 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUByte2
+(
+    XMUBYTE2* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2307,8 +2395,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte2(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (uint8_t)tmp.x;
-    pDestination->y = (uint8_t)tmp.y;
+    pDestination->x = static_cast<uint8_t>(tmp.x);
+    pDestination->y = static_cast<uint8_t>(tmp.y);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0.f));
@@ -2316,7 +2404,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte2(
     uint32x4_t vInt32 = vcvtq_u32_f32(R);
     uint16x4_t vInt16 = vqmovn_u32(vInt32);
     uint8x8_t vInt8 = vqmovn_u16(vcombine_u16(vInt16, vInt16));
-    vst1_lane_u16(reinterpret_cast<uint16_t *>(pDestination), vreinterpret_u16_u8(vInt8), 0);
+    vst1_lane_u16(reinterpret_cast<uint16_t*>(pDestination), vreinterpret_u16_u8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
@@ -2324,19 +2412,22 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte2(
     // Convert to int by rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->v = ((y & 0xFF) << 8) | (x & 0xFF);
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->v = static_cast<uint16_t>(((static_cast<int>(y) & 0xFF) << 8) | (static_cast<int>(x) & 0xFF));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreU565(
-    XMU565 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreU565
+(
+    XMU565* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 Max = {{{31.0f, 63.0f, 31.0f, 0.0f}}};
+    static const XMVECTORF32 Max = { { { 31.0f, 63.0f, 31.0f, 0.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
     XMVECTOR N = XMVectorClamp(V, XMVectorZero(), Max.v);
@@ -2345,12 +2436,13 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreU565(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = (((uint16_t)tmp.z & 0x1F) << 11) |
-                      (((uint16_t)tmp.y & 0x3F) << 5) |
-                      (((uint16_t)tmp.x & 0x1F));
+    pDestination->v = static_cast<uint16_t>(
+        ((static_cast<int>(tmp.z) & 0x1F) << 11)
+        | ((static_cast<int>(tmp.y) & 0x3F) << 5)
+        | ((static_cast<int>(tmp.x) & 0x1F)));
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f, 32.f, 32.f * 64.f, 0.f}}};
-    static const XMVECTORU32 Mask = {{{0x1F, 0x3F << 5, 0x1F << 11, 0}}};
+    static const XMVECTORF32 Scale = { { { 1.0f, 32.f, 32.f * 64.f, 0.f } } };
+    static const XMVECTORU32 Mask = { { { 0x1F, 0x3F << 5, 0x1F << 11, 0 } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0));
     vResult = vminq_f32(vResult, Max);
     vResult = vmulq_f32(vResult, Scale);
@@ -2369,25 +2461,28 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreU565(
     // Convert to int with rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    uint16_t z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
-    pDestination->v = ((z & 0x1F) << 11) |
-                      ((y & 0x3F) << 5) |
-                      ((x & 0x1F));
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    auto z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
+    pDestination->v = static_cast<uint16_t>(
+        ((static_cast<int>(z) & 0x1F) << 11)
+        | ((static_cast<int>(y) & 0x3F) << 5)
+        | ((static_cast<int>(x) & 0x1F)));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreFloat3PK(
-    XMFLOAT3PK *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreFloat3PK
+(
+    XMFLOAT3PK* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 
-    XM_ALIGNAS(16)
-    uint32_t IValue[4];
-    XMStoreFloat3A(reinterpret_cast<XMFLOAT3A *>(&IValue), V);
+    XM_ALIGNED_DATA(16) uint32_t IValue[4];
+    XMStoreFloat3A(reinterpret_cast<XMFLOAT3A*>(&IValue), V);
 
     uint32_t Result[3];
 
@@ -2487,13 +2582,18 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreFloat3PK(
     }
 
     // Pack Result into memory
-    pDestination->v = (Result[0] & 0x7ff) | ((Result[1] & 0x7ff) << 11) | ((Result[2] & 0x3ff) << 22);
+    pDestination->v = (Result[0] & 0x7ff)
+        | ((Result[1] & 0x7ff) << 11)
+        | ((Result[2] & 0x3ff) << 22);
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreFloat3SE(
-    XMFLOAT3SE *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreFloat3SE
+(
+    XMFLOAT3SE* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 
@@ -2512,18 +2612,14 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreFloat3SE(
 
     const float maxColor = (max_xyz > minf9) ? max_xyz : minf9;
 
-    union
-    {
-        float f;
-        int32_t i;
-    } fi;
+    union { float f; int32_t i; } fi;
     fi.f = maxColor;
     fi.i += 0x00004000; // round up leaving 9 bits in fraction (including assumed 1)
 
-    uint32_t exp = fi.i >> 23;
+    auto exp = static_cast<uint32_t>(fi.i) >> 23;
     pDestination->e = exp - 0x6f;
 
-    fi.i = 0x83000000 - (exp << 23);
+    fi.i = static_cast<int32_t>(0x83000000 - (exp << 23));
     float ScaleR = fi.f;
 
     pDestination->xm = static_cast<uint32_t>(Internal::round_to_nearest(x * ScaleR));
@@ -2532,14 +2628,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreFloat3SE(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreHalf4(
-    XMHALF4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreHalf4
+(
+    XMHALF4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_F16C_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
     __m128i V1 = _mm_cvtps_ph(V, 0);
-    _mm_storel_epi64(reinterpret_cast<__m128i *>(pDestination), V1);
+    _mm_storel_epi64(reinterpret_cast<__m128i*>(pDestination), V1);
 #else
     XMFLOAT4A t;
     XMStoreFloat4A(&t, V);
@@ -2552,9 +2651,12 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreHalf4(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN4(
-    XMSHORTN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreShortN4
+(
+    XMSHORTN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2566,10 +2668,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
-    pDestination->z = (int16_t)tmp.z;
-    pDestination->w = (int16_t)tmp.w;
+    pDestination->x = static_cast<int16_t>(tmp.x);
+    pDestination->y = static_cast<int16_t>(tmp.y);
+    pDestination->z = static_cast<int16_t>(tmp.z);
+    pDestination->w = static_cast<int16_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(-1.f));
@@ -2577,21 +2679,24 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShortN4(
     vResult = vmulq_n_f32(vResult, 32767.0f);
     vResult = vcvtq_s32_f32(vResult);
     int16x4_t vInt = vmovn_s32(vResult);
-    vst1_s16(reinterpret_cast<int16_t *>(pDestination), vInt);
+    vst1_s16(reinterpret_cast<int16_t*>(pDestination), vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
     XMVECTOR vResult = _mm_max_ps(V, g_XMNegativeOne);
     vResult = _mm_min_ps(vResult, g_XMOne);
     vResult = _mm_mul_ps(vResult, g_ShortMax);
     __m128i vResulti = _mm_cvtps_epi32(vResult);
     vResulti = _mm_packs_epi32(vResulti, vResulti);
-    _mm_store_sd(reinterpret_cast<double *>(&pDestination->x), _mm_castsi128_pd(vResulti));
+    _mm_store_sd(reinterpret_cast<double*>(&pDestination->x), _mm_castsi128_pd(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort4(
-    XMSHORT4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreShort4
+(
+    XMSHORT4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2602,17 +2707,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
-    pDestination->z = (int16_t)tmp.z;
-    pDestination->w = (int16_t)tmp.w;
+    pDestination->x = static_cast<int16_t>(tmp.x);
+    pDestination->y = static_cast<int16_t>(tmp.y);
+    pDestination->z = static_cast<int16_t>(tmp.z);
+    pDestination->w = static_cast<int16_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t vResult = vmaxq_f32(V, g_ShortMin);
     vResult = vminq_f32(vResult, g_ShortMax);
     vResult = vcvtq_s32_f32(vResult);
     int16x4_t vInt = vmovn_s32(vResult);
-    vst1_s16(reinterpret_cast<int16_t *>(pDestination), vInt);
+    vst1_s16(reinterpret_cast<int16_t*>(pDestination), vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Bounds check
     XMVECTOR vResult = _mm_max_ps(V, g_ShortMin);
@@ -2621,14 +2726,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreShort4(
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // Pack the ints into shorts
     vInt = _mm_packs_epi32(vInt, vInt);
-    _mm_store_sd(reinterpret_cast<double *>(&pDestination->x), _mm_castsi128_pd(vInt));
+    _mm_store_sd(reinterpret_cast<double*>(&pDestination->x), _mm_castsi128_pd(vInt));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN4(
-    XMUSHORTN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUShortN4
+(
+    XMUSHORTN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2640,10 +2748,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
-    pDestination->z = (int16_t)tmp.z;
-    pDestination->w = (int16_t)tmp.w;
+    pDestination->x = static_cast<uint16_t>(tmp.x);
+    pDestination->y = static_cast<uint16_t>(tmp.y);
+    pDestination->z = static_cast<uint16_t>(tmp.z);
+    pDestination->w = static_cast<uint16_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0));
@@ -2652,7 +2760,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN4(
     vResult = vaddq_f32(vResult, g_XMOneHalf);
     vResult = vcvtq_u32_f32(vResult);
     uint16x4_t vInt = vmovn_u32(vResult);
-    vst1_u16(reinterpret_cast<uint16_t *>(pDestination), vInt);
+    vst1_u16(reinterpret_cast<uint16_t*>(pDestination), vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Bounds check
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
@@ -2663,17 +2771,20 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShortN4(
     __m128i vInt = _mm_cvttps_epi32(vResult);
     // Since the SSE pack instruction clamps using signed rules,
     // manually extract the values to store them to memory
-    pDestination->x = static_cast<int16_t>(_mm_extract_epi16(vInt, 0));
-    pDestination->y = static_cast<int16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->z = static_cast<int16_t>(_mm_extract_epi16(vInt, 4));
-    pDestination->w = static_cast<int16_t>(_mm_extract_epi16(vInt, 6));
+    pDestination->x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    pDestination->y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
+    pDestination->w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort4(
-    XMUSHORT4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUShort4
+(
+    XMUSHORT4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -2684,17 +2795,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int16_t)tmp.x;
-    pDestination->y = (int16_t)tmp.y;
-    pDestination->z = (int16_t)tmp.z;
-    pDestination->w = (int16_t)tmp.w;
+    pDestination->x = static_cast<uint16_t>(tmp.x);
+    pDestination->y = static_cast<uint16_t>(tmp.y);
+    pDestination->z = static_cast<uint16_t>(tmp.z);
+    pDestination->w = static_cast<uint16_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0));
     vResult = vminq_f32(vResult, g_UShortMax);
     vResult = vcvtq_u32_f32(vResult);
     uint16x4_t vInt = vmovn_u32(vResult);
-    vst1_u16(reinterpret_cast<uint16_t *>(pDestination), vInt);
+    vst1_u16(reinterpret_cast<uint16_t*>(pDestination), vInt);
 #elif defined(_XM_SSE_INTRINSICS_)
     // Bounds check
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
@@ -2703,24 +2814,27 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUShort4(
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // Since the SSE pack instruction clamps using signed rules,
     // manually extract the values to store them to memory
-    pDestination->x = static_cast<int16_t>(_mm_extract_epi16(vInt, 0));
-    pDestination->y = static_cast<int16_t>(_mm_extract_epi16(vInt, 2));
-    pDestination->z = static_cast<int16_t>(_mm_extract_epi16(vInt, 4));
-    pDestination->w = static_cast<int16_t>(_mm_extract_epi16(vInt, 6));
+    pDestination->x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    pDestination->y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    pDestination->z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
+    pDestination->w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDecN4(
-    XMXDECN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreXDecN4
+(
+    XMXDECN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 Min = {{{-1.0f, -1.0f, -1.0f, 0.0f}}};
+    static const XMVECTORF32 Min = { { { -1.0f, -1.0f, -1.0f, 0.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
 
-    static const XMVECTORF32 Scale = {{{511.0f, 511.0f, 511.0f, 3.0f}}};
+    static const XMVECTORF32  Scale = { { { 511.0f, 511.0f, 511.0f, 3.0f } } };
 
     XMVECTOR N = XMVectorClamp(V, Min.v, g_XMOne.v);
     N = XMVectorMultiply(N, Scale.v);
@@ -2729,14 +2843,15 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDecN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((uint32_t)tmp.w << 30) |
-                      (((int32_t)tmp.z & 0x3FF) << 20) |
-                      (((int32_t)tmp.y & 0x3FF) << 10) |
-                      (((int32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | (static_cast<int>(tmp.x) & 0x3FF));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{511.0f, 511.0f * 1024.0f, 511.0f * 1048576.0f, 3.0f * 536870912.0f}}};
-    static const XMVECTORI32 ScaleMask = {{{0x3FF, 0x3FF << 10, 0x3FF << 20, 0x3 << 29}}};
+    static const XMVECTORF32 Scale = { { { 511.0f, 511.0f * 1024.0f, 511.0f * 1048576.0f, 3.0f * 536870912.0f } } };
+    static const XMVECTORI32 ScaleMask = { { { 0x3FF, 0x3FF << 10, 0x3FF << 20, 0x3 << 29 } } };
     float32x4_t vResult = vmaxq_f32(V, Min);
     vResult = vminq_f32(vResult, vdupq_n_f32(1.0f));
     vResult = vmulq_f32(vResult, Scale);
@@ -2745,14 +2860,14 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDecN4(
     int32x4_t vResultw = vandq_s32(vResulti, g_XMMaskW);
     vResulti = vaddq_s32(vResulti, vResultw);
     // Do a horizontal or of all 4 entries
-    uint32x2_t vTemp = vget_low_u32(vreinterpret_u32_s32(vResulti));
-    uint32x2_t vhi = vget_high_u32(vreinterpret_u32_s32(vResulti));
+    uint32x2_t vTemp = vget_low_u32(vreinterpretq_u32_s32(vResulti));
+    uint32x2_t vhi = vget_high_u32(vreinterpretq_u32_s32(vResulti));
     vTemp = vorr_u32(vTemp, vhi);
     vTemp = vpadd_u32(vTemp, vTemp);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{511.0f, 511.0f * 1024.0f, 511.0f * 1048576.0f, 3.0f * 536870912.0f}}};
-    static const XMVECTORI32 ScaleMask = {{{0x3FF, 0x3FF << 10, 0x3FF << 20, 0x3 << 29}}};
+    static const XMVECTORF32 Scale = { { { 511.0f, 511.0f * 1024.0f, 511.0f * 1048576.0f, 3.0f * 536870912.0f } } };
+    static const XMVECTORI32 ScaleMask = { { { 0x3FF, 0x3FF << 10, 0x3FF << 20, 0x3 << 29 } } };
     XMVECTOR vResult = _mm_max_ps(V, Min);
     vResult = _mm_min_ps(vResult, g_XMOne);
     // Scale by multiplication
@@ -2771,7 +2886,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDecN4(
     vResulti = _mm_or_si128(vResulti, _mm_castps_si128(vResult));
     vResult = XM_PERMUTE_PS(vResult, _MM_SHUFFLE(0, 3, 2, 1));
     vResulti = _mm_or_si128(vResulti, _mm_castps_si128(vResult));
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
@@ -2780,13 +2895,16 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDecN4(
 #pragma warning(disable : 4996)
 // C4996: ignore deprecation warning
 
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDec4(
-    XMXDEC4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreXDec4
+(
+    XMXDEC4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 MinXDec4 = {{{-511.0f, -511.0f, -511.0f, 0.0f}}};
-    static const XMVECTORF32 MaxXDec4 = {{{511.0f, 511.0f, 511.0f, 3.0f}}};
+    static const XMVECTORF32 MinXDec4 = { { { -511.0f, -511.0f, -511.0f, 0.0f } } };
+    static const XMVECTORF32 MaxXDec4 = { { { 511.0f, 511.0f, 511.0f, 3.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
 
@@ -2795,22 +2913,23 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDec4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((uint32_t)tmp.w << 30) |
-                      (((int32_t)tmp.z & 0x3FF) << 20) |
-                      (((int32_t)tmp.y & 0x3FF) << 10) |
-                      (((int32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ScaleXDec4 = {{{1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f}}};
-    static const XMVECTORI32 MaskXDec4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleXDec4 = { { { 1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f } } };
+    static const XMVECTORI32 MaskXDec4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     float32x4_t vResult = vmaxq_f32(V, MinXDec4);
     vResult = vminq_f32(vResult, MaxXDec4);
     vResult = vmulq_f32(vResult, ScaleXDec4);
     int32x4_t vResulti = vcvtq_s32_f32(vResult);
     vResulti = vandq_s32(vResulti, MaskXDec4);
     // Do a horizontal or of 4 entries
-    uint32x2_t vTemp = vget_low_u32(vreinterpret_u32_s32(vResulti));
-    uint32x2_t vTemp2 = vget_high_u32(vreinterpret_u32_s32(vResulti));
+    uint32x2_t vTemp = vget_low_u32(vreinterpretq_u32_s32(vResulti));
+    uint32x2_t vTemp2 = vget_high_u32(vreinterpretq_u32_s32(vResulti));
     vTemp = vorr_u32(vTemp, vTemp2);
     // Perform a single bit left shift on y|w
     vTemp2 = vdup_lane_u32(vTemp, 1);
@@ -2818,8 +2937,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDec4(
     vTemp = vorr_u32(vTemp, vTemp2);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleXDec4 = {{{1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f}}};
-    static const XMVECTORI32 MaskXDec4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleXDec4 = { { { 1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f } } };
+    static const XMVECTORI32 MaskXDec4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, MinXDec4);
     vResult = _mm_min_ps(vResult, MaxXDec4);
@@ -2839,21 +2958,24 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreXDec4(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 #pragma warning(pop)
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4(
-    XMUDECN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUDecN4
+(
+    XMUDECN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
 
-    static const XMVECTORF32 Scale = {{{1023.0f, 1023.0f, 1023.0f, 3.0f}}};
+    static const XMVECTORF32  Scale = { { { 1023.0f, 1023.0f, 1023.0f, 3.0f } } };
 
     XMVECTOR N = XMVectorSaturate(V);
     N = XMVectorMultiply(N, Scale.v);
@@ -2861,14 +2983,15 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((uint32_t)tmp.w << 30) |
-                      (((uint32_t)tmp.z & 0x3FF) << 20) |
-                      (((uint32_t)tmp.y & 0x3FF) << 10) |
-                      (((uint32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ScaleUDecN4 = {{{1023.0f, 1023.0f * 1024.0f * 0.5f, 1023.0f * 1024.0f * 1024.0f, 3.0f * 1024.0f * 1024.0f * 1024.0f * 0.5f}}};
-    static const XMVECTORI32 MaskUDecN4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleUDecN4 = { { { 1023.0f, 1023.0f * 1024.0f * 0.5f, 1023.0f * 1024.0f * 1024.0f, 3.0f * 1024.0f * 1024.0f * 1024.0f * 0.5f } } };
+    static const XMVECTORI32 MaskUDecN4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0.f));
     vResult = vminq_f32(vResult, vdupq_n_f32(1.f));
     vResult = vmulq_f32(vResult, ScaleUDecN4);
@@ -2884,8 +3007,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4(
     vTemp = vorr_u32(vTemp, vTemp2);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleUDecN4 = {{{1023.0f, 1023.0f * 1024.0f * 0.5f, 1023.0f * 1024.0f * 1024.0f, 3.0f * 1024.0f * 1024.0f * 1024.0f * 0.5f}}};
-    static const XMVECTORI32 MaskUDecN4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleUDecN4 = { { { 1023.0f, 1023.0f * 1024.0f * 0.5f, 1023.0f * 1024.0f * 1024.0f, 3.0f * 1024.0f * 1024.0f * 1024.0f * 0.5f } } };
+    static const XMVECTORI32 MaskUDecN4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
     vResult = _mm_min_ps(vResult, g_XMOne);
@@ -2905,19 +3028,22 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4_XR(
-    XMUDECN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUDecN4_XR
+(
+    XMUDECN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 Scale = {{{510.0f, 510.0f, 510.0f, 3.0f}}};
-    static const XMVECTORF32 Bias = {{{384.0f, 384.0f, 384.0f, 0.0f}}};
-    static const XMVECTORF32 C = {{{1023.f, 1023.f, 1023.f, 3.f}}};
+    static const XMVECTORF32 Scale = { { { 510.0f, 510.0f, 510.0f, 3.0f } } };
+    static const XMVECTORF32 Bias = { { { 384.0f, 384.0f, 384.0f, 0.0f } } };
+    static const XMVECTORF32 C = { { { 1023.f, 1023.f, 1023.f, 3.f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
 
@@ -2927,11 +3053,15 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4_XR(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((uint32_t)tmp.w << 30) | (((uint32_t)tmp.z & 0x3FF) << 20) | (((uint32_t)tmp.y & 0x3FF) << 10) | (((uint32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 Shift = {{{1.0f, 1024.0f * 0.5f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f * 0.5f}}};
-    static const XMVECTORU32 MaskUDecN4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 Shift = { { { 1.0f, 1024.0f * 0.5f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f * 0.5f } } };
+    static const XMVECTORU32 MaskUDecN4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     float32x4_t vResult = vmlaq_f32(Bias, V, Scale);
     vResult = vmaxq_f32(vResult, vdupq_n_f32(0.f));
     vResult = vminq_f32(vResult, C);
@@ -2948,11 +3078,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4_XR(
     vTemp = vorr_u32(vTemp, vTemp2);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 Shift = {{{1.0f, 1024.0f * 0.5f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f * 0.5f}}};
-    static const XMVECTORU32 MaskUDecN4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 Shift = { { { 1.0f, 1024.0f * 0.5f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f * 0.5f } } };
+    static const XMVECTORU32 MaskUDecN4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     // Scale & bias
-    XMVECTOR vResult = _mm_mul_ps(V, Scale);
-    vResult = _mm_add_ps(vResult, Bias);
+    XMVECTOR vResult = XM_FMADD_PS(V, Scale, Bias);
     // Clamp to bounds
     vResult = _mm_max_ps(vResult, g_XMZero);
     vResult = _mm_min_ps(vResult, C);
@@ -2972,17 +3101,20 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDecN4_XR(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDec4(
-    XMUDEC4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUDec4
+(
+    XMUDEC4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 MaxUDec4 = {{{1023.0f, 1023.0f, 1023.0f, 3.0f}}};
+    static const XMVECTORF32 MaxUDec4 = { { { 1023.0f, 1023.0f, 1023.0f, 3.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
 
@@ -2991,14 +3123,15 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDec4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((uint32_t)tmp.w << 30) |
-                      (((uint32_t)tmp.z & 0x3FF) << 20) |
-                      (((uint32_t)tmp.y & 0x3FF) << 10) |
-                      (((uint32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ScaleUDec4 = {{{1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f}}};
-    static const XMVECTORI32 MaskUDec4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleUDec4 = { { { 1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f } } };
+    static const XMVECTORI32 MaskUDec4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0.f));
     vResult = vminq_f32(vResult, MaxUDec4);
     vResult = vmulq_f32(vResult, ScaleUDec4);
@@ -3014,8 +3147,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDec4(
     vTemp = vorr_u32(vTemp, vTemp2);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleUDec4 = {{{1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f}}};
-    static const XMVECTORI32 MaskUDec4 = {{{0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1)}}};
+    static const XMVECTORF32 ScaleUDec4 = { { { 1.0f, 1024.0f / 2.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f / 2.0f } } };
+    static const XMVECTORI32 MaskUDec4 = { { { 0x3FF, 0x3FF << (10 - 1), 0x3FF << 20, 0x3 << (30 - 1) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
     vResult = _mm_min_ps(vResult, MaxUDec4);
@@ -3035,7 +3168,7 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDec4(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
@@ -3044,14 +3177,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUDec4(
 #pragma warning(disable : 4996)
 // C4996: ignore deprecation warning
 
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreDecN4(
-    XMDECN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreDecN4
+(
+    XMDECN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
 
-    static const XMVECTORF32 Scale = {{{511.0f, 511.0f, 511.0f, 1.0f}}};
+    static const XMVECTORF32 Scale = { { { 511.0f, 511.0f, 511.0f, 1.0f } } };
 
     XMVECTOR N = XMVectorClamp(V, g_XMNegativeOne.v, g_XMOne.v);
     N = XMVectorMultiply(N, Scale.v);
@@ -3059,26 +3195,27 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreDecN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((int32_t)tmp.w << 30) |
-                      (((int32_t)tmp.z & 0x3FF) << 20) |
-                      (((int32_t)tmp.y & 0x3FF) << 10) |
-                      (((int32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ScaleDecN4 = {{{511.0f, 511.0f * 1024.0f, 511.0f * 1024.0f * 1024.0f, 1.0f * 1024.0f * 1024.0f * 1024.0f}}};
+    static const XMVECTORF32 ScaleDecN4 = { { { 511.0f, 511.0f * 1024.0f, 511.0f * 1024.0f * 1024.0f, 1.0f * 1024.0f * 1024.0f * 1024.0f } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(-1.f));
     vResult = vminq_f32(vResult, vdupq_n_f32(1.f));
     vResult = vmulq_f32(vResult, ScaleDecN4);
     int32x4_t vResulti = vcvtq_s32_f32(vResult);
     vResulti = vandq_s32(vResulti, g_XMMaskDec4);
     // Do a horizontal or of 4 entries
-    uint32x2_t vTemp = vget_low_u32(vreinterpret_u32_s32(vResulti));
-    uint32x2_t vhi = vget_high_u32(vreinterpret_u32_s32(vResulti));
+    uint32x2_t vTemp = vget_low_u32(vreinterpretq_u32_s32(vResulti));
+    uint32x2_t vhi = vget_high_u32(vreinterpretq_u32_s32(vResulti));
     vTemp = vorr_u32(vTemp, vhi);
     vTemp = vpadd_u32(vTemp, vTemp);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleDecN4 = {{{511.0f, 511.0f * 1024.0f, 511.0f * 1024.0f * 1024.0f, 1.0f * 1024.0f * 1024.0f * 1024.0f}}};
+    static const XMVECTORF32 ScaleDecN4 = { { { 511.0f, 511.0f * 1024.0f, 511.0f * 1024.0f * 1024.0f, 1.0f * 1024.0f * 1024.0f * 1024.0f } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMNegativeOne);
     vResult = _mm_min_ps(vResult, g_XMOne);
@@ -3096,18 +3233,21 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreDecN4(
     vResulti2 = _mm_shuffle_epi32(vResulti, _MM_SHUFFLE(1, 1, 1, 1));
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreDec4(
-    XMDEC4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreDec4
+(
+    XMDEC4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 MinDec4 = {{{-511.0f, -511.0f, -511.0f, -1.0f}}};
-    static const XMVECTORF32 MaxDec4 = {{{511.0f, 511.0f, 511.0f, 1.0f}}};
+    static const XMVECTORF32 MinDec4 = { { { -511.0f, -511.0f, -511.0f, -1.0f } } };
+    static const XMVECTORF32 MaxDec4 = { { { 511.0f, 511.0f, 511.0f, 1.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
 
@@ -3116,26 +3256,27 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreDec4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((int32_t)tmp.w << 30) |
-                      (((int32_t)tmp.z & 0x3FF) << 20) |
-                      (((int32_t)tmp.y & 0x3FF) << 10) |
-                      (((int32_t)tmp.x & 0x3FF));
+    pDestination->v = static_cast<uint32_t>(
+        (static_cast<int>(tmp.w) << 30)
+        | ((static_cast<int>(tmp.z) & 0x3FF) << 20)
+        | ((static_cast<int>(tmp.y) & 0x3FF) << 10)
+        | ((static_cast<int>(tmp.x) & 0x3FF)));
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ScaleDec4 = {{{1.0f, 1024.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f}}};
+    static const XMVECTORF32 ScaleDec4 = { { { 1.0f, 1024.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f } } };
     float32x4_t vResult = vmaxq_f32(V, MinDec4);
     vResult = vminq_f32(vResult, MaxDec4);
     vResult = vmulq_f32(vResult, ScaleDec4);
     int32x4_t vResulti = vcvtq_s32_f32(vResult);
     vResulti = vandq_s32(vResulti, g_XMMaskDec4);
     // Do a horizontal or of all 4 entries
-    uint32x2_t vTemp = vget_low_u32(vreinterpret_u32_s32(vResulti));
-    uint32x2_t vhi = vget_high_u32(vreinterpret_u32_s32(vResulti));
+    uint32x2_t vTemp = vget_low_u32(vreinterpretq_u32_s32(vResulti));
+    uint32x2_t vhi = vget_high_u32(vreinterpretq_u32_s32(vResulti));
     vTemp = vorr_u32(vTemp, vhi);
     vTemp = vpadd_u32(vTemp, vTemp);
     vst1_lane_u32(&pDestination->v, vTemp, 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleDec4 = {{{1.0f, 1024.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f}}};
+    static const XMVECTORF32 ScaleDec4 = { { { 1.0f, 1024.0f, 1024.0f * 1024.0f, 1024.0f * 1024.0f * 1024.0f } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, MinDec4);
     vResult = _mm_min_ps(vResult, MaxDec4);
@@ -3153,16 +3294,19 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreDec4(
     vResulti2 = _mm_shuffle_epi32(vResulti, _MM_SHUFFLE(1, 1, 1, 1));
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 #pragma warning(pop)
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN4(
-    XMUBYTEN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUByteN4
+(
+    XMUBYTEN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -3174,10 +3318,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (uint8_t)tmp.x;
-    pDestination->y = (uint8_t)tmp.y;
-    pDestination->z = (uint8_t)tmp.z;
-    pDestination->w = (uint8_t)tmp.w;
+    pDestination->x = static_cast<uint8_t>(tmp.x);
+    pDestination->y = static_cast<uint8_t>(tmp.y);
+    pDestination->z = static_cast<uint8_t>(tmp.z);
+    pDestination->w = static_cast<uint8_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0));
@@ -3188,8 +3332,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN4(
     uint8x8_t vInt8 = vqmovn_u16(vcombine_u16(vInt16, vInt16));
     vst1_lane_u32(&pDestination->v, vreinterpret_u32_u8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleUByteN4 = {{{255.0f, 255.0f * 256.0f * 0.5f, 255.0f * 256.0f * 256.0f, 255.0f * 256.0f * 256.0f * 256.0f * 0.5f}}};
-    static const XMVECTORI32 MaskUByteN4 = {{{0xFF, 0xFF << (8 - 1), 0xFF << 16, 0xFF << (24 - 1)}}};
+    static const XMVECTORF32 ScaleUByteN4 = { { { 255.0f, 255.0f * 256.0f * 0.5f, 255.0f * 256.0f * 256.0f, 255.0f * 256.0f * 256.0f * 256.0f * 0.5f } } };
+    static const XMVECTORI32 MaskUByteN4 = { { { 0xFF, 0xFF << (8 - 1), 0xFF << 16, 0xFF << (24 - 1) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
     vResult = _mm_min_ps(vResult, g_XMOne);
@@ -3209,14 +3353,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByteN4(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte4(
-    XMUBYTE4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUByte4
+(
+    XMUBYTE4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -3227,10 +3374,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (uint8_t)tmp.x;
-    pDestination->y = (uint8_t)tmp.y;
-    pDestination->z = (uint8_t)tmp.z;
-    pDestination->w = (uint8_t)tmp.w;
+    pDestination->x = static_cast<uint8_t>(tmp.x);
+    pDestination->y = static_cast<uint8_t>(tmp.y);
+    pDestination->z = static_cast<uint8_t>(tmp.z);
+    pDestination->w = static_cast<uint8_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(0));
@@ -3240,8 +3387,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte4(
     uint8x8_t vInt8 = vqmovn_u16(vcombine_u16(vInt16, vInt16));
     vst1_lane_u32(&pDestination->v, vreinterpret_u32_u8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleUByte4 = {{{1.0f, 256.0f * 0.5f, 256.0f * 256.0f, 256.0f * 256.0f * 256.0f * 0.5f}}};
-    static const XMVECTORI32 MaskUByte4 = {{{0xFF, 0xFF << (8 - 1), 0xFF << 16, 0xFF << (24 - 1)}}};
+    static const XMVECTORF32 ScaleUByte4 = { { { 1.0f, 256.0f * 0.5f, 256.0f * 256.0f, 256.0f * 256.0f * 256.0f * 0.5f } } };
+    static const XMVECTORI32 MaskUByte4 = { { { 0xFF, 0xFF << (8 - 1), 0xFF << 16, 0xFF << (24 - 1) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMZero);
     vResult = _mm_min_ps(vResult, g_UByteMax);
@@ -3261,14 +3408,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUByte4(
     vResulti2 = _mm_add_epi32(vResulti2, vResulti2);
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN4(
-    XMBYTEN4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreByteN4
+(
+    XMBYTEN4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -3280,10 +3430,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int8_t)tmp.x;
-    pDestination->y = (int8_t)tmp.y;
-    pDestination->z = (int8_t)tmp.z;
-    pDestination->w = (int8_t)tmp.w;
+    pDestination->x = static_cast<int8_t>(tmp.x);
+    pDestination->y = static_cast<int8_t>(tmp.y);
+    pDestination->z = static_cast<int8_t>(tmp.z);
+    pDestination->w = static_cast<int8_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-1.f));
@@ -3294,8 +3444,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN4(
     int8x8_t vInt8 = vqmovn_s16(vcombine_s16(vInt16, vInt16));
     vst1_lane_u32(&pDestination->v, vreinterpret_u32_s8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleByteN4 = {{{127.0f, 127.0f * 256.0f, 127.0f * 256.0f * 256.0f, 127.0f * 256.0f * 256.0f * 256.0f}}};
-    static const XMVECTORI32 MaskByteN4 = {{{0xFF, 0xFF << 8, 0xFF << 16, 0xFF << 24}}};
+    static const XMVECTORF32 ScaleByteN4 = { { { 127.0f, 127.0f * 256.0f, 127.0f * 256.0f * 256.0f, 127.0f * 256.0f * 256.0f * 256.0f } } };
+    static const XMVECTORI32 MaskByteN4 = { { { 0xFF, 0xFF << 8, 0xFF << 16, static_cast<int>(0xFF000000) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_XMNegativeOne);
     vResult = _mm_min_ps(vResult, g_XMOne);
@@ -3313,14 +3463,17 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByteN4(
     vResulti2 = _mm_shuffle_epi32(vResulti, _MM_SHUFFLE(1, 1, 1, 1));
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte4(
-    XMBYTE4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreByte4
+(
+    XMBYTE4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
 #if defined(_XM_NO_INTRINSICS_)
@@ -3331,10 +3484,10 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->x = (int8_t)tmp.x;
-    pDestination->y = (int8_t)tmp.y;
-    pDestination->z = (int8_t)tmp.z;
-    pDestination->w = (int8_t)tmp.w;
+    pDestination->x = static_cast<int8_t>(tmp.x);
+    pDestination->y = static_cast<int8_t>(tmp.y);
+    pDestination->z = static_cast<int8_t>(tmp.z);
+    pDestination->w = static_cast<int8_t>(tmp.w);
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     float32x4_t R = vmaxq_f32(V, vdupq_n_f32(-127.f));
@@ -3344,8 +3497,8 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte4(
     int8x8_t vInt8 = vqmovn_s16(vcombine_s16(vInt16, vInt16));
     vst1_lane_u32(&pDestination->v, vreinterpret_u32_s8(vInt8), 0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ScaleByte4 = {{{1.0f, 256.0f, 256.0f * 256.0f, 256.0f * 256.0f * 256.0f}}};
-    static const XMVECTORI32 MaskByte4 = {{{0xFF, 0xFF << 8, 0xFF << 16, 0xFF << 24}}};
+    static const XMVECTORF32 ScaleByte4 = { { { 1.0f, 256.0f, 256.0f * 256.0f, 256.0f * 256.0f * 256.0f } } };
+    static const XMVECTORI32 MaskByte4 = { { { 0xFF, 0xFF << 8, 0xFF << 16, static_cast<int>(0xFF000000) } } };
     // Clamp to bounds
     XMVECTOR vResult = _mm_max_ps(V, g_ByteMin);
     vResult = _mm_min_ps(vResult, g_ByteMax);
@@ -3363,17 +3516,20 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreByte4(
     vResulti2 = _mm_shuffle_epi32(vResulti, _MM_SHUFFLE(1, 1, 1, 1));
     // i = x|y|z|w
     vResulti = _mm_or_si128(vResulti, vResulti2);
-    _mm_store_ss(reinterpret_cast<float *>(&pDestination->v), _mm_castsi128_ps(vResulti));
+    _mm_store_ss(reinterpret_cast<float*>(&pDestination->v), _mm_castsi128_ps(vResulti));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreUNibble4(
-    XMUNIBBLE4 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreUNibble4
+(
+    XMUNIBBLE4* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 Max = {{{15.0f, 15.0f, 15.0f, 15.0f}}};
+    static const XMVECTORF32 Max = { { { 15.0f, 15.0f, 15.0f, 15.0f } } };
 #if defined(_XM_NO_INTRINSICS_)
 
     XMVECTOR N = XMVectorClamp(V, XMVectorZero(), Max.v);
@@ -3382,13 +3538,14 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUNibble4(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = (((uint16_t)tmp.w & 0xF) << 12) |
-                      (((uint16_t)tmp.z & 0xF) << 8) |
-                      (((uint16_t)tmp.y & 0xF) << 4) |
-                      (((uint16_t)tmp.x & 0xF));
+    pDestination->v = static_cast<uint16_t>(
+        ((static_cast<int>(tmp.w) & 0xF) << 12)
+        | ((static_cast<int>(tmp.z) & 0xF) << 8)
+        | ((static_cast<int>(tmp.y) & 0xF) << 4)
+        | (static_cast<int>(tmp.x) & 0xF));
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f, 16.f, 16.f * 16.f, 16.f * 16.f * 16.f}}};
-    static const XMVECTORU32 Mask = {{{0xF, 0xF << 4, 0xF << 8, 0xF << 12}}};
+    static const XMVECTORF32 Scale = { { { 1.0f, 16.f, 16.f * 16.f, 16.f * 16.f * 16.f } } };
+    static const XMVECTORU32 Mask = { { { 0xF, 0xF << 4, 0xF << 8, 0xF << 12 } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0));
     vResult = vminq_f32(vResult, Max);
     vResult = vmulq_f32(vResult, Scale);
@@ -3407,24 +3564,28 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreUNibble4(
     // Convert to int with rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    uint16_t z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
-    uint16_t w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
-    pDestination->v = ((w & 0xF) << 12) |
-                      ((z & 0xF) << 8) |
-                      ((y & 0xF) << 4) |
-                      ((x & 0xF));
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    auto z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
+    auto w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
+    pDestination->v = static_cast<uint16_t>(
+        ((static_cast<int>(w) & 0xF) << 12)
+        | ((static_cast<int>(z) & 0xF) << 8)
+        | ((static_cast<int>(y) & 0xF) << 4)
+        | ((static_cast<int>(x) & 0xF)));
 #endif
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMStoreU555(
-    XMU555 *pDestination,
-    FXMVECTOR V)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMStoreU555
+(
+    XMU555* pDestination,
+    FXMVECTOR V
+) noexcept
 {
     assert(pDestination);
-    static const XMVECTORF32 Max = {{{31.0f, 31.0f, 31.0f, 1.0f}}};
+    static const XMVECTORF32 Max = { { { 31.0f, 31.0f, 31.0f, 1.0f } } };
 
 #if defined(_XM_NO_INTRINSICS_)
     XMVECTOR N = XMVectorClamp(V, XMVectorZero(), Max.v);
@@ -3433,13 +3594,14 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreU555(
     XMFLOAT4A tmp;
     XMStoreFloat4A(&tmp, N);
 
-    pDestination->v = ((tmp.w > 0.f) ? 0x8000 : 0) |
-                      (((uint16_t)tmp.z & 0x1F) << 10) |
-                      (((uint16_t)tmp.y & 0x1F) << 5) |
-                      (((uint16_t)tmp.x & 0x1F));
+    pDestination->v = static_cast<uint16_t>(
+        ((tmp.w > 0.f) ? 0x8000 : 0)
+        | ((static_cast<int>(tmp.z) & 0x1F) << 10)
+        | ((static_cast<int>(tmp.y) & 0x1F) << 5)
+        | (static_cast<int>(tmp.x) & 0x1F));
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 Scale = {{{1.0f, 32.f / 2.f, 32.f * 32.f, 32.f * 32.f * 32.f / 2.f}}};
-    static const XMVECTORU32 Mask = {{{0x1F, 0x1F << (5 - 1), 0x1F << 10, 0x1 << (15 - 1)}}};
+    static const XMVECTORF32 Scale = { { { 1.0f, 32.f / 2.f, 32.f * 32.f, 32.f * 32.f * 32.f / 2.f } } };
+    static const XMVECTORU32 Mask = { { { 0x1F, 0x1F << (5 - 1), 0x1F << 10, 0x1 << (15 - 1) } } };
     float32x4_t vResult = vmaxq_f32(V, vdupq_n_f32(0));
     vResult = vminq_f32(vResult, Max);
     vResult = vmulq_f32(vResult, Scale);
@@ -3461,16 +3623,18 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreU555(
     // Convert to int with rounding
     __m128i vInt = _mm_cvtps_epi32(vResult);
     // No SSE operations will write to 16-bit values, so we have to extract them manually
-    uint16_t x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
-    uint16_t y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
-    uint16_t z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
-    uint16_t w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
-    pDestination->v = ((w) ? 0x8000 : 0) |
-                      ((z & 0x1F) << 10) |
-                      ((y & 0x1F) << 5) |
-                      ((x & 0x1F));
+    auto x = static_cast<uint16_t>(_mm_extract_epi16(vInt, 0));
+    auto y = static_cast<uint16_t>(_mm_extract_epi16(vInt, 2));
+    auto z = static_cast<uint16_t>(_mm_extract_epi16(vInt, 4));
+    auto w = static_cast<uint16_t>(_mm_extract_epi16(vInt, 6));
+    pDestination->v = static_cast<uint16_t>(
+        (static_cast<int>(w) ? 0x8000 : 0)
+        | ((static_cast<int>(z) & 0x1F) << 10)
+        | ((static_cast<int>(y) & 0x1F) << 5)
+        | ((static_cast<int>(x) & 0x1F)));
 #endif
 }
+
 
 /****************************************************************************
  *
@@ -3478,22 +3642,24 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMStoreU555(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMCOLOR::XMCOLOR(
+inline XMCOLOR::XMCOLOR
+(
     float _r,
     float _g,
     float _b,
-    float _a)
+    float _a
+) noexcept
 {
     XMStoreColor(this, XMVectorSet(_r, _g, _b, _a));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMCOLOR::XMCOLOR(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMCOLOR::XMCOLOR(const float* pArray) noexcept
 {
-    XMStoreColor(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreColor(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3502,19 +3668,21 @@ _Use_decl_annotations_ inline XMCOLOR::XMCOLOR(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMHALF2::XMHALF2(
+inline XMHALF2::XMHALF2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     x = XMConvertFloatToHalf(_x);
     y = XMConvertFloatToHalf(_y);
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMHALF2::XMHALF2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMHALF2::XMHALF2(const float* pArray) noexcept
 {
     assert(pArray != nullptr);
     x = XMConvertFloatToHalf(pArray[0]);
@@ -3527,20 +3695,22 @@ _Use_decl_annotations_ inline XMHALF2::XMHALF2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMSHORTN2::XMSHORTN2(
+inline XMSHORTN2::XMSHORTN2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreShortN2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMSHORTN2::XMSHORTN2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMSHORTN2::XMSHORTN2(const float* pArray) noexcept
 {
-    XMStoreShortN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreShortN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3549,20 +3719,22 @@ _Use_decl_annotations_ inline XMSHORTN2::XMSHORTN2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMSHORT2::XMSHORT2(
+inline XMSHORT2::XMSHORT2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreShort2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMSHORT2::XMSHORT2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMSHORT2::XMSHORT2(const float* pArray) noexcept
 {
-    XMStoreShort2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreShort2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3571,20 +3743,22 @@ _Use_decl_annotations_ inline XMSHORT2::XMSHORT2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUSHORTN2::XMUSHORTN2(
+inline XMUSHORTN2::XMUSHORTN2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreUShortN2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUSHORTN2::XMUSHORTN2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUSHORTN2::XMUSHORTN2(const float* pArray) noexcept
 {
-    XMStoreUShortN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreUShortN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3593,20 +3767,22 @@ _Use_decl_annotations_ inline XMUSHORTN2::XMUSHORTN2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUSHORT2::XMUSHORT2(
+inline XMUSHORT2::XMUSHORT2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreUShort2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUSHORT2::XMUSHORT2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUSHORT2::XMUSHORT2(const float* pArray) noexcept
 {
-    XMStoreUShort2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreUShort2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3615,20 +3791,22 @@ _Use_decl_annotations_ inline XMUSHORT2::XMUSHORT2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMBYTEN2::XMBYTEN2(
+inline XMBYTEN2::XMBYTEN2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreByteN2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMBYTEN2::XMBYTEN2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMBYTEN2::XMBYTEN2(const float* pArray) noexcept
 {
-    XMStoreByteN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreByteN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3637,20 +3815,22 @@ _Use_decl_annotations_ inline XMBYTEN2::XMBYTEN2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMBYTE2::XMBYTE2(
+inline XMBYTE2::XMBYTE2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreByte2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMBYTE2::XMBYTE2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMBYTE2::XMBYTE2(const float* pArray) noexcept
 {
-    XMStoreByte2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreByte2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3659,20 +3839,22 @@ _Use_decl_annotations_ inline XMBYTE2::XMBYTE2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUBYTEN2::XMUBYTEN2(
+inline XMUBYTEN2::XMUBYTEN2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreUByteN2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUBYTEN2::XMUBYTEN2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUBYTEN2::XMUBYTEN2(const float* pArray) noexcept
 {
-    XMStoreUByteN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreUByteN2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3681,20 +3863,22 @@ _Use_decl_annotations_ inline XMUBYTEN2::XMUBYTEN2(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUBYTE2::XMUBYTE2(
+inline XMUBYTE2::XMUBYTE2
+(
     float _x,
-    float _y)
+    float _y
+) noexcept
 {
     XMStoreUByte2(this, XMVectorSet(_x, _y, 0.0f, 0.0f));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUBYTE2::XMUBYTE2(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUBYTE2::XMUBYTE2(const float* pArray) noexcept
 {
-    XMStoreUByte2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2 *>(pArray)));
+    XMStoreUByte2(this, XMLoadFloat2(reinterpret_cast<const XMFLOAT2*>(pArray)));
 }
 
 /****************************************************************************
@@ -3703,18 +3887,20 @@ _Use_decl_annotations_ inline XMUBYTE2::XMUBYTE2(
  *
  ****************************************************************************/
 
-inline XMU565::XMU565(
+inline XMU565::XMU565
+(
     float _x,
     float _y,
-    float _z)
+    float _z
+) noexcept
 {
     XMStoreU565(this, XMVectorSet(_x, _y, _z, 0.0f));
 }
 
-_Use_decl_annotations_ inline XMU565::XMU565(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMU565::XMU565(const float* pArray) noexcept
 {
-    XMStoreU565(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3 *>(pArray)));
+    XMStoreU565(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pArray)));
 }
 
 /****************************************************************************
@@ -3723,18 +3909,20 @@ _Use_decl_annotations_ inline XMU565::XMU565(
  *
  ****************************************************************************/
 
-inline XMFLOAT3PK::XMFLOAT3PK(
+inline XMFLOAT3PK::XMFLOAT3PK
+(
     float _x,
     float _y,
-    float _z)
+    float _z
+) noexcept
 {
     XMStoreFloat3PK(this, XMVectorSet(_x, _y, _z, 0.0f));
 }
 
-_Use_decl_annotations_ inline XMFLOAT3PK::XMFLOAT3PK(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMFLOAT3PK::XMFLOAT3PK(const float* pArray) noexcept
 {
-    XMStoreFloat3PK(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3 *>(pArray)));
+    XMStoreFloat3PK(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pArray)));
 }
 
 /****************************************************************************
@@ -3743,18 +3931,20 @@ _Use_decl_annotations_ inline XMFLOAT3PK::XMFLOAT3PK(
  *
  ****************************************************************************/
 
-inline XMFLOAT3SE::XMFLOAT3SE(
+inline XMFLOAT3SE::XMFLOAT3SE
+(
     float _x,
     float _y,
-    float _z)
+    float _z
+) noexcept
 {
     XMStoreFloat3SE(this, XMVectorSet(_x, _y, _z, 0.0f));
 }
 
-_Use_decl_annotations_ inline XMFLOAT3SE::XMFLOAT3SE(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMFLOAT3SE::XMFLOAT3SE(const float* pArray) noexcept
 {
-    XMStoreFloat3SE(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3 *>(pArray)));
+    XMStoreFloat3SE(this, XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pArray)));
 }
 
 /****************************************************************************
@@ -3763,13 +3953,15 @@ _Use_decl_annotations_ inline XMFLOAT3SE::XMFLOAT3SE(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMHALF4::XMHALF4(
+inline XMHALF4::XMHALF4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     x = XMConvertFloatToHalf(_x);
     y = XMConvertFloatToHalf(_y);
@@ -3779,8 +3971,8 @@ inline XMHALF4::XMHALF4(
 
 //------------------------------------------------------------------------------
 
-_Use_decl_annotations_ inline XMHALF4::XMHALF4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMHALF4::XMHALF4(const float* pArray) noexcept
 {
     XMConvertFloatToHalfStream(&x, sizeof(HALF), pArray, sizeof(float), 4);
 }
@@ -3791,22 +3983,24 @@ _Use_decl_annotations_ inline XMHALF4::XMHALF4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMSHORTN4::XMSHORTN4(
+inline XMSHORTN4::XMSHORTN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreShortN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMSHORTN4::XMSHORTN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMSHORTN4::XMSHORTN4(const float* pArray) noexcept
 {
-    XMStoreShortN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreShortN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3815,22 +4009,24 @@ _Use_decl_annotations_ inline XMSHORTN4::XMSHORTN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMSHORT4::XMSHORT4(
+inline XMSHORT4::XMSHORT4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreShort4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMSHORT4::XMSHORT4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMSHORT4::XMSHORT4(const float* pArray) noexcept
 {
-    XMStoreShort4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreShort4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3839,22 +4035,24 @@ _Use_decl_annotations_ inline XMSHORT4::XMSHORT4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUSHORTN4::XMUSHORTN4(
+inline XMUSHORTN4::XMUSHORTN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUShortN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUSHORTN4::XMUSHORTN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUSHORTN4::XMUSHORTN4(const float* pArray) noexcept
 {
-    XMStoreUShortN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUShortN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3863,22 +4061,24 @@ _Use_decl_annotations_ inline XMUSHORTN4::XMUSHORTN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUSHORT4::XMUSHORT4(
+inline XMUSHORT4::XMUSHORT4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUShort4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUSHORT4::XMUSHORT4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUSHORT4::XMUSHORT4(const float* pArray) noexcept
 {
-    XMStoreUShort4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUShort4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3887,22 +4087,24 @@ _Use_decl_annotations_ inline XMUSHORT4::XMUSHORT4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMXDECN4::XMXDECN4(
+inline XMXDECN4::XMXDECN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreXDecN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMXDECN4::XMXDECN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMXDECN4::XMXDECN4(const float* pArray) noexcept
 {
-    XMStoreXDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreXDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3913,24 +4115,26 @@ _Use_decl_annotations_ inline XMXDECN4::XMXDECN4(
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
-// C4996: ignore deprecation warning
+ // C4996: ignore deprecation warning
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMXDEC4::XMXDEC4(
+inline XMXDEC4::XMXDEC4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreXDec4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMXDEC4::XMXDEC4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMXDEC4::XMXDEC4(const float* pArray) noexcept
 {
-    XMStoreXDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreXDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3939,22 +4143,24 @@ _Use_decl_annotations_ inline XMXDEC4::XMXDEC4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMDECN4::XMDECN4(
+inline XMDECN4::XMDECN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreDecN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMDECN4::XMDECN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMDECN4::XMDECN4(const float* pArray) noexcept
 {
-    XMStoreDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -3963,22 +4169,24 @@ _Use_decl_annotations_ inline XMDECN4::XMDECN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMDEC4::XMDEC4(
+inline XMDEC4::XMDEC4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreDec4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMDEC4::XMDEC4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMDEC4::XMDEC4(const float* pArray) noexcept
 {
-    XMStoreDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 #pragma warning(pop)
@@ -3989,22 +4197,24 @@ _Use_decl_annotations_ inline XMDEC4::XMDEC4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUDECN4::XMUDECN4(
+inline XMUDECN4::XMUDECN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUDecN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUDECN4::XMUDECN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUDECN4::XMUDECN4(const float* pArray) noexcept
 {
-    XMStoreUDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUDecN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4013,22 +4223,24 @@ _Use_decl_annotations_ inline XMUDECN4::XMUDECN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUDEC4::XMUDEC4(
+inline XMUDEC4::XMUDEC4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUDec4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUDEC4::XMUDEC4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUDEC4::XMUDEC4(const float* pArray) noexcept
 {
-    XMStoreUDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUDec4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4037,22 +4249,24 @@ _Use_decl_annotations_ inline XMUDEC4::XMUDEC4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMBYTEN4::XMBYTEN4(
+inline XMBYTEN4::XMBYTEN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreByteN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMBYTEN4::XMBYTEN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMBYTEN4::XMBYTEN4(const float* pArray) noexcept
 {
-    XMStoreByteN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreByteN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4061,22 +4275,24 @@ _Use_decl_annotations_ inline XMBYTEN4::XMBYTEN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMBYTE4::XMBYTE4(
+inline XMBYTE4::XMBYTE4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreByte4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMBYTE4::XMBYTE4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMBYTE4::XMBYTE4(const float* pArray) noexcept
 {
-    XMStoreByte4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreByte4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4085,22 +4301,24 @@ _Use_decl_annotations_ inline XMBYTE4::XMBYTE4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUBYTEN4::XMUBYTEN4(
+inline XMUBYTEN4::XMUBYTEN4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUByteN4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUBYTEN4::XMUBYTEN4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUBYTEN4::XMUBYTEN4(const float* pArray) noexcept
 {
-    XMStoreUByteN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUByteN4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4109,22 +4327,24 @@ _Use_decl_annotations_ inline XMUBYTEN4::XMUBYTEN4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUBYTE4::XMUBYTE4(
+inline XMUBYTE4::XMUBYTE4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUByte4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUBYTE4::XMUBYTE4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUBYTE4::XMUBYTE4(const float* pArray) noexcept
 {
-    XMStoreUByte4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUByte4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4133,22 +4353,24 @@ _Use_decl_annotations_ inline XMUBYTE4::XMUBYTE4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMUNIBBLE4::XMUNIBBLE4(
+inline XMUNIBBLE4::XMUNIBBLE4
+(
     float _x,
     float _y,
     float _z,
-    float _w)
+    float _w
+) noexcept
 {
     XMStoreUNibble4(this, XMVectorSet(_x, _y, _z, _w));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMUNIBBLE4::XMUNIBBLE4(
-    const float *pArray)
+_Use_decl_annotations_
+inline XMUNIBBLE4::XMUNIBBLE4(const float* pArray) noexcept
 {
-    XMStoreUNibble4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4 *>(pArray)));
+    XMStoreUNibble4(this, XMLoadFloat4(reinterpret_cast<const XMFLOAT4*>(pArray)));
 }
 
 /****************************************************************************
@@ -4157,24 +4379,28 @@ _Use_decl_annotations_ inline XMUNIBBLE4::XMUNIBBLE4(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline XMU555::XMU555(
+inline XMU555::XMU555
+(
     float _x,
     float _y,
     float _z,
-    bool _w)
+    bool _w
+) noexcept
 {
     XMStoreU555(this, XMVectorSet(_x, _y, _z, ((_w) ? 1.0f : 0.0f)));
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMU555::XMU555(
-    const float *pArray,
-    bool _w)
+_Use_decl_annotations_
+inline XMU555::XMU555
+(
+    const float* pArray,
+    bool _w
+) noexcept
 {
-    XMVECTOR V = XMLoadFloat3(reinterpret_cast<const XMFLOAT3 *>(pArray));
+    XMVECTOR V = XMLoadFloat3(reinterpret_cast<const XMFLOAT3*>(pArray));
     XMStoreU555(this, XMVectorSetW(V, ((_w) ? 1.0f : 0.0f)));
 }
 
-#endif

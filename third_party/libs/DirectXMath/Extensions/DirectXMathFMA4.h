@@ -1,32 +1,17 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathFMA4.h -- FMA4 extensions for SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#ifdef _MSC_VER
 #pragma once
-#endif
 
-#ifdef _M_ARM
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __arm__ || __aarch64__
 #error FMA4 not supported on ARM platform
 #endif
-
-#if defined(_MSC_VER) && (_MSC_VER < 1600)
-#error FMA4 intrinsics requires Visual C++ 2010 Service Pack 1 or later.
-#endif
-
-#pragma warning(push)
-#pragma warning(disable : 4987)
-#include <intrin.h>
-#pragma warning(pop)
 
 #include <ammintrin.h>
 
@@ -34,11 +19,6 @@
 
 namespace DirectX
 {
-#if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-#define XM_CALLCONV __fastcall
-typedef const DirectX::XMVECTOR& HXMVECTOR;
-typedef const DirectX::XMMATRIX& FXMMATRIX;
-#endif
 
 namespace FMA4
 {
@@ -50,23 +30,41 @@ inline bool XMVerifyFMA4Support()
 
    // See http://msdn.microsoft.com/en-us/library/hskdteyh.aspx
    int CPUInfo[4] = {-1};
-   __cpuid( CPUInfo, 0 );
+#if defined(__clang__) || defined(__GNUC__)
+   __cpuid(0, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+   __cpuid(CPUInfo, 0);
+#endif
 
    if ( CPUInfo[0] < 1  )
        return false;
 
-    __cpuid(CPUInfo, 1 );
+#if defined(__clang__) || defined(__GNUC__)
+   __cpuid(1, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+   __cpuid(CPUInfo, 1);
+#endif
 
     // We check for AVX, OSXSAVE (required to access FMA4)
     if ( (CPUInfo[2] & 0x18000000) != 0x18000000 )
         return false;
 
-    __cpuid( CPUInfo, 0x80000000 );
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(0x80000000, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+    __cpuid(CPUInfo, 0x80000000);
+#endif
 
-    if ( CPUInfo[0] < 0x80000001 )
+    if ( uint32_t(CPUInfo[0]) < 0x80000001u )
         return false;
 
     // We check for FMA4
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(0x80000001, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+    __cpuid(CPUInfo, 0x80000001);
+#endif
+
     return ( CPUInfo[2] & 0x10000 );
 }
 
@@ -239,7 +237,7 @@ inline XMVECTOR XM_CALLCONV XMVector3Unproject
     CXMMATRIX World
 )
 {
-    static const XMVECTORF32 D = { -1.0f, 1.0f, 0.0f, 0.0f };
+    static const XMVECTORF32 D = { { { -1.0f, 1.0f, 0.0f, 0.0f } } };
 
     XMVECTOR Scale = XMVectorSet(ViewportWidth * 0.5f, -ViewportHeight * 0.5f, ViewportMaxZ - ViewportMinZ, 1.0f);
     Scale = XMVectorReciprocal(Scale);
@@ -409,6 +407,6 @@ inline XMMATRIX XM_CALLCONV XMMatrixMultiplyTranspose
     return mResult;
 }
 
-}; // namespace FMA4
+} // namespace FMA4
 
-}; // namespace DirectX;
+} // namespace DirectX;

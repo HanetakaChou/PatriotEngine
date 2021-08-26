@@ -170,6 +170,11 @@
         "file": "${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp"
     },
     {
+        "directory": "${workspaceFolder}/src",
+        "command": "g++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_arm_neon.o",
+        "file": "${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp"
+    },
+    {
         "directory": "${workspaceFolder}/examples/launcher",
         "command": "g++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_window_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_window_x11.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_window_x11.cpp"

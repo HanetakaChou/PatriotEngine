@@ -18,17 +18,13 @@
 #
 
 # configure
-if test \( $# -ne 3 \);
+if test \( $# -ne 2 \);
 then
     echo "Usage: build.sh config platform arch"
     echo ""
     echo "Configs:"
     echo "  debug   -   build with the debug configuration"
     echo "  release -   build with the release configuration"
-    echo ""
-    echo "Platforms:"
-    echo "  bionic  -   build with the bionic platform"
-    echo "  glibc   -   build with the glibc platform"
     echo ""
     echo "Archs:"
     echo "  x86     -   build with the x86 arch"
@@ -56,32 +52,19 @@ else
     exit 1
 fi
 
-if test \( \( -n "$2" \) -a \( "$2" = "bionic" \) \);then
-    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=build_bionic.mk"
-    NDK_BUILD_CMD_DIR_PLATFORM="android-ndk-r14b"
-elif test \( \( -n "$2" \) -a \( "$2" = "glibc" \) \);then
-    NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=build_glibc.mk"
-    NDK_BUILD_CMD_DIR_PLATFORM="ndk_build_glibc"
-else
-    echo "The platform \"$2\" is not supported!"
-    echo ""
-    echo "Platforms:"
-    echo "  bionic  -   build with the bionic platform"
-    echo "  glibc   -   build with the glibc platform"
-    echo ""
-    exit 1
-fi
+NDK_BUILD_ARG_PLATFORM="APP_BUILD_SCRIPT:=Linux_X11.mk"
+NDK_BUILD_CMD_DIR_PLATFORM="ndk_build_glibc"
 
-if test \( \( -n "$3" \) -a \( "$3" = "x86" \) \);then
+if test \( \( -n "$2" \) -a \( "$2" = "x86" \) \);then
     NDK_BUILD_ARG_ARCH="APP_ABI:=x86"
     INT_DIR_ARCH="x86"
     OUT_DIR_ARCH="x86"
-elif test \( \( -n "$3" \) -a \( "$3" = "x64" \) \);then
+elif test \( \( -n "$2" \) -a \( "$2" = "x64" \) \);then
     NDK_BUILD_ARG_ARCH="APP_ABI:=x86_64"
     INT_DIR_ARCH="x86_64"
     OUT_DIR_ARCH="x64"
 else
-    echo "The architecture \"$3\" is not supported!"
+    echo "The architecture \"$2\" is not supported!"
     echo ""
     echo "Archs:"
     echo "  x86     -   build with the x86 arch"

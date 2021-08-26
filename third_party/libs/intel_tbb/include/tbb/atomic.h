@@ -34,7 +34,7 @@
 #include <cstddef>
 
 #if _MSC_VER
-#define __TBB_LONG_LONG __int64
+#define __TBB_LONG_LONG int64_t
 #else
 #define __TBB_LONG_LONG long long
 #endif /* _MSC_VER */

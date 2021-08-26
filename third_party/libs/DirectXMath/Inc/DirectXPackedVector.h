@@ -1,12 +1,8 @@
 //-------------------------------------------------------------------------------------
 // DirectXPackedVector.h -- SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
@@ -22,11 +18,17 @@ namespace DirectX
     {
 
 #pragma warning(push)
-#pragma warning(disable : 4201 4365 4324 4996)
+#pragma warning(disable:4201 4365 4324 4996)
         // C4201: nonstandard extension used
         // C4365: Off by default noise
         // C4324: alignment padding warnings
         // C4996: deprecation warnings
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-anonymous-struct"
+#pragma clang diagnostic ignored "-Wnested-anon-types"
+#endif
 
         //------------------------------------------------------------------------------
         // ARGB Color; 8-8-8-8 bit unsigned normalized integer components packed into
@@ -41,32 +43,29 @@ namespace DirectX
             {
                 struct
                 {
-                    uint8_t b; // Blue:    0/255 to 255/255
-                    uint8_t g; // Green:   0/255 to 255/255
-                    uint8_t r; // Red:     0/255 to 255/255
-                    uint8_t a; // Alpha:   0/255 to 255/255
+                    uint8_t b;  // Blue:    0/255 to 255/255
+                    uint8_t g;  // Green:   0/255 to 255/255
+                    uint8_t r;  // Red:     0/255 to 255/255
+                    uint8_t a;  // Alpha:   0/255 to 255/255
                 };
                 uint32_t c;
             };
 
-            XMCOLOR()
-            XM_CTOR_DEFAULT
-                XM_CONSTEXPR XMCOLOR(uint32_t Color) : c(Color) {}
-            XMCOLOR(float _r, float _g, float _b, float _a);
-            explicit XMCOLOR(_In_reads_(4) const float *pArray);
+            XMCOLOR() = default;
 
-            operator uint32_t() const { return c; }
+            XMCOLOR(const XMCOLOR&) = default;
+            XMCOLOR& operator=(const XMCOLOR&) = default;
 
-            XMCOLOR &operator=(const XMCOLOR &Color)
-            {
-                c = Color.c;
-                return *this;
-            }
-            XMCOLOR &operator=(const uint32_t Color)
-            {
-                c = Color;
-                return *this;
-            }
+            XMCOLOR(XMCOLOR&&) = default;
+            XMCOLOR& operator=(XMCOLOR&&) = default;
+
+            constexpr XMCOLOR(uint32_t Color) noexcept : c(Color) {}
+            XMCOLOR(float _r, float _g, float _b, float _a) noexcept;
+            explicit XMCOLOR(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const { return c; }
+
+            XMCOLOR& operator= (const uint32_t Color) { c = Color; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -88,25 +87,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMHALF2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMHALF2(uint32_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMHALF2(HALF _x, HALF _y) : x(_x), y(_y) {}
-            explicit XMHALF2(_In_reads_(2) const HALF *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMHALF2(float _x, float _y);
-            explicit XMHALF2(_In_reads_(2) const float *pArray);
+            XMHALF2() = default;
 
-            XMHALF2 &operator=(const XMHALF2 &Half2)
-            {
-                x = Half2.x;
-                y = Half2.y;
-                return *this;
-            }
-            XMHALF2 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMHALF2(const XMHALF2&) = default;
+            XMHALF2& operator=(const XMHALF2&) = default;
+
+            XMHALF2(XMHALF2&&) = default;
+            XMHALF2& operator=(XMHALF2&&) = default;
+
+            explicit constexpr XMHALF2(uint32_t Packed) noexcept : v(Packed) {}
+            constexpr XMHALF2(HALF _x, HALF _y) noexcept : x(_x), y(_y) {}
+            explicit XMHALF2(_In_reads_(2) const HALF* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMHALF2(float _x, float _y) noexcept;
+            explicit XMHALF2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMHALF2& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -123,25 +118,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMSHORTN2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMSHORTN2(uint32_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMSHORTN2(int16_t _x, int16_t _y) : x(_x), y(_y) {}
-            explicit XMSHORTN2(_In_reads_(2) const int16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMSHORTN2(float _x, float _y);
-            explicit XMSHORTN2(_In_reads_(2) const float *pArray);
+            XMSHORTN2() = default;
 
-            XMSHORTN2 &operator=(const XMSHORTN2 &ShortN2)
-            {
-                x = ShortN2.x;
-                y = ShortN2.y;
-                return *this;
-            }
-            XMSHORTN2 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMSHORTN2(const XMSHORTN2&) = default;
+            XMSHORTN2& operator=(const XMSHORTN2&) = default;
+
+            XMSHORTN2(XMSHORTN2&&) = default;
+            XMSHORTN2& operator=(XMSHORTN2&&) = default;
+
+            explicit constexpr XMSHORTN2(uint32_t Packed) noexcept : v(Packed) {}
+            constexpr XMSHORTN2(int16_t _x, int16_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMSHORTN2(_In_reads_(2) const int16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMSHORTN2(float _x, float _y) noexcept;
+            explicit XMSHORTN2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMSHORTN2& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 16 bit signed integer components
@@ -157,25 +148,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMSHORT2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMSHORT2(uint32_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMSHORT2(int16_t _x, int16_t _y) : x(_x), y(_y) {}
-            explicit XMSHORT2(_In_reads_(2) const int16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMSHORT2(float _x, float _y);
-            explicit XMSHORT2(_In_reads_(2) const float *pArray);
+            XMSHORT2() = default;
 
-            XMSHORT2 &operator=(const XMSHORT2 &Short2)
-            {
-                x = Short2.x;
-                y = Short2.y;
-                return *this;
-            }
-            XMSHORT2 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMSHORT2(const XMSHORT2&) = default;
+            XMSHORT2& operator=(const XMSHORT2&) = default;
+
+            XMSHORT2(XMSHORT2&&) = default;
+            XMSHORT2& operator=(XMSHORT2&&) = default;
+
+            explicit constexpr XMSHORT2(uint32_t Packed) noexcept : v(Packed) {}
+            constexpr XMSHORT2(int16_t _x, int16_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMSHORT2(_In_reads_(2) const int16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMSHORT2(float _x, float _y) noexcept;
+            explicit XMSHORT2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMSHORT2& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 16 bit unsigned normalized integer components
@@ -191,25 +178,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMUSHORTN2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUSHORTN2(uint32_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUSHORTN2(uint16_t _x, uint16_t _y) : x(_x), y(_y) {}
-            explicit XMUSHORTN2(_In_reads_(2) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMUSHORTN2(float _x, float _y);
-            explicit XMUSHORTN2(_In_reads_(2) const float *pArray);
+            XMUSHORTN2() = default;
 
-            XMUSHORTN2 &operator=(const XMUSHORTN2 &UShortN2)
-            {
-                x = UShortN2.x;
-                y = UShortN2.y;
-                return *this;
-            }
-            XMUSHORTN2 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUSHORTN2(const XMUSHORTN2&) = default;
+            XMUSHORTN2& operator=(const XMUSHORTN2&) = default;
+
+            XMUSHORTN2(XMUSHORTN2&&) = default;
+            XMUSHORTN2& operator=(XMUSHORTN2&&) = default;
+
+            explicit constexpr XMUSHORTN2(uint32_t Packed) noexcept : v(Packed) {}
+            constexpr XMUSHORTN2(uint16_t _x, uint16_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMUSHORTN2(_In_reads_(2) const uint16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMUSHORTN2(float _x, float _y) noexcept;
+            explicit XMUSHORTN2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMUSHORTN2& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 16 bit unsigned integer components
@@ -225,25 +208,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMUSHORT2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUSHORT2(uint32_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUSHORT2(uint16_t _x, uint16_t _y) : x(_x), y(_y) {}
-            explicit XMUSHORT2(_In_reads_(2) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMUSHORT2(float _x, float _y);
-            explicit XMUSHORT2(_In_reads_(2) const float *pArray);
+            XMUSHORT2() = default;
 
-            XMUSHORT2 &operator=(const XMUSHORT2 &UShort2)
-            {
-                x = UShort2.x;
-                y = UShort2.y;
-                return *this;
-            }
-            XMUSHORT2 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUSHORT2(const XMUSHORT2&) = default;
+            XMUSHORT2& operator=(const XMUSHORT2&) = default;
+
+            XMUSHORT2(XMUSHORT2&&) = default;
+            XMUSHORT2& operator=(XMUSHORT2&&) = default;
+
+            explicit constexpr XMUSHORT2(uint32_t Packed) noexcept : v(Packed) {}
+            constexpr XMUSHORT2(uint16_t _x, uint16_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMUSHORT2(_In_reads_(2) const uint16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMUSHORT2(float _x, float _y) noexcept;
+            explicit XMUSHORT2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMUSHORT2& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -260,25 +239,21 @@ namespace DirectX
                 uint16_t v;
             };
 
-            XMBYTEN2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMBYTEN2(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMBYTEN2(int8_t _x, int8_t _y) : x(_x), y(_y) {}
-            explicit XMBYTEN2(_In_reads_(2) const int8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMBYTEN2(float _x, float _y);
-            explicit XMBYTEN2(_In_reads_(2) const float *pArray);
+            XMBYTEN2() = default;
 
-            XMBYTEN2 &operator=(const XMBYTEN2 &ByteN2)
-            {
-                x = ByteN2.x;
-                y = ByteN2.y;
-                return *this;
-            }
-            XMBYTEN2 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMBYTEN2(const XMBYTEN2&) = default;
+            XMBYTEN2& operator=(const XMBYTEN2&) = default;
+
+            XMBYTEN2(XMBYTEN2&&) = default;
+            XMBYTEN2& operator=(XMBYTEN2&&) = default;
+
+            explicit constexpr XMBYTEN2(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMBYTEN2(int8_t _x, int8_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMBYTEN2(_In_reads_(2) const int8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMBYTEN2(float _x, float _y) noexcept;
+            explicit XMBYTEN2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMBYTEN2& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 8 bit signed integer components
@@ -294,25 +269,21 @@ namespace DirectX
                 uint16_t v;
             };
 
-            XMBYTE2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMBYTE2(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMBYTE2(int8_t _x, int8_t _y) : x(_x), y(_y) {}
-            explicit XMBYTE2(_In_reads_(2) const int8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMBYTE2(float _x, float _y);
-            explicit XMBYTE2(_In_reads_(2) const float *pArray);
+            XMBYTE2() = default;
 
-            XMBYTE2 &operator=(const XMBYTE2 &Byte2)
-            {
-                x = Byte2.x;
-                y = Byte2.y;
-                return *this;
-            }
-            XMBYTE2 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMBYTE2(const XMBYTE2&) = default;
+            XMBYTE2& operator=(const XMBYTE2&) = default;
+
+            XMBYTE2(XMBYTE2&&) = default;
+            XMBYTE2& operator=(XMBYTE2&&) = default;
+
+            explicit constexpr XMBYTE2(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMBYTE2(int8_t _x, int8_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMBYTE2(_In_reads_(2) const int8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMBYTE2(float _x, float _y) noexcept;
+            explicit XMBYTE2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMBYTE2& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 8 bit unsigned normalized integer components
@@ -328,25 +299,21 @@ namespace DirectX
                 uint16_t v;
             };
 
-            XMUBYTEN2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUBYTEN2(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUBYTEN2(uint8_t _x, uint8_t _y) : x(_x), y(_y) {}
-            explicit XMUBYTEN2(_In_reads_(2) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMUBYTEN2(float _x, float _y);
-            explicit XMUBYTEN2(_In_reads_(2) const float *pArray);
+            XMUBYTEN2() = default;
 
-            XMUBYTEN2 &operator=(const XMUBYTEN2 &UByteN2)
-            {
-                x = UByteN2.x;
-                y = UByteN2.y;
-                return *this;
-            }
-            XMUBYTEN2 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUBYTEN2(const XMUBYTEN2&) = default;
+            XMUBYTEN2& operator=(const XMUBYTEN2&) = default;
+
+            XMUBYTEN2(XMUBYTEN2&&) = default;
+            XMUBYTEN2& operator=(XMUBYTEN2&&) = default;
+
+            explicit constexpr XMUBYTEN2(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMUBYTEN2(uint8_t _x, uint8_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMUBYTEN2(_In_reads_(2) const uint8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMUBYTEN2(float _x, float _y) noexcept;
+            explicit XMUBYTEN2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMUBYTEN2& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 2D Vector; 8 bit unsigned integer components
@@ -362,25 +329,21 @@ namespace DirectX
                 uint16_t v;
             };
 
-            XMUBYTE2()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUBYTE2(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUBYTE2(uint8_t _x, uint8_t _y) : x(_x), y(_y) {}
-            explicit XMUBYTE2(_In_reads_(2) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]) {}
-            XMUBYTE2(float _x, float _y);
-            explicit XMUBYTE2(_In_reads_(2) const float *pArray);
+            XMUBYTE2() = default;
 
-            XMUBYTE2 &operator=(const XMUBYTE2 &UByte2)
-            {
-                x = UByte2.x;
-                y = UByte2.y;
-                return *this;
-            }
-            XMUBYTE2 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUBYTE2(const XMUBYTE2&) = default;
+            XMUBYTE2& operator=(const XMUBYTE2&) = default;
+
+            XMUBYTE2(XMUBYTE2&&) = default;
+            XMUBYTE2& operator=(XMUBYTE2&&) = default;
+
+            explicit constexpr XMUBYTE2(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMUBYTE2(uint8_t _x, uint8_t _y) noexcept : x(_x), y(_y) {}
+            explicit XMUBYTE2(_In_reads_(2) const uint8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]) {}
+            XMUBYTE2(float _x, float _y) noexcept;
+            explicit XMUBYTE2(_In_reads_(2) const float* pArray) noexcept;
+
+            XMUBYTE2& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -391,33 +354,30 @@ namespace DirectX
             {
                 struct
                 {
-                    uint16_t x : 5; // 0 to 31
-                    uint16_t y : 6; // 0 to 63
-                    uint16_t z : 5; // 0 to 31
+                    uint16_t x : 5;    // 0 to 31
+                    uint16_t y : 6;    // 0 to 63
+                    uint16_t z : 5;    // 0 to 31
                 };
                 uint16_t v;
             };
 
-            XMU565()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMU565(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMU565(uint8_t _x, uint8_t _y, uint8_t _z) : x(_x), y(_y), z(_z) {}
-            explicit XMU565(_In_reads_(3) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]) {}
-            XMU565(float _x, float _y, float _z);
-            explicit XMU565(_In_reads_(3) const float *pArray);
+            XMU565() = default;
 
-            operator uint16_t() const { return v; }
+            XMU565(const XMU565&) = default;
+            XMU565& operator=(const XMU565&) = default;
 
-            XMU565 &operator=(const XMU565 &U565)
-            {
-                v = U565.v;
-                return *this;
-            }
-            XMU565 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMU565(XMU565&&) = default;
+            XMU565& operator=(XMU565&&) = default;
+
+            explicit constexpr XMU565(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMU565(uint8_t _x, uint8_t _y, uint8_t _z) noexcept : x(_x), y(_y), z(_z) {}
+            explicit XMU565(_In_reads_(3) const uint8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]) {}
+            XMU565(float _x, float _y, float _z) noexcept;
+            explicit XMU565(_In_reads_(3) const float* pArray) noexcept;
+
+            operator uint16_t () const noexcept { return v; }
+
+            XMU565& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -445,24 +405,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMFLOAT3PK()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMFLOAT3PK(uint32_t Packed) : v(Packed) {}
-            XMFLOAT3PK(float _x, float _y, float _z);
-            explicit XMFLOAT3PK(_In_reads_(3) const float *pArray);
+            XMFLOAT3PK() = default;
 
-            operator uint32_t() const { return v; }
+            XMFLOAT3PK(const XMFLOAT3PK&) = default;
+            XMFLOAT3PK& operator=(const XMFLOAT3PK&) = default;
 
-            XMFLOAT3PK &operator=(const XMFLOAT3PK &float3pk)
-            {
-                v = float3pk.v;
-                return *this;
-            }
-            XMFLOAT3PK &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMFLOAT3PK(XMFLOAT3PK&&) = default;
+            XMFLOAT3PK& operator=(XMFLOAT3PK&&) = default;
+
+            explicit constexpr XMFLOAT3PK(uint32_t Packed) noexcept : v(Packed) {}
+            XMFLOAT3PK(float _x, float _y, float _z) noexcept;
+            explicit XMFLOAT3PK(_In_reads_(3) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMFLOAT3PK& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -482,29 +439,26 @@ namespace DirectX
                     uint32_t xm : 9; // x-mantissa
                     uint32_t ym : 9; // y-mantissa
                     uint32_t zm : 9; // z-mantissa
-                    uint32_t e : 5;  // shared exponent
+                    uint32_t e : 5; // shared exponent
                 };
                 uint32_t v;
             };
 
-            XMFLOAT3SE()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMFLOAT3SE(uint32_t Packed) : v(Packed) {}
-            XMFLOAT3SE(float _x, float _y, float _z);
-            explicit XMFLOAT3SE(_In_reads_(3) const float *pArray);
+            XMFLOAT3SE() = default;
 
-            operator uint32_t() const { return v; }
+            XMFLOAT3SE(const XMFLOAT3SE&) = default;
+            XMFLOAT3SE& operator=(const XMFLOAT3SE&) = default;
 
-            XMFLOAT3SE &operator=(const XMFLOAT3SE &float3se)
-            {
-                v = float3se.v;
-                return *this;
-            }
-            XMFLOAT3SE &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMFLOAT3SE(XMFLOAT3SE&&) = default;
+            XMFLOAT3SE& operator=(XMFLOAT3SE&&) = default;
+
+            explicit constexpr XMFLOAT3SE(uint32_t Packed) noexcept : v(Packed) {}
+            XMFLOAT3SE(float _x, float _y, float _z) noexcept;
+            explicit XMFLOAT3SE(_In_reads_(3) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMFLOAT3SE& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -523,27 +477,21 @@ namespace DirectX
                 uint64_t v;
             };
 
-            XMHALF4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMHALF4(uint64_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMHALF4(HALF _x, HALF _y, HALF _z, HALF _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMHALF4(_In_reads_(4) const HALF *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMHALF4(float _x, float _y, float _z, float _w);
-            explicit XMHALF4(_In_reads_(4) const float *pArray);
+            XMHALF4() = default;
 
-            XMHALF4 &operator=(const XMHALF4 &Half4)
-            {
-                x = Half4.x;
-                y = Half4.y;
-                z = Half4.z;
-                w = Half4.w;
-                return *this;
-            }
-            XMHALF4 &operator=(uint64_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMHALF4(const XMHALF4&) = default;
+            XMHALF4& operator=(const XMHALF4&) = default;
+
+            XMHALF4(XMHALF4&&) = default;
+            XMHALF4& operator=(XMHALF4&&) = default;
+
+            explicit constexpr XMHALF4(uint64_t Packed) noexcept : v(Packed) {}
+            constexpr XMHALF4(HALF _x, HALF _y, HALF _z, HALF _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMHALF4(_In_reads_(4) const HALF* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMHALF4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMHALF4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMHALF4& operator= (uint64_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -562,27 +510,21 @@ namespace DirectX
                 uint64_t v;
             };
 
-            XMSHORTN4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMSHORTN4(uint64_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMSHORTN4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMSHORTN4(_In_reads_(4) const int16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMSHORTN4(float _x, float _y, float _z, float _w);
-            explicit XMSHORTN4(_In_reads_(4) const float *pArray);
+            XMSHORTN4() = default;
 
-            XMSHORTN4 &operator=(const XMSHORTN4 &ShortN4)
-            {
-                x = ShortN4.x;
-                y = ShortN4.y;
-                z = ShortN4.z;
-                w = ShortN4.w;
-                return *this;
-            }
-            XMSHORTN4 &operator=(uint64_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMSHORTN4(const XMSHORTN4&) = default;
+            XMSHORTN4& operator=(const XMSHORTN4&) = default;
+
+            XMSHORTN4(XMSHORTN4&&) = default;
+            XMSHORTN4& operator=(XMSHORTN4&&) = default;
+
+            explicit constexpr XMSHORTN4(uint64_t Packed) noexcept : v(Packed) {}
+            constexpr XMSHORTN4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMSHORTN4(_In_reads_(4) const int16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMSHORTN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMSHORTN4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMSHORTN4& operator= (uint64_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 16 bit signed integer components
@@ -600,27 +542,21 @@ namespace DirectX
                 uint64_t v;
             };
 
-            XMSHORT4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMSHORT4(uint64_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMSHORT4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMSHORT4(_In_reads_(4) const int16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMSHORT4(float _x, float _y, float _z, float _w);
-            explicit XMSHORT4(_In_reads_(4) const float *pArray);
+            XMSHORT4() = default;
 
-            XMSHORT4 &operator=(const XMSHORT4 &Short4)
-            {
-                x = Short4.x;
-                y = Short4.y;
-                z = Short4.z;
-                w = Short4.w;
-                return *this;
-            }
-            XMSHORT4 &operator=(uint64_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMSHORT4(const XMSHORT4&) = default;
+            XMSHORT4& operator=(const XMSHORT4&) = default;
+
+            XMSHORT4(XMSHORT4&&) = default;
+            XMSHORT4& operator=(XMSHORT4&&) = default;
+
+            explicit constexpr XMSHORT4(uint64_t Packed) noexcept : v(Packed) {}
+            constexpr XMSHORT4(int16_t _x, int16_t _y, int16_t _z, int16_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMSHORT4(_In_reads_(4) const int16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMSHORT4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMSHORT4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMSHORT4& operator= (uint64_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 16 bit unsigned normalized integer components
@@ -638,27 +574,21 @@ namespace DirectX
                 uint64_t v;
             };
 
-            XMUSHORTN4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUSHORTN4(uint64_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUSHORTN4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMUSHORTN4(_In_reads_(4) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMUSHORTN4(float _x, float _y, float _z, float _w);
-            explicit XMUSHORTN4(_In_reads_(4) const float *pArray);
+            XMUSHORTN4() = default;
 
-            XMUSHORTN4 &operator=(const XMUSHORTN4 &UShortN4)
-            {
-                x = UShortN4.x;
-                y = UShortN4.y;
-                z = UShortN4.z;
-                w = UShortN4.w;
-                return *this;
-            }
-            XMUSHORTN4 &operator=(uint64_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUSHORTN4(const XMUSHORTN4&) = default;
+            XMUSHORTN4& operator=(const XMUSHORTN4&) = default;
+
+            XMUSHORTN4(XMUSHORTN4&&) = default;
+            XMUSHORTN4& operator=(XMUSHORTN4&&) = default;
+
+            explicit constexpr XMUSHORTN4(uint64_t Packed) noexcept : v(Packed) {}
+            constexpr XMUSHORTN4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMUSHORTN4(_In_reads_(4) const uint16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMUSHORTN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUSHORTN4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMUSHORTN4& operator= (uint64_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 16 bit unsigned integer components
@@ -676,27 +606,21 @@ namespace DirectX
                 uint64_t v;
             };
 
-            XMUSHORT4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUSHORT4(uint64_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUSHORT4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMUSHORT4(_In_reads_(4) const uint16_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMUSHORT4(float _x, float _y, float _z, float _w);
-            explicit XMUSHORT4(_In_reads_(4) const float *pArray);
+            XMUSHORT4() = default;
 
-            XMUSHORT4 &operator=(const XMUSHORT4 &UShort4)
-            {
-                x = UShort4.x;
-                y = UShort4.y;
-                z = UShort4.z;
-                w = UShort4.w;
-                return *this;
-            }
-            XMUSHORT4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUSHORT4(const XMUSHORT4&) = default;
+            XMUSHORT4& operator=(const XMUSHORT4&) = default;
+
+            XMUSHORT4(XMUSHORT4&&) = default;
+            XMUSHORT4& operator=(XMUSHORT4&&) = default;
+
+            explicit constexpr XMUSHORT4(uint64_t Packed) noexcept : v(Packed) {}
+            constexpr XMUSHORT4(uint16_t _x, uint16_t _y, uint16_t _z, uint16_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMUSHORT4(_In_reads_(4) const uint16_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMUSHORT4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUSHORT4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMUSHORT4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -712,32 +636,29 @@ namespace DirectX
             {
                 struct
                 {
-                    int32_t x : 10; // -511/511 to 511/511
-                    int32_t y : 10; // -511/511 to 511/511
-                    int32_t z : 10; // -511/511 to 511/511
-                    uint32_t w : 2; //      0/3 to     3/3
+                    int32_t x : 10;    // -511/511 to 511/511
+                    int32_t y : 10;    // -511/511 to 511/511
+                    int32_t z : 10;    // -511/511 to 511/511
+                    uint32_t w : 2;     //      0/3 to     3/3
                 };
                 uint32_t v;
             };
 
-            XMXDECN4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMXDECN4(uint32_t Packed) : v(Packed) {}
-            XMXDECN4(float _x, float _y, float _z, float _w);
-            explicit XMXDECN4(_In_reads_(4) const float *pArray);
+            XMXDECN4() = default;
 
-            operator uint32_t() const { return v; }
+            XMXDECN4(const XMXDECN4&) = default;
+            XMXDECN4& operator=(const XMXDECN4&) = default;
 
-            XMXDECN4 &operator=(const XMXDECN4 &XDecN4)
-            {
-                v = XDecN4.v;
-                return *this;
-            }
-            XMXDECN4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMXDECN4(XMXDECN4&&) = default;
+            XMXDECN4& operator=(XMXDECN4&&) = default;
+
+            explicit constexpr XMXDECN4(uint32_t Packed) : v(Packed) {}
+            XMXDECN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMXDECN4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMXDECN4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 10-10-10-2 bit components packed into a 32 bit integer
@@ -752,32 +673,29 @@ namespace DirectX
             {
                 struct
                 {
-                    int32_t x : 10; // -511 to 511
-                    int32_t y : 10; // -511 to 511
-                    int32_t z : 10; // -511 to 511
-                    uint32_t w : 2; // 0 to 3
+                    int32_t x : 10;    // -511 to 511
+                    int32_t y : 10;    // -511 to 511
+                    int32_t z : 10;    // -511 to 511
+                    uint32_t w : 2;     // 0 to 3
                 };
                 uint32_t v;
             };
 
-            XMXDEC4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMXDEC4(uint32_t Packed) : v(Packed) {}
-            XMXDEC4(float _x, float _y, float _z, float _w);
-            explicit XMXDEC4(_In_reads_(4) const float *pArray);
+            XMXDEC4() = default;
 
-            operator uint32_t() const { return v; }
+            XMXDEC4(const XMXDEC4&) = default;
+            XMXDEC4& operator=(const XMXDEC4&) = default;
 
-            XMXDEC4 &operator=(const XMXDEC4 &XDec4)
-            {
-                v = XDec4.v;
-                return *this;
-            }
-            XMXDEC4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMXDEC4(XMXDEC4&&) = default;
+            XMXDEC4& operator=(XMXDEC4&&) = default;
+
+            explicit constexpr XMXDEC4(uint32_t Packed) noexcept : v(Packed) {}
+            XMXDEC4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMXDEC4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMXDEC4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 10-10-10-2 bit normalized components packed into a 32 bit integer
@@ -792,32 +710,29 @@ namespace DirectX
             {
                 struct
                 {
-                    int32_t x : 10; // -511/511 to 511/511
-                    int32_t y : 10; // -511/511 to 511/511
-                    int32_t z : 10; // -511/511 to 511/511
-                    int32_t w : 2;  //     -1/1 to     1/1
+                    int32_t x : 10;    // -511/511 to 511/511
+                    int32_t y : 10;    // -511/511 to 511/511
+                    int32_t z : 10;    // -511/511 to 511/511
+                    int32_t w : 2;     //     -1/1 to     1/1
                 };
                 uint32_t v;
             };
 
-            XMDECN4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMDECN4(uint32_t Packed) : v(Packed) {}
-            XMDECN4(float _x, float _y, float _z, float _w);
-            explicit XMDECN4(_In_reads_(4) const float *pArray);
+            XMDECN4() = default;
 
-            operator uint32_t() const { return v; }
+            XMDECN4(const XMDECN4&) = default;
+            XMDECN4& operator=(const XMDECN4&) = default;
 
-            XMDECN4 &operator=(const XMDECN4 &DecN4)
-            {
-                v = DecN4.v;
-                return *this;
-            }
-            XMDECN4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMDECN4(XMDECN4&&) = default;
+            XMDECN4& operator=(XMDECN4&&) = default;
+
+            explicit constexpr XMDECN4(uint32_t Packed) noexcept : v(Packed) {}
+            XMDECN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMDECN4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMDECN4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 10-10-10-2 bit components packed into a 32 bit integer
@@ -832,32 +747,29 @@ namespace DirectX
             {
                 struct
                 {
-                    int32_t x : 10; // -511 to 511
-                    int32_t y : 10; // -511 to 511
-                    int32_t z : 10; // -511 to 511
-                    int32_t w : 2;  //   -1 to   1
+                    int32_t  x : 10;    // -511 to 511
+                    int32_t  y : 10;    // -511 to 511
+                    int32_t  z : 10;    // -511 to 511
+                    int32_t  w : 2;     //   -1 to   1
                 };
                 uint32_t v;
             };
 
-            XMDEC4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMDEC4(uint32_t Packed) : v(Packed) {}
-            XMDEC4(float _x, float _y, float _z, float _w);
-            explicit XMDEC4(_In_reads_(4) const float *pArray);
+            XMDEC4() = default;
 
-            operator uint32_t() const { return v; }
+            XMDEC4(const XMDEC4&) = default;
+            XMDEC4& operator=(const XMDEC4&) = default;
 
-            XMDEC4 &operator=(const XMDEC4 &Dec4)
-            {
-                v = Dec4.v;
-                return *this;
-            }
-            XMDEC4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMDEC4(XMDEC4&&) = default;
+            XMDEC4& operator=(XMDEC4&&) = default;
+
+            explicit constexpr XMDEC4(uint32_t Packed) noexcept : v(Packed) {}
+            XMDEC4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMDEC4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMDEC4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 10-10-10-2 bit normalized components packed into a 32 bit integer
@@ -872,32 +784,29 @@ namespace DirectX
             {
                 struct
                 {
-                    uint32_t x : 10; // 0/1023 to 1023/1023
-                    uint32_t y : 10; // 0/1023 to 1023/1023
-                    uint32_t z : 10; // 0/1023 to 1023/1023
-                    uint32_t w : 2;  //    0/3 to       3/3
+                    uint32_t x : 10;    // 0/1023 to 1023/1023
+                    uint32_t y : 10;    // 0/1023 to 1023/1023
+                    uint32_t z : 10;    // 0/1023 to 1023/1023
+                    uint32_t w : 2;     //    0/3 to       3/3
                 };
                 uint32_t v;
             };
 
-            XMUDECN4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUDECN4(uint32_t Packed) : v(Packed) {}
-            XMUDECN4(float _x, float _y, float _z, float _w);
-            explicit XMUDECN4(_In_reads_(4) const float *pArray);
+            XMUDECN4() = default;
 
-            operator uint32_t() const { return v; }
+            XMUDECN4(const XMUDECN4&) = default;
+            XMUDECN4& operator=(const XMUDECN4&) = default;
 
-            XMUDECN4 &operator=(const XMUDECN4 &UDecN4)
-            {
-                v = UDecN4.v;
-                return *this;
-            }
-            XMUDECN4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUDECN4(XMUDECN4&&) = default;
+            XMUDECN4& operator=(XMUDECN4&&) = default;
+
+            explicit constexpr XMUDECN4(uint32_t Packed) noexcept : v(Packed) {}
+            XMUDECN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUDECN4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMUDECN4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 10-10-10-2 bit components packed into a 32 bit integer
@@ -912,32 +821,29 @@ namespace DirectX
             {
                 struct
                 {
-                    uint32_t x : 10; // 0 to 1023
-                    uint32_t y : 10; // 0 to 1023
-                    uint32_t z : 10; // 0 to 1023
-                    uint32_t w : 2;  // 0 to    3
+                    uint32_t x : 10;    // 0 to 1023
+                    uint32_t y : 10;    // 0 to 1023
+                    uint32_t z : 10;    // 0 to 1023
+                    uint32_t w : 2;     // 0 to    3
                 };
                 uint32_t v;
             };
 
-            XMUDEC4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUDEC4(uint32_t Packed) : v(Packed) {}
-            XMUDEC4(float _x, float _y, float _z, float _w);
-            explicit XMUDEC4(_In_reads_(4) const float *pArray);
+            XMUDEC4() = default;
 
-            operator uint32_t() const { return v; }
+            XMUDEC4(const XMUDEC4&) = default;
+            XMUDEC4& operator=(const XMUDEC4&) = default;
 
-            XMUDEC4 &operator=(const XMUDEC4 &UDec4)
-            {
-                v = UDec4.v;
-                return *this;
-            }
-            XMUDEC4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUDEC4(XMUDEC4&&) = default;
+            XMUDEC4& operator=(XMUDEC4&&) = default;
+
+            explicit constexpr XMUDEC4(uint32_t Packed) noexcept : v(Packed) {}
+            XMUDEC4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUDEC4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint32_t () const noexcept { return v; }
+
+            XMUDEC4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -956,27 +862,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMBYTEN4()
-            XM_CTOR_DEFAULT
-                XM_CONSTEXPR XMBYTEN4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XM_CONSTEXPR XMBYTEN4(uint32_t Packed) : v(Packed) {}
-            explicit XMBYTEN4(_In_reads_(4) const int8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMBYTEN4(float _x, float _y, float _z, float _w);
-            explicit XMBYTEN4(_In_reads_(4) const float *pArray);
+            XMBYTEN4() = default;
 
-            XMBYTEN4 &operator=(const XMBYTEN4 &ByteN4)
-            {
-                x = ByteN4.x;
-                y = ByteN4.y;
-                z = ByteN4.z;
-                w = ByteN4.w;
-                return *this;
-            }
-            XMBYTEN4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMBYTEN4(const XMBYTEN4&) = default;
+            XMBYTEN4& operator=(const XMBYTEN4&) = default;
+
+            XMBYTEN4(XMBYTEN4&&) = default;
+            XMBYTEN4& operator=(XMBYTEN4&&) = default;
+
+            constexpr XMBYTEN4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit constexpr XMBYTEN4(uint32_t Packed) noexcept : v(Packed) {}
+            explicit XMBYTEN4(_In_reads_(4) const int8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMBYTEN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMBYTEN4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMBYTEN4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 8 bit signed integer components
@@ -994,27 +894,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMBYTE4()
-            XM_CTOR_DEFAULT
-                XM_CONSTEXPR XMBYTE4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XM_CONSTEXPR XMBYTE4(uint32_t Packed) : v(Packed) {}
-            explicit XMBYTE4(_In_reads_(4) const int8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMBYTE4(float _x, float _y, float _z, float _w);
-            explicit XMBYTE4(_In_reads_(4) const float *pArray);
+            XMBYTE4() = default;
 
-            XMBYTE4 &operator=(const XMBYTE4 &Byte4)
-            {
-                x = Byte4.x;
-                y = Byte4.y;
-                z = Byte4.z;
-                w = Byte4.w;
-                return *this;
-            }
-            XMBYTE4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMBYTE4(const XMBYTE4&) = default;
+            XMBYTE4& operator=(const XMBYTE4&) = default;
+
+            XMBYTE4(XMBYTE4&&) = default;
+            XMBYTE4& operator=(XMBYTE4&&) = default;
+
+            constexpr XMBYTE4(int8_t _x, int8_t _y, int8_t _z, int8_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit constexpr XMBYTE4(uint32_t Packed) noexcept : v(Packed) {}
+            explicit XMBYTE4(_In_reads_(4) const int8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMBYTE4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMBYTE4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMBYTE4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 8 bit unsigned normalized integer components
@@ -1032,27 +926,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMUBYTEN4()
-            XM_CTOR_DEFAULT
-                XM_CONSTEXPR XMUBYTEN4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XM_CONSTEXPR XMUBYTEN4(uint32_t Packed) : v(Packed) {}
-            explicit XMUBYTEN4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMUBYTEN4(float _x, float _y, float _z, float _w);
-            explicit XMUBYTEN4(_In_reads_(4) const float *pArray);
+            XMUBYTEN4() = default;
 
-            XMUBYTEN4 &operator=(const XMUBYTEN4 &UByteN4)
-            {
-                x = UByteN4.x;
-                y = UByteN4.y;
-                z = UByteN4.z;
-                w = UByteN4.w;
-                return *this;
-            }
-            XMUBYTEN4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUBYTEN4(const XMUBYTEN4&) = default;
+            XMUBYTEN4& operator=(const XMUBYTEN4&) = default;
+
+            XMUBYTEN4(XMUBYTEN4&&) = default;
+            XMUBYTEN4& operator=(XMUBYTEN4&&) = default;
+
+            constexpr XMUBYTEN4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit constexpr XMUBYTEN4(uint32_t Packed) noexcept : v(Packed) {}
+            explicit XMUBYTEN4(_In_reads_(4) const uint8_t* pArray) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMUBYTEN4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUBYTEN4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMUBYTEN4& operator= (uint32_t Packed) noexcept { v = Packed; return *this; }
         };
 
         // 4D Vector; 8 bit unsigned integer components
@@ -1070,27 +958,21 @@ namespace DirectX
                 uint32_t v;
             };
 
-            XMUBYTE4()
-            XM_CTOR_DEFAULT
-                XM_CONSTEXPR XMUBYTE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XM_CONSTEXPR XMUBYTE4(uint32_t Packed) : v(Packed) {}
-            explicit XMUBYTE4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMUBYTE4(float _x, float _y, float _z, float _w);
-            explicit XMUBYTE4(_In_reads_(4) const float *pArray);
+            XMUBYTE4() = default;
 
-            XMUBYTE4 &operator=(const XMUBYTE4 &UByte4)
-            {
-                x = UByte4.x;
-                y = UByte4.y;
-                z = UByte4.z;
-                w = UByte4.w;
-                return *this;
-            }
-            XMUBYTE4 &operator=(uint32_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUBYTE4(const XMUBYTE4&) = default;
+            XMUBYTE4& operator=(const XMUBYTE4&) = default;
+
+            XMUBYTE4(XMUBYTE4&&) = default;
+            XMUBYTE4& operator=(XMUBYTE4&&) = default;
+
+            constexpr XMUBYTE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit constexpr XMUBYTE4(uint32_t Packed)  noexcept : v(Packed) {}
+            explicit XMUBYTE4(_In_reads_(4) const uint8_t* pArray)  noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMUBYTE4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUBYTE4(_In_reads_(4) const float* pArray) noexcept;
+
+            XMUBYTE4& operator= (uint32_t Packed)  noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -1101,34 +983,31 @@ namespace DirectX
             {
                 struct
                 {
-                    uint16_t x : 4; // 0 to 15
-                    uint16_t y : 4; // 0 to 15
-                    uint16_t z : 4; // 0 to 15
-                    uint16_t w : 4; // 0 to 15
+                    uint16_t x : 4;    // 0 to 15
+                    uint16_t y : 4;    // 0 to 15
+                    uint16_t z : 4;    // 0 to 15
+                    uint16_t w : 4;    // 0 to 15
                 };
                 uint16_t v;
             };
 
-            XMUNIBBLE4()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMUNIBBLE4(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMUNIBBLE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w) : x(_x), y(_y), z(_z), w(_w) {}
-            explicit XMUNIBBLE4(_In_reads_(4) const uint8_t *pArray) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
-            XMUNIBBLE4(float _x, float _y, float _z, float _w);
-            explicit XMUNIBBLE4(_In_reads_(4) const float *pArray);
+            XMUNIBBLE4() = default;
 
-            operator uint16_t() const { return v; }
+            XMUNIBBLE4(const XMUNIBBLE4&) = default;
+            XMUNIBBLE4& operator=(const XMUNIBBLE4&) = default;
 
-            XMUNIBBLE4 &operator=(const XMUNIBBLE4 &UNibble4)
-            {
-                v = UNibble4.v;
-                return *this;
-            }
-            XMUNIBBLE4 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMUNIBBLE4(XMUNIBBLE4&&) = default;
+            XMUNIBBLE4& operator=(XMUNIBBLE4&&) = default;
+
+            explicit constexpr XMUNIBBLE4(uint16_t Packed)  noexcept : v(Packed) {}
+            constexpr XMUNIBBLE4(uint8_t _x, uint8_t _y, uint8_t _z, uint8_t _w)  noexcept : x(_x), y(_y), z(_z), w(_w) {}
+            explicit XMUNIBBLE4(_In_reads_(4) const uint8_t* pArray)  noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(pArray[3]) {}
+            XMUNIBBLE4(float _x, float _y, float _z, float _w) noexcept;
+            explicit XMUNIBBLE4(_In_reads_(4) const float* pArray) noexcept;
+
+            operator uint16_t () const  noexcept { return v; }
+
+            XMUNIBBLE4& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
         //------------------------------------------------------------------------------
@@ -1139,165 +1018,168 @@ namespace DirectX
             {
                 struct
                 {
-                    uint16_t x : 5; // 0 to 31
-                    uint16_t y : 5; // 0 to 31
-                    uint16_t z : 5; // 0 to 31
-                    uint16_t w : 1; // 0 or 1
+                    uint16_t x : 5;    // 0 to 31
+                    uint16_t y : 5;    // 0 to 31
+                    uint16_t z : 5;    // 0 to 31
+                    uint16_t w : 1;    // 0 or 1
                 };
                 uint16_t v;
             };
 
-            XMU555()
-            XM_CTOR_DEFAULT
-                explicit XM_CONSTEXPR XMU555(uint16_t Packed) : v(Packed) {}
-            XM_CONSTEXPR XMU555(uint8_t _x, uint8_t _y, uint8_t _z, bool _w) : x(_x), y(_y), z(_z), w(_w ? 0x1 : 0) {}
-            XMU555(_In_reads_(3) const uint8_t *pArray, _In_ bool _w) : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(_w ? 0x1 : 0) {}
-            XMU555(float _x, float _y, float _z, bool _w);
-            XMU555(_In_reads_(3) const float *pArray, _In_ bool _w);
+            XMU555() = default;
 
-            operator uint16_t() const { return v; }
+            XMU555(const XMU555&) = default;
+            XMU555& operator=(const XMU555&) = default;
 
-            XMU555 &operator=(const XMU555 &U555)
-            {
-                v = U555.v;
-                return *this;
-            }
-            XMU555 &operator=(uint16_t Packed)
-            {
-                v = Packed;
-                return *this;
-            }
+            XMU555(XMU555&&) = default;
+            XMU555& operator=(XMU555&&) = default;
+
+            explicit constexpr XMU555(uint16_t Packed) noexcept : v(Packed) {}
+            constexpr XMU555(uint8_t _x, uint8_t _y, uint8_t _z, bool _w) noexcept : x(_x), y(_y), z(_z), w(_w ? 0x1 : 0) {}
+            XMU555(_In_reads_(3) const uint8_t* pArray, _In_ bool _w) noexcept : x(pArray[0]), y(pArray[1]), z(pArray[2]), w(_w ? 0x1 : 0) {}
+            XMU555(float _x, float _y, float _z, bool _w) noexcept;
+            XMU555(_In_reads_(3) const float* pArray, _In_ bool _w) noexcept;
+
+            operator uint16_t () const noexcept { return v; }
+
+            XMU555& operator= (uint16_t Packed) noexcept { v = Packed; return *this; }
         };
 
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 #pragma warning(pop)
 
-        /****************************************************************************
- *
- * Data conversion operations
- *
- ****************************************************************************/
-
-        float XMConvertHalfToFloat(HALF Value);
-        float *XMConvertHalfToFloatStream(_Out_writes_bytes_(sizeof(float) + OutputStride * (HalfCount - 1)) float *pOutputStream,
-                                          _In_ size_t OutputStride,
-                                          _In_reads_bytes_(sizeof(HALF) + InputStride * (HalfCount - 1)) const HALF *pInputStream,
-                                          _In_ size_t InputStride, _In_ size_t HalfCount);
-        HALF XMConvertFloatToHalf(float Value);
-        HALF *XMConvertFloatToHalfStream(_Out_writes_bytes_(sizeof(HALF) + OutputStride * (FloatCount - 1)) HALF *pOutputStream,
-                                         _In_ size_t OutputStride,
-                                         _In_reads_bytes_(sizeof(float) + InputStride * (FloatCount - 1)) const float *pInputStream,
-                                         _In_ size_t InputStride, _In_ size_t FloatCount);
 
         /****************************************************************************
- *
- * Load operations
- *
- ****************************************************************************/
+         *
+         * Data conversion operations
+         *
+         ****************************************************************************/
 
-        XMVECTOR XM_CALLCONV XMLoadColor(_In_ const XMCOLOR *pSource);
+        float           XMConvertHalfToFloat(HALF Value) noexcept;
+        float* XMConvertHalfToFloatStream(_Out_writes_bytes_(sizeof(float) + OutputStride * (HalfCount - 1)) float* pOutputStream,
+            _In_ size_t OutputStride,
+            _In_reads_bytes_(sizeof(HALF) + InputStride * (HalfCount - 1)) const HALF* pInputStream,
+            _In_ size_t InputStride, _In_ size_t HalfCount) noexcept;
+        HALF            XMConvertFloatToHalf(float Value) noexcept;
+        HALF* XMConvertFloatToHalfStream(_Out_writes_bytes_(sizeof(HALF) + OutputStride * (FloatCount - 1)) HALF* pOutputStream,
+            _In_ size_t OutputStride,
+            _In_reads_bytes_(sizeof(float) + InputStride * (FloatCount - 1)) const float* pInputStream,
+            _In_ size_t InputStride, _In_ size_t FloatCount) noexcept;
 
-        XMVECTOR XM_CALLCONV XMLoadHalf2(_In_ const XMHALF2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadShortN2(_In_ const XMSHORTN2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadShort2(_In_ const XMSHORT2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUShortN2(_In_ const XMUSHORTN2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUShort2(_In_ const XMUSHORT2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadByteN2(_In_ const XMBYTEN2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadByte2(_In_ const XMBYTE2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUByteN2(_In_ const XMUBYTEN2 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUByte2(_In_ const XMUBYTE2 *pSource);
+        /****************************************************************************
+         *
+         * Load operations
+         *
+         ****************************************************************************/
 
-        XMVECTOR XM_CALLCONV XMLoadU565(_In_ const XMU565 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadFloat3PK(_In_ const XMFLOAT3PK *pSource);
-        XMVECTOR XM_CALLCONV XMLoadFloat3SE(_In_ const XMFLOAT3SE *pSource);
+        XMVECTOR    XM_CALLCONV     XMLoadColor(_In_ const XMCOLOR* pSource) noexcept;
 
-        XMVECTOR XM_CALLCONV XMLoadHalf4(_In_ const XMHALF4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadShortN4(_In_ const XMSHORTN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadShort4(_In_ const XMSHORT4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUShortN4(_In_ const XMUSHORTN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUShort4(_In_ const XMUSHORT4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadXDecN4(_In_ const XMXDECN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUDecN4(_In_ const XMUDECN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUDecN4_XR(_In_ const XMUDECN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUDec4(_In_ const XMUDEC4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadByteN4(_In_ const XMBYTEN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadByte4(_In_ const XMBYTE4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUByteN4(_In_ const XMUBYTEN4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUByte4(_In_ const XMUBYTE4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadUNibble4(_In_ const XMUNIBBLE4 *pSource);
-        XMVECTOR XM_CALLCONV XMLoadU555(_In_ const XMU555 *pSource);
+        XMVECTOR    XM_CALLCONV     XMLoadHalf2(_In_ const XMHALF2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadShortN2(_In_ const XMSHORTN2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadShort2(_In_ const XMSHORT2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUShortN2(_In_ const XMUSHORTN2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUShort2(_In_ const XMUSHORT2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadByteN2(_In_ const XMBYTEN2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadByte2(_In_ const XMBYTE2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUByteN2(_In_ const XMUBYTEN2* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUByte2(_In_ const XMUBYTE2* pSource) noexcept;
+
+        XMVECTOR    XM_CALLCONV     XMLoadU565(_In_ const XMU565* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadFloat3PK(_In_ const XMFLOAT3PK* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadFloat3SE(_In_ const XMFLOAT3SE* pSource) noexcept;
+
+        XMVECTOR    XM_CALLCONV     XMLoadHalf4(_In_ const XMHALF4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadShortN4(_In_ const XMSHORTN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadShort4(_In_ const XMSHORT4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUShortN4(_In_ const XMUSHORTN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUShort4(_In_ const XMUSHORT4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadXDecN4(_In_ const XMXDECN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUDecN4(_In_ const XMUDECN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUDecN4_XR(_In_ const XMUDECN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUDec4(_In_ const XMUDEC4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadByteN4(_In_ const XMBYTEN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadByte4(_In_ const XMBYTE4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUByteN4(_In_ const XMUBYTEN4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUByte4(_In_ const XMUBYTE4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadUNibble4(_In_ const XMUNIBBLE4* pSource) noexcept;
+        XMVECTOR    XM_CALLCONV     XMLoadU555(_In_ const XMU555* pSource) noexcept;
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
         // C4996: ignore deprecation warning
 
-        XMVECTOR XM_DEPRECATED XM_CALLCONV XMLoadDecN4(_In_ const XMDECN4 *pSource);
-        XMVECTOR XM_DEPRECATED XM_CALLCONV XMLoadDec4(_In_ const XMDEC4 *pSource);
-        XMVECTOR XM_DEPRECATED XM_CALLCONV XMLoadXDec4(_In_ const XMXDEC4 *pSource);
+        XMVECTOR    XM_DEPRECATED XM_CALLCONV XMLoadDecN4(_In_ const XMDECN4* pSource) noexcept;
+        XMVECTOR    XM_DEPRECATED XM_CALLCONV XMLoadDec4(_In_ const XMDEC4* pSource) noexcept;
+        XMVECTOR    XM_DEPRECATED XM_CALLCONV XMLoadXDec4(_In_ const XMXDEC4* pSource) noexcept;
 #pragma warning(pop)
 
         /****************************************************************************
- *
- * Store operations
- *
- ****************************************************************************/
+         *
+         * Store operations
+         *
+         ****************************************************************************/
 
-        void XM_CALLCONV XMStoreColor(_Out_ XMCOLOR *pDestination, _In_ FXMVECTOR V);
+        void    XM_CALLCONV     XMStoreColor(_Out_ XMCOLOR* pDestination, _In_ FXMVECTOR V) noexcept;
 
-        void XM_CALLCONV XMStoreHalf2(_Out_ XMHALF2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreShortN2(_Out_ XMSHORTN2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreShort2(_Out_ XMSHORT2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUShortN2(_Out_ XMUSHORTN2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUShort2(_Out_ XMUSHORT2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreByteN2(_Out_ XMBYTEN2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreByte2(_Out_ XMBYTE2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUByteN2(_Out_ XMUBYTEN2 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUByte2(_Out_ XMUBYTE2 *pDestination, _In_ FXMVECTOR V);
+        void    XM_CALLCONV     XMStoreHalf2(_Out_ XMHALF2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreShortN2(_Out_ XMSHORTN2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreShort2(_Out_ XMSHORT2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUShortN2(_Out_ XMUSHORTN2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUShort2(_Out_ XMUSHORT2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreByteN2(_Out_ XMBYTEN2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreByte2(_Out_ XMBYTE2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUByteN2(_Out_ XMUBYTEN2* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUByte2(_Out_ XMUBYTE2* pDestination, _In_ FXMVECTOR V) noexcept;
 
-        void XM_CALLCONV XMStoreU565(_Out_ XMU565 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreFloat3PK(_Out_ XMFLOAT3PK *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreFloat3SE(_Out_ XMFLOAT3SE *pDestination, _In_ FXMVECTOR V);
+        void    XM_CALLCONV     XMStoreU565(_Out_ XMU565* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreFloat3PK(_Out_ XMFLOAT3PK* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreFloat3SE(_Out_ XMFLOAT3SE* pDestination, _In_ FXMVECTOR V) noexcept;
 
-        void XM_CALLCONV XMStoreHalf4(_Out_ XMHALF4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreShortN4(_Out_ XMSHORTN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreShort4(_Out_ XMSHORT4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUShortN4(_Out_ XMUSHORTN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUShort4(_Out_ XMUSHORT4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreXDecN4(_Out_ XMXDECN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUDecN4(_Out_ XMUDECN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUDecN4_XR(_Out_ XMUDECN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUDec4(_Out_ XMUDEC4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreByteN4(_Out_ XMBYTEN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreByte4(_Out_ XMBYTE4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUByteN4(_Out_ XMUBYTEN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUByte4(_Out_ XMUBYTE4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreUNibble4(_Out_ XMUNIBBLE4 *pDestination, _In_ FXMVECTOR V);
-        void XM_CALLCONV XMStoreU555(_Out_ XMU555 *pDestination, _In_ FXMVECTOR V);
+        void    XM_CALLCONV     XMStoreHalf4(_Out_ XMHALF4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreShortN4(_Out_ XMSHORTN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreShort4(_Out_ XMSHORT4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUShortN4(_Out_ XMUSHORTN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUShort4(_Out_ XMUSHORT4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreXDecN4(_Out_ XMXDECN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUDecN4(_Out_ XMUDECN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUDecN4_XR(_Out_ XMUDECN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUDec4(_Out_ XMUDEC4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreByteN4(_Out_ XMBYTEN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreByte4(_Out_ XMBYTE4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUByteN4(_Out_ XMUBYTEN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUByte4(_Out_ XMUBYTE4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreUNibble4(_Out_ XMUNIBBLE4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_CALLCONV     XMStoreU555(_Out_ XMU555* pDestination, _In_ FXMVECTOR V) noexcept;
 
 #pragma warning(push)
 #pragma warning(disable : 4996)
         // C4996: ignore deprecation warning
 
-        void XM_DEPRECATED XM_CALLCONV XMStoreDecN4(_Out_ XMDECN4 *pDestination, _In_ FXMVECTOR V);
-        void XM_DEPRECATED XM_CALLCONV XMStoreDec4(_Out_ XMDEC4 *pDestination, _In_ FXMVECTOR V);
-        void XM_DEPRECATED XM_CALLCONV XMStoreXDec4(_Out_ XMXDEC4 *pDestination, _In_ FXMVECTOR V);
+        void    XM_DEPRECATED XM_CALLCONV XMStoreDecN4(_Out_ XMDECN4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_DEPRECATED XM_CALLCONV XMStoreDec4(_Out_ XMDEC4* pDestination, _In_ FXMVECTOR V) noexcept;
+        void    XM_DEPRECATED XM_CALLCONV XMStoreXDec4(_Out_ XMXDEC4* pDestination, _In_ FXMVECTOR V) noexcept;
 #pragma warning(pop)
 
         /****************************************************************************
- *
- * Implementation
- *
- ****************************************************************************/
+         *
+         * Implementation
+         *
+         ****************************************************************************/
 
 #pragma warning(push)
-#pragma warning(disable : 4068 4214 4204 4365 4616 6001 6101)
-        // C4068/4616: ignore unknown pragmas
-        // C4214/4204: nonstandard extension used
-        // C4365: Off by default noise
-        // C6001/6101: False positives
+#pragma warning(disable:4068 4214 4204 4365 4616 6001 6101)
+         // C4068/4616: ignore unknown pragmas
+         // C4214/4204: nonstandard extension used
+         // C4365: Off by default noise
+         // C6001/6101: False positives
 
 #ifdef _PREFAST_
 #pragma prefast(push)
 #pragma prefast(disable : 25000, "FXMVECTOR is 16 bytes")
+#pragma prefast(disable : 26495, "Union initialization confuses /analyze")
 #endif
 
 #include "DirectXPackedVector.inl"
@@ -1308,6 +1190,7 @@ namespace DirectX
 
 #pragma warning(pop)
 
-    }; // namespace PackedVector
+    } // namespace PackedVector
 
-}; // namespace DirectX
+} // namespace DirectX
+

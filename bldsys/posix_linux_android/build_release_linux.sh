@@ -22,7 +22,7 @@ cd ${MY_DIR}
 
 # ndk-build
 
-if "${MY_DIR}/android-ndk-r14b/ndk-build" APP_DEBUG:=false NDK_PROJECT_PATH:=null NDK_OUT:=obj/release NDK_LIBS_OUT:=libs/release/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk; then
+if "${MY_DIR}/android-ndk-r14b/ndk-build" APP_DEBUG:=false NDK_PROJECT_PATH:=null NDK_OUT:=obj/release NDK_LIBS_OUT:=libs/release/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Android.mk; then
     echo "ndk-build passed"
 else
     echo "ndk-build failed"

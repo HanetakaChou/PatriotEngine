@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -38,13 +38,21 @@ inline T mcrt_intrin_round_up(T value, T alignment);
 #include <emmintrin.h>
 typedef __m128i mcrt_uuid;
 #elif defined(PT_ARM64) || defined(PT_ARM)
+#include <arm_neon.h>
+typedef uint32x4_t mcrt_uuid;
 #else
 #error Unknown Architecture
 #endif
 
-inline mcrt_uuid mcrt_uuid_load(uint8_t bytes[16]);
-
-inline bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b);
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+    PT_ATTR_MCRT mcrt_uuid PT_CALL mcrt_uuid_load(uint8_t bytes[16]);
+    PT_ATTR_MCRT bool PT_CALL mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b);
+#ifdef __cplusplus
+}
+#endif
 
 #if defined PT_GCC
 #include "pt_mcrt_intrin_gcc.inl"

@@ -1,18 +1,13 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathMisc.inl -- SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#ifndef _DIRECTX_MATH_MISC_INL_
-#define _DIRECTX_MATH_MISC_INL_ 1
+#pragma once
 
 /****************************************************************************
  *
@@ -20,48 +15,49 @@
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
-// Comparison operations
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
+ // Comparison operations
+ //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMQuaternionEqual(
+inline bool XM_CALLCONV XMQuaternionEqual
+(
     FXMVECTOR Q1,
-    FXMVECTOR Q2)
+    FXMVECTOR Q2
+) noexcept
 {
     return XMVector4Equal(Q1, Q2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMQuaternionNotEqual(
+inline bool XM_CALLCONV XMQuaternionNotEqual
+(
     FXMVECTOR Q1,
-    FXMVECTOR Q2)
+    FXMVECTOR Q2
+) noexcept
 {
     return XMVector4NotEqual(Q1, Q2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMQuaternionIsNaN(
-    FXMVECTOR Q)
+inline bool XM_CALLCONV XMQuaternionIsNaN(FXMVECTOR Q) noexcept
 {
     return XMVector4IsNaN(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMQuaternionIsInfinite(
-    FXMVECTOR Q)
+inline bool XM_CALLCONV XMQuaternionIsInfinite(FXMVECTOR Q) noexcept
 {
     return XMVector4IsInfinite(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMQuaternionIsIdentity(
-    FXMVECTOR Q)
+inline bool XM_CALLCONV XMQuaternionIsIdentity(FXMVECTOR Q) noexcept
 {
     return XMVector4Equal(Q, g_XMIdentityR3.v);
 }
@@ -72,18 +68,22 @@ inline bool XM_CALLCONV XMQuaternionIsIdentity(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionDot(
+inline XMVECTOR XM_CALLCONV XMQuaternionDot
+(
     FXMVECTOR Q1,
-    FXMVECTOR Q2)
+    FXMVECTOR Q2
+) noexcept
 {
     return XMVector4Dot(Q1, Q2);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
+inline XMVECTOR XM_CALLCONV XMQuaternionMultiply
+(
     FXMVECTOR Q1,
-    FXMVECTOR Q2)
+    FXMVECTOR Q2
+) noexcept
 {
     // Returns the product Q2*Q1 (which is the concatenation of a rotation Q1 followed by the rotation Q2)
 
@@ -93,15 +93,17 @@ inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
     //   (Q2.w * Q1.w) - (Q2.x * Q1.x) - (Q2.y * Q1.y) - (Q2.z * Q1.z) ]
 
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 Result = {{{(Q2.vector4_f32[3] * Q1.vector4_f32[0]) + (Q2.vector4_f32[0] * Q1.vector4_f32[3]) + (Q2.vector4_f32[1] * Q1.vector4_f32[2]) - (Q2.vector4_f32[2] * Q1.vector4_f32[1]),
-                            (Q2.vector4_f32[3] * Q1.vector4_f32[1]) - (Q2.vector4_f32[0] * Q1.vector4_f32[2]) + (Q2.vector4_f32[1] * Q1.vector4_f32[3]) + (Q2.vector4_f32[2] * Q1.vector4_f32[0]),
-                            (Q2.vector4_f32[3] * Q1.vector4_f32[2]) + (Q2.vector4_f32[0] * Q1.vector4_f32[1]) - (Q2.vector4_f32[1] * Q1.vector4_f32[0]) + (Q2.vector4_f32[2] * Q1.vector4_f32[3]),
-                            (Q2.vector4_f32[3] * Q1.vector4_f32[3]) - (Q2.vector4_f32[0] * Q1.vector4_f32[0]) - (Q2.vector4_f32[1] * Q1.vector4_f32[1]) - (Q2.vector4_f32[2] * Q1.vector4_f32[2])}}};
+    XMVECTORF32 Result = { { {
+            (Q2.vector4_f32[3] * Q1.vector4_f32[0]) + (Q2.vector4_f32[0] * Q1.vector4_f32[3]) + (Q2.vector4_f32[1] * Q1.vector4_f32[2]) - (Q2.vector4_f32[2] * Q1.vector4_f32[1]),
+            (Q2.vector4_f32[3] * Q1.vector4_f32[1]) - (Q2.vector4_f32[0] * Q1.vector4_f32[2]) + (Q2.vector4_f32[1] * Q1.vector4_f32[3]) + (Q2.vector4_f32[2] * Q1.vector4_f32[0]),
+            (Q2.vector4_f32[3] * Q1.vector4_f32[2]) + (Q2.vector4_f32[0] * Q1.vector4_f32[1]) - (Q2.vector4_f32[1] * Q1.vector4_f32[0]) + (Q2.vector4_f32[2] * Q1.vector4_f32[3]),
+            (Q2.vector4_f32[3] * Q1.vector4_f32[3]) - (Q2.vector4_f32[0] * Q1.vector4_f32[0]) - (Q2.vector4_f32[1] * Q1.vector4_f32[1]) - (Q2.vector4_f32[2] * Q1.vector4_f32[2])
+        } } };
     return Result.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 ControlWZYX = {{{1.0f, -1.0f, 1.0f, -1.0f}}};
-    static const XMVECTORF32 ControlZWXY = {{{1.0f, 1.0f, -1.0f, -1.0f}}};
-    static const XMVECTORF32 ControlYXWZ = {{{-1.0f, 1.0f, 1.0f, -1.0f}}};
+    static const XMVECTORF32 ControlWZYX = { { { 1.0f, -1.0f, 1.0f, -1.0f } } };
+    static const XMVECTORF32 ControlZWXY = { { { 1.0f, 1.0f, -1.0f, -1.0f } } };
+    static const XMVECTORF32 ControlYXWZ = { { { -1.0f, 1.0f, 1.0f, -1.0f } } };
 
     float32x2_t Q2L = vget_low_f32(Q2);
     float32x2_t Q2H = vget_high_f32(Q2);
@@ -129,9 +131,9 @@ inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
     vResult = vmlaq_f32(vResult, Q2Z, ControlYXWZ);
     return vResult;
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 ControlWZYX = {{{1.0f, -1.0f, 1.0f, -1.0f}}};
-    static const XMVECTORF32 ControlZWXY = {{{1.0f, 1.0f, -1.0f, -1.0f}}};
-    static const XMVECTORF32 ControlYXWZ = {{{-1.0f, 1.0f, 1.0f, -1.0f}}};
+    static const XMVECTORF32 ControlWZYX = { { { 1.0f, -1.0f, 1.0f, -1.0f } } };
+    static const XMVECTORF32 ControlZWXY = { { { 1.0f, 1.0f, -1.0f, -1.0f } } };
+    static const XMVECTORF32 ControlYXWZ = { { { -1.0f, 1.0f, 1.0f, -1.0f } } };
     // Copy to SSE registers and use as few as possible for x86
     XMVECTOR Q2X = Q2;
     XMVECTOR Q2Y = Q2;
@@ -151,7 +153,7 @@ inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
     Q2X = _mm_mul_ps(Q2X, Q1Shuffle);
     Q1Shuffle = XM_PERMUTE_PS(Q1Shuffle, _MM_SHUFFLE(2, 3, 0, 1));
     // Flip the signs on y and z
-    Q2X = _mm_mul_ps(Q2X, ControlWZYX);
+    vResult = XM_FMADD_PS(Q2X, ControlWZYX, vResult);
     // Mul by Q1ZWXY
     Q2Y = _mm_mul_ps(Q2Y, Q1Shuffle);
     Q1Shuffle = XM_PERMUTE_PS(Q1Shuffle, _MM_SHUFFLE(0, 1, 2, 3));
@@ -159,10 +161,8 @@ inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
     Q2Y = _mm_mul_ps(Q2Y, ControlZWXY);
     // Mul by Q1YXWZ
     Q2Z = _mm_mul_ps(Q2Z, Q1Shuffle);
-    vResult = _mm_add_ps(vResult, Q2X);
     // Flip the signs on x and w
-    Q2Z = _mm_mul_ps(Q2Z, ControlYXWZ);
-    Q2Y = _mm_add_ps(Q2Y, Q2Z);
+    Q2Y = XM_FMADD_PS(Q2Z, ControlYXWZ, Q2Y);
     vResult = _mm_add_ps(vResult, Q2Y);
     return vResult;
 #endif
@@ -170,70 +170,65 @@ inline XMVECTOR XM_CALLCONV XMQuaternionMultiply(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionLengthSq(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionLengthSq(FXMVECTOR Q) noexcept
 {
     return XMVector4LengthSq(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionReciprocalLength(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionReciprocalLength(FXMVECTOR Q) noexcept
 {
     return XMVector4ReciprocalLength(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionLength(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionLength(FXMVECTOR Q) noexcept
 {
     return XMVector4Length(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionNormalizeEst(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionNormalizeEst(FXMVECTOR Q) noexcept
 {
     return XMVector4NormalizeEst(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionNormalize(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionNormalize(FXMVECTOR Q) noexcept
 {
     return XMVector4Normalize(Q);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionConjugate(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionConjugate(FXMVECTOR Q) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 Result = {{{-Q.vector4_f32[0],
-                            -Q.vector4_f32[1],
-                            -Q.vector4_f32[2],
-                            Q.vector4_f32[3]}}};
+    XMVECTORF32 Result = { { {
+            -Q.vector4_f32[0],
+            -Q.vector4_f32[1],
+            -Q.vector4_f32[2],
+            Q.vector4_f32[3]
+        } } };
     return Result.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 NegativeOne3 = {{{-1.0f, -1.0f, -1.0f, 1.0f}}};
+    static const XMVECTORF32 NegativeOne3 = { { { -1.0f, -1.0f, -1.0f, 1.0f } } };
     return vmulq_f32(Q, NegativeOne3.v);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 NegativeOne3 = {{{-1.0f, -1.0f, -1.0f, 1.0f}}};
+    static const XMVECTORF32 NegativeOne3 = { { { -1.0f, -1.0f, -1.0f, 1.0f } } };
     return _mm_mul_ps(Q, NegativeOne3);
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionInverse(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionInverse(FXMVECTOR Q) noexcept
 {
-    const XMVECTOR Zero = XMVectorZero();
+    const XMVECTOR  Zero = XMVectorZero();
 
     XMVECTOR L = XMVector4LengthSq(Q);
     XMVECTOR Conjugate = XMQuaternionConjugate(Q);
@@ -249,10 +244,9 @@ inline XMVECTOR XM_CALLCONV XMQuaternionInverse(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionLn(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionLn(FXMVECTOR Q) noexcept
 {
-    static const XMVECTORF32 OneMinusEpsilon = {{{1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f}}};
+    static const XMVECTORF32 OneMinusEpsilon = { { { 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f } } };
 
     XMVECTOR QW = XMVectorSplatW(Q);
     XMVECTOR Q0 = XMVectorSelect(g_XMSelect1110.v, Q, g_XMSelect1110.v);
@@ -272,8 +266,7 @@ inline XMVECTOR XM_CALLCONV XMQuaternionLn(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionExp(
-    FXMVECTOR Q)
+inline XMVECTOR XM_CALLCONV XMQuaternionExp(FXMVECTOR Q) noexcept
 {
     XMVECTOR Theta = XMVector3Length(Q);
 
@@ -295,10 +288,12 @@ inline XMVECTOR XM_CALLCONV XMQuaternionExp(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionSlerp(
+inline XMVECTOR XM_CALLCONV XMQuaternionSlerp
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
-    float t)
+    float    t
+) noexcept
 {
     XMVECTOR T = XMVectorReplicate(t);
     return XMQuaternionSlerpV(Q0, Q1, T);
@@ -306,10 +301,12 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSlerp(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionSlerpV(
+inline XMVECTOR XM_CALLCONV XMQuaternionSlerpV
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
-    FXMVECTOR T)
+    FXMVECTOR T
+) noexcept
 {
     assert((XMVectorGetY(T) == XMVectorGetX(T)) && (XMVectorGetZ(T) == XMVectorGetX(T)) && (XMVectorGetW(T) == XMVectorGetX(T)));
 
@@ -317,7 +314,7 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSlerpV(
 
 #if defined(_XM_NO_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
 
-    const XMVECTORF32 OneMinusEpsilon = {{{1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f}}};
+    const XMVECTORF32 OneMinusEpsilon = { { { 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f } } };
 
     XMVECTOR CosOmega = XMQuaternionDot(Q0, Q1);
 
@@ -359,8 +356,8 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSlerpV(
     return Result;
 
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 OneMinusEpsilon = {{{1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f}}};
-    static const XMVECTORU32 SignMask2 = {{{0x80000000, 0x00000000, 0x00000000, 0x00000000}}};
+    static const XMVECTORF32 OneMinusEpsilon = { { { 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f, 1.0f - 0.00001f } } };
+    static const XMVECTORU32 SignMask2 = { { { 0x80000000, 0x00000000, 0x00000000, 0x00000000 } } };
 
     XMVECTOR CosOmega = XMQuaternionDot(Q0, Q1);
 
@@ -402,12 +399,14 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSlerpV(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionSquad(
+inline XMVECTOR XM_CALLCONV XMQuaternionSquad
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
     FXMVECTOR Q2,
     GXMVECTOR Q3,
-    float t)
+    float    t
+) noexcept
 {
     XMVECTOR T = XMVectorReplicate(t);
     return XMQuaternionSquadV(Q0, Q1, Q2, Q3, T);
@@ -415,12 +414,14 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSquad(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionSquadV(
+inline XMVECTOR XM_CALLCONV XMQuaternionSquadV
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
     FXMVECTOR Q2,
     GXMVECTOR Q3,
-    HXMVECTOR T)
+    HXMVECTOR T
+) noexcept
 {
     assert((XMVectorGetY(T) == XMVectorGetX(T)) && (XMVectorGetZ(T) == XMVectorGetX(T)) && (XMVectorGetW(T) == XMVectorGetX(T)));
 
@@ -439,14 +440,17 @@ inline XMVECTOR XM_CALLCONV XMQuaternionSquadV(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMQuaternionSquadSetup(
-    XMVECTOR *pA,
-    XMVECTOR *pB,
-    XMVECTOR *pC,
-    FXMVECTOR Q0,
-    FXMVECTOR Q1,
-    FXMVECTOR Q2,
-    GXMVECTOR Q3)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMQuaternionSquadSetup
+(
+    XMVECTOR* pA,
+    XMVECTOR* pB,
+    XMVECTOR* pC,
+    FXMVECTOR  Q0,
+    FXMVECTOR  Q1,
+    FXMVECTOR  Q2,
+    GXMVECTOR  Q3
+) noexcept
 {
     assert(pA);
     assert(pB);
@@ -495,12 +499,14 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMQuaternionSquadSetup(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentric(
+inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentric
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
     FXMVECTOR Q2,
-    float f,
-    float g)
+    float    f,
+    float    g
+) noexcept
 {
     float s = f + g;
 
@@ -522,12 +528,14 @@ inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentric(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentricV(
+inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentricV
+(
     FXMVECTOR Q0,
     FXMVECTOR Q1,
     FXMVECTOR Q2,
     GXMVECTOR F,
-    HXMVECTOR G)
+    HXMVECTOR G
+) noexcept
 {
     assert((XMVectorGetY(F) == XMVectorGetX(F)) && (XMVectorGetZ(F) == XMVectorGetX(F)) && (XMVectorGetW(F) == XMVectorGetX(F)));
     assert((XMVectorGetY(G) == XMVectorGetX(G)) && (XMVectorGetZ(G) == XMVectorGetX(G)) && (XMVectorGetW(G) == XMVectorGetX(G)));
@@ -560,17 +568,19 @@ inline XMVECTOR XM_CALLCONV XMQuaternionBaryCentricV(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionIdentity()
+inline XMVECTOR XM_CALLCONV XMQuaternionIdentity() noexcept
 {
     return g_XMIdentityR3.v;
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYaw(
+inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYaw
+(
     float Pitch,
     float Yaw,
-    float Roll)
+    float Roll
+) noexcept
 {
     XMVECTOR Angles = XMVectorSet(Pitch, Yaw, Roll, 0.0f);
     XMVECTOR Q = XMQuaternionRotationRollPitchYawFromVector(Angles);
@@ -579,11 +589,12 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYaw(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYawFromVector(
+inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYawFromVector
+(
     FXMVECTOR Angles // <Pitch, Yaw, Roll, 0>
-)
+) noexcept
 {
-    static const XMVECTORF32 Sign = {{{1.0f, -1.0f, -1.0f, 1.0f}}};
+    static const XMVECTORF32  Sign = { { { 1.0f, -1.0f, -1.0f, 1.0f } } };
 
     XMVECTOR HalfAngles = XMVectorMultiply(Angles, g_XMOneHalf.v);
 
@@ -608,9 +619,11 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationRollPitchYawFromVector(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionRotationNormal(
+inline XMVECTOR XM_CALLCONV XMQuaternionRotationNormal
+(
     FXMVECTOR NormalAxis,
-    float Angle)
+    float    Angle
+) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
 
@@ -638,9 +651,11 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationNormal(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionRotationAxis(
+inline XMVECTOR XM_CALLCONV XMQuaternionRotationAxis
+(
     FXMVECTOR Axis,
-    float Angle)
+    float    Angle
+) noexcept
 {
     assert(!XMVector3Equal(Axis, XMVectorZero()));
     assert(!XMVector3IsInfinite(Axis));
@@ -652,18 +667,17 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationAxis(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
-    FXMMATRIX M)
+inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(FXMMATRIX M) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_)
 
     XMVECTORF32 q;
     float r22 = M.m[2][2];
-    if (r22 <= 0.f) // x^2 + y^2 >= z^2 + w^2
+    if (r22 <= 0.f)  // x^2 + y^2 >= z^2 + w^2
     {
         float dif10 = M.m[1][1] - M.m[0][0];
         float omr22 = 1.f - r22;
-        if (dif10 <= 0.f) // x^2 >= y^2
+        if (dif10 <= 0.f)  // x^2 >= y^2
         {
             float fourXSqr = omr22 - dif10;
             float inv4x = 0.5f / sqrtf(fourXSqr);
@@ -672,7 +686,7 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
             q.f[2] = (M.m[0][2] + M.m[2][0]) * inv4x;
             q.f[3] = (M.m[1][2] - M.m[2][1]) * inv4x;
         }
-        else // y^2 >= x^2
+        else  // y^2 >= x^2
         {
             float fourYSqr = omr22 + dif10;
             float inv4y = 0.5f / sqrtf(fourYSqr);
@@ -682,11 +696,11 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
             q.f[3] = (M.m[2][0] - M.m[0][2]) * inv4y;
         }
     }
-    else // z^2 + w^2 >= x^2 + y^2
+    else  // z^2 + w^2 >= x^2 + y^2
     {
         float sum10 = M.m[1][1] + M.m[0][0];
         float opr22 = 1.f + r22;
-        if (sum10 <= 0.f) // z^2 >= w^2
+        if (sum10 <= 0.f)  // z^2 >= w^2
         {
             float fourZSqr = opr22 - sum10;
             float inv4z = 0.5f / sqrtf(fourZSqr);
@@ -695,7 +709,7 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
             q.f[2] = fourZSqr * inv4z;
             q.f[3] = (M.m[0][1] - M.m[1][0]) * inv4z;
         }
-        else // w^2 >= z^2
+        else  // w^2 >= z^2
         {
             float fourWSqr = opr22 + sum10;
             float inv4w = 0.5f / sqrtf(fourWSqr);
@@ -708,11 +722,11 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
     return q.v;
 
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
-    static const XMVECTORF32 XMPMMP = {{{+1.0f, -1.0f, -1.0f, +1.0f}}};
-    static const XMVECTORF32 XMMPMP = {{{-1.0f, +1.0f, -1.0f, +1.0f}}};
-    static const XMVECTORF32 XMMMPP = {{{-1.0f, -1.0f, +1.0f, +1.0f}}};
-    static const XMVECTORU32 Select0110 = {{{XM_SELECT_0, XM_SELECT_1, XM_SELECT_1, XM_SELECT_0}}};
-    static const XMVECTORU32 Select0010 = {{{XM_SELECT_0, XM_SELECT_0, XM_SELECT_1, XM_SELECT_0}}};
+    static const XMVECTORF32 XMPMMP = { { { +1.0f, -1.0f, -1.0f, +1.0f } } };
+    static const XMVECTORF32 XMMPMP = { { { -1.0f, +1.0f, -1.0f, +1.0f } } };
+    static const XMVECTORF32 XMMMPP = { { { -1.0f, -1.0f, +1.0f, +1.0f } } };
+    static const XMVECTORU32 Select0110 = { { { XM_SELECT_0, XM_SELECT_1, XM_SELECT_1, XM_SELECT_0 } } };
+    static const XMVECTORU32 Select0010 = { { { XM_SELECT_0, XM_SELECT_0, XM_SELECT_1, XM_SELECT_0 } } };
 
     XMVECTOR r0 = M.r[0];
     XMVECTOR r1 = M.r[1];
@@ -795,13 +809,13 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
     t0 = XMVector4Length(t2);
     return XMVectorDivide(t2, t0);
 #elif defined(_XM_SSE_INTRINSICS_)
-    static const XMVECTORF32 XMPMMP = {{{+1.0f, -1.0f, -1.0f, +1.0f}}};
-    static const XMVECTORF32 XMMPMP = {{{-1.0f, +1.0f, -1.0f, +1.0f}}};
-    static const XMVECTORF32 XMMMPP = {{{-1.0f, -1.0f, +1.0f, +1.0f}}};
+    static const XMVECTORF32 XMPMMP = { { { +1.0f, -1.0f, -1.0f, +1.0f } } };
+    static const XMVECTORF32 XMMPMP = { { { -1.0f, +1.0f, -1.0f, +1.0f } } };
+    static const XMVECTORF32 XMMMPP = { { { -1.0f, -1.0f, +1.0f, +1.0f } } };
 
-    XMVECTOR r0 = M.r[0]; // (r00, r01, r02, 0)
-    XMVECTOR r1 = M.r[1]; // (r10, r11, r12, 0)
-    XMVECTOR r2 = M.r[2]; // (r20, r21, r22, 0)
+    XMVECTOR r0 = M.r[0];  // (r00, r01, r02, 0)
+    XMVECTOR r1 = M.r[1];  // (r10, r11, r12, 0)
+    XMVECTOR r2 = M.r[2];  // (r20, r21, r22, 0)
 
     // (r00, r00, r00, r00)
     XMVECTOR r00 = XM_PERMUTE_PS(r0, _MM_SHUFFLE(0, 0, 0, 0));
@@ -823,19 +837,11 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
     // x^2 + y^2 >= z^2 + w^2 equivalent to r22 <= 0
     XMVECTOR x2py2gez2pw2 = _mm_cmple_ps(r22, g_XMZero);
 
-    // (+r00, -r00, -r00, +r00)
-    XMVECTOR t0 = _mm_mul_ps(XMPMMP, r00);
-
-    // (-r11, +r11, -r11, +r11)
-    XMVECTOR t1 = _mm_mul_ps(XMMPMP, r11);
-
-    // (-r22, -r22, +r22, +r22)
-    XMVECTOR t2 = _mm_mul_ps(XMMMPP, r22);
-
     // (4*x^2, 4*y^2, 4*z^2, 4*w^2)
-    XMVECTOR x2y2z2w2 = _mm_add_ps(t0, t1);
-    x2y2z2w2 = _mm_add_ps(t2, x2y2z2w2);
-    x2y2z2w2 = _mm_add_ps(x2y2z2w2, g_XMOne);
+    XMVECTOR t0 = XM_FMADD_PS(XMPMMP, r00, g_XMOne);
+    XMVECTOR t1 = _mm_mul_ps(XMMPMP, r11);
+    XMVECTOR t2 = XM_FMADD_PS(XMMMPP, r22, t0);
+    XMVECTOR x2y2z2w2 = _mm_add_ps(t1, t2);
 
     // (r01, r02, r12, r11)
     t0 = _mm_shuffle_ps(r0, r1, _MM_SHUFFLE(1, 2, 2, 1));
@@ -897,10 +903,13 @@ inline XMVECTOR XM_CALLCONV XMQuaternionRotationMatrix(
 //------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMQuaternionToAxisAngle(
-    XMVECTOR *pAxis,
-    float *pAngle,
-    FXMVECTOR Q)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMQuaternionToAxisAngle
+(
+    XMVECTOR* pAxis,
+    float* pAngle,
+    FXMVECTOR  Q
+) noexcept
 {
     assert(pAxis);
     assert(pAngle);
@@ -916,25 +925,29 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMQuaternionToAxisAngle(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
-// Comparison operations
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
+ // Comparison operations
+ //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMPlaneEqual(
+inline bool XM_CALLCONV XMPlaneEqual
+(
     FXMVECTOR P1,
-    FXMVECTOR P2)
+    FXMVECTOR P2
+) noexcept
 {
     return XMVector4Equal(P1, P2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMPlaneNearEqual(
+inline bool XM_CALLCONV XMPlaneNearEqual
+(
     FXMVECTOR P1,
     FXMVECTOR P2,
-    FXMVECTOR Epsilon)
+    FXMVECTOR Epsilon
+) noexcept
 {
     XMVECTOR NP1 = XMPlaneNormalize(P1);
     XMVECTOR NP2 = XMPlaneNormalize(P2);
@@ -943,25 +956,25 @@ inline bool XM_CALLCONV XMPlaneNearEqual(
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMPlaneNotEqual(
+inline bool XM_CALLCONV XMPlaneNotEqual
+(
     FXMVECTOR P1,
-    FXMVECTOR P2)
+    FXMVECTOR P2
+) noexcept
 {
     return XMVector4NotEqual(P1, P2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMPlaneIsNaN(
-    FXMVECTOR P)
+inline bool XM_CALLCONV XMPlaneIsNaN(FXMVECTOR P) noexcept
 {
     return XMVector4IsNaN(P);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMPlaneIsInfinite(
-    FXMVECTOR P)
+inline bool XM_CALLCONV XMPlaneIsInfinite(FXMVECTOR P) noexcept
 {
     return XMVector4IsInfinite(P);
 }
@@ -972,18 +985,22 @@ inline bool XM_CALLCONV XMPlaneIsInfinite(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneDot(
+inline XMVECTOR XM_CALLCONV XMPlaneDot
+(
     FXMVECTOR P,
-    FXMVECTOR V)
+    FXMVECTOR V
+) noexcept
 {
     return XMVector4Dot(P, V);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneDotCoord(
+inline XMVECTOR XM_CALLCONV XMPlaneDotCoord
+(
     FXMVECTOR P,
-    FXMVECTOR V)
+    FXMVECTOR V
+) noexcept
 {
     // Result = P[0] * V[0] + P[1] * V[1] + P[2] * V[2] + P[3]
 
@@ -994,9 +1011,11 @@ inline XMVECTOR XM_CALLCONV XMPlaneDotCoord(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneDotNormal(
+inline XMVECTOR XM_CALLCONV XMPlaneDotNormal
+(
     FXMVECTOR P,
-    FXMVECTOR V)
+    FXMVECTOR V
+) noexcept
 {
     return XMVector3Dot(P, V);
 }
@@ -1005,8 +1024,7 @@ inline XMVECTOR XM_CALLCONV XMPlaneDotNormal(
 // XMPlaneNormalizeEst uses a reciprocal estimate and
 // returns QNaN on zero and infinite vectors.
 
-inline XMVECTOR XM_CALLCONV XMPlaneNormalizeEst(
-    FXMVECTOR P)
+inline XMVECTOR XM_CALLCONV XMPlaneNormalizeEst(FXMVECTOR P) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_) || defined(_XM_ARM_NEON_INTRINSICS_)
 
@@ -1040,20 +1058,21 @@ inline XMVECTOR XM_CALLCONV XMPlaneNormalizeEst(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneNormalize(
-    FXMVECTOR P)
+inline XMVECTOR XM_CALLCONV XMPlaneNormalize(FXMVECTOR P) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_)
     float fLengthSq = sqrtf((P.vector4_f32[0] * P.vector4_f32[0]) + (P.vector4_f32[1] * P.vector4_f32[1]) + (P.vector4_f32[2] * P.vector4_f32[2]));
     // Prevent divide by zero
-    if (fLengthSq)
+    if (fLengthSq > 0)
     {
         fLengthSq = 1.0f / fLengthSq;
     }
-    XMVECTORF32 vResult = {{{P.vector4_f32[0] * fLengthSq,
-                             P.vector4_f32[1] * fLengthSq,
-                             P.vector4_f32[2] * fLengthSq,
-                             P.vector4_f32[3] * fLengthSq}}};
+    XMVECTORF32 vResult = { { {
+            P.vector4_f32[0] * fLengthSq,
+            P.vector4_f32[1] * fLengthSq,
+            P.vector4_f32[2] * fLengthSq,
+            P.vector4_f32[3] * fLengthSq
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     XMVECTOR vLength = XMVector3ReciprocalLength(P);
@@ -1093,10 +1112,12 @@ inline XMVECTOR XM_CALLCONV XMPlaneNormalize(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneIntersectLine(
+inline XMVECTOR XM_CALLCONV XMPlaneIntersectLine
+(
     FXMVECTOR P,
     FXMVECTOR LinePoint1,
-    FXMVECTOR LinePoint2)
+    FXMVECTOR LinePoint2
+) noexcept
 {
     XMVECTOR V1 = XMVector3Dot(P, LinePoint1);
     XMVECTOR V2 = XMVector3Dot(P, LinePoint2);
@@ -1115,11 +1136,14 @@ inline XMVECTOR XM_CALLCONV XMPlaneIntersectLine(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline void XM_CALLCONV XMPlaneIntersectPlane(
-    XMVECTOR *pLinePoint1,
-    XMVECTOR *pLinePoint2,
-    FXMVECTOR P1,
-    FXMVECTOR P2)
+_Use_decl_annotations_
+inline void XM_CALLCONV XMPlaneIntersectPlane
+(
+    XMVECTOR* pLinePoint1,
+    XMVECTOR* pLinePoint2,
+    FXMVECTOR  P1,
+    FXMVECTOR  P2
+) noexcept
 {
     assert(pLinePoint1);
     assert(pLinePoint2);
@@ -1149,9 +1173,11 @@ _Use_decl_annotations_ inline void XM_CALLCONV XMPlaneIntersectPlane(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneTransform(
+inline XMVECTOR XM_CALLCONV XMPlaneTransform
+(
     FXMVECTOR P,
-    FXMMATRIX M)
+    FXMMATRIX M
+) noexcept
 {
     XMVECTOR W = XMVectorSplatW(P);
     XMVECTOR Z = XMVectorSplatZ(P);
@@ -1166,20 +1192,23 @@ inline XMVECTOR XM_CALLCONV XMPlaneTransform(
 }
 
 //------------------------------------------------------------------------------
-_Use_decl_annotations_ inline XMFLOAT4 *XM_CALLCONV XMPlaneTransformStream(
-    XMFLOAT4 *pOutputStream,
-    size_t OutputStride,
-    const XMFLOAT4 *pInputStream,
-    size_t InputStride,
-    size_t PlaneCount,
-    FXMMATRIX M)
+_Use_decl_annotations_
+inline XMFLOAT4* XM_CALLCONV XMPlaneTransformStream
+(
+    XMFLOAT4* pOutputStream,
+    size_t          OutputStride,
+    const XMFLOAT4* pInputStream,
+    size_t          InputStride,
+    size_t          PlaneCount,
+    FXMMATRIX       M
+) noexcept
 {
     return XMVector4TransformStream(pOutputStream,
-                                    OutputStride,
-                                    pInputStream,
-                                    InputStride,
-                                    PlaneCount,
-                                    M);
+        OutputStride,
+        pInputStream,
+        InputStride,
+        PlaneCount,
+        M);
 }
 
 //------------------------------------------------------------------------------
@@ -1188,9 +1217,11 @@ _Use_decl_annotations_ inline XMFLOAT4 *XM_CALLCONV XMPlaneTransformStream(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneFromPointNormal(
+inline XMVECTOR XM_CALLCONV XMPlaneFromPointNormal
+(
     FXMVECTOR Point,
-    FXMVECTOR Normal)
+    FXMVECTOR Normal
+) noexcept
 {
     XMVECTOR W = XMVector3Dot(Point, Normal);
     W = XMVectorNegate(W);
@@ -1199,10 +1230,12 @@ inline XMVECTOR XM_CALLCONV XMPlaneFromPointNormal(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMPlaneFromPoints(
+inline XMVECTOR XM_CALLCONV XMPlaneFromPoints
+(
     FXMVECTOR Point1,
     FXMVECTOR Point2,
-    FXMVECTOR Point3)
+    FXMVECTOR Point3
+) noexcept
 {
     XMVECTOR V21 = XMVectorSubtract(Point1, Point2);
     XMVECTOR V31 = XMVectorSubtract(Point1, Point3);
@@ -1224,76 +1257,86 @@ inline XMVECTOR XM_CALLCONV XMPlaneFromPoints(
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
-// Comparison operations
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
+ // Comparison operations
+ //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorEqual(
+inline bool XM_CALLCONV XMColorEqual
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4Equal(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorNotEqual(
+inline bool XM_CALLCONV XMColorNotEqual
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4NotEqual(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorGreater(
+inline bool XM_CALLCONV XMColorGreater
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4Greater(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorGreaterOrEqual(
+inline bool XM_CALLCONV XMColorGreaterOrEqual
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4GreaterOrEqual(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorLess(
+inline bool XM_CALLCONV XMColorLess
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4Less(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorLessOrEqual(
+inline bool XM_CALLCONV XMColorLessOrEqual
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVector4LessOrEqual(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorIsNaN(
-    FXMVECTOR C)
+inline bool XM_CALLCONV XMColorIsNaN(FXMVECTOR C) noexcept
 {
     return XMVector4IsNaN(C);
 }
 
 //------------------------------------------------------------------------------
 
-inline bool XM_CALLCONV XMColorIsInfinite(
-    FXMVECTOR C)
+inline bool XM_CALLCONV XMColorIsInfinite(FXMVECTOR C) noexcept
 {
     return XMVector4IsInfinite(C);
 }
@@ -1304,14 +1347,15 @@ inline bool XM_CALLCONV XMColorIsInfinite(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorNegative(
-    FXMVECTOR vColor)
+inline XMVECTOR XM_CALLCONV XMColorNegative(FXMVECTOR vColor) noexcept
 {
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{1.0f - vColor.vector4_f32[0],
-                             1.0f - vColor.vector4_f32[1],
-                             1.0f - vColor.vector4_f32[2],
-                             vColor.vector4_f32[3]}}};
+    XMVECTORF32 vResult = { { {
+            1.0f - vColor.vector4_f32[0],
+            1.0f - vColor.vector4_f32[1],
+            1.0f - vColor.vector4_f32[2],
+            vColor.vector4_f32[3]
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     XMVECTOR vTemp = veorq_u32(vColor, g_XMNegate3);
@@ -1326,23 +1370,27 @@ inline XMVECTOR XM_CALLCONV XMColorNegative(
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorModulate(
+inline XMVECTOR XM_CALLCONV XMColorModulate
+(
     FXMVECTOR C1,
-    FXMVECTOR C2)
+    FXMVECTOR C2
+) noexcept
 {
     return XMVectorMultiply(C1, C2);
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorAdjustSaturation(
+inline XMVECTOR XM_CALLCONV XMColorAdjustSaturation
+(
     FXMVECTOR vColor,
-    float fSaturation)
+    float    fSaturation
+) noexcept
 {
     // Luminance = 0.2125f * C[0] + 0.7154f * C[1] + 0.0721f * C[2];
     // Result = (C - Luminance) * Saturation + Luminance;
 
-    const XMVECTORF32 gvLuminance = {{{0.2125f, 0.7154f, 0.0721f, 0.0f}}};
+    const XMVECTORF32 gvLuminance = { { { 0.2125f, 0.7154f, 0.0721f, 0.0f } } };
 #if defined(_XM_NO_INTRINSICS_)
     float fLuminance = (vColor.vector4_f32[0] * gvLuminance.f[0]) + (vColor.vector4_f32[1] * gvLuminance.f[1]) + (vColor.vector4_f32[2] * gvLuminance.f[2]);
     XMVECTOR vResult;
@@ -1362,50 +1410,50 @@ inline XMVECTOR XM_CALLCONV XMColorAdjustSaturation(
     XMVECTOR vSaturation = _mm_set_ps1(fSaturation);
     // vResult = ((vColor-vLuminance)*vSaturation)+vLuminance;
     XMVECTOR vResult = _mm_sub_ps(vColor, vLuminance);
-    vResult = _mm_mul_ps(vResult, vSaturation);
-    vResult = _mm_add_ps(vResult, vLuminance);
+    vResult = XM_FMADD_PS(vResult, vSaturation, vLuminance);
     // Retain w from the source color
-    vLuminance = _mm_shuffle_ps(vResult, vColor, _MM_SHUFFLE(3, 2, 2, 2));  // x = vResult.z,y = vResult.z,z = vColor.z,w=vColor.w
-    vResult = _mm_shuffle_ps(vResult, vLuminance, _MM_SHUFFLE(3, 0, 1, 0)); // x = vResult.x,y = vResult.y,z = vResult.z,w=vColor.w
+    vLuminance = _mm_shuffle_ps(vResult, vColor, _MM_SHUFFLE(3, 2, 2, 2));   // x = vResult.z,y = vResult.z,z = vColor.z,w=vColor.w
+    vResult = _mm_shuffle_ps(vResult, vLuminance, _MM_SHUFFLE(3, 0, 1, 0));  // x = vResult.x,y = vResult.y,z = vResult.z,w=vColor.w
     return vResult;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorAdjustContrast(
+inline XMVECTOR XM_CALLCONV XMColorAdjustContrast
+(
     FXMVECTOR vColor,
-    float fContrast)
+    float    fContrast
+) noexcept
 {
     // Result = (vColor - 0.5f) * fContrast + 0.5f;
 
 #if defined(_XM_NO_INTRINSICS_)
-    XMVECTORF32 vResult = {{{
-        ((vColor.vector4_f32[0] - 0.5f) * fContrast) + 0.5f,
-        ((vColor.vector4_f32[1] - 0.5f) * fContrast) + 0.5f,
-        ((vColor.vector4_f32[2] - 0.5f) * fContrast) + 0.5f,
-        vColor.vector4_f32[3] // Leave W untouched
-    }}};
+    XMVECTORF32 vResult = { { {
+            ((vColor.vector4_f32[0] - 0.5f) * fContrast) + 0.5f,
+            ((vColor.vector4_f32[1] - 0.5f) * fContrast) + 0.5f,
+            ((vColor.vector4_f32[2] - 0.5f) * fContrast) + 0.5f,
+            vColor.vector4_f32[3]        // Leave W untouched
+        } } };
     return vResult.v;
 #elif defined(_XM_ARM_NEON_INTRINSICS_)
     XMVECTOR vResult = vsubq_f32(vColor, g_XMOneHalf.v);
     vResult = vmlaq_n_f32(g_XMOneHalf.v, vResult, fContrast);
     return vbslq_f32(g_XMSelect1110, vResult, vColor);
 #elif defined(_XM_SSE_INTRINSICS_)
-    XMVECTOR vScale = _mm_set_ps1(fContrast);                           // Splat the scale
-    XMVECTOR vResult = _mm_sub_ps(vColor, g_XMOneHalf);                 // Subtract 0.5f from the source (Saving source)
-    vResult = _mm_mul_ps(vResult, vScale);                              // Mul by scale
-    vResult = _mm_add_ps(vResult, g_XMOneHalf);                         // Add 0.5f
-                                                                        // Retain w from the source color
-    vScale = _mm_shuffle_ps(vResult, vColor, _MM_SHUFFLE(3, 2, 2, 2));  // x = vResult.z,y = vResult.z,z = vColor.z,w=vColor.w
-    vResult = _mm_shuffle_ps(vResult, vScale, _MM_SHUFFLE(3, 0, 1, 0)); // x = vResult.x,y = vResult.y,z = vResult.z,w=vColor.w
+    XMVECTOR vScale = _mm_set_ps1(fContrast);           // Splat the scale
+    XMVECTOR vResult = _mm_sub_ps(vColor, g_XMOneHalf);  // Subtract 0.5f from the source (Saving source)
+    vResult = XM_FMADD_PS(vResult, vScale, g_XMOneHalf);
+// Retain w from the source color
+    vScale = _mm_shuffle_ps(vResult, vColor, _MM_SHUFFLE(3, 2, 2, 2));   // x = vResult.z,y = vResult.z,z = vColor.z,w=vColor.w
+    vResult = _mm_shuffle_ps(vResult, vScale, _MM_SHUFFLE(3, 0, 1, 0));  // x = vResult.x,y = vResult.y,z = vResult.z,w=vColor.w
     return vResult;
 #endif
 }
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToHSL(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToHSL(FXMVECTOR rgb) noexcept
 {
     XMVECTOR r = XMVectorSplatX(rgb);
     XMVECTOR g = XMVectorSplatY(rgb);
@@ -1475,10 +1523,10 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToHSL(FXMVECTOR rgb)
 namespace Internal
 {
 
-    inline XMVECTOR XM_CALLCONV XMColorHue2Clr(FXMVECTOR p, FXMVECTOR q, FXMVECTOR h)
+    inline XMVECTOR XM_CALLCONV XMColorHue2Clr(FXMVECTOR p, FXMVECTOR q, FXMVECTOR h) noexcept
     {
-        static const XMVECTORF32 oneSixth = {{{1.0f / 6.0f, 1.0f / 6.0f, 1.0f / 6.0f, 1.0f / 6.0f}}};
-        static const XMVECTORF32 twoThirds = {{{2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f}}};
+        static const XMVECTORF32 oneSixth = { { { 1.0f / 6.0f, 1.0f / 6.0f, 1.0f / 6.0f, 1.0f / 6.0f } } };
+        static const XMVECTORF32 twoThirds = { { { 2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f } } };
 
         XMVECTOR t = h;
 
@@ -1510,11 +1558,11 @@ namespace Internal
         return p;
     }
 
-}; // namespace Internal
+} // namespace Internal
 
-inline XMVECTOR XM_CALLCONV XMColorHSLToRGB(FXMVECTOR hsl)
+inline XMVECTOR XM_CALLCONV XMColorHSLToRGB(FXMVECTOR hsl) noexcept
 {
-    static const XMVECTORF32 oneThird = {{{1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f}}};
+    static const XMVECTORF32 oneThird = { { { 1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f, 1.0f / 3.0f } } };
 
     XMVECTOR s = XMVectorSplatY(hsl);
     XMVECTOR l = XMVectorSplatZ(hsl);
@@ -1553,7 +1601,7 @@ inline XMVECTOR XM_CALLCONV XMColorHSLToRGB(FXMVECTOR hsl)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToHSV(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToHSV(FXMVECTOR rgb) noexcept
 {
     XMVECTOR r = XMVectorSplatX(rgb);
     XMVECTOR g = XMVectorSplatY(rgb);
@@ -1608,7 +1656,7 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToHSV(FXMVECTOR rgb)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorHSVToRGB(FXMVECTOR hsv)
+inline XMVECTOR XM_CALLCONV XMColorHSVToRGB(FXMVECTOR hsv) noexcept
 {
     XMVECTOR h = XMVectorSplatX(hsv);
     XMVECTOR s = XMVectorSplatY(hsv);
@@ -1628,7 +1676,7 @@ inline XMVECTOR XM_CALLCONV XMColorHSVToRGB(FXMVECTOR hsv)
     // t = v*(1 - (1-f)*s)
     XMVECTOR t = XMVectorMultiply(v, XMVectorSubtract(g_XMOne, XMVectorMultiply(XMVectorSubtract(g_XMOne, f), s)));
 
-    int ii = static_cast<int>(XMVectorGetX(XMVectorMod(i, g_XMSix)));
+    auto ii = static_cast<int>(XMVectorGetX(XMVectorMod(i, g_XMSix)));
 
     XMVECTOR _rgb;
 
@@ -1677,11 +1725,11 @@ inline XMVECTOR XM_CALLCONV XMColorHSVToRGB(FXMVECTOR hsv)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToYUV(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToYUV(FXMVECTOR rgb) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{0.299f, -0.147f, 0.615f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{0.587f, -0.289f, -0.515f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{0.114f, 0.436f, -0.100f, 0.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 0.299f, -0.147f, 0.615f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { 0.587f, -0.289f, -0.515f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 0.114f, 0.436f, -0.100f, 0.0f } } };
 
     XMMATRIX M(Scale0, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVector3Transform(rgb, M);
@@ -1691,10 +1739,10 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToYUV(FXMVECTOR rgb)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorYUVToRGB(FXMVECTOR yuv)
+inline XMVECTOR XM_CALLCONV XMColorYUVToRGB(FXMVECTOR yuv) noexcept
 {
-    static const XMVECTORF32 Scale1 = {{{0.0f, -0.395f, 2.032f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{1.140f, -0.581f, 0.0f, 0.0f}}};
+    static const XMVECTORF32 Scale1 = { { { 0.0f, -0.395f, 2.032f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 1.140f, -0.581f, 0.0f, 0.0f } } };
 
     XMMATRIX M(g_XMOne, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVector3Transform(yuv, M);
@@ -1704,11 +1752,11 @@ inline XMVECTOR XM_CALLCONV XMColorYUVToRGB(FXMVECTOR yuv)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToYUV_HD(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToYUV_HD(FXMVECTOR rgb) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{0.2126f, -0.0997f, 0.6150f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{0.7152f, -0.3354f, -0.5586f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{0.0722f, 0.4351f, -0.0564f, 0.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 0.2126f, -0.0997f, 0.6150f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { 0.7152f, -0.3354f, -0.5586f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 0.0722f, 0.4351f, -0.0564f, 0.0f } } };
 
     XMMATRIX M(Scale0, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVector3Transform(rgb, M);
@@ -1718,10 +1766,10 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToYUV_HD(FXMVECTOR rgb)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorYUVToRGB_HD(FXMVECTOR yuv)
+inline XMVECTOR XM_CALLCONV XMColorYUVToRGB_HD(FXMVECTOR yuv) noexcept
 {
-    static const XMVECTORF32 Scale1 = {{{0.0f, -0.2153f, 2.1324f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{1.2803f, -0.3806f, 0.0f, 0.0f}}};
+    static const XMVECTORF32 Scale1 = { { { 0.0f, -0.2153f, 2.1324f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 1.2803f, -0.3806f, 0.0f, 0.0f } } };
 
     XMMATRIX M(g_XMOne, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVector3Transform(yuv, M);
@@ -1731,12 +1779,12 @@ inline XMVECTOR XM_CALLCONV XMColorYUVToRGB_HD(FXMVECTOR yuv)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToXYZ(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToXYZ(FXMVECTOR rgb) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{0.4887180f, 0.1762044f, 0.0000000f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{0.3106803f, 0.8129847f, 0.0102048f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{0.2006017f, 0.0108109f, 0.9897952f, 0.0f}}};
-    static const XMVECTORF32 Scale = {{{1.f / 0.17697f, 1.f / 0.17697f, 1.f / 0.17697f, 0.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 0.4887180f, 0.1762044f, 0.0000000f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { 0.3106803f, 0.8129847f, 0.0102048f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 0.2006017f, 0.0108109f, 0.9897952f, 0.0f } } };
+    static const XMVECTORF32 Scale = { { { 1.f / 0.17697f, 1.f / 0.17697f, 1.f / 0.17697f, 0.0f } } };
 
     XMMATRIX M(Scale0, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVectorMultiply(XMVector3Transform(rgb, M), Scale);
@@ -1744,12 +1792,12 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToXYZ(FXMVECTOR rgb)
     return XMVectorSelect(rgb, clr, g_XMSelect1110);
 }
 
-inline XMVECTOR XM_CALLCONV XMColorXYZToRGB(FXMVECTOR xyz)
+inline XMVECTOR XM_CALLCONV XMColorXYZToRGB(FXMVECTOR xyz) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{2.3706743f, -0.5138850f, 0.0052982f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{-0.9000405f, 1.4253036f, -0.0146949f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{-0.4706338f, 0.0885814f, 1.0093968f, 0.0f}}};
-    static const XMVECTORF32 Scale = {{{0.17697f, 0.17697f, 0.17697f, 0.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 2.3706743f, -0.5138850f, 0.0052982f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { -0.9000405f, 1.4253036f, -0.0146949f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { -0.4706338f, 0.0885814f, 1.0093968f, 0.0f } } };
+    static const XMVECTORF32 Scale = { { { 0.17697f, 0.17697f, 0.17697f, 0.0f } } };
 
     XMMATRIX M(Scale0, Scale1, Scale2, g_XMZero);
     XMVECTOR clr = XMVector3Transform(XMVectorMultiply(xyz, Scale), M);
@@ -1759,13 +1807,13 @@ inline XMVECTOR XM_CALLCONV XMColorXYZToRGB(FXMVECTOR xyz)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorXYZToSRGB(FXMVECTOR xyz)
+inline XMVECTOR XM_CALLCONV XMColorXYZToSRGB(FXMVECTOR xyz) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{3.2406f, -0.9689f, 0.0557f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{-1.5372f, 1.8758f, -0.2040f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{-0.4986f, 0.0415f, 1.0570f, 0.0f}}};
-    static const XMVECTORF32 Cutoff = {{{0.0031308f, 0.0031308f, 0.0031308f, 0.0f}}};
-    static const XMVECTORF32 Exp = {{{1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 3.2406f, -0.9689f, 0.0557f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { -1.5372f, 1.8758f, -0.2040f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { -0.4986f, 0.0415f, 1.0570f, 0.0f } } };
+    static const XMVECTORF32 Cutoff = { { { 0.0031308f, 0.0031308f, 0.0031308f, 0.0f } } };
+    static const XMVECTORF32 Exp = { { { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.0f } } };
 
     XMMATRIX M(Scale0, Scale1, Scale2, g_XMZero);
     XMVECTOR lclr = XMVector3Transform(xyz, M);
@@ -1785,13 +1833,13 @@ inline XMVECTOR XM_CALLCONV XMColorXYZToSRGB(FXMVECTOR xyz)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorSRGBToXYZ(FXMVECTOR srgb)
+inline XMVECTOR XM_CALLCONV XMColorSRGBToXYZ(FXMVECTOR srgb) noexcept
 {
-    static const XMVECTORF32 Scale0 = {{{0.4124f, 0.2126f, 0.0193f, 0.0f}}};
-    static const XMVECTORF32 Scale1 = {{{0.3576f, 0.7152f, 0.1192f, 0.0f}}};
-    static const XMVECTORF32 Scale2 = {{{0.1805f, 0.0722f, 0.9505f, 0.0f}}};
-    static const XMVECTORF32 Cutoff = {{{0.04045f, 0.04045f, 0.04045f, 0.0f}}};
-    static const XMVECTORF32 Exp = {{{2.4f, 2.4f, 2.4f, 1.0f}}};
+    static const XMVECTORF32 Scale0 = { { { 0.4124f, 0.2126f, 0.0193f, 0.0f } } };
+    static const XMVECTORF32 Scale1 = { { { 0.3576f, 0.7152f, 0.1192f, 0.0f } } };
+    static const XMVECTORF32 Scale2 = { { { 0.1805f, 0.0722f, 0.9505f, 0.0f } } };
+    static const XMVECTORF32 Cutoff = { { { 0.04045f, 0.04045f, 0.04045f, 0.0f } } };
+    static const XMVECTORF32 Exp = { { { 2.4f, 2.4f, 2.4f, 1.0f } } };
 
     XMVECTOR sel = XMVectorGreater(srgb, Cutoff);
 
@@ -1811,13 +1859,13 @@ inline XMVECTOR XM_CALLCONV XMColorSRGBToXYZ(FXMVECTOR srgb)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorRGBToSRGB(FXMVECTOR rgb)
+inline XMVECTOR XM_CALLCONV XMColorRGBToSRGB(FXMVECTOR rgb) noexcept
 {
-    static const XMVECTORF32 Cutoff = {{{0.0031308f, 0.0031308f, 0.0031308f, 1.f}}};
-    static const XMVECTORF32 Linear = {{{12.92f, 12.92f, 12.92f, 1.f}}};
-    static const XMVECTORF32 Scale = {{{1.055f, 1.055f, 1.055f, 1.f}}};
-    static const XMVECTORF32 Bias = {{{0.055f, 0.055f, 0.055f, 0.f}}};
-    static const XMVECTORF32 InvGamma = {{{1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.f}}};
+    static const XMVECTORF32 Cutoff = { { { 0.0031308f, 0.0031308f, 0.0031308f, 1.f } } };
+    static const XMVECTORF32 Linear = { { { 12.92f, 12.92f, 12.92f, 1.f } } };
+    static const XMVECTORF32 Scale = { { { 1.055f, 1.055f, 1.055f, 1.f } } };
+    static const XMVECTORF32 Bias = { { { 0.055f, 0.055f, 0.055f, 0.f } } };
+    static const XMVECTORF32 InvGamma = { { { 1.0f / 2.4f, 1.0f / 2.4f, 1.0f / 2.4f, 1.f } } };
 
     XMVECTOR V = XMVectorSaturate(rgb);
     XMVECTOR V0 = XMVectorMultiply(V, Linear);
@@ -1829,13 +1877,13 @@ inline XMVECTOR XM_CALLCONV XMColorRGBToSRGB(FXMVECTOR rgb)
 
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMColorSRGBToRGB(FXMVECTOR srgb)
+inline XMVECTOR XM_CALLCONV XMColorSRGBToRGB(FXMVECTOR srgb) noexcept
 {
-    static const XMVECTORF32 Cutoff = {{{0.04045f, 0.04045f, 0.04045f, 1.f}}};
-    static const XMVECTORF32 ILinear = {{{1.f / 12.92f, 1.f / 12.92f, 1.f / 12.92f, 1.f}}};
-    static const XMVECTORF32 Scale = {{{1.f / 1.055f, 1.f / 1.055f, 1.f / 1.055f, 1.f}}};
-    static const XMVECTORF32 Bias = {{{0.055f, 0.055f, 0.055f, 0.f}}};
-    static const XMVECTORF32 Gamma = {{{2.4f, 2.4f, 2.4f, 1.f}}};
+    static const XMVECTORF32 Cutoff = { { { 0.04045f, 0.04045f, 0.04045f, 1.f } } };
+    static const XMVECTORF32 ILinear = { { { 1.f / 12.92f, 1.f / 12.92f, 1.f / 12.92f, 1.f } } };
+    static const XMVECTORF32 Scale = { { { 1.f / 1.055f, 1.f / 1.055f, 1.f / 1.055f, 1.f } } };
+    static const XMVECTORF32 Bias = { { { 0.055f, 0.055f, 0.055f, 0.f } } };
+    static const XMVECTORF32 Gamma = { { { 2.4f, 2.4f, 2.4f, 1.f } } };
 
     XMVECTOR V = XMVectorSaturate(srgb);
     XMVECTOR V0 = XMVectorMultiply(V, ILinear);
@@ -1851,15 +1899,17 @@ inline XMVECTOR XM_CALLCONV XMColorSRGBToRGB(FXMVECTOR srgb)
  *
  ****************************************************************************/
 
-//------------------------------------------------------------------------------
+ //------------------------------------------------------------------------------
 
-#if defined(_MSC_VER) 
-
-inline bool XMVerifyCPUSupport()
+inline bool XMVerifyCPUSupport() noexcept
 {
 #if defined(_XM_SSE_INTRINSICS_) && !defined(_XM_NO_INTRINSICS_)
     int CPUInfo[4] = { -1 };
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(0, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
     __cpuid(CPUInfo, 0);
+#endif
 
 #ifdef __AVX2__
     if (CPUInfo[0] < 7)
@@ -1869,7 +1919,11 @@ inline bool XMVerifyCPUSupport()
         return false;
 #endif
 
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(1, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
     __cpuid(CPUInfo, 1);
+#endif
 
 #if defined(__AVX2__) || defined(_XM_AVX2_INTRINSICS_)
     // The compiler can emit FMA3 instructions even without explicit intrinsics use
@@ -1900,7 +1954,11 @@ inline bool XMVerifyCPUSupport()
         return false; // No SSE2/SSE support
 
 #if defined(__AVX2__) || defined(_XM_AVX2_INTRINSICS_)
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid_count(7, 0, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
     __cpuidex(CPUInfo, 7, 0);
+#endif
     if (!(CPUInfo[1] & 0x20))
         return false; // No AVX2 support
 #endif
@@ -1915,13 +1973,13 @@ inline bool XMVerifyCPUSupport()
 #endif
 }
 
-#endif
-
 //------------------------------------------------------------------------------
 
-inline XMVECTOR XM_CALLCONV XMFresnelTerm(
+inline XMVECTOR XM_CALLCONV XMFresnelTerm
+(
     FXMVECTOR CosIncidentAngle,
-    FXMVECTOR RefractionIndex)
+    FXMVECTOR RefractionIndex
+) noexcept
 {
     assert(!XMVector4IsInfinite(CosIncidentAngle));
 
@@ -2000,10 +2058,12 @@ inline XMVECTOR XM_CALLCONV XMFresnelTerm(
 
 //------------------------------------------------------------------------------
 
-inline bool XMScalarNearEqual(
+inline bool XMScalarNearEqual
+(
     float S1,
     float S2,
-    float Epsilon)
+    float Epsilon
+) noexcept
 {
     float Delta = S1 - S2;
     return (fabsf(Delta) <= Epsilon);
@@ -2011,8 +2071,7 @@ inline bool XMScalarNearEqual(
 
 //------------------------------------------------------------------------------
 // Modulo the range of the given angle such that -XM_PI <= Angle < XM_PI
-inline float XMScalarModAngle(
-    float Angle)
+inline float XMScalarModAngle(float Angle) noexcept
 {
     // Note: The modulo is performed with unsigned math only to work
     // around a precision error on numbers that are close to PI
@@ -2021,7 +2080,7 @@ inline float XMScalarModAngle(
     Angle = Angle + XM_PI;
     // Perform the modulo, unsigned
     float fTemp = fabsf(Angle);
-    fTemp = fTemp - (XM_2PI * (float)((int32_t)(fTemp / XM_2PI)));
+    fTemp = fTemp - (XM_2PI * static_cast<float>(static_cast<int32_t>(fTemp / XM_2PI)));
     // Restore the number to the range of -XM_PI to XM_PI-epsilon
     fTemp = fTemp - XM_PI;
     // If the modulo'd value was negative, restore negation
@@ -2034,18 +2093,17 @@ inline float XMScalarModAngle(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarSin(
-    float Value)
+inline float XMScalarSin(float Value) noexcept
 {
     // Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2066,18 +2124,17 @@ inline float XMScalarSin(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarSinEst(
-    float Value)
+inline float XMScalarSinEst(float Value) noexcept
 {
     // Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2098,18 +2155,17 @@ inline float XMScalarSinEst(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarCos(
-    float Value)
+inline float XMScalarCos(float Value) noexcept
 {
     // Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2138,18 +2194,17 @@ inline float XMScalarCos(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarCosEst(
-    float Value)
+inline float XMScalarCosEst(float Value) noexcept
 {
     // Map Value to y in [-pi,pi], x = 2*pi*quotient + remainder.
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2178,10 +2233,13 @@ inline float XMScalarCosEst(
 
 //------------------------------------------------------------------------------
 
-_Use_decl_annotations_ inline void XMScalarSinCos(
-    float *pSin,
-    float *pCos,
-    float Value)
+_Use_decl_annotations_
+inline void XMScalarSinCos
+(
+    float* pSin,
+    float* pCos,
+    float  Value
+) noexcept
 {
     assert(pSin);
     assert(pCos);
@@ -2190,11 +2248,11 @@ _Use_decl_annotations_ inline void XMScalarSinCos(
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2227,10 +2285,13 @@ _Use_decl_annotations_ inline void XMScalarSinCos(
 
 //------------------------------------------------------------------------------
 
-_Use_decl_annotations_ inline void XMScalarSinCosEst(
-    float *pSin,
-    float *pCos,
-    float Value)
+_Use_decl_annotations_
+inline void XMScalarSinCosEst
+(
+    float* pSin,
+    float* pCos,
+    float  Value
+) noexcept
 {
     assert(pSin);
     assert(pCos);
@@ -2239,11 +2300,11 @@ _Use_decl_annotations_ inline void XMScalarSinCosEst(
     float quotient = XM_1DIV2PI * Value;
     if (Value >= 0.0f)
     {
-        quotient = (float)((int)(quotient + 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient + 0.5f));
     }
     else
     {
-        quotient = (float)((int)(quotient - 0.5f));
+        quotient = static_cast<float>(static_cast<int>(quotient - 0.5f));
     }
     float y = Value - XM_2PI * quotient;
 
@@ -2276,8 +2337,7 @@ _Use_decl_annotations_ inline void XMScalarSinCosEst(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarASin(
-    float Value)
+inline float XMScalarASin(float Value) noexcept
 {
     // Clamp input to [-1,1].
     bool nonnegative = (Value >= 0.0f);
@@ -2291,7 +2351,7 @@ inline float XMScalarASin(
 
     // 7-degree minimax approximation
     float result = ((((((-0.0012624911f * x + 0.0066700901f) * x - 0.0170881256f) * x + 0.0308918810f) * x - 0.0501743046f) * x + 0.0889789874f) * x - 0.2145988016f) * x + 1.5707963050f;
-    result *= root; // acos(|x|)
+    result *= root;  // acos(|x|)
 
     // acos(x) = pi - acos(-x) when x < 0, asin(x) = pi/2 - acos(x)
     return (nonnegative ? XM_PIDIV2 - result : result - XM_PIDIV2);
@@ -2299,8 +2359,7 @@ inline float XMScalarASin(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarASinEst(
-    float Value)
+inline float XMScalarASinEst(float Value) noexcept
 {
     // Clamp input to [-1,1].
     bool nonnegative = (Value >= 0.0f);
@@ -2314,7 +2373,7 @@ inline float XMScalarASinEst(
 
     // 3-degree minimax approximation
     float result = ((-0.0187293f * x + 0.0742610f) * x - 0.2121144f) * x + 1.5707288f;
-    result *= root; // acos(|x|)
+    result *= root;  // acos(|x|)
 
     // acos(x) = pi - acos(-x) when x < 0, asin(x) = pi/2 - acos(x)
     return (nonnegative ? XM_PIDIV2 - result : result - XM_PIDIV2);
@@ -2322,8 +2381,7 @@ inline float XMScalarASinEst(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarACos(
-    float Value)
+inline float XMScalarACos(float Value) noexcept
 {
     // Clamp input to [-1,1].
     bool nonnegative = (Value >= 0.0f);
@@ -2345,8 +2403,7 @@ inline float XMScalarACos(
 
 //------------------------------------------------------------------------------
 
-inline float XMScalarACosEst(
-    float Value)
+inline float XMScalarACosEst(float Value) noexcept
 {
     // Clamp input to [-1,1].
     bool nonnegative = (Value >= 0.0f);
@@ -2366,4 +2423,3 @@ inline float XMScalarACosEst(
     return (nonnegative ? result : XM_PI - result);
 }
 
-#endif

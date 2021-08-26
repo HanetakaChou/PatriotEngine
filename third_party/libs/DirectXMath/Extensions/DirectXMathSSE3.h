@@ -1,28 +1,17 @@
 //-------------------------------------------------------------------------------------
 // DirectXMathSSE3.h -- SSE3 extensions for SIMD C++ Math library
 //
-// THIS CODE AND INFORMATION IS PROVIDED "AS IS" WITHOUT WARRANTY OF
-// ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO
-// THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A
-// PARTICULAR PURPOSE.
-//  
 // Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
 //
 // http://go.microsoft.com/fwlink/?LinkID=615560
 //-------------------------------------------------------------------------------------
 
-#ifdef _MSC_VER
 #pragma once
-#endif
 
-#ifdef _M_ARM
+#if defined(_M_ARM) || defined(_M_ARM64) || defined(_M_HYBRID_X86_ARM64) || __arm__ || __aarch64__
 #error SSE3 not supported on ARM platform
 #endif
-
-#pragma warning(push)
-#pragma warning(disable : 4987)
-#include <intrin.h>
-#pragma warning(pop)
 
 #include <pmmintrin.h>
 
@@ -30,11 +19,6 @@
 
 namespace DirectX
 {
-#if (DIRECTXMATH_VERSION < 305) && !defined(XM_CALLCONV)
-#define XM_CALLCONV __fastcall
-typedef const DirectX::XMVECTOR& HXMVECTOR;
-typedef const DirectX::XMMATRIX& FXMMATRIX;
-#endif
 
 namespace SSE3
 {
@@ -44,13 +28,20 @@ inline bool XMVerifySSE3Support()
     // Should return true on AMD Athlon 64, AMD Phenom, and Intel Pentium 4 or later processors
 
     // See http://msdn.microsoft.com/en-us/library/hskdteyh.aspx
-    int CPUInfo[4] = {-1};
-    __cpuid( CPUInfo, 0 );
-
+    int CPUInfo[4] = { -1 };
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(0, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+    __cpuid(CPUInfo, 0);
+#endif
     if ( CPUInfo[0] < 1  )
         return false;
 
-    __cpuid(CPUInfo, 1 );
+#if defined(__clang__) || defined(__GNUC__)
+    __cpuid(1, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+#else
+    __cpuid(CPUInfo, 1);
+#endif
 
     // We only check for SSE3 instruction set. SSSE3 instructions are not used.
     return ( (CPUInfo[2] & 0x1) != 0 );
@@ -115,6 +106,6 @@ inline XMVECTOR XM_CALLCONV XMVectorSwizzle_1133( FXMVECTOR V )
     return _mm_movehdup_ps(V);
 }
 
-}; // namespace SSE3
+} // namespace SSE3
 
-}; // namespace DirectX;
+} // namespace DirectX

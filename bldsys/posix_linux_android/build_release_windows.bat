@@ -20,7 +20,7 @@ CD /d "%MY_DIR%"
 
 REM ndk-build
 
-CALL "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=false NDK_PROJECT_PATH:=null NDK_OUT:=obj/release NDK_LIBS_OUT:=libs/release/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=build.mk
+CALL "%MY_DIR%/android-ndk-r14b/ndk-build.cmd" APP_DEBUG:=false NDK_PROJECT_PATH:=null NDK_OUT:=obj/release NDK_LIBS_OUT:=libs/release/lib NDK_APPLICATION_MK:=Application.mk APP_BUILD_SCRIPT:=Android.mk
 IF %ERRORLEVEL% NEQ 0 ( 
    EXIT 1
 )

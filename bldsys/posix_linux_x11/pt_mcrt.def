@@ -42,6 +42,8 @@
         mcrt_aligned_malloc;
         mcrt_aligned_realloc;
         mcrt_aligned_free;
+        mcrt_uuid_load;
+        mcrt_uuid_equal;
         mcrt_memcmp;
         mcrt_memcpy;
         mcrt_log_print;

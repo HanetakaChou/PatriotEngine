@@ -166,10 +166,10 @@ typedef uint64_t                khronos_uint64_t;
 /*
  * Win32
  */
-typedef __int32                 khronos_int32_t;
-typedef unsigned __int32        khronos_uint32_t;
-typedef __int64                 khronos_int64_t;
-typedef unsigned __int64        khronos_uint64_t;
+typedef int32_t                 khronos_int32_t;
+typedef uint32_t        khronos_uint32_t;
+typedef int64_t                 khronos_int64_t;
+typedef uint64_t        khronos_uint64_t;
 #define KHRONOS_SUPPORT_INT64   1
 #define KHRONOS_SUPPORT_FLOAT   1
 
