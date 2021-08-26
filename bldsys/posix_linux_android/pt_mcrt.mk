@@ -28,6 +28,7 @@ LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_task.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcmp.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memset.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_log.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_intrin.cpp \
 

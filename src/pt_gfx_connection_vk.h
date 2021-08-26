@@ -210,6 +210,8 @@ class gfx_connection_vk final : public gfx_connection_base
     inline void destroy_frame();
     inline void destory_surface();
     inline void destory_framebuffer();
+    inline void destory_pipeline_layout();
+    inline void destory_shader();
     inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
 
     inline bool init_streaming();

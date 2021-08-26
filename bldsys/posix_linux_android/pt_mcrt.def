@@ -44,6 +44,7 @@
         mcrt_uuid_equal;
         mcrt_memcmp;
         mcrt_memcpy;
+        mcrt_memset;
         mcrt_log_print;
     local:
         *;

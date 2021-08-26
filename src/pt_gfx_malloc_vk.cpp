@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -619,8 +619,19 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
     return true;
 }
 
-void gfx_malloc_vk::destroy()
+void gfx_malloc_vk::destroy(class gfx_device_vk *gfx_device)
 {
+    assert(VK_NULL_HANDLE != this->m_transfer_src_buffer);
+    gfx_device->destroy_buffer(this->m_transfer_src_buffer);
+
+    assert(VK_NULL_HANDLE != this->m_transfer_src_buffer_device_memory);
+    gfx_device->free_memory(this->m_transfer_src_buffer_device_memory);
+
+    assert(VK_NULL_HANDLE != this->m_uniform_buffer);
+    gfx_device->destroy_buffer(this->m_uniform_buffer);
+
+    assert(VK_NULL_HANDLE != this->m_uniform_buffer_device_memory);
+    gfx_device->free_memory(this->m_uniform_buffer_device_memory);
 }
 
 gfx_malloc_vk::~gfx_malloc_vk()

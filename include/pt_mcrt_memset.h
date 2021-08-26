@@ -1,33 +1,36 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _PT_GFX_COMMON_H_
-#define _PT_GFX_COMMON_H_ 1
+#ifndef _PT_MCRT_MEMSET_H_
+#define _PT_MCRT_MEMSET_H_ 1
 
+#include <stddef.h>
 #include "pt_common.h"
+#include "pt_mcrt_common.h"
 
-#ifndef PT_ATTR_GFX
-#define PT_ATTR_GFX PT_ATTR_IMPORT
+#ifdef __cplusplus
+extern "C"
+{
 #endif
 
-#define PT_GFX_PROFILE 1
+    PT_ATTR_MCRT void *PT_CALL mcrt_memset(void *ptr, int value, size_t num);
 
-#define PT_GFX_DEBUG_MCRT 1
-
-#define PT_GFX_DEBUG_MALLOC 0
+#ifdef __cplusplus
+}
+#endif
 
 #endif

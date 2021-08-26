@@ -2200,6 +2200,33 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
     return NULL;
 }
 
+inline void gfx_connection_vk::destory_pipeline_layout()
+{
+    assert(VK_NULL_HANDLE != this->m_pipeline_layout);
+    this->m_device.destroy_pipeline_layout(this->m_pipeline_layout);
+
+    assert(VK_NULL_HANDLE != this->m_descriptor_pool_each_object_private);
+    this->m_device.destroy_descriptor_pool(this->m_descriptor_pool_each_object_private);
+
+    assert(VK_NULL_HANDLE != this->m_descriptor_set_layout_each_object_shared);
+    this->m_device.destroy_descriptor_set_layout(this->m_descriptor_set_layout_each_object_shared);
+
+    assert(VK_NULL_HANDLE != this->m_descriptor_set_layout_each_object_private);
+    this->m_device.destroy_descriptor_set_layout(this->m_descriptor_set_layout_each_object_private);
+
+    assert(VK_NULL_HANDLE != this->m_immutable_sampler);
+    this->m_device.destroy_sampler(this->m_immutable_sampler);
+}
+
+inline void gfx_connection_vk::destory_shader()
+{
+    assert(VK_NULL_HANDLE != this->m_shader_module_mesh_vertex);
+    this->m_device.destroy_shader_module(this->m_shader_module_mesh_vertex);
+
+    assert(VK_NULL_HANDLE != this->m_shader_module_mesh_fragment);
+    this->m_device.destroy_shader_module(this->m_shader_module_mesh_fragment);
+}
+
 inline void gfx_connection_vk::destroy_frame()
 {
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
@@ -2214,6 +2241,10 @@ inline void gfx_connection_vk::destroy_frame()
     this->m_swapchain = VK_NULL_HANDLE;
 
     this->destory_surface();
+
+    this->destory_shader();
+
+    this->destory_pipeline_layout();
 
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
     {
@@ -2292,7 +2323,7 @@ void gfx_connection_vk::destroy()
 
     mcrt_task_arena_terminate(this->m_task_arena);
 
-    this->m_malloc.destroy();
+    this->m_malloc.destroy(&this->m_device);
 
     this->m_device.destroy();
 

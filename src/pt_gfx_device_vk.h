@@ -105,7 +105,9 @@ class gfx_device_vk
     PFN_vkCreateSampler m_vk_create_sampler;
     PFN_vkDestroySampler m_vk_destroy_sampler;
     PFN_vkCreateDescriptorSetLayout m_vk_create_descriptor_set_layout;
+    PFN_vkDestroyDescriptorSetLayout m_vk_destroy_descriptor_set_layout;
     PFN_vkCreatePipelineLayout m_vk_create_pipeline_layout;
+    PFN_vkDestroyPipelineLayout m_vk_destroy_pipeline_layout;
     PFN_vkCreateDescriptorPool m_vk_create_descriptor_pool;
     PFN_vkDestroyDescriptorPool m_vk_destroy_descriptor_pool;
     PFN_vkAllocateDescriptorSets m_vk_allocate_descriptor_sets;
@@ -221,7 +223,10 @@ public:
     inline void destroy_framebuffer(VkFramebuffer framebuffer) { return this->m_vk_destory_framebuffer(this->m_device, framebuffer, this->m_vk_allocation_callbacks); }
 
     inline VkResult create_descriptor_set_layout(VkDescriptorSetLayoutCreateInfo const *create_info, VkDescriptorSetLayout *set_layout) { return this->m_vk_create_descriptor_set_layout(this->m_device, create_info, this->m_vk_allocation_callbacks, set_layout); }
+    inline void destroy_descriptor_set_layout(VkDescriptorSetLayout descriptor_set_layout) { return this->m_vk_destroy_descriptor_set_layout(this->m_device, descriptor_set_layout, this->m_vk_allocation_callbacks); }
+
     inline VkResult create_pipeline_layout(VkPipelineLayoutCreateInfo const *create_info, VkPipelineLayout *pipeline_layout) { return this->m_vk_create_pipeline_layout(this->m_device, create_info, this->m_vk_allocation_callbacks, pipeline_layout); }
+    inline void destroy_pipeline_layout(VkPipelineLayout pipeline_layout) { return this->m_vk_destroy_pipeline_layout(this->m_device, pipeline_layout, this->m_vk_allocation_callbacks); }
 
     inline VkResult create_descriptor_pool(VkDescriptorPoolCreateInfo const *create_info, VkDescriptorPool *descriptor_pool) { return this->m_vk_create_descriptor_pool(this->m_device, create_info, this->m_vk_allocation_callbacks, descriptor_pool); }
     inline void destroy_descriptor_pool(VkDescriptorPool descriptor_pool) { return this->m_vk_destroy_descriptor_pool(this->m_device, descriptor_pool, this->m_vk_allocation_callbacks); }

@@ -85,7 +85,7 @@ class gfx_malloc_vk : public gfx_malloc
 public:
     gfx_malloc_vk();
     bool init(class gfx_device_vk *gfx_device);
-    void destroy();
+    void destroy(class gfx_device_vk *gfx_device);
     ~gfx_malloc_vk();
 
     inline void *uniform_buffer_pointer() { return this->m_uniform_buffer_device_memory_pointer; }

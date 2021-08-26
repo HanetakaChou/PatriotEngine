@@ -43,17 +43,17 @@ public:
     inline void insert(void *ptr)
     {
         mcrt_spin_lock(&this->m_spin_lock);
-        assert(m_memory_objects.end() == m_memory_objects.find(ptr));
+        assert(this->m_memory_objects.end() == this->m_memory_objects.find(ptr));
 
         void *addrs_ptr[3];
         int num_levels = backtrace(addrs_ptr, 3);
         if (num_levels >= 3)
         {
-            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[2]));
+            this->m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[2]));
         }
         else
         {
-            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(static_cast<void *>(NULL)));
+            this->m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(static_cast<void *>(NULL)));
         }
 
         mcrt_spin_unlock(&this->m_spin_lock);

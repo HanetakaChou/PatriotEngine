@@ -18,6 +18,7 @@
 #include <stddef.h>
 #include "pt_gfx_device_vk.h"
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_memset.h>
 #include <pt_mcrt_log.h>
 #include <assert.h>
 #include <string.h>
@@ -52,7 +53,10 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_mcrt_allocation_callbacks.pfnInternalAllocation = NULL;
     this->m_vk_mcrt_allocation_callbacks.pfnInternalFree = NULL;
 
-    this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
+    // perhaps due to bugs
+    // the instance may free the same memory multiple times
+    this->m_vk_allocation_callbacks = NULL;
+    // this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
 
     PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = vkGetInstanceProcAddr;
 
@@ -65,9 +69,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         application_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         application_info.pNext = NULL;
         application_info.pApplicationName = "PatriotEngine";
-        application_info.applicationVersion = 0;
+        application_info.applicationVersion = 0U;
         application_info.pEngineName = "PatriotEngine";
-        application_info.engineVersion = 0;
+        application_info.engineVersion = 0U;
         application_info.apiVersion = VK_API_VERSION_1_0;
 
         VkInstanceCreateInfo instance_create_info;
@@ -79,7 +83,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
 #if defined(VK_API_VERSION_1_2)
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
-        instance_create_info.enabledLayerCount = 1;
+        instance_create_info.enabledLayerCount = 1U;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
 #elif defined(VK_API_VERSION_1_1)
 #if VK_HEADER_VERSION >= 106
@@ -382,6 +386,10 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         this->m_physical_device_feature_texture_compression_BC = (physical_device_features.textureCompressionBC != VK_FALSE) ? true : false;
     }
 
+    // perhaps due to bugs
+    // the instance may free the same memory multiple times
+    this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
+
     this->m_device = VK_NULL_HANDLE;
     {
 
@@ -586,8 +594,14 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_create_descriptor_set_layout = reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(vk_get_device_proc_addr(this->m_device, "vkCreateDescriptorSetLayout"));
     assert(NULL != this->m_vk_create_descriptor_set_layout);
 
+    this->m_vk_destroy_descriptor_set_layout = reinterpret_cast<PFN_vkDestroyDescriptorSetLayout>(vk_get_device_proc_addr(this->m_device, "vkDestroyDescriptorSetLayout"));
+    assert(NULL != this->m_vk_destroy_descriptor_set_layout);
+
     this->m_vk_create_pipeline_layout = reinterpret_cast<PFN_vkCreatePipelineLayout>(vk_get_device_proc_addr(this->m_device, "vkCreatePipelineLayout"));
     assert(NULL != this->m_vk_create_pipeline_layout);
+
+    this->m_vk_destroy_pipeline_layout = reinterpret_cast<PFN_vkDestroyPipelineLayout>(vk_get_device_proc_addr(this->m_device, "vkDestroyPipelineLayout"));
+    assert(NULL != this->m_vk_destroy_pipeline_layout);
 
     this->m_vk_create_descriptor_pool = reinterpret_cast<PFN_vkCreateDescriptorPool>(vk_get_device_proc_addr(this->m_device, "vkCreateDescriptorPool"));
     assert(NULL != this->m_vk_create_descriptor_pool);
@@ -683,14 +697,37 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
 
 void gfx_device_vk::destroy()
 {
-#ifndef NDEBUG
     PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vkGetInstanceProcAddr(this->m_instance, "vkGetInstanceProcAddr"));
 
+    vk_get_instance_proc_addr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(vk_get_instance_proc_addr(this->m_instance, "vkGetInstanceProcAddr"));
+    assert(NULL != vk_get_instance_proc_addr);
+
+    PFN_vkGetDeviceProcAddr vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetDeviceProcAddr"));
+    assert(NULL != vk_get_device_proc_addr);
+
+    vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_device_proc_addr(this->m_device, "vkGetDeviceProcAddr"));
+    assert(NULL != vk_get_device_proc_addr);
+
+    PFN_vkDestroyDevice vk_destroy_device = reinterpret_cast<PFN_vkDestroyDevice>(vk_get_device_proc_addr(this->m_device, "vkDestroyDevice"));
+    assert(NULL != vk_destroy_device);
+
+    vk_destroy_device(this->m_device, this->m_vk_allocation_callbacks);
+
+    // perhaps due to bugs
+    // the instance may free the same memory multiple times
+    this->m_vk_allocation_callbacks = NULL;
+
+#ifndef NDEBUG
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
     vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, this->m_vk_allocation_callbacks);
     m_debug_report_callback = VK_NULL_HANDLE;
 #endif
+
+    PFN_vkDestroyInstance vk_destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(vk_get_instance_proc_addr(this->m_instance, "vkDestroyInstance"));
+    assert(NULL != vk_destroy_instance);
+
+    vk_destroy_instance(this->m_instance,this->m_vk_allocation_callbacks);
 }
 
 gfx_device_vk::~gfx_device_vk()
@@ -731,13 +768,22 @@ public:
     inline void insert(void *ptr)
     {
         mcrt_spin_lock(&this->m_spin_lock);
-        assert(m_memory_objects.end() == m_memory_objects.find(ptr));
-
-        void *addrs_ptr[3];
-        int num_levels = backtrace(addrs_ptr, 3);
-        if (num_levels >= 3)
+        auto iter = this->m_memory_objects.find(ptr);
+        if (this->m_memory_objects.end() != iter)
         {
-            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[2]));
+            void *object_addr = iter->first;
+            void *funtion_addr = iter->second;
+            // set breakpoint here and the debugger can tell you the name of the function by the address
+            assert(0);
+            object_addr = NULL;
+            funtion_addr = NULL;
+        }
+
+        void *addrs_ptr[7];
+        int num_levels = backtrace(addrs_ptr, 7);
+        if (num_levels >= 7)
+        {
+            m_memory_objects.emplace(std::piecewise_construct, std::forward_as_tuple(ptr), std::forward_as_tuple(addrs_ptr[6]));
         }
         else
         {
@@ -778,6 +824,7 @@ static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_
     {
         void *pMemory = mcrt_aligned_malloc(size, alignment);
         assert(NULL != pMemory);
+        mcrt_memset(pMemory, 0, size);
 #if defined(PT_GFX_DEBUG_MALLOC) && PT_GFX_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)
         instance_mcrt_malloc_verify_support.insert(pMemory);
 #endif
