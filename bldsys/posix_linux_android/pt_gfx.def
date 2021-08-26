@@ -1,0 +1,40 @@
+/*
+ * Copyright (C) YuqiaoZhang(HanetakaYuminaga)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+{
+    global:
+        gfx_connection_init;
+        gfx_connection_wsi_on_resized;
+        gfx_connection_wsi_on_redraw_needed_acquire;
+        gfx_connection_wsi_on_redraw_needed_release;
+        gfx_connection_destroy;
+        gfx_connection_create_node;
+        gfx_node_set_mesh;
+        gfx_node_set_material;
+        gfx_node_destroy;
+        gfx_connection_create_mesh;
+        gfx_mesh_read_input_stream;
+        gfx_mesh_destroy;
+        gfx_connection_create_material;
+        gfx_material_init_with_texture;
+        gfx_material_destroy;
+        gfx_connection_create_texture;
+        gfx_texture_read_input_stream;
+        gfx_texture_destroy;
+    local:
+        *;
+};

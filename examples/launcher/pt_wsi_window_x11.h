@@ -19,6 +19,7 @@
 #define _PT_WSI_WINDOW_X11_H_ 1
 
 #include <stddef.h>
+#include <stdint.h>
 #include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
 #include <xcb/xcb.h>

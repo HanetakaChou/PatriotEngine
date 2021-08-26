@@ -24,9 +24,9 @@
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_rwlock.h>
 #include <pt_mcrt_malloc.h>
+#include "pt_gfx_frame_object_base.h"
 #include <type_traits>
 #include <new>
-#include "pt_gfx_frame_object_base.h"
 
 class gfx_connection_proxy
 {

@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -297,7 +297,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_rows = (h + get_compressed_format_block_height(vk_header->format) - 1) / get_compressed_format_block_height(vk_header->format);
                     output_num_slices = d;
 
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     // bufferOffset must be a multiple of 4
@@ -340,7 +341,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_rows = h;
                     output_num_slices = d;
 
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     //bufferRowLength = output_row_pitch / get_rgba_format_pixel_bytes(vk_header->format);
@@ -355,7 +357,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_rows = h;
                     output_num_slices = d;
 
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                    assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     //bufferRowLength = output_row_pitch / get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
@@ -364,7 +367,9 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     texel_block_size = get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
                 }
 
-                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(staging_offset, size_t(4U)), texel_block_size), physical_device_limits_optimal_buffer_copy_offset_alignment), physical_device_limits_optimal_buffer_copy_row_pitch_alignment);
+                assert(physical_device_limits_optimal_buffer_copy_offset_alignment <= UINT32_MAX);
+                assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
+                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(staging_offset, size_t(4U)), texel_block_size), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_offset_alignment)), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
                 TotalBytes += (stagingOffset_new - staging_offset);
                 staging_offset = stagingOffset_new;
 

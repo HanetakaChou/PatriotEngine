@@ -1178,10 +1178,10 @@ inline bool gfx_connection_vk::update_framebuffer()
 {
     // depth image and view
     {
-        if (NULL != this->m_depth_image)
+        if (VK_NULL_HANDLE != this->m_depth_image)
         {
-            assert(NULL != this->m_depth_image_view);
-            assert(NULL != this->m_depth_device_memory);
+            assert(VK_NULL_HANDLE != this->m_depth_image_view);
+            assert(VK_NULL_HANDLE != this->m_depth_device_memory);
             this->m_device.destroy_image_view(this->m_depth_image_view);
             this->m_device.destroy_image(this->m_depth_image);
             this->m_device.free_memory(this->m_depth_device_memory);

@@ -66,6 +66,7 @@ class gfx_connection_vk final : public gfx_connection_base
         uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_secondary_commmand_pool) + sizeof(m_frame_graphics_secondary_command_buffer))];
     };
     static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_secondary_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer)), "");
+    static_assert(std::is_pod<struct frame_thread_block>::value, "");
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
 
@@ -179,12 +180,13 @@ class gfx_connection_vk final : public gfx_connection_base
     struct streaming_thread_block
     {
         VkCommandPool m_streaming_transfer_command_pool;
-        VkCommandBuffer m_streaming_transfer_command_buffer;
         VkCommandPool m_streaming_graphics_command_pool;
+        VkCommandBuffer m_streaming_transfer_command_buffer;
         VkCommandBuffer m_streaming_graphics_command_buffer;
-        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_transfer_command_buffer) + sizeof(m_streaming_graphics_command_buffer) + sizeof(m_streaming_transfer_command_pool))];
+        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_transfer_command_buffer) + sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_graphics_command_buffer))];
     };
-    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_pool)), "");
+    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer)), "");
+    static_assert(std::is_pod<struct streaming_thread_block>::value, "");
     static_assert(sizeof(struct streaming_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct streaming_thread_block *m_streaming_thread_block[STREAMING_THROTTLING_COUNT];
 

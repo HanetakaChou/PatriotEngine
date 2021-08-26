@@ -32,7 +32,6 @@ class gfx_device_vk
 
 #ifndef NDEBUG
     VkDebugReportCallbackEXT m_debug_report_callback;
-    VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 
     VkPhysicalDevice m_physical_device;
@@ -132,6 +131,10 @@ public:
     bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
     void destroy();
     ~gfx_device_vk();
+
+#ifndef NDEBUG
+    inline VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
+#endif
 
     inline uint32_t physical_device_pipeline_vendor_id() { return m_physical_device_pipeline_vendor_id; }
     inline uint32_t physical_device_pipeline_device_id() { return m_physical_device_pipeline_device_id; }

@@ -34,17 +34,20 @@ We may treat the image synthesis graphics engine as the 3D version X11 server.
 The geometry(e.g. mesh, hair, terrain) / material / texture / light(e.g. directional light, punctual light, area light, light probe) are analogous to the pixmap on X11 server      
 and the hierarchy of the scenetree / scenegraph are analogous to the relationship of the "child-parent" window on X11 server.  
    
-The user can't control whether the "content" of the mesh / hair / material / ... is resident on the GPU since the memory allocation in Vulkan / Direct3D12 / Metal may fail.    
-However, the user may tweak the "create / destory" strategy of the mesh / hair / material / ... according to the "fail_count / request_count".
+The asset streaming process is totally asynchronous. This means that the calling thread will not halt at all. Thus we can definitely call these functions in the gameplay logic and no performance penalty will be introduced.
 
 ```  
     gfx_connection_init
     gfx_connection_destroy
 
-    //scenetree related
-    gfx_connection_create_node  
+    // scene related
+    gfx_connection_create_node // Top-Level-Structure // to reuse mesh etc 
     gfx_connection_create_selector //LOD etc  
     gfx_connection_create_...
+    
+    gfx_node_set_mesh
+    gfx_node_set_material
+    gfx_node_set ...
 
     // asset related
     gfx_connection_create_mesh
@@ -53,9 +56,11 @@ However, the user may tweak the "create / destory" strategy of the mesh / hair /
     gfx_connection_create_light_probe
     gfx_connection_create_...
 
-    // memory budget related
-    gfx_connection_fail_count  
-    gfx_connection_request_count   
+    // asset streaming
+    gfx_mesh_read_input_stream
+    gfx_material_init_with_texture
+    gfx_mesh_destroy
+    gfx_material_destroy
 
     // wsi related
     gfx_connection_wsi_on_resized
@@ -102,20 +107,6 @@ Build Type | Status
 **MacOSX Debug (Universal Binary)** | [![MacOSX Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Debug+%28Universal+Binary%29%22)     
      
 ---        
-
-### In Progress    
-* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
-Try to understand the following papers from the perspective of the 2-Manifold:         
-> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
-\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
-> * LTC  
-\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
-
-* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
-> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
-* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.    
-    
----   
 
 ### Feature List
 - [ ] Scene  
@@ -166,8 +157,8 @@ Try to understand the following papers from the perspective of the 2-Manifold:
     - [x] SLOB  
     - [ ] RingBuffer  
   - [ ] TextureLoader  
-    - [ ] DDS  
-    - [ ] PVR  
+    - [x] DDS  
+    - [x] PVR  
     - [ ] KTX
   - [ ] ModelLoader
     - [ ] PMX
@@ -212,3 +203,18 @@ Try to understand the following papers from the perspective of the 2-Manifold:
     - [ ] FBX
   - [ ] WSI  
     - [ ] Win32Desktop      
+
+---   
+
+### In Progress    
+* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
+Try to understand the following papers from the perspective of the 2-Manifold:         
+> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
+\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
+> * LTC  
+\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
+
+* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
+> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
+* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.    
+    

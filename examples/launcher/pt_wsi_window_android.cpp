@@ -18,20 +18,23 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <android/native_activity.h>
+#include <pt_gfx_connection.h>
 #include <assert.h>
 
 static void ANativeActivity_onDestroy(ANativeActivity *native_activity);
 static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue);
 static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue);
+static void ANativeActivity_onNativeWindowCreated(ANativeActivity *activity, ANativeWindow *window);
+static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *activity, ANativeWindow *window);
+
 static ANativeActivity *wsi_window_andoird_native_activity = NULL;
+static gfx_connection_ref m_gfx_connection = NULL;
 
 extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *, size_t)
 {
 	static bool app_process_on_create = true;
 	if (app_process_on_create)
 	{
-		//
-
 		app_process_on_create = false;
 	}
 
@@ -73,7 +76,8 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity
 		input_queue,
 		looper,
 		0, //Identifier is ignored when callback is not NULL. ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the UI thread.
-		[](int fd, int events, void *__input_queue) -> int {
+		[](int fd, int events, void *__input_queue) -> int
+		{
 			AInputQueue *input_queue = static_cast<AInputQueue *>(__input_queue);
 
 			AInputEvent *input_event;

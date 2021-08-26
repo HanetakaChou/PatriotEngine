@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -31,15 +31,42 @@ gfx_device_vk::gfx_device_vk()
     return;
 }
 
+static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+{
+    return mcrt_aligned_malloc(size, alignment);
+}
+
+static void *VKAPI_PTR __internal_reallocation_callback(void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+{
+    return mcrt_aligned_realloc(pOriginal, size, alignment);
+}
+
+static void VKAPI_PTR __internal_free_callback(void *, void *pMemory)
+{
+    return mcrt_aligned_free(pMemory);
+}
+
+static void VKAPI_PTR __internal_internal_allocation_callback(void *, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
+{
+}
+
+static void VKAPI_PTR __internal_internal_free_callback(void *, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
+{
+}
+
+static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData)
+{
+    return static_cast<gfx_device_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
+}
+
 bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
     this->m_allocator_callbacks.pUserData = NULL;
-    this->m_allocator_callbacks.pfnAllocation = [](void *, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_malloc(size, alignment); };
-    this->m_allocator_callbacks.pfnReallocation = [](void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope) -> void * { return mcrt_aligned_realloc(pOriginal, size, alignment); };
-    this->m_allocator_callbacks.pfnFree = [](void *, void *pMemory) -> void
-    { return mcrt_aligned_free(pMemory); };
-    this->m_allocator_callbacks.pfnInternalAllocation = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
-    this->m_allocator_callbacks.pfnInternalFree = [](void *, size_t, VkInternalAllocationType, VkSystemAllocationScope) -> void {};
+    this->m_allocator_callbacks.pfnAllocation = __internal_allocation_callback;
+    this->m_allocator_callbacks.pfnReallocation = __internal_reallocation_callback;
+    this->m_allocator_callbacks.pfnFree = __internal_free_callback;
+    this->m_allocator_callbacks.pfnInternalAllocation = __internal_internal_allocation_callback;
+    this->m_allocator_callbacks.pfnInternalFree = __internal_internal_free_callback;
 
     PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = vkGetInstanceProcAddr;
 
@@ -130,10 +157,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         debug_report_callback_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
         debug_report_callback_create_info.pNext = NULL;
         debug_report_callback_create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT;
-        debug_report_callback_create_info.pfnCallback = [](VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData) -> VkBool32
-        {
-            return static_cast<gfx_device_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
-        };
+        debug_report_callback_create_info.pfnCallback = __internal_debug_report_callback;
         debug_report_callback_create_info.pUserData = this;
 
         VkResult vk_res = vk_create_debug_report_callback_ext(this->m_instance, &debug_report_callback_create_info, &this->m_allocator_callbacks, &this->m_debug_report_callback);
@@ -661,7 +685,7 @@ void gfx_device_vk::destroy()
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
     vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, &m_allocator_callbacks);
-    m_debug_report_callback = NULL;
+    m_debug_report_callback = VK_NULL_HANDLE;
 #endif
 }
 
@@ -671,7 +695,7 @@ gfx_device_vk::~gfx_device_vk()
 }
 
 #ifndef NDEBUG
-VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
+inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     mcrt_log_print("[%s] : %s \n", pLayerPrefix, pMessage);
     return VK_FALSE;
