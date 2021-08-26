@@ -24,4 +24,6 @@
 #define PT_ATTR_MCRT PT_ATTR_IMPORT
 #endif
 
+#define PT_MCRT_DEBUG_MALLOC 0
+
 #endif

@@ -936,6 +936,18 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     this->m_depth_device_memory = VK_NULL_HANDLE;
     this->m_swapchain_image_views = NULL;
     this->m_framebuffers = NULL;
+    this->m_pipeline_mesh = VK_NULL_HANDLE;
+    this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
+
+    if (!this->init_pipeline_layout())
+    {
+        return false;
+    }
+
+    if (!this->init_shader())
+    {
+        return false;
+    }
 
     if (!this->update_surface(wsi_connection, wsi_visual, wsi_window))
     {
@@ -943,16 +955,6 @@ inline bool gfx_connection_vk::init_frame(wsi_connection_ref wsi_connection, wsi
     }
 
     if (!this->update_framebuffer())
-    {
-        return false;
-    }
-
-    if (!this->init_pipeline_layout())
-    {
-        return false;
-    }
-
-    if (!this->init_pipeline())
     {
         return false;
     }
@@ -1278,7 +1280,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         }
     }
 
-    // frame buffer
+    // frame buffer // depend on renderpass and swapchain_image_count
     {
         assert(NULL == this->m_framebuffers);
         this->m_framebuffers = static_cast<VkFramebuffer *>(mcrt_aligned_malloc(sizeof(VkFramebuffer) * this->m_swapchain_image_count, alignof(VkFramebuffer)));
@@ -1303,264 +1305,15 @@ inline bool gfx_connection_vk::update_framebuffer()
         }
     }
 
-    return true;
-}
-
-inline void gfx_connection_vk::destory_framebuffer()
-{
-    // wait fence
-    if (0U != this->m_swapchain_image_count)
-    {
-        assert(NULL != this->m_swapchain_image_views);
-        assert(NULL != this->m_framebuffers);
-        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
-        {
-            this->m_device.destroy_image_view(this->m_swapchain_image_views[swapchain_image_index]);
-            this->m_device.destroy_framebuffer(this->m_framebuffers[swapchain_image_index]);
-        }
-        mcrt_aligned_free(this->m_swapchain_image_views);
-        mcrt_aligned_free(this->m_framebuffers);
-        this->m_swapchain_image_views = NULL;
-        this->m_framebuffers = NULL;
-
-        assert(NULL != this->m_swapchain_images);
-        mcrt_aligned_free(this->m_swapchain_images);
-        this->m_swapchain_images = NULL;
-
-        assert(VK_FORMAT_UNDEFINED != this->m_swapchain_image_format);
-        this->m_swapchain_image_format = VK_FORMAT_UNDEFINED;
-
-        assert(VK_NULL_HANDLE != this->m_render_pass);
-        this->m_device.destroy_renderPass(this->m_render_pass);
-        this->m_render_pass = VK_NULL_HANDLE;
-
-        assert(VK_NULL_HANDLE != this->m_depth_image_view);
-        assert(VK_NULL_HANDLE != this->m_depth_image);
-        assert(VK_NULL_HANDLE != this->m_depth_device_memory);
-        this->m_device.destroy_image_view(this->m_depth_image_view);
-        this->m_device.destroy_image(this->m_depth_image);
-        this->m_device.free_memory(this->m_depth_device_memory);
-        this->m_depth_image_view = VK_NULL_HANDLE;
-        this->m_depth_image = VK_NULL_HANDLE;
-        this->m_depth_device_memory = VK_NULL_HANDLE;
-    }
-}
-
-inline void gfx_connection_vk::destory_surface()
-{
-    // wait fence
-    if (VK_NULL_HANDLE != this->m_surface)
-    {
-        this->m_device.destroy_surface(this->m_surface);
-        this->m_surface = VK_NULL_HANDLE;
-    }
-}
-
-inline bool gfx_connection_vk::init_pipeline_layout()
-{
-    // \[Pettineo 2016\][Matt Pettineo. "Bindless Texturing For Deferred Rendering And Decals." WordPress Blog 2016.](https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/)
-
-    // bindless texture seems meaningless
-    // It's believed that the "vkUpdateDescriptorSets" is heavy while the "vkCmdBindDescriptorSets" is lightweight
-    // We may consider "update" as the "init" operation and store the descriptors in advance
-
-    // [Direct3D 12](https://docs.microsoft.com/en-us/windows/win32/direct3d12/advanced-use-of-descriptor-tables?redirectedfrom=MSDN#changing-descriptor-table-entries-between-rendering-calls)
-
-    // \[Kubisch 2016\] [Christoph Kubisch. "Vulkan Shader Resource Binding." NVIDIA GameWorks Blog 2016.](https://developer.nvidia.com/vulkan-shader-resource-binding)
-    //
-    // bindings happen at different frequencies
-    // each view                            // camera, environment...
-    // each ~shader~ material               // shader control values
-    // each ~material~ materialinstance     // material parameters and textures
-    // each object                          // object transforms
-
-    // VkPhysicalDeviceLimits::maxPushConstantsSize // min 128
-    // vp 64 byte // each view
-    // m 64 byte // each object
-
-    // VkPhysicalDeviceLimits::maxBoundDescriptorSets // min 4
-    // 1. each_object_shared
-    //  uniform buffer dynamic
-    // 2. each_object_private
-    //  diffusecolor
-    //  specularcolor
-    //  glossiness
-    //  ambientocclusion
-    //  height
-    //  normal
-
-    // VkPhysicalDeviceLimits::maxPerStageDescriptorSampledImages // min 16
-    // VkPhysicalDeviceLimits::maxPerStageResources
-    // VkPhysicalDeviceLimits::maxDescriptorSetSampledImages
-
-    // the related "descriptor_set" is owned by this "gfx_connection"
-    // uniform buffer // the joint matrix
-    {
-        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_shared_bindings[1];
-        descriptor_set_layout_each_object_shared_bindings[0].binding = 0;
-        descriptor_set_layout_each_object_shared_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        descriptor_set_layout_each_object_shared_bindings[0].descriptorCount = 1U;
-        descriptor_set_layout_each_object_shared_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        descriptor_set_layout_each_object_shared_bindings[0].pImmutableSamplers = NULL;
-
-        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_shared_create_info;
-        descriptor_set_layout_each_object_shared_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptor_set_layout_each_object_shared_create_info.pNext = NULL;
-        descriptor_set_layout_each_object_shared_create_info.flags = 0U;
-        descriptor_set_layout_each_object_shared_create_info.bindingCount = 1U;
-        descriptor_set_layout_each_object_shared_create_info.pBindings = descriptor_set_layout_each_object_shared_bindings;
-
-        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_shared_create_info, &this->m_descriptor_set_layout_each_object_shared);
-        assert(VK_SUCCESS == res_create_descriptor_set_layout);
-    }
-
-    // immutable sampler
-    {
-        VkSamplerCreateInfo sampler_create_info;
-        sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-        sampler_create_info.pNext = NULL;
-        sampler_create_info.flags = 0U;
-        sampler_create_info.magFilter = VK_FILTER_NEAREST;
-        sampler_create_info.minFilter = VK_FILTER_NEAREST;
-        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-        sampler_create_info.mipLodBias = 0.0f;
-        sampler_create_info.anisotropyEnable = VK_FALSE,
-        sampler_create_info.maxAnisotropy = 1U;
-        sampler_create_info.compareEnable = VK_FALSE,
-        sampler_create_info.compareOp = VK_COMPARE_OP_NEVER;
-        sampler_create_info.minLod = 0.0f,
-        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE,
-        sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
-        sampler_create_info.unnormalizedCoordinates = VK_FALSE;
-        PT_MAYBE_UNUSED VkResult res_create_sampler = this->m_device.create_sampler(&sampler_create_info, &this->m_immutable_sampler);
-        assert(VK_SUCCESS == res_create_sampler);
-    }
-
-    // the related "descriptor_set" is owned by the object
-    // material
-    {
-        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[GFX_MATERIAL_MAX_TEXTURE_COUNT];
-        for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)
-        {
-            descriptor_set_layout_each_object_private_bindings[texture_index].binding = texture_index;
-            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorCount = 1U;
-            descriptor_set_layout_each_object_private_bindings[texture_index].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-            descriptor_set_layout_each_object_private_bindings[texture_index].pImmutableSamplers = &this->m_immutable_sampler;
-        }
-        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_private_create_info;
-        descriptor_set_layout_each_object_private_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        descriptor_set_layout_each_object_private_create_info.pNext = NULL;
-        descriptor_set_layout_each_object_private_create_info.flags = 0U;
-        descriptor_set_layout_each_object_private_create_info.bindingCount = GFX_MATERIAL_MAX_TEXTURE_COUNT;
-        descriptor_set_layout_each_object_private_create_info.pBindings = descriptor_set_layout_each_object_private_bindings;
-
-        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_private_create_info, &this->m_descriptor_set_layout_each_object_private);
-        assert(VK_SUCCESS == res_create_descriptor_set_layout);
-    }
-
-    // descriptor pool
-    {
-        VkDescriptorPoolSize pool_sizes[1];
-        pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        pool_sizes[0].descriptorCount = GFX_MATERIAL_MAX_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
-
-        // https://community.arm.com/developer/tools-software/graphics/b/blog/posts/vulkan-descriptor-and-buffer-management
-        // https://github.com/ARM-software/vulkan_best_practice_for_mobile_developers
-        // [framework/core/descriptor_pool.h]
-        // MAX_SETS_PER_POOL = 16
-        VkDescriptorPoolCreateInfo descriptor_pool_create_info;
-        descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        descriptor_pool_create_info.pNext = NULL;
-        descriptor_pool_create_info.flags = 0U;
-        descriptor_pool_create_info.maxSets = MAX_FRAME_OBJECT_INUSE_COUNT;
-        descriptor_pool_create_info.poolSizeCount = 1U;
-        descriptor_pool_create_info.pPoolSizes = pool_sizes;
-
-        PT_MAYBE_UNUSED VkResult res_create_descriptor_pool = this->m_device.create_descriptor_pool(&descriptor_pool_create_info, &this->m_descriptor_pool_each_object_private);
-        assert(VK_SUCCESS == res_create_descriptor_pool);
-    }
-
-    // pipeline layout = descriptor layout + push constant
-    {
-        VkDescriptorSetLayout set_layouts[2] = {this->m_descriptor_set_layout_each_object_shared, this->m_descriptor_set_layout_each_object_private};
-
-        this->m_push_constant_mat_vp_offset = 0U;
-        this->m_push_constant_mat_vp_size = sizeof(math_alignas16_mat4x4);
-        this->m_push_constant_mat_m_offset = sizeof(math_alignas16_mat4x4);
-        this->m_push_constant_mat_m_size = sizeof(math_alignas16_mat4x4);
-
-        VkPushConstantRange push_constant_ranges[1];
-        push_constant_ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-        push_constant_ranges[0].offset = 0U;
-        push_constant_ranges[0].size = this->m_push_constant_mat_vp_size + this->m_push_constant_mat_m_size;
-        assert(push_constant_ranges[0].size <= m_limit_min_max_push_constants_size);
-
-        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
-        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-        pipeline_layout_create_info.pNext = NULL;
-        pipeline_layout_create_info.flags = 0U;
-        pipeline_layout_create_info.setLayoutCount = 2U;
-        pipeline_layout_create_info.pSetLayouts = set_layouts;
-        pipeline_layout_create_info.pushConstantRangeCount = 1U;
-        pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges;
-
-        PT_MAYBE_UNUSED VkResult res_create_pipeline_layout = this->m_device.create_pipeline_layout(&pipeline_layout_create_info, &this->m_pipeline_layout);
-        assert(VK_SUCCESS == res_create_pipeline_layout);
-    }
-
-    ///math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
-    ///math_store_alignas16_mat4x4(&this->m_mat_vp, m);
-
-    return true;
-}
-
-inline bool gfx_connection_vk::init_pipeline()
-{
-    //mesh_vertex
-    {
-        uint32_t const shader_code_mesh_vertex[] = {
-#include "pt_gfx_shader_mesh_vertex_vk.inl"
-        };
-
-        VkShaderModuleCreateInfo shader_module_create_info;
-        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.pNext = NULL;
-        shader_module_create_info.flags = 0;
-        shader_module_create_info.codeSize = sizeof(shader_code_mesh_vertex);
-        shader_module_create_info.pCode = shader_code_mesh_vertex;
-
-        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_vertex);
-        assert(VK_SUCCESS == res_create_shader_module);
-    }
-
-    //mesh_fragment
-    {
-        uint32_t const shader_code_mesh_fragment[] = {
-#include "pt_gfx_shader_mesh_fragment_vk.inl"
-        };
-
-        VkShaderModuleCreateInfo shader_module_create_info;
-        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        shader_module_create_info.pNext = NULL;
-        shader_module_create_info.flags = 0;
-        shader_module_create_info.codeSize = sizeof(shader_code_mesh_fragment);
-        shader_module_create_info.pCode = shader_code_mesh_fragment;
-
-        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_fragment);
-        assert(VK_SUCCESS == res_create_shader_module);
-    }
-
     // pipeline cache
+    assert(VK_NULL_HANDLE == this->m_pipeline_cache_mesh);
     {
         PT_MAYBE_UNUSED bool res_load_pipeline_cache = this->load_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
         assert(res_load_pipeline_cache);
     }
 
-    // pipeline
+    // pipeline // depend on renderpass
+    assert(VK_NULL_HANDLE == this->m_pipeline_mesh);
     {
         VkPipelineShaderStageCreateInfo stages[2];
         stages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1737,6 +1490,270 @@ inline bool gfx_connection_vk::init_pipeline()
         assert(VK_SUCCESS == res_create_graphics_pipelines);
 
         this->m_pipeline_mesh = pipelines[0];
+    }
+
+    return true;
+}
+
+inline void gfx_connection_vk::destory_framebuffer()
+{
+    // wait fence
+    if (0U != this->m_swapchain_image_count)
+    {
+
+        assert(VK_NULL_HANDLE != this->m_pipeline_cache_mesh);
+        // after queuesubmit // may before destory
+        this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+
+        assert(VK_NULL_HANDLE != this->m_pipeline_mesh);
+        this->m_device.destroy_pipeline(this->m_pipeline_mesh);
+        this->m_pipeline_mesh = VK_NULL_HANDLE;
+
+        assert(NULL != this->m_framebuffers);
+        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
+        {
+            this->m_device.destroy_framebuffer(this->m_framebuffers[swapchain_image_index]);
+        }
+        mcrt_aligned_free(this->m_framebuffers);
+        this->m_framebuffers = NULL;
+
+        assert(VK_NULL_HANDLE != this->m_depth_image_view);
+        assert(VK_NULL_HANDLE != this->m_depth_image);
+        assert(VK_NULL_HANDLE != this->m_depth_device_memory);
+        this->m_device.destroy_image_view(this->m_depth_image_view);
+        this->m_device.destroy_image(this->m_depth_image);
+        this->m_device.free_memory(this->m_depth_device_memory);
+        this->m_depth_image_view = VK_NULL_HANDLE;
+        this->m_depth_image = VK_NULL_HANDLE;
+        this->m_depth_device_memory = VK_NULL_HANDLE;
+
+        assert(VK_NULL_HANDLE != this->m_render_pass);
+        this->m_device.destroy_renderPass(this->m_render_pass);
+        this->m_render_pass = VK_NULL_HANDLE;
+
+        assert(VK_FORMAT_UNDEFINED != this->m_swapchain_image_format);
+        this->m_swapchain_image_format = VK_FORMAT_UNDEFINED;
+
+        assert(NULL != this->m_swapchain_image_views);
+        for (uint32_t swapchain_image_index = 0U; swapchain_image_index < this->m_swapchain_image_count; ++swapchain_image_index)
+        {
+            this->m_device.destroy_image_view(this->m_swapchain_image_views[swapchain_image_index]);
+        }
+        mcrt_aligned_free(this->m_swapchain_image_views);
+        this->m_swapchain_image_views = NULL;
+
+        assert(NULL != this->m_swapchain_images);
+        mcrt_aligned_free(this->m_swapchain_images);
+        this->m_swapchain_images = NULL;
+    }
+}
+
+inline void gfx_connection_vk::destory_surface()
+{
+    // wait fence
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->m_device.destroy_surface(this->m_surface);
+        this->m_surface = VK_NULL_HANDLE;
+    }
+}
+
+inline bool gfx_connection_vk::init_pipeline_layout()
+{
+    // \[Pettineo 2016\][Matt Pettineo. "Bindless Texturing For Deferred Rendering And Decals." WordPress Blog 2016.](https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/)
+
+    // bindless texture seems meaningless
+    // It's believed that the "vkUpdateDescriptorSets" is heavy while the "vkCmdBindDescriptorSets" is lightweight
+    // We may consider "update" as the "init" operation and store the descriptors in advance
+
+    // [Direct3D 12](https://docs.microsoft.com/en-us/windows/win32/direct3d12/advanced-use-of-descriptor-tables?redirectedfrom=MSDN#changing-descriptor-table-entries-between-rendering-calls)
+
+    // \[Kubisch 2016\] [Christoph Kubisch. "Vulkan Shader Resource Binding." NVIDIA GameWorks Blog 2016.](https://developer.nvidia.com/vulkan-shader-resource-binding)
+    //
+    // bindings happen at different frequencies
+    // each view                            // camera, environment...
+    // each ~shader~ material               // shader control values
+    // each ~material~ materialinstance     // material parameters and textures
+    // each object                          // object transforms
+
+    // VkPhysicalDeviceLimits::maxPushConstantsSize // min 128
+    // vp 64 byte // each view
+    // m 64 byte // each object
+
+    // VkPhysicalDeviceLimits::maxBoundDescriptorSets // min 4
+    // 1. each_object_shared
+    //  uniform buffer dynamic
+    // 2. each_object_private
+    //  diffusecolor
+    //  specularcolor
+    //  glossiness
+    //  ambientocclusion
+    //  height
+    //  normal
+
+    // VkPhysicalDeviceLimits::maxPerStageDescriptorSampledImages // min 16
+    // VkPhysicalDeviceLimits::maxPerStageResources
+    // VkPhysicalDeviceLimits::maxDescriptorSetSampledImages
+
+    // the related "descriptor_set" is owned by this "gfx_connection"
+    // uniform buffer // the joint matrix
+    {
+        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_shared_bindings[1];
+        descriptor_set_layout_each_object_shared_bindings[0].binding = 0;
+        descriptor_set_layout_each_object_shared_bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+        descriptor_set_layout_each_object_shared_bindings[0].descriptorCount = 1U;
+        descriptor_set_layout_each_object_shared_bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        descriptor_set_layout_each_object_shared_bindings[0].pImmutableSamplers = NULL;
+
+        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_shared_create_info;
+        descriptor_set_layout_each_object_shared_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptor_set_layout_each_object_shared_create_info.pNext = NULL;
+        descriptor_set_layout_each_object_shared_create_info.flags = 0U;
+        descriptor_set_layout_each_object_shared_create_info.bindingCount = 1U;
+        descriptor_set_layout_each_object_shared_create_info.pBindings = descriptor_set_layout_each_object_shared_bindings;
+
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_shared_create_info, &this->m_descriptor_set_layout_each_object_shared);
+        assert(VK_SUCCESS == res_create_descriptor_set_layout);
+    }
+
+    // immutable sampler
+    {
+        VkSamplerCreateInfo sampler_create_info;
+        sampler_create_info.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+        sampler_create_info.pNext = NULL;
+        sampler_create_info.flags = 0U;
+        sampler_create_info.magFilter = VK_FILTER_NEAREST;
+        sampler_create_info.minFilter = VK_FILTER_NEAREST;
+        sampler_create_info.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        sampler_create_info.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler_create_info.mipLodBias = 0.0f;
+        sampler_create_info.anisotropyEnable = VK_FALSE,
+        sampler_create_info.maxAnisotropy = 1U;
+        sampler_create_info.compareEnable = VK_FALSE,
+        sampler_create_info.compareOp = VK_COMPARE_OP_NEVER;
+        sampler_create_info.minLod = 0.0f,
+        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE,
+        sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        sampler_create_info.unnormalizedCoordinates = VK_FALSE;
+        PT_MAYBE_UNUSED VkResult res_create_sampler = this->m_device.create_sampler(&sampler_create_info, &this->m_immutable_sampler);
+        assert(VK_SUCCESS == res_create_sampler);
+    }
+
+    // the related "descriptor_set" is owned by the object
+    // material
+    {
+        VkDescriptorSetLayoutBinding descriptor_set_layout_each_object_private_bindings[GFX_MATERIAL_MAX_TEXTURE_COUNT];
+        for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)
+        {
+            descriptor_set_layout_each_object_private_bindings[texture_index].binding = texture_index;
+            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            descriptor_set_layout_each_object_private_bindings[texture_index].descriptorCount = 1U;
+            descriptor_set_layout_each_object_private_bindings[texture_index].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+            descriptor_set_layout_each_object_private_bindings[texture_index].pImmutableSamplers = &this->m_immutable_sampler;
+        }
+        VkDescriptorSetLayoutCreateInfo descriptor_set_layout_each_object_private_create_info;
+        descriptor_set_layout_each_object_private_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        descriptor_set_layout_each_object_private_create_info.pNext = NULL;
+        descriptor_set_layout_each_object_private_create_info.flags = 0U;
+        descriptor_set_layout_each_object_private_create_info.bindingCount = GFX_MATERIAL_MAX_TEXTURE_COUNT;
+        descriptor_set_layout_each_object_private_create_info.pBindings = descriptor_set_layout_each_object_private_bindings;
+
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_set_layout = this->m_device.create_descriptor_set_layout(&descriptor_set_layout_each_object_private_create_info, &this->m_descriptor_set_layout_each_object_private);
+        assert(VK_SUCCESS == res_create_descriptor_set_layout);
+    }
+
+    // descriptor pool
+    {
+        VkDescriptorPoolSize pool_sizes[1];
+        pool_sizes[0].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        pool_sizes[0].descriptorCount = GFX_MATERIAL_MAX_TEXTURE_COUNT * MAX_FRAME_OBJECT_INUSE_COUNT;
+
+        // https://community.arm.com/developer/tools-software/graphics/b/blog/posts/vulkan-descriptor-and-buffer-management
+        // https://github.com/ARM-software/vulkan_best_practice_for_mobile_developers
+        // [framework/core/descriptor_pool.h]
+        // MAX_SETS_PER_POOL = 16
+        VkDescriptorPoolCreateInfo descriptor_pool_create_info;
+        descriptor_pool_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        descriptor_pool_create_info.pNext = NULL;
+        descriptor_pool_create_info.flags = 0U;
+        descriptor_pool_create_info.maxSets = MAX_FRAME_OBJECT_INUSE_COUNT;
+        descriptor_pool_create_info.poolSizeCount = 1U;
+        descriptor_pool_create_info.pPoolSizes = pool_sizes;
+
+        PT_MAYBE_UNUSED VkResult res_create_descriptor_pool = this->m_device.create_descriptor_pool(&descriptor_pool_create_info, &this->m_descriptor_pool_each_object_private);
+        assert(VK_SUCCESS == res_create_descriptor_pool);
+    }
+
+    // pipeline layout = descriptor layout + push constant
+    {
+        VkDescriptorSetLayout set_layouts[2] = {this->m_descriptor_set_layout_each_object_shared, this->m_descriptor_set_layout_each_object_private};
+
+        this->m_push_constant_mat_vp_offset = 0U;
+        this->m_push_constant_mat_vp_size = sizeof(math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_offset = sizeof(math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_size = sizeof(math_alignas16_mat4x4);
+
+        VkPushConstantRange push_constant_ranges[1];
+        push_constant_ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+        push_constant_ranges[0].offset = 0U;
+        push_constant_ranges[0].size = this->m_push_constant_mat_vp_size + this->m_push_constant_mat_m_size;
+        assert(push_constant_ranges[0].size <= m_limit_min_max_push_constants_size);
+
+        VkPipelineLayoutCreateInfo pipeline_layout_create_info;
+        pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipeline_layout_create_info.pNext = NULL;
+        pipeline_layout_create_info.flags = 0U;
+        pipeline_layout_create_info.setLayoutCount = 2U;
+        pipeline_layout_create_info.pSetLayouts = set_layouts;
+        pipeline_layout_create_info.pushConstantRangeCount = 1U;
+        pipeline_layout_create_info.pPushConstantRanges = push_constant_ranges;
+
+        PT_MAYBE_UNUSED VkResult res_create_pipeline_layout = this->m_device.create_pipeline_layout(&pipeline_layout_create_info, &this->m_pipeline_layout);
+        assert(VK_SUCCESS == res_create_pipeline_layout);
+    }
+
+    ///math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
+    ///math_store_alignas16_mat4x4(&this->m_mat_vp, m);
+
+    return true;
+}
+
+inline bool gfx_connection_vk::init_shader()
+{
+    //mesh_vertex
+    {
+        uint32_t const shader_code_mesh_vertex[] = {
+#include "pt_gfx_shader_mesh_vertex_vk.inl"
+        };
+
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = NULL;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.codeSize = sizeof(shader_code_mesh_vertex);
+        shader_module_create_info.pCode = shader_code_mesh_vertex;
+
+        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_vertex);
+        assert(VK_SUCCESS == res_create_shader_module);
+    }
+
+    //mesh_fragment
+    {
+        uint32_t const shader_code_mesh_fragment[] = {
+#include "pt_gfx_shader_mesh_fragment_vk.inl"
+        };
+
+        VkShaderModuleCreateInfo shader_module_create_info;
+        shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+        shader_module_create_info.pNext = NULL;
+        shader_module_create_info.flags = 0;
+        shader_module_create_info.codeSize = sizeof(shader_code_mesh_fragment);
+        shader_module_create_info.pCode = shader_code_mesh_fragment;
+
+        PT_MAYBE_UNUSED VkResult res_create_shader_module = this->m_device.create_shader_module(&shader_module_create_info, &this->m_shader_module_mesh_fragment);
+        assert(VK_SUCCESS == res_create_shader_module);
     }
 
     return true;
@@ -2003,7 +2020,11 @@ inline void gfx_connection_vk::release_frame()
                     this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX] = VK_NULL_HANDLE;
                 }
             }
-            this->m_device.cmd_execute_commands(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], command_buffer_count, this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX]);
+
+            if (command_buffer_count > 0U)
+            {
+                this->m_device.cmd_execute_commands(this->m_frame_graphics_primary_command_buffer[frame_throttling_index], command_buffer_count, this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX]);
+            }
         }
 
         this->m_device.cmd_end_render_pass(this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
@@ -2182,14 +2203,21 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
 
 inline void gfx_connection_vk::destroy_frame()
 {
-    // after queuesubmit
-    // may before destory
-    this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
-
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
     {
         this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
+    }
 
+    this->destory_framebuffer();
+
+    assert(VK_NULL_HANDLE != this->m_swapchain);
+    this->m_device.destroy_swapchain(this->m_swapchain);
+    this->m_swapchain = VK_NULL_HANDLE;
+
+    this->destory_surface();
+
+    for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
+    {
         this->m_device.destroy_fence(this->m_frame_fence[frame_throttling_index]);
 
         this->m_device.destroy_semaphore(this->m_frame_semaphore_queue_submit[frame_throttling_index]);
@@ -2202,9 +2230,14 @@ inline void gfx_connection_vk::destroy_frame()
         {
             this->m_device.destroy_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool);
         }
+
+        mcrt_aligned_free(this->m_frame_thread_block[frame_throttling_index]);
     }
 
-    mcrt_aligned_free(this->m_frame_graphcis_execute_command_buffers);
+    for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
+    {
+        mcrt_aligned_free(this->m_frame_graphcis_execute_command_buffers[subpass_index]);
+    }
 }
 
 inline void gfx_connection_vk::destroy_streaming()
@@ -2247,7 +2280,7 @@ inline void gfx_connection_vk::destroy_streaming()
     }
 
     mcrt_aligned_free(this->m_streaming_transfer_submit_info_command_buffers);
-    mcrt_aligned_free(this->m_streaming_transfer_submit_info_command_buffers);
+    mcrt_aligned_free(this->m_streaming_graphics_submit_info_command_buffers);
 }
 
 void gfx_connection_vk::destroy()
@@ -2273,6 +2306,10 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
+void gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+}
+
 void gfx_connection_vk::on_wsi_resized(float width, float height)
 {
     mcrt_atomic_store(&this->m_wsi_width, uint32_t(width));
@@ -2281,13 +2318,13 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
 
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
+    this->reduce_streaming_task();
     this->acquire_frame();
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
     this->release_frame();
-    this->reduce_streaming_task();
 }
 
 class gfx_node_base *gfx_connection_vk::create_node()
@@ -2383,6 +2420,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
         }
     }
 
+    assert(VK_NULL_HANDLE == this->m_pipeline_cache_mesh);
     VkPipelineCacheCreateInfo pipeline_cache_create_info;
     pipeline_cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     pipeline_cache_create_info.pNext = NULL;
@@ -2473,12 +2511,17 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
     assert(VK_SUCCESS == res_get_pipeline_cache_data);
     assert(pipeline_cache_size_before == pipeline_cache_size);
 
-    PT_MAYBE_UNUSED uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
-    PT_MAYBE_UNUSED uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 4);
-    PT_MAYBE_UNUSED uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 8);
-    PT_MAYBE_UNUSED uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 12);
-    PT_MAYBE_UNUSED mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 16);
+    this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
+    this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
+
+#ifndef NDEBUG
+    uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
+    uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 4);
+    uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 8);
+    uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 12);
+    mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 16);
     assert(header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()));
+#endif
 
     PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
     assert(res_write == pipeline_cache_size);

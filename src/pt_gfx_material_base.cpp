@@ -56,6 +56,7 @@ bool gfx_material_base::init_with_texture(class gfx_connection_base *gfx_connect
             task_data->m_gfx_streaming_object = this;
             task_data->m_gfx_connection = gfx_connection;
 
+
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_SECOND);
             // different master task doesn't share the task_arena
             // we need to share the same the task arena to make sure the "tbb::this_task_arena::current_thread_id" unique

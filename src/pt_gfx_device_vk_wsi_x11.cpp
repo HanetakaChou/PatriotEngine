@@ -59,5 +59,5 @@ VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_conne
     xcb_surface_create_info.connection = unwrap(wsi_connection);
     xcb_surface_create_info.window = unwrap(wsi_window);
 
-    return vk_create_xcb_surface(this->m_instance, &xcb_surface_create_info, &this->m_allocator_callbacks, surface);
+    return vk_create_xcb_surface(this->m_instance, &xcb_surface_create_info, this->m_vk_allocation_callbacks, surface);
 }

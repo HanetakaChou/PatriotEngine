@@ -803,7 +803,7 @@ static inline bool is_format_rgba(VkFormat vk_format)
     return (vk_format >= VK_FORMAT_R4G4_UNORM_PACK8 && vk_format <= VK_FORMAT_E5B9G9R9_UFLOAT_PACK32);
 }
 
-static inline bool is_format_depth_stencil(VkFormat vk_format)
+static inline PT_MAYBE_UNUSED bool is_format_depth_stencil(VkFormat vk_format)
 {
     return (vk_format >= VK_FORMAT_D16_UNORM && vk_format <= VK_FORMAT_D32_SFLOAT_S8_UINT);
 }
@@ -1136,7 +1136,7 @@ static inline uint32_t get_compressed_format_block_height(VkFormat vk_format)
     return vulkan_compressed_format_info_table[format_info_index].compressedBlockHeight;
 }
 
-static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format)
+static inline PT_MAYBE_UNUSED uint32_t get_compressed_format_block_depth(VkFormat vk_format)
 {
     assert(is_format_compressed(vk_format));
 

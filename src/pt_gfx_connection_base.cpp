@@ -96,17 +96,27 @@ PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref ws
     return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, wsi_window));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_resized(gfx_connection_ref gfx_connection, float width, float height)
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_created(gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
+{
+    return unwrap(gfx_connection)->on_wsi_window_created(wsi_connection, wsi_visual, wsi_window);
+}
+
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed()
+{
+
+}
+
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_resized(gfx_connection_ref gfx_connection, float width, float height)
 {
     return unwrap(gfx_connection)->on_wsi_resized(width, height);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_acquire(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_redraw_needed_acquire(gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_redraw_needed_acquire();
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_wsi_on_redraw_needed_release(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_redraw_needed_release(gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_redraw_needed_release();
 }

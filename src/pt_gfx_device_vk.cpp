@@ -20,6 +20,7 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
 #include <assert.h>
+#include <string.h>
 
 gfx_device_vk::gfx_device_vk()
     : m_instance(VK_NULL_HANDLE),
@@ -33,25 +34,27 @@ gfx_device_vk::gfx_device_vk()
 
 static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
-    return mcrt_aligned_malloc(size, alignment);
+    void *pMemory = mcrt_aligned_malloc(size, alignment);
+
+    return pMemory;
 }
 
 static void *VKAPI_PTR __internal_reallocation_callback(void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
+    if (NULL != pOriginal && 0U == size)
+    {
+
+    }
     return mcrt_aligned_realloc(pOriginal, size, alignment);
 }
 
 static void VKAPI_PTR __internal_free_callback(void *, void *pMemory)
 {
+    if (NULL != pMemory)
+    {
+
+    }
     return mcrt_aligned_free(pMemory);
-}
-
-static void VKAPI_PTR __internal_internal_allocation_callback(void *, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
-{
-}
-
-static void VKAPI_PTR __internal_internal_free_callback(void *, size_t size, VkInternalAllocationType allocationType, VkSystemAllocationScope allocationScope)
-{
 }
 
 #ifndef NDEBUG
@@ -63,12 +66,14 @@ static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT
 
 bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
-    this->m_allocator_callbacks.pUserData = NULL;
-    this->m_allocator_callbacks.pfnAllocation = __internal_allocation_callback;
-    this->m_allocator_callbacks.pfnReallocation = __internal_reallocation_callback;
-    this->m_allocator_callbacks.pfnFree = __internal_free_callback;
-    this->m_allocator_callbacks.pfnInternalAllocation = __internal_internal_allocation_callback;
-    this->m_allocator_callbacks.pfnInternalFree = __internal_internal_free_callback;
+    this->m_vk_mcrt_allocation_callbacks.pUserData = NULL;
+    this->m_vk_mcrt_allocation_callbacks.pfnAllocation = __internal_allocation_callback;
+    this->m_vk_mcrt_allocation_callbacks.pfnReallocation = __internal_reallocation_callback;
+    this->m_vk_mcrt_allocation_callbacks.pfnFree = __internal_free_callback;
+    this->m_vk_mcrt_allocation_callbacks.pfnInternalAllocation = NULL;
+    this->m_vk_mcrt_allocation_callbacks.pfnInternalFree = NULL;
+
+    this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
 
     PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr = vkGetInstanceProcAddr;
 
@@ -123,7 +128,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;
 #endif
 
-        PT_MAYBE_UNUSED VkResult vk_res = vk_create_instance(&instance_create_info, &m_allocator_callbacks, &this->m_instance);
+        PT_MAYBE_UNUSED VkResult vk_res = vk_create_instance(&instance_create_info, this->m_vk_allocation_callbacks, &this->m_instance);
         assert(VK_SUCCESS == vk_res);
     }
     assert(VK_NULL_HANDLE != this->m_instance);
@@ -168,7 +173,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         debug_report_callback_create_info.pfnCallback = __internal_debug_report_callback;
         debug_report_callback_create_info.pUserData = this;
 
-        VkResult vk_res = vk_create_debug_report_callback_ext(this->m_instance, &debug_report_callback_create_info, &this->m_allocator_callbacks, &this->m_debug_report_callback);
+        VkResult vk_res = vk_create_debug_report_callback_ext(this->m_instance, &debug_report_callback_create_info, this->m_vk_allocation_callbacks, &this->m_debug_report_callback);
         assert(VK_SUCCESS == vk_res);
     }
 #endif
@@ -189,7 +194,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 PFN_vkEnumeratePhysicalDevices vk_enumerate_physical_devices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(vk_get_instance_proc_addr(instance, "vkEnumeratePhysicalDevices"));
                 assert(NULL != vk_enumerate_physical_devices);
 
-                uint32_t physical_device_count_before;
+                uint32_t physical_device_count_before = 0U;
                 PT_MAYBE_UNUSED VkResult vk_res_before = vk_enumerate_physical_devices(instance, &physical_device_count_before, NULL);
                 assert(VK_SUCCESS == vk_res_before);
 
@@ -471,7 +476,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         enabled_features.textureCompressionBC = this->m_physical_device_feature_texture_compression_BC ? VK_TRUE : VK_FALSE;
         device_create_info.pEnabledFeatures = &enabled_features;
 
-        PT_MAYBE_UNUSED VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, &m_allocator_callbacks, &this->m_device);
+        PT_MAYBE_UNUSED VkResult vk_res = vk_create_device(this->m_physical_device, &device_create_info, this->m_vk_allocation_callbacks, &this->m_device);
         assert(VK_SUCCESS == vk_res);
     }
     assert(VK_NULL_HANDLE != this->m_device);
@@ -479,199 +484,208 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     PFN_vkGetDeviceProcAddr vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_instance_proc_addr(m_instance, "vkGetDeviceProcAddr"));
     assert(NULL != vk_get_device_proc_addr);
 
-    vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_device_proc_addr(m_device, "vkGetDeviceProcAddr"));
+    vk_get_device_proc_addr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(vk_get_device_proc_addr(this->m_device, "vkGetDeviceProcAddr"));
     assert(NULL != vk_get_device_proc_addr);
 
-    this->m_vk_create_buffer = reinterpret_cast<PFN_vkCreateBuffer>(vk_get_device_proc_addr(m_device, "vkCreateBuffer"));
+    this->m_vk_create_buffer = reinterpret_cast<PFN_vkCreateBuffer>(vk_get_device_proc_addr(this->m_device, "vkCreateBuffer"));
     assert(NULL != this->m_vk_create_buffer);
 
-    this->m_vk_create_image = reinterpret_cast<PFN_vkCreateImage>(vk_get_device_proc_addr(m_device, "vkCreateImage"));
+    this->m_vk_create_image = reinterpret_cast<PFN_vkCreateImage>(vk_get_device_proc_addr(this->m_device, "vkCreateImage"));
     assert(NULL != this->m_vk_create_image);
 
-    this->m_vk_destroy_buffer = reinterpret_cast<PFN_vkDestroyBuffer>(vk_get_device_proc_addr(m_device, "vkDestroyBuffer"));
+    this->m_vk_destroy_buffer = reinterpret_cast<PFN_vkDestroyBuffer>(vk_get_device_proc_addr(this->m_device, "vkDestroyBuffer"));
     assert(NULL != this->m_vk_destroy_buffer);
 
-    this->m_vk_destroy_image = reinterpret_cast<PFN_vkDestroyImage>(vk_get_device_proc_addr(m_device, "vkDestroyImage"));
+    this->m_vk_destroy_image = reinterpret_cast<PFN_vkDestroyImage>(vk_get_device_proc_addr(this->m_device, "vkDestroyImage"));
     assert(NULL != this->m_vk_destroy_image);
 
-    this->m_vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetBufferMemoryRequirements"));
+    this->m_vk_get_buffer_memory_requirements = reinterpret_cast<PFN_vkGetBufferMemoryRequirements>(vk_get_device_proc_addr(this->m_device, "vkGetBufferMemoryRequirements"));
     assert(NULL != this->m_vk_get_buffer_memory_requirements);
 
-    this->m_vk_get_image_memory_requirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(vk_get_device_proc_addr(m_device, "vkGetImageMemoryRequirements"));
+    this->m_vk_get_image_memory_requirements = reinterpret_cast<PFN_vkGetImageMemoryRequirements>(vk_get_device_proc_addr(this->m_device, "vkGetImageMemoryRequirements"));
     assert(NULL != this->m_vk_get_image_memory_requirements);
 
-    this->m_vk_allocate_memory = reinterpret_cast<PFN_vkAllocateMemory>(vk_get_device_proc_addr(m_device, "vkAllocateMemory"));
+    this->m_vk_allocate_memory = reinterpret_cast<PFN_vkAllocateMemory>(vk_get_device_proc_addr(this->m_device, "vkAllocateMemory"));
     assert(NULL != this->m_vk_allocate_memory);
 
-    this->m_vk_free_memory = reinterpret_cast<PFN_vkFreeMemory>(vk_get_device_proc_addr(m_device, "vkFreeMemory"));
+    this->m_vk_free_memory = reinterpret_cast<PFN_vkFreeMemory>(vk_get_device_proc_addr(this->m_device, "vkFreeMemory"));
     assert(NULL != this->m_vk_free_memory);
 
-    this->m_vk_bind_buffer_memory = reinterpret_cast<PFN_vkBindBufferMemory>(vk_get_device_proc_addr(m_device, "vkBindBufferMemory"));
+    this->m_vk_bind_buffer_memory = reinterpret_cast<PFN_vkBindBufferMemory>(vk_get_device_proc_addr(this->m_device, "vkBindBufferMemory"));
     assert(NULL != this->m_vk_bind_buffer_memory);
 
-    this->m_vk_bind_image_memory = reinterpret_cast<PFN_vkBindImageMemory>(vk_get_device_proc_addr(m_device, "vkBindImageMemory"));
+    this->m_vk_bind_image_memory = reinterpret_cast<PFN_vkBindImageMemory>(vk_get_device_proc_addr(this->m_device, "vkBindImageMemory"));
     assert(NULL != this->m_vk_bind_image_memory);
 
-    this->m_vk_map_memory = reinterpret_cast<PFN_vkMapMemory>(vk_get_device_proc_addr(m_device, "vkMapMemory"));
+    this->m_vk_map_memory = reinterpret_cast<PFN_vkMapMemory>(vk_get_device_proc_addr(this->m_device, "vkMapMemory"));
     assert(NULL != this->m_vk_map_memory);
 
-    this->m_vk_unmap_memory = reinterpret_cast<PFN_vkUnmapMemory>(vk_get_device_proc_addr(m_device, "vkUnmapMemory"));
+    this->m_vk_unmap_memory = reinterpret_cast<PFN_vkUnmapMemory>(vk_get_device_proc_addr(this->m_device, "vkUnmapMemory"));
     assert(NULL != this->m_vk_unmap_memory);
 
-    this->m_vk_create_command_pool = reinterpret_cast<PFN_vkCreateCommandPool>(vk_get_device_proc_addr(m_device, "vkCreateCommandPool"));
+    this->m_vk_create_command_pool = reinterpret_cast<PFN_vkCreateCommandPool>(vk_get_device_proc_addr(this->m_device, "vkCreateCommandPool"));
     assert(NULL != this->m_vk_create_command_pool);
 
-    this->m_vk_reset_command_pool = reinterpret_cast<PFN_vkResetCommandPool>(vk_get_device_proc_addr(m_device, "vkResetCommandPool"));
+    this->m_vk_reset_command_pool = reinterpret_cast<PFN_vkResetCommandPool>(vk_get_device_proc_addr(this->m_device, "vkResetCommandPool"));
     assert(NULL != this->m_vk_reset_command_pool);
 
-    this->m_vk_destroy_command_pool = reinterpret_cast<PFN_vkDestroyCommandPool>(vk_get_device_proc_addr(m_device, "vkDestroyCommandPool"));
+    this->m_vk_destroy_command_pool = reinterpret_cast<PFN_vkDestroyCommandPool>(vk_get_device_proc_addr(this->m_device, "vkDestroyCommandPool"));
     assert(NULL != this->m_vk_destroy_command_pool);
 
-    this->m_vk_allocate_command_buffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(vk_get_device_proc_addr(m_device, "vkAllocateCommandBuffers"));
+    this->m_vk_allocate_command_buffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(vk_get_device_proc_addr(this->m_device, "vkAllocateCommandBuffers"));
     assert(NULL != this->m_vk_allocate_command_buffers);
 
-    this->m_vk_begin_command_buffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(vk_get_device_proc_addr(m_device, "vkBeginCommandBuffer"));
+    this->m_vk_begin_command_buffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(vk_get_device_proc_addr(this->m_device, "vkBeginCommandBuffer"));
     assert(NULL != this->m_vk_begin_command_buffer);
 
-    this->m_vk_end_command_buffer = reinterpret_cast<PFN_vkEndCommandBuffer>(vk_get_device_proc_addr(m_device, "vkEndCommandBuffer"));
+    this->m_vk_end_command_buffer = reinterpret_cast<PFN_vkEndCommandBuffer>(vk_get_device_proc_addr(this->m_device, "vkEndCommandBuffer"));
     assert(NULL != this->m_vk_end_command_buffer);
 
-    this->m_vk_cmd_copy_buffer = reinterpret_cast<PFN_vkCmdCopyBuffer>(vk_get_device_proc_addr(m_device, "vkCmdCopyBuffer"));
+    this->m_vk_cmd_copy_buffer = reinterpret_cast<PFN_vkCmdCopyBuffer>(vk_get_device_proc_addr(this->m_device, "vkCmdCopyBuffer"));
     assert(NULL != this->m_vk_cmd_copy_buffer);
 
-    this->m_vk_cmd_pipeline_barrier = reinterpret_cast<PFN_vkCmdPipelineBarrier>(vk_get_device_proc_addr(m_device, "vkCmdPipelineBarrier"));
+    this->m_vk_cmd_pipeline_barrier = reinterpret_cast<PFN_vkCmdPipelineBarrier>(vk_get_device_proc_addr(this->m_device, "vkCmdPipelineBarrier"));
     assert(NULL != this->m_vk_cmd_pipeline_barrier);
 
-    this->m_vk_cmd_copy_buffer_to_image = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(vk_get_device_proc_addr(m_device, "vkCmdCopyBufferToImage"));
+    this->m_vk_cmd_copy_buffer_to_image = reinterpret_cast<PFN_vkCmdCopyBufferToImage>(vk_get_device_proc_addr(this->m_device, "vkCmdCopyBufferToImage"));
     assert(NULL != this->m_vk_cmd_copy_buffer_to_image);
 
-    this->m_vk_queue_submit = reinterpret_cast<PFN_vkQueueSubmit>(vk_get_device_proc_addr(m_device, "vkQueueSubmit"));
+    this->m_vk_queue_submit = reinterpret_cast<PFN_vkQueueSubmit>(vk_get_device_proc_addr(this->m_device, "vkQueueSubmit"));
     assert(NULL != this->m_vk_queue_submit);
 
-    this->m_vk_create_fence = reinterpret_cast<PFN_vkCreateFence>(vk_get_device_proc_addr(m_device, "vkCreateFence"));
+    this->m_vk_create_fence = reinterpret_cast<PFN_vkCreateFence>(vk_get_device_proc_addr(this->m_device, "vkCreateFence"));
     assert(NULL != this->m_vk_create_fence);
 
-    this->m_vk_wait_for_fences = reinterpret_cast<PFN_vkWaitForFences>(vk_get_device_proc_addr(m_device, "vkWaitForFences"));
+    this->m_vk_wait_for_fences = reinterpret_cast<PFN_vkWaitForFences>(vk_get_device_proc_addr(this->m_device, "vkWaitForFences"));
     assert(NULL != this->m_vk_wait_for_fences);
 
-    this->m_vk_reset_fences = reinterpret_cast<PFN_vkResetFences>(vk_get_device_proc_addr(m_device, "vkResetFences"));
+    this->m_vk_reset_fences = reinterpret_cast<PFN_vkResetFences>(vk_get_device_proc_addr(this->m_device, "vkResetFences"));
     assert(NULL != this->m_vk_reset_fences);
 
-    this->m_vk_destory_fence = reinterpret_cast<PFN_vkDestroyFence>(vk_get_device_proc_addr(m_device, "vkDestroyFence"));
+    this->m_vk_destory_fence = reinterpret_cast<PFN_vkDestroyFence>(vk_get_device_proc_addr(this->m_device, "vkDestroyFence"));
     assert(NULL != this->m_vk_destory_fence);
 
-    this->m_vk_create_semaphore = reinterpret_cast<PFN_vkCreateSemaphore>(vk_get_device_proc_addr(m_device, "vkCreateSemaphore"));
+    this->m_vk_create_semaphore = reinterpret_cast<PFN_vkCreateSemaphore>(vk_get_device_proc_addr(this->m_device, "vkCreateSemaphore"));
     assert(NULL != this->m_vk_create_semaphore);
 
-    this->m_vk_destroy_semaphore = reinterpret_cast<PFN_vkDestroySemaphore>(vk_get_device_proc_addr(m_device, "vkDestroySemaphore"));
+    this->m_vk_destroy_semaphore = reinterpret_cast<PFN_vkDestroySemaphore>(vk_get_device_proc_addr(this->m_device, "vkDestroySemaphore"));
     assert(NULL != this->m_vk_destroy_semaphore);
 
-    this->m_vk_create_swapchain = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk_get_device_proc_addr(m_device, "vkCreateSwapchainKHR"));
+    this->m_vk_create_swapchain = reinterpret_cast<PFN_vkCreateSwapchainKHR>(vk_get_device_proc_addr(this->m_device, "vkCreateSwapchainKHR"));
     assert(NULL != this->m_vk_create_swapchain);
 
-    this->m_vk_get_swapchain_images = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk_get_device_proc_addr(m_device, "vkGetSwapchainImagesKHR"));
+    this->m_vk_destroy_swapchain = reinterpret_cast<PFN_vkDestroySwapchainKHR>(vk_get_device_proc_addr(this->m_device, "vkDestroySwapchainKHR"));
+    assert(NULL != this->m_vk_destroy_swapchain);
+
+    this->m_vk_get_swapchain_images = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(vk_get_device_proc_addr(this->m_device, "vkGetSwapchainImagesKHR"));
     assert(NULL != this->m_vk_get_swapchain_images);
 
-    this->m_vk_create_render_pass = reinterpret_cast<PFN_vkCreateRenderPass>(vk_get_device_proc_addr(m_device, "vkCreateRenderPass"));
+    this->m_vk_create_render_pass = reinterpret_cast<PFN_vkCreateRenderPass>(vk_get_device_proc_addr(this->m_device, "vkCreateRenderPass"));
     assert(NULL != this->m_vk_create_render_pass);
 
-    this->m_vk_destroy_render_pass = reinterpret_cast<PFN_vkDestroyRenderPass>(vk_get_device_proc_addr(m_device, "vkDestroyRenderPass"));
+    this->m_vk_destroy_render_pass = reinterpret_cast<PFN_vkDestroyRenderPass>(vk_get_device_proc_addr(this->m_device, "vkDestroyRenderPass"));
     assert(NULL != this->m_vk_destroy_render_pass);
 
-    this->m_vk_create_image_view = reinterpret_cast<PFN_vkCreateImageView>(vk_get_device_proc_addr(m_device, "vkCreateImageView"));
+    this->m_vk_create_image_view = reinterpret_cast<PFN_vkCreateImageView>(vk_get_device_proc_addr(this->m_device, "vkCreateImageView"));
     assert(NULL != this->m_vk_create_image_view);
 
-    this->m_vk_destory_image_view = reinterpret_cast<PFN_vkDestroyImageView>(vk_get_device_proc_addr(m_device, "vkDestroyImageView"));
+    this->m_vk_destory_image_view = reinterpret_cast<PFN_vkDestroyImageView>(vk_get_device_proc_addr(this->m_device, "vkDestroyImageView"));
     assert(NULL != this->m_vk_destory_image_view);
 
-    this->m_vk_create_framebuffer = reinterpret_cast<PFN_vkCreateFramebuffer>(vk_get_device_proc_addr(m_device, "vkCreateFramebuffer"));
+    this->m_vk_create_framebuffer = reinterpret_cast<PFN_vkCreateFramebuffer>(vk_get_device_proc_addr(this->m_device, "vkCreateFramebuffer"));
     assert(NULL != this->m_vk_create_framebuffer);
 
-    this->m_vk_destory_framebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(vk_get_device_proc_addr(m_device, "vkDestroyFramebuffer"));
+    this->m_vk_destory_framebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(vk_get_device_proc_addr(this->m_device, "vkDestroyFramebuffer"));
     assert(NULL != this->m_vk_destory_framebuffer);
 
-    this->m_vk_create_sampler = reinterpret_cast<PFN_vkCreateSampler>(vk_get_device_proc_addr(m_device, "vkCreateSampler"));
+    this->m_vk_create_sampler = reinterpret_cast<PFN_vkCreateSampler>(vk_get_device_proc_addr(this->m_device, "vkCreateSampler"));
     assert(NULL != this->m_vk_create_sampler);
 
-    this->m_vk_destroy_sampler = reinterpret_cast<PFN_vkDestroySampler>(vk_get_device_proc_addr(m_device, "vkDestroySampler"));
+    this->m_vk_destroy_sampler = reinterpret_cast<PFN_vkDestroySampler>(vk_get_device_proc_addr(this->m_device, "vkDestroySampler"));
     assert(NULL != this->m_vk_destroy_sampler);
 
-    this->m_vk_create_descriptor_set_layout = reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(vk_get_device_proc_addr(m_device, "vkCreateDescriptorSetLayout"));
+    this->m_vk_create_descriptor_set_layout = reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(vk_get_device_proc_addr(this->m_device, "vkCreateDescriptorSetLayout"));
     assert(NULL != this->m_vk_create_descriptor_set_layout);
 
-    this->m_vk_create_pipeline_layout = reinterpret_cast<PFN_vkCreatePipelineLayout>(vk_get_device_proc_addr(m_device, "vkCreatePipelineLayout"));
+    this->m_vk_create_pipeline_layout = reinterpret_cast<PFN_vkCreatePipelineLayout>(vk_get_device_proc_addr(this->m_device, "vkCreatePipelineLayout"));
     assert(NULL != this->m_vk_create_pipeline_layout);
 
-    this->m_vk_create_descriptor_pool = reinterpret_cast<PFN_vkCreateDescriptorPool>(vk_get_device_proc_addr(m_device, "vkCreateDescriptorPool"));
+    this->m_vk_create_descriptor_pool = reinterpret_cast<PFN_vkCreateDescriptorPool>(vk_get_device_proc_addr(this->m_device, "vkCreateDescriptorPool"));
     assert(NULL != this->m_vk_create_descriptor_pool);
 
-    this->m_vk_destroy_descriptor_pool = reinterpret_cast<PFN_vkDestroyDescriptorPool>(vk_get_device_proc_addr(m_device, "vkDestroyDescriptorPool"));
+    this->m_vk_destroy_descriptor_pool = reinterpret_cast<PFN_vkDestroyDescriptorPool>(vk_get_device_proc_addr(this->m_device, "vkDestroyDescriptorPool"));
     assert(NULL != this->m_vk_destroy_descriptor_pool);
 
-    this->m_vk_allocate_descriptor_sets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(vk_get_device_proc_addr(m_device, "vkAllocateDescriptorSets"));
+    this->m_vk_allocate_descriptor_sets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(vk_get_device_proc_addr(this->m_device, "vkAllocateDescriptorSets"));
     assert(NULL != this->m_vk_allocate_descriptor_sets);
 
-    this->m_vk_update_descriptor_sets = reinterpret_cast<PFN_vkUpdateDescriptorSets>(vk_get_device_proc_addr(m_device, "vkUpdateDescriptorSets"));
+    this->m_vk_update_descriptor_sets = reinterpret_cast<PFN_vkUpdateDescriptorSets>(vk_get_device_proc_addr(this->m_device, "vkUpdateDescriptorSets"));
     assert(NULL != this->m_vk_update_descriptor_sets);
 
-    this->m_vk_create_shader_module = reinterpret_cast<PFN_vkCreateShaderModule>(vk_get_device_proc_addr(m_device, "vkCreateShaderModule"));
+    this->m_vk_create_shader_module = reinterpret_cast<PFN_vkCreateShaderModule>(vk_get_device_proc_addr(this->m_device, "vkCreateShaderModule"));
     assert(NULL != this->m_vk_create_shader_module);
 
-    this->m_vk_destroy_shader_module = reinterpret_cast<PFN_vkDestroyShaderModule>(vk_get_device_proc_addr(m_device, "vkDestroyShaderModule"));
+    this->m_vk_destroy_shader_module = reinterpret_cast<PFN_vkDestroyShaderModule>(vk_get_device_proc_addr(this->m_device, "vkDestroyShaderModule"));
     assert(NULL != this->m_vk_destroy_shader_module);
 
-    this->m_vk_create_graphics_pipelines = reinterpret_cast<PFN_vkCreateGraphicsPipelines>(vk_get_device_proc_addr(m_device, "vkCreateGraphicsPipelines"));
+    this->m_vk_create_graphics_pipelines = reinterpret_cast<PFN_vkCreateGraphicsPipelines>(vk_get_device_proc_addr(this->m_device, "vkCreateGraphicsPipelines"));
     assert(NULL != this->m_vk_create_graphics_pipelines);
 
-    this->m_vk_create_pipeline_cache = reinterpret_cast<PFN_vkCreatePipelineCache>(vk_get_device_proc_addr(m_device, "vkCreatePipelineCache"));
+    this->m_vk_destroy_pipeline = reinterpret_cast<PFN_vkDestroyPipeline>(vk_get_device_proc_addr(this->m_device, "vkDestroyPipeline"));
+    assert(NULL != this->m_vk_destroy_pipeline);
+
+    this->m_vk_create_pipeline_cache = reinterpret_cast<PFN_vkCreatePipelineCache>(vk_get_device_proc_addr(this->m_device, "vkCreatePipelineCache"));
     assert(NULL != this->m_vk_create_pipeline_cache);
 
-    this->m_vk_get_pipeline_cache_data = reinterpret_cast<PFN_vkGetPipelineCacheData>(vk_get_device_proc_addr(m_device, "vkGetPipelineCacheData"));
+    this->m_vk_get_pipeline_cache_data = reinterpret_cast<PFN_vkGetPipelineCacheData>(vk_get_device_proc_addr(this->m_device, "vkGetPipelineCacheData"));
     assert(NULL != this->m_vk_get_pipeline_cache_data);
 
-    this->m_vk_acquire_next_image = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk_get_device_proc_addr(m_device, "vkAcquireNextImageKHR"));
+    this->m_vk_destroy_pipeline_cache = reinterpret_cast<PFN_vkDestroyPipelineCache>(vk_get_device_proc_addr(this->m_device, "vkDestroyPipelineCache"));
+    assert(NULL != this->m_vk_destroy_pipeline_cache);
+
+    this->m_vk_acquire_next_image = reinterpret_cast<PFN_vkAcquireNextImageKHR>(vk_get_device_proc_addr(this->m_device, "vkAcquireNextImageKHR"));
     assert(NULL != this->m_vk_acquire_next_image);
 
-    this->m_vk_queue_present = reinterpret_cast<PFN_vkQueuePresentKHR>(vk_get_device_proc_addr(m_device, "vkQueuePresentKHR"));
+    this->m_vk_queue_present = reinterpret_cast<PFN_vkQueuePresentKHR>(vk_get_device_proc_addr(this->m_device, "vkQueuePresentKHR"));
     assert(NULL != this->m_vk_queue_present);
 
-    this->m_vk_cmd_begin_render_pass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(vk_get_device_proc_addr(m_device, "vkCmdBeginRenderPass"));
+    this->m_vk_cmd_begin_render_pass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(vk_get_device_proc_addr(this->m_device, "vkCmdBeginRenderPass"));
     assert(NULL != this->m_vk_cmd_begin_render_pass);
 
-    this->m_vk_cmd_execute_commands = reinterpret_cast<PFN_vkCmdExecuteCommands>(vk_get_device_proc_addr(m_device, "vkCmdExecuteCommands"));
+    this->m_vk_cmd_execute_commands = reinterpret_cast<PFN_vkCmdExecuteCommands>(vk_get_device_proc_addr(this->m_device, "vkCmdExecuteCommands"));
     assert(NULL != this->m_vk_cmd_execute_commands);
 
-    this->m_vk_cmd_bind_pipeline = reinterpret_cast<PFN_vkCmdBindPipeline>(vk_get_device_proc_addr(m_device, "vkCmdBindPipeline"));
+    this->m_vk_cmd_bind_pipeline = reinterpret_cast<PFN_vkCmdBindPipeline>(vk_get_device_proc_addr(this->m_device, "vkCmdBindPipeline"));
     assert(NULL != this->m_vk_cmd_bind_pipeline);
 
-    this->m_vk_cmd_set_viewport = reinterpret_cast<PFN_vkCmdSetViewport>(vk_get_device_proc_addr(m_device, "vkCmdSetViewport"));
+    this->m_vk_cmd_set_viewport = reinterpret_cast<PFN_vkCmdSetViewport>(vk_get_device_proc_addr(this->m_device, "vkCmdSetViewport"));
     assert(NULL != this->m_vk_cmd_set_viewport);
 
-    this->m_vk_cmd_set_scissor = reinterpret_cast<PFN_vkCmdSetScissor>(vk_get_device_proc_addr(m_device, "vkCmdSetScissor"));
+    this->m_vk_cmd_set_scissor = reinterpret_cast<PFN_vkCmdSetScissor>(vk_get_device_proc_addr(this->m_device, "vkCmdSetScissor"));
     assert(NULL != this->m_vk_cmd_set_scissor);
 
-    this->m_vk_cmd_bind_vertex_buffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(vk_get_device_proc_addr(m_device, "vkCmdBindVertexBuffers"));
+    this->m_vk_cmd_bind_vertex_buffers = reinterpret_cast<PFN_vkCmdBindVertexBuffers>(vk_get_device_proc_addr(this->m_device, "vkCmdBindVertexBuffers"));
     assert(NULL != this->m_vk_cmd_bind_vertex_buffers);
 
-    this->m_vk_cmd_bind_index_buffer = reinterpret_cast<PFN_vkCmdBindIndexBuffer>(vk_get_device_proc_addr(m_device, "vkCmdBindIndexBuffer"));
+    this->m_vk_cmd_bind_index_buffer = reinterpret_cast<PFN_vkCmdBindIndexBuffer>(vk_get_device_proc_addr(this->m_device, "vkCmdBindIndexBuffer"));
     assert(NULL != this->m_vk_cmd_bind_index_buffer);
 
-    this->m_vk_cmd_push_constants = reinterpret_cast<PFN_vkCmdPushConstants>(vk_get_device_proc_addr(m_device, "vkCmdPushConstants"));
+    this->m_vk_cmd_push_constants = reinterpret_cast<PFN_vkCmdPushConstants>(vk_get_device_proc_addr(this->m_device, "vkCmdPushConstants"));
     assert(NULL != this->m_vk_cmd_push_constants);
 
-    this->m_vk_cmd_bind_descriptor_sets = reinterpret_cast<PFN_vkCmdBindDescriptorSets>(vk_get_device_proc_addr(m_device, "vkCmdBindDescriptorSets"));
+    this->m_vk_cmd_bind_descriptor_sets = reinterpret_cast<PFN_vkCmdBindDescriptorSets>(vk_get_device_proc_addr(this->m_device, "vkCmdBindDescriptorSets"));
     assert(NULL != this->m_vk_cmd_bind_descriptor_sets);
 
-    this->m_vk_cmd_draw = reinterpret_cast<PFN_vkCmdDraw>(vk_get_device_proc_addr(m_device, "vkCmdDraw"));
+    this->m_vk_cmd_draw = reinterpret_cast<PFN_vkCmdDraw>(vk_get_device_proc_addr(this->m_device, "vkCmdDraw"));
     assert(NULL != this->m_vk_cmd_draw);
 
-    this->m_vk_cmd_end_render_pass = reinterpret_cast<PFN_vkCmdEndRenderPass>(vk_get_device_proc_addr(m_device, "vkCmdEndRenderPass"));
+    this->m_vk_cmd_end_render_pass = reinterpret_cast<PFN_vkCmdEndRenderPass>(vk_get_device_proc_addr(this->m_device, "vkCmdEndRenderPass"));
     assert(NULL != this->m_vk_cmd_end_render_pass);
 
     this->m_queue_graphics = VK_NULL_HANDLE;
     this->m_queue_transfer = VK_NULL_HANDLE;
     {
-        PFN_vkGetDeviceQueue vk_get_device_queue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(m_device, "vkGetDeviceQueue"));
+        PFN_vkGetDeviceQueue vk_get_device_queue = reinterpret_cast<PFN_vkGetDeviceQueue>(vk_get_device_proc_addr(this->m_device, "vkGetDeviceQueue"));
         assert(NULL != vk_get_device_queue);
 
         vk_get_device_queue(this->m_device, this->m_queue_graphics_family_index, this->m_queue_graphics_queue_index, &this->m_queue_graphics);
@@ -695,7 +709,7 @@ void gfx_device_vk::destroy()
 
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
-    vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, &m_allocator_callbacks);
+    vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, this->m_vk_allocation_callbacks);
     m_debug_report_callback = VK_NULL_HANDLE;
 #endif
 }
