@@ -54,10 +54,12 @@ static void VKAPI_PTR __internal_internal_free_callback(void *, size_t size, VkI
 {
 }
 
+#ifndef NDEBUG
 static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData)
 {
     return static_cast<gfx_device_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
 }
+#endif
 
 bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window)
 {
