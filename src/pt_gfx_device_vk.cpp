@@ -35,26 +35,36 @@ gfx_device_vk::gfx_device_vk()
 static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
 {
     void *pMemory = mcrt_aligned_malloc(size, alignment);
-
     return pMemory;
-}
-
-static void *VKAPI_PTR __internal_reallocation_callback(void *, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
-{
-    if (NULL != pOriginal && 0U == size)
-    {
-
-    }
-    return mcrt_aligned_realloc(pOriginal, size, alignment);
 }
 
 static void VKAPI_PTR __internal_free_callback(void *, void *pMemory)
 {
     if (NULL != pMemory)
     {
-
+        return mcrt_aligned_free(pMemory);
     }
-    return mcrt_aligned_free(pMemory);
+    else
+    {
+        return;
+    }
+}
+
+static void *VKAPI_PTR __internal_reallocation_callback(void *pUserData, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope)
+{
+    if (NULL == pOriginal)
+    {
+        return __internal_allocation_callback(pUserData, size, alignment, allocationScope);
+    }
+    else if (0U == size)
+    {
+        __internal_free_callback(pUserData, pOriginal);
+        return NULL;
+    }
+    else
+    {
+        return mcrt_aligned_realloc(pOriginal, size, alignment);
+    }
 }
 
 #ifndef NDEBUG
