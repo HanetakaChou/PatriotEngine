@@ -43,7 +43,7 @@
 #define PT_X86 1
 #elif defined(__aarch64__)
 #define PT_ARM64 1
-#elif defined(__arm__)
+#elif defined(__arm__) //&& defined(__thumb__)
 #define PT_ARM 1
 #else
 #error Unknown Architecture

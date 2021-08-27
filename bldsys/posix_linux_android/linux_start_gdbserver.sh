@@ -23,6 +23,14 @@
 MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 cd ${MY_DIR}
 
+python2 "${MY_DIR}/ndk_python/prebuilt/linux-x86_64/bin/ndk-gdb.py" --project ${MY_DIR} --adb "${MY_DIR}/android-sdk/platform-tools/adb" --launch
+
+exit 0 
+
+
+
+
+
 # https://developer.android.com/studio/debug#debug-types
 # android-ndk-r14b/prebuilt/windows-x86_64/bin/ndk-gdb.py
 # android-ndk-r14b/python-packages/gdbrunner/__init__.py
@@ -152,8 +160,7 @@ else
 fi 
 
 # we don't use "wait java" method 
-# we connect to the gdbserver when we lock the screen of the phone
-# and when we unlock the screen of the phone after the gdbserver is connected
+# we use "Wait for debugger" in the developer options
 
 # wait the activity to launch
 sleep ${DELAY} 
@@ -203,6 +210,9 @@ fi
 #       Popen handle to the `adb shell` process gdbserver was started with.
 #
 DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
+
+# remove the old one
+"${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" rm -rf ${DEBUG_SOCKET}"
 
 if "${ADB_CMD}" forward "tcp:${PORT}" "localfilesystem:${DEBUG_SOCKET}"; then
     echo "Starting gdbserver..."

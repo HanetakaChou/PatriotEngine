@@ -92,6 +92,11 @@ LOCAL_CFLAGS += -std=c99
 LOCAL_CPPFLAGS += -xc	
 LOCAL_CPPFLAGS += -std=c99
 
+ifeq (arm,$(TARGET_ARCH))
+LOCAL_ARM_MODE := arm
+LOCAL_ARM_NEON := true
+endif
+
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
 include $(BUILD_STATIC_LIBRARY)

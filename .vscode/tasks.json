@@ -4,16 +4,23 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build-glibc-debug-x64",
+            "label": "build-linux-x11-debug-x64",
             "type": "shell",
             "command": "${workspaceFolder}/bldsys/posix_linux_x11/build.sh debug x64",
             "problemMatcher": [],
             "group": "build"
         },
         {
-            "label": "build-glibc-release-x64",
+            "label": "build-linux-x11-release-x64",
             "type": "shell",
             "command": "${workspaceFolder}/bldsys/posix_linux_x11/build.sh release x64",
+            "problemMatcher": [],
+            "group": "build"
+        },
+        {
+            "label": "build-linux-android-debug",
+            "type": "shell",
+            "command": "${workspaceFolder}/bldsys/posix_linux_android/linux_build_debug.sh",
             "problemMatcher": [],
             "group": "build"
         },

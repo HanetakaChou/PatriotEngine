@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Android Dependencies (All APP_ABI) (On Ubuntu LTS)
-        run: ./bldsys/posix_linux_android/install_dependencies_linux.sh
+        run: ./bldsys/posix_linux_android/linux_install_dependencies.sh
       - name: Build Android Debug (All APP_ABI) (On Ubuntu LTS)
-        run: ./bldsys/posix_linux_android/build_debug_linux.sh
+        run: ./bldsys/posix_linux_android/linux_build_debug.sh

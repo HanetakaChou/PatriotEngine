@@ -22,6 +22,7 @@
 #include <pt_mcrt_atomic.h>
 #include <pt_gfx_connection.h>
 #include <assert.h>
+#include <unistd.h>
 
 static void ANativeActivity_onDestroy(ANativeActivity *native_activity);
 static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue);
@@ -50,6 +51,9 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 	static bool app_process_on_create = true;
 	if (PT_UNLIKELY(app_process_on_create))
 	{
+		// demo purpose
+		chdir(native_activity->internalDataPath);
+
 		wsi_linux_android_gfx_connection = gfx_connection_init(NULL, NULL);
 
 		struct wsi_linux_android_app_main_argument_t linux_android_app_main_argument;
@@ -61,11 +65,6 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 		assert(res_native_thread_create);
 
 		while (!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
-		{
-			mcrt_os_yield();
-		}
-
-		for (int i = 0; i < 500; ++i)
 		{
 			mcrt_os_yield();
 		}

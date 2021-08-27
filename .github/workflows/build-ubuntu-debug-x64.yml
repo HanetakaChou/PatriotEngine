@@ -1,0 +1,20 @@
+name: Ubuntu LTS Debug x64
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: install ubuntu lts dependencies
+        run: sudo ./bldsys/posix_linux_x11/install_ubuntu_dependencies.sh x64
+      - name: build ubuntu lts debug
+        run: ./bldsys/posix_linux_x11/build.sh debug x64
+      - name: test ubuntu lts debug
+        run: ./bldsys/posix_linux_x11/run_tests.sh debug x64

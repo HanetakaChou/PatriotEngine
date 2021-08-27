@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Android Dependencies (All APP_ABI) (On Windows)
-        run: ./bldsys/posix_linux_android/install_dependencies_windows.bat
+        run: ./bldsys/posix_linux_android/windows_install_dependencies.bat
       - name: Build Android Release (All APP_ABI) (On Windows)
-        run: ./bldsys/posix_linux_android/build_release_windows.bat
+        run: ./bldsys/posix_linux_android/windows_build_release.bat

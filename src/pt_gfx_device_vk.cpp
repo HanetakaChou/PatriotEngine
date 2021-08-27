@@ -80,20 +80,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.flags = 0U;
         instance_create_info.pApplicationInfo = &application_info;
 #ifndef NDEBUG
-
-#if defined(VK_API_VERSION_1_2) || (defined(VK_API_VERSION_1_1) && (VK_HEADER_VERSION >= 106))
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
         instance_create_info.enabledLayerCount = 1U;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-#elif defined(VK_API_VERSION_1_1) 
-        char const *enabled_layer_names[1] = {"VK_LAYER_LUNARG_standard_validation"};
-        instance_create_info.enabledLayerCount = 1;
-        instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-#else
-        char const *enabled_layer_names[5] = {"VK_LAYER_GOOGLE_threading", "VK_LAYER_LUNARG_parameter_validation", "VK_LAYER_LUNARG_object_tracker", "VK_LAYER_LUNARG_core_validation", "VK_LAYER_GOOGLE_unique_objects"};
-        instance_create_info.enabledLayerCount = 5;
-        instance_create_info.ppEnabledLayerNames = enabled_layer_names;
-#endif
         char const *enabled_extension_names[3] = {VK_EXT_DEBUG_REPORT_EXTENSION_NAME, VK_KHR_SURFACE_EXTENSION_NAME, platform_surface_extension_name()};
         instance_create_info.enabledExtensionCount = 3U;
         instance_create_info.ppEnabledExtensionNames = enabled_extension_names;

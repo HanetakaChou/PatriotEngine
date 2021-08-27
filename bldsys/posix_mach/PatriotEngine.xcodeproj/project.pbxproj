@@ -193,8 +193,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
-		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
+		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
+		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
 		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -223,7 +223,7 @@
 		629186D526D84891007A708F /* pt_gfx_material_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_base.cpp; path = ../../src/pt_gfx_material_base.cpp; sourceTree = "<group>"; };
 		629186D726D8489F007A708F /* pt_gfx_material_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_material_vk.h; path = ../../src/pt_gfx_material_vk.h; sourceTree = "<group>"; };
 		629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_vk.cpp; path = ../../src/pt_gfx_material_vk.cpp; sourceTree = "<group>"; };
-		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
+		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
 		62D230622688861B0044D96C /* pt_gfx_texture_base_load_dds.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base_load_dds.cpp; path = ../../src/pt_gfx_texture_base_load_dds.cpp; sourceTree = SOURCE_ROOT; };
@@ -1360,9 +1360,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -1384,9 +1384,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -1763,7 +1763,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -1822,7 +1822,7 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;

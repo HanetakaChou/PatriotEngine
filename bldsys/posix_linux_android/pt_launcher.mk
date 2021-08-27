@@ -30,6 +30,12 @@ LOCAL_SRC_FILES:= \
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LOCAL_CFLAGS += -fvisibility=hidden
+LOCAL_CFLAGS += -Wall
+
+ifeq (arm,$(TARGET_ARCH))
+LOCAL_ARM_MODE := arm
+LOCAL_ARM_NEON := true
+endif
 
 LOCAL_CPPFLAGS += -std=c++11
 
@@ -39,6 +45,6 @@ LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 LOCAL_LDFLAGS += -landroid
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt libpt_gfx
+LOCAL_SHARED_LIBRARIES += libpt_mcrt libpt_gfx
 
 include $(BUILD_SHARED_LIBRARY)

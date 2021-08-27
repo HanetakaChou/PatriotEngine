@@ -13,6 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install Android Dependencies (All APP_ABI) (On MacOSX)
-        run: ./bldsys/posix_linux_android/install_dependencies_macosx.sh
+        run: ./bldsys/posix_linux_android/macosx_install_dependencies.sh
       - name: Build Android Release (All APP_ABI) (On MacOSX)
-        run: ./bldsys/posix_linux_android/build_release_macosx.sh
+        run: ./bldsys/posix_linux_android/macosx_build_release.sh
