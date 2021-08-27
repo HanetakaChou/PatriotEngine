@@ -38,7 +38,7 @@
             "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/app_process64", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bldsys/posix_linux_android",
+            "cwd": "${workspaceFolder}/third_party/assets",
             "environment": [],
             "externalConsole": false,
             "miDebuggerServerAddress": "localhost:5039", //Use gdbserver

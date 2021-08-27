@@ -38,8 +38,8 @@ static void *wsi_linux_android_void_instance = NULL;
 
 struct wsi_linux_android_app_main_argument_t
 {
-    gfx_connection_ref m_gfx_connection;
-    void **m_void_instance;
+	gfx_connection_ref m_gfx_connection;
+	void **m_void_instance;
 	bool m_has_inited;
 };
 static void *wsi_linux_android_app_main(void *argument);
@@ -60,7 +60,12 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_app_main_thread_id, wsi_linux_android_app_main, NULL);
 		assert(res_native_thread_create);
 
-		while(!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
+		while (!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
+		{
+			mcrt_os_yield();
+		}
+
+		for (int i = 0; i < 500; ++i)
 		{
 			mcrt_os_yield();
 		}
@@ -195,11 +200,11 @@ static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_a
 static void *wsi_linux_android_app_main(void *argument_void)
 {
 	struct wsi_linux_android_app_main_argument_t *argument = static_cast<struct wsi_linux_android_app_main_argument_t *>(argument_void);
-	bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection,argument->m_void_instance);
+	bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
 	assert(res_neutral_app_init);
 	mcrt_atomic_store(&argument->m_has_inited, true);
 
-    int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
+	int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
 
 	//mcrt_atomic_store(&self->m_loop, false);
 

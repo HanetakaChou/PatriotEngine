@@ -141,12 +141,16 @@ fi
 
 # Launch the application if needed, and get its pid
 COMPONENT_NAME="${PACKAGE_NAME}/${LAUNCH_ACTIVITY_NAME}"
-if "${ADB_CMD}" shell "am start ${COMPONENT_NAME}"; then # -D # wait java
+if "${ADB_CMD}" shell "am start ${COMPONENT_NAME}"; then # -D # wait java 
     echo "Launching activity ${COMPONENT_NAME}..."
 else
     echo "Failed to start ${COMPONENT_NAME}"
     exit 1
 fi 
+
+# we don't use "wait java" method 
+# we connect to the gdbserver when we lock the screen of the phone
+# and when we unlock the screen of the phone after the gdbserver is connected
 
 # wait the activity to launch
 sleep ${DELAY} 
