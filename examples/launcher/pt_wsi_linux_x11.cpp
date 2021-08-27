@@ -140,7 +140,6 @@ void wsi_window_x11::init()
     assert(m_gfx_connection != NULL);
 
     // app_thread
-    m_wsi_window_app = NULL;
     mcrt_atomic_store(&m_app_thread_running, false);
     PT_MAYBE_UNUSED bool res_app_thread = mcrt_native_thread_create(&m_app_thread_id, app_main, this);
     assert(res_app_thread);
@@ -148,8 +147,7 @@ void wsi_window_x11::init()
     {
         mcrt_os_yield();
     }
-    assert(m_wsi_window_app != NULL);
-
+    
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_alloc
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
@@ -205,17 +203,17 @@ void *wsi_window_x11::app_main(void *arg)
 {
     wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    self->m_wsi_window_app = wsi_window_app_init(self->m_gfx_connection);
-    assert(self->m_wsi_window_app != NULL);
+    bool res_neutral_app_init = wsi_neutral_app_init(self->m_gfx_connection, &self->m_neutral_app_void_instance);
+    assert(res_neutral_app_init);
     mcrt_atomic_store(&self->m_app_thread_running, true);
 
-    int res = wsi_window_app_main(self->m_wsi_window_app);
+    int res_neutral_app_main = wsi_neutral_app_main(self->m_neutral_app_void_instance);
 
     //mcrt_atomic_store(&self->m_loop, false);
 
     //wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
 
-    return reinterpret_cast<void *>(static_cast<intptr_t>(res));
+    return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
 
 void wsi_window_x11::sync_keysyms()
@@ -294,8 +292,8 @@ void wsi_window_x11::run()
                 {
                     assert(XK_W == keysym || XK_w == keysym);
 
-                    struct wsi_window_app_event_t wsi_window_app_event = {wsi_window_app_event_t::MESSAGE_CODE_KEY_PRESS, wsi_window_app_event_t::KEY_SYM_W, 0};
-                    wsi_window_app_handle_event(this->m_wsi_window_app, &wsi_window_app_event);
+                    struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_KEY_PRESS, KEY_SYM_W, 0};
+                    wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
                 }
                 break;
                 case XK_Shift_L:
@@ -342,8 +340,8 @@ void wsi_window_x11::run()
                 mcrt_atomic_store(&this->m_loop, false);
 
                 //mcrt_atomic_store(&m_app_has_quit, false);
-                struct wsi_window_app_event_t wsi_window_app_event = {wsi_window_app_event_t::MESSAGE_CODE_QUIT, 0, 0};
-                wsi_window_app_handle_event(this->m_wsi_window_app, &wsi_window_app_event);
+                struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_QUIT, 0, 0};
+                wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
 
                 //move xcb_destroy_window_checked here?
             }
@@ -366,7 +364,6 @@ void wsi_window_x11::destroy()
     {
         mcrt_os_yield();
     }
-    wsi_window_app_destroy(this->m_wsi_window_app);
 
     mcrt_native_thread_join(m_draw_request_thread_id);
     while (mcrt_atomic_load(&m_draw_request_thread_running))

@@ -161,7 +161,7 @@ int wsi_neutral_app_main(void *void_instance)
     return 0;
 }
 
-void wsi_neutral_app_handle_input_event(struct wsi_neutral_app_input_event_t *wsi_neutral_app_input_event, void *void_instance)
+void wsi_neutral_app_handle_input_event(struct wsi_neutral_app_input_event_t const *wsi_neutral_app_input_event, void *void_instance)
 {
     switch (wsi_neutral_app_input_event->message_code)
     {

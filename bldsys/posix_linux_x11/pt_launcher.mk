@@ -25,7 +25,7 @@ LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_linux_x11.cpp \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_window_app.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_neutral_app.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8

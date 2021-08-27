@@ -25,8 +25,6 @@ include $(LOCAL_PATH)/pt_gfx.mk
 
 include $(LOCAL_PATH)/pt_launcher.mk
 
-include $(LOCAL_PATH)/pt_example.mk
-
 # intel_tbb / libpt_tbbmalloc 
 
 include $(CLEAR_VARS)

@@ -23,7 +23,7 @@
 #include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
 #include <xcb/xcb.h>
-#include "pt_wsi_window_app.h"
+#include "pt_wsi_neutral_app.h"
 #include <vector>
 
 class wsi_window_x11
@@ -50,7 +50,7 @@ class wsi_window_x11
 
     mcrt_native_thread_id m_app_thread_id;
     static void *app_main(void *);
-    wsi_window_app_ref m_wsi_window_app;
+    void *m_neutral_app_void_instance;
     bool m_app_thread_running;
 
     xcb_keycode_t m_min_keycode;
