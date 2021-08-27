@@ -81,6 +81,7 @@ class gfx_device_vk
     PFN_vkResetCommandPool m_vk_reset_command_pool;
     PFN_vkDestroyCommandPool m_vk_destroy_command_pool;
     PFN_vkAllocateCommandBuffers m_vk_allocate_command_buffers;
+    PFN_vkFreeCommandBuffers m_vk_free_command_buffers;
     PFN_vkBeginCommandBuffer m_vk_begin_command_buffer;
     PFN_vkEndCommandBuffer m_vk_end_command_buffer;
     PFN_vkCmdCopyBuffer m_vk_cmd_copy_buffer;
@@ -195,6 +196,7 @@ public:
     inline VkResult allocate_command_buffers(VkCommandBufferAllocateInfo const *allocate_info, VkCommandBuffer *command_buffers) { return m_vk_allocate_command_buffers(m_device, allocate_info, command_buffers); }
     inline VkResult begin_command_buffer(VkCommandBuffer command_buffer, VkCommandBufferBeginInfo const *begin_info) { return m_vk_begin_command_buffer(command_buffer, begin_info); }
     inline VkResult end_command_buffer(VkCommandBuffer command_buffer) { return m_vk_end_command_buffer(command_buffer); }
+    inline void free_command_buffers(VkCommandPool command_pool, uint32_t command_buffer_count, VkCommandBuffer const *command_buffers) { return m_vk_free_command_buffers(this->m_device, command_pool, command_buffer_count, command_buffers); }
 
     inline void cmd_copy_buffer(VkCommandBuffer command_buffer, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions) { return this->m_vk_cmd_copy_buffer(command_buffer, src_buffer, dst_buffer, region_count, regions); }
     inline void cmd_pipeline_barrier(VkCommandBuffer command_buffer, VkPipelineStageFlags src_stage_mask, VkPipelineStageFlags dst_stage_mask, VkDependencyFlags dependency_flags, uint32_t memory_barrier_count, VkMemoryBarrier const *memory_barriers, uint32_t buffer_memory_barrier_count, VkBufferMemoryBarrier *const buffer_memory_barriers, uint32_t image_memory_barrier_count, VkImageMemoryBarrier const *image_memory_barriers) { return m_vk_cmd_pipeline_barrier(command_buffer, src_stage_mask, dst_stage_mask, dependency_flags, memory_barrier_count, memory_barriers, buffer_memory_barrier_count, buffer_memory_barriers, image_memory_barrier_count, image_memory_barriers); }

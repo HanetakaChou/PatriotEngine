@@ -516,6 +516,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_allocate_command_buffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(vk_get_device_proc_addr(this->m_device, "vkAllocateCommandBuffers"));
     assert(NULL != this->m_vk_allocate_command_buffers);
 
+    this->m_vk_free_command_buffers = reinterpret_cast<PFN_vkFreeCommandBuffers>(vk_get_device_proc_addr(this->m_device, "vkFreeCommandBuffers"));
+    assert(NULL != this->m_vk_allocate_command_buffers);
+
     this->m_vk_begin_command_buffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(vk_get_device_proc_addr(this->m_device, "vkBeginCommandBuffer"));
     assert(NULL != this->m_vk_begin_command_buffer);
 

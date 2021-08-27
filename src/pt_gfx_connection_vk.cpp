@@ -2263,10 +2263,17 @@ inline void gfx_connection_vk::destroy_frame()
 
         this->m_device.destroy_semaphore(this->m_frame_semaphore_acquire_next_image[frame_throttling_index]);
 
+        this->m_device.free_command_buffers(this->m_frame_graphics_primary_commmand_pool[frame_throttling_index], 1U, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+
         this->m_device.destroy_command_pool(this->m_frame_graphics_primary_commmand_pool[frame_throttling_index]);
 
         for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
         {
+            for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
+            {
+                this->m_device.free_command_buffers(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool, 1U, &this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]);
+            }
+
             this->m_device.destroy_command_pool(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool);
         }
 
@@ -2302,15 +2309,21 @@ inline void gfx_connection_vk::destroy_streaming()
 
             if (this->m_device.has_dedicated_transfer_queue())
             {
+                this->m_device.free_command_buffers(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool, 1U, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer);
+
                 this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool);
 
                 if (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())
                 {
+                    this->m_device.free_command_buffers(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 1U, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
+
                     this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
                 }
             }
             else
             {
+                this->m_device.free_command_buffers(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool, 1U, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
+
                 this->m_device.destroy_command_pool(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
             }
         }
@@ -2439,7 +2452,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
     {
         int fd;
         {
-            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
             mcrt_string path = ".cache/vulkan_pipeline_cache/";
             path += pipeline_cache_name;
             path += ".bin";
@@ -2540,7 +2553,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
             }
             else
             {
-                char const * huhu = strerror(errno);
+                char const *huhu = strerror(errno);
                 assert(errno == ENOENT);
                 mkdir_needed = true;
             }
@@ -2565,7 +2578,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
 
     int fd;
     {
-        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
         mcrt_string path = pipeline_cache_name;
         path += ".bin";
         fd = openat(fd_dir, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
