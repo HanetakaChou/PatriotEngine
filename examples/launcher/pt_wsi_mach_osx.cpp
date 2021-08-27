@@ -87,7 +87,7 @@ static void *wsi_mach_osx_app_main(void *argument_void)
     PT_MAYBE_UNUSED bool res_neutral_app_init =  wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
     assert(res_neutral_app_init);
 
-    int res_neutral_app_main = wsi_neutral_app_main(argument->m_void_instance);
+    int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
 
     return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
