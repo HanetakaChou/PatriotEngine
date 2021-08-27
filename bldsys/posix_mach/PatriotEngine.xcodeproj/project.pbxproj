@@ -16,6 +16,11 @@
 		624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		6257EF3926D9601700E4917D /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D326D8F3DB0004F34C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp */; };
+		6257EF3A26D9602900E4917D /* pt_mcrt_intrin_arm_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63DD26D8F6E10004F34C /* pt_mcrt_intrin_arm_neon.cpp */; };
+		6257EF3D26D9603F00E4917D /* libpt_mcrt_neon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */; };
+		6257EF4826D960C200E4917D /* libpt_math_neon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6257EF4226D9609A00E4917D /* libpt_math_neon.a */; };
+		6257EF4926D960D500E4917D /* pt_math_directx_math_arm_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */; };
 		625C06E526880E6300D173BE /* libpt_gfx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		629186C126D847C5007A708F /* pt_gfx_mesh_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */; };
 		629186C726D847E1007A708F /* pt_gfx_mesh_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */; };
@@ -78,6 +83,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		6257EF3B26D9603500E4917D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6257EF3426D95FF400E4917D;
+			remoteInfo = pt_mcrt_neon;
+		};
+		6257EF4626D960B900E4917D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6257EF4126D9609A00E4917D;
+			remoteInfo = pt_math_neon;
+		};
 		62D230D62688987A0044D96C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
@@ -177,6 +196,8 @@
 		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
 		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		6257EF4226D9609A00E4917D /* libpt_math_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F2C26775B6F000F087B /* libpt_gfx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_base.cpp; path = ../../src/pt_gfx_connection_base.cpp; sourceTree = SOURCE_ROOT; };
 		625D4F3426775DA0000F087B /* pt_gfx_connection_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_base.h; path = ../../src/pt_gfx_connection_base.h; sourceTree = SOURCE_ROOT; };
@@ -283,6 +304,21 @@
 				62FF468426D946B000CAEF53 /* libpt_math_sse2.a in Frameworks */,
 				62FF468526D946B300CAEF53 /* libpt_math_avx.a in Frameworks */,
 				62FF468626D946B800CAEF53 /* libpt_math_avx2.a in Frameworks */,
+				6257EF4826D960C200E4917D /* libpt_math_neon.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF3326D95FF400E4917D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF4026D9609A00E4917D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -311,6 +347,7 @@
 				62FF465526D9444A00CAEF53 /* libpt_mcrt_sse3.a in Frameworks */,
 				62FF465626D9444C00CAEF53 /* libpt_mcrt_avx.a in Frameworks */,
 				62FF466226D9453D00CAEF53 /* libpt_mcrt_avx512f.a in Frameworks */,
+				6257EF3D26D9603F00E4917D /* libpt_mcrt_neon.a in Frameworks */,
 				62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */,
 				62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */,
 				62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */,
@@ -534,6 +571,8 @@
 				62D7940D2597576F001CC2AF /* examples */,
 				9279CC2124390AE300DACBD7 /* Frameworks */,
 				62FF468726D9474D00CAEF53 /* Products */,
+				6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */,
+				6257EF4226D9609A00E4917D /* libpt_math_neon.a */,
 			);
 			sourceTree = "<group>";
 		};
@@ -541,6 +580,20 @@
 
 /* Begin PBXHeadersBuildPhase section */
 		6238290026768846002ECF8A /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF3126D95FF400E4917D /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF3E26D9609A00E4917D /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -629,11 +682,46 @@
 				62FF467F26D946A100CAEF53 /* PBXTargetDependency */,
 				62FF468126D946A300CAEF53 /* PBXTargetDependency */,
 				62FF468326D946A500CAEF53 /* PBXTargetDependency */,
+				6257EF4726D960B900E4917D /* PBXTargetDependency */,
 			);
 			name = pt_math;
 			productName = pt_math;
 			productReference = 6238290426768846002ECF8A /* libpt_math.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
+		};
+		6257EF3426D95FF400E4917D /* pt_mcrt_neon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6257EF3826D95FF400E4917D /* Build configuration list for PBXNativeTarget "pt_mcrt_neon" */;
+			buildPhases = (
+				6257EF3126D95FF400E4917D /* Headers */,
+				6257EF3226D95FF400E4917D /* Sources */,
+				6257EF3326D95FF400E4917D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_mcrt_neon;
+			productName = pt_mcrt_neon;
+			productReference = 6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		6257EF4126D9609A00E4917D /* pt_math_neon */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6257EF4326D9609A00E4917D /* Build configuration list for PBXNativeTarget "pt_math_neon" */;
+			buildPhases = (
+				6257EF3E26D9609A00E4917D /* Headers */,
+				6257EF3F26D9609A00E4917D /* Sources */,
+				6257EF4026D9609A00E4917D /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_math_neon;
+			productName = pt_math_neon;
+			productReference = 6257EF4226D9609A00E4917D /* libpt_math_neon.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 		625D4F2B26775B6F000F087B /* pt_gfx */ = {
 			isa = PBXNativeTarget;
@@ -686,6 +774,7 @@
 				62FF465226D9443F00CAEF53 /* PBXTargetDependency */,
 				62FF465426D9444100CAEF53 /* PBXTargetDependency */,
 				62FF466126D9453400CAEF53 /* PBXTargetDependency */,
+				6257EF3C26D9603500E4917D /* PBXTargetDependency */,
 			);
 			name = pt_mcrt;
 			productName = pt_mcrt;
@@ -842,6 +931,12 @@
 					6238290326768846002ECF8A = {
 						CreatedOnToolsVersion = 12.5;
 					};
+					6257EF3426D95FF400E4917D = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					6257EF4126D9609A00E4917D = {
+						CreatedOnToolsVersion = 12.5;
+					};
 					625D4F2B26775B6F000F087B = {
 						CreatedOnToolsVersion = 12.5;
 					};
@@ -898,10 +993,12 @@
 				62FF464226D943B000CAEF53 /* pt_mcrt_sse3 */,
 				62FF464B26D9440700CAEF53 /* pt_mcrt_avx */,
 				62FF465A26D944F100CAEF53 /* pt_mcrt_avx512f */,
+				6257EF3426D95FF400E4917D /* pt_mcrt_neon */,
 				6238290326768846002ECF8A /* pt_math */,
 				62FF466626D9460200CAEF53 /* pt_math_sse2 */,
 				62FF466E26D9461000CAEF53 /* pt_math_avx */,
 				62FF467626D9461E00CAEF53 /* pt_math_avx2 */,
+				6257EF4126D9609A00E4917D /* pt_math_neon */,
 			);
 		};
 /* End PBXProject section */
@@ -938,6 +1035,23 @@
 			buildActionMask = 2147483647;
 			files = (
 				62EF63CB26D8F0AE0004F34C /* pt_math.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF3226D95FF400E4917D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6257EF3A26D9602900E4917D /* pt_mcrt_intrin_arm_neon.cpp in Sources */,
+				6257EF3926D9601700E4917D /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6257EF3F26D9609A00E4917D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6257EF4926D960D500E4917D /* pt_math_directx_math_arm_neon.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1056,6 +1170,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		6257EF3C26D9603500E4917D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6257EF3426D95FF400E4917D /* pt_mcrt_neon */;
+			targetProxy = 6257EF3B26D9603500E4917D /* PBXContainerItemProxy */;
+		};
+		6257EF4726D960B900E4917D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6257EF4126D9609A00E4917D /* pt_math_neon */;
+			targetProxy = 6257EF4626D960B900E4917D /* PBXContainerItemProxy */;
+		};
 		62D230D72688987A0044D96C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 62D230AB268893240044D96C /* pt_mcrt */;
@@ -1119,7 +1243,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT",
+					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1143,7 +1267,7 @@
 				EXECUTABLE_PREFIX = lib;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
-					"PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT",
+					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
@@ -1151,6 +1275,64 @@
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
 				OTHER_CFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		6257EF3626D95FF400E4917D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		6257EF3726D95FF400E4917D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		6257EF4426D9609A00E4917D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		6257EF4526D9609A00E4917D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -1242,6 +1424,12 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
@@ -1263,6 +1451,8 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
+				GCC_PREPROCESSOR_DEFINITIONS = "PT_ATTR_MCRT=PT_ATTR_EXPORT";
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
@@ -1557,6 +1747,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1615,6 +1806,7 @@
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1685,6 +1877,24 @@
 			buildConfigurations = (
 				6238290526768846002ECF8A /* Debug */,
 				6238290626768846002ECF8A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6257EF3826D95FF400E4917D /* Build configuration list for PBXNativeTarget "pt_mcrt_neon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6257EF3626D95FF400E4917D /* Debug */,
+				6257EF3726D95FF400E4917D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		6257EF4326D9609A00E4917D /* Build configuration list for PBXNativeTarget "pt_math_neon" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6257EF4426D9609A00E4917D /* Debug */,
+				6257EF4526D9609A00E4917D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

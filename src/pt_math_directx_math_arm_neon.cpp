@@ -18,7 +18,7 @@
 #include <pt_math.h>
 #include "pt_math_directx_math.h"
 
-#if defined(PT_ARM) && defined(PT_ARM64)
+#if defined(PT_ARM) || defined(PT_ARM64)
 
 #if !defined(_MSC_VER)
 //#include "sal.h"

@@ -18,7 +18,7 @@
 #include <stdint.h>
 #include <pt_mcrt_intrin.h>
 
-#if defined(PT_ARM) && defined(PT_ARM64)
+#if defined(PT_ARM) || defined(PT_ARM64)
 
 extern "C" mcrt_uuid mcrt_uuid_load_arm_neon(uint8_t bytes[16])
 {
