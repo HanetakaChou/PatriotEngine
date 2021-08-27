@@ -11,30 +11,20 @@
 		6210AF6B26891D6000047DAB /* libvulkan.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		6210AF712689203D00047DAB /* VkLayer_khronos_validation.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */; };
 		6210AF73268920A900047DAB /* MoltenVK_icd.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF722689206A00047DAB /* MoltenVK_icd.json */; };
-		6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */; };
-		6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */; };
-		623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */; };
 		624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		625C06DD26880C7C00D173BE /* pt_apple_sdk_posix_mach_corevideo.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */; };
-		625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		625C06F0268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */; };
-		6277494026894C3D009F2E71 /* pt_wsi_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6277493F26894C3D009F2E71 /* pt_wsi_bitmap.cpp */; };
-		6277494D26894D30009F2E71 /* pt_gfx_texture_base_load_dds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230622688861B0044D96C /* pt_gfx_texture_base_load_dds.cpp */; };
-		6277494E26894D30009F2E71 /* pt_gfx_malloc_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */; };
-		6277494F26894D30009F2E71 /* pt_gfx_texture_base_load_pvr.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23064268886200044D96C /* pt_gfx_texture_base_load_pvr.cpp */; };
-		6277495026894D30009F2E71 /* pt_gfx_texture_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_base.cpp */; };
-		6277495126894D30009F2E71 /* pt_gfx_connection_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */; };
-		6277495226894D30009F2E71 /* pt_gfx_connection_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */; };
-		6277495326894D30009F2E71 /* pt_gfx_texture_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */; };
-		6277495426894D30009F2E71 /* pt_gfx_malloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2307226888F830044D96C /* pt_gfx_malloc.cpp */; };
-		6277495526894D6A009F2E71 /* libpt_mcrt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; };
-		6277495A26894D71009F2E71 /* libpt_mcrt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; };
-		6277495F26894D85009F2E71 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; };
+		625C06E526880E6300D173BE /* libpt_gfx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		629186C126D847C5007A708F /* pt_gfx_mesh_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */; };
+		629186C726D847E1007A708F /* pt_gfx_mesh_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */; };
+		629186CA26D8481B007A708F /* pt_gfx_node_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C926D8481B007A708F /* pt_gfx_node_base.cpp */; };
+		629186CD26D8482F007A708F /* pt_gfx_node_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186CC26D8482F007A708F /* pt_gfx_node_vk.cpp */; };
+		629186D026D84856007A708F /* pt_gfx_streaming_object_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186CF26D84856007A708F /* pt_gfx_streaming_object_base.cpp */; };
+		629186D326D84874007A708F /* pt_gfx_frame_object_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D226D84874007A708F /* pt_gfx_frame_object_base.cpp */; };
+		629186D626D84891007A708F /* pt_gfx_material_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D526D84891007A708F /* pt_gfx_material_base.cpp */; };
+		629186D926D848A7007A708F /* pt_gfx_material_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */; };
 		62A5B4352689183B00AE5275 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; };
 		62D230882688921E0044D96C /* pt_gfx_device_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_device_vk_wsi_metal.cpp */; };
 		62D230892688921E0044D96C /* pt_gfx_texture_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_base.cpp */; };
@@ -46,40 +36,40 @@
 		62D2308F2688921E0044D96C /* pt_gfx_texture_base_load_dds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230622688861B0044D96C /* pt_gfx_texture_base_load_dds.cpp */; };
 		62D230902688921E0044D96C /* pt_gfx_device_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */; };
 		62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */; };
-		62D230BD268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */; };
-		62D230BE268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */; };
-		62D230BF268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */; };
 		62D230C0268893540044D96C /* pt_mcrt_memcpy.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B3268893540044D96C /* pt_mcrt_memcpy.cpp */; };
 		62D230C4268893540044D96C /* pt_mcrt_malloc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */; };
-		62D230C6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */; };
 		62D230C7268893540044D96C /* pt_mcrt_task.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230BA268893540044D96C /* pt_mcrt_task.cpp */; };
 		62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; };
 		62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; };
 		62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; };
 		62D230D42688987A0044D96C /* libpt_mcrt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; };
-		62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B425974516001CC2AF /* libobjc.tbd */; };
-		62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793B825974525001CC2AF /* AppKit.tbd */; };
-		62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D793BC25974534001CC2AF /* Foundation.tbd */; };
-		62D7940E25975789001CC2AF /* pt_wsi_window_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */; };
-		62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
-		62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */; };
-		62E54AA226894DFF00D7A782 /* pt_gfx_device_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */; };
-		62E54AA326894E1400D7A782 /* pt_gfx_device_vk_wsi_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6277494B26894D22009F2E71 /* pt_gfx_device_vk_wsi_bitmap.cpp */; };
-		62E54AA426894EA600D7A782 /* pt_gfx_device_vk_wsi_bitmap.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6277494B26894D22009F2E71 /* pt_gfx_device_vk_wsi_bitmap.cpp */; };
-		62E54AA626894EF700D7A782 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AA926894EFF00D7A782 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AAB26894F0200D7A782 /* libpt_tbb.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CC268896930044D96C /* libpt_tbb.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AAD26894F0400D7A782 /* libpt_tbbmalloc.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AAF26894F0700D7A782 /* libVkLayer_khronos_validation.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AB126894F0900D7A782 /* libvulkan.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AB326894F1700D7A782 /* libpt_mcrt.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AB626894F1D00D7A782 /* libpt_gfx_wsi_bitmap.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6277494726894CE1009F2E71 /* libpt_gfx_wsi_bitmap.dylib */; };
-		62E54AB726894F1D00D7A782 /* libpt_gfx_wsi_bitmap.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6277494726894CE1009F2E71 /* libpt_gfx_wsi_bitmap.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54ABE26894F5B00D7A782 /* VkLayer_khronos_validation.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */; };
-		62E54ABF26894F5D00D7A782 /* MoltenVK_icd.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF722689206A00047DAB /* MoltenVK_icd.json */; };
-		62E54AC02689502400D7A782 /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		62E54AC12689502D00D7A782 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */; };
-		62F91F37268807C6009FCA7E /* CoreVideo.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 62F9437726880A93001A4BC8 /* CoreVideo.tbd */; };
+		62D7940E25975789001CC2AF /* pt_wsi_mach_osx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */; };
+		62D9E1C626779F530003ADBA /* libpt_gfx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */; };
+		62EF63BC26D8E75C0004F34C /* pt_wsi_mach_osx.m in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */; };
+		62EF63BE26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63BD26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp */; };
+		62EF63C026D8EBAB0004F34C /* pt_gfx_texture_base_load.h in Headers */ = {isa = PBXBuildFile; fileRef = 62EF63BF26D8EBAB0004F34C /* pt_gfx_texture_base_load.h */; };
+		62EF63CB26D8F0AE0004F34C /* pt_math.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C526D8F0AE0004F34C /* pt_math.cpp */; };
+		62EF63CF26D8F2180004F34C /* libpt_math.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_math.dylib */; };
+		62EF63D226D8F24B0004F34C /* libpt_math.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 6238290426768846002ECF8A /* libpt_math.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		62EF63D626D8F6A10004F34C /* pt_mcrt_memset.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D526D8F6A10004F34C /* pt_mcrt_memset.cpp */; };
+		62EF63D826D8F6AA0004F34C /* pt_mcrt_memcmp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D726D8F6AA0004F34C /* pt_mcrt_memcmp.cpp */; };
+		62EF63DA26D8F6CE0004F34C /* pt_mcrt_log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */; };
+		62EF63DC26D8F6DB0004F34C /* pt_mcrt_intrin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */; };
+		62EF63E226D8F78C0004F34C /* AppKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 62EF63E126D8F78C0004F34C /* AppKit.framework */; };
+		62FF463926D9424300CAEF53 /* pt_mcrt_intrin_x86_sse2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63DF26D8F6E80004F34C /* pt_mcrt_intrin_x86_sse2.cpp */; };
+		62FF463C26D9429B00CAEF53 /* libpt_mcrt_sse2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */; };
+		62FF464726D943B700CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */; };
+		62FF465026D9442200CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */; };
+		62FF465526D9444A00CAEF53 /* libpt_mcrt_sse3.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */; };
+		62FF465626D9444C00CAEF53 /* libpt_mcrt_avx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */; };
+		62FF465F26D9451600CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */; };
+		62FF466226D9453D00CAEF53 /* libpt_mcrt_avx512f.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */; };
+		62FF467B26D9466600CAEF53 /* pt_math_directx_math_x86_sse2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C626D8F0AE0004F34C /* pt_math_directx_math_x86_sse2.cpp */; };
+		62FF467C26D9466A00CAEF53 /* pt_math_directx_math_x86_avx2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */; };
+		62FF467D26D9466D00CAEF53 /* pt_math_directx_math_x86_avx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C226D8F0AE0004F34C /* pt_math_directx_math_x86_avx.cpp */; };
+		62FF468426D946B000CAEF53 /* libpt_math_sse2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF466726D9460200CAEF53 /* libpt_math_sse2.a */; };
+		62FF468526D946B300CAEF53 /* libpt_math_avx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF466F26D9461000CAEF53 /* libpt_math_avx.a */; };
+		62FF468626D946B800CAEF53 /* libpt_math_avx2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */; };
 		92F0788E2447818700F82881 /* UIKit.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0788D2447818700F82881 /* UIKit.tbd */; };
 		92F078942447863B00F82881 /* libobjc.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F078932447863B00F82881 /* libobjc.tbd */; };
 		92F0793324479F0600F82881 /* Foundation.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 92F0793224479F0600F82881 /* Foundation.tbd */; };
@@ -88,27 +78,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		624EFC1726889C0E001F2F63 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 62D230AB268893240044D96C;
-			remoteInfo = pt_mcrt;
-		};
-		6277495726894D6A009F2E71 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 62D230AB268893240044D96C;
-			remoteInfo = pt_mcrt;
-		};
-		6277495C26894D71009F2E71 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 62D230AB268893240044D96C;
-			remoteInfo = pt_mcrt;
-		};
 		62D230D62688987A0044D96C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
@@ -116,40 +85,68 @@
 			remoteGlobalIDString = 62D230AB268893240044D96C;
 			remoteInfo = pt_mcrt;
 		};
-		62D230D826889B2E0044D96C /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6238290326768846002ECF8A;
-			remoteInfo = pt_apple_sdk_posix_mach_osx;
-		};
 		62D230DA26889B330044D96C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 625D4F2B26775B6F000F087B;
-			remoteInfo = pt_gfx_wsi_window_osx;
+			remoteInfo = pt_gfx;
 		};
-		62E54AB426894F1700D7A782 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 62D230AB268893240044D96C;
-			remoteInfo = pt_mcrt;
-		};
-		62E54AB826894F1D00D7A782 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 6277494626894CE1009F2E71;
-			remoteInfo = pt_gfx_wsi_bitmap;
-		};
-		62E54ABC26894F2200D7A782 /* PBXContainerItemProxy */ = {
+		62EF63CD26D8F2110004F34C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 6238290326768846002ECF8A;
-			remoteInfo = pt_apple_sdk_posix_mach_osx;
+			remoteInfo = pt_math;
+		};
+		62FF463D26D9429F00CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 627FF3B326D9419900ED4AB6;
+			remoteInfo = pt_mcrt_sse2;
+		};
+		62FF465126D9443F00CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF464226D943B000CAEF53;
+			remoteInfo = pt_mcrt_sse3;
+		};
+		62FF465326D9444100CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF464B26D9440700CAEF53;
+			remoteInfo = pt_mcrt_avx;
+		};
+		62FF466026D9453400CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF465A26D944F100CAEF53;
+			remoteInfo = pt_mcrt_avx512f;
+		};
+		62FF467E26D946A100CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF466626D9460200CAEF53;
+			remoteInfo = pt_math_sse2;
+		};
+		62FF468026D946A300CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF466E26D9461000CAEF53;
+			remoteInfo = pt_math_avx;
+		};
+		62FF468226D946A500CAEF53 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 62FF467626D9461E00CAEF53;
+			remoteInfo = pt_math_avx2;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -160,7 +157,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				625C06E526880E6300D173BE /* libpt_gfx_wsi_window_osx.dylib in Embed Libraries */,
+				625C06E526880E6300D173BE /* libpt_gfx.dylib in Embed Libraries */,
 				6210AF6B26891D6000047DAB /* libvulkan.1.dylib in Embed Libraries */,
 				6210AF6A26891D4D00047DAB /* libVkLayer_khronos_validation.dylib in Embed Libraries */,
 				624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */,
@@ -168,26 +165,7 @@
 				624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */,
 				624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */,
 				624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */,
-				625C06E326880E6200D173BE /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */,
-			);
-			name = "Embed Libraries";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		62E54AA726894EF700D7A782 /* Embed Libraries */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "";
-			dstSubfolderSpec = 10;
-			files = (
-				62E54AB726894F1D00D7A782 /* libpt_gfx_wsi_bitmap.dylib in Embed Libraries */,
-				62E54AB126894F0900D7A782 /* libvulkan.1.dylib in Embed Libraries */,
-				62E54AAF26894F0700D7A782 /* libVkLayer_khronos_validation.dylib in Embed Libraries */,
-				62E54AA626894EF700D7A782 /* libMoltenVK.dylib in Embed Libraries */,
-				62E54AB326894F1700D7A782 /* libpt_mcrt.dylib in Embed Libraries */,
-				62E54AA926894EFF00D7A782 /* libpt_irml.dylib in Embed Libraries */,
-				62E54AAD26894F0400D7A782 /* libpt_tbbmalloc.dylib in Embed Libraries */,
-				62E54AAB26894F0200D7A782 /* libpt_tbb.dylib in Embed Libraries */,
-				62E54AC02689502400D7A782 /* libpt_apple_sdk_posix_mach_osx.dylib in Embed Libraries */,
+				62EF63D226D8F24B0004F34C /* libpt_math.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -198,25 +176,29 @@
 		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
 		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
 		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
-		6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_apple_sdk_posix_mach_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		6238290A267692DD002ECF8A /* pt_apple_sdk_common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_common.h; path = ../../include/pt_apple_sdk_common.h; sourceTree = SOURCE_ROOT; };
-		6238290C267692F2002ECF8A /* pt_apple_sdk_posix_mach_appkit.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_appkit.h; path = ../../include/pt_apple_sdk_posix_mach_appkit.h; sourceTree = SOURCE_ROOT; };
-		6238290D267692FA002ECF8A /* pt_apple_sdk_posix_mach_foundation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_foundation.h; path = ../../include/pt_apple_sdk_posix_mach_foundation.h; sourceTree = SOURCE_ROOT; };
-		6238290E2676930A002ECF8A /* pt_apple_sdk_posix_mach_objc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_objc.h; path = ../../include/pt_apple_sdk_posix_mach_objc.h; sourceTree = SOURCE_ROOT; };
-		6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_objc.cpp; path = ../../src/pt_apple_sdk_posix_mach_objc.cpp; sourceTree = SOURCE_ROOT; };
-		6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_foundation.cpp; path = ../../src/pt_apple_sdk_posix_mach_foundation.cpp; sourceTree = SOURCE_ROOT; };
-		623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_appkit.cpp; path = ../../src/pt_apple_sdk_posix_mach_appkit.cpp; sourceTree = SOURCE_ROOT; };
-		625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_dispatch.cpp; path = ../../src/pt_apple_sdk_posix_mach_dispatch.cpp; sourceTree = SOURCE_ROOT; };
-		625C06F1268837D100D173BE /* pt_apple_sdk_posix_mach_dispatch.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_dispatch.h; path = ../../include/pt_apple_sdk_posix_mach_dispatch.h; sourceTree = SOURCE_ROOT; };
-		625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx_wsi_window_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		625D4F2C26775B6F000F087B /* libpt_gfx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_base.cpp; path = ../../src/pt_gfx_connection_base.cpp; sourceTree = SOURCE_ROOT; };
 		625D4F3426775DA0000F087B /* pt_gfx_connection_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_base.h; path = ../../src/pt_gfx_connection_base.h; sourceTree = SOURCE_ROOT; };
-		6277492926894ADC009F2E71 /* pt_launcher_wsi_bitmap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher_wsi_bitmap.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		6277493F26894C3D009F2E71 /* pt_wsi_bitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_bitmap.cpp; path = ../../examples/launcher/pt_wsi_bitmap.cpp; sourceTree = SOURCE_ROOT; };
 		6277494126894CA3009F2E71 /* pt_gfx_connection_utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_utils.h; path = ../../examples/launcher/pt_gfx_connection_utils.h; sourceTree = SOURCE_ROOT; };
 		6277494226894CBA009F2E71 /* pt_gfx_connection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection.h; path = ../../include/pt_gfx_connection.h; sourceTree = SOURCE_ROOT; };
-		6277494726894CE1009F2E71 /* libpt_gfx_wsi_bitmap.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx_wsi_bitmap.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		6277494B26894D22009F2E71 /* pt_gfx_device_vk_wsi_bitmap.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_device_vk_wsi_bitmap.cpp; path = ../../src/pt_gfx_device_vk_wsi_bitmap.cpp; sourceTree = SOURCE_ROOT; };
+		627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_mesh_base.cpp; path = ../../src/pt_gfx_mesh_base.cpp; sourceTree = "<group>"; };
+		629186C226D847D8007A708F /* pt_gfx_mesh_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_base.h; path = ../../src/pt_gfx_mesh_base.h; sourceTree = "<group>"; };
+		629186C426D847E1007A708F /* pt_gfx_mesh_vk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_vk.h; path = ../../src/pt_gfx_mesh_vk.h; sourceTree = "<group>"; };
+		629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_mesh_vk.cpp; path = ../../src/pt_gfx_mesh_vk.cpp; sourceTree = "<group>"; };
+		629186C826D8480F007A708F /* pt_gfx_node_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_node_base.h; path = ../../src/pt_gfx_node_base.h; sourceTree = "<group>"; };
+		629186C926D8481B007A708F /* pt_gfx_node_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_node_base.cpp; path = ../../src/pt_gfx_node_base.cpp; sourceTree = "<group>"; };
+		629186CB26D84824007A708F /* pt_gfx_node_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_node_vk.h; path = ../../src/pt_gfx_node_vk.h; sourceTree = "<group>"; };
+		629186CC26D8482F007A708F /* pt_gfx_node_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_node_vk.cpp; path = ../../src/pt_gfx_node_vk.cpp; sourceTree = "<group>"; };
+		629186CE26D84850007A708F /* pt_gfx_streaming_object_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_streaming_object_base.h; path = ../../src/pt_gfx_streaming_object_base.h; sourceTree = "<group>"; };
+		629186CF26D84856007A708F /* pt_gfx_streaming_object_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_streaming_object_base.cpp; path = ../../src/pt_gfx_streaming_object_base.cpp; sourceTree = "<group>"; };
+		629186D126D8486A007A708F /* pt_gfx_frame_object_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_frame_object_base.h; path = ../../src/pt_gfx_frame_object_base.h; sourceTree = "<group>"; };
+		629186D226D84874007A708F /* pt_gfx_frame_object_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_frame_object_base.cpp; path = ../../src/pt_gfx_frame_object_base.cpp; sourceTree = "<group>"; };
+		629186D426D8488A007A708F /* pt_gfx_material_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_material_base.h; path = ../../src/pt_gfx_material_base.h; sourceTree = "<group>"; };
+		629186D526D84891007A708F /* pt_gfx_material_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_base.cpp; path = ../../src/pt_gfx_material_base.cpp; sourceTree = "<group>"; };
+		629186D726D8489F007A708F /* pt_gfx_material_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_material_vk.h; path = ../../src/pt_gfx_material_vk.h; sourceTree = "<group>"; };
+		629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_vk.cpp; path = ../../src/pt_gfx_material_vk.cpp; sourceTree = "<group>"; };
 		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
@@ -256,12 +238,33 @@
 		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793C025974546001CC2AF /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793C62597454D001CC2AF /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher_wsi_window_osx.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		62D793E425974E73001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "PatriotEngine-iPhoneOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_window_osx.cpp; path = ../../examples/launcher/pt_wsi_window_osx.cpp; sourceTree = SOURCE_ROOT; };
-		62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_apple_sdk_posix_mach_corevideo.cpp; path = ../../src/pt_apple_sdk_posix_mach_corevideo.cpp; sourceTree = SOURCE_ROOT; };
-		62F91F38268807E2009FCA7E /* pt_apple_sdk_posix_mach_corevideo.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_apple_sdk_posix_mach_corevideo.h; path = ../../include/pt_apple_sdk_posix_mach_corevideo.h; sourceTree = SOURCE_ROOT; };
+		62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
+		62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_mach_osx.m; path = ../../examples/launcher/pt_wsi_mach_osx.m; sourceTree = "<group>"; };
+		62EF63BD26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base_load.cpp; path = ../../src/pt_gfx_texture_base_load.cpp; sourceTree = "<group>"; };
+		62EF63BF26D8EBAB0004F34C /* pt_gfx_texture_base_load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base_load.h; path = ../../src/pt_gfx_texture_base_load.h; sourceTree = "<group>"; };
+		62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_avx2.cpp; path = ../../src/pt_math_directx_math_x86_avx2.cpp; sourceTree = "<group>"; };
+		62EF63C226D8F0AE0004F34C /* pt_math_directx_math_x86_avx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_avx.cpp; path = ../../src/pt_math_directx_math_x86_avx.cpp; sourceTree = "<group>"; };
+		62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_arm_neon.cpp; path = ../../src/pt_math_directx_math_arm_neon.cpp; sourceTree = "<group>"; };
+		62EF63C426D8F0AE0004F34C /* pt_math_directx_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_math_directx_math.h; path = ../../src/pt_math_directx_math.h; sourceTree = "<group>"; };
+		62EF63C526D8F0AE0004F34C /* pt_math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math.cpp; path = ../../src/pt_math.cpp; sourceTree = "<group>"; };
+		62EF63C626D8F0AE0004F34C /* pt_math_directx_math_x86_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_sse2.cpp; path = ../../src/pt_math_directx_math_x86_sse2.cpp; sourceTree = "<group>"; };
+		62EF63D326D8F3DB0004F34C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp; sourceTree = "<group>"; };
+		62EF63D526D8F6A10004F34C /* pt_mcrt_memset.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memset.cpp; path = ../../src/pt_mcrt_memset.cpp; sourceTree = "<group>"; };
+		62EF63D726D8F6AA0004F34C /* pt_mcrt_memcmp.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcmp.cpp; path = ../../src/pt_mcrt_memcmp.cpp; sourceTree = "<group>"; };
+		62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_log.cpp; path = ../../src/pt_mcrt_log.cpp; sourceTree = "<group>"; };
+		62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_intrin.cpp; path = ../../src/pt_mcrt_intrin.cpp; sourceTree = "<group>"; };
+		62EF63DD26D8F6E10004F34C /* pt_mcrt_intrin_arm_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_intrin_arm_neon.cpp; path = ../../src/pt_mcrt_intrin_arm_neon.cpp; sourceTree = "<group>"; };
+		62EF63DF26D8F6E80004F34C /* pt_mcrt_intrin_x86_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_intrin_x86_sse2.cpp; path = ../../src/pt_mcrt_intrin_x86_sse2.cpp; sourceTree = "<group>"; };
+		62EF63E126D8F78C0004F34C /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		62F9437726880A93001A4BC8 /* CoreVideo.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = CoreVideo.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreVideo.framework/CoreVideo.tbd; sourceTree = DEVELOPER_DIR; };
+		62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_sse3.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx512f.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF466726D9460200CAEF53 /* libpt_math_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF466F26D9461000CAEF53 /* libpt_math_avx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_avx.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_avx2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F078822447761900F82881 /* osx.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = osx.entitlements; sourceTree = SOURCE_ROOT; };
 		92F0788A24477E2200F82881 /* ios.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ios.plist; sourceTree = SOURCE_ROOT; };
 		92F0788D2447818700F82881 /* UIKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = UIKit.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/UIKit.framework/UIKit.tbd; sourceTree = DEVELOPER_DIR; };
@@ -277,10 +280,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D793B525974516001CC2AF /* libobjc.tbd in Frameworks */,
-				62D793B925974525001CC2AF /* AppKit.tbd in Frameworks */,
-				62D793BD25974534001CC2AF /* Foundation.tbd in Frameworks */,
-				62F91F37268807C6009FCA7E /* CoreVideo.tbd in Frameworks */,
+				62FF468426D946B000CAEF53 /* libpt_math_sse2.a in Frameworks */,
+				62FF468526D946B300CAEF53 /* libpt_math_avx.a in Frameworks */,
+				62FF468626D946B800CAEF53 /* libpt_math_avx2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,26 +291,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				62D230D42688987A0044D96C /* libpt_mcrt.dylib in Frameworks */,
-				6277495526894D6A009F2E71 /* libpt_mcrt.dylib in Frameworks */,
+				62EF63CF26D8F2180004F34C /* libpt_math.dylib in Frameworks */,
 				62A5B4352689183B00AE5275 /* libvulkan.1.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6277492626894ADC009F2E71 /* Frameworks */ = {
+		627FF3B226D9419900ED4AB6 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62E54AB626894F1D00D7A782 /* libpt_gfx_wsi_bitmap.dylib in Frameworks */,
-				62E54AC12689502D00D7A782 /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6277494526894CE1009F2E71 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				6277495F26894D85009F2E71 /* libvulkan.1.dylib in Frameworks */,
-				6277495A26894D71009F2E71 /* libpt_mcrt.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,9 +307,55 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62FF463C26D9429B00CAEF53 /* libpt_mcrt_sse2.a in Frameworks */,
+				62FF465526D9444A00CAEF53 /* libpt_mcrt_sse3.a in Frameworks */,
+				62FF465626D9444C00CAEF53 /* libpt_mcrt_avx.a in Frameworks */,
+				62FF466226D9453D00CAEF53 /* libpt_mcrt_avx512f.a in Frameworks */,
 				62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */,
 				62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */,
 				62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF464126D943B000CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF464A26D9440700CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF465926D944F100CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466526D9460200CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466D26D9461000CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF467526D9461E00CAEF53 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -338,8 +375,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D9E1C626779F530003ADBA /* libpt_gfx_wsi_window_osx.dylib in Frameworks */,
-				62D9E1C526779F510003ADBA /* libpt_apple_sdk_posix_mach_osx.dylib in Frameworks */,
+				62D9E1C626779F530003ADBA /* libpt_gfx.dylib in Frameworks */,
+				62EF63E226D8F78C0004F34C /* AppKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,12 +387,6 @@
 			isa = PBXGroup;
 			children = (
 				6277494226894CBA009F2E71 /* pt_gfx_connection.h */,
-				6238290A267692DD002ECF8A /* pt_apple_sdk_common.h */,
-				6238290E2676930A002ECF8A /* pt_apple_sdk_posix_mach_objc.h */,
-				6238290D267692FA002ECF8A /* pt_apple_sdk_posix_mach_foundation.h */,
-				6238290C267692F2002ECF8A /* pt_apple_sdk_posix_mach_appkit.h */,
-				62F91F38268807E2009FCA7E /* pt_apple_sdk_posix_mach_corevideo.h */,
-				625C06F1268837D100D173BE /* pt_apple_sdk_posix_mach_dispatch.h */,
 			);
 			name = include;
 			sourceTree = SOURCE_ROOT;
@@ -365,40 +396,65 @@
 			children = (
 				62D2306C2688865D0044D96C /* pt_gfx_device_vk.h */,
 				62D2306A268886570044D96C /* pt_gfx_device_vk.cpp */,
-				625D4F3426775DA0000F087B /* pt_gfx_connection_base.h */,
-				625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */,
-				62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */,
-				62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */,
-				6277494B26894D22009F2E71 /* pt_gfx_device_vk_wsi_bitmap.cpp */,
 				62D2306D26888F630044D96C /* pt_gfx_device_vk_wsi_metal.cpp */,
-				62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */,
-				62D23060268884630044D96C /* pt_gfx_texture_base.cpp */,
-				62D230622688861B0044D96C /* pt_gfx_texture_base_load_dds.cpp */,
-				62D23064268886200044D96C /* pt_gfx_texture_base_load_pvr.cpp */,
-				62D23068268886320044D96C /* pt_gfx_texture_vk.h */,
-				62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */,
 				62D2307426888F8E0044D96C /* pt_gfx_malloc.h */,
 				62D2307226888F830044D96C /* pt_gfx_malloc.cpp */,
 				62D2307526888F9B0044D96C /* pt_gfx_malloc_vk.h */,
 				62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */,
+				625D4F3426775DA0000F087B /* pt_gfx_connection_base.h */,
+				625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */,
+				62D2307126888F6D0044D96C /* pt_gfx_connection_vk.h */,
+				62D2306F26888F690044D96C /* pt_gfx_connection_vk.cpp */,
+				629186D126D8486A007A708F /* pt_gfx_frame_object_base.h */,
+				629186D226D84874007A708F /* pt_gfx_frame_object_base.cpp */,
+				629186CE26D84850007A708F /* pt_gfx_streaming_object_base.h */,
+				629186CF26D84856007A708F /* pt_gfx_streaming_object_base.cpp */,
+				629186C826D8480F007A708F /* pt_gfx_node_base.h */,
+				629186C926D8481B007A708F /* pt_gfx_node_base.cpp */,
+				629186CB26D84824007A708F /* pt_gfx_node_vk.h */,
+				629186CC26D8482F007A708F /* pt_gfx_node_vk.cpp */,
+				629186D426D8488A007A708F /* pt_gfx_material_base.h */,
+				629186D526D84891007A708F /* pt_gfx_material_base.cpp */,
+				629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */,
+				629186D726D8489F007A708F /* pt_gfx_material_vk.h */,
+				629186C226D847D8007A708F /* pt_gfx_mesh_base.h */,
+				629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */,
+				629186C426D847E1007A708F /* pt_gfx_mesh_vk.h */,
+				629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */,
+				62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */,
+				62D23060268884630044D96C /* pt_gfx_texture_base.cpp */,
+				62EF63BF26D8EBAB0004F34C /* pt_gfx_texture_base_load.h */,
+				62EF63BD26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp */,
+				62D230622688861B0044D96C /* pt_gfx_texture_base_load_dds.cpp */,
+				62D23064268886200044D96C /* pt_gfx_texture_base_load_pvr.cpp */,
+				62D23068268886320044D96C /* pt_gfx_texture_vk.h */,
+				62D230662688862D0044D96C /* pt_gfx_texture_vk.cpp */,
 				62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */,
+				62EF63D726D8F6AA0004F34C /* pt_mcrt_memcmp.cpp */,
+				62EF63D526D8F6A10004F34C /* pt_mcrt_memset.cpp */,
 				62D230BC268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_common.h */,
-				62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */,
 				62D230B6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h */,
+				62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */,
 				62D230B5268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h */,
+				62EF63D326D8F3DB0004F34C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp */,
+				62D230B4268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h */,
+				62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */,
 				62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */,
 				62D230B2268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp */,
-				62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */,
-				62D230B4268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h */,
 				62D230B3268893540044D96C /* pt_mcrt_memcpy.cpp */,
 				62D230BB268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler_common.h */,
 				62D230B8268893540044D96C /* pt_mcrt_scalable_allocator_tbb_scheduler.h */,
 				62D230BA268893540044D96C /* pt_mcrt_task.cpp */,
-				6238290F26769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp */,
-				6238291126769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp */,
-				623829132676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp */,
-				62F91F36268807C6009FCA7E /* pt_apple_sdk_posix_mach_corevideo.cpp */,
-				625C06EF268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp */,
+				62EF63DD26D8F6E10004F34C /* pt_mcrt_intrin_arm_neon.cpp */,
+				62EF63DF26D8F6E80004F34C /* pt_mcrt_intrin_x86_sse2.cpp */,
+				62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */,
+				62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */,
+				62EF63C426D8F0AE0004F34C /* pt_math_directx_math.h */,
+				62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */,
+				62EF63C226D8F0AE0004F34C /* pt_math_directx_math_x86_avx.cpp */,
+				62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */,
+				62EF63C626D8F0AE0004F34C /* pt_math_directx_math_x86_sse2.cpp */,
+				62EF63C526D8F0AE0004F34C /* pt_math.cpp */,
 			);
 			name = src;
 			sourceTree = SOURCE_ROOT;
@@ -417,8 +473,8 @@
 			isa = PBXGroup;
 			children = (
 				6277494126894CA3009F2E71 /* pt_gfx_connection_utils.h */,
-				6277493F26894C3D009F2E71 /* pt_wsi_bitmap.cpp */,
-				62D7940C25975766001CC2AF /* pt_wsi_window_osx.cpp */,
+				62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */,
+				62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */,
 			);
 			name = examples;
 			sourceTree = SOURCE_ROOT;
@@ -426,6 +482,7 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				62EF63E126D8F78C0004F34C /* AppKit.framework */,
 				62A5B4342689183B00AE5275 /* libvulkan.1.dylib */,
 				6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */,
 				6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */,
@@ -458,12 +515,17 @@
 				62382909267692A3002ECF8A /* src */,
 				9279CC2124390AE300DACBD7 /* Frameworks */,
 				62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */,
-				62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */,
-				6277492926894ADC009F2E71 /* pt_launcher_wsi_bitmap.app */,
-				6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */,
-				625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */,
-				6277494726894CE1009F2E71 /* libpt_gfx_wsi_bitmap.dylib */,
+				62D793E425974E73001CC2AF /* pt_launcher.app */,
+				6238290426768846002ECF8A /* libpt_math.dylib */,
+				625D4F2C26775B6F000F087B /* libpt_gfx.dylib */,
 				62D230AC268893240044D96C /* libpt_mcrt.dylib */,
+				627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */,
+				62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */,
+				62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */,
+				62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */,
+				62FF466726D9460200CAEF53 /* libpt_math_sse2.a */,
+				62FF466F26D9461000CAEF53 /* libpt_math_avx.a */,
+				62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */,
 			);
 			sourceTree = "<group>";
 		};
@@ -481,10 +543,11 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				62EF63C026D8EBAB0004F34C /* pt_gfx_texture_base_load.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6277494326894CE1009F2E71 /* Headers */ = {
+		627FF3B026D9419900ED4AB6 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -498,12 +561,54 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		62FF463F26D943B000CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF464826D9440700CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF465726D944F100CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466326D9460200CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466B26D9461000CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF467326D9461E00CAEF53 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */ = {
+		6238290326768846002ECF8A /* pt_math */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_apple_sdk_posix_mach_osx" */;
+			buildConfigurationList = 6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_math" */;
 			buildPhases = (
 				6238290026768846002ECF8A /* Headers */,
 				6238290126768846002ECF8A /* Sources */,
@@ -513,15 +618,18 @@
 			buildRules = (
 			);
 			dependencies = (
+				62FF467F26D946A100CAEF53 /* PBXTargetDependency */,
+				62FF468126D946A300CAEF53 /* PBXTargetDependency */,
+				62FF468326D946A500CAEF53 /* PBXTargetDependency */,
 			);
-			name = pt_apple_sdk_posix_mach_osx;
-			productName = pt_apple_sdk_posix_mach_osx;
-			productReference = 6238290426768846002ECF8A /* libpt_apple_sdk_posix_mach_osx.dylib */;
+			name = pt_math;
+			productName = pt_math;
+			productReference = 6238290426768846002ECF8A /* libpt_math.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */ = {
+		625D4F2B26775B6F000F087B /* pt_gfx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 625D4F2D26775B6F000F087B /* Build configuration list for PBXNativeTarget "pt_gfx_wsi_window_osx" */;
+			buildConfigurationList = 625D4F2D26775B6F000F087B /* Build configuration list for PBXNativeTarget "pt_gfx" */;
 			buildPhases = (
 				625D4F2826775B6F000F087B /* Headers */,
 				625D4F2926775B6F000F087B /* Sources */,
@@ -531,51 +639,29 @@
 			);
 			dependencies = (
 				62D230D72688987A0044D96C /* PBXTargetDependency */,
-				6277495826894D6A009F2E71 /* PBXTargetDependency */,
+				62EF63CE26D8F2110004F34C /* PBXTargetDependency */,
 			);
-			name = pt_gfx_wsi_window_osx;
-			productName = pt_gfx_wsi_window_osx;
-			productReference = 625D4F2C26775B6F000F087B /* libpt_gfx_wsi_window_osx.dylib */;
+			name = pt_gfx;
+			productName = pt_gfx;
+			productReference = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
-		6277492826894ADC009F2E71 /* pt_launcher_wsi_bitmap */ = {
+		627FF3B326D9419900ED4AB6 /* pt_mcrt_sse2 */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 6277493A26894ADC009F2E71 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_bitmap" */;
+			buildConfigurationList = 627FF3B526D9419900ED4AB6 /* Build configuration list for PBXNativeTarget "pt_mcrt_sse2" */;
 			buildPhases = (
-				6277492526894ADC009F2E71 /* Sources */,
-				6277492626894ADC009F2E71 /* Frameworks */,
-				6277492726894ADC009F2E71 /* Resources */,
-				62E54AA726894EF700D7A782 /* Embed Libraries */,
+				627FF3B026D9419900ED4AB6 /* Headers */,
+				627FF3B126D9419900ED4AB6 /* Sources */,
+				627FF3B226D9419900ED4AB6 /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				62E54AB526894F1700D7A782 /* PBXTargetDependency */,
-				62E54AB926894F1D00D7A782 /* PBXTargetDependency */,
-				62E54ABD26894F2200D7A782 /* PBXTargetDependency */,
 			);
-			name = pt_launcher_wsi_bitmap;
-			productName = pt_launcher_wsi_bitmap;
-			productReference = 6277492926894ADC009F2E71 /* pt_launcher_wsi_bitmap.app */;
-			productType = "com.apple.product-type.application";
-		};
-		6277494626894CE1009F2E71 /* pt_gfx_wsi_bitmap */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 6277494826894CE1009F2E71 /* Build configuration list for PBXNativeTarget "pt_gfx_wsi_bitmap" */;
-			buildPhases = (
-				6277494326894CE1009F2E71 /* Headers */,
-				6277494426894CE1009F2E71 /* Sources */,
-				6277494526894CE1009F2E71 /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				6277495D26894D71009F2E71 /* PBXTargetDependency */,
-			);
-			name = pt_gfx_wsi_bitmap;
-			productName = pt_gfx_wsi_bitmap;
-			productReference = 6277494726894CE1009F2E71 /* libpt_gfx_wsi_bitmap.dylib */;
-			productType = "com.apple.product-type.library.dynamic";
+			name = pt_mcrt_sse2;
+			productName = pt_mcrt_sse2;
+			productReference = 627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 		62D230AB268893240044D96C /* pt_mcrt */ = {
 			isa = PBXNativeTarget;
@@ -588,11 +674,117 @@
 			buildRules = (
 			);
 			dependencies = (
+				62FF463E26D9429F00CAEF53 /* PBXTargetDependency */,
+				62FF465226D9443F00CAEF53 /* PBXTargetDependency */,
+				62FF465426D9444100CAEF53 /* PBXTargetDependency */,
+				62FF466126D9453400CAEF53 /* PBXTargetDependency */,
 			);
 			name = pt_mcrt;
 			productName = pt_mcrt;
 			productReference = 62D230AC268893240044D96C /* libpt_mcrt.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
+		};
+		62FF464226D943B000CAEF53 /* pt_mcrt_sse3 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF464426D943B000CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_sse3" */;
+			buildPhases = (
+				62FF463F26D943B000CAEF53 /* Headers */,
+				62FF464026D943B000CAEF53 /* Sources */,
+				62FF464126D943B000CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_mcrt_sse3;
+			productName = pt_mcrt_sse3;
+			productReference = 62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		62FF464B26D9440700CAEF53 /* pt_mcrt_avx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF464D26D9440700CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_avx" */;
+			buildPhases = (
+				62FF464826D9440700CAEF53 /* Headers */,
+				62FF464926D9440700CAEF53 /* Sources */,
+				62FF464A26D9440700CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_mcrt_avx;
+			productName = pt_mcrt_avx;
+			productReference = 62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		62FF465A26D944F100CAEF53 /* pt_mcrt_avx512f */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF465C26D944F100CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_avx512f" */;
+			buildPhases = (
+				62FF465726D944F100CAEF53 /* Headers */,
+				62FF465826D944F100CAEF53 /* Sources */,
+				62FF465926D944F100CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_mcrt_avx512f;
+			productName = pt_mcrt_avx512f;
+			productReference = 62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		62FF466626D9460200CAEF53 /* pt_math_sse2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF466826D9460200CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_sse2" */;
+			buildPhases = (
+				62FF466326D9460200CAEF53 /* Headers */,
+				62FF466426D9460200CAEF53 /* Sources */,
+				62FF466526D9460200CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_math_sse2;
+			productName = pt_math_sse2;
+			productReference = 62FF466726D9460200CAEF53 /* libpt_math_sse2.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		62FF466E26D9461000CAEF53 /* pt_math_avx */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF467026D9461000CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_avx" */;
+			buildPhases = (
+				62FF466B26D9461000CAEF53 /* Headers */,
+				62FF466C26D9461000CAEF53 /* Sources */,
+				62FF466D26D9461000CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_math_avx;
+			productName = pt_math_avx;
+			productReference = 62FF466F26D9461000CAEF53 /* libpt_math_avx.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		62FF467626D9461E00CAEF53 /* pt_math_avx2 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62FF467826D9461E00CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_avx2" */;
+			buildPhases = (
+				62FF467326D9461E00CAEF53 /* Headers */,
+				62FF467426D9461E00CAEF53 /* Sources */,
+				62FF467526D9461E00CAEF53 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_math_avx2;
+			productName = pt_math_avx2;
+			productReference = 62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */;
+			productType = "com.apple.product-type.library.static";
 		};
 		92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */ = {
 			isa = PBXNativeTarget;
@@ -611,9 +803,9 @@
 			productReference = 62D793E525974E7C001CC2AF /* PatriotEngine-iPhoneOS.app */;
 			productType = "com.apple.product-type.application";
 		};
-		92F977E32439099000C5F3C5 /* pt_launcher_wsi_window_osx */ = {
+		92F977E32439099000C5F3C5 /* pt_launcher */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_window_osx" */;
+			buildConfigurationList = 92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher" */;
 			buildPhases = (
 				92F977E02439099000C5F3C5 /* Sources */,
 				92F977E12439099000C5F3C5 /* Frameworks */,
@@ -624,12 +816,10 @@
 			);
 			dependencies = (
 				62D230DB26889B330044D96C /* PBXTargetDependency */,
-				62D230D926889B2E0044D96C /* PBXTargetDependency */,
-				624EFC1826889C0E001F2F63 /* PBXTargetDependency */,
 			);
-			name = pt_launcher_wsi_window_osx;
+			name = pt_launcher;
 			productName = CXXBasedMac;
-			productReference = 62D793E425974E73001CC2AF /* pt_launcher_wsi_window_osx.app */;
+			productReference = 62D793E425974E73001CC2AF /* pt_launcher.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -638,7 +828,7 @@
 		92F977DC2439099000C5F3C5 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1230;
+				LastUpgradeCheck = 1250;
 				ORGANIZATIONNAME = AdunZhang;
 				TargetAttributes = {
 					6238290326768846002ECF8A = {
@@ -647,13 +837,28 @@
 					625D4F2B26775B6F000F087B = {
 						CreatedOnToolsVersion = 12.5;
 					};
-					6277492826894ADC009F2E71 = {
-						CreatedOnToolsVersion = 12.5;
-					};
-					6277494626894CE1009F2E71 = {
+					627FF3B326D9419900ED4AB6 = {
 						CreatedOnToolsVersion = 12.5;
 					};
 					62D230AB268893240044D96C = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF464226D943B000CAEF53 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF464B26D9440700CAEF53 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF465A26D944F100CAEF53 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF466626D9460200CAEF53 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF466E26D9461000CAEF53 = {
+						CreatedOnToolsVersion = 12.5;
+					};
+					62FF467626D9461E00CAEF53 = {
 						CreatedOnToolsVersion = 12.5;
 					};
 					92983F172447725E003F48B6 = {
@@ -678,26 +883,22 @@
 			projectRoot = "";
 			targets = (
 				92983F172447725E003F48B6 /* PatriotEngine-iPhoneOS */,
-				92F977E32439099000C5F3C5 /* pt_launcher_wsi_window_osx */,
-				6277492826894ADC009F2E71 /* pt_launcher_wsi_bitmap */,
-				625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */,
-				6277494626894CE1009F2E71 /* pt_gfx_wsi_bitmap */,
+				92F977E32439099000C5F3C5 /* pt_launcher */,
+				625D4F2B26775B6F000F087B /* pt_gfx */,
 				62D230AB268893240044D96C /* pt_mcrt */,
-				6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */,
+				627FF3B326D9419900ED4AB6 /* pt_mcrt_sse2 */,
+				62FF464226D943B000CAEF53 /* pt_mcrt_sse3 */,
+				62FF464B26D9440700CAEF53 /* pt_mcrt_avx */,
+				62FF465A26D944F100CAEF53 /* pt_mcrt_avx512f */,
+				6238290326768846002ECF8A /* pt_math */,
+				62FF466626D9460200CAEF53 /* pt_math_sse2 */,
+				62FF466E26D9461000CAEF53 /* pt_math_avx */,
+				62FF467626D9461E00CAEF53 /* pt_math_avx2 */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		6277492726894ADC009F2E71 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				62E54ABE26894F5B00D7A782 /* VkLayer_khronos_validation.json in Resources */,
-				62E54ABF26894F5D00D7A782 /* MoltenVK_icd.json in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		62C438F7268809BD00D219BA /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -728,11 +929,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6238291026769323002ECF8A /* pt_apple_sdk_posix_mach_objc.cpp in Sources */,
-				625C06DD26880C7C00D173BE /* pt_apple_sdk_posix_mach_corevideo.cpp in Sources */,
-				6238291226769328002ECF8A /* pt_apple_sdk_posix_mach_foundation.cpp in Sources */,
-				623829142676932F002ECF8A /* pt_apple_sdk_posix_mach_appkit.cpp in Sources */,
-				625C06F0268837C500D173BE /* pt_apple_sdk_posix_mach_dispatch.cpp in Sources */,
+				62EF63CB26D8F0AE0004F34C /* pt_math.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -741,41 +938,32 @@
 			buildActionMask = 2147483647;
 			files = (
 				62D230902688921E0044D96C /* pt_gfx_device_vk.cpp in Sources */,
+				629186D626D84891007A708F /* pt_gfx_material_base.cpp in Sources */,
 				62D2308E2688921E0044D96C /* pt_gfx_connection_base.cpp in Sources */,
 				62D230912688921E0044D96C /* pt_gfx_connection_vk.cpp in Sources */,
+				629186C126D847C5007A708F /* pt_gfx_mesh_base.cpp in Sources */,
+				62EF63BE26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp in Sources */,
+				629186D926D848A7007A708F /* pt_gfx_material_vk.cpp in Sources */,
 				62D230882688921E0044D96C /* pt_gfx_device_vk_wsi_metal.cpp in Sources */,
 				62D230892688921E0044D96C /* pt_gfx_texture_base.cpp in Sources */,
 				62D2308C2688921E0044D96C /* pt_gfx_texture_vk.cpp in Sources */,
+				629186C726D847E1007A708F /* pt_gfx_mesh_vk.cpp in Sources */,
+				629186CD26D8482F007A708F /* pt_gfx_node_vk.cpp in Sources */,
 				62D2308F2688921E0044D96C /* pt_gfx_texture_base_load_dds.cpp in Sources */,
 				62D2308D2688921E0044D96C /* pt_gfx_texture_base_load_pvr.cpp in Sources */,
 				62D2308A2688921E0044D96C /* pt_gfx_malloc.cpp in Sources */,
+				629186CA26D8481B007A708F /* pt_gfx_node_base.cpp in Sources */,
 				62D2308B2688921E0044D96C /* pt_gfx_malloc_vk.cpp in Sources */,
+				629186D026D84856007A708F /* pt_gfx_streaming_object_base.cpp in Sources */,
+				629186D326D84874007A708F /* pt_gfx_frame_object_base.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		6277492526894ADC009F2E71 /* Sources */ = {
+		627FF3B126D9419900ED4AB6 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6277494026894C3D009F2E71 /* pt_wsi_bitmap.cpp in Sources */,
-				62E54AA326894E1400D7A782 /* pt_gfx_device_vk_wsi_bitmap.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		6277494426894CE1009F2E71 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				62E54AA226894DFF00D7A782 /* pt_gfx_device_vk.cpp in Sources */,
-				6277495126894D30009F2E71 /* pt_gfx_connection_base.cpp in Sources */,
-				6277495226894D30009F2E71 /* pt_gfx_connection_vk.cpp in Sources */,
-				62E54AA426894EA600D7A782 /* pt_gfx_device_vk_wsi_bitmap.cpp in Sources */,
-				6277495026894D30009F2E71 /* pt_gfx_texture_base.cpp in Sources */,
-				6277495326894D30009F2E71 /* pt_gfx_texture_vk.cpp in Sources */,
-				6277494D26894D30009F2E71 /* pt_gfx_texture_base_load_dds.cpp in Sources */,
-				6277494F26894D30009F2E71 /* pt_gfx_texture_base_load_pvr.cpp in Sources */,
-				6277495426894D30009F2E71 /* pt_gfx_malloc.cpp in Sources */,
-				6277494E26894D30009F2E71 /* pt_gfx_malloc_vk.cpp in Sources */,
+				62FF463926D9424300CAEF53 /* pt_mcrt_intrin_x86_sse2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -783,13 +971,61 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D230C6268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp in Sources */,
-				62D230BD268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */,
-				62D230BF268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */,
+				62EF63DC26D8F6DB0004F34C /* pt_mcrt_intrin.cpp in Sources */,
 				62D230C0268893540044D96C /* pt_mcrt_memcpy.cpp in Sources */,
+				62EF63D626D8F6A10004F34C /* pt_mcrt_memset.cpp in Sources */,
 				62D230C7268893540044D96C /* pt_mcrt_task.cpp in Sources */,
 				62D230C4268893540044D96C /* pt_mcrt_malloc.cpp in Sources */,
-				62D230BE268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */,
+				62EF63DA26D8F6CE0004F34C /* pt_mcrt_log.cpp in Sources */,
+				62EF63D826D8F6AA0004F34C /* pt_mcrt_memcmp.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF464026D943B000CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF464726D943B700CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF464926D9440700CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF465026D9442200CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF465826D944F100CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF465F26D9451600CAEF53 /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466426D9460200CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF467B26D9466600CAEF53 /* pt_math_directx_math_x86_sse2.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF466C26D9461000CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF467D26D9466D00CAEF53 /* pt_math_directx_math_x86_avx.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		62FF467426D9461E00CAEF53 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				62FF467C26D9466A00CAEF53 /* pt_math_directx_math_x86_avx2.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -804,57 +1040,63 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				62D7940E25975789001CC2AF /* pt_wsi_window_osx.cpp in Sources */,
+				62D7940E25975789001CC2AF /* pt_wsi_mach_osx.cpp in Sources */,
+				62EF63BC26D8E75C0004F34C /* pt_wsi_mach_osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		624EFC1826889C0E001F2F63 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 62D230AB268893240044D96C /* pt_mcrt */;
-			targetProxy = 624EFC1726889C0E001F2F63 /* PBXContainerItemProxy */;
-		};
-		6277495826894D6A009F2E71 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 62D230AB268893240044D96C /* pt_mcrt */;
-			targetProxy = 6277495726894D6A009F2E71 /* PBXContainerItemProxy */;
-		};
-		6277495D26894D71009F2E71 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 62D230AB268893240044D96C /* pt_mcrt */;
-			targetProxy = 6277495C26894D71009F2E71 /* PBXContainerItemProxy */;
-		};
 		62D230D72688987A0044D96C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 62D230AB268893240044D96C /* pt_mcrt */;
 			targetProxy = 62D230D62688987A0044D96C /* PBXContainerItemProxy */;
 		};
-		62D230D926889B2E0044D96C /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */;
-			targetProxy = 62D230D826889B2E0044D96C /* PBXContainerItemProxy */;
-		};
 		62D230DB26889B330044D96C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 625D4F2B26775B6F000F087B /* pt_gfx_wsi_window_osx */;
+			target = 625D4F2B26775B6F000F087B /* pt_gfx */;
 			targetProxy = 62D230DA26889B330044D96C /* PBXContainerItemProxy */;
 		};
-		62E54AB526894F1700D7A782 /* PBXTargetDependency */ = {
+		62EF63CE26D8F2110004F34C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 62D230AB268893240044D96C /* pt_mcrt */;
-			targetProxy = 62E54AB426894F1700D7A782 /* PBXContainerItemProxy */;
+			target = 6238290326768846002ECF8A /* pt_math */;
+			targetProxy = 62EF63CD26D8F2110004F34C /* PBXContainerItemProxy */;
 		};
-		62E54AB926894F1D00D7A782 /* PBXTargetDependency */ = {
+		62FF463E26D9429F00CAEF53 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 6277494626894CE1009F2E71 /* pt_gfx_wsi_bitmap */;
-			targetProxy = 62E54AB826894F1D00D7A782 /* PBXContainerItemProxy */;
+			target = 627FF3B326D9419900ED4AB6 /* pt_mcrt_sse2 */;
+			targetProxy = 62FF463D26D9429F00CAEF53 /* PBXContainerItemProxy */;
 		};
-		62E54ABD26894F2200D7A782 /* PBXTargetDependency */ = {
+		62FF465226D9443F00CAEF53 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 6238290326768846002ECF8A /* pt_apple_sdk_posix_mach_osx */;
-			targetProxy = 62E54ABC26894F2200D7A782 /* PBXContainerItemProxy */;
+			target = 62FF464226D943B000CAEF53 /* pt_mcrt_sse3 */;
+			targetProxy = 62FF465126D9443F00CAEF53 /* PBXContainerItemProxy */;
+		};
+		62FF465426D9444100CAEF53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62FF464B26D9440700CAEF53 /* pt_mcrt_avx */;
+			targetProxy = 62FF465326D9444100CAEF53 /* PBXContainerItemProxy */;
+		};
+		62FF466126D9453400CAEF53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62FF465A26D944F100CAEF53 /* pt_mcrt_avx512f */;
+			targetProxy = 62FF466026D9453400CAEF53 /* PBXContainerItemProxy */;
+		};
+		62FF467F26D946A100CAEF53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62FF466626D9460200CAEF53 /* pt_math_sse2 */;
+			targetProxy = 62FF467E26D946A100CAEF53 /* PBXContainerItemProxy */;
+		};
+		62FF468126D946A300CAEF53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62FF466E26D9461000CAEF53 /* pt_math_avx */;
+			targetProxy = 62FF468026D946A300CAEF53 /* PBXContainerItemProxy */;
+		};
+		62FF468326D946A500CAEF53 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 62FF467626D9461E00CAEF53 /* pt_math_avx2 */;
+			targetProxy = 62FF468226D946A500CAEF53 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -872,6 +1114,11 @@
 					"PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -891,6 +1138,11 @@
 					"PT_ATTR_APPLE_SDK=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -910,6 +1162,10 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -930,6 +1186,10 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -937,70 +1197,28 @@
 			};
 			name = Release;
 		};
-		6277493B26894ADC009F2E71 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = osx.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
-				INFOPLIST_FILE = osx.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
-				PRODUCT_BUNDLE_IDENTIFIER = "PatriotEngine.HanetakaYuminaga.pt-launcher-wsi-bitmap";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Debug;
-		};
-		6277493C26894ADC009F2E71 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = osx.entitlements;
-				CODE_SIGN_STYLE = Automatic;
-				COMBINE_HIDPI_IMAGES = YES;
-				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
-				INFOPLIST_FILE = osx.plist;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/../Frameworks",
-				);
-				MACOSX_DEPLOYMENT_TARGET = 11.3;
-				PRODUCT_BUNDLE_IDENTIFIER = "PatriotEngine.HanetakaYuminaga.pt-launcher-wsi-bitmap";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SDKROOT = macosx;
-			};
-			name = Release;
-		};
-		6277494926894CE1009F2E71 /* Debug */ = {
+		627FF3B626D9419900ED4AB6 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
-		6277494A26894CE1009F2E71 /* Release */ = {
+		627FF3B726D9419900ED4AB6 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/lib/mach_osx";
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse2";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -1016,12 +1234,12 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
-				OTHER_CFLAGS = (
-					"-mssse3",
-					"-mavx",
-					"-mavx512f",
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				OTHER_CFLAGS = "";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -1037,11 +1255,203 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				OTHER_CFLAGS = "";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF464526D943B000CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse3";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF464626D943B000CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse3";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF464E26D9440700CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF464F26D9440700CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF465D26D944F100CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx512f";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF465E26D944F100CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx512f";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF466926D9460200CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse2";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF466A26D9460200CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-msse2";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF467126D9461000CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF467226D9461000CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = "-mavx";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		62FF467926D9461E00CAEF53 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = (
-					"-mssse3",
-					"-mavx",
-					"-mavx512f",
+					"-mavx2",
+					"-mfma",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		62FF467A26D9461E00CAEF53 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CFLAGS = (
+					"-mavx2",
+					"-mfma",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
@@ -1149,6 +1559,7 @@
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
 					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -1206,6 +1617,7 @@
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
 					"$(PROJECT_DIR)/../../third_party/libs/lunarg_vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1222,23 +1634,14 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
-				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = osx.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Foundation.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = HanetakaYuminaga.pt_launcher_wsi_window_osx;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = HanetakaYuminaga.pt_launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -1253,23 +1656,14 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
-				HEADER_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/include",
-				);
+				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = osx.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Foundation.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/AppKit.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/Metal.framework/Versions/Current",
-					"$(SYSTEM_LIBRARY_DIR)/Frameworks/MetalKit.framework/Versions/Current",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = HanetakaYuminaga.pt_launcher_wsi_window_osx;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_BUNDLE_IDENTIFIER = HanetakaYuminaga.pt_launcher;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = macosx;
 			};
@@ -1278,7 +1672,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_apple_sdk_posix_mach_osx" */ = {
+		6238290726768846002ECF8A /* Build configuration list for PBXNativeTarget "pt_math" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				6238290526768846002ECF8A /* Debug */,
@@ -1287,7 +1681,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		625D4F2D26775B6F000F087B /* Build configuration list for PBXNativeTarget "pt_gfx_wsi_window_osx" */ = {
+		625D4F2D26775B6F000F087B /* Build configuration list for PBXNativeTarget "pt_gfx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				625D4F2E26775B6F000F087B /* Debug */,
@@ -1296,20 +1690,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		6277493A26894ADC009F2E71 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_bitmap" */ = {
+		627FF3B526D9419900ED4AB6 /* Build configuration list for PBXNativeTarget "pt_mcrt_sse2" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				6277493B26894ADC009F2E71 /* Debug */,
-				6277493C26894ADC009F2E71 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		6277494826894CE1009F2E71 /* Build configuration list for PBXNativeTarget "pt_gfx_wsi_bitmap" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				6277494926894CE1009F2E71 /* Debug */,
-				6277494A26894CE1009F2E71 /* Release */,
+				627FF3B626D9419900ED4AB6 /* Debug */,
+				627FF3B726D9419900ED4AB6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1319,6 +1704,60 @@
 			buildConfigurations = (
 				62D230AE268893240044D96C /* Debug */,
 				62D230AF268893240044D96C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF464426D943B000CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_sse3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF464526D943B000CAEF53 /* Debug */,
+				62FF464626D943B000CAEF53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF464D26D9440700CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_avx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF464E26D9440700CAEF53 /* Debug */,
+				62FF464F26D9440700CAEF53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF465C26D944F100CAEF53 /* Build configuration list for PBXNativeTarget "pt_mcrt_avx512f" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF465D26D944F100CAEF53 /* Debug */,
+				62FF465E26D944F100CAEF53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF466826D9460200CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_sse2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF466926D9460200CAEF53 /* Debug */,
+				62FF466A26D9460200CAEF53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF467026D9461000CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_avx" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF467126D9461000CAEF53 /* Debug */,
+				62FF467226D9461000CAEF53 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		62FF467826D9461E00CAEF53 /* Build configuration list for PBXNativeTarget "pt_math_avx2" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				62FF467926D9461E00CAEF53 /* Debug */,
+				62FF467A26D9461E00CAEF53 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -1341,7 +1780,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher_wsi_window_osx" */ = {
+		92F977F82439099100C5F3C5 /* Build configuration list for PBXNativeTarget "pt_launcher" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				92F977F92439099100C5F3C5 /* Debug */,

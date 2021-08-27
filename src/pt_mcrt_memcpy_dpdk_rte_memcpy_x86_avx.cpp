@@ -19,7 +19,6 @@
 #include <pt_mcrt_common.h>
 
 #if defined(PT_X64) || defined(PT_X86)
-#define __PT_MCRT_RTE_MEMCPY_AVX 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_x86.h"
 
 extern void *rte_memcpy_x86_avx(void *__restrict dest, void const *__restrict src, size_t count)

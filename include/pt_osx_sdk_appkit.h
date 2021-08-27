@@ -21,8 +21,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_apple_sdk_common.h"
-#include "pt_apple_sdk_posix_mach_objc.h"
-#include "pt_apple_sdk_posix_mach_foundation.h"
+#include "pt_osx_sdk_objc.h"
+#include "pt_osx_sdk_foundation.h"
 
 /** @file /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/Headers/NSApplication.h */
 typedef struct _NSApplication_T_ *NSApplication;

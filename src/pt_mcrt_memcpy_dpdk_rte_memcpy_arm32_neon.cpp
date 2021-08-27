@@ -20,7 +20,6 @@
 
 #if defined(PT_ARM)
 #include <string.h>
-#define __PT_MCRT_RTE_MEMCPY_ARM32_NEON 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm32.h"
 
 extern void *rte_memcpy_arm32_neon(void *__restrict dest, void const *__restrict src, size_t count)

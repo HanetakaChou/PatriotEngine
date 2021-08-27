@@ -18,7 +18,9 @@
 #include <pt_math.h>
 #include "pt_math_directx_math.h"
 
-#if !defined(_MSC_VER)
+#if defined(PT_X64) || defined(PT_X86)
+
+#if defined(PT_POSIX)
 //#include "sal.h"
 #define _In_
 #define _In_reads_(expression)
@@ -127,5 +129,6 @@ void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_mat4x4(math_alignas16_m
 void PT_VECTORCALL directx_math_x86_sse2_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4(unwrap(destination),unwrap(m));
-
 }
+
+#endif

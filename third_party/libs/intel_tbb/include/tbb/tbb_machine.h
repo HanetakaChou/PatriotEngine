@@ -113,7 +113,8 @@
 #include "tbb_stddef.h"
 
 namespace tbb {
-namespace internal { //< @cond INTERNAL
+namespace internal {
+// @cond INTERNAL
 
 ////////////////////////////////////////////////////////////////////////////////
 // Overridable helpers declarations
@@ -160,7 +161,7 @@ template<> struct atomic_selector<8> {
     inline static word fetch_store ( volatile void* location, word value );
 };
 
-}} //< namespaces internal @endcond, tbb
+}} // namespaces internal @endcond, tbb
 
 #define __TBB_MACHINE_DEFINE_STORE8_GENERIC_FENCED(M)                                        \
     inline void __TBB_machine_generic_store8##M(volatile void *ptr, int64_t value) {         \
@@ -338,7 +339,7 @@ namespace tbb {
 //! Sequentially consistent full memory fence.
 inline void atomic_fence () { __TBB_full_memory_fence(); }
 
-namespace internal { //< @cond INTERNAL
+namespace internal { // @cond INTERNAL
 
 //! Class that implements exponential backoff.
 /** See implementation of spin_wait_while_eq for an example. */

@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <pt_mcrt_intrin.h>
 
+#if defined(PT_X64) || defined(PT_X86)
+
 extern "C" mcrt_uuid mcrt_uuid_load_x86_sse2(uint8_t bytes[16])
 {
     return _mm_loadu_si128(reinterpret_cast<__m128i *>(&bytes[0]));
@@ -30,3 +32,5 @@ extern "C" bool mcrt_uuid_equal_x86_sse2(mcrt_uuid a, mcrt_uuid b)
     int mask = _mm_movemask_epi8(v);
     return (0XFFFF == mask);
 }
+
+#endif

@@ -18,6 +18,8 @@
 #include <stdint.h>
 #include <pt_mcrt_intrin.h>
 
+#if defined(PT_ARM) && defined(PT_ARM64)
+
 extern "C" mcrt_uuid mcrt_uuid_load_arm_neon(uint8_t bytes[16])
 {
     return vld1q_u32(reinterpret_cast<uint32_t *>(&bytes[0]));
@@ -32,3 +34,5 @@ extern "C" bool mcrt_uuid_equal_arm_neon(mcrt_uuid a, mcrt_uuid b)
     uint32_t mask = vget_lane_u32(v_temp_2.val[1], 1);
     return (0xFFFFFFFFU == mask);
 }
+
+#endif

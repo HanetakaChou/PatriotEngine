@@ -18,6 +18,8 @@
 #include <pt_math.h>
 #include "pt_math_directx_math.h"
 
+#if defined(PT_ARM) && defined(PT_ARM64)
+
 #if !defined(_MSC_VER)
 //#include "sal.h"
 #define _In_
@@ -120,3 +122,5 @@ void PT_VECTORCALL directx_math_arm_neon_store_mat4x4(math_mat4x4 *destination, 
 {
     return DirectX::XMStoreFloat4x4(unwrap(destination), unwrap(m));
 }
+
+#endif

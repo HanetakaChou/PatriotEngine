@@ -273,21 +273,21 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
     {
         for (uint32_t arrayLayer = 0; arrayLayer < vk_header->array_layers; ++arrayLayer)
         {
-            size_t w = vk_header->extent.width;
-            size_t h = vk_header->extent.height;
-            size_t d = vk_header->extent.depth;
+            uint32_t w = vk_header->extent.width;
+            uint32_t h = vk_header->extent.height;
+            uint32_t d = vk_header->extent.depth;
             for (uint32_t mipLevel = 0; mipLevel < vk_header->mip_levels; ++mipLevel)
             {
-                size_t output_row_pitch;
-                size_t output_row_size;
-                size_t output_num_rows;
-                size_t output_slice_pitch;
-                size_t output_num_slices;
+                uint32_t output_row_pitch;
+                uint32_t output_row_size;
+                uint32_t output_num_rows;
+                uint32_t output_slice_pitch;
+                uint32_t output_num_slices;
 
                 //uint32_t bufferRowLength;
                 //uint32_t bufferImageHeight;
 
-                size_t texel_block_size;
+                uint32_t texel_block_size;
 
                 if (is_format_compressed(vk_header->format))
                 {
@@ -298,7 +298,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_slices = d;
 
                     assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<uint32_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    assert((static_cast<size_t>(output_row_pitch) * static_cast<size_t>(output_num_rows)) <= UINT32_MAX);
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     // bufferOffset must be a multiple of 4
@@ -342,7 +343,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_slices = d;
 
                     assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<uint32_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    assert((static_cast<size_t>(output_row_pitch) * static_cast<size_t>(output_num_rows)) <= UINT32_MAX);
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     //bufferRowLength = output_row_pitch / get_rgba_format_pixel_bytes(vk_header->format);
@@ -358,7 +360,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     output_num_slices = d;
 
                     assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
-                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    output_row_pitch = mcrt_intrin_round_up(output_row_size, static_cast<uint32_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                    assert((static_cast<size_t>(output_row_pitch) * static_cast<size_t>(output_num_rows)) <= UINT32_MAX);
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
                     //bufferRowLength = output_row_pitch / get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
@@ -369,7 +372,7 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
 
                 assert(physical_device_limits_optimal_buffer_copy_offset_alignment <= UINT32_MAX);
                 assert(physical_device_limits_optimal_buffer_copy_row_pitch_alignment <= UINT32_MAX);
-                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(staging_offset, size_t(4U)), texel_block_size), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_offset_alignment)), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
+                size_t stagingOffset_new = mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(mcrt_intrin_round_up(staging_offset, static_cast<size_t>(4U)), static_cast<size_t>(texel_block_size)), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_offset_alignment)), static_cast<size_t>(physical_device_limits_optimal_buffer_copy_row_pitch_alignment));
                 TotalBytes += (stagingOffset_new - staging_offset);
                 staging_offset = stagingOffset_new;
 
@@ -383,7 +386,7 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                 out_memcpy_dest[DstSubresource].output_slice_pitch = output_slice_pitch;
                 out_memcpy_dest[DstSubresource].output_num_slices = output_num_slices;
 
-                size_t surfaceSize = (output_slice_pitch * output_num_slices);
+                size_t surfaceSize = (static_cast<size_t>(output_slice_pitch) * static_cast<size_t>(output_num_slices));
                 staging_offset += surfaceSize;
                 TotalBytes += surfaceSize;
                 assert((base_offset + TotalBytes) == staging_offset);
@@ -417,9 +420,9 @@ static inline void get_copyable_footprints_cmdcpy(struct gfx_texture_vk_header_t
     {
         for (uint32_t arrayLayer = 0; arrayLayer < vk_header->array_layers; ++arrayLayer)
         {
-            size_t w = vk_header->extent.width;
-            size_t h = vk_header->extent.height;
-            size_t d = vk_header->extent.depth;
+            uint32_t w = vk_header->extent.width;
+            uint32_t h = vk_header->extent.height;
+            uint32_t d = vk_header->extent.depth;
             for (uint32_t mipLevel = 0; mipLevel < vk_header->mip_levels; ++mipLevel)
             {
                 uint32_t subresource_index = calculate_subresource_index_vk(mipLevel, arrayLayer, aspect_index, vk_header->mip_levels, vk_header->array_layers);

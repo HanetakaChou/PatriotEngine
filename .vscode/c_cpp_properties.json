@@ -6,7 +6,10 @@
         },
         {
             "name": "Mac",
-            "compileCommands": "${workspaceFolder}/.vscode/compile_commands_mac.json"
+            "compileCommands": "${workspaceFolder}/.vscode/compile_commands_mac.json",
+            "macFrameworkPath": [
+                "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks"
+            ]
         }
     ],
     "version": 4

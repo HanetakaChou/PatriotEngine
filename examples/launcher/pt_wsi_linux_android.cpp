@@ -30,12 +30,12 @@ static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *native_acti
 static void ANativeActivity_onNativeWindowResized(ANativeActivity *native_activity, ANativeWindow *native_window);
 static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_activity, ANativeWindow *native_window);
 
-static ANativeActivity *wsi_android_native_activity = NULL;
-static ANativeWindow *wsi_android_native_window = NULL;
-static gfx_connection_ref wsi_android_gfx_connection = NULL;
+static ANativeActivity *wsi_linux_android_native_activity = NULL;
+static ANativeWindow *wsi_linux_android_native_window = NULL;
+static gfx_connection_ref wsi_linux_android_gfx_connection = NULL;
 
-static void *wsi_android_app_main(void *arg);
-mcrt_native_thread_id wsi_android_app_main_thread_id;
+static void *wsi_linux_android_app_main(void *arg);
+mcrt_native_thread_id wsi_linux_android_app_main_thread_id;
 //bool m_app_thread_running;
 
 extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *, size_t)
@@ -43,9 +43,9 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 	static bool app_process_on_create = true;
 	if (app_process_on_create)
 	{
-		wsi_android_gfx_connection = gfx_connection_init(NULL, NULL);
+		wsi_linux_android_gfx_connection = gfx_connection_init(NULL, NULL);
 
-		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_android_app_main_thread_id, wsi_android_app_main, NULL);
+		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_app_main_thread_id, wsi_linux_android_app_main, NULL);
 		assert(res_native_thread_create);
 
 		app_process_on_create = false;
@@ -69,18 +69,18 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 	native_activity->callbacks->onConfigurationChanged = NULL;
 	native_activity->callbacks->onLowMemory = NULL;
 
-	wsi_android_native_activity = native_activity;
+	wsi_linux_android_native_activity = native_activity;
 }
 
 static void ANativeActivity_onDestroy(ANativeActivity *native_activity)
 {
-	assert(native_activity == wsi_android_native_activity);
-	wsi_android_native_activity = NULL;
+	assert(native_activity == wsi_linux_android_native_activity);
+	wsi_linux_android_native_activity = NULL;
 }
 
 static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue)
 {
-	assert(native_activity == wsi_android_native_activity);
+	assert(native_activity == wsi_linux_android_native_activity);
 
 	ALooper *looper = ALooper_forThread();
 	assert(looper != NULL);
@@ -111,8 +111,8 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity
 						{
 						case AKEYCODE_HOME:
 						{
-							assert(NULL != wsi_android_native_activity);
-							ANativeActivity_finish(wsi_android_native_activity);
+							assert(NULL != wsi_linux_android_native_activity);
+							ANativeActivity_finish(wsi_linux_android_native_activity);
 							handled = 1;
 						}
 						break;
@@ -135,7 +135,7 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity
 
 static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue)
 {
-	assert(native_activity == wsi_android_native_activity);
+	assert(native_activity == wsi_linux_android_native_activity);
 
 	ALooper *looper = ALooper_forThread();
 	assert(looper != NULL);
@@ -145,45 +145,45 @@ static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activi
 
 static void ANativeActivity_onNativeWindowCreated(ANativeActivity *native_activity, ANativeWindow *native_window)
 {
-	assert(native_activity == wsi_android_native_activity);
-	bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(wsi_android_gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(native_window), ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
+	assert(native_activity == wsi_linux_android_native_activity);
+	bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(wsi_linux_android_gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(native_window), ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
 	assert(res_on_wsi_window_created);
-	wsi_android_native_window = native_window;
+	wsi_linux_android_native_window = native_window;
 }
 
 static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *native_activity, ANativeWindow *native_window)
 {
-	assert(native_activity == wsi_android_native_activity);
-	assert(native_window == wsi_android_native_window);
-	gfx_connection_on_wsi_window_destroyed(wsi_android_gfx_connection);
-	wsi_android_native_window = NULL;
+	assert(native_activity == wsi_linux_android_native_activity);
+	assert(native_window == wsi_linux_android_native_window);
+	gfx_connection_on_wsi_window_destroyed(wsi_linux_android_gfx_connection);
+	wsi_linux_android_native_window = NULL;
 }
 
 static void ANativeActivity_onNativeWindowResized(ANativeActivity *native_activity, ANativeWindow *native_window)
 {
-	assert(native_activity == wsi_android_native_activity);
-	assert(native_window == wsi_android_native_window);
-	gfx_connection_on_wsi_resized(wsi_android_gfx_connection, ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
+	assert(native_activity == wsi_linux_android_native_activity);
+	assert(native_window == wsi_linux_android_native_window);
+	gfx_connection_on_wsi_resized(wsi_linux_android_gfx_connection, ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
 }
 
 static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_activity, ANativeWindow *native_window)
 {
-	assert(native_activity == wsi_android_native_activity);
-	assert(native_window == wsi_android_native_window);
-	gfx_connection_on_wsi_redraw_needed_acquire(wsi_android_gfx_connection);
-	gfx_connection_on_wsi_redraw_needed_release(wsi_android_gfx_connection);
+	assert(native_activity == wsi_linux_android_native_activity);
+	assert(native_window == wsi_linux_android_native_window);
+	gfx_connection_on_wsi_redraw_needed_acquire(wsi_linux_android_gfx_connection);
+	gfx_connection_on_wsi_redraw_needed_release(wsi_linux_android_gfx_connection);
 }
 
 #include "pt_wsi_window_app.h"
-wsi_window_app_ref wsi_android_app;
+wsi_window_app_ref wsi_linux_android_app;
 
-static void *wsi_android_app_main(void *arg)
+static void *wsi_linux_android_app_main(void *arg)
 {
-	wsi_android_app = wsi_window_app_init(wsi_android_gfx_connection);
-	assert(wsi_android_app != NULL);
+	wsi_linux_android_app = wsi_window_app_init(wsi_linux_android_gfx_connection);
+	assert(wsi_linux_android_app != NULL);
 	//mcrt_atomic_store(&self->m_app_thread_running, true);
 
-	int res = wsi_window_app_main(wsi_android_app);
+	int res = wsi_window_app_main(wsi_linux_android_app);
 
 	//mcrt_atomic_store(&self->m_loop, false);
 

@@ -1936,8 +1936,8 @@ typedef struct VkImageCreateInfo {
     VkImageType              imageType;
     VkFormat                 format;
     VkExtent3D               extent;
-    uint32_t                 mip_levels;
-    uint32_t                 array_layers;
+    uint32_t                 mipLevels;
+    uint32_t                 arrayLayers;
     VkSampleCountFlagBits    samples;
     VkImageTiling            tiling;
     VkImageUsageFlags        usage;
@@ -2444,7 +2444,7 @@ typedef struct VkImageBlit {
     VkOffset3D                  dstOffsets[2];
 } VkImageBlit;
 
-typedef VkBufferImageCopy {
+typedef struct VkBufferImageCopy {
     VkDeviceSize                bufferOffset;
     uint32_t                    bufferRowLength;
     uint32_t                    bufferImageHeight;

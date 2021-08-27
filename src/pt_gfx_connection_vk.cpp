@@ -735,7 +735,7 @@ void gfx_connection_vk::reduce_streaming_task()
         this->m_transfer_src_buffer_end[streaming_throttling_index] = transfer_src_buffer_begin;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
         uint64_t transfer_src_buffer_size = this->m_transfer_src_buffer_size[streaming_throttling_index];
-        uint32_t transfer_src_buffer_used = (transfer_src_buffer_end - transfer_src_buffer_begin);
+        uint64_t transfer_src_buffer_used = (transfer_src_buffer_end - transfer_src_buffer_begin);
         if (transfer_src_buffer_used > 0U)
         {
             mcrt_log_print("index %i: transfer_src_buffer unused memory %f mb\n", int(streaming_throttling_index), float(transfer_src_buffer_size - transfer_src_buffer_used) / 1024.0f / 1024.0f);
@@ -1625,12 +1625,12 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         sampler_create_info.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         sampler_create_info.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
         sampler_create_info.mipLodBias = 0.0f;
-        sampler_create_info.anisotropyEnable = VK_FALSE,
+        sampler_create_info.anisotropyEnable = VK_FALSE;
         sampler_create_info.maxAnisotropy = 1U;
-        sampler_create_info.compareEnable = VK_FALSE,
+        sampler_create_info.compareEnable = VK_FALSE;
         sampler_create_info.compareOp = VK_COMPARE_OP_NEVER;
-        sampler_create_info.minLod = 0.0f,
-        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE,
+        sampler_create_info.minLod = 0.0f;
+        sampler_create_info.maxLod = VK_LOD_CLAMP_NONE;
         sampler_create_info.borderColor = VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
         sampler_create_info.unnormalizedCoordinates = VK_FALSE;
         PT_MAYBE_UNUSED VkResult res_create_sampler = this->m_device.create_sampler(&sampler_create_info, &this->m_immutable_sampler);
@@ -2405,6 +2405,8 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
     return gfx_texture;
 }
 
+#if defined(PT_POSIX)
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -2434,7 +2436,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
             {
                 void *data = mcrt_aligned_malloc(statbuf.st_size, alignof(uint8_t));
 
-                PT_MAYBE_UNUSED int res_read = read(fd, data, statbuf.st_size);
+                PT_MAYBE_UNUSED ssize_t res_read = read(fd, data, statbuf.st_size);
                 assert(res_read == statbuf.st_size);
 
                 uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data));
@@ -2582,3 +2584,9 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
 
     return;
 }
+
+#elif defined(PT_WIN32)
+
+#else
+#error Unknown Platform
+#endif

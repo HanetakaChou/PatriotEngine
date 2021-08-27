@@ -43,7 +43,7 @@ namespace tbb
 #endif
 
     namespace internal
-    { //< @cond INTERNAL
+    { // @cond INTERNAL
 
         class allocate_additional_child_of_proxy : no_assign
         {
@@ -64,7 +64,7 @@ namespace tbb
         {
             int space[sizeof(internal::uint64_t) / sizeof(int)];
         };
-    } //< namespace internal @endcond
+    } // namespace internal @endcond
 
     namespace interface5
     {

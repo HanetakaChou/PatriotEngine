@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1230"
+   LastUpgradeVersion = "1250"
    version = "1.3">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "92F977E32439099000C5F3C5"
-               BuildableName = "pt_launcher_wsi_window_osx.app"
-               BlueprintName = "pt_launcher_wsi_window_osx"
+               BuildableName = "pt_launcher.app"
+               BlueprintName = "pt_launcher"
                ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92F977E32439099000C5F3C5"
-            BuildableName = "pt_launcher_wsi_window_osx.app"
-            BlueprintName = "pt_launcher_wsi_window_osx"
+            BuildableName = "pt_launcher.app"
+            BlueprintName = "pt_launcher"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -79,8 +79,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92F977E32439099000C5F3C5"
-            BuildableName = "pt_launcher_wsi_window_osx.app"
-            BlueprintName = "pt_launcher_wsi_window_osx"
+            BuildableName = "pt_launcher.app"
+            BlueprintName = "pt_launcher"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

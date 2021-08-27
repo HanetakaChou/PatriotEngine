@@ -19,7 +19,7 @@
 #define _PT_APPLE_SDK_POSIX_MACH_FOUNDATION_H_ 1
 
 #include "pt_apple_sdk_common.h"
-#include "pt_apple_sdk_posix_mach_objc.h"
+#include "pt_osx_sdk_objc.h"
 
 typedef struct _Class_NSThreadDetachTarget_T_ *Class_NSThreadDetachTarget;
 typedef struct _NSThreadDetachTarget_T_ *NSThreadDetachTarget;

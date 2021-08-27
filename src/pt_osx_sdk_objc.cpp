@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <pt_apple_sdk_posix_mach_objc.h>
+#include <pt_os_sdk_objc.h>
 
 #include <TargetConditionals.h>
 #if TARGET_OS_IOS

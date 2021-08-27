@@ -49,11 +49,11 @@ VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_conne
     PFN_vkCreateAndroidSurfaceKHR vk_create_android_surface = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_android_surface);
 
-    VkAndroidSurfaceCreateInfoKHR xcb_surface_create_info;
-    xcb_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
-    xcb_surface_create_info.pNext = NULL;
-    xcb_surface_create_info.flags = 0U;
-    xcb_surface_create_info.window = unwrap(wsi_window);
+    VkAndroidSurfaceCreateInfoKHR android_surface_create_info;
+    android_surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
+    android_surface_create_info.pNext = NULL;
+    android_surface_create_info.flags = 0U;
+    android_surface_create_info.window = unwrap(wsi_window);
 
-    return vk_create_android_surface(this->m_instance, &xcb_surface_create_info, this->m_vk_allocation_callbacks, surface);
+    return vk_create_android_surface(this->m_instance, &android_surface_create_info, this->m_vk_allocation_callbacks, surface);
 }

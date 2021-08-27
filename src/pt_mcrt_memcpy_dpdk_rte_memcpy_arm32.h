@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include "pt_mcrt_memcpy_dpdk_rte_common.h"
 
-#if defined(__ARM_NEON) && defined(__PT_MCRT_RTE_MEMCPY_ARM32_NEON) 
+#if defined(__ARM_NEON)
 #include <arm_neon.h>
 static __rte_always_inline void rte_mov16(uint8_t *dst, const uint8_t *src)
 {

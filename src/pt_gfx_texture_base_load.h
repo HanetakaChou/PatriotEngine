@@ -236,11 +236,11 @@ struct gfx_texture_neutral_header_t
 struct gfx_texture_neutral_memcpy_dest_t
 {
     size_t staging_offset;
-    size_t output_row_pitch;
-    size_t output_row_size;
-    size_t output_num_rows;
-    size_t output_slice_pitch;
-    size_t output_num_slices;
+    uint32_t output_row_pitch;
+    uint32_t output_row_size;
+    uint32_t output_num_rows;
+    uint32_t output_slice_pitch;
+    uint32_t output_num_slices;
 };
 
 bool load_header_from_input_stream(

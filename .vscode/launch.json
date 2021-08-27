@@ -56,10 +56,10 @@
             ]
         },
         {
-            "name": "(MacOSX) Launch",
+            "name": "(Mach OSX) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/pt_launcher_wsi_window_osx.app/Contents/MacOS/pt_launcher_wsi_window_osx",
+            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/pt_launcher.app/Contents/MacOS/pt_launcher",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

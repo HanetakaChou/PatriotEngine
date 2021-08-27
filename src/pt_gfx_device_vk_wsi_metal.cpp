@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -22,60 +22,14 @@
 #include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 
-inline CAMetalLayer *unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast<CAMetalLayer *>(wsi_visual); }
+inline CAMetalLayer *unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<CAMetalLayer *>(wsi_window); }
 
-//static_assert(sizeof(xcb_window_t) <= sizeof(void *), "sizeof(xcb_window_t) <= sizeof(void *)");
-
-void gfx_device_vk::on_wsi_resized(float width, float height)
+char const *gfx_device_vk::platform_surface_extension_name()
 {
-    this->m
-    //m_wsi_window = wsi_window;
-
-    //xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    //xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-    //xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
+    return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
 }
 
-void gfx_device_vk::on_wsi_redraw_needed_acquire()
-{
-#if 0
-    assert(m_wsi_connection == m_invalid_wsi_connection || _wsi_connection == m_wsi_connection);
-    assert(m_visual == m_invalid_visual || m_visual == _visual);
-    m_wsi_connection = _wsi_connection;
-    m_visual = _visual;
-
-    xcb_connection_t *wsi_connection = static_cast<xcb_connection_t *>(m_wsi_connection);
-    xcb_visualid_t visual = reinterpret_cast<uintptr_t>(m_visual);
-    xcb_window_t window = reinterpret_cast<uintptr_t>(_window);
-#endif
-}
-
-void gfx_device_vk::on_wsi_redraw_needed_release()
-{
-}
-
-char const *gfx_device_vk::platform_surface_extension_name(uint32_t index)
-{
-    if (0 == index)
-    {
-        return VK_KHR_SURFACE_EXTENSION_NAME;
-    }
-    else if (1 == index)
-    {
-        return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
-    }
-    else
-    {
-        return NULL;
-    }
-}
-
-uint32_t gfx_device_vk::platform_surface_extension_count()
-{
-    return 2;
-}
-
-bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
 {
     // [33.4.9. iOS Platform](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/chap33.html#platformQuerySupport_ios)
     // On iOS, all physical devices and queue families must be capable of presentation with any layer. As a result there is no iOS-specific query for these capabilities.
@@ -86,21 +40,21 @@ bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInsta
     return true;
 }
 
-
-
-char const *gfx_device_vk::platform_swapchain_extension_name(uint32_t index)
+char const *gfx_device_vk::platform_create_surface_function_name()
 {
-    if (0 == index)
-    {
-        return VK_KHR_SWAPCHAIN_EXTENSION_NAME;
-    }
-    else
-    {
-        return NULL;
-    }
+    return "vkCreateMetalSurfaceEXT";
 }
 
-uint32_t gfx_device_vk::platform_swapchain_extension_count()
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
 {
-    return 1;
+    PFN_vkCreateMetalSurfaceEXT vk_create_metal_surface = reinterpret_cast<PFN_vkCreateMetalSurfaceEXT>(this->m_vk_platform_create_surface);
+    assert(NULL != vk_create_metal_surface);
+
+    VkMetalSurfaceCreateInfoEXT metal_surface_create_info;
+    metal_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    metal_surface_create_info.pNext = NULL;
+    metal_surface_create_info.flags = 0U;
+    metal_surface_create_info.pLayer = unwrap(wsi_window);
+
+    return vk_create_metal_surface(this->m_instance, &metal_surface_create_info, this->m_vk_allocation_callbacks, surface);
 }

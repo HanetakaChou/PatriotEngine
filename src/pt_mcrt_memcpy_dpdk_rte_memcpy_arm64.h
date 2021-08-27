@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include "pt_mcrt_memcpy_dpdk_rte_common.h"
 
-#if defined(__ARM_NEON) && defined(__PT_MCRT_RTE_MEMCPY_ARM64_NEON) 
+#if defined(__ARM_NEON)
 #include <arm_neon.h>
 
 /*

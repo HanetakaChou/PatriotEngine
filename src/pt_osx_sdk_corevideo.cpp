@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <pt_apple_sdk_posix_mach_objc.h>
-#include <pt_apple_sdk_posix_mach_corevideo.h>
+#include <pt_osx_sdk_objc.h>
+#include <pt_osx_sdk_corevideo.h>
 
 extern "C" CVReturn CVDisplayLinkCreateWithActiveCGDisplays(CVDisplayLinkRef *displayLinkOut);
 

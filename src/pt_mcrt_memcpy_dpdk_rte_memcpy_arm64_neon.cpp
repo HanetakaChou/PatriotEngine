@@ -21,7 +21,6 @@
 #if defined(PT_ARM64)
 #include <string.h>
 #define rte_likely(x) PT_LIKELY((x))
-#define __PT_MCRT_RTE_MEMCPY_ARM64_NEON 1
 #include "pt_mcrt_memcpy_dpdk_rte_memcpy_arm64.h"
 
 extern void *rte_memcpy_arm64_neon(void *__restrict dest, void const *__restrict src, size_t count)

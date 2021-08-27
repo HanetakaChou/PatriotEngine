@@ -20,7 +20,7 @@
 #include <X11/keysym.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_wsi_window_x11.h"
+#include "pt_wsi_linux_x11.h"
 
 int main(int argc, char **argv)
 {
