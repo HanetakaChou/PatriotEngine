@@ -115,7 +115,17 @@ inline bool gfx_connection_vk::init_streaming()
                     PT_MAYBE_UNUSED VkResult res_create_command_pool = this->m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool);
                     assert(VK_SUCCESS == res_create_command_pool);
 
-                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer = VK_NULL_HANDLE;
+                    VkCommandBufferAllocateInfo command_buffer_allocate_info;
+                    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    command_buffer_allocate_info.pNext = NULL;
+                    command_buffer_allocate_info.commandPool = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool;
+                    command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                    command_buffer_allocate_info.commandBufferCount = 1U;
+
+                    PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer);
+                    assert(VK_SUCCESS == res_allocate_command_buffers);
+
+                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer_recording = false;
                 }
 
                 if (this->m_device.queue_transfer_family_index() != this->m_device.queue_graphics_family_index())
@@ -128,7 +138,17 @@ inline bool gfx_connection_vk::init_streaming()
                     PT_MAYBE_UNUSED VkResult res_create_command_pool = this->m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
                     assert(VK_SUCCESS == res_create_command_pool);
 
-                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer = VK_NULL_HANDLE;
+                    VkCommandBufferAllocateInfo command_buffer_allocate_info;
+                    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    command_buffer_allocate_info.pNext = NULL;
+                    command_buffer_allocate_info.commandPool = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool;
+                    command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                    command_buffer_allocate_info.commandBufferCount = 1U;
+
+                    PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
+                    assert(VK_SUCCESS == res_allocate_command_buffers);
+
+                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording = false;
                 }
             }
             else
@@ -142,7 +162,17 @@ inline bool gfx_connection_vk::init_streaming()
                 PT_MAYBE_UNUSED VkResult res_create_command_pool = m_device.create_command_Pool(&command_pool_create_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool);
                 assert(VK_SUCCESS == res_create_command_pool);
 
-                this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer = VK_NULL_HANDLE;
+                VkCommandBufferAllocateInfo command_buffer_allocate_info;
+                command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                command_buffer_allocate_info.pNext = NULL;
+                command_buffer_allocate_info.commandPool = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool;
+                command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                command_buffer_allocate_info.commandBufferCount = 1U;
+
+                PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
+                assert(VK_SUCCESS == res_allocate_command_buffers);
+
+                this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording = false;
             }
         }
 
@@ -182,18 +212,8 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_bu
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < this->m_streaming_thread_count);
 
-    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer))
+    if (PT_UNLIKELY(!mcrt_atomic_load(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer_recording)))
     {
-        VkCommandBufferAllocateInfo command_buffer_allocate_info;
-        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_pool;
-        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        command_buffer_allocate_info.commandBufferCount = 1U;
-
-        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer);
-        assert(VK_SUCCESS == res_allocate_command_buffers);
-
         VkCommandBufferBeginInfo command_buffer_begin_info = {
             VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             NULL,
@@ -202,6 +222,8 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_transfer_command_bu
         };
         PT_MAYBE_UNUSED VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer, &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
+
+        mcrt_atomic_store(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer_recording, true);
     }
 
     return this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer;
@@ -214,18 +236,8 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
     assert(uint32_t(-1) != streaming_thread_index);
     assert(streaming_thread_index < this->m_streaming_thread_count);
 
-    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer))
+    if (PT_UNLIKELY(!mcrt_atomic_load(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording)))
     {
-        VkCommandBufferAllocateInfo command_buffer_allocate_info;
-        command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-        command_buffer_allocate_info.pNext = NULL;
-        command_buffer_allocate_info.commandPool = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_pool;
-        command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        command_buffer_allocate_info.commandBufferCount = 1U;
-
-        PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
-        assert(VK_SUCCESS == res_allocate_command_buffers);
-
         VkCommandBufferBeginInfo command_buffer_begin_info = {
             VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             NULL,
@@ -234,6 +246,8 @@ inline VkCommandBuffer gfx_connection_vk::streaming_task_get_graphics_command_bu
         };
         PT_MAYBE_UNUSED VkResult res_begin_command_buffer = m_device.begin_command_buffer(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer, &command_buffer_begin_info);
         assert(VK_SUCCESS == res_begin_command_buffer);
+
+        mcrt_atomic_store(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording, true);
     }
 
     return this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer;
@@ -607,24 +621,24 @@ void gfx_connection_vk::reduce_streaming_task()
 
             for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)
             {
-                if (VK_NULL_HANDLE != this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer)
+                if (mcrt_atomic_load(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer_recording))
                 {
                     this->m_device.end_command_buffer(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer);
 
                     this->m_streaming_transfer_submit_info_command_buffers[submit_info_transfer.commandBufferCount] = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer;
                     ++submit_info_transfer.commandBufferCount;
 
-                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer = VK_NULL_HANDLE;
+                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_transfer_command_buffer_recording = false;
                 }
 
-                if (VK_NULL_HANDLE != this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer)
+                if (mcrt_atomic_load(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording))
                 {
                     this->m_device.end_command_buffer(this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer);
 
                     this->m_streaming_graphics_submit_info_command_buffers[submit_info_graphics.commandBufferCount] = this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer;
                     ++submit_info_graphics.commandBufferCount;
 
-                    this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer = VK_NULL_HANDLE;
+                    mcrt_atomic_store(&this->m_streaming_thread_block[streaming_throttling_index][streaming_thread_index].m_streaming_graphics_command_buffer_recording, false);
                 }
             }
             assert(submit_info_transfer.commandBufferCount == submit_info_graphics.commandBufferCount);
@@ -875,6 +889,18 @@ inline bool gfx_connection_vk::init_frame()
             }
 
             {
+                VkCommandBufferAllocateInfo command_buffer_allocate_info;
+                command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                command_buffer_allocate_info.pNext = NULL;
+                command_buffer_allocate_info.commandPool = this->m_frame_graphics_primary_commmand_pool[frame_throttling_index];
+                command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+                command_buffer_allocate_info.commandBufferCount = 1U;
+
+                PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
+                assert(VK_SUCCESS == res_allocate_command_buffers);
+            }
+
+            {
                 VkSemaphoreCreateInfo semaphore_create_info;
                 semaphore_create_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
                 semaphore_create_info.pNext = NULL;
@@ -913,7 +939,17 @@ inline bool gfx_connection_vk::init_frame()
 
                 for (uint32_t subpass_index = 0U; subpass_index < SUBPASS_COUNT; ++subpass_index)
                 {
-                    this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index] = VK_NULL_HANDLE;
+                    VkCommandBufferAllocateInfo command_buffer_allocate_info;
+                    command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+                    command_buffer_allocate_info.pNext = NULL;
+                    command_buffer_allocate_info.commandPool = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool;
+                    command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+                    command_buffer_allocate_info.commandBufferCount = 1U;
+
+                    PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]);
+                    assert(VK_SUCCESS == res_allocate_command_buffers);
+
+                    this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer_recording[subpass_index] = VK_NULL_HANDLE;
                 }
             }
 
@@ -1760,41 +1796,28 @@ inline VkCommandBuffer gfx_connection_vk::frame_task_get_secondary_command_buffe
     assert(uint32_t(-1) != frame_thread_index);
     assert(frame_thread_index < this->m_frame_thread_count);
 
-    if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]))
+    if (PT_UNLIKELY(!mcrt_atomic_load(&this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer_recording[subpass_index])))
     {
+        VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
+        command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+        command_buffer_inheritance_info.pNext = NULL;
+        command_buffer_inheritance_info.renderPass = this->m_render_pass;
+        command_buffer_inheritance_info.subpass = 0;
+        command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_frame_swapchain_image_index[frame_throttling_index]];
+        command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
+        command_buffer_inheritance_info.queryFlags = 0U;
+        command_buffer_inheritance_info.pipelineStatistics = 0U;
 
-        {
-            VkCommandBufferAllocateInfo command_buffer_allocate_info;
-            command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            command_buffer_allocate_info.pNext = NULL;
-            command_buffer_allocate_info.commandPool = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_commmand_pool;
-            command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-            command_buffer_allocate_info.commandBufferCount = 1U;
+        VkCommandBufferBeginInfo command_buffer_begin_info;
+        command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        command_buffer_begin_info.pNext = NULL;
+        command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+        command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
 
-            PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index]);
-            assert(VK_SUCCESS == res_allocate_command_buffers);
-        }
+        PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index], &command_buffer_begin_info);
+        assert(VK_SUCCESS == res_begin_command_buffer);
 
-        {
-            VkCommandBufferInheritanceInfo command_buffer_inheritance_info;
-            command_buffer_inheritance_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
-            command_buffer_inheritance_info.pNext = NULL;
-            command_buffer_inheritance_info.renderPass = this->m_render_pass;
-            command_buffer_inheritance_info.subpass = 0;
-            command_buffer_inheritance_info.framebuffer = this->m_framebuffers[this->m_frame_swapchain_image_index[frame_throttling_index]];
-            command_buffer_inheritance_info.occlusionQueryEnable = VK_FALSE;
-            command_buffer_inheritance_info.queryFlags = 0U;
-            command_buffer_inheritance_info.pipelineStatistics = 0U;
-
-            VkCommandBufferBeginInfo command_buffer_begin_info;
-            command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            command_buffer_begin_info.pNext = NULL;
-            command_buffer_begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT | VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-            command_buffer_begin_info.pInheritanceInfo = &command_buffer_inheritance_info;
-
-            PT_MAYBE_UNUSED VkResult res_begin_command_buffer = this->m_device.begin_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index], &command_buffer_begin_info);
-            assert(VK_SUCCESS == res_begin_command_buffer);
-        }
+        mcrt_atomic_store(&this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer_recording[subpass_index], false);
     }
 
     return this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[subpass_index];
@@ -1953,18 +1976,6 @@ inline void gfx_connection_vk::release_frame()
         }
 
         {
-            VkCommandBufferAllocateInfo command_buffer_allocate_info;
-            command_buffer_allocate_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            command_buffer_allocate_info.pNext = NULL;
-            command_buffer_allocate_info.commandPool = this->m_frame_graphics_primary_commmand_pool[frame_throttling_index];
-            command_buffer_allocate_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            command_buffer_allocate_info.commandBufferCount = 1U;
-
-            PT_MAYBE_UNUSED VkResult res_allocate_command_buffers = this->m_device.allocate_command_buffers(&command_buffer_allocate_info, &this->m_frame_graphics_primary_command_buffer[frame_throttling_index]);
-            assert(VK_SUCCESS == res_allocate_command_buffers);
-        }
-
-        {
             VkCommandBufferBeginInfo command_buffer_begin_info;
             command_buffer_begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             command_buffer_begin_info.pNext = NULL;
@@ -2007,14 +2018,14 @@ inline void gfx_connection_vk::release_frame()
             uint32_t command_buffer_count = 0U;
             for (uint32_t frame_thread_index = 0U; frame_thread_index < this->m_frame_thread_count; ++frame_thread_index)
             {
-                if (VK_NULL_HANDLE != this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX])
+                if (mcrt_atomic_load(&this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer_recording[OPAQUE_SUBPASS_INDEX]))
                 {
                     this->m_device.end_command_buffer(this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX]);
 
                     this->m_frame_graphcis_execute_command_buffers[OPAQUE_SUBPASS_INDEX][command_buffer_count] = this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX];
                     ++command_buffer_count;
 
-                    this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer[OPAQUE_SUBPASS_INDEX] = VK_NULL_HANDLE;
+                    mcrt_atomic_store(&this->m_frame_thread_block[frame_throttling_index][frame_thread_index].m_frame_graphics_secondary_command_buffer_recording[OPAQUE_SUBPASS_INDEX], false);
                 }
             }
 

@@ -63,9 +63,10 @@ class gfx_connection_vk final : public gfx_connection_base
     {
         VkCommandPool m_frame_graphics_secondary_commmand_pool;
         VkCommandBuffer m_frame_graphics_secondary_command_buffer[SUBPASS_COUNT];
-        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_secondary_commmand_pool) + sizeof(m_frame_graphics_secondary_command_buffer))];
+        bool m_frame_graphics_secondary_command_buffer_recording[SUBPASS_COUNT];
+        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_frame_graphics_secondary_commmand_pool) + sizeof(m_frame_graphics_secondary_command_buffer) + sizeof(m_frame_graphics_secondary_command_buffer_recording))];
     };
-    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_secondary_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer)), "");
+    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(frame_thread_block::m_frame_graphics_secondary_commmand_pool) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer) + sizeof(frame_thread_block::m_frame_graphics_secondary_command_buffer_recording)), "");
     static_assert(std::is_pod<struct frame_thread_block>::value, "");
     static_assert(sizeof(struct frame_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct frame_thread_block *m_frame_thread_block[FRAME_THROTTLING_COUNT];
@@ -82,7 +83,7 @@ class gfx_connection_vk final : public gfx_connection_base
 
     // Scene
     template <typename T>
-    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T> >;
     mcrt_vector<class gfx_node_vk *> m_scene_node_list;
     mcrt_vector<size_t> m_scene_node_list_free_index_list;
 
@@ -182,9 +183,11 @@ class gfx_connection_vk final : public gfx_connection_base
         VkCommandPool m_streaming_graphics_command_pool;
         VkCommandBuffer m_streaming_transfer_command_buffer;
         VkCommandBuffer m_streaming_graphics_command_buffer;
-        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_transfer_command_buffer) + sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_graphics_command_buffer))];
+        bool m_streaming_transfer_command_buffer_recording;
+        bool m_streaming_graphics_command_buffer_recording;
+        uint8_t m_padding[ESTIMATED_CACHE_LINE_SIZE - (sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_transfer_command_buffer) + sizeof(m_streaming_transfer_command_pool) + sizeof(m_streaming_graphics_command_buffer) + sizeof(m_streaming_transfer_command_buffer_recording) + sizeof(m_streaming_graphics_command_buffer_recording))];
     };
-    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer)), "");
+    static_assert(ESTIMATED_CACHE_LINE_SIZE >= (sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_pool) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer) + sizeof(streaming_thread_block::m_streaming_transfer_command_buffer_recording) + sizeof(streaming_thread_block::m_streaming_graphics_command_buffer_recording)), "");
     static_assert(std::is_pod<struct streaming_thread_block>::value, "");
     static_assert(sizeof(struct streaming_thread_block) == ESTIMATED_CACHE_LINE_SIZE, "");
     struct streaming_thread_block *m_streaming_thread_block[STREAMING_THROTTLING_COUNT];
@@ -216,7 +219,6 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline bool init_streaming();
     inline void destroy_streaming();
-
 
     friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     class gfx_node_base *create_node() override;
