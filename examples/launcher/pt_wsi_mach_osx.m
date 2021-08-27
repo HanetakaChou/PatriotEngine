@@ -31,8 +31,8 @@ void lunarg_vulkan_sdk_setenv(void)
     {
         char const *mainbundle_resource_path = [[[NSBundle mainBundle] resourcePath] UTF8String];
 
-        int ret_vk_layer_path = setenv("VK_LAYER_PATH", mainbundle_resource_path, 1);
-        assert(0 == ret_vk_layer_path);
+        __attribute__((unused)) int res_set_env_vk_layer_path = setenv("VK_LAYER_PATH", mainbundle_resource_path, 1);
+        assert(0 == res_set_env_vk_layer_path);
 
         char const *moltenvk_icd_file_name = "MoltenVK_icd.json";
 
@@ -45,8 +45,8 @@ void lunarg_vulkan_sdk_setenv(void)
         memcpy(vk_icd_file_names + mainbundle_resource_path_length + 1, moltenvk_icd_file_name, moltenvk_icd_file_name_length);
         vk_icd_file_names[mainbundle_resource_path_length + 1 + moltenvk_icd_file_name_length] = '\0';
 
-        int ret_vk_icd_file_names = setenv("VK_ICD_FILENAMES", vk_icd_file_names, 1);
-        assert(0 == ret_vk_icd_file_names);
+        __attribute__((unused)) int res_set_env_vk_icd_file_names = setenv("VK_ICD_FILENAMES", vk_icd_file_names, 1);
+        assert(0 == res_set_env_vk_icd_file_names);
         
         free(vk_icd_file_names);
     }
@@ -110,9 +110,9 @@ bool cocoa_is_multithreaded(void)
 
 static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext);
 
-extern void *gfx_connection_init_callback(void *layer, float width, float height);
+extern void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance);
 
-extern void gfx_connection_redraw_callback(void *gfx_connection_void);
+extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 @implementation pt_wsi_mach_osx_application_delegate
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
@@ -153,6 +153,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection_void);
 @implementation pt_wsi_mach_osx_view_controller
 {
     void *m_gfx_connection;
+    void *m_void_instance;
     dispatch_source_t m_display_source;
     CVDisplayLinkRef m_display_link;
 }
@@ -220,7 +221,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection_void);
             if (NULL != layer)
             {
                 CGSize drawable_size = [((CAMetalLayer *)((__bridge id)layer)) drawableSize];
-                self->m_gfx_connection = gfx_connection_init_callback(layer, drawable_size.width, drawable_size.height);
+                self->m_gfx_connection = gfx_connection_init_callback(layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
             }
         }
     }

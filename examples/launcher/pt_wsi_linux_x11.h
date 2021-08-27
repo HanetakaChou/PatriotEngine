@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _PT_WSI_WINDOW_X11_H_
-#define _PT_WSI_WINDOW_X11_H_ 1
+#ifndef _PT_WSI_LINUX_X11_H_
+#define _PT_WSI_LINUX_X11_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>

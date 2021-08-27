@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
-#include "pt_wsi_window_app.h"
+#include "pt_wsi_neutral_app.h"
 #include "pt_gfx_connection_utils.h"
 #include <pt_mcrt_thread.h>
 
@@ -13,34 +13,34 @@ static gfx_node_ref my_node = NULL;
 static gfx_texture_ref my_texture = NULL;
 static gfx_material_ref my_material = NULL;
 
-wsi_window_app_ref wsi_window_app_init(gfx_connection_ref gfx_connection)
+bool wsi_neutral_app_init(gfx_connection_ref gfx_connection, void **void_instance)
 {
     my_gfx_connection = gfx_connection;
-    return (wsi_window_app_ref)0xdeadbeef;
+    return true;
 }
 
-int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
+int wsi_neutral_app_main(void *void_instance)
 {
     gfx_mesh_ref my_mesh1 = gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh1, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh1, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
 
     my_mesh = gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
     //gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
     my_node = gfx_connection_create_node(my_gfx_connection);
     gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
 
     gfx_texture_ref my_texture2 = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture2, "../third_party/assets/lenna/lena_std_directx_tex.dds");
+    gfx_texture_read_file(my_gfx_connection, my_texture2, "./lenna/lena_std_directx_tex.dds");
 
     my_texture = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
+    gfx_texture_read_file(my_gfx_connection, my_texture, "./lenna/l_hires_nvidia_texture_tools.dds");
 
     gfx_texture_ref my_texture3 = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture3, "../third_party/assets/lenna/lena_std_rgba.pvr");
+    gfx_texture_read_file(my_gfx_connection, my_texture3, "./lenna/lena_std_rgba.pvr");
 
     my_material = gfx_connection_create_material(my_gfx_connection);
     gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture);
@@ -75,7 +75,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/lena_std_rgba.pvr");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "./lenna/lena_std_rgba.pvr");
             my_textures.push_back(my_texture);
 
             if ((i > 100) && (!has_set))
@@ -93,7 +93,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
         else if (4 == r1 % 9 || 5 == r1 % 9 || 6 == r1 % 9 || 7 == r1 % 9)
         {
             gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-            gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_directx_tex.dds");
+            gfx_texture_read_file(my_gfx_connection, my_texture, "./lenna/l_hires_directx_tex.dds");
             my_textures.push_back(my_texture);
         }
         else
@@ -110,7 +110,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
             else
             {
                 gfx_texture_ref my_texture = gfx_connection_create_texture(my_gfx_connection);
-                gfx_texture_read_file(my_gfx_connection, my_texture, "../third_party/assets/lenna/l_hires_nvidia_texture_tools.dds");
+                gfx_texture_read_file(my_gfx_connection, my_texture, "./lenna/l_hires_nvidia_texture_tools.dds");
                 my_textures.push_back(my_texture);
             }
         }
@@ -125,7 +125,7 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
 #endif
 
     gfx_texture_ref my_texture1 = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture1, "../third_party/assets/lenna/l_hires_rgba.pvr");
+    gfx_texture_read_file(my_gfx_connection, my_texture1, "./lenna/l_hires_rgba.pvr");
 
     gfx_material_ref my_material1 = gfx_connection_create_material(my_gfx_connection);
     gfx_material_init_with_texture(my_gfx_connection, my_material1, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture1);
@@ -145,8 +145,8 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     sleep(15);
 
     my_mesh = gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "../third_party/assets/glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "./glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
     //gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
     my_node = gfx_connection_create_node(my_gfx_connection);
@@ -161,11 +161,11 @@ int wsi_window_app_main(wsi_window_app_ref wsi_window_app)
     return 0;
 }
 
-void wsi_window_app_handle_event(wsi_window_app_ref wsi_window_app, struct wsi_window_app_event_t *wsi_window_app_event)
+void wsi_neutral_app_handle_input_event(struct wsi_neutral_app_input_event_t *wsi_neutral_app_input_event, void *void_instance)
 {
-    switch (wsi_window_app_event->message_code)
+    switch (wsi_neutral_app_input_event->message_code)
     {
-    case wsi_window_app_event_t::KEY_SYM_W:
+    case KEY_SYM_W:
     {
         //camera move forward
     }
@@ -178,10 +178,4 @@ void wsi_window_app_handle_event(wsi_window_app_ref wsi_window_app, struct wsi_w
     default:
         break;
     }
-}
-
-void wsi_window_app_destroy(wsi_window_app_ref wsi_window_app)
-{
-    //gfx_texture_destroy(my_texture1);
-    //gfx_texture_destroy(my_texture2);
 }

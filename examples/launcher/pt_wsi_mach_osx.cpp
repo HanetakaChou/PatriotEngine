@@ -19,7 +19,6 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
-#include <string>
 
 extern "C" void lunarg_vulkan_sdk_setenv(void);
 extern "C" void cocoa_set_multithreaded(void);
@@ -49,13 +48,29 @@ int main(int argc, char const *argv[])
     return application_main(argc, argv);
 }
 
+#include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
+#include "pt_wsi_neutral_app.h"
 
-extern "C" void *gfx_connection_init_callback(void *layer, float width, float height)
+struct wsi_mach_osx_app_main_argument_t
+{
+    gfx_connection_ref m_gfx_connection;
+    void **m_void_instance;
+} wsi_mach_osx_app_main_argument;
+static void *wsi_mach_osx_app_main(void *argument);
+mcrt_native_thread_id wsi_mach_osx_app_main_thread_id;
+
+extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
 {
     gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL);
-    bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
+    PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
     assert(res_on_wsi_window_created);
+
+    wsi_mach_osx_app_main_argument.m_gfx_connection = gfx_connection;
+    wsi_mach_osx_app_main_argument.m_void_instance = void_instance;
+    PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_mach_osx_app_main_thread_id, wsi_mach_osx_app_main, &wsi_mach_osx_app_main_argument);
+    assert(res_native_thread_create);
+
     return gfx_connection;
 }
 
@@ -64,4 +79,15 @@ extern "C" void gfx_connection_redraw_callback(void *gfx_connection_void)
     gfx_connection_ref gfx_connection = static_cast<gfx_connection_ref>(gfx_connection_void);
     gfx_connection_on_wsi_redraw_needed_acquire(gfx_connection);
     gfx_connection_on_wsi_redraw_needed_release(gfx_connection);
+}
+
+static void *wsi_mach_osx_app_main(void *argument_void)
+{
+    struct wsi_mach_osx_app_main_argument_t *argument = static_cast<struct wsi_mach_osx_app_main_argument_t *>(argument_void);
+    PT_MAYBE_UNUSED bool res_neutral_app_init =  wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
+    assert(res_neutral_app_init);
+
+    int res_neutral_app_main = wsi_neutral_app_main(argument->m_void_instance);
+
+    return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }

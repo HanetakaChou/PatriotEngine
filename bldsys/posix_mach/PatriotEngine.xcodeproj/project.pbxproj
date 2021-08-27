@@ -21,6 +21,7 @@
 		6257EF3D26D9603F00E4917D /* libpt_mcrt_neon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */; };
 		6257EF4826D960C200E4917D /* libpt_math_neon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6257EF4226D9609A00E4917D /* libpt_math_neon.a */; };
 		6257EF4926D960D500E4917D /* pt_math_directx_math_arm_neon.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */; };
+		6257EF4C26D9738500E4917D /* pt_wsi_neutral_app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */; };
 		625C06E526880E6300D173BE /* libpt_gfx.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		629186C126D847C5007A708F /* pt_gfx_mesh_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */; };
 		629186C726D847E1007A708F /* pt_gfx_mesh_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */; };
@@ -198,6 +199,8 @@
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF4226D9609A00E4917D /* libpt_math_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		6257EF4A26D9737F00E4917D /* pt_wsi_neutral_app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_neutral_app.h; path = ../../examples/launcher/pt_wsi_neutral_app.h; sourceTree = "<group>"; };
+		6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_neutral_app.cpp; path = ../../examples/launcher/pt_wsi_neutral_app.cpp; sourceTree = "<group>"; };
 		625D4F2C26775B6F000F087B /* libpt_gfx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F3226775CEF000F087B /* pt_gfx_connection_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_connection_base.cpp; path = ../../src/pt_gfx_connection_base.cpp; sourceTree = SOURCE_ROOT; };
 		625D4F3426775DA0000F087B /* pt_gfx_connection_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection_base.h; path = ../../src/pt_gfx_connection_base.h; sourceTree = SOURCE_ROOT; };
@@ -509,9 +512,11 @@
 		62D7940D2597576F001CC2AF /* examples */ = {
 			isa = PBXGroup;
 			children = (
-				6277494126894CA3009F2E71 /* pt_gfx_connection_utils.h */,
 				62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */,
 				62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */,
+				6257EF4A26D9737F00E4917D /* pt_wsi_neutral_app.h */,
+				6277494126894CA3009F2E71 /* pt_gfx_connection_utils.h */,
+				6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */,
 			);
 			name = examples;
 			sourceTree = SOURCE_ROOT;
@@ -1163,6 +1168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				62D7940E25975789001CC2AF /* pt_wsi_mach_osx.cpp in Sources */,
+				6257EF4C26D9738500E4917D /* pt_wsi_neutral_app.cpp in Sources */,
 				62EF63BC26D8E75C0004F34C /* pt_wsi_mach_osx.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

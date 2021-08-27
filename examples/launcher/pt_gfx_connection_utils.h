@@ -18,6 +18,7 @@
 #ifndef _PT_GFX_CONNECTION_UTILS_H_
 #define _PT_GFX_CONNECTION_UTILS_H_ 1
 
+#include <pt_common.h>
 #include <pt_gfx_connection.h>
 #include <pt_mcrt_memcpy.h>
 

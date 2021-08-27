@@ -2076,6 +2076,11 @@ inline void gfx_connection_vk::release_frame()
             }
             else if (VK_SUBOPTIMAL_KHR == res_queue_present)
             {
+                // Try to solve
+                PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
+                assert(VK_SUCCESS == res_wait_for_fences);
+                this->destory_framebuffer();
+                this->update_framebuffer();
             }
             else if (VK_ERROR_OUT_OF_DATE_KHR == res_queue_present)
             {

@@ -13,7 +13,7 @@
             //"program": "${workspaceFolder}/bin/posix_linux_x11/x86/debug/pt_general_acyclic_graphs_of_tasks", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}/bin",
+            "cwd": "${workspaceFolder}/third_party/assets",
             "environment": [],
             "envFile": "${workspaceFolder}/.vscode/cppvsdbg.env",
             "externalConsole": false,
@@ -62,7 +62,7 @@
             "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/pt_launcher.app/Contents/MacOS/pt_launcher",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/third_party/assets",
             "environment": [],
             "externalConsole": false,
             "MIMode": "lldb"
