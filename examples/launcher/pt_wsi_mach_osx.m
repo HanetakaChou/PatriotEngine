@@ -47,6 +47,8 @@ void lunarg_vulkan_sdk_setenv(void)
 
         int ret_vk_icd_file_names = setenv("VK_ICD_FILENAMES", vk_icd_file_names, 1);
         assert(0 == ret_vk_icd_file_names);
+        
+        free(vk_icd_file_names);
     }
 }
 
