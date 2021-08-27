@@ -1874,11 +1874,12 @@ inline void gfx_connection_vk::acquire_frame()
     VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_frame_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
 
-    if (VK_SUCCESS == res_acquire_next_image)
+    if (VK_SUCCESS == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image)
     {
+        // we handle the "VK_SUBOPTIMAL_KHR" in the "release"
         this->m_frame_swapchain_image_acquired[frame_throttling_index] = true;
     }
-    else if (VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image)
+    else if (VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image)
     {
         PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
         assert(VK_SUCCESS == res_wait_for_fences);
@@ -2060,9 +2061,12 @@ inline void gfx_connection_vk::release_frame()
             PT_MAYBE_UNUSED VkResult res_queue_present = this->m_device.queue_present(this->m_device.queue_graphics(), &present_info);
             if (VK_SUCCESS == res_queue_present)
             {
-                //
+                // Do Nothing
             }
-            else if (VK_ERROR_OUT_OF_DATE_KHR == res_queue_present || VK_SUBOPTIMAL_KHR == res_queue_present)
+            else if (VK_SUBOPTIMAL_KHR == res_queue_present)
+            {
+            }
+            else if (VK_ERROR_OUT_OF_DATE_KHR == res_queue_present)
             {
                 PT_MAYBE_UNUSED VkResult res_wait_for_fences = this->m_device.wait_for_fences(FRAME_THROTTLING_COUNT, this->m_frame_fence, VK_TRUE, UINT64_MAX);
                 assert(VK_SUCCESS == res_wait_for_fences);
@@ -2323,7 +2327,6 @@ void gfx_connection_vk::destroy()
 
 inline gfx_connection_vk::~gfx_connection_vk()
 {
-
 }
 
 bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
@@ -2420,7 +2423,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
     {
         int fd;
         {
-            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
             mcrt_string path = ".cache/vulkan_pipeline_cache/";
             path += pipeline_cache_name;
             path += ".bin";
@@ -2545,7 +2548,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
 
     int fd;
     {
-        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
         mcrt_string path = pipeline_cache_name;
         path += ".bin";
         fd = openat(fd_dir, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);

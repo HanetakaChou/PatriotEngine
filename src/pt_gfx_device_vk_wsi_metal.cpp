@@ -51,7 +51,7 @@ VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_conne
     assert(NULL != vk_create_metal_surface);
 
     VkMetalSurfaceCreateInfoEXT metal_surface_create_info;
-    metal_surface_create_info.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
+    metal_surface_create_info.sType = VK_STRUCTURE_TYPE_METAL_SURFACE_CREATE_INFO_EXT;
     metal_surface_create_info.pNext = NULL;
     metal_surface_create_info.flags = 0U;
     metal_surface_create_info.pLayer = unwrap(wsi_window);
