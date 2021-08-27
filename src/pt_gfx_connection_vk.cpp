@@ -2540,6 +2540,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_n
             }
             else
             {
+                char const * huhu = strerror(errno);
                 assert(errno == ENOENT);
                 mkdir_needed = true;
             }

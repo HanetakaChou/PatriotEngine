@@ -27,7 +27,7 @@
 
 void lunarg_vulkan_sdk_setenv(void)
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         char const *mainbundle_resource_path = [[[NSBundle mainBundle] resourcePath] UTF8String];
 
@@ -65,7 +65,7 @@ void lunarg_vulkan_sdk_setenv(void)
 
 void cocoa_set_multithreaded(void)
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         bool volatile __here_ns_thread_detach_target_has_finished = false;
         id ns_thread_detach_target = [[pt_wsi_mach_osx_nsthread_detach_target alloc] init];
@@ -81,7 +81,7 @@ void cocoa_set_multithreaded(void)
 
 bool cocoa_is_multithreaded(void)
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         return [NSThread isMultiThreaded];
     }
@@ -105,7 +105,6 @@ bool cocoa_is_multithreaded(void)
 - (BOOL)wantsLayer;
 - (CALayer *)makeBackingLayer;
 - (BOOL)wantsUpdateLayer;
-- (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy;
 @end
 
 static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext);
@@ -117,7 +116,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 @implementation pt_wsi_mach_osx_application_delegate
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         CGFloat ns_window_width = 1280.0f;
         CGFloat ns_window_height = 720.0f;
@@ -160,9 +159,9 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)loadView
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
-        NSRect ns_view_rect = {{0, 0}, {800, 600}};
+        NSRect ns_view_rect = {{0, 0}, {1280, 720}};
         id ns_view = [[pt_wsi_mach_osx_view alloc] initWithFrame:ns_view_rect];
         [self setView:ns_view];
     }
@@ -170,7 +169,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)viewDidLoad
 {
-    @autoreleasepool
+    ////@autoreleasepool
     {
         [super viewDidLoad];
 
@@ -215,7 +214,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     }
     else
     {
-        @autoreleasepool
+        ////@autoreleasepool
         {
             void *layer = ((__bridge void *)[[self view] layer]);
             if (NULL != layer)
@@ -250,11 +249,6 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 {
     return YES;
 }
-
-- (NSViewLayerContentsRedrawPolicy)layerContentsRedrawPolicy
-{
-    return NSViewLayerContentsRedrawDuringViewResize;
-}
 @end
 
 static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext)
@@ -266,7 +260,7 @@ static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef di
 static __strong id application_delegate = nil;
 void application_set_delegate(void)
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         application_delegate = [[pt_wsi_mach_osx_application_delegate alloc] init];
         [[NSApplication sharedApplication] setDelegate:application_delegate];
@@ -275,7 +269,7 @@ void application_set_delegate(void)
 
 int application_main(int argc, char const *argv[])
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         return NSApplicationMain(argc, argv);
     }
