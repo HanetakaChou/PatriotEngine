@@ -1,9 +1,9 @@
 #include <stdlib.h>
 #include <time.h>
 #include <vector>
-#include "pt_wsi_neutral_app.h"
-#include "pt_gfx_connection_utils.h"
+#include <unistd.h>
 #include <pt_mcrt_thread.h>
+#include "pt_wsi_neutral_app.h"
 
 extern bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename);
 extern bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename);
