@@ -9,7 +9,8 @@
   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <application android:label="PatriotEngine" android:icon="@drawable/icon" android:hasCode="false">
-    <activity android:name="android.app.NativeActivity" android:label="PatriotEngine" android:screenOrientation="landscape" android:configChanges="orientation|keyboardHidden">
+    <activity android:name="android.app.NativeActivity" android:label="PatriotEngine" android:screenOrientation="landscape" android:configChanges="keyboardHidden">
+      <!-- android:configChanges="orientation|keyboardHidden" -->
       <meta-data android:name="android.app.lib_name" android:value="pt_launcher"/>
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>

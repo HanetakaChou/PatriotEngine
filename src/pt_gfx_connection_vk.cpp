@@ -1121,7 +1121,16 @@ inline bool gfx_connection_vk::update_framebuffer()
 
             this->m_aspect_ratio = static_cast<float>(m_framebuffer_width) / static_cast<float>(this->m_framebuffer_height);
 
-            swapchain_create_info.preTransform = surface_capabilities.currentTransform;
+            // Test on Android 
+            // We should use identity even if the surface is rotation 90
+            if (VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR == (VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR & surface_capabilities.supportedTransforms))
+            {
+                swapchain_create_info.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+            }
+            else
+            {
+                swapchain_create_info.preTransform = surface_capabilities.currentTransform;
+            }
 
             VkCompositeAlphaFlagBitsKHR composite_alphas[] = {
                 VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,

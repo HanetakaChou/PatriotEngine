@@ -40,7 +40,7 @@ int wsi_neutral_app_main(void *void_instance)
     gfx_texture_read_file(my_gfx_connection, my_texture2, "lenna/lena_std_directx_tex.dds");
 
     my_texture = gfx_connection_create_texture(my_gfx_connection);
-    gfx_texture_read_file(my_gfx_connection, my_texture, "lenna/l_hires_nvidia_texture_tools.dds");
+    gfx_texture_read_file(my_gfx_connection, my_texture, "lenna/l_hires_astc.pvr");
 
     gfx_texture_ref my_texture3 = gfx_connection_create_texture(my_gfx_connection);
     gfx_texture_read_file(my_gfx_connection, my_texture3, "lenna/lena_std_rgba.pvr");
