@@ -17,10 +17,14 @@
 
 #include <stdlib.h>
 #include <assert.h>
+#include <string>
 #include <X11/keysym.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_atomic.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include "pt_wsi_linux_x11.h"
+
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 
 int main(int argc, char **argv)
 {
@@ -147,7 +151,7 @@ void wsi_window_x11::init()
     {
         mcrt_os_yield();
     }
-    
+
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_alloc
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
@@ -174,7 +178,7 @@ void *wsi_window_x11::draw_request_main(void *arg)
 {
     wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual), "../../bin");
+    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual), ".");
     assert(self->m_gfx_connection != NULL);
     mcrt_atomic_store(&self->m_draw_request_thread_running, true);
 
@@ -389,10 +393,13 @@ void wsi_window_x11::destroy()
 
 bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
+    mcrt_string path = "../third_party/assets/";
+    path += initial_filename;
+
     return gfx_texture_read_input_stream(
         gfx_connection,
         texture,
-        initial_filename,
+        path.c_str(),
         [](char const *initial_filename) -> gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
@@ -416,12 +423,15 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
 
 bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
+    mcrt_string path = "../third_party/assets/";
+    path += initial_filename;
+
     return gfx_mesh_read_input_stream(
         gfx_connection,
         mesh,
         mesh_index,
         material_index,
-        initial_filename,
+        path.c_str(),
         [](char const *initial_filename) -> gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
