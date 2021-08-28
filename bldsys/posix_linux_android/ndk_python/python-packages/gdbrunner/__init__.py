@@ -20,6 +20,7 @@ import adb
 import argparse
 import atexit
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -79,23 +80,15 @@ class ArgumentParser(argparse.ArgumentParser):
         return result
 
 
-def get_run_as_cmd(user, cmd):
-    """Generate a run-as or su command depending on user."""
-
-    if user is None:
-        return cmd
-    elif user == "root":
-        return ["su", "0"] + cmd
-    else:
-        return ["run-as", user] + cmd
-
-
 def get_processes(device):
     """Return a dict from process name to list of running PIDs on the device."""
 
     # Some custom ROMs use busybox instead of toolbox for ps. Without -w,
     # busybox truncates the output, and very long package names like
     # com.exampleisverylongtoolongbyfar.plasma exceed the limit.
+    #
+    # API 26 use toybox instead of toolbox for ps and needs -A to list
+    # all processes.
     #
     # Perform the check for this on the device to avoid an adb roundtrip
     # Some devices might not have readlink or which, so we need to handle
@@ -106,10 +99,12 @@ def get_processes(device):
 
     ps_script = """
         if $(ls /system/bin/readlink >/dev/null 2>&1); then
-          if [ $(readlink /system/bin/ps) == "toolbox" ]; then
-            ps;
-          else
+          if [ $(readlink /system/bin/ps) == "busybox" ]; then
             ps -w;
+          elif [ $(readlink /system/bin/ps) == "toybox" ]; then
+            ps -A;
+          else
+            ps;
           fi
         else
           ps;
@@ -119,6 +114,7 @@ def get_processes(device):
 
     output, _ = device.shell([ps_script])
     return parse_ps_output(output)
+
 
 def parse_ps_output(output):
     processes = dict()
@@ -146,7 +142,8 @@ def get_pids(device, process_name):
 
 
 def start_gdbserver(device, gdbserver_local_path, gdbserver_remote_path,
-                    target_pid, run_cmd, debug_socket, port, user=None):
+                    target_pid, run_cmd, debug_socket, port, run_as_cmd=None,
+                    lldb=False):
     """Start gdbserver in the background and forward necessary ports.
 
     Args:
@@ -157,7 +154,7 @@ def start_gdbserver(device, gdbserver_local_path, gdbserver_remote_path,
         run_cmd: Command to run on the device.
         debug_socket: Device path to place gdbserver unix domain socket.
         port: Host port to forward the debug_socket to.
-        user: Device user to run gdbserver as.
+        run_as_cmd: run-as or su command to prepend to commands.
 
     Returns:
         Popen handle to the `adb shell` process gdbserver was started with.
@@ -165,33 +162,65 @@ def start_gdbserver(device, gdbserver_local_path, gdbserver_remote_path,
 
     assert target_pid is None or run_cmd is None
 
+    # Remove the old socket file.
+    rm_cmd = ["rm", debug_socket]
+    if run_as_cmd:
+        rm_cmd = run_as_cmd + rm_cmd
+    device.shell_nocheck(rm_cmd)
+
     # Push gdbserver to the target.
     if gdbserver_local_path is not None:
         device.push(gdbserver_local_path, gdbserver_remote_path)
 
     # Run gdbserver.
-    gdbserver_cmd = [gdbserver_remote_path, "--once",
-                     "+{}".format(debug_socket)]
+    gdbserver_cmd = [gdbserver_remote_path]
+    if lldb:
+        gdbserver_cmd.extend(["gdbserver", "unix://" + debug_socket])
+    else:
+        gdbserver_cmd.extend(["--once", "+{}".format(debug_socket)])
 
     if target_pid is not None:
         gdbserver_cmd += ["--attach", str(target_pid)]
     else:
-        gdbserver_cmd += run_cmd
+        gdbserver_cmd += ["--"] + run_cmd
 
-    device.forward("tcp:{}".format(port),
-                   "localfilesystem:{}".format(debug_socket))
-    atexit.register(lambda: device.forward_remove("tcp:{}".format(port)))
-    gdbserver_cmd = get_run_as_cmd(user, gdbserver_cmd)
+    forward_gdbserver_port(device, local=port, remote="localfilesystem:{}".format(debug_socket))
 
-    gdbserver_output_path = os.path.join(tempfile.gettempdir(),
-                                         "gdbclient.log")
-    print("Redirecting gdbserver output to {}".format(gdbserver_output_path))
+    if run_as_cmd:
+        gdbserver_cmd = run_as_cmd + gdbserver_cmd
+
+    if lldb:
+        gdbserver_output_path = os.path.join(tempfile.gettempdir(),
+                                             "lldb-client.log")
+        print("Redirecting lldb-server output to {}".format(gdbserver_output_path))
+    else:
+        gdbserver_output_path = os.path.join(tempfile.gettempdir(),
+                                             "gdbclient.log")
+        print("Redirecting gdbserver output to {}".format(gdbserver_output_path))
     gdbserver_output = file(gdbserver_output_path, 'w')
     return device.shell_popen(gdbserver_cmd, stdout=gdbserver_output,
                               stderr=gdbserver_output)
 
 
-def find_file(device, executable_path, sysroot, user=None):
+def get_uid(device):
+    """Gets the uid adbd runs as."""
+    line, _ = device.shell(["id", "-u"])
+    return int(line.strip())
+
+
+def forward_gdbserver_port(device, local, remote):
+    """Forwards local TCP port `port` to `remote` via `adb forward`."""
+    if get_uid(device) != 0:
+        WARNING = '\033[93m'
+        ENDC = '\033[0m'
+        print(WARNING +
+              "Port forwarding may not work because adbd is not running as root. " +
+              " Run `adb root` to fix." + ENDC)
+    device.forward("tcp:{}".format(local), remote)
+    atexit.register(lambda: device.forward_remove("tcp:{}".format(local)))
+
+
+def find_file(device, executable_path, sysroot, run_as_cmd=None):
     """Finds a device executable file.
 
     This function first attempts to find the local file which will
@@ -202,7 +231,7 @@ def find_file(device, executable_path, sysroot, user=None):
       device: the AndroidDevice object to use.
       executable_path: absolute path to the executable or symlink.
       sysroot: absolute path to the built symbol sysroot.
-      user: if necessary, the user to download the file as.
+      run_as_cmd: if necessary, run-as or su command to prepend
 
     Returns:
       A tuple containing (<open file object>, <was found locally>).
@@ -231,8 +260,11 @@ def find_file(device, executable_path, sysroot, user=None):
         file_name = "gdbclient-binary-{}".format(os.getppid())
         remote_temp_path = "/data/local/tmp/{}".format(file_name)
         local_path = os.path.join(tempfile.gettempdir(), file_name)
-        cmd = get_run_as_cmd(user,
-                             ["cat", executable_path, ">", remote_temp_path])
+
+        cmd = ["cat", executable_path, ">", remote_temp_path]
+        if run_as_cmd:
+            cmd = run_as_cmd + cmd
+
         try:
             device.shell(cmd)
         except adb.ShellError:
@@ -246,10 +278,37 @@ def find_file(device, executable_path, sysroot, user=None):
             return (open(path, "r"), found_locally)
     raise RuntimeError('Could not find executable {}'.format(executable_path))
 
+def find_executable_path(device, executable_name, run_as_cmd=None):
+    """Find a device executable from its name
 
-def find_binary(device, pid, sysroot, user=None):
+    This function calls which on the device to retrieve the absolute path of
+    the executable.
+
+    Args:
+      device: the AndroidDevice object to use.
+      executable_name: the name of the executable to find.
+      run_as_cmd: if necessary, run-as or su command to prepend
+
+    Returns:
+      The absolute path of the executable.
+
+    Raises:
+      RuntimeError: could not find the executable.
+    """
+    cmd = ["which", executable_name]
+    if run_as_cmd:
+        cmd = run_as_cmd + cmd
+
+    try:
+        output, _ = device.shell(cmd)
+        return adb.split_lines(output)[0]
+    except adb.ShellError:
+        raise  RuntimeError("Could not find executable '{}' on "
+                            "device".format(executable_name))
+
+def find_binary(device, pid, sysroot, run_as_cmd=None):
     """Finds a device executable file corresponding to |pid|."""
-    return find_file(device, "/proc/{}/exe".format(pid), sysroot, user)
+    return find_file(device, "/proc/{}/exe".format(pid), sysroot, run_as_cmd)
 
 
 def get_binary_arch(binary_file):
@@ -288,7 +347,17 @@ def get_binary_arch(binary_file):
         raise RuntimeError("unknown architecture: 0x{:x}".format(e_machine))
 
 
-def start_gdb(gdb_path, gdb_commands, gdb_flags=None):
+def get_binary_interp(binary_path, llvm_readobj_path):
+    args = [llvm_readobj_path, "--elf-output-style=GNU", "-l", binary_path]
+    output = subprocess.check_output(args, universal_newlines=True)
+    m = re.search(r"\[Requesting program interpreter: (.*?)\]\n", output)
+    if m is None:
+        return None
+    else:
+        return m.group(1)
+
+
+def start_gdb(gdb_path, gdb_commands, gdb_flags=None, lldb=False):
     """Start gdb in the background and block until it finishes.
 
     Args:
@@ -298,21 +367,24 @@ def start_gdb(gdb_path, gdb_commands, gdb_flags=None):
     """
 
     # Windows disallows opening the file while it's open for writing.
-    gdb_script_fd, gdb_script_path = tempfile.mkstemp()
-    os.write(gdb_script_fd, gdb_commands)
-    os.close(gdb_script_fd)
-    gdb_args = [gdb_path, "-x", gdb_script_path] + (gdb_flags or [])
+    script_fd, script_path = tempfile.mkstemp()
+    os.write(script_fd, gdb_commands)
+    os.close(script_fd)
+    if lldb:
+        script_parameter = "--source"
+    else:
+        script_parameter = "-x"
+    gdb_args = [gdb_path, script_parameter, script_path] + (gdb_flags or [])
 
-    kwargs = {}
+    creationflags = 0
     if sys.platform.startswith("win"):
-        kwargs["creationflags"] = subprocess.CREATE_NEW_CONSOLE
+        creationflags = subprocess.CREATE_NEW_CONSOLE
 
-    gdb_process = subprocess.Popen(gdb_args, **kwargs)
+    gdb_process = subprocess.Popen(gdb_args, creationflags=creationflags)
     while gdb_process.returncode is None:
         try:
             gdb_process.communicate()
         except KeyboardInterrupt:
             pass
 
-    os.unlink(gdb_script_path)
-
+    os.unlink(script_path)

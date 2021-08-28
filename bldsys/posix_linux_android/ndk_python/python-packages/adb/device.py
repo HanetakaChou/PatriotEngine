@@ -51,7 +51,8 @@ def get_devices(adb_path='adb'):
     with open(os.devnull, 'wb') as devnull:
         subprocess.check_call([adb_path, 'start-server'], stdout=devnull,
                               stderr=devnull)
-    out = split_lines(subprocess.check_output([adb_path, 'devices']))
+    out = split_lines(
+        subprocess.check_output([adb_path, 'devices']).decode('utf-8'))
 
     # The first line of `adb devices` just says "List of attached devices", so
     # skip that.
@@ -118,7 +119,7 @@ def _get_device_by_type(flag, adb_path):
                               stderr=devnull)
     try:
         serial = subprocess.check_output(
-            [adb_path, flag, 'get-serialno']).strip()
+            [adb_path, flag, 'get-serialno']).decode('utf-8').strip()
     except subprocess.CalledProcessError:
         raise RuntimeError('adb unexpectedly returned nonzero')
     if serial == 'unknown':
@@ -233,6 +234,7 @@ def version(adb_path=None):
 
     adb_path = adb_path if adb_path is not None else ['adb']
     version_output = subprocess.check_output(adb_path + ['version'])
+    version_output = version_output.decode('utf-8')
     pattern = r'^Android Debug Bridge version 1.0.(\d+)$'
     result = re.match(pattern, version_output.splitlines()[0])
     if not result:
@@ -260,6 +262,7 @@ class AndroidDevice(object):
     def __init__(self, serial, product=None, adb_path='adb'):
         self.serial = serial
         self.product = product
+        self.adb_path = adb_path
         self.adb_cmd = [adb_path]
 
         if self.serial is not None:
@@ -272,8 +275,8 @@ class AndroidDevice(object):
     @property
     def linesep(self):
         if self._linesep is None:
-            self._linesep = subprocess.check_output(self.adb_cmd +
-                                                    ['shell', 'echo'])
+            self._linesep = subprocess.check_output(
+                self.adb_cmd + ['shell', 'echo']).decode('utf-8')
         return self._linesep
 
     @property
@@ -325,7 +328,7 @@ class AndroidDevice(object):
     def _simple_call(self, cmd):
         logging.info(' '.join(self.adb_cmd + cmd))
         return _subprocess_check_output(
-            self.adb_cmd + cmd, stderr=subprocess.STDOUT)
+            self.adb_cmd + cmd, stderr=subprocess.STDOUT).decode('utf-8')
 
     def shell(self, cmd):
         """Calls `adb shell`
@@ -360,6 +363,8 @@ class AndroidDevice(object):
         p = _subprocess_Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = p.communicate()
+        stdout = stdout.decode('utf-8')
+        stderr = stderr.decode('utf-8')
         if self.has_shell_protocol():
             exit_code = p.returncode
         else:
@@ -415,8 +420,29 @@ class AndroidDevice(object):
         cmd.append(filename)
         return self._simple_call(cmd)
 
-    def push(self, local, remote):
-        return self._simple_call(['push', local, remote])
+    def push(self, local, remote, sync=False):
+        """Transfer a local file or directory to the device.
+
+        Args:
+            local: The local file or directory to transfer.
+            remote: The remote path to which local should be transferred.
+            sync: If True, only transfers files that are newer on the host than
+                  those on the device. If False, transfers all files.
+
+        Returns:
+            Exit status of the push command.
+        """
+        cmd = ['push']
+        if sync:
+            cmd.append('--sync')
+
+        if isinstance(local, str):
+            cmd.extend([local, remote])
+        else:
+            cmd.extend(local)
+            cmd.append(remote)
+
+        return self._simple_call(cmd)
 
     def pull(self, remote, local):
         return self._simple_call(['pull', remote, local])
@@ -483,22 +509,6 @@ class AndroidDevice(object):
 
     def wait(self):
         return self._simple_call(['wait-for-device'])
-
-    def get_props(self):
-        result = {}
-        output, _ = self.shell(['getprop'])
-        output = split_lines(output)
-        pattern = re.compile(r'^\[([^]]+)\]: \[(.*)\]')
-        for line in output:
-            match = pattern.match(line)
-            if match is None:
-                raise RuntimeError('invalid getprop line: "{}"'.format(line))
-            key = match.group(1)
-            value = match.group(2)
-            if key in result:
-                raise RuntimeError('duplicate getprop key: "{}"'.format(key))
-            result[key] = value
-        return result
 
     def get_prop(self, prop_name):
         output = split_lines(self.shell(['getprop', prop_name])[0])
