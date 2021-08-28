@@ -726,7 +726,6 @@ gfx_device_vk::~gfx_device_vk()
 inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     mcrt_log_print("[%s] : %s \n", pLayerPrefix, pMessage);
-    assert(0);
     return VK_FALSE;
 }
 #endif
