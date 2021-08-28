@@ -200,7 +200,7 @@ static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_a
 static void *wsi_linux_android_app_main(void *argument_void)
 {
 	struct wsi_linux_android_app_main_argument_t *argument = static_cast<struct wsi_linux_android_app_main_argument_t *>(argument_void);
-	bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
+	PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
 	assert(res_neutral_app_init);
 	mcrt_atomic_store(&argument->m_has_inited, true);
 

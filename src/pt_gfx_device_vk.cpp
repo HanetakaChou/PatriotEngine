@@ -383,8 +383,9 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         device_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
         device_create_info.pNext = NULL;
         device_create_info.flags = 0U;
-        float queue_graphics_priorities[1] = {1.0f};
-        float queue_transfer_priorities[1] = {1.0f};
+        float queue_graphics_priority = 1.0f;
+        float queue_transfer_priority = 1.0f;
+        float queue_graphics_transfer_priorities[2] = {queue_graphics_priority, queue_transfer_priority};
         struct VkDeviceQueueCreateInfo device_queue_create_infos[2];
         if (m_has_dedicated_transfer_queue)
         {
@@ -396,7 +397,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 device_queue_create_infos[0].queueFamilyIndex = m_queue_graphics_family_index;
                 assert(0U == m_queue_graphics_queue_index);
                 device_queue_create_infos[0].queueCount = 1U;
-                device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
+                device_queue_create_infos[0].pQueuePriorities = &queue_graphics_priority;
 
                 device_queue_create_infos[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
                 device_queue_create_infos[1].pNext = NULL;
@@ -404,7 +405,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 device_queue_create_infos[1].queueFamilyIndex = m_queue_transfer_family_index;
                 assert(0U == m_queue_transfer_queue_index);
                 device_queue_create_infos[1].queueCount = 1U;
-                device_queue_create_infos[1].pQueuePriorities = queue_transfer_priorities;
+                device_queue_create_infos[1].pQueuePriorities = &queue_transfer_priority;
 
                 device_create_info.pQueueCreateInfos = device_queue_create_infos;
                 device_create_info.queueCreateInfoCount = 2U;
@@ -418,7 +419,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
                 assert(0U == m_queue_graphics_queue_index);
                 assert(1U == m_queue_transfer_queue_index);
                 device_queue_create_infos[0].queueCount = 2U;
-                device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
+                device_queue_create_infos[0].pQueuePriorities = queue_graphics_transfer_priorities;
                 device_create_info.pQueueCreateInfos = device_queue_create_infos;
                 device_create_info.queueCreateInfoCount = 1U;
             }
@@ -431,7 +432,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
             device_queue_create_infos[0].queueFamilyIndex = m_queue_graphics_family_index;
             assert(0U == m_queue_graphics_queue_index);
             device_queue_create_infos[0].queueCount = 1U;
-            device_queue_create_infos[0].pQueuePriorities = queue_graphics_priorities;
+            device_queue_create_infos[0].pQueuePriorities = &queue_graphics_priority;
             device_create_info.pQueueCreateInfos = device_queue_create_infos;
             device_create_info.queueCreateInfoCount = 1U;
         }
@@ -725,6 +726,7 @@ gfx_device_vk::~gfx_device_vk()
 inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     mcrt_log_print("[%s] : %s \n", pLayerPrefix, pMessage);
+    assert(0);
     return VK_FALSE;
 }
 #endif

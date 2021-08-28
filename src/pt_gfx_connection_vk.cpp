@@ -660,7 +660,7 @@ void gfx_connection_vk::reduce_streaming_task()
             submit_info_transfer.pWaitDstStageMask = NULL;
             submit_info_transfer.commandBufferCount = 0U;
             submit_info_transfer.pCommandBuffers = this->m_streaming_transfer_submit_info_command_buffers;
-            submit_info_transfer.signalSemaphoreCount = 1U;
+            submit_info_transfer.signalSemaphoreCount = 0U;
             submit_info_transfer.pSignalSemaphores = NULL;
 
             for (uint32_t streaming_thread_index = 0U; streaming_thread_index < this->m_streaming_thread_count; ++streaming_thread_index)

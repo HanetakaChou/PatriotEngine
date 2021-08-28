@@ -207,7 +207,7 @@ void *wsi_window_x11::app_main(void *arg)
 {
     wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
 
-    bool res_neutral_app_init = wsi_neutral_app_init(self->m_gfx_connection, &self->m_neutral_app_void_instance);
+    PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(self->m_gfx_connection, &self->m_neutral_app_void_instance);
     assert(res_neutral_app_init);
     mcrt_atomic_store(&self->m_app_thread_running, true);
 
