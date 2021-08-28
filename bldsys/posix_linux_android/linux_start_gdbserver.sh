@@ -23,7 +23,7 @@
 MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 cd ${MY_DIR}
 
-python2 "${MY_DIR}/ndk_python/prebuilt/linux-x86_64/bin/ndk-gdb.py" --project ${MY_DIR} --adb "${MY_DIR}/android-sdk/platform-tools/adb" --launch
+python2 "${MY_DIR}/ndk_python/prebuilt/linux-x86_64/bin/ndk-gdb.py" --adb "${MY_DIR}/android-sdk/platform-tools/adb" --project ${MY_DIR} --launch
 
 exit 0 
 
