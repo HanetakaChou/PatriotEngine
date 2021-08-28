@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -20,7 +20,6 @@
 
 #include <pt_common.h>
 #include <pt_gfx_connection.h>
-#include <pt_mcrt_memcpy.h>
 
 #if defined(PT_POSIX)
 #include <unistd.h>
@@ -41,16 +40,18 @@ inline bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture
         },
         [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
-            ssize_t _res = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return _res;
+            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
+            return res_read;
         },
         [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
-            off_t _res = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return _res;
+            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
+            return res_lseek;
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
-        { close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream))); });
+        {
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+        });
 }
 
 inline bool PT_CALL gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
@@ -77,7 +78,9 @@ inline bool PT_CALL gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_me
             return _res;
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
-        { close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream))); });
+        {
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+        });
 }
 
 static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
@@ -89,7 +92,7 @@ static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
 #define WIN32_LEAN_AND_MEAN 1
 #include <Windows.h>
 
-inline bool gfx_itexture_read_file(struct gfx_itexture *texture, char const *initial_filename)
+inline bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
     return texture->read_input_stream(
         initial_filename,
@@ -106,74 +109,17 @@ inline bool gfx_itexture_read_file(struct gfx_itexture *texture, char const *ini
             return _res;
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
-        { CloseHandle(static_cast<HANDLE>(reinterpret_cast<void *>(gfx_input_stream))); });
+        {
+            CloseHandle(static_cast<HANDLE>(reinterpret_cast<void *>(gfx_input_stream)));
+        });
 }
 
-static_assert(FILE_BEGIN == PT_GFX_INPUT_STREAM_SEEK_SET, "FILE_BEGIN == PT_GFX_INPUT_STREAM_SEEK_SET");
-static_assert(FILE_CURRENT == PT_GFX_INPUT_STREAM_SEEK_CUR, "FILE_CURRENT == PT_GFX_INPUT_STREAM_SEEK_CUR");
-static_assert(FILE_END == PT_GFX_INPUT_STREAM_SEEK_END, "FILE_END == PT_GFX_INPUT_STREAM_SEEK_END");
+static_assert(FILE_BEGIN == PT_GFX_INPUT_STREAM_SEEK_SET, "");
+static_assert(FILE_CURRENT == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
+static_assert(FILE_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
 
 #else
 #error Unknown Platform
 #endif
-
-inline bool gfx_texture_read_memory(gfx_connection_ref gfx_connection, gfx_texture_ref texture, void const *data, size_t data_size)
-{
-    struct input_memory_stream
-    {
-        uint8_t const *m_data;
-        size_t m_data_size;
-        uint8_t const *m_p;
-    } gfx_input_stream = {reinterpret_cast<uint8_t const *>(data), data_size, reinterpret_cast<uint8_t const *>(data)};
-
-    bool _res = gfx_texture_read_input_stream(
-        gfx_connection,
-        texture,
-        reinterpret_cast<char *>(&gfx_input_stream),
-        [](char const *initial_filename) -> gfx_input_stream_ref
-        { return reinterpret_cast<gfx_input_stream_ref>(const_cast<char *>(initial_filename)); },
-        [](gfx_input_stream_ref _input_stream, void *buf, size_t count) -> intptr_t
-        {
-            input_memory_stream *gfx_input_stream = reinterpret_cast<input_memory_stream *>(_input_stream);
-
-            intptr_t count_read = ((gfx_input_stream->m_p + count) <= (gfx_input_stream->m_data + gfx_input_stream->m_data_size))
-                                      ? count
-                                      : ((gfx_input_stream->m_p <= (gfx_input_stream->m_data + gfx_input_stream->m_data_size))
-                                             ? ((gfx_input_stream->m_data + gfx_input_stream->m_data_size) - gfx_input_stream->m_p)
-                                             : 0);
-
-            if (count_read > 0)
-            {
-                mcrt_memcpy(buf, gfx_input_stream->m_p, count_read);
-                gfx_input_stream->m_p = gfx_input_stream->m_p + count_read;
-            }
-
-            return count_read;
-        },
-        [](gfx_input_stream_ref _input_stream, int64_t offset, int whence) -> int64_t
-        {
-            input_memory_stream *gfx_input_stream = reinterpret_cast<input_memory_stream *>(_input_stream);
-
-            switch (whence)
-            {
-            case PT_GFX_INPUT_STREAM_SEEK_SET:
-                gfx_input_stream->m_p = gfx_input_stream->m_data + offset;
-                break;
-            case PT_GFX_INPUT_STREAM_SEEK_CUR:
-                gfx_input_stream->m_p = gfx_input_stream->m_p + offset;
-                break;
-            case PT_GFX_INPUT_STREAM_SEEK_END:
-                gfx_input_stream->m_p = gfx_input_stream->m_data + offset;
-                break;
-            default:
-                return -1;
-            }
-
-            return gfx_input_stream->m_p - gfx_input_stream->m_data;
-        },
-        [](gfx_input_stream_ref gfx_input_stream) -> void {});
-
-    return _res;
-}
 
 #endif

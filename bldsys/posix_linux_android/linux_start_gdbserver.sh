@@ -23,14 +23,6 @@
 MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 cd ${MY_DIR}
 
-python2 "${MY_DIR}/ndk_python/prebuilt/linux-x86_64/bin/ndk-gdb.py" --adb "${MY_DIR}/android-sdk/platform-tools/adb" --project ${MY_DIR} --launch
-
-exit 0 
-
-
-
-
-
 # https://developer.android.com/studio/debug#debug-types
 # android-ndk-r14b/prebuilt/windows-x86_64/bin/ndk-gdb.py
 # android-ndk-r14b/python-packages/gdbrunner/__init__.py
@@ -45,8 +37,8 @@ ARCH=arm64
 DELAY=0.25s
 PORT=5039
 
-DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
-if test -z ${DATA_DIR}; then
+APP_DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
+if test -z ${APP_DATA_DIR}; then
     echo "Could not find application's data directory. Are you sure that the application is installed and debuggable?"
     exit 1
 fi
@@ -55,13 +47,12 @@ fi
 # created with rwx------ permissions, preventing adbd from forwarding to
 # the gdbserver socket. To be safe, if we're on a device >= 24, always
 # chmod the directory.
-if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${DATA_DIR}""; then # chmod a+x
-    echo "Found application data directory: ${DATA_DIR}"
+if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_DATA_DIR}""; then # chmod a+x
+    echo "Found application data directory: ${APP_DATA_DIR}"
 else
     echo "Failed to make application data directory world executable"
     exit 1
 fi
-APP_DATA_DIR="${DATA_DIR}"
 
 APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/${ARCH}/gdbserver"
 if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/dev/null 2>/dev/null"; then

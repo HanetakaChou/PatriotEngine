@@ -2,13 +2,11 @@
  * Copyright(c) 2015 RehiveTech. All rights reserved.
  */
 
-/** @file lib/librte_eal/arm/include/rte_memcpy_32.h */
-
-#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM32_H_
-#define _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM32_H_ 1
+#ifndef _RTE_MEMCPY_ARM32_H_
+#define _RTE_MEMCPY_ARM32_H_ 1
 
 #include <stdint.h>
-#include "pt_mcrt_memcpy_dpdk_rte_common.h"
+#include "../../include/rte_common.h"
 
 #if defined(__ARM_NEON)
 #include <arm_neon.h>

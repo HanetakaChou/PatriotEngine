@@ -2,18 +2,17 @@
  * Copyright(c) 2010-2014 Intel Corporation
  */
 
-#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_X86_H_
-#define _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_X86_H_ 1
+#ifndef _RTE_MEMCPY_X86_H_
+#define _RTE_MEMCPY_X86_H_ 1
 
 /**
- * @file lib/librte_eal/x86/include/rte_memcpy.h
  *
  * Functions for SSE/AVX/AVX2/AVX512 implementation of memcpy().
  */
 
 #include <stdint.h>
 #include <immintrin.h>
-#include "pt_mcrt_memcpy_dpdk_rte_common.h"
+#include "../../include/rte_common.h"
 
 /**
  * Copy bytes from one location to another. The locations must not overlap.

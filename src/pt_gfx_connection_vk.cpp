@@ -22,10 +22,10 @@
 #include "pt_gfx_connection_vk.h"
 #include <new>
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
-    if (connection->init(wsi_connection, wsi_visual))
+    if (connection->init(wsi_connection, wsi_visual, gfx_cache_dirname))
     {
         return connection;
     }
@@ -40,7 +40,7 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
-inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     if (!m_device.init(wsi_connection, wsi_visual))
     {
@@ -67,7 +67,7 @@ inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visua
     }
 
     // Frame
-    if (!this->init_frame())
+    if (!this->init_frame(gfx_cache_dirname))
     {
         return false;
     }
@@ -858,9 +858,21 @@ void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
     this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
 }
 
-inline bool gfx_connection_vk::init_frame()
+inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
 {
-    //Frame Throttling
+    // Pipeline Cache
+#if defined(PT_POSIX)
+    this->m_pipeline_cache_dir_fd = -1;
+#elif defined(PT_WIN32)
+#else
+#error Unknown Platform
+#endif
+    if (!this->init_pipeline_cache_dir(gfx_cache_dirname))
+    {
+        return false;
+    }
+
+    // Frame Throttling
     {
         this->m_frame_throttling_index = 0U;
         mcrt_rwlock_init(&this->m_rwlock_frame_throttling_index);
@@ -1340,7 +1352,7 @@ inline bool gfx_connection_vk::update_framebuffer()
     // pipeline cache
     assert(VK_NULL_HANDLE == this->m_pipeline_cache_mesh);
     {
-        PT_MAYBE_UNUSED bool res_load_pipeline_cache = this->load_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+        PT_MAYBE_UNUSED bool res_load_pipeline_cache = this->load_pipeline_cache(".cache-vkpipeline-mesh.bin", &this->m_pipeline_cache_mesh);
         assert(res_load_pipeline_cache);
     }
 
@@ -1535,7 +1547,7 @@ inline void gfx_connection_vk::destory_framebuffer()
 
         assert(VK_NULL_HANDLE != this->m_pipeline_cache_mesh);
         // after queuesubmit // may before destory
-        this->store_pipeline_cache("mesh", &this->m_pipeline_cache_mesh);
+        this->store_pipeline_cache(".cache-vkpipeline-mesh.bin", &this->m_pipeline_cache_mesh);
 
         assert(VK_NULL_HANDLE != this->m_pipeline_mesh);
         this->m_device.destroy_pipeline(this->m_pipeline_mesh);
@@ -2444,20 +2456,56 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
 #include <sys/stat.h>
 #include <pt_mcrt_scalable_allocator.h>
 #include <string>
+#include <string.h>
 
-inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache)
+inline bool gfx_connection_vk::init_pipeline_cache_dir(char const *gfx_cache_dirname)
+{
+    assert(-1 == this->m_pipeline_cache_dir_fd);
+    this->m_pipeline_cache_dir_fd = openat(AT_FDCWD, gfx_cache_dirname, O_RDONLY);
+    if (-1 != this->m_pipeline_cache_dir_fd)
+    {
+        struct stat statbuf;
+        PT_MAYBE_UNUSED int res_fstat = fstat(this->m_pipeline_cache_dir_fd, &statbuf);
+        assert(0 == res_fstat);
+
+        if (S_ISDIR(statbuf.st_mode))
+        {
+            return true;
+        }
+        else
+        {
+            mcrt_log_print("expected vkpipeline cache directory %s is not a directory)!\n", gfx_cache_dirname);
+            close(this->m_pipeline_cache_dir_fd);
+            this->m_pipeline_cache_dir_fd = -1;
+            return false;
+        }
+    }
+    else
+    {
+        assert(EACCES == (errno) || ENOENT == (errno));
+        if (EACCES == (errno))
+        {
+            mcrt_log_print("expected vkpipeline cache directory %s can't be accessed!\n", gfx_cache_dirname);
+        }
+        else if (ENOENT == (errno))
+        {
+            mcrt_log_print("expected vkpipeline cache directory %s doesn't exist!\n", gfx_cache_dirname);
+        }
+        else
+        {
+            mcrt_log_print("expected vkpipeline cache directory %s unexpected error %s\n", gfx_cache_dirname, strerror(errno));
+        }
+        return false;
+    }
+}
+
+inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache)
 {
     size_t pipeline_cache_size;
     void *pipeline_cache_data;
+    if (-1 != this->m_pipeline_cache_dir_fd)
     {
-        int fd;
-        {
-            using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-            mcrt_string path = ".cache/vulkan_pipeline_cache/";
-            path += pipeline_cache_name;
-            path += ".bin";
-            fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
-        }
+        int fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_RDONLY);
 
         if (fd != -1)
         {
@@ -2483,6 +2531,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
                 }
                 else
                 {
+                    mcrt_log_print("expected vkpipeline cache file %s doesn't match current device!\n", pipeline_cache_file_name);
                     mcrt_aligned_free(data);
                     pipeline_cache_size = 0U;
                     pipeline_cache_data = NULL;
@@ -2490,6 +2539,7 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
             }
             else
             {
+                mcrt_log_print("expected vkpipeline cache file %s is not a regular file!\n", pipeline_cache_file_name);
                 pipeline_cache_size = 0U;
                 pipeline_cache_data = NULL;
             }
@@ -2498,10 +2548,27 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
         }
         else
         {
-            assert(errno == ENOENT);
+            assert(EACCES == (errno) || ENOENT == (errno));
+            if (EACCES == (errno))
+            {
+                mcrt_log_print("expected vkpipeline cache file %s can't be accessed!\n", pipeline_cache_file_name);
+            }
+            else if (ENOENT == (errno))
+            {
+                mcrt_log_print("expected vkpipeline cache file %s doesn't exist!\n", pipeline_cache_file_name);
+            }
+            else
+            {
+                mcrt_log_print("expected vkpipeline cache file %s unexpected error %s\n", pipeline_cache_file_name, strerror(errno));
+            }
             pipeline_cache_size = 0U;
             pipeline_cache_data = NULL;
         }
+    }
+    else
+    {
+        pipeline_cache_size = 0U;
+        pipeline_cache_data = NULL;
     }
 
     assert(VK_NULL_HANDLE == this->m_pipeline_cache_mesh);
@@ -2521,101 +2588,65 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_na
     return (VK_SUCCESS == res_create_pipeline_cache);
 }
 
-inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache)
+inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache)
 {
-    int fd_dir;
+    if (-1 != this->m_pipeline_cache_dir_fd)
     {
-        char const *paths[2] = {".cache", "vulkan_pipeline_cache"};
-        int fd_dir_parent = AT_FDCWD;
-        for (char const *path : paths)
+        int fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        if (-1 != fd)
         {
-            fd_dir = openat(fd_dir_parent, path, O_RDONLY);
-
-            bool mkdir_needed;
-
-            if (fd_dir != -1)
+            struct stat statbuf;
+            PT_MAYBE_UNUSED int res_fstat = fstat(fd, &statbuf);
+            assert(0 == res_fstat);
+            if (S_ISREG(statbuf.st_mode))
             {
-                struct stat statbuf;
-                PT_MAYBE_UNUSED int res_fstat = fstat(fd_dir, &statbuf);
-                assert(0 == res_fstat);
-                if (S_ISDIR(statbuf.st_mode))
-                {
-                    mkdir_needed = false;
-                }
-                else
-                {
-                    mcrt_log_print("can not use %s for vulkan pipeline cache (not a directory) --- remove it!\n", path);
-                    PT_MAYBE_UNUSED int res_unlinkat = unlinkat(fd_dir_parent, path, 0);
-                    assert(0 == res_unlinkat);
-                    close(fd_dir);
-                    mkdir_needed = true;
-                }
+                size_t pipeline_cache_size_before;
+                PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size_before, NULL);
+                assert(VK_SUCCESS == res_get_pipeline_cache_data_before);
+
+                size_t pipeline_cache_size = pipeline_cache_size_before;
+                void *pipeline_cache_data = mcrt_aligned_malloc(pipeline_cache_size, alignof(uint8_t));
+                PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
+                assert(VK_SUCCESS == res_get_pipeline_cache_data);
+                assert(pipeline_cache_size_before == pipeline_cache_size);
+
+                this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
+                this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
+
+#ifndef NDEBUG
+                uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
+                uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 4);
+                uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 8);
+                uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 12);
+                mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 16);
+                assert(header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()));
+#endif
+
+                PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
+                assert(res_write == pipeline_cache_size);
+
+                mcrt_aligned_free(pipeline_cache_data);
             }
             else
             {
-                char const *huhu = strerror(errno);
-                assert(errno == ENOENT);
-                mkdir_needed = true;
+                mcrt_log_print("expected vkpipeline cache file %s is not a regular file!\n", pipeline_cache_file_name);
             }
 
-            if (mkdir_needed)
+            close(fd);
+        }
+        else
+        {
+            assert(EACCES == (errno));
+            if (EACCES == (errno))
             {
-                PT_MAYBE_UNUSED int res_mkdirat = mkdirat(fd_dir_parent, path, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-                assert(0 == res_mkdirat);
-
-                fd_dir = openat(fd_dir_parent, path, O_RDONLY);
-                assert(-1 != fd_dir);
+                mcrt_log_print("expected vkpipeline cache file %s can't be accessed!\n", pipeline_cache_file_name);
             }
-
-            if (AT_FDCWD != fd_dir_parent)
+            else
             {
-                close(fd_dir_parent);
+                mcrt_log_print("expected vkpipeline cache file %s unexpected error %s\n", pipeline_cache_file_name, strerror(errno));
             }
-
-            fd_dir_parent = fd_dir;
         }
     }
-
-    int fd;
-    {
-        using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-        mcrt_string path = pipeline_cache_name;
-        path += ".bin";
-        fd = openat(fd_dir, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-        close(fd_dir);
-    }
-    assert(fd != -1);
-
-    size_t pipeline_cache_size_before;
-    PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size_before, NULL);
-    assert(VK_SUCCESS == res_get_pipeline_cache_data_before);
-
-    size_t pipeline_cache_size = pipeline_cache_size_before;
-    void *pipeline_cache_data = mcrt_aligned_malloc(pipeline_cache_size, alignof(uint8_t));
-    PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
-    assert(VK_SUCCESS == res_get_pipeline_cache_data);
-    assert(pipeline_cache_size_before == pipeline_cache_size);
-
-    this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
-    this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
-
-#ifndef NDEBUG
-    uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
-    uint32_t cache_header_version = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 4);
-    uint32_t vendor_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 8);
-    uint32_t device_id = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 12);
-    mcrt_uuid pipeline_cache_uuid = mcrt_uuid_load(reinterpret_cast<uint8_t *>(pipeline_cache_data) + 16);
-    assert(header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()));
-#endif
-
-    PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
-    assert(res_write == pipeline_cache_size);
-
-    mcrt_aligned_free(pipeline_cache_data);
-
-    close(fd);
-
-    return;
 }
 
 #elif defined(PT_WIN32)

@@ -15,17 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <new>
+
+#include <pt_mcrt_malloc.h>
 #include <pt_mcrt_task.h>
 
 #include <tbb/task.h>
-
-#include "pt_mcrt_scalable_allocator_tbb_scheduler.h"
-
 #include <tbb/task_arena.h>
+#include <../src/tbb/scheduler.h>
 
-#include <pt_mcrt_malloc.h>
 
-#include <new>
 
 class mcrt_task_t;
 
@@ -54,7 +53,7 @@ public:
 
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
-static_assert(sizeof(mcrt_task_t) <= mcrt::internal::generic_scheduler::quick_task_size, "");
+static_assert(sizeof(mcrt_task_t) <= tbb::internal::generic_scheduler::quick_task_size, "");
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {

@@ -20,12 +20,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_math.h>
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_rwlock.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include <pt_math.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include "pt_gfx_connection_base.h"
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc_vk.h"
@@ -37,14 +37,19 @@
 #include "pt_gfx_texture_vk.h"
 #include <vulkan/vulkan.h>
 #include <vector>
+#include <string>
 
 class gfx_connection_vk final : public gfx_connection_base
 {
+    template <typename T>
+    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+
+    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
     // MCRT
-
     // Avoid false sharing
 #if defined(PT_X64) || defined(PT_X86) || defined(PT_ARM64) || defined(PT_ARM)
     enum {ESTIMATED_CACHE_LINE_SIZE = 64U};
@@ -53,6 +58,14 @@ class gfx_connection_vk final : public gfx_connection_base
 #endif
 
     // Frame
+#if defined(PT_POSIX)
+    int m_pipeline_cache_dir_fd;
+#elif defined(PT_WIN32)
+    HANDLE m_pipeline_cache_dir_fd
+#else
+#error Unknown Platform
+#endif
+
     enum
     {
         OPAQUE_SUBPASS_INDEX = 0U,
@@ -82,8 +95,6 @@ class gfx_connection_vk final : public gfx_connection_base
     bool m_frame_swapchain_image_acquired[FRAME_THROTTLING_COUNT];
 
     // Scene
-    template <typename T>
-    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T> >;
     mcrt_vector<class gfx_node_vk *> m_scene_node_list;
     mcrt_vector<size_t> m_scene_node_list_free_index_list;
 
@@ -201,26 +212,27 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline gfx_connection_vk();
     inline ~gfx_connection_vk();
-    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
     void destroy() override;
+    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
-    inline bool init_frame();
+    inline bool init_frame(char const *gfx_cache_dirname);
+    inline bool init_pipeline_cache_dir(char const* gfx_cache_dirname);
     inline bool init_pipeline_layout();
     inline bool init_shader();
     inline bool update_surface(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window);
     inline bool update_framebuffer();
-    inline bool load_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
+    inline bool load_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache);
     inline void destroy_frame();
     inline void destory_surface();
     inline void destory_framebuffer();
     inline void destory_pipeline_layout();
     inline void destory_shader();
-    inline void store_pipeline_cache(char const *pipeline_cache_name, VkPipelineCache *pipeline_cache);
+    inline void store_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache);
 
     inline bool init_streaming();
     inline void destroy_streaming();
 
-    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
     class gfx_node_base *create_node() override;
     class gfx_mesh_base *create_mesh() override;
     class gfx_material_base *create_material() override;
@@ -271,7 +283,7 @@ public:
     void free_descriptor_set(VkDescriptorSet descriptor_set);
 };
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
 // Streaming in CryEngine - StatObj
 

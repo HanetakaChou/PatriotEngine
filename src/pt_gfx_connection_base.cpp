@@ -44,11 +44,11 @@ extern class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_win
 #endif
 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
-    extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual);
+    extern class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 #endif
 
 // API
-class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     class gfx_connection_base *gfx_connection = NULL;
 
@@ -69,7 +69,7 @@ class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_con
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
     if (NULL == gfx_connection)
     {
-        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual);
+        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual, gfx_cache_dirname);
     }
 #endif
 
@@ -91,9 +91,9 @@ inline class gfx_material_base *unwrap(gfx_material_ref gfx_material) { return r
 inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const* gfx_cache_dirname)
 {
-    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual));
+    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, gfx_cache_dirname));
 }
 
 PT_ATTR_GFX bool PT_CALL gfx_connection_on_wsi_window_created(gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)

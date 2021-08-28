@@ -14,12 +14,12 @@
     limitations under the License.
 */
 
-#ifndef _PT_MCRT_TASK_TBB_TBB_SCHEDULER_H_
-#define _PT_MCRT_TASK_TBB_TBB_SCHEDULER_H_ 1
+#ifndef _TBB_scheduler_H
+#define _TBB_scheduler_H
 
-#include "pt_mcrt_scalable_allocator_tbb_scheduler_common.h"
+#include "scheduler_common.h"
 
-namespace mcrt
+namespace tbb
 {
     namespace internal
     {

@@ -2,10 +2,8 @@
  * Copyright(c) 2015 RehiveTech. All rights reserved.
  */
 
-/** @file lib/librte_eal/arm/include/rte_memcpy_64.h */
-
-#ifndef _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM64_H_
-#define _PT_MCRT_MEMCPY_DPDK_RTE_MEMCPY_ARM64_H_ 1
+#ifndef _RTE_MEMCPY_ARM64_H_
+#define _RTE_MEMCPY_ARM64_H_ 1
 
 /** @file config/arm/meson.build */
 #define RTE_CACHE_LINE_SIZE 64
@@ -13,7 +11,7 @@
 #define RTE_ARM64_MEMCPY_UNALIGNED_THRESHOLD 512
 
 #include <stdint.h>
-#include "pt_mcrt_memcpy_dpdk_rte_common.h"
+#include "../../include/rte_common.h"
 
 #if defined(__ARM_NEON)
 #include <arm_neon.h>

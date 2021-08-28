@@ -14,22 +14,21 @@
     limitations under the License.
 */
 
-#ifndef _PT_MCRT_TASK_TBB_TBB_SCHEDULER_COMMON_H_
-#define _PT_MCRT_TASK_TBB_TBB_SCHEDULER_COMMON_H_ 1
+#ifndef _TBB_scheduler_common_H
+#define _TBB_scheduler_common_H
 
-namespace mcrt
+namespace tbb
 {
     namespace internal
     {
-        //sizeof(internal::task_prefix)
-        size_t const task_prefix_size = 64;
-
         //! Alignment for a task object
         const size_t task_alignment = 32;
 
+        // sizeof(internal::task_prefix) == 64
+
         //! Number of bytes reserved for a task prefix
         /** If not exactly sizeof(task_prefix), the extra bytes *precede* the task_prefix. */
-        const size_t task_prefix_reservation_size = ((task_prefix_size - 1) / task_alignment + 1) * task_alignment;
+        const size_t task_prefix_reservation_size = ((64 - 1) / task_alignment + 1) * task_alignment;
     } // namespace internal
 } // namespace mcrt
 #endif
