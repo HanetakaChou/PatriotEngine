@@ -8,14 +8,6 @@ It's widely establish that "Program = Data Structure + Algorithm" and this engin
 The contents of this engine is likely to be as follows:   
 >
 > [PatriotEngine](https://yuqiaozhang.github.io/PatriotEngine/)  
->    
-> [docs/malloc.md](docs/malloc.md)  
-> [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
->
-> --- 
->
-> [docs/tbb.md](docs/tbb.md)  
-> [docs/task.zh_CN.md](docs/task.zh_CN.md)
 >       
 > ---
 > 
@@ -24,12 +16,21 @@ The contents of this engine is likely to be as follows:
 > [docs/Grass.md](docs/Grass.md)     
 > [docs/Volumetric-Rendering.md](docs/Volumetric-Rendering.md)     
 >
+> ---
+>
+> [docs/malloc.md](docs/malloc.md)  
+> [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
+>
+> --- 
+>
+> [docs/tbb.md](docs/tbb.md)  
+> [docs/task.zh_CN.md](docs/task.zh_CN.md)
+
+
 ---  
 
-### Core Interfaces   
-   
-#### gfx_connection_ref   
-  
+### Interfaces   
+     
 We may treat the image synthesis graphics engine as the 3D version X11 server.  
 The geometry(e.g. mesh, hair, terrain) / material / texture / light(e.g. directional light, punctual light, area light, light probe) are analogous to the pixmap on X11 server      
 and the hierarchy of the scenetree / scenegraph are analogous to the relationship of the "child-parent" window on X11 server.  
@@ -167,8 +168,8 @@ Build Type | Status
     - [ ] USD
     - [ ] FBX
   - [ ] WSI  
-    - [ ] PosixLinuxX11  
-    - [ ] PosixLinuxAndroid  
+    - [x] PosixLinuxX11  
+    - [x] PosixLinuxAndroid  
     - [ ] Win32Desktop  
 - [ ] Metal  
   - [ ] MemoryAllocator  
