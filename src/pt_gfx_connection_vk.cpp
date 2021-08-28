@@ -810,6 +810,7 @@ bool gfx_connection_vk::allocate_descriptor_set(VkDescriptorSet *descriptor_set)
     if (this->m_descriptor_set_object_private_free_list.size() > 0U)
     {
         (*descriptor_set) = this->m_descriptor_set_object_private_free_list.back();
+        assert(VK_NULL_HANDLE != (*descriptor_set));
         this->m_descriptor_set_object_private_free_list.pop_back();
         return true;
     }
@@ -855,7 +856,7 @@ void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint
 
 void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
 {
-    asset(VK_NULL_HANDLE != descriptor_set);
+    assert(VK_NULL_HANDLE != descriptor_set);
     this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
 }
 

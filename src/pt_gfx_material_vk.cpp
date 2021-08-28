@@ -49,8 +49,16 @@ void gfx_material_vk::frame_destroy_callback(class gfx_connection_base *gfx_conn
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     // this function is serial
-    gfx_connection->free_descriptor_set(this->m_desciptor_set);
-    this->m_desciptor_set = VK_NULL_HANDLE;
+
+    if (VK_NULL_HANDLE != this->m_desciptor_set)
+    {
+        gfx_connection->free_descriptor_set(this->m_desciptor_set);
+        this->m_desciptor_set = VK_NULL_HANDLE;
+    }
+    else
+    {
+        assert(mcrt_atomic_load(&this->m_streaming_error));
+    }
 
     this->unified_destory_execute(gfx_connection);
 }
