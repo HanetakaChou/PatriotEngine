@@ -864,6 +864,7 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
 #if defined(PT_POSIX)
     this->m_pipeline_cache_dir_fd = -1;
 #elif defined(PT_WIN32)
+    this->m_
 #else
 #error Unknown Platform
 #endif
@@ -871,6 +872,10 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
     {
         return false;
     }
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_init(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
 
     // Frame Throttling
     {
@@ -2372,6 +2377,11 @@ inline gfx_connection_vk::~gfx_connection_vk()
 
 bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
 {
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
     this->m_wsi_width = width;
     this->m_wsi_height = height;
 
@@ -2385,11 +2395,19 @@ bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection,
         return false;
     }
 
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
     return true;
 }
 
 void gfx_connection_vk::on_wsi_window_destroyed()
 {
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
     {
         this->m_device.wait_for_fences(1U, &this->m_frame_fence[frame_throttling_index], VK_TRUE, UINT64_MAX);
@@ -2402,6 +2420,10 @@ void gfx_connection_vk::on_wsi_window_destroyed()
     this->m_swapchain = VK_NULL_HANDLE;
 
     this->destory_surface();
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
 }
 
 void gfx_connection_vk::on_wsi_resized(float width, float height)
@@ -2412,13 +2434,36 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
 
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
     this->reduce_streaming_task();
-    this->acquire_frame();
+
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->acquire_frame();
+    }
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
-    this->release_frame();
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->release_frame();
+    }
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
 }
 
 class gfx_node_base *gfx_connection_vk::create_node()

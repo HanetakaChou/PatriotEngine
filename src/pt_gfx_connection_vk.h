@@ -22,6 +22,7 @@
 #include <stdint.h>
 #include <pt_math.h>
 #include <pt_mcrt_task.h>
+#include <pt_mcrt_spinlock.h>
 #include <pt_mcrt_rwlock.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
@@ -174,6 +175,11 @@ class gfx_connection_vk final : public gfx_connection_base
 
     // Perspective Matraix
     float m_aspect_ratio; //width-divide-height
+
+    // Window
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_asset_spinlock_t m_asset_spinlock_wsi_windiw_exist;
+#endif
 
     // SwapChain
     VkSurfaceKHR m_surface;

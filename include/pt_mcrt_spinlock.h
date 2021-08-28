@@ -27,6 +27,10 @@ inline void mcrt_spin_init(struct mcrt_spinlock_t *lock);
 inline void mcrt_spin_lock(struct mcrt_spinlock_t *lock);
 inline void mcrt_spin_unlock(struct mcrt_spinlock_t *lock);
 
+inline void mcrt_asset_spin_init(struct mcrt_asset_spinlock_t *lock);
+inline void mcrt_asset_spin_lock(struct mcrt_asset_spinlock_t *lock);
+inline void mcrt_asset_spin_unlock(struct mcrt_asset_spinlock_t *lock);
+
 #include "pt_mcrt_spinlock.inl"
 
 #endif

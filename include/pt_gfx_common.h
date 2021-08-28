@@ -26,7 +26,7 @@
 
 #define PT_GFX_PROFILE 1
 
-#define PT_GFX_DEBUG_MCRT 0
+#define PT_GFX_DEBUG_MCRT 1
 
 #define PT_GFX_DEBUG_MALLOC 0
 

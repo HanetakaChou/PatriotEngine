@@ -19,6 +19,7 @@
 #include <stdint.h>
 #include <assert.h>
 #include <string>
+#include <sys/socket.h>
 #include <android/native_activity.h>
 #include <pt_mcrt_thread.h>
 #include <pt_mcrt_atomic.h>
@@ -40,6 +41,18 @@ static mcrt_string wsi_linux_android_internal_data_path;
 static ANativeWindow *wsi_linux_android_native_window = NULL;
 static gfx_connection_ref wsi_linux_android_gfx_connection = NULL;
 static void *wsi_linux_android_void_instance = NULL;
+
+static int wsi_linux_android_main_thread_dispatch_source_event_handler(int fd, int events, void *data);
+
+static int wsi_linux_android_display_source = -1;
+static void wsi_linux_android_display_link_output_callback();
+
+struct wsi_linux_android_display_link_output_main_argument_t
+{
+	bool m_has_inited;
+};
+static void *wsi_linux_android_display_link_output_main(void *argument);
+static mcrt_native_thread_id wsi_linux_android_display_link_output_main_thread_id;
 
 struct wsi_linux_android_app_main_argument_t
 {
@@ -73,21 +86,59 @@ extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activ
 	static bool app_process_on_create = true;
 	if (PT_UNLIKELY(app_process_on_create))
 	{
+		// demo purpose
 		wsi_linux_android_internal_data_path = native_activity->internalDataPath;
 
 		wsi_linux_android_gfx_connection = gfx_connection_init(NULL, NULL, native_activity->internalDataPath);
 
-		struct wsi_linux_android_app_main_argument_t linux_android_app_main_argument;
-		linux_android_app_main_argument.m_gfx_connection = wsi_linux_android_gfx_connection;
-		linux_android_app_main_argument.m_void_instance = &wsi_linux_android_void_instance;
-		linux_android_app_main_argument.m_has_inited = false;
-
-		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_app_main_thread_id, wsi_linux_android_app_main, &linux_android_app_main_argument);
-		assert(res_native_thread_create);
-
-		while (!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
+		// register "pt_wsi_mach_osx_main_queue_dispatch_source_event_handler"
 		{
-			mcrt_os_yield();
+			ALooper *looper = ALooper_forThread();
+			assert(looper != NULL);
+
+			// we use "STREAM" since the rendering may be slower than the "pt_wsi_mach_osx_display_link_output_callback"
+			int sv[2];
+			int res_socketpair = socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
+			assert(0 == res_socketpair);
+
+			int sv_read = sv[0];
+			int sv_write = sv[1];
+
+			// Identifier is ignored when callback is not NULL. ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the UI thread.
+			int res_addfd = ALooper_addFd(looper, sv_read, 0, ALOOPER_EVENT_INPUT, wsi_linux_android_main_thread_dispatch_source_event_handler, NULL);
+			assert(1 == res_addfd);
+
+			wsi_linux_android_display_source = sv_write;
+		}
+
+		// display link output main
+		{
+			struct wsi_linux_android_display_link_output_main_argument_t linux_android_display_link_output_main_argument;
+			linux_android_display_link_output_main_argument.m_has_inited = false;
+
+			PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_display_link_output_main_thread_id, wsi_linux_android_display_link_output_main, &linux_android_display_link_output_main_argument);
+			assert(res_native_thread_create);
+
+			while (!mcrt_atomic_load(&linux_android_display_link_output_main_argument.m_has_inited))
+			{
+				mcrt_os_yield();
+			}
+		}
+
+		// app main
+		{
+			struct wsi_linux_android_app_main_argument_t linux_android_app_main_argument;
+			linux_android_app_main_argument.m_gfx_connection = wsi_linux_android_gfx_connection;
+			linux_android_app_main_argument.m_void_instance = &wsi_linux_android_void_instance;
+			linux_android_app_main_argument.m_has_inited = false;
+
+			PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_app_main_thread_id, wsi_linux_android_app_main, &linux_android_app_main_argument);
+			assert(res_native_thread_create);
+
+			while (!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
+			{
+				mcrt_os_yield();
+			}
 		}
 
 		app_process_on_create = false;
@@ -111,9 +162,9 @@ static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity
 		input_queue,
 		looper,
 		0, //Identifier is ignored when callback is not NULL. ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the UI thread.
-		[](int fd, int events, void *__input_queue) -> int
+		[](int fd, int, void *input_queue_void) -> int
 		{
-			AInputQueue *input_queue = static_cast<AInputQueue *>(__input_queue);
+			AInputQueue *input_queue = static_cast<AInputQueue *>(input_queue_void);
 
 			AInputEvent *input_event;
 			while (AInputQueue_getEvent(input_queue, &input_event) >= 0)
@@ -192,17 +243,74 @@ static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_a
 {
 	assert(native_activity == wsi_linux_android_native_activity);
 	assert(native_window == wsi_linux_android_native_window);
+
+	wsi_linux_android_display_link_output_callback();
+}
+
+static int wsi_linux_android_main_thread_dispatch_source_event_handler(int fd, int, void *)
+{
+	// read all data
+	{
+		uint8_t buf[4096];
+		ssize_t res_recv = recv(fd, buf, 4096U, 0);
+		assert(-1 != res_recv);
+	}
+
 	gfx_connection_on_wsi_redraw_needed_acquire(wsi_linux_android_gfx_connection);
 	gfx_connection_on_wsi_redraw_needed_release(wsi_linux_android_gfx_connection);
+
+	return 1;
+}
+
+static void wsi_linux_android_display_link_output_callback()
+{
+	uint8_t buf[1] = {7};
+	ssize_t res_send = send(wsi_linux_android_display_source, buf, 1U, 0);
+	assert(1 == res_send);
+}
+
+static void *wsi_linux_android_display_link_output_main(void *argument_void)
+{
+	// display link output init
+	{
+		struct wsi_linux_android_display_link_output_main_argument_t *argument = static_cast<struct wsi_linux_android_display_link_output_main_argument_t *>(argument_void);
+		mcrt_atomic_store(&argument->m_has_inited, true);
+	}
+
+	while (1)
+	{
+		// 60 FPS
+		{
+			uint32_t milli_second = 1000U / 60U;
+			struct timespec request;
+			struct timespec remain;
+			request.tv_sec = static_cast<time_t>(milli_second / 1000U);
+			request.tv_nsec = static_cast<long>(1000000U * (milli_second % 1000U));
+			int res_sleep;
+			while (0 != (res_sleep = nanosleep(&request, &remain)))
+			{
+				assert(EINTR == errno);
+				assert(-1 == res_sleep);
+				assert(remain.tv_nsec > 0 || remain.tv_sec > 0);
+				request = remain;
+			}
+		}
+
+		wsi_linux_android_display_link_output_callback();
+	}
 }
 
 #include "pt_wsi_neutral_app.h"
 static void *wsi_linux_android_app_main(void *argument_void)
 {
 	struct wsi_linux_android_app_main_argument_t *argument = static_cast<struct wsi_linux_android_app_main_argument_t *>(argument_void);
-	PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
-	assert(res_neutral_app_init);
-	mcrt_atomic_store(&argument->m_has_inited, true);
+
+	// app init
+	{
+		PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
+		assert(res_neutral_app_init);
+		mcrt_atomic_store(&argument->m_has_inited, true);
+	}
 
 	int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
 
@@ -269,13 +377,13 @@ bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, ui
 		},
 		[](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
 		{
-			ssize_t _res = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-			return _res;
+			ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
+			return res_read;
 		},
 		[](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
 		{
-			off_t _res = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-			return _res;
+			off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
+			return res_lseek;
 		},
 		[](gfx_input_stream_ref gfx_input_stream) -> void
 		{

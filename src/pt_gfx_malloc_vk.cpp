@@ -318,6 +318,9 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
     }
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
 
+    // Maximum size of a memory heap in Vulkan to consider it "small".
+    static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
+
     this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
         uint32_t memory_requirements_memory_type_bits_vertex_buffer = 0U;
@@ -378,9 +381,6 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
              (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)));
              memory_requirements_memory_type_bits ^= (1U << memory_type_index))
         {
-            // Maximum size of a memory heap in Vulkan to consider it "small".
-            static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
-
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
             assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
             uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
@@ -469,10 +469,25 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
              memory_requirements_memory_type_bits ^= (1U << memory_type_index))
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
+            uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
+            assert(VK_MAX_MEMORY_TYPES > heap_index);
+            assert(physical_device_memory_properties.memoryHeapCount > heap_index);
+            VkDeviceSize heap_size = physical_device_memory_properties.memoryHeaps[heap_index].size;
 
-            // The lower index indicates the more performance
-            color_format_regular_optimal_memory_index = memory_type_index;
-            break;
+            if (heap_size >= VMA_SMALL_HEAP_MAX_SIZE)
+            {
+                color_format_regular_optimal_memory_index = memory_type_index;
+                break;
+            }
+            else
+            {
+                // The lower index indicates the more performance
+                if (VK_MAX_MEMORY_TYPES != color_format_regular_optimal_memory_index)
+                {
+                    color_format_regular_optimal_memory_index = memory_type_index;
+                }
+            }
         }
     }
     if (VK_MAX_MEMORY_TYPES == color_format_regular_optimal_memory_index)
@@ -523,36 +538,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
             gfx_device->destroy_image(dummy_img);
         }
 
-        for (uint32_t memory_type_index;
-             (0U != memory_requirements_memory_type_bits) &&
-
-             (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)));
-             memory_requirements_memory_type_bits ^= (1U << memory_type_index))
-        {
-            // Maximum size of a memory heap in Vulkan to consider it "small".
-            static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
-
-            assert(VK_MAX_MEMORY_TYPES > memory_type_index);
-            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
-            uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-            assert(VK_MAX_MEMORY_TYPES > heap_index);
-            assert(physical_device_memory_properties.memoryHeapCount > heap_index);
-            VkDeviceSize heap_size = physical_device_memory_properties.memoryHeaps[heap_index].size;
-
-            if (heap_size >= VMA_SMALL_HEAP_MAX_SIZE)
-            {
-                color_format_transient_tiling_optimal_memory_index = memory_type_index;
-                break;
-            }
-            else
-            {
-                // The lower index indicates the more performance
-                if (VK_MAX_MEMORY_TYPES != color_format_transient_tiling_optimal_memory_index)
-                {
-                    color_format_transient_tiling_optimal_memory_index = memory_type_index;
-                }
-            }
-        }
+        // The lower index indicates the more performance
+        color_format_transient_tiling_optimal_memory_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == color_format_transient_tiling_optimal_memory_index)
     {
@@ -633,38 +620,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
             gfx_device->destroy_image(dummy_img);
         }
 
-        for (uint32_t memory_type_index;
-             (0U != memory_requirements_memory_type_bits) &&
-
-             (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT)));
-             memory_requirements_memory_type_bits ^= (1U << memory_type_index))
-        {
-            assert(VK_MAX_MEMORY_TYPES > memory_type_index);
-
-            // Maximum size of a memory heap in Vulkan to consider it "small".
-            static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
-
-            assert(VK_MAX_MEMORY_TYPES > memory_type_index);
-            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
-            uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-            assert(VK_MAX_MEMORY_TYPES > heap_index);
-            assert(physical_device_memory_properties.memoryHeapCount > heap_index);
-            VkDeviceSize heap_size = physical_device_memory_properties.memoryHeaps[heap_index].size;
-
-            if (heap_size >= VMA_SMALL_HEAP_MAX_SIZE)
-            {
-                this->m_depth_stencil_attachment_and_transient_attachment_memory_index = memory_type_index;
-                break;
-            }
-            else
-            {
-                // The lower index indicates the more performance
-                if (VK_MAX_MEMORY_TYPES != color_format_transient_tiling_optimal_memory_index)
-                {
-                    this->m_depth_stencil_attachment_and_transient_attachment_memory_index = memory_type_index;
-                }
-            }
-        }
+        // The lower index indicates the more performance
+        this->m_depth_stencil_attachment_and_transient_attachment_memory_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT);
     }
     if (VK_MAX_MEMORY_TYPES == this->m_depth_stencil_attachment_and_transient_attachment_memory_index)
     {

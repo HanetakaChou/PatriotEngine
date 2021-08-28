@@ -439,13 +439,13 @@ bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, ui
         },
         [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
-            ssize_t _res = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return _res;
+            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
+            return res_read;
         },
         [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
-            off_t _res = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return _res;
+            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
+            return res_lseek;
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
         {

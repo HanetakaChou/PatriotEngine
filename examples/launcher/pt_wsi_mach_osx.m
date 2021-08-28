@@ -153,7 +153,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 {
     void *m_gfx_connection;
     void *m_void_instance;
-    dispatch_source_t m_display_source;
+    dispatch_source_t m_dispatch_source;
     CVDisplayLinkRef m_display_link;
 }
 
@@ -178,16 +178,16 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
         // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
         // RENDER_ON_MAIN_THREAD
-        self->m_display_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
+        self->m_dispatch_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
 
         // Block Implementation Specification
         // https://clang.llvm.org/docs/Block-ABI-Apple.html
         void *const view_controller_void = ((__bridge void *)self);
-        dispatch_source_set_event_handler(self->m_display_source, ^{
+        dispatch_source_set_event_handler(self->m_dispatch_source, ^{
           [((pt_wsi_mach_osx_view_controller *)((__bridge id)view_controller_void)) pt_wsi_mach_osx_main_queue_dispatch_source_event_handler];
         });
 
-        dispatch_resume(self->m_display_source);
+        dispatch_resume(self->m_dispatch_source);
 
         CVReturn res_display_link_create_with_active_cg_displays = CVDisplayLinkCreateWithActiveCGDisplays(&self->m_display_link);
         assert(kCVReturnSuccess == res_display_link_create_with_active_cg_displays);
@@ -228,7 +228,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (CVReturn)pt_wsi_mach_osx_display_link_output_callback
 {
-    dispatch_source_merge_data(self->m_display_source, 1);
+    dispatch_source_merge_data(self->m_dispatch_source, 1);
     return kCVReturnSuccess;
 }
 

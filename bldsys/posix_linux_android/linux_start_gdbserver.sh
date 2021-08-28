@@ -79,6 +79,7 @@ else
         exit 1
     fi
 
+    # We don't use "cp" due to potential bugs
     if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"; then
         echo "Copied gdbserver to ${DESTINATION}."
     else
@@ -151,7 +152,8 @@ else
 fi 
 
 # we don't use "wait java" method 
-# we use "Wait for debugger" in the developer options
+# we connect to the gdbserver when we lock the screen of the phone
+# and when we unlock the screen of the phone after the gdbserver is connected
 
 # wait the activity to launch
 sleep ${DELAY} 
