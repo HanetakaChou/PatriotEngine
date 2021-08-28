@@ -855,6 +855,7 @@ void gfx_connection_vk::init_descriptor_set(VkDescriptorSet descriptor_set, uint
 
 void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
 {
+    asset(VK_NULL_HANDLE != descriptor_set);
     this->m_descriptor_set_object_private_free_list.push_back(descriptor_set);
 }
 

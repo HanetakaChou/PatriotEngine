@@ -29,16 +29,18 @@ cd ${MY_DIR}
 # gdbrunner.get_run_as_cmd
 
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
-LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
 ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
-GDBSERVER_CMD="${MY_DIR}/bin/arm64-v8a/gdbserver"
-OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
-ARCH=arm64
-DELAY=0.25s
-PORT=5039
 
-APP_DATA_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'pwd' 2>/dev/null" | xargs)"
-if test -z ${APP_DATA_DIR}; then
+LAUNCH_ACTIVITY_NAME=android.app.NativeActivity
+DELAY=0.25s
+
+GDBSERVER_LOCAL_PATH="${MY_DIR}/bin/arm64-v8a/gdbserver"
+ARCH=arm64
+PORT=5039
+OUT_DIR="${MY_DIR}/obj/debug/local/arm64-v8a"
+
+APP_PWD_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" pwd")"
+if test -z ${APP_PWD_DIR}; then
     echo "Could not find application's data directory. Are you sure that the application is installed and debuggable?"
     exit 1
 fi
@@ -47,54 +49,52 @@ fi
 # created with rwx------ permissions, preventing adbd from forwarding to
 # the gdbserver socket. To be safe, if we're on a device >= 24, always
 # chmod the directory.
-if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_DATA_DIR}""; then # chmod a+x
-    echo "Found application data directory: ${APP_DATA_DIR}"
+if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${APP_PWD_DIR}""; then # chmod a+x
+    echo "Found application data directory: ${APP_PWD_DIR}"
 else
     echo "Failed to make application data directory world executable"
     exit 1
 fi
 
-APP_GDBSERVER_PATH="${APP_DATA_DIR}/lib/${ARCH}/gdbserver"
-if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${APP_GDBSERVER_PATH}" 1>/dev/null 2>/dev/null"; then
-    echo "Found app gdbserver: ${APP_GDBSERVER_PATH}"
+APP_INTERNAL_LIB_DIR="${APP_PWD_DIR}/lib/${ARCH}"
+
+# We need to upload our gdbserver
+APP_GDBSERVER_PATH="${APP_INTERNAL_LIB_DIR}/gdbserver"
+COPY_DEST_PATH="${APP_GDBSERVER_PATH}"
+if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" ls "${COPY_DEST_PATH}" 1>/dev/null 2>/dev/null"; then
+    echo "Found ${COPY_DEST_PATH} skip copy"
 else
-    # We need to upload our gdbserver
-    LOCAL_PATH="${GDBSERVER_CMD}"
-    REMOTE_PATH="/data/local/tmp/${APP_GDBSERVER_PATH}"
-    if "${ADB_CMD}" push "${LOCAL_PATH}" "${REMOTE_PATH}"; then
-        echo "App gdbserver not found at ${APP_GDBSERVER_PATH}, uploaded to ${REMOTE_PATH}."
+    # Firstly we upload the local gdbserver to "/data/local/tmp"
+    PUSH_LOCAL_PATH="${GDBSERVER_LOCAL_PATH}"
+    PUSH_REMOTE_PATH="/data/local/tmp/${APP_INTERNAL_LIB_DIR}/tmp_gdbserver"
+    if "${ADB_CMD}" push "${PUSH_LOCAL_PATH}" "${PUSH_REMOTE_PATH}"; then
+        echo "Have uploaded ${PUSH_LOCAL_PATH} to ${PUSH_REMOTE_PATH}"
     else
-        echo "Failed to upload gdbserver to ${REMOTE_PATH}."
+        echo "Failed to upload ${PUSH_LOCAL_PATH} to ${PUSH_REMOTE_PATH}"
         exit 1
     fi
 
-    # Copy gdbserver into the data directory on M+, because selinux prevents
-    # execution of binaries directly from /data/local/tmp.
-    DESTINATION="${APP_GDBSERVER_PATH}"
-    
-    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" mkdir -p "$(dirname "${DESTINATION}")""; then
-        echo "Mkdir "$(dirname "${DESTINATION}")"."
+    # Secondly, we copy the gdbserver from "/data/local/tmp" to app internal data path
+    COPY_SRC_PATH="${PUSH_REMOTE_PATH}"
+    COPY_DEST_DIR="$(dirname "${COPY_DEST_PATH}")"
+    "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" mkdir -p "${COPY_DEST_DIR}""
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" cp -f "${COPY_SRC_PATH}" "${COPY_DEST_PATH}""; then
+        echo "Have copied ${COPY_SRC_PATH} to ${COPY_DEST_PATH}"
     else
-        echo "Failed to mkdir "$(dirname "${DESTINATION}")"."
+        echo "Failed to copy ${COPY_SRC_PATH} to ${COPY_DEST_PATH}"
         exit 1
     fi
 
-    # We don't use "cp" due to potential bugs
-    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" sh -c 'cat '${REMOTE_PATH}' | cat > '${DESTINATION}''"; then
-        echo "Copied gdbserver to ${DESTINATION}."
+    # Thirdly, we chmod the gdbserver
+    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${COPY_DEST_PATH}""; then
+        echo "Have chmod ${COPY_DEST_PATH}"
     else
-        echo "Failed to copy gdbserver to ${DESTINATION}."
-        exit 1
-    fi
-
-    if "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" chmod 711 "${DESTINATION}""; then
-        echo "Uploaded gdbserver to ${DESTINATION}"
-    else
-        echo "Failed to chmod gdbserver at ${DESTINATION}."
+        echo "Failed to chmod ${DESTINATION}"
         exit 1
     fi
 fi
 
+# 
 if "${ADB_CMD}" shell "ls /system/bin/readlink 1>/dev/null 2>/dev/null"; then
     if test "$("${ADB_CMD}" shell "readlink /system/bin/ps")" = "toolbox"; then
         PS_SCRIPT="ps"
@@ -202,7 +202,7 @@ fi
 #   Returns:
 #       Popen handle to the `adb shell` process gdbserver was started with.
 #
-DEBUG_SOCKET="${APP_DATA_DIR}/debug_socket"
+DEBUG_SOCKET="${APP_PWD_DIR}/debug_socket"
 
 # remove the old one
 "${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" rm -rf ${DEBUG_SOCKET}"
