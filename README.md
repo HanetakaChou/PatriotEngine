@@ -83,10 +83,10 @@ The asset streaming process is totally asynchronous. This means that the calling
       
 Build Type | Status     
 :-: | :-:     
-**Ubuntu LTS Glibc Release x86** | [![Ubuntu LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x86%22)    
-**Ubuntu LTS Glibc Debug x86** | [![Ubuntu LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x86%22)      
-**Ubuntu LTS Glibc Release x64** | [![Ubuntu LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x64%22)    
-**Ubuntu LTS Glibc Debug x64** | [![Ubuntu LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x64%22)    
+**Ubuntu LTS Release x86** | [![Ubuntu LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x86%22)    
+**Ubuntu LTS Debug x86** | [![Ubuntu LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x86%22)      
+**Ubuntu LTS Release x64** | [![Ubuntu LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x64%22)    
+**Ubuntu LTS Debug x64** | [![Ubuntu LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x64%22)    
     
 #### Posix Linux Android
   
