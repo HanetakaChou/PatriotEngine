@@ -62,7 +62,7 @@ mcrt_native_thread_id wsi_mach_osx_app_main_thread_id;
 
 extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
 {
-    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL);
+    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, ".");
     PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
     assert(res_on_wsi_window_created);
 
@@ -91,3 +91,80 @@ static void *wsi_mach_osx_app_main(void *argument_void)
 
     return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
+
+#include <string>
+#include <pt_mcrt_scalable_allocator.h>
+
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+
+// neutral app file system
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+{
+    mcrt_string path = "../third_party/assets/";
+    path += initial_filename;
+
+    return gfx_texture_read_input_stream(
+        gfx_connection,
+        texture,
+        path.c_str(),
+        [](char const *initial_filename) -> gfx_input_stream_ref
+        {
+            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
+            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+        },
+        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        {
+            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
+            return res_read;
+        },
+        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        {
+            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
+            return res_lseek;
+        },
+        [](gfx_input_stream_ref gfx_input_stream) -> void
+        {
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+        });
+}
+
+bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+{
+    mcrt_string path = "../third_party/assets/";
+    path += initial_filename;
+
+    return gfx_mesh_read_input_stream(
+        gfx_connection,
+        mesh,
+        mesh_index,
+        material_index,
+        path.c_str(),
+        [](char const *initial_filename) -> gfx_input_stream_ref
+        {
+            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
+            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+        },
+        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        {
+            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
+            return res_read;
+        },
+        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        {
+            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
+            return res_lseek;
+        },
+        [](gfx_input_stream_ref gfx_input_stream) -> void
+        {
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+        });
+}
+
+static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
+static_assert(SEEK_CUR == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
+static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
