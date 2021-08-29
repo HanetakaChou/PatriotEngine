@@ -25,6 +25,10 @@
 #include <CoreVideo/CoreVideo.h>
 #include <QuartzCore/QuartzCore.h>
 
+// TODO GPU Capture doesn't work now
+// Before macOS 10.15 and iOS 13.0, captureDesc will just be nil
+#define RENDER_ON_MAIN_THREAD 1
+
 void get_mainbundle_resource_path(char *path, size_t *length)
 {
     @autoreleasepool
@@ -211,14 +215,15 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)pt_wsi_mach_osx_main_queue_dispatch_source_event_handler
 {
-    // main thread // serial
-    if (NULL != self->m_gfx_connection)
+    @autoreleasepool
     {
-        gfx_connection_redraw_callback(self->m_gfx_connection);
-    }
-    else
-    {
-        @autoreleasepool
+        // main thread // serial
+#if RENDER_ON_MAIN_THREAD
+        if (NULL != self->m_gfx_connection)
+        {
+            gfx_connection_redraw_callback(self->m_gfx_connection);
+        }
+        else
         {
             void *layer = ((__bridge void *)[[self view] layer]);
             if (NULL != layer)
@@ -227,6 +232,18 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
                 self->m_gfx_connection = gfx_connection_init_callback(layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
             }
         }
+#else
+        if (NULL == self->m_gfx_connection)
+        {
+
+            void *layer = ((__bridge void *)[[self view] layer]);
+            if (NULL != layer)
+            {
+                CGSize drawable_size = [((CAMetalLayer *)((__bridge id)layer)) drawableSize];
+                self->m_gfx_connection = gfx_connection_init_callback(layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
+            }
+        }
+#endif
     }
 }
 
@@ -234,7 +251,19 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 {
     @autoreleasepool
     {
+#if RENDER_ON_MAIN_THREAD
         dispatch_source_merge_data(self->m_dispatch_source, 1);
+#else
+        // serial
+        if (NULL != self->m_gfx_connection)
+        {
+            gfx_connection_redraw_callback(self->m_gfx_connection);
+        }
+        else
+        {
+            dispatch_source_merge_data(self->m_dispatch_source, 1);
+        }
+#endif
         return kCVReturnSuccess;
     }
 }
@@ -249,10 +278,13 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (CALayer *)makeBackingLayer
 {
-    CALayer *layer = [CAMetalLayer layer];
-    CGSize viewScale = [self convertSizeToBacking:CGSizeMake(1.0, 1.0)];
-    layer.contentsScale = MIN(viewScale.width, viewScale.height);
-    return layer;
+    @autoreleasepool
+    {
+        CALayer *layer = [CAMetalLayer layer];
+        CGSize viewScale = [self convertSizeToBacking:CGSizeMake(1.0, 1.0)];
+        layer.contentsScale = MIN(viewScale.width, viewScale.height);
+        return layer;
+    }
 }
 
 - (BOOL)wantsUpdateLayer
