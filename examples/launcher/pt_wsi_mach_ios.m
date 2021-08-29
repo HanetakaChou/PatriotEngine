@@ -171,22 +171,10 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     {
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
-        CGFloat huhu = [UIScreen mainScreen].nativeScale;
 
         UIView *view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
 
-        //MTKView *view = [[MTKView alloc] initWithFrame: main_screen_bounds];
-        //view.delegate = nil;
-
-        //if(nil==view.window)
-        //{
-        //    view.window = self->m_window;
-        //}
-
         [self setView:view];
-
-        //[view initWithView:<#(nonnull UIView *)#> parameters:<#(nonnull UIDragPreviewParameters *)#>]
-        //[((CAMetalLayer *)[view layer]) draw
     }
 }
 - (void)viewDidLoad
@@ -200,8 +188,11 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 // Allow device rotation to resize the swapchain
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    //resize
+    
+    @autoreleasepool
+    {
+        [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
+    }
 }
 
 @end
