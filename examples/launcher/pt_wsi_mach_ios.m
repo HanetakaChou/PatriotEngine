@@ -104,10 +104,10 @@ bool cocoa_is_multithreaded(void)
 @end
 
 @interface pt_wsi_mach_ios_view_controller : UIViewController
-- (instancetype)initWithWindow:(UIWindow*) window;
+- (instancetype)initWithWindow:(UIWindow *)window;
 - (void)loadView;
 - (void)viewDidLoad;
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator;
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
 @end
 
 @interface pt_wsi_mach_ios_view : UIView
@@ -133,14 +133,13 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
         //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
-        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow: window];
-    
-        
+        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow:window];
+
         //[window setRootViewController:view_controller];
-        
-        [window setRootViewController: view_controller];
-        
-        [window setBackgroundColor: [UIColor whiteColor]];
+
+        [window setRootViewController:view_controller];
+
+        [window setBackgroundColor:[UIColor whiteColor]];
 
         [window makeKeyAndVisible];
 
@@ -156,12 +155,12 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 // very strange // we need this to make sure the present
 
-- (instancetype)initWithWindow:(UIWindow*) window
+- (instancetype)initWithWindow:(UIWindow *)window
 {
-    self =[super initWithNibName:nil bundle:nil];
-    if(self)
+    self = [super initWithNibName:nil bundle:nil];
+    if (self)
     {
-        self->m_window =window;
+        self->m_window = window;
     }
     return self;
 }
@@ -173,9 +172,9 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
         CGFloat huhu = [UIScreen mainScreen].nativeScale;
-        
+
         UIView *view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
-        
+
         //MTKView *view = [[MTKView alloc] initWithFrame: main_screen_bounds];
         //view.delegate = nil;
 
@@ -183,9 +182,8 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         //{
         //    view.window = self->m_window;
         //}
-        
+
         [self setView:view];
-        
 
         //[view initWithView:<#(nonnull UIView *)#> parameters:<#(nonnull UIDragPreviewParameters *)#>]
         //[((CAMetalLayer *)[view layer]) draw
@@ -200,7 +198,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 }
 
 // Allow device rotation to resize the swapchain
-- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     //resize
@@ -226,32 +224,32 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    
+
     UIWindow *window = [self window];
-    assert(nil!=window);
-    
+    assert(nil != window);
+
+    UIScreen *screen = [window screen];
+    assert(nil != screen);
+
+    CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+    assert(nil != layer);
+
     // Note !!!
     // We must create display link after the window is not nil
-    
-    UIScreen *screen = [window screen];
-    assert(nil!=screen);
-        
-    //self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
-    
-    //
-    self->m_gfx_connection = NULL;
+
+    CGSize drawable_size = [layer drawableSize];
+    self->m_gfx_connection = gfx_connection_init_callback((__bridge void *)layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
 
     // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
     // RENDER_ON_MAIN_THREAD
     self->m_display_link = [screen displayLinkWithTarget:self
-                                                       selector:@selector(display_link_callback)];
+                                                selector:@selector(display_link_callback)];
 
     [self->m_display_link setPreferredFramesPerSecond:60];
 
     // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
     // the main run loop (since 'viewDidLoad' is always executed from the main thread.
     [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-
 }
 
 - (void)display_link_callback
@@ -259,59 +257,8 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     @autoreleasepool
     {
         // main thread // serial
-        if (NULL != self->m_gfx_connection)
-        {
-            gfx_connection_redraw_callback(self->m_gfx_connection);
-        }
-        else
-        {
-            CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-            if (nil != layer)
-            {
-                CGRect huhu = [layer bounds];
-                CGSize drawable_size = [layer drawableSize];
-                MTLPixelFormat hehe = [layer pixelFormat];
-                if(drawable_size.width >0 &&drawable_size.height >0)
-                {
-                self->m_gfx_connection = gfx_connection_init_callback((__bridge  void*)layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
-                }
-            }
-        }
+        gfx_connection_redraw_callback(self->m_gfx_connection);
     }
-}
-
-- (void)setContentScaleFactor:(CGFloat)contentScaleFactor
-{
-    [super setContentScaleFactor:contentScaleFactor];
-    [self resize_drawable:self.window.screen.nativeScale];
-}
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-    [self resize_drawable:self.window.screen.nativeScale];
-}
-
-- (void)setFrame:(CGRect)frame
-{
-    [super setFrame:frame];
-    [self resize_drawable:self.window.screen.nativeScale];
-}
-
-- (void)setBounds:(CGRect)bounds
-{
-    [super setBounds:bounds];
-    [self resize_drawable:self.window.screen.nativeScale];
-}
-
-- (void)resize_drawable:(CGFloat)scaleFactor
-{
-    CGSize newSize = self.bounds.size;
-    newSize.width *= scaleFactor;
-    newSize.height *= scaleFactor;
-    
-    CAMetalLayer *metal_layer = ((CAMetalLayer *)[self layer]);
-    metal_layer.drawableSize = newSize;
 }
 
 @end

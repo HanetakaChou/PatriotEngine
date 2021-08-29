@@ -3208,7 +3208,7 @@
 				CODE_SIGN_ENTITLEMENTS = ios.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = "";
+				DEVELOPMENT_TEAM = 6MJZWFY372;
 				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"NDEBUG=1",
