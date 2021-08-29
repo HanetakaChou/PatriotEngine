@@ -18,19 +18,69 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <assert.h>
 
-extern "C" void lunarg_vulkan_sdk_setenv(void);
+extern "C" void get_mainbundle_resource_path(char *, size_t *);
+extern "C" void get_library_directory(char *, size_t *);
 extern "C" void cocoa_set_multithreaded(void);
 extern "C" bool cocoa_is_multithreaded(void);
 extern "C" void application_set_delegate(void);
-extern "C" int application_main(int argc, char const *argv[]);
+extern "C" int application_main(int, char const *[]);
+
+#include <string>
+#include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+static mcrt_string wsi_mach_osx_library_path;
 
 int main(int argc, char const *argv[])
 {
     // Lunarg Vulkan SDK
     {
-        lunarg_vulkan_sdk_setenv();
+
+        size_t mainbundle_resource_path_length_before;
+        get_mainbundle_resource_path(NULL, &mainbundle_resource_path_length_before);
+
+        char *mainbundle_resource_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (mainbundle_resource_path_length_before + 1), alignof(char)));
+        size_t mainbundle_resource_path_length;
+        get_mainbundle_resource_path(mainbundle_resource_path, &mainbundle_resource_path_length);
+        assert(mainbundle_resource_path_length_before == mainbundle_resource_path_length);
+        mainbundle_resource_path[mainbundle_resource_path_length] = '\0';
+
+        PT_MAYBE_UNUSED int res_set_env_vk_layer_path = setenv("VK_LAYER_PATH", mainbundle_resource_path, 1);
+        assert(0 == res_set_env_vk_layer_path);
+
+        char const *moltenvk_icd_file_name = "MoltenVK_icd.json";
+
+        size_t moltenvk_icd_file_name_length = strlen(moltenvk_icd_file_name);
+        char *vk_icd_file_names = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (mainbundle_resource_path_length + 1 + moltenvk_icd_file_name_length + 1), alignof(char)));
+        assert(NULL != vk_icd_file_names);
+        memcpy(vk_icd_file_names, mainbundle_resource_path, sizeof(char) * mainbundle_resource_path_length);
+        vk_icd_file_names[mainbundle_resource_path_length] = '/';
+        memcpy(vk_icd_file_names + mainbundle_resource_path_length + 1, moltenvk_icd_file_name, moltenvk_icd_file_name_length);
+        vk_icd_file_names[mainbundle_resource_path_length + 1 + moltenvk_icd_file_name_length] = '\0';
+
+        PT_MAYBE_UNUSED int res_set_env_vk_icd_file_names = setenv("VK_ICD_FILENAMES", vk_icd_file_names, 1);
+        assert(0 == res_set_env_vk_icd_file_names);
+
+        mcrt_aligned_free(mainbundle_resource_path);
+        mcrt_aligned_free(vk_icd_file_names);
+    }
+
+    // Standard Library Directory
+    {
+        size_t library_directory_path_length_before;
+        get_library_directory(NULL, &library_directory_path_length_before);
+
+        char *library_directory_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (library_directory_path_length_before + 1), alignof(char)));
+        size_t library_directory_path_length;
+        get_library_directory(library_directory_path, &library_directory_path_length);
+        assert(library_directory_path_length_before == library_directory_path_length);
+
+        wsi_mach_osx_library_path.assign(library_directory_path, library_directory_path + library_directory_path_length);
+
+        mcrt_aligned_free(library_directory_path);
     }
 
     // Enable MultiThreaded
@@ -62,7 +112,7 @@ mcrt_native_thread_id wsi_mach_osx_app_main_thread_id;
 
 extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
 {
-    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, ".");
+    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, wsi_mach_osx_library_path.c_str());
     PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
     assert(res_on_wsi_window_created);
 
@@ -84,18 +134,13 @@ extern "C" void gfx_connection_redraw_callback(void *gfx_connection_void)
 static void *wsi_mach_osx_app_main(void *argument_void)
 {
     struct wsi_mach_osx_app_main_argument_t *argument = static_cast<struct wsi_mach_osx_app_main_argument_t *>(argument_void);
-    PT_MAYBE_UNUSED bool res_neutral_app_init =  wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
+    PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
     assert(res_neutral_app_init);
 
     int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
 
     return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
-
-#include <string>
-#include <pt_mcrt_scalable_allocator.h>
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 
 // neutral app file system
 #include <unistd.h>
@@ -105,7 +150,8 @@ using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalab
 
 bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = wsi_mach_osx_library_path.c_str();
+    path += '/';
     path += initial_filename;
 
     return gfx_texture_read_input_stream(
@@ -135,7 +181,8 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
 
 bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = wsi_mach_osx_library_path.c_str();
+    path += '/';
     path += initial_filename;
 
     return gfx_mesh_read_input_stream(

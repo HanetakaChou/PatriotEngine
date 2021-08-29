@@ -25,30 +25,34 @@
 #include <CoreVideo/CoreVideo.h>
 #include <QuartzCore/QuartzCore.h>
 
-void lunarg_vulkan_sdk_setenv(void)
+void get_mainbundle_resource_path(char *path, size_t *length)
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         char const *mainbundle_resource_path = [[[NSBundle mainBundle] resourcePath] UTF8String];
-
-        __attribute__((unused)) int res_set_env_vk_layer_path = setenv("VK_LAYER_PATH", mainbundle_resource_path, 1);
-        assert(0 == res_set_env_vk_layer_path);
-
-        char const *moltenvk_icd_file_name = "MoltenVK_icd.json";
-
         size_t mainbundle_resource_path_length = strlen(mainbundle_resource_path);
-        size_t moltenvk_icd_file_name_length = strlen(moltenvk_icd_file_name);
-        char *vk_icd_file_names = malloc(sizeof(char) * (mainbundle_resource_path_length + 1 + moltenvk_icd_file_name_length + 1));
-        assert(NULL != vk_icd_file_names);
-        memcpy(vk_icd_file_names, mainbundle_resource_path, sizeof(char) * mainbundle_resource_path_length);
-        vk_icd_file_names[mainbundle_resource_path_length] = '/';
-        memcpy(vk_icd_file_names + mainbundle_resource_path_length + 1, moltenvk_icd_file_name, moltenvk_icd_file_name_length);
-        vk_icd_file_names[mainbundle_resource_path_length + 1 + moltenvk_icd_file_name_length] = '\0';
+        (*length) = mainbundle_resource_path_length;
+        if (NULL != path)
+        {
+            memcpy(path, mainbundle_resource_path, sizeof(char) * mainbundle_resource_path_length);
+        }
+    }
+}
 
-        __attribute__((unused)) int res_set_env_vk_icd_file_names = setenv("VK_ICD_FILENAMES", vk_icd_file_names, 1);
-        assert(0 == res_set_env_vk_icd_file_names);
-        
-        free(vk_icd_file_names);
+void get_library_directory(char *path, size_t *length)
+{
+    @autoreleasepool
+    {
+        // Locating Items in the Standard Directories
+        // https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/AccessingFilesandDirectories/AccessingFilesandDirectories.html
+
+        char const *standard_library_directory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask][0] fileSystemRepresentation];
+        size_t standard_library_directory_length = strlen(standard_library_directory);
+        (*length) = standard_library_directory_length;
+        if (NULL != path)
+        {
+            memcpy(path, standard_library_directory, sizeof(char) * standard_library_directory_length);
+        }
     }
 }
 
@@ -65,7 +69,7 @@ void lunarg_vulkan_sdk_setenv(void)
 
 void cocoa_set_multithreaded(void)
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         bool volatile __here_ns_thread_detach_target_has_finished = false;
         id ns_thread_detach_target = [[pt_wsi_mach_osx_nsthread_detach_target alloc] init];
@@ -81,7 +85,7 @@ void cocoa_set_multithreaded(void)
 
 bool cocoa_is_multithreaded(void)
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         return [NSThread isMultiThreaded];
     }
@@ -242,7 +246,10 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (CALayer *)makeBackingLayer
 {
-    return [CAMetalLayer layer];
+    CALayer* layer = [CAMetalLayer layer];
+    CGSize viewScale = [self convertSizeToBacking: CGSizeMake(1.0, 1.0)];
+    layer.contentsScale = MIN(viewScale.width, viewScale.height);
+    return layer;
 }
 
 - (BOOL)wantsUpdateLayer

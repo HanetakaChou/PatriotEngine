@@ -1084,7 +1084,7 @@ inline bool gfx_connection_vk::update_framebuffer()
             VkSurfaceCapabilitiesKHR surface_capabilities;
             PT_MAYBE_UNUSED VkResult res_get_physical_device_surface_capablilities = this->m_device.get_physical_device_surface_capablilities(this->m_surface, &surface_capabilities);
             assert(VK_SUCCESS == res_get_physical_device_surface_capablilities);
-            if (swapchain_create_info.imageExtent.width != 0XFFFFFFFFU)
+            if (surface_capabilities.currentExtent.width != 0XFFFFFFFFU)
             {
                 this->m_framebuffer_width = surface_capabilities.currentExtent.width;
             }
@@ -1101,9 +1101,9 @@ inline bool gfx_connection_vk::update_framebuffer()
                 this->m_framebuffer_width = surface_capabilities.maxImageExtent.width;
             }
             swapchain_create_info.imageExtent.width = this->m_framebuffer_width;
-            if (swapchain_create_info.imageExtent.height == 0XFFFFFFFFU)
+            if (surface_capabilities.currentExtent.height != 0XFFFFFFFFU)
             {
-                this->m_framebuffer_height = swapchain_create_info.imageExtent.height;
+                this->m_framebuffer_height = surface_capabilities.currentExtent.height;
             }
             else
             {
