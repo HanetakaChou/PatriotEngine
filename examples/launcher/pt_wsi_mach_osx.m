@@ -120,7 +120,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 @implementation pt_wsi_mach_osx_application_delegate
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         CGFloat ns_window_width = 1280.0f;
         CGFloat ns_window_height = 720.0f;
@@ -163,7 +163,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)loadView
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         NSRect ns_view_rect = {{0, 0}, {1280, 720}};
         id ns_view = [[pt_wsi_mach_osx_view alloc] initWithFrame:ns_view_rect];
@@ -173,7 +173,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)viewDidLoad
 {
-    ////@autoreleasepool
+    @autoreleasepool
     {
         [super viewDidLoad];
 
@@ -218,7 +218,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     }
     else
     {
-        ////@autoreleasepool
+        @autoreleasepool
         {
             void *layer = ((__bridge void *)[[self view] layer]);
             if (NULL != layer)
@@ -232,8 +232,11 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (CVReturn)pt_wsi_mach_osx_display_link_output_callback
 {
-    dispatch_source_merge_data(self->m_dispatch_source, 1);
-    return kCVReturnSuccess;
+    @autoreleasepool
+    {
+        dispatch_source_merge_data(self->m_dispatch_source, 1);
+        return kCVReturnSuccess;
+    }
 }
 
 @end
@@ -246,8 +249,8 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (CALayer *)makeBackingLayer
 {
-    CALayer* layer = [CAMetalLayer layer];
-    CGSize viewScale = [self convertSizeToBacking: CGSizeMake(1.0, 1.0)];
+    CALayer *layer = [CAMetalLayer layer];
+    CGSize viewScale = [self convertSizeToBacking:CGSizeMake(1.0, 1.0)];
     layer.contentsScale = MIN(viewScale.width, viewScale.height);
     return layer;
 }
@@ -260,14 +263,17 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext)
 {
-    return [((pt_wsi_mach_osx_view_controller *)((__bridge id)displayLinkContext)) pt_wsi_mach_osx_display_link_output_callback];
+    @autoreleasepool
+    {
+        return [((pt_wsi_mach_osx_view_controller *)((__bridge id)displayLinkContext)) pt_wsi_mach_osx_display_link_output_callback];
+    }
 }
 
 // We need this to hold the refcount of the "pt_wsi_mach_osx_application_delegate" since the "NSApplication::delegate" is weak.
 static __strong id application_delegate = nil;
 void application_set_delegate(void)
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         application_delegate = [[pt_wsi_mach_osx_application_delegate alloc] init];
         [[NSApplication sharedApplication] setDelegate:application_delegate];
@@ -276,7 +282,7 @@ void application_set_delegate(void)
 
 int application_main(int argc, char const *argv[])
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         return NSApplicationMain(argc, argv);
     }
