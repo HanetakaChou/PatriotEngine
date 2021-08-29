@@ -108,7 +108,6 @@ bool cocoa_is_multithreaded(void)
 - (void)loadView;
 - (void)viewDidLoad;
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator;
-- (void)display_link_callback;
 @end
 
 @interface pt_wsi_mach_ios_view : UIView
@@ -116,6 +115,7 @@ bool cocoa_is_multithreaded(void)
 - (void)didMoveToWindow;
 - (void)setFrame:(CGRect)frame;
 - (void)resize_drawable:(CGFloat)scaleFactor; // callstack of mtkview
+- (void)display_link_callback;
 @end
 
 extern void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance);
@@ -134,8 +134,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
         pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow: window];
-        
-        
+    
         
         //[window setRootViewController:view_controller];
         
@@ -152,15 +151,14 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 @implementation pt_wsi_mach_ios_view_controller
 {
-    void *m_gfx_connection;
-    void *m_void_instance;
-    CADisplayLink *m_display_link;
     UIWindow *m_window;
 }
 
+// very strange // we need this to make sure the present
+
 - (instancetype)initWithWindow:(UIWindow*) window
 {
-    self = [super init];
+    self =[super initWithNibName:nil bundle:nil];
     if(self)
     {
         self->m_window =window;
@@ -208,6 +206,54 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     //resize
 }
 
+@end
+
+@implementation pt_wsi_mach_ios_view
+{
+    void *m_gfx_connection;
+    void *m_void_instance;
+    CADisplayLink *m_display_link;
+}
+
++ (Class)layerClass
+{
+    //@autoreleasepool
+    {
+        return [CAMetalLayer class];
+    }
+}
+
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    
+    UIWindow *window = [self window];
+    assert(nil!=window);
+    
+    // Note !!!
+    // We must create display link after the window is not nil
+    
+    UIScreen *screen = [window screen];
+    assert(nil!=screen);
+        
+    //self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
+    
+    //
+    self->m_gfx_connection = NULL;
+
+    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+    // RENDER_ON_MAIN_THREAD
+    self->m_display_link = [screen displayLinkWithTarget:self
+                                                       selector:@selector(display_link_callback)];
+
+    [self->m_display_link setPreferredFramesPerSecond:60];
+
+    // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
+    // the main run loop (since 'viewDidLoad' is always executed from the main thread.
+    [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+
+}
+
 - (void)display_link_callback
 {
     @autoreleasepool
@@ -219,7 +265,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         }
         else
         {
-            CAMetalLayer *layer = ((CAMetalLayer *)[[self view] layer]);
+            CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
             if (nil != layer)
             {
                 CGRect huhu = [layer bounds];
@@ -233,50 +279,29 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         }
     }
 }
-@end
 
-@implementation pt_wsi_mach_ios_view
-+ (Class)layerClass
+- (void)setContentScaleFactor:(CGFloat)contentScaleFactor
 {
-    //@autoreleasepool
-    {
-        return [CAMetalLayer class];
-    }
+    [super setContentScaleFactor:contentScaleFactor];
+    [self resize_drawable:self.window.screen.nativeScale];
 }
 
-- (void)didMoveToWindow
+- (void)layoutSubviews
 {
-    [super didMoveToWindow];
-    
-    assert(nil!=[self window]);
-    
-    // Note !!!
-    // We must create display link after the window is not nil
-    
-    
-    //self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
-    
-    //
-    //self->m_gfx_connection = NULL;
-
-    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
-    // RENDER_ON_MAIN_THREAD
-    //self->m_display_link = [CADisplayLink displayLinkWithTarget:self
-    //                                                   selector:@selector(display_link_callback)];
-
-    //[self->m_display_link setPreferredFramesPerSecond:60];
-
-    // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
-    // the main run loop (since 'viewDidLoad' is always executed from the main thread.
-    //[self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    [super layoutSubviews];
+    [self resize_drawable:self.window.screen.nativeScale];
 }
 
 - (void)setFrame:(CGRect)frame
 {
     [super setFrame:frame];
-    UIWindow *window = self.window;
-    UIScreen *screen = window.screen;
-    [self resize_drawable: screen.nativeScale];
+    [self resize_drawable:self.window.screen.nativeScale];
+}
+
+- (void)setBounds:(CGRect)bounds
+{
+    [super setBounds:bounds];
+    [self resize_drawable:self.window.screen.nativeScale];
 }
 
 - (void)resize_drawable:(CGFloat)scaleFactor
