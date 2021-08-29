@@ -93,6 +93,7 @@
 		6292C30526DBC08C00494EF8 /* libpt_tbb_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */; platformFilter = maccatalyst; };
 		6292C30626DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */; platformFilter = maccatalyst; };
 		6292C30726DBC08C00494EF8 /* libpt_irml_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */; platformFilter = maccatalyst; };
+		6292C30926DBC3AE00494EF8 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30826DBC3AE00494EF8 /* libMoltenVK.a */; platformFilter = ios; };
 		62A5B4352689183B00AE5275 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; };
 		62D230882688921E0044D96C /* pt_gfx_device_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_device_vk_wsi_metal.cpp */; };
 		62D230892688921E0044D96C /* pt_gfx_texture_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_base.cpp */; };
@@ -506,6 +507,7 @@
 		6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a; sourceTree = "<group>"; };
 		6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc_catalyst.a; sourceTree = "<group>"; };
 		6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml_catalyst.a; sourceTree = "<group>"; };
+		6292C30826DBC3AE00494EF8 /* libMoltenVK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK.a; path = ../../third_party/libs/molten_vk/lib/mach_ios/libMoltenVK.a; sourceTree = "<group>"; };
 		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
@@ -765,6 +767,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6217808C26DBAFD100DE15BF /* libpt_gfx.a in Frameworks */,
+				6292C30926DBC3AE00494EF8 /* libMoltenVK.a in Frameworks */,
 				6217808D26DBAFD700DE15BF /* libpt_mcrt.a in Frameworks */,
 				6217809326DBB48D00DE15BF /* libpt_tbbmalloc.a in Frameworks */,
 				6217809126DBB48D00DE15BF /* libpt_irml.a in Frameworks */,
@@ -959,6 +962,7 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6292C30826DBC3AE00494EF8 /* libMoltenVK.a */,
 				6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */,
 				6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */,
 				6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */,
@@ -3154,7 +3158,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_ios",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3185,7 +3192,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios";
+				LIBRARY_SEARCH_PATHS = (
+					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_ios",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
 				PROVISIONING_PROFILE_SPECIFIER = "";
