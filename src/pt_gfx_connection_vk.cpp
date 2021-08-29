@@ -1121,7 +1121,7 @@ inline bool gfx_connection_vk::update_framebuffer()
 
             this->m_aspect_ratio = static_cast<float>(m_framebuffer_width) / static_cast<float>(this->m_framebuffer_height);
 
-            // Test on Android 
+            // Test on Android
             // We should use identity even if the surface is rotation 90
             if (VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR == (VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR & surface_capabilities.supportedTransforms))
             {
@@ -2646,6 +2646,8 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
 
 inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache)
 {
+    assert(VK_NULL_HANDLE != this->m_pipeline_cache_mesh);
+
     if (-1 != this->m_pipeline_cache_dir_fd)
     {
         int fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -2665,9 +2667,6 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
                 PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_mesh, &pipeline_cache_size, pipeline_cache_data);
                 assert(VK_SUCCESS == res_get_pipeline_cache_data);
                 assert(pipeline_cache_size_before == pipeline_cache_size);
-
-                this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
-                this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
 
 #ifndef NDEBUG
                 uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(pipeline_cache_data));
@@ -2703,6 +2702,9 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
             }
         }
     }
+
+    this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
+    this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
 }
 
 #elif defined(PT_WIN32)

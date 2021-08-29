@@ -386,6 +386,72 @@ void wsi_window_x11::destroy()
 }
 
 // neutral app file system
+
+#if 0
+#include <map>
+#include <utility>
+#include <pt_mcrt_spinlock.h>
+
+#include <dlfcn.h>
+#include <execinfo.h>
+
+class instance_gfx_input_stream_verify_support
+{
+    mcrt_spinlock_t m_spin_lock;
+    std::map<int, void *> m_fds;
+
+public:
+    inline instance_gfx_input_stream_verify_support()
+    {
+        mcrt_spin_init(&this->m_spin_lock);
+    }
+
+    inline void insert(int fd)
+    {
+        mcrt_spin_lock(&this->m_spin_lock);
+        assert(this->m_fds.end() == this->m_fds.find(fd));
+
+        this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(static_cast<void *>(NULL)));
+#if 0
+        void *addrs_ptr[3];
+        int num_levels = backtrace(addrs_ptr, 3);
+        if (num_levels >= 3)
+        {
+            this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(addrs_ptr[2]));
+        }
+        else
+        {
+            this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(static_cast<void *>(NULL)));
+        }
+#endif
+        mcrt_spin_unlock(&this->m_spin_lock);
+    }
+
+    inline void erase(int fd)
+    {
+        mcrt_spin_lock(&this->m_spin_lock);
+        auto iter = this->m_fds.find(fd);
+        assert(this->m_fds.end() != iter);
+        this->m_fds.erase(iter);
+        mcrt_spin_unlock(&this->m_spin_lock);
+    }
+
+    inline ~instance_gfx_input_stream_verify_support()
+    {
+        for (auto const &item : this->m_fds)
+        {
+            int fd = item.first;
+            void *funtion_addr = item.second;
+            // set breakpoint here and the debugger can tell you the name of the function by the address
+            assert(0);
+            fd = -1;
+            funtion_addr = NULL;
+        }
+    }
+
+} instance_gfx_input_stream_verify_support;
+#endif
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -403,6 +469,12 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
         [](char const *initial_filename) -> gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
+#if 0
+            if (-1 != fd)
+            {
+                instance_gfx_input_stream_verify_support.insert(fd);
+            }
+#endif
             return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
         [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
@@ -417,7 +489,11 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
         {
-            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
+#if 0
+            instance_gfx_input_stream_verify_support.erase(fd);
+#endif
+            close(fd);
         });
 }
 
@@ -435,6 +511,12 @@ bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, ui
         [](char const *initial_filename) -> gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
+#if 0
+            if (-1 != fd)
+            {
+                instance_gfx_input_stream_verify_support.insert(fd);
+            }
+#endif
             return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
         [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
@@ -449,7 +531,11 @@ bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, ui
         },
         [](gfx_input_stream_ref gfx_input_stream) -> void
         {
-            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
+            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
+#if 0
+            instance_gfx_input_stream_verify_support.erase(fd);
+#endif
+            close(fd);
         });
 }
 
