@@ -50,37 +50,58 @@ void get_library_directory(char *path, size_t *length)
         // Locating Items in the Standard Directories
         // https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/AccessingFilesandDirectories/AccessingFilesandDirectories.html
 
-        char const *standard_library_directory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask][0] fileSystemRepresentation];
-        size_t standard_library_directory_length = strlen(standard_library_directory);
-        (*length) = standard_library_directory_length;
+        char const *library_directory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask][0] fileSystemRepresentation];
+        size_t library_directory_length = strlen(library_directory);
+        (*length) = library_directory_length;
         if (NULL != path)
         {
-            memcpy(path, standard_library_directory, sizeof(char) * standard_library_directory_length);
+            memcpy(path, library_directory, sizeof(char) * library_directory_length);
         }
     }
 }
 
-@interface pt_wsi_mach_osx_nsthread_detach_target : NSObject
-- (void)pt_wsi_mach_osx_nsmain:(void *)__here_ns_thread_detach_target_has_finished;
+@interface pt_wsi_mach_osx_thread_detach_target : NSObject
+- (instancetype)init;
+- (void)pt_wsi_mach_ios_main:(void *)argument;
+- (bool)has_inited;
 @end
 
-@implementation pt_wsi_mach_osx_nsthread_detach_target
-- (void)pt_wsi_mach_osx_nsmain:(void *)__here_ns_thread_detach_target_has_finished
+@implementation pt_wsi_mach_osx_thread_detach_target
 {
-    (*((bool volatile *)__here_ns_thread_detach_target_has_finished)) = true;
+    bool volatile m_has_inited;
 }
+- (instancetype)init
+{
+    self = [super init];
+    if (self)
+    {
+        self->m_has_inited = false;
+    }
+    return self;
+}
+
+- (void)pt_wsi_mach_osx_main:(void *)argument
+{
+    self->m_has_inited = true;
+}
+
+- (bool)has_inited
+{
+    return self->m_has_inited;
+}
+
 @end
 
 void cocoa_set_multithreaded(void)
 {
     @autoreleasepool
     {
-        bool volatile __here_ns_thread_detach_target_has_finished = false;
-        id ns_thread_detach_target = [[pt_wsi_mach_osx_nsthread_detach_target alloc] init];
-        [NSThread detachNewThreadSelector:@selector(pt_wsi_mach_osx_nsmain:)
-                                 toTarget:ns_thread_detach_target
-                               withObject:((__bridge id)((void *)&__here_ns_thread_detach_target_has_finished))];
-        while (!__here_ns_thread_detach_target_has_finished)
+        pt_wsi_mach_osx_thread_detach_target *thread_detach_target = [[pt_wsi_mach_osx_thread_detach_target alloc] init];
+        [NSThread detachNewThreadSelector:@selector(pt_wsi_mach_osx_main:)
+                                 toTarget:thread_detach_target
+                               withObject:nil];
+
+        while (![thread_detach_target has_inited])
         {
             pthread_yield_np();
         }
@@ -105,8 +126,8 @@ bool cocoa_is_multithreaded(void)
 - (void)loadView;
 - (void)viewDidLoad;
 - (void)setRepresentedObject:representedObject;
-- (void)pt_wsi_mach_osx_main_queue_dispatch_source_event_handler;
-- (CVReturn)pt_wsi_mach_osx_display_link_output_callback;
+- (void)main_queue_dispatch_source_event_handler;
+- (void)display_link_output_callback;
 @end
 
 @interface pt_wsi_mach_osx_view : NSView
@@ -192,7 +213,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         // https://clang.llvm.org/docs/Block-ABI-Apple.html
         void *const view_controller_void = ((__bridge void *)self);
         dispatch_source_set_event_handler(self->m_dispatch_source, ^{
-          [((pt_wsi_mach_osx_view_controller *)((__bridge id)view_controller_void)) pt_wsi_mach_osx_main_queue_dispatch_source_event_handler];
+          [((pt_wsi_mach_osx_view_controller *)((__bridge id)view_controller_void)) main_queue_dispatch_source_event_handler];
         });
 
         dispatch_resume(self->m_dispatch_source);
@@ -213,7 +234,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     [super setRepresentedObject:representedObject];
 }
 
-- (void)pt_wsi_mach_osx_main_queue_dispatch_source_event_handler
+- (void)main_queue_dispatch_source_event_handler
 {
     @autoreleasepool
     {
@@ -247,7 +268,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     }
 }
 
-- (CVReturn)pt_wsi_mach_osx_display_link_output_callback
+- (void)display_link_output_callback
 {
     @autoreleasepool
     {
@@ -264,7 +285,6 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
             dispatch_source_merge_data(self->m_dispatch_source, 1);
         }
 #endif
-        return kCVReturnSuccess;
     }
 }
 
@@ -297,7 +317,8 @@ static CVReturn pt_wsi_mach_osx_display_link_output_callback(CVDisplayLinkRef di
 {
     @autoreleasepool
     {
-        return [((pt_wsi_mach_osx_view_controller *)((__bridge id)displayLinkContext)) pt_wsi_mach_osx_display_link_output_callback];
+        [((pt_wsi_mach_osx_view_controller *)((__bridge id)displayLinkContext)) display_link_output_callback];
+        return kCVReturnSuccess;
     }
 }
 

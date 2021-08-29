@@ -2114,7 +2114,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math;
 				SDKROOT = iphoneos;
@@ -2133,7 +2133,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math;
 				SDKROOT = iphoneos;
@@ -2153,7 +2153,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_sse2;
@@ -2173,7 +2173,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_sse2;
@@ -2194,7 +2194,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_avx;
@@ -2214,7 +2214,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_avx;
@@ -2235,7 +2235,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = (
 					"-mavx2",
 					"-mfma",
@@ -2258,7 +2258,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = (
 					"-mavx2",
 					"-mfma",
@@ -2282,7 +2282,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_neon;
 				SDKROOT = iphoneos;
@@ -2301,7 +2301,7 @@
 					"PT_ATTR_MATH=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_neon;
 				SDKROOT = iphoneos;
@@ -2321,7 +2321,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = iphoneos;
@@ -2340,7 +2340,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = iphoneos;
@@ -2360,7 +2360,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2380,7 +2380,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"NDEBUG=1",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2401,7 +2401,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse3";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2421,7 +2421,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-msse3";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2443,7 +2443,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2464,7 +2464,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2485,7 +2485,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx512f";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2505,7 +2505,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_CFLAGS = "-mavx512f";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2526,7 +2526,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2545,7 +2545,7 @@
 					"PT_ATTR_MCRT=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2565,7 +2565,7 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = iphoneos;
@@ -2584,7 +2584,7 @@
 					"PT_ATTR_GFX=PT_ATTR_EXPORT",
 					"$(inherited)",
 				);
-				IPHONEOS_DEPLOYMENT_TARGET = 14.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = iphoneos;

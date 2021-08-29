@@ -20,26 +20,106 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-
 #include <string>
-#include <pt_mcrt_malloc.h>
-#include <pt_mcrt_scalable_allocator.h>
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
-static mcrt_string wsi_mach_ios_library_path;
-
-int main(int argc, char const *argv[])
-{
-    return 0;
-}
-
-
-#include <pt_gfx_connection.h>
-
-// neutral app file system
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pt_mcrt_thread.h>
+#include <pt_mcrt_atomic.h>
+#include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <pt_gfx_connection.h>
+
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+static mcrt_string wsi_mach_ios_library_path;
+
+extern "C" void get_library_directory(char *, size_t *);
+extern "C" void cocoa_set_multithreaded(void);
+extern "C" bool cocoa_is_multithreaded(void);
+extern "C" int application_main(int, char *[]);
+
+int main(int argc, char *argv[])
+{
+    // Standard Library Directory
+    {
+        size_t library_directory_path_length_before;
+        get_library_directory(NULL, &library_directory_path_length_before);
+
+        char *library_directory_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (library_directory_path_length_before + 1), alignof(char)));
+        size_t library_directory_path_length;
+        get_library_directory(library_directory_path, &library_directory_path_length);
+        assert(library_directory_path_length_before == library_directory_path_length);
+
+        wsi_mach_ios_library_path.assign(library_directory_path, library_directory_path + library_directory_path_length);
+
+        mcrt_aligned_free(library_directory_path);
+    }
+
+    // Enable MultiThreaded
+    // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html
+    {
+        cocoa_set_multithreaded();
+        assert(cocoa_is_multithreaded());
+    }
+
+    return application_main(argc, argv);
+}
+
+// neutral app
+#include "pt_wsi_neutral_app.h"
+
+struct wsi_mach_ios_app_main_argument_t
+{
+    gfx_connection_ref m_gfx_connection;
+    void **m_void_instance;
+    bool m_has_inited;
+};
+static void *wsi_mach_ios_app_main(void *argument);
+mcrt_native_thread_id wsi_mach_ios_app_main_thread_id;
+
+extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
+{
+    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, wsi_mach_ios_library_path.c_str());
+    PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
+    assert(res_on_wsi_window_created);
+
+    struct wsi_mach_ios_app_main_argument_t wsi_mach_ios_app_main_argument;
+    wsi_mach_ios_app_main_argument.m_gfx_connection = gfx_connection;
+    wsi_mach_ios_app_main_argument.m_void_instance = void_instance;
+    wsi_mach_ios_app_main_argument.m_has_inited = false;
+    PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_mach_ios_app_main_thread_id, wsi_mach_ios_app_main, &wsi_mach_ios_app_main_argument);
+    assert(res_native_thread_create);
+    while (!mcrt_atomic_load(&wsi_mach_ios_app_main_argument.m_has_inited))
+    {
+        mcrt_os_yield();
+    }
+
+    return gfx_connection;
+}
+
+extern "C" void gfx_connection_redraw_callback(void *gfx_connection_void)
+{
+    gfx_connection_ref gfx_connection = static_cast<gfx_connection_ref>(gfx_connection_void);
+    gfx_connection_on_wsi_redraw_needed_acquire(gfx_connection);
+    gfx_connection_on_wsi_redraw_needed_release(gfx_connection);
+}
+
+static void *wsi_mach_ios_app_main(void *argument_void)
+{
+    struct wsi_mach_ios_app_main_argument_t *argument = static_cast<struct wsi_mach_ios_app_main_argument_t *>(argument_void);
+
+    //Init
+    {
+        PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
+        assert(res_neutral_app_init);
+        mcrt_atomic_store(&argument->m_has_inited, true);
+    }
+
+    int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
+
+    return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
+}
 
 bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
