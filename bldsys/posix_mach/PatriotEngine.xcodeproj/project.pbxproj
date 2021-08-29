@@ -3,14 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		620D767B26DB722B001E7BD0 /* pt_wsi_neutral_app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */; };
 		620D767D26DB728E001E7BD0 /* pt_wsi_mach_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */; };
 		620D768026DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */; };
-		620D768126DB77FB001E7BD0 /* libpt_gfx.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 625D4F2C26775B6F000F087B /* libpt_gfx.dylib */; };
 		620D770326DB83E3001E7BD0 /* libpt_math_avx2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76E526DB830F001E7BD0 /* libpt_math_avx2.a */; };
 		620D770426DB83E8001E7BD0 /* libpt_math_sse2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76CB26DB8290001E7BD0 /* libpt_math_sse2.a */; };
 		620D770526DB83F7001E7BD0 /* libpt_math_avx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76D826DB82E9001E7BD0 /* libpt_math_avx.a */; };
@@ -63,6 +62,13 @@
 		6210AF6B26891D6000047DAB /* libvulkan.1.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		6210AF712689203D00047DAB /* VkLayer_khronos_validation.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */; };
 		6210AF73268920A900047DAB /* MoltenVK_icd.json in Resources */ = {isa = PBXBuildFile; fileRef = 6210AF722689206A00047DAB /* MoltenVK_icd.json */; };
+		6217808C26DBAFD100DE15BF /* libpt_gfx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D777D26DB95D4001E7BD0 /* libpt_gfx.a */; };
+		6217808D26DBAFD700DE15BF /* libpt_mcrt.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D771226DB8570001E7BD0 /* libpt_mcrt.a */; };
+		6217809126DBB48D00DE15BF /* libpt_irml.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6217808626DBAF8F00DE15BF /* libpt_irml.a */; platformFilter = ios; };
+		6217809226DBB48D00DE15BF /* libpt_tbb.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6217808726DBAF8F00DE15BF /* libpt_tbb.a */; platformFilter = ios; };
+		6217809326DBB48D00DE15BF /* libpt_tbbmalloc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */; platformFilter = ios; };
+		6217809426DBB4A500DE15BF /* pt_mcrt_log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */; };
+		6217809526DBB4A900DE15BF /* pt_mcrt_intrin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */; };
 		624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -84,6 +90,9 @@
 		629186D326D84874007A708F /* pt_gfx_frame_object_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D226D84874007A708F /* pt_gfx_frame_object_base.cpp */; };
 		629186D626D84891007A708F /* pt_gfx_material_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D526D84891007A708F /* pt_gfx_material_base.cpp */; };
 		629186D926D848A7007A708F /* pt_gfx_material_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */; };
+		6292C30526DBC08C00494EF8 /* libpt_tbb_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */; platformFilter = maccatalyst; };
+		6292C30626DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */; platformFilter = maccatalyst; };
+		6292C30726DBC08C00494EF8 /* libpt_irml_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */; platformFilter = maccatalyst; };
 		62A5B4352689183B00AE5275 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; };
 		62D230882688921E0044D96C /* pt_gfx_device_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_device_vk_wsi_metal.cpp */; };
 		62D230892688921E0044D96C /* pt_gfx_texture_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_base.cpp */; };
@@ -132,20 +141,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		620D767526DB71F5001E7BD0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 625D4F2B26775B6F000F087B;
-			remoteInfo = pt_gfx;
-		};
-		620D767926DB7208001E7BD0 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 62D230AB268893240044D96C;
-			remoteInfo = pt_mcrt;
-		};
 		620D76FB26DB8388001E7BD0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
@@ -217,6 +212,20 @@
 			remoteInfo = pt_math_ios;
 		};
 		620D779E26DB994A001E7BD0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 620D771126DB8570001E7BD0;
+			remoteInfo = pt_mcrt_ios;
+		};
+		620D77A226DB9B5A001E7BD0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 620D777C26DB95D4001E7BD0;
+			remoteInfo = pt_gfx_ios;
+		};
+		620D77A426DB9B65001E7BD0 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
 			proxyType = 1;
@@ -436,9 +445,9 @@
 				6210AF6A26891D4D00047DAB /* libVkLayer_khronos_validation.dylib in Embed Libraries */,
 				624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */,
 				624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */,
+				624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */,
 				624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */,
 				624EFC1B26889C4B001F2F63 /* libpt_tbb.dylib in Embed Libraries */,
-				624EFC1C26889C4F001F2F63 /* libpt_tbbmalloc.dylib in Embed Libraries */,
 				62EF63D226D8F24B0004F34C /* libpt_math.dylib in Embed Libraries */,
 			);
 			name = "Embed Libraries";
@@ -465,6 +474,9 @@
 		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
 		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
 		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
+		6217808626DBAF8F00DE15BF /* libpt_irml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml.a; sourceTree = "<group>"; };
+		6217808726DBAF8F00DE15BF /* libpt_tbb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb.a; sourceTree = "<group>"; };
+		6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc.a; sourceTree = "<group>"; };
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF4226D9609A00E4917D /* libpt_math_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -491,6 +503,9 @@
 		629186D526D84891007A708F /* pt_gfx_material_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_base.cpp; path = ../../src/pt_gfx_material_base.cpp; sourceTree = "<group>"; };
 		629186D726D8489F007A708F /* pt_gfx_material_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_material_vk.h; path = ../../src/pt_gfx_material_vk.h; sourceTree = "<group>"; };
 		629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_vk.cpp; path = ../../src/pt_gfx_material_vk.cpp; sourceTree = "<group>"; };
+		6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a; sourceTree = "<group>"; };
+		6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc_catalyst.a; sourceTree = "<group>"; };
+		6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml_catalyst.a; sourceTree = "<group>"; };
 		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
@@ -519,11 +534,6 @@
 		62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbbmalloc.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbbmalloc.dylib; sourceTree = SOURCE_ROOT; };
 		62D230CB268896930044D96C /* libpt_irml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_irml.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_irml.dylib; sourceTree = SOURCE_ROOT; };
 		62D230CC268896930044D96C /* libpt_tbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbb.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbb.dylib; sourceTree = SOURCE_ROOT; };
-		62D793B425974516001CC2AF /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793B825974525001CC2AF /* AppKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = AppKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/AppKit.framework/AppKit.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793BC25974534001CC2AF /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793C025974546001CC2AF /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
-		62D793C62597454D001CC2AF /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
 		62D793E425974E73001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
@@ -544,7 +554,6 @@
 		62EF63DD26D8F6E10004F34C /* pt_mcrt_intrin_arm_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_intrin_arm_neon.cpp; path = ../../src/pt_mcrt_intrin_arm_neon.cpp; sourceTree = "<group>"; };
 		62EF63DF26D8F6E80004F34C /* pt_mcrt_intrin_x86_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_intrin_x86_sse2.cpp; path = ../../src/pt_mcrt_intrin_x86_sse2.cpp; sourceTree = "<group>"; };
 		62EF63E126D8F78C0004F34C /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
-		62F9437726880A93001A4BC8 /* CoreVideo.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = CoreVideo.tbd; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/CoreVideo.framework/CoreVideo.tbd; sourceTree = DEVELOPER_DIR; };
 		62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_sse3.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx512f.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -553,11 +562,6 @@
 		62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_avx2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		92F078822447761900F82881 /* osx.entitlements */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.entitlements; path = osx.entitlements; sourceTree = SOURCE_ROOT; };
 		92F0788A24477E2200F82881 /* ios.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = ios.plist; sourceTree = SOURCE_ROOT; };
-		92F0788D2447818700F82881 /* UIKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = UIKit.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/UIKit.framework/UIKit.tbd; sourceTree = DEVELOPER_DIR; };
-		92F078932447863B00F82881 /* libobjc.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libobjc.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/usr/lib/libobjc.tbd; sourceTree = DEVELOPER_DIR; };
-		92F0793224479F0600F82881 /* Foundation.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Foundation.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Foundation.framework/Foundation.tbd; sourceTree = DEVELOPER_DIR; };
-		92F0793424479F1000F82881 /* Metal.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = Metal.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/Metal.framework/Metal.tbd; sourceTree = DEVELOPER_DIR; };
-		92F0793624479F1500F82881 /* MetalKit.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = MetalKit.tbd; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/System/Library/Frameworks/MetalKit.framework/MetalKit.tbd; sourceTree = DEVELOPER_DIR; };
 		92F977F22439099100C5F3C5 /* osx.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = osx.plist; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -708,9 +712,9 @@
 				62FF465626D9444C00CAEF53 /* libpt_mcrt_avx.a in Frameworks */,
 				62FF466226D9453D00CAEF53 /* libpt_mcrt_avx512f.a in Frameworks */,
 				6257EF3D26D9603F00E4917D /* libpt_mcrt_neon.a in Frameworks */,
+				62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */,
 				62D230CF268896930044D96C /* libpt_irml.dylib in Frameworks */,
 				62D230D1268896930044D96C /* libpt_tbb.dylib in Frameworks */,
-				62D230CD268896930044D96C /* libpt_tbbmalloc.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -760,7 +764,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				620D768126DB77FB001E7BD0 /* libpt_gfx.dylib in Frameworks */,
+				6217808C26DBAFD100DE15BF /* libpt_gfx.a in Frameworks */,
+				6217808D26DBAFD700DE15BF /* libpt_mcrt.a in Frameworks */,
+				6217809326DBB48D00DE15BF /* libpt_tbbmalloc.a in Frameworks */,
+				6217809126DBB48D00DE15BF /* libpt_irml.a in Frameworks */,
+				6217809226DBB48D00DE15BF /* libpt_tbb.a in Frameworks */,
+				6292C30626DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a in Frameworks */,
+				6292C30726DBC08C00494EF8 /* libpt_irml_catalyst.a in Frameworks */,
+				6292C30526DBC08C00494EF8 /* libpt_tbb_catalyst.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -813,6 +824,31 @@
 				620D76D826DB82E9001E7BD0 /* libpt_math_avx.a */,
 				620D76E526DB830F001E7BD0 /* libpt_math_avx2.a */,
 				620D76F226DB8346001E7BD0 /* libpt_math_neon.a */,
+			);
+			name = IOS;
+			sourceTree = "<group>";
+		};
+		620D77A626DB9C2C001E7BD0 /* OSX */ = {
+			isa = PBXGroup;
+			children = (
+				62A5B4342689183B00AE5275 /* libvulkan.1.dylib */,
+				6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */,
+				6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */,
+				6210AF722689206A00047DAB /* MoltenVK_icd.json */,
+				62D2307A268890680044D96C /* libMoltenVK.dylib */,
+				62D230CB268896930044D96C /* libpt_irml.dylib */,
+				62D230CC268896930044D96C /* libpt_tbb.dylib */,
+				62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */,
+			);
+			name = OSX;
+			sourceTree = "<group>";
+		};
+		6217808526DB9D8F00DE15BF /* IOS */ = {
+			isa = PBXGroup;
+			children = (
+				6217808626DBAF8F00DE15BF /* libpt_irml.a */,
+				6217808726DBAF8F00DE15BF /* libpt_tbb.a */,
+				6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */,
 			);
 			name = IOS;
 			sourceTree = "<group>";
@@ -901,10 +937,10 @@
 		62D7940D2597576F001CC2AF /* examples */ = {
 			isa = PBXGroup;
 			children = (
-				620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */,
-				620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */,
 				62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */,
 				62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */,
+				620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */,
+				620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */,
 				6257EF4A26D9737F00E4917D /* pt_wsi_neutral_app.h */,
 				6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */,
 			);
@@ -923,26 +959,12 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */,
+				6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */,
+				6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */,
+				620D77A626DB9C2C001E7BD0 /* OSX */,
+				6217808526DB9D8F00DE15BF /* IOS */,
 				62EF63E126D8F78C0004F34C /* AppKit.framework */,
-				62A5B4342689183B00AE5275 /* libvulkan.1.dylib */,
-				6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */,
-				6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */,
-				6210AF722689206A00047DAB /* MoltenVK_icd.json */,
-				62D2307A268890680044D96C /* libMoltenVK.dylib */,
-				62D230CB268896930044D96C /* libpt_irml.dylib */,
-				62D230CC268896930044D96C /* libpt_tbb.dylib */,
-				62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */,
-				62F9437726880A93001A4BC8 /* CoreVideo.tbd */,
-				62D793C62597454D001CC2AF /* MetalKit.tbd */,
-				62D793C025974546001CC2AF /* Metal.tbd */,
-				62D793BC25974534001CC2AF /* Foundation.tbd */,
-				62D793B825974525001CC2AF /* AppKit.tbd */,
-				62D793B425974516001CC2AF /* libobjc.tbd */,
-				92F0793624479F1500F82881 /* MetalKit.tbd */,
-				92F0793424479F1000F82881 /* Metal.tbd */,
-				92F0793224479F0600F82881 /* Foundation.tbd */,
-				92F078932447863B00F82881 /* libobjc.tbd */,
-				92F0788D2447818700F82881 /* UIKit.tbd */,
 			);
 			name = Frameworks;
 			sourceTree = SOURCE_ROOT;
@@ -1492,8 +1514,8 @@
 			buildRules = (
 			);
 			dependencies = (
-				620D767626DB71F5001E7BD0 /* PBXTargetDependency */,
-				620D767A26DB7208001E7BD0 /* PBXTargetDependency */,
+				620D77A526DB9B65001E7BD0 /* PBXTargetDependency */,
+				620D77A326DB9B5A001E7BD0 /* PBXTargetDependency */,
 			);
 			name = pt_launcher_ios;
 			productName = CXXBasedMac;
@@ -1727,6 +1749,8 @@
 				620D777426DB9565001E7BD0 /* pt_mcrt_task.cpp in Sources */,
 				620D777826DB9574001E7BD0 /* pt_mcrt_memset.cpp in Sources */,
 				620D777726DB9571001E7BD0 /* pt_mcrt_memcmp.cpp in Sources */,
+				6217809526DBB4A900DE15BF /* pt_mcrt_intrin.cpp in Sources */,
+				6217809426DBB4A500DE15BF /* pt_mcrt_log.cpp in Sources */,
 				620D777626DB956D001E7BD0 /* pt_mcrt_malloc.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1944,16 +1968,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		620D767626DB71F5001E7BD0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 625D4F2B26775B6F000F087B /* pt_gfx_osx */;
-			targetProxy = 620D767526DB71F5001E7BD0 /* PBXContainerItemProxy */;
-		};
-		620D767A26DB7208001E7BD0 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 62D230AB268893240044D96C /* pt_mcrt_osx */;
-			targetProxy = 620D767926DB7208001E7BD0 /* PBXContainerItemProxy */;
-		};
 		620D76FC26DB8388001E7BD0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 620D76E426DB830F001E7BD0 /* pt_math_avx2_ios */;
@@ -2008,6 +2022,16 @@
 			isa = PBXTargetDependency;
 			target = 620D771126DB8570001E7BD0 /* pt_mcrt_ios */;
 			targetProxy = 620D779E26DB994A001E7BD0 /* PBXContainerItemProxy */;
+		};
+		620D77A326DB9B5A001E7BD0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 620D777C26DB95D4001E7BD0 /* pt_gfx_ios */;
+			targetProxy = 620D77A226DB9B5A001E7BD0 /* PBXContainerItemProxy */;
+		};
+		620D77A526DB9B65001E7BD0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 620D771126DB8570001E7BD0 /* pt_mcrt_ios */;
+			targetProxy = 620D77A426DB9B65001E7BD0 /* PBXContainerItemProxy */;
 		};
 		6257EF3C26D9603500E4917D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -3119,6 +3143,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = ios.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6MJZWFY372;
 				DYLIB_INSTALL_NAME_BASE = "@executable_path/../Frameworks";
@@ -3129,6 +3154,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios";
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -3159,6 +3185,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios";
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
 				PROVISIONING_PROFILE_SPECIFIER = "";
