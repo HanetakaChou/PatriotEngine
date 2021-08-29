@@ -24,6 +24,7 @@
 #include <dispatch/dispatch.h>
 #include <CoreVideo/CoreVideo.h>
 #include <QuartzCore/QuartzCore.h>
+#include <MetalKit/MTKView.h>
 
 void get_library_directory(char *path, size_t *length)
 {
@@ -103,6 +104,7 @@ bool cocoa_is_multithreaded(void)
 @end
 
 @interface pt_wsi_mach_ios_view_controller : UIViewController
+- (instancetype)initWithWindow:(UIWindow*) window;
 - (void)loadView;
 - (void)viewDidLoad;
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator;
@@ -112,6 +114,8 @@ bool cocoa_is_multithreaded(void)
 @interface pt_wsi_mach_ios_view : UIView
 + (Class)layerClass;
 - (void)didMoveToWindow;
+- (void)setFrame:(CGRect)frame;
+- (void)resize_drawable:(CGFloat)scaleFactor; // callstack of mtkview
 @end
 
 extern void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance);
@@ -129,11 +133,13 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
         //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
-        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] init];
+        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow: window];
+        
+        
         
         //[window setRootViewController:view_controller];
         
-        [window setRootViewController: [[UINavigationController alloc] initWithRootViewController: view_controller]];
+        [window setRootViewController: view_controller];
         
         [window setBackgroundColor: [UIColor whiteColor]];
 
@@ -149,6 +155,17 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     void *m_gfx_connection;
     void *m_void_instance;
     CADisplayLink *m_display_link;
+    UIWindow *m_window;
+}
+
+- (instancetype)initWithWindow:(UIWindow*) window
+{
+    self = [super init];
+    if(self)
+    {
+        self->m_window =window;
+    }
+    return self;
 }
 
 - (void)loadView
@@ -157,10 +174,21 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     {
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
-        id view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
+        CGFloat huhu = [UIScreen mainScreen].nativeScale;
+        
+        UIView *view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
+        
+        //MTKView *view = [[MTKView alloc] initWithFrame: main_screen_bounds];
+        //view.delegate = nil;
 
+        //if(nil==view.window)
+        //{
+        //    view.window = self->m_window;
+        //}
+        
         [self setView:view];
         
+
         //[view initWithView:<#(nonnull UIView *)#> parameters:<#(nonnull UIDragPreviewParameters *)#>]
         //[((CAMetalLayer *)[view layer]) draw
     }
@@ -170,22 +198,6 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     @autoreleasepool
     {
         [super viewDidLoad];
-
-        self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
-        
-        //
-        self->m_gfx_connection = NULL;
-
-        // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
-        // RENDER_ON_MAIN_THREAD
-        self->m_display_link = [CADisplayLink displayLinkWithTarget:self
-                                                           selector:@selector(display_link_callback)];
-
-        [self->m_display_link setPreferredFramesPerSecond:60];
-
-        // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
-        // the main run loop (since 'viewDidLoad' is always executed from the main thread.
-        [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
 }
 
@@ -235,13 +247,48 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-    if(nil!=layer)
-    {
-        [layer setDrawableSize: [self bounds].size];
-        [layer setBounds:[self bounds]];
-    }
+    
+    assert(nil!=[self window]);
+    
+    // Note !!!
+    // We must create display link after the window is not nil
+    
+    
+    //self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
+    
+    //
+    //self->m_gfx_connection = NULL;
+
+    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+    // RENDER_ON_MAIN_THREAD
+    //self->m_display_link = [CADisplayLink displayLinkWithTarget:self
+    //                                                   selector:@selector(display_link_callback)];
+
+    //[self->m_display_link setPreferredFramesPerSecond:60];
+
+    // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
+    // the main run loop (since 'viewDidLoad' is always executed from the main thread.
+    //[self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 }
+
+- (void)setFrame:(CGRect)frame
+{
+    [super setFrame:frame];
+    UIWindow *window = self.window;
+    UIScreen *screen = window.screen;
+    [self resize_drawable: screen.nativeScale];
+}
+
+- (void)resize_drawable:(CGFloat)scaleFactor
+{
+    CGSize newSize = self.bounds.size;
+    newSize.width *= scaleFactor;
+    newSize.height *= scaleFactor;
+    
+    CAMetalLayer *metal_layer = ((CAMetalLayer *)[self layer]);
+    metal_layer.drawableSize = newSize;
+}
+
 @end
 
 int application_main(int argc, char *argv[])
