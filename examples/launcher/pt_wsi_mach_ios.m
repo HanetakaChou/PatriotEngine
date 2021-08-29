@@ -121,15 +121,21 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 @implementation pt_wsi_mach_ios_application_delegate
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
         UIWindow *window = [[UIWindow alloc] initWithFrame:main_screen_bounds];
 
-        UIViewController *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
+        //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
-        [window setRootViewController:view_controller];
+        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] init];
+        
+        //[window setRootViewController:view_controller];
+        
+        [window setRootViewController: [[UINavigationController alloc] initWithRootViewController: view_controller]];
+        
+        [window setBackgroundColor: [UIColor whiteColor]];
 
         [window makeKeyAndVisible];
 
@@ -147,13 +153,16 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)loadView
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
         id view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
 
         [self setView:view];
+        
+        //[view initWithView:<#(nonnull UIView *)#> parameters:<#(nonnull UIDragPreviewParameters *)#>]
+        //[((CAMetalLayer *)[view layer]) draw
     }
 }
 - (void)viewDidLoad
@@ -183,6 +192,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 // Allow device rotation to resize the swapchain
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
 {
+    [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
     //resize
 }
 
@@ -197,11 +207,16 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         }
         else
         {
-            void *layer = ((__bridge void *)[[self view] layer]);
-            if (NULL != layer)
+            CAMetalLayer *layer = ((CAMetalLayer *)[[self view] layer]);
+            if (nil != layer)
             {
-                CGSize drawable_size = [((CAMetalLayer *)((__bridge id)layer)) drawableSize];
-                self->m_gfx_connection = gfx_connection_init_callback(layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
+                CGRect huhu = [layer bounds];
+                CGSize drawable_size = [layer drawableSize];
+                MTLPixelFormat hehe = [layer pixelFormat];
+                if(drawable_size.width >0 &&drawable_size.height >0)
+                {
+                self->m_gfx_connection = gfx_connection_init_callback((__bridge  void*)layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
+                }
             }
         }
     }
@@ -211,7 +226,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 @implementation pt_wsi_mach_ios_view
 + (Class)layerClass
 {
-    @autoreleasepool
+    //@autoreleasepool
     {
         return [CAMetalLayer class];
     }
@@ -220,11 +235,12 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 - (void)didMoveToWindow
 {
     [super didMoveToWindow];
-    //CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-    //if(nil!=layer)
-    //{
-    //    [layer setDrawableSize: [self bounds].size];
-    //}
+    CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+    if(nil!=layer)
+    {
+        [layer setDrawableSize: [self bounds].size];
+        [layer setBounds:[self bounds]];
+    }
 }
 @end
 

@@ -2119,6 +2119,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math;
 				SDKROOT = iphoneos;
@@ -2138,6 +2139,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math;
 				SDKROOT = iphoneos;
@@ -2158,6 +2160,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_sse2;
@@ -2178,6 +2181,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_sse2;
@@ -2199,6 +2203,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_avx;
@@ -2219,6 +2224,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_avx;
@@ -2240,6 +2246,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = (
 					"-mavx2",
 					"-mfma",
@@ -2263,6 +2270,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = (
 					"-mavx2",
 					"-mfma",
@@ -2287,6 +2295,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_neon;
 				SDKROOT = iphoneos;
@@ -2306,6 +2315,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_math_neon;
 				SDKROOT = iphoneos;
@@ -2326,6 +2336,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = iphoneos;
@@ -2345,6 +2356,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = iphoneos;
@@ -2365,6 +2377,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2385,6 +2398,7 @@
 					"NDEBUG=1",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse2";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2406,6 +2420,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse3";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2426,6 +2441,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-msse3";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2448,6 +2464,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2469,6 +2486,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2490,6 +2508,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx512f";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2510,6 +2529,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_CFLAGS = "-mavx512f";
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -2531,6 +2551,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2550,6 +2571,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
@@ -2570,6 +2592,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = iphoneos;
@@ -2589,6 +2612,7 @@
 					"$(inherited)",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = iphoneos;
@@ -3158,7 +3182,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3193,7 +3217,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
-				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3271,6 +3295,7 @@
 					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -3333,6 +3358,7 @@
 					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
