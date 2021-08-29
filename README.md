@@ -170,6 +170,7 @@ Build Type | Status
   - [ ] WSI  
     - [x] PosixLinuxX11  
     - [x] PosixLinuxAndroid  
+    - [x] PosixMachOSX
     - [ ] Win32Desktop  
 - [ ] Metal  
   - [ ] MemoryAllocator  
