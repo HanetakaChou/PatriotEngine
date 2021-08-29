@@ -69,6 +69,7 @@
 		6217809326DBB48D00DE15BF /* libpt_tbbmalloc.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */; platformFilter = ios; };
 		6217809426DBB4A500DE15BF /* pt_mcrt_log.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */; };
 		6217809526DBB4A900DE15BF /* pt_mcrt_intrin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */; };
+		6246EFC326DC10D1002BA0B2 /* libMoltenVK_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6246EFC226DC10D1002BA0B2 /* libMoltenVK_catalyst.a */; platformFilter = maccatalyst; };
 		624EFC1626889C0E001F2F63 /* libpt_mcrt.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1926889C3E001F2F63 /* libMoltenVK.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D2307A268890680044D96C /* libMoltenVK.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		624EFC1A26889C46001F2F63 /* libpt_irml.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 62D230CB268896930044D96C /* libpt_irml.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -479,6 +480,7 @@
 		6217808726DBAF8F00DE15BF /* libpt_tbb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb.a; sourceTree = "<group>"; };
 		6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc.a; sourceTree = "<group>"; };
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		6246EFC226DC10D1002BA0B2 /* libMoltenVK_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK_catalyst.a; path = ../../third_party/libs/molten_vk/lib/mach_ios/libMoltenVK_catalyst.a; sourceTree = "<group>"; };
 		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF4226D9609A00E4917D /* libpt_math_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF4A26D9737F00E4917D /* pt_wsi_neutral_app.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_neutral_app.h; path = ../../examples/launcher/pt_wsi_neutral_app.h; sourceTree = "<group>"; };
@@ -768,6 +770,7 @@
 			files = (
 				6217808C26DBAFD100DE15BF /* libpt_gfx.a in Frameworks */,
 				6292C30926DBC3AE00494EF8 /* libMoltenVK.a in Frameworks */,
+				6246EFC326DC10D1002BA0B2 /* libMoltenVK_catalyst.a in Frameworks */,
 				6217808D26DBAFD700DE15BF /* libpt_mcrt.a in Frameworks */,
 				6217809326DBB48D00DE15BF /* libpt_tbbmalloc.a in Frameworks */,
 				6217809126DBB48D00DE15BF /* libpt_irml.a in Frameworks */,
@@ -962,6 +965,7 @@
 		9279CC2124390AE300DACBD7 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				6246EFC226DC10D1002BA0B2 /* libMoltenVK_catalyst.a */,
 				6292C30826DBC3AE00494EF8 /* libMoltenVK.a */,
 				6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */,
 				6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */,
@@ -3154,6 +3158,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3168,7 +3173,7 @@
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
 				SUPPORTS_MACCATALYST = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 			};
 			name = Debug;
 		};
@@ -3188,6 +3193,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				INFOPLIST_FILE = ios.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx*]" = 14.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
@@ -3202,7 +3208,7 @@
 				SDKROOT = iphoneos;
 				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
 				SUPPORTS_MACCATALYST = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = "1,2,6";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;

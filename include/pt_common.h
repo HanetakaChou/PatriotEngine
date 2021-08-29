@@ -32,6 +32,14 @@
 //https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
 #define PT_POSIX 1
 #define PT_POSIX_MACH 1
+//#include <TargetConditionals.h>
+#if __is_target_os(ios) //TARGET_OS_IPHONE
+#define PT_POSIX_MATH_IOS 1
+#elif __is_target_os(macos) //TARGET_OS_OSX
+#define PT_POSIX_MATH_OSX 1
+#else
+#error Unknown Mach Platform
+#endif
 #else
 #error Unknown Platform
 #endif

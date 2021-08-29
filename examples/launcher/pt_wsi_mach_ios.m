@@ -105,11 +105,13 @@ bool cocoa_is_multithreaded(void)
 @interface pt_wsi_mach_ios_view_controller : UIViewController
 - (void)loadView;
 - (void)viewDidLoad;
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator;
 - (void)display_link_callback;
 @end
 
 @interface pt_wsi_mach_ios_view : UIView
 + (Class)layerClass;
+- (void)didMoveToWindow;
 @end
 
 extern void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance);
@@ -160,6 +162,8 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     {
         [super viewDidLoad];
 
+        self.view.contentScaleFactor = UIScreen.mainScreen.nativeScale;
+        
         //
         self->m_gfx_connection = NULL;
 
@@ -174,6 +178,12 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
         // the main run loop (since 'viewDidLoad' is always executed from the main thread.
         [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
+}
+
+// Allow device rotation to resize the swapchain
+- (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id <UIViewControllerTransitionCoordinator>)coordinator
+{
+    //resize
 }
 
 - (void)display_link_callback
@@ -205,6 +215,16 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
     {
         return [CAMetalLayer class];
     }
+}
+
+- (void)didMoveToWindow
+{
+    [super didMoveToWindow];
+    //CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+    //if(nil!=layer)
+    //{
+    //    [layer setDrawableSize: [self bounds].size];
+    //}
 }
 @end
 

@@ -25,6 +25,9 @@
 #include <assert.h>
 #include <new>
 
+// Maximum size of a memory heap in Vulkan to consider it "small".
+static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
+
 static inline uint32_t __internal_find_lowest_memory_type_index(struct VkPhysicalDeviceMemoryProperties const *physical_device_memory_properties, uint32_t memory_requirements_memory_type_bits, VkMemoryPropertyFlags required_property_flags)
 {
     uint32_t memory_type_count = physical_device_memory_properties->memoryTypeCount;
@@ -100,7 +103,7 @@ static inline VkDeviceSize __internal_calc_preferred_block_size(struct VkPhysica
     static VkDeviceSize const VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE = (256ULL * 1024ULL * 1024ULL);
 
     /// Maximum size of a memory heap in Vulkan to consider it "small".
-    static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
+    //static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
 
     bool is_small_heap = (heap_size <= VMA_SMALL_HEAP_MAX_SIZE);
     VkDeviceSize preferred_block_size = mcrt_intrin_round_up(is_small_heap ? (heap_size / 8) : VMA_DEFAULT_LARGE_HEAP_BLOCK_SIZE, static_cast<VkDeviceSize>(32));
@@ -178,6 +181,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
              memory_requirements_memory_type_bits ^= (1U << memory_type_index))
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
 
             VkResult res_allocate_memory;
             {
@@ -231,31 +235,33 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
 
     // staging buffer
     uint32_t transfer_src_memory_index = VK_MAX_MEMORY_TYPES;
-    this->m_transfer_src_buffer_size = (512ULL * 1024ULL * 1024ULL);
+    VkDeviceSize transfer_src_buffer_size_list[] = {512ULL * 1024ULL * 1024ULL, 256ULL * 1024ULL * 1024ULL};
+    this->m_transfer_src_buffer_size = -1;
     this->m_transfer_src_buffer = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory = VK_NULL_HANDLE;
     this->m_transfer_src_buffer_device_memory_pointer = NULL;
     {
-        VkDeviceSize memory_requirements_size = VkDeviceSize(-1);
         uint32_t memory_requirements_memory_type_bits = 0U;
         {
             struct VkBufferCreateInfo buffer_create_info_transfer_src;
             buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info_transfer_src.pNext = NULL;
             buffer_create_info_transfer_src.flags = 0U;
-            buffer_create_info_transfer_src.size = this->m_transfer_src_buffer_size;
+            buffer_create_info_transfer_src.size = 8U;
             buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
             buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
-            PT_MAYBE_UNUSED VkResult res_create_buffer = gfx_device->create_buffer(&buffer_create_info_transfer_src, &this->m_transfer_src_buffer);
+            VkBuffer dummy_buf;
+            PT_MAYBE_UNUSED VkResult res_create_buffer = gfx_device->create_buffer(&buffer_create_info_transfer_src, &dummy_buf);
             assert(VK_SUCCESS == res_create_buffer);
 
             struct VkMemoryRequirements memory_requirements;
-            gfx_device->get_buffer_memory_requirements(this->m_transfer_src_buffer, &memory_requirements);
-            memory_requirements_size = memory_requirements.size;
+            gfx_device->get_buffer_memory_requirements(dummy_buf, &memory_requirements);
             memory_requirements_memory_type_bits = memory_requirements.memoryTypeBits;
+
+            gfx_device->destroy_buffer(dummy_buf);
         }
 
         for (uint32_t memory_type_index;
@@ -266,60 +272,101 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
              memory_requirements_memory_type_bits ^= (1U << memory_type_index))
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
 
-            VkResult res_allocate_memory;
+            // The lower memory_type_index indicates the more performance
+            // Thus we try to reduce the requested memory size
+            for (size_t transfer_src_buffer_size : transfer_src_buffer_size_list)
             {
-                VkMemoryAllocateInfo memory_allocate_info;
-                memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-                memory_allocate_info.pNext = NULL;
-                memory_allocate_info.allocationSize = memory_requirements_size;
-                memory_allocate_info.memoryTypeIndex = memory_type_index;
+                VkDeviceSize memory_requirements_size = VkDeviceSize(-1);
+                VkBuffer transfer_src_buffer = VK_NULL_HANDLE;
+                {
+                    struct VkBufferCreateInfo buffer_create_info_transfer_src;
+                    buffer_create_info_transfer_src.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+                    buffer_create_info_transfer_src.pNext = NULL;
+                    buffer_create_info_transfer_src.flags = 0U;
+                    buffer_create_info_transfer_src.size = transfer_src_buffer_size;
+                    buffer_create_info_transfer_src.usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+                    buffer_create_info_transfer_src.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+                    buffer_create_info_transfer_src.queueFamilyIndexCount = 0U;
+                    buffer_create_info_transfer_src.pQueueFamilyIndices = NULL;
 
-                res_allocate_memory = gfx_device->allocate_memory(&memory_allocate_info, &this->m_transfer_src_buffer_device_memory);
+                    PT_MAYBE_UNUSED VkResult res_create_buffer = gfx_device->create_buffer(&buffer_create_info_transfer_src, &transfer_src_buffer);
+                    assert(VK_SUCCESS == res_create_buffer);
+
+                    struct VkMemoryRequirements memory_requirements;
+                    gfx_device->get_buffer_memory_requirements(transfer_src_buffer, &memory_requirements);
+                    memory_requirements_size = memory_requirements.size;
+                    memory_requirements_memory_type_bits = memory_requirements.memoryTypeBits;
+                }
+
+                VkDeviceMemory transfer_src_buffer_device_memory = VK_NULL_HANDLE;
+                VkResult res_allocate_memory;
+                {
+                    VkMemoryAllocateInfo memory_allocate_info;
+                    memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+                    memory_allocate_info.pNext = NULL;
+                    memory_allocate_info.allocationSize = memory_requirements_size;
+                    memory_allocate_info.memoryTypeIndex = memory_type_index;
+
+                    res_allocate_memory = gfx_device->allocate_memory(&memory_allocate_info, &transfer_src_buffer_device_memory);
+                }
+                assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
+
+                if (VK_SUCCESS == res_allocate_memory)
+                {
+                    this->m_transfer_src_buffer_size = transfer_src_buffer_size;
+                    this->m_transfer_src_buffer = transfer_src_buffer;
+                    this->m_transfer_src_buffer_device_memory = transfer_src_buffer_device_memory;
+
+                    // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
+                    uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
+                    PT_MAYBE_UNUSED VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - this->m_uniform_buffer_size);
+                    // The application is not alone and there may be other applications which interact with the Vulkan as well.
+                    // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
+                    assert(this->m_transfer_src_buffer_size <= heap_size_budget);
+
+                    {
+                        PT_MAYBE_UNUSED VkResult res_map_memory = gfx_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, this->m_transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
+                        assert(VK_SUCCESS == res_map_memory);
+                    }
+
+                    {
+                        PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
+                        assert(VK_SUCCESS == res_bind_buffer_memory);
+                    }
+
+                    transfer_src_memory_index = memory_type_index;
+                    break;
+                }
+                else
+                {
+                    assert(VK_NULL_HANDLE != transfer_src_buffer);
+                    gfx_device->destroy_buffer(transfer_src_buffer);
+                }
             }
-            assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
 
-            if (VK_SUCCESS == res_allocate_memory)
+            if (VK_NULL_HANDLE == this->m_transfer_src_buffer || VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory || NULL == this->m_transfer_src_buffer_device_memory_pointer)
             {
-                // We allocate the contant buffer first to ensure that the "AMD Special Pool" is occupied by the the contant buffer
-                uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
-                PT_MAYBE_UNUSED VkDeviceSize heap_size_budget = (memory_type_index != uniform_buffer_memory_index) ? (physical_device_memory_properties.memoryHeaps[heap_index].size) : (physical_device_memory_properties.memoryHeaps[heap_index].size - this->m_uniform_buffer_size);
-                // The application is not alone and there may be other applications which interact with the Vulkan as well.
-                // The allocation may success even if the budget has been exceeded. However, this may result in performance issue.
-                assert(this->m_transfer_src_buffer_size <= heap_size_budget);
-
-                {
-                    PT_MAYBE_UNUSED VkResult res_map_memory = gfx_device->map_memory(this->m_transfer_src_buffer_device_memory, 0U, this->m_transfer_src_buffer_size, 0U, &this->m_transfer_src_buffer_device_memory_pointer);
-                    assert(VK_SUCCESS == res_map_memory);
-                }
-
-                {
-                    PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_device->bind_buffer_memory(this->m_transfer_src_buffer, this->m_transfer_src_buffer_device_memory, 0U);
-                    assert(VK_SUCCESS == res_bind_buffer_memory);
-                }
-
-                transfer_src_memory_index = memory_type_index;
+                assert(VK_NULL_HANDLE == this->m_transfer_src_buffer);
+                assert(VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory);
+                assert(NULL == this->m_transfer_src_buffer_device_memory_pointer);
+            }
+            else
+            {
                 break;
             }
         }
     }
     if (VK_NULL_HANDLE == this->m_transfer_src_buffer || VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory || NULL == this->m_transfer_src_buffer_device_memory_pointer)
     {
+        assert(VK_NULL_HANDLE == this->m_transfer_src_buffer);
         assert(VK_NULL_HANDLE == this->m_transfer_src_buffer_device_memory);
         assert(NULL == this->m_transfer_src_buffer_device_memory_pointer);
-
-        if (VK_NULL_HANDLE != this->m_transfer_src_buffer)
-        {
-            gfx_device->destroy_buffer(this->m_transfer_src_buffer);
-            this->m_transfer_src_buffer = VK_NULL_HANDLE;
-        }
-
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
-
-    // Maximum size of a memory heap in Vulkan to consider it "small".
-    static VkDeviceSize const VMA_SMALL_HEAP_MAX_SIZE = (1024ULL * 1024ULL * 1024ULL);
+    assert(physical_device_memory_properties.memoryTypeCount > transfer_src_memory_index);
 
     this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {

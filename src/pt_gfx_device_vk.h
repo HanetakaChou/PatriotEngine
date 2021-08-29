@@ -24,6 +24,26 @@
 #include <pt_mcrt_intrin.h>
 #include <vulkan/vulkan.h>
 
+#ifdef PT_POSIX
+#ifdef PT_POSIX_LINUX
+#define PT_VK_LAYER_KHRONOS_VALIDATION 1
+#elif defined(PT_POSIX_MACH)
+#ifdef PT_POSIX_MATH_IOS
+#define PT_VK_LAYER_KHRONOS_VALIDATION 0
+#elif defined(PT_POSIX_MATH_OSX)
+#define PT_VK_LAYER_KHRONOS_VALIDATION 1
+#else
+#error Unknown Mach Platform
+#endif
+#else
+#error Unknown Platform
+#endif
+#elif defined(PT_WIN32)
+#define PT_VK_LAYER_KHRONOS_VALIDATION 1
+#else
+#error Unknown Platform
+#endif
+
 class gfx_device_vk
 {
     VkAllocationCallbacks m_vk_mcrt_allocation_callbacks;
@@ -31,7 +51,7 @@ class gfx_device_vk
 
     VkInstance m_instance;
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     VkDebugReportCallbackEXT m_debug_report_callback;
 #endif
 
@@ -144,7 +164,7 @@ public:
     void destroy();
     ~gfx_device_vk();
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     inline VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 

@@ -25,7 +25,7 @@
 
 gfx_device_vk::gfx_device_vk()
     : m_instance(VK_NULL_HANDLE),
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
       m_debug_report_callback(VK_NULL_HANDLE),
 #endif
       m_physical_device(VK_NULL_HANDLE)
@@ -37,7 +37,7 @@ static void *VKAPI_PTR __internal_allocation_callback(void *, size_t size, size_
 static void *VKAPI_PTR __internal_reallocation_callback(void *pUserData, void *pOriginal, size_t size, size_t alignment, VkSystemAllocationScope allocationScope);
 static void VKAPI_PTR __internal_free_callback(void *, void *pMemory);
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
 static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage, void *pUserData)
 {
     return static_cast<gfx_device_vk *>(pUserData)->debug_report_callback(flags, objectType, object, location, messageCode, pLayerPrefix, pMessage);
@@ -79,7 +79,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.pNext = NULL;
         instance_create_info.flags = 0U;
         instance_create_info.pApplicationInfo = &application_info;
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
         instance_create_info.enabledLayerCount = 1U;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
@@ -126,7 +126,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_destroy_surface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(vk_get_instance_proc_addr(this->m_instance, "vkDestroySurfaceKHR"));
     assert(NULL != this->m_vk_destroy_surface);
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     assert(VK_NULL_HANDLE == this->m_debug_report_callback);
     {
         PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkCreateDebugReportCallbackEXT"));
@@ -699,12 +699,13 @@ void gfx_device_vk::destroy()
     assert(NULL != vk_destroy_device);
 
     vk_destroy_device(this->m_device, this->m_vk_allocation_callbacks);
+    this->m_device = VK_NULL_HANDLE;
 
     // perhaps due to bugs
     // the instance may free the same memory multiple times
     this->m_vk_allocation_callbacks = NULL;
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     PFN_vkDestroyDebugReportCallbackEXT vk_destroy_debug_report_callback_ext = reinterpret_cast<PFN_vkDestroyDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkDestroyDebugReportCallbackEXT"));
     assert(NULL != vk_destroy_debug_report_callback_ext);
     vk_destroy_debug_report_callback_ext(m_instance, m_debug_report_callback, this->m_vk_allocation_callbacks);
@@ -714,15 +715,20 @@ void gfx_device_vk::destroy()
     PFN_vkDestroyInstance vk_destroy_instance = reinterpret_cast<PFN_vkDestroyInstance>(vk_get_instance_proc_addr(this->m_instance, "vkDestroyInstance"));
     assert(NULL != vk_destroy_instance);
 
-    vk_destroy_instance(this->m_instance,this->m_vk_allocation_callbacks);
+    vk_destroy_instance(this->m_instance, this->m_vk_allocation_callbacks);
+    this->m_instance = VK_NULL_HANDLE;
 }
 
 gfx_device_vk::~gfx_device_vk()
 {
+    assert(VK_NULL_HANDLE == this->m_device);
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     assert(VK_NULL_HANDLE == m_debug_report_callback);
+#endif
+    assert(VK_NULL_HANDLE == this->m_instance);
 }
 
-#ifndef NDEBUG
+#if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
 inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage)
 {
     mcrt_log_print("[%s] : %s \n", pLayerPrefix, pMessage);
