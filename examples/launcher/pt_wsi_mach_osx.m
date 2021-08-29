@@ -62,7 +62,7 @@ void get_library_directory(char *path, size_t *length)
 
 @interface pt_wsi_mach_osx_thread_detach_target : NSObject
 - (instancetype)init;
-- (void)pt_wsi_mach_ios_main:(void *)argument;
+- (void)pt_wsi_mach_osx_main:(void *)argument;
 - (bool)has_inited;
 @end
 
