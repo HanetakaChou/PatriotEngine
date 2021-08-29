@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "92983F172447725E003F48B6"
-               BuildableName = "PatriotEngine-iPhoneOS.app"
-               BlueprintName = "PatriotEngine-iPhoneOS"
+               BuildableName = "pt_launcher.app"
+               BlueprintName = "pt_launcher_ios"
                ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -48,8 +48,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92983F172447725E003F48B6"
-            BuildableName = "PatriotEngine-iPhoneOS.app"
-            BlueprintName = "PatriotEngine-iPhoneOS"
+            BuildableName = "pt_launcher.app"
+            BlueprintName = "pt_launcher_ios"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -65,8 +65,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92983F172447725E003F48B6"
-            BuildableName = "PatriotEngine-iPhoneOS.app"
-            BlueprintName = "PatriotEngine-iPhoneOS"
+            BuildableName = "pt_launcher.app"
+            BlueprintName = "pt_launcher_ios"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

@@ -16,7 +16,7 @@
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "92F977E32439099000C5F3C5"
                BuildableName = "pt_launcher.app"
-               BlueprintName = "pt_launcher"
+               BlueprintName = "pt_launcher_osx"
                ReferencedContainer = "container:PatriotEngine.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -47,7 +47,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92F977E32439099000C5F3C5"
             BuildableName = "pt_launcher.app"
-            BlueprintName = "pt_launcher"
+            BlueprintName = "pt_launcher_osx"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -64,7 +64,7 @@
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "92F977E32439099000C5F3C5"
             BuildableName = "pt_launcher.app"
-            BlueprintName = "pt_launcher"
+            BlueprintName = "pt_launcher_osx"
             ReferencedContainer = "container:PatriotEngine.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

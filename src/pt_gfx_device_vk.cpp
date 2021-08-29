@@ -79,7 +79,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
         instance_create_info.pNext = NULL;
         instance_create_info.flags = 0U;
         instance_create_info.pApplicationInfo = &application_info;
-#if 0 //ndef NDEBUG
+#ifndef NDEBUG
         char const *enabled_layer_names[1] = {"VK_LAYER_KHRONOS_validation"};
         instance_create_info.enabledLayerCount = 1U;
         instance_create_info.ppEnabledLayerNames = enabled_layer_names;
@@ -126,7 +126,7 @@ bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_v
     this->m_vk_destroy_surface = reinterpret_cast<PFN_vkDestroySurfaceKHR>(vk_get_instance_proc_addr(this->m_instance, "vkDestroySurfaceKHR"));
     assert(NULL != this->m_vk_destroy_surface);
 
-#if 0 //ndef NDEBUG
+#ifndef NDEBUG
     assert(VK_NULL_HANDLE == this->m_debug_report_callback);
     {
         PFN_vkCreateDebugReportCallbackEXT vk_create_debug_report_callback_ext = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vk_get_instance_proc_addr(m_instance, "vkCreateDebugReportCallbackEXT"));
