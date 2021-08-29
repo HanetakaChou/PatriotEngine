@@ -104,7 +104,7 @@ int wsi_neutral_app_main(void *void_instance)
             if (!my_textures.empty())
             {
                 long int r2 = rand_r(&rand_buf);
-                int vec_idx = (r2 % (my_textures.size() / 2 + 1));
+                size_t vec_idx = (r2 % (my_textures.size() / 2 + 1));
                 gfx_texture_ref my_texture = my_textures[vec_idx];
                 my_textures[vec_idx] = my_textures.back();
                 my_textures.pop_back();
