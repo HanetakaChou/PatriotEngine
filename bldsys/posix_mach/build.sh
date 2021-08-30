@@ -81,7 +81,7 @@ cd ${MY_DIR}
 
 # https://developer.apple.com/library/archive/technotes/tn2339/_index.html
 # xcode-select -switch /Applications/Xcode.app/Contents/Developer
-if xcodebuild -scheme "${XCODE_BUILD_ARG_SCHEME_PLATFORM}_${XCODE_BUILD_ARG_SCHEME_CONFIG}" -destination "${XCODE_BUILD_ARG_DESTINNATION}"; then  
+if xcodebuild -scheme "${XCODE_BUILD_ARG_SCHEME_PLATFORM}_${XCODE_BUILD_ARG_SCHEME_CONFIG}" -destination "${XCODE_BUILD_ARG_DESTINNATION}" build  -allowProvisioningUpdates; then  
     echo "xcodebuild passed"
 else
     echo "xcodebuild failed"
