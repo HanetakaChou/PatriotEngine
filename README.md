@@ -84,10 +84,10 @@ The asset streaming process is totally asynchronous. This means that the calling
       
 Build Type | Status     
 :-: | :-:     
-**Ubuntu LTS Release x86** | [![Ubuntu LTS Glibc Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x86%22)    
-**Ubuntu LTS Debug x86** | [![Ubuntu LTS Glibc Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x86%22)      
-**Ubuntu LTS Release x64** | [![Ubuntu LTS Glibc Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Release+x64%22)    
-**Ubuntu LTS Debug x64** | [![Ubuntu LTS Glibc Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Glibc%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Glibc+Debug+x64%22)    
+**Ubuntu LTS Release x86** | [![Ubuntu LTS Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x86%22)    
+**Ubuntu LTS Debug x86** | [![Ubuntu LTS Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x86%22)      
+**Ubuntu LTS Release x64** | [![Ubuntu LTS Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x64%22)    
+**Ubuntu LTS Debug x64** | [![Ubuntu LTS Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x64%22)    
     
 #### Posix Linux Android
   
@@ -106,7 +106,11 @@ Build Type | Status
 :-: | :-:      
 **MacOSX Release (Universal Binary)** | [![MacOSX Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Release+%28Universal+Binary%29%22)         
 **MacOSX Debug (Universal Binary)** | [![MacOSX Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Debug+%28Universal+Binary%29%22)     
-     
+**IOS Release (Universal Binary)** | [![IOS Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/IOS%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22IOS+Release+%28Universal+Binary%29%22)         
+**IOS Debug (Universal Binary)** | [![IOS Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/IOS%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22IOS+Debug+%28Universal+Binary%29%22)     
+**Catalyst Release (Universal Binary)** | [![Catalyst Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Release+%28Universal+Binary%29%22)         
+**Catalyst Debug (Universal Binary)** | [![Catalyst Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Debug+%28Universal+Binary%29%22)    
+
 ---        
 
 ### Feature List
@@ -171,6 +175,7 @@ Build Type | Status
     - [x] PosixLinuxX11  
     - [x] PosixLinuxAndroid  
     - [x] PosixMachOSX
+    - [x] PosixMachIOS
     - [ ] Win32Desktop  
 - [ ] Metal  
   - [ ] MemoryAllocator  

@@ -12,9 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: install ubuntu lts dependencies
+      - name: Install Ubuntu LTS Dependencies
         run: sudo ./bldsys/posix_linux_x11/install_ubuntu_dependencies.sh x86
-      - name: build ubuntu lts release
+      - name: Build Ubuntu LTS Release
         run: ./bldsys/posix_linux_x11/build.sh release x86
-      - name: test ubuntu lts release
+      - name: Test Ubuntu LTS Release
         run: ./bldsys/posix_linux_x11/run_tests.sh release x86
