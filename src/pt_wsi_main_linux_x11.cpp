@@ -352,10 +352,11 @@ int wsi_linux_x11::main()
                 //struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_QUIT, 0, 0};
                 //wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
 
-                xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
+                // we can't destory window here
+                // we need to destory API related vksurface etc first
 
-                PT_MAYBE_UNUSED xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
-                assert(error_generic == NULL);
+                // xcb_destroy_window_checked
+                // xcb_request_check
             }
         }
         break;
@@ -371,6 +372,12 @@ int wsi_linux_x11::main()
     mcrt_native_thread_join(this->m_app_main_thread_id);
 
     mcrt_native_thread_join(this->m_draw_main_thread_id);
+
+    {
+        xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
+        PT_MAYBE_UNUSED xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
+        assert(error_generic == NULL);
+    }
 
     xcb_disconnect(m_xcb_connection);
 
