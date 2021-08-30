@@ -23,7 +23,7 @@ include $(LOCAL_PATH)/pt_mcrt.mk
 
 include $(LOCAL_PATH)/pt_gfx.mk
 
-#include $(LOCAL_PATH)/pt_wsi.mk
+include $(LOCAL_PATH)/pt_wsi.mk
 
 include $(LOCAL_PATH)/pt_launcher.mk
 

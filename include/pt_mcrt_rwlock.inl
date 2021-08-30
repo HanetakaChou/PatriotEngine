@@ -77,26 +77,26 @@ inline void mcrt_rwlock_wrunlock(struct mcrt_rwlock_t *rwlock)
     mcrt_atomic_store(&rwlock->m_lock, 0U);
 }
 
-struct mcrt_asset_rwlock_t
+struct mcrt_assert_rwlock_t
 {
     uint32_t m_lock;
     uint32_t m_reader_count;
 };
 
-inline void mcrt_asset_rwlock_init(struct mcrt_asset_rwlock_t *rwlock)
+inline void mcrt_assert_rwlock_init(struct mcrt_assert_rwlock_t *rwlock)
 {
     rwlock->m_lock = 0U;
     rwlock->m_reader_count = 0U;
 }
 
-inline void mcrt_asset_rwlock_rdlock(struct mcrt_asset_rwlock_t *rwlock)
+inline void mcrt_assert_rwlock_rdlock(struct mcrt_assert_rwlock_t *rwlock)
 {
     mcrt_atomic_inc_u32(&rwlock->m_reader_count);
 
     MCRT_ASSERT(0U == mcrt_atomic_load(&rwlock->m_lock));
 }
 
-inline void mcrt_asset_rwlock_wrlock(struct mcrt_asset_rwlock_t *rwlock)
+inline void mcrt_assert_rwlock_wrlock(struct mcrt_assert_rwlock_t *rwlock)
 {
     MCRT_ASSERT(0U == mcrt_atomic_load(&rwlock->m_lock));
 
@@ -105,14 +105,14 @@ inline void mcrt_asset_rwlock_wrlock(struct mcrt_asset_rwlock_t *rwlock)
     MCRT_ASSERT(0U == mcrt_atomic_load(&rwlock->m_reader_count));
 }
 
-inline void mcrt_asset_rwlock_rdunlock(struct mcrt_asset_rwlock_t *rwlock)
+inline void mcrt_assert_rwlock_rdunlock(struct mcrt_assert_rwlock_t *rwlock)
 {
     MCRT_ASSERT(0U == mcrt_atomic_load(&rwlock->m_lock));
 
     mcrt_atomic_dec_u32(&rwlock->m_reader_count);
 }
 
-inline void mcrt_asset_rwlock_wrunlock(struct mcrt_asset_rwlock_t *rwlock)
+inline void mcrt_assert_rwlock_wrunlock(struct mcrt_assert_rwlock_t *rwlock)
 {
     MCRT_ASSERT(0U == mcrt_atomic_load(&rwlock->m_reader_count));
 

@@ -1,14 +1,33 @@
-#include <stdlib.h>
-#include <time.h>
+//
+// Copyright (C) YuqiaoZhang(HanetakaYuminaga)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
 #include <vector>
-#include <unistd.h>
+#include "pt_wsi_app_base.h"
 #include <pt_mcrt_thread.h>
-#include "pt_wsi_neutral_app.h"
 
 extern bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename);
 extern bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename);
 
 static pt_gfx_connection_ref my_gfx_connection = NULL;
+void wsi_app_base::init(pt_gfx_connection_ref gfx_connection)
+{
+    my_gfx_connection = gfx_connection;
+}
+
 //static gfx_texture_ref my_texture1 = NULL;
 //static gfx_texture_ref my_texture2 = NULL;
 static gfx_mesh_ref my_mesh = NULL;
@@ -16,13 +35,7 @@ static gfx_node_ref my_node = NULL;
 static gfx_texture_ref my_texture = NULL;
 static gfx_material_ref my_material = NULL;
 
-bool wsi_neutral_app_init(pt_gfx_connection_ref gfx_connection, void **void_instance)
-{
-    my_gfx_connection = gfx_connection;
-    return true;
-}
-
-int wsi_neutral_app_main(void *void_instance)
+int wsi_app_base::main()
 {
     gfx_mesh_ref my_mesh1 = gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
@@ -63,7 +76,7 @@ int wsi_neutral_app_main(void *void_instance)
     gfx_mesh_destroy(my_gfx_connection, my_mesh1);
 
 #if 1
-    sleep(3);
+    mcrt_os_sleep(3000);
 
     bool has_set = false;
 
@@ -119,7 +132,7 @@ int wsi_neutral_app_main(void *void_instance)
         }
     }
 
-    sleep(3);
+    mcrt_os_sleep(3000);
 
     for (gfx_texture_ref my_texture : my_textures)
     {
@@ -139,7 +152,7 @@ int wsi_neutral_app_main(void *void_instance)
 
     gfx_material_destroy(my_gfx_connection, my_material1);
 
-    sleep(3);
+    mcrt_os_sleep(3000);
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
     gfx_node_destroy(my_gfx_connection, my_node);
@@ -162,23 +175,4 @@ int wsi_neutral_app_main(void *void_instance)
 #endif
 
     return 0;
-}
-
-void wsi_neutral_app_handle_input_event(struct wsi_neutral_app_input_event_t const *wsi_neutral_app_input_event, void *void_instance)
-{
-    switch (wsi_neutral_app_input_event->message_code)
-    {
-    case KEY_SYM_W:
-    {
-        //camera move forward
-    }
-    break;
-
-        // case MESSAGE_CODE_QUIT
-        // may clean up here
-        // window->mark_app_has_quit();
-
-    default:
-        break;
-    }
 }

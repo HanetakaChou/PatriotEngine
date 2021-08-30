@@ -45,7 +45,7 @@ class wsi_window_x11
 
     mcrt_native_thread_id m_draw_request_thread_id;
     static void *draw_request_main(void *);
-    gfx_connection_ref m_gfx_connection;
+    pt_gfx_connection_ref m_gfx_connection;
     bool m_draw_request_thread_running;
 
     mcrt_native_thread_id m_app_thread_id;

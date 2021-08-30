@@ -25,10 +25,11 @@ LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_linux_android.cpp \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_neutral_app.cpp \
+	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_app_base.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -Wall
 
@@ -45,6 +46,6 @@ LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_launcher.def
 LOCAL_LDFLAGS += -landroid
 
-LOCAL_SHARED_LIBRARIES += libpt_mcrt libpt_gfx
+LOCAL_SHARED_LIBRARIES += libpt_mcrt libpt_wsi libpt_gfx
 
 include $(BUILD_SHARED_LIBRARY)

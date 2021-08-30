@@ -169,6 +169,11 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 	WakeAllConditionVariable(cond);
 }
 
+inline void mcrt_os_sleep(uint32_t milli_second)
+{
+	SleepEx(milli_second, FALSE);
+}
+
 #else
 #error "Never use <pt_mcrt_thread_win32.inl> directly; include <pt_mcrt_thread.h> instead."
 #endif

@@ -1,335 +1,75 @@
-﻿/*
- * Copyright (C) YuqiaoZhang(HanetakaYuminaga)
- * 
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+﻿//
+// Copyright (C) YuqiaoZhang(HanetakaYuminaga)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
 
-#include <stddef.h>
-#include <stdint.h>
-#include <assert.h>
-#include <string>
-#include <sys/socket.h>
 #include <android/native_activity.h>
-#include <pt_mcrt_thread.h>
-#include <pt_mcrt_atomic.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include <pt_gfx_connection.h>
+#include <pt_wsi_main.h>
 
-static void ANativeActivity_onDestroy(ANativeActivity *native_activity);
-static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue);
-static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue);
-static void ANativeActivity_onNativeWindowCreated(ANativeActivity *native_activity, ANativeWindow *native_window);
-static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *native_activity, ANativeWindow *native_window);
-static void ANativeActivity_onNativeWindowResized(ANativeActivity *native_activity, ANativeWindow *native_window);
-static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_activity, ANativeWindow *native_window);
+static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path);
+static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app);
+
+extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *savedState, size_t savedStateSize)
+{
+	return pt_wsi_main(native_activity, savedState, savedStateSize, wsi_app_init, wsi_app_main);
+}
+
+#include <pt_mcrt_malloc.h>
+#include "pt_wsi_app_base.h"
+
+class wsi_app_linux_android : public wsi_app_base
+{
+public:
+	void init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path);
+};
+
+inline pt_wsi_app_ref wrap(class wsi_app_linux_android *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
+inline class wsi_app_linux_android *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_linux_android *>(wsi_app); }
+
+static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
+{
+	class wsi_app_linux_android *wsi_app = static_cast<class wsi_app_linux_android *>(mcrt_aligned_malloc(sizeof(class wsi_app_linux_android), alignof(class wsi_app_linux_android)));
+	wsi_app->init(gfx_connection, internal_data_path);
+	return wrap(wsi_app);
+}
+
+static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
+{
+	return unwrap(wsi_app)->main();
+}
+
+#include <string>
+#include <pt_mcrt_scalable_allocator.h>
 
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+mcrt_string g_wsi_app_linux_android_internal_data_path;
 
-static ANativeActivity *wsi_linux_android_native_activity = NULL;
-static mcrt_string wsi_linux_android_internal_data_path;
-static ANativeWindow *wsi_linux_android_native_window = NULL;
-static gfx_connection_ref wsi_linux_android_gfx_connection = NULL;
-static void *wsi_linux_android_void_instance = NULL;
-
-static int wsi_linux_android_main_thread_dispatch_source_event_handler(int fd, int events, void *data);
-
-static int wsi_linux_android_display_source = -1;
-static void wsi_linux_android_display_link_output_callback();
-
-struct wsi_linux_android_display_link_output_main_argument_t
+void wsi_app_linux_android::init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
 {
-	bool m_has_inited;
-};
-static void *wsi_linux_android_display_link_output_main(void *argument);
-static mcrt_native_thread_id wsi_linux_android_display_link_output_main_thread_id;
-
-struct wsi_linux_android_app_main_argument_t
-{
-	gfx_connection_ref m_gfx_connection;
-	void **m_void_instance;
-	bool m_has_inited;
-};
-static void *wsi_linux_android_app_main(void *argument);
-static mcrt_native_thread_id wsi_linux_android_app_main_thread_id;
-
-extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *, size_t)
-{
-	wsi_linux_android_native_activity = native_activity;
-	native_activity->callbacks->onStart = NULL;
-	native_activity->callbacks->onResume = NULL;
-	native_activity->callbacks->onSaveInstanceState = NULL;
-	native_activity->callbacks->onPause = NULL;
-	native_activity->callbacks->onStop = NULL;
-	native_activity->callbacks->onDestroy = ANativeActivity_onDestroy;
-	native_activity->callbacks->onWindowFocusChanged = NULL;
-	native_activity->callbacks->onNativeWindowCreated = ANativeActivity_onNativeWindowCreated;
-	native_activity->callbacks->onNativeWindowResized = ANativeActivity_onNativeWindowResized;
-	native_activity->callbacks->onNativeWindowRedrawNeeded = ANativeActivity_onNativeWindowRedrawNeeded;
-	native_activity->callbacks->onNativeWindowDestroyed = ANativeActivity_onNativeWindowDestroyed;
-	native_activity->callbacks->onInputQueueCreated = ANativeActivity_onInputQueueCreated;
-	native_activity->callbacks->onInputQueueDestroyed = ANativeActivity_onInputQueueDestroyed;
-	native_activity->callbacks->onContentRectChanged = NULL;
-	native_activity->callbacks->onConfigurationChanged = NULL;
-	native_activity->callbacks->onLowMemory = NULL;
-
-	static bool app_process_on_create = true;
-	if (PT_UNLIKELY(app_process_on_create))
-	{
-		// demo purpose
-		wsi_linux_android_internal_data_path = native_activity->internalDataPath;
-
-		wsi_linux_android_gfx_connection = gfx_connection_init(NULL, NULL, native_activity->internalDataPath);
-
-		// register "pt_wsi_mach_osx_main_queue_dispatch_source_event_handler"
-		{
-			ALooper *looper = ALooper_forThread();
-			assert(looper != NULL);
-
-			// we use "STREAM" since the rendering may be slower than the "pt_wsi_mach_osx_display_link_output_callback"
-			int sv[2];
-			int res_socketpair = socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
-			assert(0 == res_socketpair);
-
-			int sv_read = sv[0];
-			int sv_write = sv[1];
-
-			// Identifier is ignored when callback is not NULL. ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the UI thread.
-			int res_addfd = ALooper_addFd(looper, sv_read, 0, ALOOPER_EVENT_INPUT, wsi_linux_android_main_thread_dispatch_source_event_handler, NULL);
-			assert(1 == res_addfd);
-
-			wsi_linux_android_display_source = sv_write;
-		}
-
-		// display link output main
-		{
-			struct wsi_linux_android_display_link_output_main_argument_t linux_android_display_link_output_main_argument;
-			linux_android_display_link_output_main_argument.m_has_inited = false;
-
-			PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_display_link_output_main_thread_id, wsi_linux_android_display_link_output_main, &linux_android_display_link_output_main_argument);
-			assert(res_native_thread_create);
-
-			while (!mcrt_atomic_load(&linux_android_display_link_output_main_argument.m_has_inited))
-			{
-				mcrt_os_yield();
-			}
-		}
-
-		// app main
-		{
-			struct wsi_linux_android_app_main_argument_t linux_android_app_main_argument;
-			linux_android_app_main_argument.m_gfx_connection = wsi_linux_android_gfx_connection;
-			linux_android_app_main_argument.m_void_instance = &wsi_linux_android_void_instance;
-			linux_android_app_main_argument.m_has_inited = false;
-
-			PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&wsi_linux_android_app_main_thread_id, wsi_linux_android_app_main, &linux_android_app_main_argument);
-			assert(res_native_thread_create);
-
-			while (!mcrt_atomic_load(&linux_android_app_main_argument.m_has_inited))
-			{
-				mcrt_os_yield();
-			}
-		}
-
-		app_process_on_create = false;
-	}
+	this->wsi_app_base::init(gfx_connection);
+	g_wsi_app_linux_android_internal_data_path = internal_data_path;
 }
 
-static void ANativeActivity_onDestroy(ANativeActivity *native_activity)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-	wsi_linux_android_native_activity = NULL;
-}
-
-static void ANativeActivity_onInputQueueCreated(ANativeActivity *native_activity, AInputQueue *input_queue)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-
-	ALooper *looper = ALooper_forThread();
-	assert(looper != NULL);
-
-	AInputQueue_attachLooper(
-		input_queue,
-		looper,
-		0, //Identifier is ignored when callback is not NULL. ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the UI thread.
-		[](int fd, int, void *input_queue_void) -> int
-		{
-			AInputQueue *input_queue = static_cast<AInputQueue *>(input_queue_void);
-
-			AInputEvent *input_event;
-			while (AInputQueue_getEvent(input_queue, &input_event) >= 0)
-			{
-				//The app will be "No response" if we don't call AInputQueue_finishEvent and pass the non-zero value for all events which is not pre-dispatched.
-				if (0 == AInputQueue_preDispatchEvent(input_queue, input_event))
-				{
-					int handled = 0;
-
-					int32_t type = AInputEvent_getType(input_event);
-					switch (type)
-					{
-					case AINPUT_EVENT_TYPE_KEY:
-					{
-						int32_t key_code = AKeyEvent_getKeyCode(input_event);
-						switch (key_code)
-						{
-						case AKEYCODE_HOME:
-						{
-							assert(NULL != wsi_linux_android_native_activity);
-							ANativeActivity_finish(wsi_linux_android_native_activity);
-							handled = 1;
-						}
-						break;
-						default:
-							break;
-						}
-					}
-					break;
-					default:
-						break;
-					}
-
-					AInputQueue_finishEvent(input_queue, input_event, handled);
-				}
-			}
-			return 1;
-		},
-		input_queue);
-}
-
-static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activity, AInputQueue *input_queue)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-
-	ALooper *looper = ALooper_forThread();
-	assert(looper != NULL);
-
-	AInputQueue_detachLooper(input_queue);
-}
-
-static void ANativeActivity_onNativeWindowCreated(ANativeActivity *native_activity, ANativeWindow *native_window)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-	wsi_linux_android_native_window = native_window;
-	bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(wsi_linux_android_gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(native_window), ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
-	assert(res_on_wsi_window_created);
-}
-
-static void ANativeActivity_onNativeWindowDestroyed(ANativeActivity *native_activity, ANativeWindow *native_window)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-	assert(native_window == wsi_linux_android_native_window);
-	wsi_linux_android_native_window = NULL;
-	gfx_connection_on_wsi_window_destroyed(wsi_linux_android_gfx_connection);
-}
-
-static void ANativeActivity_onNativeWindowResized(ANativeActivity *native_activity, ANativeWindow *native_window)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-	assert(native_window == wsi_linux_android_native_window);
-	gfx_connection_on_wsi_resized(wsi_linux_android_gfx_connection, ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
-}
-
-static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_activity, ANativeWindow *native_window)
-{
-	assert(native_activity == wsi_linux_android_native_activity);
-	assert(native_window == wsi_linux_android_native_window);
-
-	wsi_linux_android_display_link_output_callback();
-}
-
-static int wsi_linux_android_main_thread_dispatch_source_event_handler(int fd, int, void *)
-{
-	// read all data
-	{
-		uint8_t buf[4096];
-		ssize_t res_recv = recv(fd, buf, 4096U, 0);
-		assert(-1 != res_recv);
-	}
-
-	gfx_connection_on_wsi_redraw_needed_acquire(wsi_linux_android_gfx_connection);
-	gfx_connection_on_wsi_redraw_needed_release(wsi_linux_android_gfx_connection);
-
-	return 1;
-}
-
-static void wsi_linux_android_display_link_output_callback()
-{
-	uint8_t buf[1] = {7};
-	ssize_t res_send = send(wsi_linux_android_display_source, buf, 1U, 0);
-	assert(1 == res_send);
-}
-
-static void *wsi_linux_android_display_link_output_main(void *argument_void)
-{
-	// display link output init
-	{
-		struct wsi_linux_android_display_link_output_main_argument_t *argument = static_cast<struct wsi_linux_android_display_link_output_main_argument_t *>(argument_void);
-		mcrt_atomic_store(&argument->m_has_inited, true);
-	}
-
-	while (1)
-	{
-		// 60 FPS
-		{
-			uint32_t milli_second = 1000U / 60U;
-			struct timespec request;
-			struct timespec remain;
-			request.tv_sec = static_cast<time_t>(milli_second / 1000U);
-			request.tv_nsec = static_cast<long>(1000000U * (milli_second % 1000U));
-			int res_sleep;
-			while (0 != (res_sleep = nanosleep(&request, &remain)))
-			{
-				assert(EINTR == errno);
-				assert(-1 == res_sleep);
-				assert(remain.tv_nsec > 0 || remain.tv_sec > 0);
-				request = remain;
-			}
-		}
-
-		wsi_linux_android_display_link_output_callback();
-	}
-}
-
-#include "pt_wsi_neutral_app.h"
-static void *wsi_linux_android_app_main(void *argument_void)
-{
-	struct wsi_linux_android_app_main_argument_t *argument = static_cast<struct wsi_linux_android_app_main_argument_t *>(argument_void);
-
-	// app init
-	{
-		PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(argument->m_gfx_connection, argument->m_void_instance);
-		assert(res_neutral_app_init);
-		mcrt_atomic_store(&argument->m_has_inited, true);
-	}
-
-	int res_neutral_app_main = wsi_neutral_app_main((*argument->m_void_instance));
-
-	//mcrt_atomic_store(&self->m_loop, false);
-
-	//wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
-
-	return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
-}
-
-// neutral app file system
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
-bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
-	mcrt_string path = wsi_linux_android_internal_data_path;
+	mcrt_string path = g_wsi_app_linux_android_internal_data_path;
 	path += '/';
 	path += initial_filename;
 
@@ -358,9 +98,9 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
 		});
 }
 
-bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
-	mcrt_string path = wsi_linux_android_internal_data_path;
+	mcrt_string path = g_wsi_app_linux_android_internal_data_path;
 	path += '/';
 	path += initial_filename;
 

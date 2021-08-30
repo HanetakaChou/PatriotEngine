@@ -76,8 +76,8 @@ class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_con
     return gfx_connection;
 }
 
-inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
 inline gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<gfx_node_ref>(node); }
 inline class gfx_node_base *unwrap(gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
@@ -91,57 +91,57 @@ inline class gfx_material_base *unwrap(gfx_material_ref gfx_material) { return r
 inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const* gfx_cache_dirname)
+PT_ATTR_GFX pt_gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const* gfx_cache_dirname)
 {
     return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, gfx_cache_dirname));
 }
 
-PT_ATTR_GFX bool PT_CALL gfx_connection_on_wsi_window_created(gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
+PT_ATTR_GFX bool PT_CALL gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
 {
     return unwrap(gfx_connection)->on_wsi_window_created(wsi_connection, wsi_window, width, height);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed(pt_gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_window_destroyed();
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_resized(gfx_connection_ref gfx_connection, float width, float height)
+PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_resized(pt_gfx_connection_ref gfx_connection, float width, float height)
 {
     return unwrap(gfx_connection)->on_wsi_resized(width, height);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_redraw_needed_acquire(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_redraw_needed_acquire();
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_redraw_needed_release(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->on_wsi_redraw_needed_release();
 }
 
-PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(pt_gfx_connection_ref gfx_connection)
 {
     return wrap(unwrap(gfx_connection)->create_node());
 }
 
-PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(pt_gfx_connection_ref gfx_connection)
 {
     return wrap(unwrap(gfx_connection)->create_mesh());
 }
 
-PT_ATTR_GFX gfx_material_ref PT_CALL gfx_connection_create_material(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX gfx_material_ref PT_CALL gfx_connection_create_material(pt_gfx_connection_ref gfx_connection)
 {
     return wrap(unwrap(gfx_connection)->create_material());
 }
 
-PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(pt_gfx_connection_ref gfx_connection)
 {
     return wrap(unwrap(gfx_connection)->create_texture());
 }
 
-PT_ATTR_GFX void PT_CALL gfx_connection_destroy(gfx_connection_ref gfx_connection)
+PT_ATTR_GFX void PT_CALL gfx_connection_destroy(pt_gfx_connection_ref gfx_connection)
 {
     return unwrap(gfx_connection)->destroy();
 }

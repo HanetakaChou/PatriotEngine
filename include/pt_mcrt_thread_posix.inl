@@ -207,6 +207,20 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 	assert(res == 0);
 }
 
+inline void mcrt_os_sleep(uint32_t milli_second)
+{
+	struct timespec request = {static_cast<time_t>(milli_second) / static_cast<time_t>(1000), static_cast<long>(1000000) * (static_cast<long>(milli_second) % static_cast<long>(1000))};
+	struct timespec remain;
+
+	int res_sleep;
+	while ((-1 == (res_sleep = nanosleep(&request, &remain))) && (EINTR == errno))
+	{
+		assert(remain.tv_nsec > 0 || remain.tv_sec > 0);
+		request = remain;
+	}
+	assert(0 == res_sleep);
+}
+
 #else
 #error "Never use <pt_mcrt_thread_posix.inl> directly; include <pt_mcrt_thread.h> instead."
 #endif

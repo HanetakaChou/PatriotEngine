@@ -67,8 +67,8 @@ void gfx_node_base::destroy(class gfx_connection_base *gfx_connection)
 }
 
 // API
-inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
 inline gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<gfx_node_ref>(node); }
 inline class gfx_node_base *unwrap(gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
@@ -79,17 +79,17 @@ inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<
 inline gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<gfx_material_ref>(gfx_material); }
 inline class gfx_material_base *unwrap(gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
 
-PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_mesh_ref gfx_mesh)
+PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_mesh_ref gfx_mesh)
 {
     return unwrap(gfx_node)->set_mesh(unwrap(gfx_connection), unwrap(gfx_mesh));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_node_set_material(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_material_ref gfx_material)
+PT_ATTR_GFX void PT_CALL gfx_node_set_material(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_material_ref gfx_material)
 {
     return unwrap(gfx_node)->set_material(unwrap(gfx_connection), unwrap(gfx_material));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_node_destroy(gfx_connection_ref gfx_connection, gfx_node_ref gfx_node)
+PT_ATTR_GFX void PT_CALL gfx_node_destroy(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node)
 {
     return unwrap(gfx_node)->destroy(unwrap(gfx_connection));
 }

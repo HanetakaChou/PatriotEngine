@@ -194,9 +194,9 @@ void *wsi_window_x11::draw_request_main(void *arg)
         // gfx release //draw and present //draw //not sync scenetree
 
         // update scenetree
-        gfx_connection_on_wsi_redraw_needed_acquire(self->m_gfx_connection);
+        gfx_connection_draw_acquire(self->m_gfx_connection);
         // update animation etc
-        gfx_connection_on_wsi_redraw_needed_release(self->m_gfx_connection);
+        gfx_connection_draw_release(self->m_gfx_connection);
     }
 
     mcrt_atomic_store(&self->m_draw_request_thread_running, false);
@@ -316,7 +316,7 @@ void wsi_window_x11::run()
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
             this->m_window_width = configure_notify->width;
             this->m_window_height = configure_notify->height;
-            gfx_connection_on_wsi_resized(m_gfx_connection, this->m_window_width, this->m_window_height);
+            gfx_connection_on_wsi_window_resized(m_gfx_connection, this->m_window_width, this->m_window_height);
         }
         break;
         case XCB_MAPPING_NOTIFY:
@@ -457,7 +457,7 @@ public:
 #include <sys/stat.h>
 #include <fcntl.h>
 
-bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
     mcrt_string path = "../third_party/assets/";
     path += initial_filename;
@@ -497,7 +497,7 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
         });
 }
 
-bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
     mcrt_string path = "../third_party/assets/";
     path += initial_filename;

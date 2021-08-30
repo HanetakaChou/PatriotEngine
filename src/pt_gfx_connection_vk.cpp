@@ -94,7 +94,7 @@ inline bool gfx_connection_vk::init_streaming()
     for (uint32_t streaming_throttling_index = 0U; streaming_throttling_index < STREAMING_THROTTLING_COUNT; ++streaming_throttling_index)
     {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_asset_rwlock_init(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+        mcrt_assert_rwlock_init(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
         this->m_transfer_src_buffer_begin[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
         this->m_transfer_src_buffer_end[streaming_throttling_index] = this->m_transfer_src_buffer_begin[streaming_throttling_index];
@@ -588,7 +588,7 @@ void gfx_connection_vk::reduce_streaming_task()
     mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+    mcrt_assert_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // submit
@@ -720,7 +720,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+    mcrt_assert_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // The new index
@@ -737,7 +737,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+    mcrt_assert_rwlock_wrlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
 
     // free transfer_src buffer memory
@@ -800,7 +800,7 @@ void gfx_connection_vk::reduce_streaming_task()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+    mcrt_assert_rwlock_wrunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
     return;
 }
@@ -876,7 +876,7 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_init(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_init(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     // Frame Throttling
@@ -2390,7 +2390,7 @@ bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection,
 {
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     this->m_wsi_width = width;
@@ -2407,7 +2407,7 @@ bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection,
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     return true;
@@ -2416,7 +2416,7 @@ bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection,
 void gfx_connection_vk::on_wsi_window_destroyed()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     for (uint32_t frame_throttling_index = 0U; frame_throttling_index < FRAME_THROTTLING_COUNT; ++frame_throttling_index)
@@ -2433,7 +2433,7 @@ void gfx_connection_vk::on_wsi_window_destroyed()
     this->destory_surface();
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 }
 
@@ -2446,7 +2446,7 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
 void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     this->reduce_streaming_task();
@@ -2457,14 +2457,14 @@ void gfx_connection_vk::on_wsi_redraw_needed_acquire()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 }
 
 void gfx_connection_vk::on_wsi_redraw_needed_release()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 
     if (VK_NULL_HANDLE != this->m_surface)
@@ -2473,7 +2473,7 @@ void gfx_connection_vk::on_wsi_redraw_needed_release()
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 }
 

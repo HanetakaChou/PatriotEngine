@@ -31,17 +31,17 @@ extern "C"
 #ifdef PT_POSIX
 #ifdef PT_POSIX_LINUX
 #ifdef PT_POSIX_LINUX_ANDROID
-    PT_ATTR_WSI void PT_CALL pt_wsi_main(ANativeActivity *native_activity, void *, size_t, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+    PT_ATTR_WSI void PT_CALL pt_wsi_main(struct ANativeActivity *native_activity, void *, size_t, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref, char const *internal_data_path), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
 #elif defined(PT_POSIX_LINUX_X11)
-    PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+    PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
 #else
 #error Unknown Mach Platform
 #endif
 #elif defined(PT_POSIX_MACH)
 #ifdef PT_POSIX_MATH_IOS
-    PT_ATTR_WSI int PT_CALL pt_wsi_mainn(int argc, char **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+    PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
 #elif defined(PT_POSIX_MATH_OSX)
-    PT_ATTR_WSI int PT_CALL pt_wsi_mainn(int argc, char const **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+    PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char const **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
 #else
 #error Unknown Mach Platform
 #endif

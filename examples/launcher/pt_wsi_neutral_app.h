@@ -40,7 +40,7 @@ struct wsi_neutral_app_input_event_t
 };
 
 // This is the native instance of the application.  It is not used by the framework, but can be set by the application to its own instance state.
-bool wsi_neutral_app_init(gfx_connection_ref gfx_connection, void **void_instance);
+bool wsi_neutral_app_init(pt_gfx_connection_ref gfx_connection, void **void_instance);
 
 int wsi_neutral_app_main(void *void_instance);
 

@@ -59,7 +59,7 @@ protected:
         static_assert(std::is_pod<T>::value, "");
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_asset_rwlock_t m_asset_rwlock; // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
+        mcrt_assert_rwlock_t m_asset_rwlock; // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
 #endif
 
         uint32_t m_linear_list_count;
@@ -105,7 +105,7 @@ protected:
     uint32_t m_streaming_throttling_index;
     mcrt_rwlock_t m_rwlock_streaming_throttling_index;
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_t m_asset_rwlock_streaming_throttling_index[STREAMING_THROTTLING_COUNT]; // streaming_throttling_index
+    mcrt_assert_rwlock_t m_asset_rwlock_streaming_throttling_index[STREAMING_THROTTLING_COUNT]; // streaming_throttling_index
 #endif
     uint32_t m_streaming_thread_count;
     mcrt_task_ref m_streaming_task_root[STREAMING_THROTTLING_COUNT];
@@ -137,9 +137,9 @@ public:
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     inline void streaming_task_mark_execute_begin(uint32_t streaming_throttling_index)
     {
-        mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
+        mcrt_assert_rwlock_rdlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
     }
-    inline void streaming_task_mark_executie_end(uint32_t streaming_throttling_index) { mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]); }
+    inline void streaming_task_mark_executie_end(uint32_t streaming_throttling_index) { mcrt_assert_rwlock_rdunlock(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]); }
 #endif
     inline void streaming_throttling_index_lock()
     {
@@ -175,7 +175,7 @@ template <typename T, uint32_t LINEAR_LIST_COUNT>
 inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::init()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_init(&this->m_asset_rwlock);
+    mcrt_assert_rwlock_init(&this->m_asset_rwlock);
 #endif
     this->m_linear_list_count = 0U;
     this->m_link_list_head = NULL;
@@ -185,7 +185,7 @@ template <typename T, uint32_t LINEAR_LIST_COUNT>
 inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T value)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_rdlock(&this->m_asset_rwlock);
+    mcrt_assert_rwlock_rdlock(&this->m_asset_rwlock);
 #endif
 
     uint32_t linear_list_index = mcrt_atomic_inc_u32(&this->m_linear_list_count) - 1U;
@@ -215,7 +215,7 @@ inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T valu
     }
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_rdunlock(&this->m_asset_rwlock);
+    mcrt_assert_rwlock_rdunlock(&this->m_asset_rwlock);
 #endif
 }
 
@@ -223,7 +223,7 @@ template <typename T, uint32_t LINEAR_LIST_COUNT>
 inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrlock(&this->m_asset_rwlock);
+    mcrt_assert_rwlock_wrlock(&this->m_asset_rwlock);
 #endif
 
     // list
@@ -246,7 +246,7 @@ inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_cl
     this->m_link_list_head = NULL;
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_rwlock_wrunlock(&this->m_asset_rwlock);
+    mcrt_assert_rwlock_wrunlock(&this->m_asset_rwlock);
 #endif
 }
 

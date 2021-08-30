@@ -20,9 +20,9 @@
         gfx_connection_init;
         gfx_connection_on_wsi_window_created;
         gfx_connection_on_wsi_window_destroyed;
-        gfx_connection_on_wsi_resized;
-        gfx_connection_on_wsi_redraw_needed_acquire;
-        gfx_connection_on_wsi_redraw_needed_release;
+        gfx_connection_on_wsi_window_resized;
+        gfx_connection_draw_acquire;
+        gfx_connection_draw_release;
         gfx_connection_destroy;
         gfx_connection_create_node;
         gfx_node_set_mesh;

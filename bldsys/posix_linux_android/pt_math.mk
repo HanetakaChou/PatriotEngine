@@ -28,6 +28,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
@@ -70,6 +71,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
@@ -97,6 +99,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
@@ -125,6 +128,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
@@ -155,6 +159,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall

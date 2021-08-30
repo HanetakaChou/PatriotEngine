@@ -28,6 +28,7 @@ LOCAL_SRC_FILES:= \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
+LOCAL_LDFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_WSI=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
@@ -46,7 +47,9 @@ LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dta
 LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix me: define the $ORIGIN correctly in the Linux_X11.mk
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_wsi.def
 
-LOCAL_SHARED_LIBRARIES := libpt_mcrt 
+LOCAL_LDLIBS += -landroid
+
+LOCAL_SHARED_LIBRARIES := libpt_gfx libpt_mcrt 
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 

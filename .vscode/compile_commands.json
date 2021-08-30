@@ -176,6 +176,11 @@
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_base.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_base.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
         "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_linux_x11.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp"
     },

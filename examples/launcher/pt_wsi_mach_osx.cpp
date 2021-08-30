@@ -111,7 +111,7 @@ int main(int argc, char const *argv[])
 
 struct wsi_mach_osx_app_main_argument_t
 {
-    gfx_connection_ref m_gfx_connection;
+    pt_gfx_connection_ref m_gfx_connection;
     void **m_void_instance;
     bool m_has_inited;
 } ;
@@ -120,7 +120,7 @@ mcrt_native_thread_id wsi_mach_osx_app_main_thread_id;
 
 extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
 {
-    gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, wsi_mach_osx_library_path.c_str());
+    pt_gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, wsi_mach_osx_library_path.c_str());
     PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
     assert(res_on_wsi_window_created);
 
@@ -140,9 +140,9 @@ extern "C" void *gfx_connection_init_callback(void *layer, float width, float he
 
 extern "C" void gfx_connection_redraw_callback(void *gfx_connection_void)
 {
-    gfx_connection_ref gfx_connection = static_cast<gfx_connection_ref>(gfx_connection_void);
-    gfx_connection_on_wsi_redraw_needed_acquire(gfx_connection);
-    gfx_connection_on_wsi_redraw_needed_release(gfx_connection);
+    pt_gfx_connection_ref gfx_connection = static_cast<pt_gfx_connection_ref>(gfx_connection_void);
+    gfx_connection_draw_acquire(gfx_connection);
+    gfx_connection_draw_release(gfx_connection);
 }
 
 static void *wsi_mach_osx_app_main(void *argument_void)
@@ -160,7 +160,7 @@ static void *wsi_mach_osx_app_main(void *argument_void)
     return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
 
-bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
 {
     mcrt_string path = wsi_mach_osx_library_path.c_str();
     path += '/';
@@ -191,7 +191,7 @@ bool gfx_texture_read_file(gfx_connection_ref gfx_connection, gfx_texture_ref te
         });
 }
 
-bool gfx_mesh_read_file(gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
     mcrt_string path = wsi_mach_osx_library_path.c_str();
     path += '/';

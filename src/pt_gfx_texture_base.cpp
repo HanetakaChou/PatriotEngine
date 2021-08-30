@@ -278,14 +278,14 @@ void gfx_texture_base::release(class gfx_connection_base *gfx_connection)
 }
 
 // API
-inline gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
 inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
 inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
 PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
-    gfx_connection_ref gfx_connection,
+    pt_gfx_connection_ref gfx_connection,
     gfx_texture_ref texture,
     char const *initial_filename,
     gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
@@ -296,7 +296,7 @@ PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
     return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_texture_destroy(gfx_connection_ref gfx_connection, gfx_texture_ref texture)
+PT_ATTR_GFX void PT_CALL gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture)
 {
     return unwrap(texture)->destroy(unwrap(gfx_connection));
 }

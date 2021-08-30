@@ -135,6 +135,8 @@ inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *conditi
 //      -1                - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
 inline int mcrt_os_event_timedwait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms);
 
+inline void mcrt_os_sleep(uint32_t milli_second);
+
 #if defined PT_POSIX
 #include "pt_mcrt_thread_posix.inl"
 #elif defined PT_WIN32

@@ -50,18 +50,18 @@ struct mcrt_asset_spinlock_t
     uint32_t m_lock;
 };
 
-inline void mcrt_asset_spin_init(struct mcrt_asset_spinlock_t *lock)
+inline void mcrt_assert_spin_init(struct mcrt_asset_spinlock_t *lock)
 {
     lock->m_lock = 0U;
 }
 
-inline void mcrt_asset_spin_lock(struct mcrt_asset_spinlock_t *lock)
+inline void mcrt_assert_spin_lock(struct mcrt_asset_spinlock_t *lock)
 {
     MCRT_ASSERT(0U == mcrt_atomic_load(&lock->m_lock));
     mcrt_atomic_store(&lock->m_lock, 1U);
 }
 
-inline void mcrt_asset_spin_unlock(struct mcrt_asset_spinlock_t *lock)
+inline void mcrt_assert_spin_unlock(struct mcrt_asset_spinlock_t *lock)
 {
     mcrt_atomic_store(&lock->m_lock, 0U);
 }

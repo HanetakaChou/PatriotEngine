@@ -22,6 +22,6 @@ cd ${MY_DIR}
 
 ${MY_DIR}/linux_deploy_debug.sh
 
-${MY_DIR}/linux_upload_assets.sh
+#${MY_DIR}/linux_upload_assets.sh
 
 ${MY_DIR}/linux_start_gdbserver.sh
