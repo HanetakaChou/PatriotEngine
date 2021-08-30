@@ -40,7 +40,7 @@ inline class wsi_app_linux_android *unwrap(pt_wsi_app_ref wsi_app) { return rein
 
 static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
 {
-	class wsi_app_linux_android *wsi_app = static_cast<class wsi_app_linux_android *>(mcrt_aligned_malloc(sizeof(class wsi_app_linux_android), alignof(class wsi_app_linux_android)));
+	class wsi_app_linux_android *wsi_app = new(mcrt_aligned_malloc(sizeof(class wsi_app_linux_android), alignof(class wsi_app_linux_android)))wsi_app_linux_android();
 	wsi_app->init(gfx_connection, internal_data_path);
 	return wrap(wsi_app);
 }

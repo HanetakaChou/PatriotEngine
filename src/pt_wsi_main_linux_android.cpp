@@ -17,6 +17,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
+#include <new>
 #include <sys/socket.h>
 #include <android/native_activity.h>
 #include <pt_mcrt_thread.h>
@@ -26,6 +27,7 @@
 #include <pt_wsi_main.h>
 
 static void ANativeActivity_onDestroy(ANativeActivity *native_activity);
+static void ANativeActivity_onWindowFocusChanged(ANativeActivity *native_activity, int hasFocus);
 static void ANativeActivity_onNativeWindowCreated(ANativeActivity *native_activity, ANativeWindow *native_window);
 static void ANativeActivity_onNativeWindowResized(ANativeActivity *native_activity, ANativeWindow *native_window);
 static void ANativeActivity_onNativeWindowRedrawNeeded(ANativeActivity *native_activity, ANativeWindow *native_window);
@@ -44,6 +46,7 @@ class wsi_linux_android
 	mcrt_native_thread_id m_periodic_timer_main_thread_id;
 	mcrt_native_thread_id m_app_main_thread_id;
 	pt_wsi_app_ref m_wsi_app;
+	bool m_has_focus;
 
 	static int main_thread_alooper_callback(int fd, int events, void *data);
 
@@ -69,7 +72,9 @@ class wsi_linux_android
 	static void *app_main(void *argument_void);
 
 public:
+	inline wsi_linux_android();
 	bool init(char const *internal_data_path, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref, char const *), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+	void on_window_focus_changed(bool has_focus);
 	bool on_window_created(ANativeWindow *native_window);
 	void on_window_resized(ANativeWindow *native_window);
 	void on_window_redraw_needed();
@@ -89,7 +94,7 @@ PT_ATTR_WSI void PT_CALL pt_wsi_main(ANativeActivity *native_activity, void *, s
 	native_activity->callbacks->onPause = NULL;
 	native_activity->callbacks->onStop = NULL;
 	native_activity->callbacks->onDestroy = ANativeActivity_onDestroy;
-	native_activity->callbacks->onWindowFocusChanged = NULL;
+	native_activity->callbacks->onWindowFocusChanged = ANativeActivity_onWindowFocusChanged;
 	native_activity->callbacks->onNativeWindowCreated = ANativeActivity_onNativeWindowCreated;
 	native_activity->callbacks->onNativeWindowResized = ANativeActivity_onNativeWindowResized;
 	native_activity->callbacks->onNativeWindowRedrawNeeded = ANativeActivity_onNativeWindowRedrawNeeded;
@@ -102,7 +107,7 @@ PT_ATTR_WSI void PT_CALL pt_wsi_main(ANativeActivity *native_activity, void *, s
 
 	if (PT_UNLIKELY(NULL == g_wsi_linux_android_instance))
 	{
-		g_wsi_linux_android_instance = static_cast<class wsi_linux_android *>(mcrt_aligned_malloc(sizeof(class wsi_linux_android), alignof(wsi_linux_android)));
+		g_wsi_linux_android_instance = new (mcrt_aligned_malloc(sizeof(class wsi_linux_android), alignof(wsi_linux_android))) wsi_linux_android();
 		assert(NULL != g_wsi_linux_android_instance);
 
 		PT_MAYBE_UNUSED bool res_linux_android_instance_init = g_wsi_linux_android_instance->init(native_activity->internalDataPath, pt_wsi_app_init_callback, pt_wsi_app_main_callback);
@@ -114,6 +119,12 @@ static void ANativeActivity_onDestroy(ANativeActivity *native_activity)
 {
 	assert(native_activity == g_wsi_linux_android_native_activity);
 	g_wsi_linux_android_native_activity = NULL;
+}
+
+static void ANativeActivity_onWindowFocusChanged(ANativeActivity *native_activity, int hasFocus)
+{
+	assert(native_activity == g_wsi_linux_android_native_activity);
+	g_wsi_linux_android_instance->on_window_focus_changed(0 != hasFocus);
 }
 
 static void ANativeActivity_onNativeWindowCreated(ANativeActivity *native_activity, ANativeWindow *native_window)
@@ -215,6 +226,10 @@ static void ANativeActivity_onInputQueueDestroyed(ANativeActivity *native_activi
 	AInputQueue_detachLooper(input_queue);
 }
 
+inline wsi_linux_android::wsi_linux_android() : m_gfx_connection(NULL), m_main_thread_alooper_fd_read(-1), m_main_thread_alooper_fd_write(-1), m_wsi_app(NULL), m_has_focus(true)
+{
+}
+
 bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref, char const *), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref))
 {
 	//
@@ -279,7 +294,7 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 int wsi_linux_android::main_thread_alooper_callback(int fd, int events, void *data)
 {
 	class wsi_linux_android *instance = static_cast<class wsi_linux_android *>(data);
-	assert(instance->m_main_thread_alooper_fd_read == fd);
+	assert(fd == instance->m_main_thread_alooper_fd_read);
 	assert(ALOOPER_EVENT_INPUT == events);
 
 	// we use "SOCK_STREAM" since the "draw_on_main_thread" may be slower than the "request_draw_on_main_thread"
@@ -316,8 +331,13 @@ void *wsi_linux_android::periodic_timer_main(void *argument_void)
 		uint32_t milli_second = 1000U / 60U;
 		mcrt_os_sleep(milli_second);
 
-		instance->request_draw_on_main_thread();
+		if (mcrt_atomic_load(&instance->m_has_focus))
+		{
+			instance->request_draw_on_main_thread();
+		}
 	}
+
+	return NULL;
 }
 
 void wsi_linux_android::request_draw_on_main_thread()
@@ -359,6 +379,11 @@ void *wsi_linux_android::app_main(void *argument_void)
 	//wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
 
 	return reinterpret_cast<void *>(static_cast<intptr_t>(res_app_main_callback));
+}
+
+void wsi_linux_android::on_window_focus_changed(bool has_focus)
+{
+	mcrt_atomic_store(&this->m_has_focus, has_focus);
 }
 
 bool wsi_linux_android::on_window_created(ANativeWindow *native_window)

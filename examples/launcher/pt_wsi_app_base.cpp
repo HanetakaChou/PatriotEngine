@@ -155,7 +155,7 @@ int wsi_app_base::main()
     mcrt_os_sleep(3000);
 
     gfx_mesh_destroy(my_gfx_connection, my_mesh);
-    gfx_node_destroy(my_gfx_connection, my_node);
+    //gfx_node_destroy(my_gfx_connection, my_node);
 
 #if 0
     sleep(15);
