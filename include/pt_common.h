@@ -28,6 +28,11 @@
 #if defined(__linux__)
 #define PT_POSIX 1
 #define PT_POSIX_LINUX 1
+#ifdef __ANDROID__
+#define PT_POSIX_LINUX_ANDROID 1
+#else
+#define PT_POSIX_LINUX_X11 1
+#endif
 #elif defined(__MACH__)
 //https://developer.apple.com/library/archive/documentation/Porting/Conceptual/PortingUnix/compiling/compiling.html
 #define PT_POSIX 1

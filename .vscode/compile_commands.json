@@ -165,6 +165,16 @@
         "file": "${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp"
     },
     {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_linux_android.cpp -o ${workspaceFolder}/src/pt_wsi_main_linux_android.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_linux_android.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp -o ${workspaceFolder}/src/pt_wsi_main_linux_x11.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp"
+    },
+    {
         "directory": "${workspaceFolder}/examples/launcher",
         "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_linux_x11.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp"
