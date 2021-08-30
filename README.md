@@ -67,12 +67,15 @@ The asset streaming process is totally asynchronous. This means that the calling
     gfx_connection_wsi_on_resized
 
     // usage
-    // [current thread] app on_redraw_needed //drawInMTKView //onNativeWindowRedrawNeeded 
+    // [current thread] app on_redraw_needed //drawInMTKView 
     // [arbitrary thread] app update info which doesn't depend on accurate time ( scenetree etc ) //app may update in other threads 
     // [current thread] app call gfx acquire //gfx sync ( from other threads ) and flatten scenetree //and then gfx frame throttling
     // [current thread] app update time-related info ( animation etc ) //frame throttling make the time here less latency //scenetree update here (include update from other threads) is ignored in current frame and to impact on the next frame
     // [current thread] app call gfx release //gfx draw and present //gfx not sync scenetree here
     gfx_connection_wsi_on_redraw_needed_acquire
+
+    // app related update
+
     gfx_connection_wsi_on_redraw_needed_release
 ```   
  
