@@ -17,6 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# Sign Xcode applications
+# https://docs.github.com/en/actions/guides/installing-an-apple-certificate-on-macos-runners-for-xcode-development
+
 # configure
 if test \( $# -ne 2 \);
 then
