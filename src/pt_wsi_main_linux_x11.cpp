@@ -18,96 +18,91 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
+#include <vector>
 #include <X11/keysym.h>
 #include <xcb/xcb.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include <pt_wsi_main.h>
 
+template <typename T>
+using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
 
-class wsi_window_x11
+class wsi_linux_x11
 {
     xcb_connection_t *m_xcb_connection;
-
     xcb_setup_t const *m_setup;
     xcb_screen_t *m_screen;
     xcb_visualid_t m_visual;
-
     xcb_window_t m_window;
     float m_window_width;
     float m_window_height;
-
     xcb_atom_t m_atom_wm_protocols;
     xcb_atom_t m_atom_wm_delete_window;
-
-    bool m_loop;
-
-    mcrt_native_thread_id m_draw_main_id;
-    static void *draw_main(void *);
-    pt_gfx_connection_ref m_gfx_connection;
-    bool m_draw_request_thread_running;
-
-    mcrt_native_thread_id m_app_thread_id;
-    static void *app_main(void *);
-    void *m_neutral_app_void_instance;
-    bool m_app_thread_running;
-
+    mcrt_native_thread_id m_draw_main_thread_id;
+    mcrt_native_thread_id m_app_main_thread_id;
+    bool m_x11_main_running;
     xcb_keycode_t m_min_keycode;
     xcb_keycode_t m_max_keycode;
-    std::vector<xcb_keysym_t> m_keysym;
+    mcrt_vector<xcb_keysym_t> m_keysym;
     uint8_t m_keysyms_per_keycode;
     void sync_keysyms();
     xcb_keysym_t keycode_to_keysym(xcb_keycode_t keycode);
+
+    // TODO
+    // padding for cache line
+
+    pt_gfx_connection_ref m_gfx_connection;
+    bool m_draw_main_running;
+    static void *draw_main(void *);
+
+    struct app_main_argument_t
+    {
+        class wsi_linux_x11 *m_instance;
+        pt_wsi_app_ref(PT_PTR *m_wsi_app_init_callback)(pt_gfx_connection_ref);
+        int(PT_PTR *m_wsi_app_main_callback)(pt_wsi_app_ref);
+    };
+    pt_wsi_app_ref m_wsi_app;
+    bool m_app_main_running;
+    static void *app_main(void *);
 
     static inline wsi_connection_ref wrap_wsi_connection(xcb_connection_t *wsi_connection);
     static inline wsi_visual_ref wrap_wsi_visual(xcb_visualid_t wsi_visual);
     static inline wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window);
 
 public:
-    void init();
-    void run();
-    void destroy();
+    void init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref));
+    int main();
 };
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref))
+PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
 {
-    
+    wsi_linux_x11 instance;
+    instance.init(wsi_app_init_callback, wsi_app_main_callback);
+    return instance.main();
 }
 
-#include <pt_mcrt_scalable_allocator.h>
-#include "pt_wsi_linux_x11.h"
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
-int main(int argc, char **argv)
-{
-    wsi_window_x11 window_x11;
-    window_x11.init();
-    window_x11.run();
-    window_x11.destroy();
-    return 0;
-}
-
-void wsi_window_x11::init()
+void wsi_linux_x11::init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
 {
     int scr;
-    m_xcb_connection = xcb_connect(NULL, &scr);
-    assert(xcb_connection_has_error(m_xcb_connection) == 0);
+    this->m_xcb_connection = xcb_connect(NULL, &scr);
+    assert(xcb_connection_has_error(this->m_xcb_connection) == 0);
 
-    m_setup = xcb_get_setup(m_xcb_connection);
+    this->m_setup = xcb_get_setup(this->m_xcb_connection);
 
-    xcb_screen_iterator_t iter = xcb_setup_roots_iterator(m_setup);
+    xcb_screen_iterator_t iter = xcb_setup_roots_iterator(this->m_setup);
     for (int i = 0; i < scr; ++i)
     {
         xcb_screen_next(&iter);
     }
-    m_screen = iter.data;
+    this->m_screen = iter.data;
 
-    m_visual = m_screen->root_visual;
+    this->m_visual = m_screen->root_visual;
 
     // CreateWindowExW
-    m_window = xcb_generate_id(m_xcb_connection);
+    this->m_window = xcb_generate_id(m_xcb_connection);
 
     uint32_t value_mask = XCB_CW_BACK_PIXEL | XCB_CW_BACKING_STORE | XCB_CW_EVENT_MASK;
 
@@ -139,71 +134,83 @@ void wsi_window_x11::init()
     // Delete Window
     // https://www.x.org/releases/current/doc/xorg-docs/icccm/icccm.html
 
-    xcb_intern_atom_cookie_t cookie_net_wm_name = xcb_intern_atom(m_xcb_connection, 0, 12U, "_NET_WM_NAME");
-    xcb_intern_atom_cookie_t cookie_utf8_string = xcb_intern_atom(m_xcb_connection, 0, 11U, "UTF8_STRING");
-    xcb_intern_atom_cookie_t cookie_wm_protocols = xcb_intern_atom(m_xcb_connection, 0, 12U, "WM_PROTOCOLS");
-    xcb_intern_atom_cookie_t cookie_wm_delete_window = xcb_intern_atom(m_xcb_connection, 0, 16U, "WM_DELETE_WINDOW");
+    xcb_intern_atom_cookie_t cookie_net_wm_name = xcb_intern_atom(this->m_xcb_connection, 0, 12U, "_NET_WM_NAME");
+    xcb_intern_atom_cookie_t cookie_utf8_string = xcb_intern_atom(this->m_xcb_connection, 0, 11U, "UTF8_STRING");
+    xcb_intern_atom_cookie_t cookie_wm_protocols = xcb_intern_atom(this->m_xcb_connection, 0, 12U, "WM_PROTOCOLS");
+    xcb_intern_atom_cookie_t cookie_wm_delete_window = xcb_intern_atom(this->m_xcb_connection, 0, 16U, "WM_DELETE_WINDOW");
 
-    xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_create_window); //implicit xcb_flush
+    xcb_generic_error_t *error_generic = xcb_request_check(this->m_xcb_connection, cookie_create_window); //implicit xcb_flush
     assert(error_generic == NULL);
 
-    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(m_xcb_connection, cookie_net_wm_name, &error_generic);
+    xcb_intern_atom_reply_t *reply_net_wm_name = xcb_intern_atom_reply(this->m_xcb_connection, cookie_net_wm_name, &error_generic);
     assert(error_generic == NULL);
     xcb_atom_t atom_net_wm_name = reply_net_wm_name->atom;
     free(reply_net_wm_name);
 
-    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(m_xcb_connection, cookie_utf8_string, &error_generic);
+    xcb_intern_atom_reply_t *reply_utf8_string = xcb_intern_atom_reply(this->m_xcb_connection, cookie_utf8_string, &error_generic);
     assert(error_generic == NULL);
     xcb_atom_t atom_utf8_string = reply_utf8_string->atom;
     free(reply_utf8_string);
 
-    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_protocols, &error_generic);
+    xcb_intern_atom_reply_t *reply_wm_protocols = xcb_intern_atom_reply(this->m_xcb_connection, cookie_wm_protocols, &error_generic);
     assert(error_generic == NULL);
-    m_atom_wm_protocols = reply_wm_protocols->atom;
+    this->m_atom_wm_protocols = reply_wm_protocols->atom;
     free(reply_wm_protocols);
 
     xcb_intern_atom_reply_t *reply_wm_delete_window = xcb_intern_atom_reply(m_xcb_connection, cookie_wm_delete_window, &error_generic);
     assert(error_generic == NULL);
-    m_atom_wm_delete_window = reply_wm_delete_window->atom;
+    this->m_atom_wm_delete_window = reply_wm_delete_window->atom;
     free(reply_wm_delete_window);
 
-    xcb_void_cookie_t cookie_change_property_net_wm_name = xcb_change_property_checked(m_xcb_connection, XCB_PROP_MODE_REPLACE, m_window, atom_net_wm_name, atom_utf8_string, 8U, 13U, "PatriotEngine");
+    xcb_void_cookie_t cookie_change_property_net_wm_name = xcb_change_property_checked(this->m_xcb_connection, XCB_PROP_MODE_REPLACE, this->m_window, atom_net_wm_name, atom_utf8_string, 8U, 13U, "PatriotEngine");
 
-    xcb_void_cookie_t cookie_change_property_wm_protocols = xcb_change_property_checked(m_xcb_connection, XCB_PROP_MODE_REPLACE, m_window, m_atom_wm_protocols, XCB_ATOM_ATOM, 32U, 1U, &m_atom_wm_delete_window);
+    xcb_void_cookie_t cookie_change_property_wm_protocols = xcb_change_property_checked(this->m_xcb_connection, XCB_PROP_MODE_REPLACE, this->m_window, this->m_atom_wm_protocols, XCB_ATOM_ATOM, 32U, 1U, &this->m_atom_wm_delete_window);
 
     // ShowWindow
-    xcb_void_cookie_t cookie_map_window = xcb_map_window_checked(m_xcb_connection, m_window);
+    xcb_void_cookie_t cookie_map_window = xcb_map_window_checked(this->m_xcb_connection, this->m_window);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_net_wm_name);
+    error_generic = xcb_request_check(this->m_xcb_connection, cookie_change_property_net_wm_name);
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_change_property_wm_protocols);
+    error_generic = xcb_request_check(this->m_xcb_connection, cookie_change_property_wm_protocols);
     assert(error_generic == NULL);
 
-    error_generic = xcb_request_check(m_xcb_connection, cookie_map_window);
+    error_generic = xcb_request_check(this->m_xcb_connection, cookie_map_window);
     assert(error_generic == NULL);
 
-    // member
-    mcrt_atomic_store(&this->m_loop, true);
-
-    // draw_request_thread
-    m_gfx_connection = NULL;
-    mcrt_atomic_store(&m_draw_request_thread_running, false);
-    PT_MAYBE_UNUSED bool res_draw_request_thread = mcrt_native_thread_create(&m_draw_request_thread_id, draw_request_main, this);
-    assert(res_draw_request_thread);
-    while (!mcrt_atomic_load(&m_draw_request_thread_running))
+    // draw_main
     {
-        mcrt_os_yield();
+        this->m_gfx_connection = NULL;
+        mcrt_atomic_store(&this->m_draw_main_running, false);
+
+        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_draw_main_thread_id, draw_main, this);
+        assert(res_native_thread_create);
+
+        while (!mcrt_atomic_load(&this->m_draw_main_running))
+        {
+            mcrt_os_yield();
+        }
+
+        assert(this->m_gfx_connection != NULL);
     }
-    assert(m_gfx_connection != NULL);
 
-    // app_thread
-    mcrt_atomic_store(&m_app_thread_running, false);
-    PT_MAYBE_UNUSED bool res_app_thread = mcrt_native_thread_create(&m_app_thread_id, app_main, this);
-    assert(res_app_thread);
-    while (!mcrt_atomic_load(&m_app_thread_running))
+    // app_main
     {
-        mcrt_os_yield();
+        struct app_main_argument_t app_main_argument;
+        app_main_argument.m_instance = this;
+        app_main_argument.m_wsi_app_init_callback = wsi_app_init_callback;
+        app_main_argument.m_wsi_app_main_callback = wsi_app_main_callback;
+        mcrt_atomic_store(&this->m_app_main_running, false);
+
+        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_app_main_thread_id, app_main, &app_main_argument);
+        assert(res_native_thread_create);
+
+        while (!mcrt_atomic_load(&this->m_app_main_running))
+        {
+            mcrt_os_yield();
+        }
+
+        assert(NULL != this->m_wsi_app);
     }
 
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
@@ -211,78 +218,20 @@ void wsi_window_x11::init()
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_get_keysym
     this->sync_keysyms();
+
+    // x11_main
+    mcrt_atomic_store(&this->m_x11_main_running, true);
 }
 
-inline wsi_connection_ref wsi_window_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
+void wsi_linux_x11::sync_keysyms()
 {
-    return reinterpret_cast<wsi_connection_ref>(wsi_connection);
-}
+    this->m_min_keycode = this->m_setup->min_keycode;
+    this->m_max_keycode = this->m_setup->max_keycode;
 
-inline wsi_visual_ref wsi_window_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
-{
-    return reinterpret_cast<wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
-}
-
-inline wsi_window_ref wsi_window_x11::wrap_wsi_window(xcb_window_t wsi_window)
-{
-    return reinterpret_cast<wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
-}
-
-void *wsi_window_x11::draw_request_main(void *arg)
-{
-    wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
-
-    self->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_visual(self->m_visual), ".");
-    assert(self->m_gfx_connection != NULL);
-    mcrt_atomic_store(&self->m_draw_request_thread_running, true);
-
-    gfx_connection_on_wsi_window_created(self->m_gfx_connection, wrap_wsi_connection(self->m_xcb_connection), wrap_wsi_window(self->m_window), self->m_window_height, self->m_window_width);
-
-    while (mcrt_atomic_load(&self->m_loop))
-    {
-        // usage
-        // on_redraw_needed
-        // app update scenetree //maybe in other thread //not depend on accurate time
-        // gfx acquire //sync and flatten scenetree //then frame throttling
-        // app update time-related (animation etc) //frame throttling make the time here less latency //scenetree modify will impact on the next frame
-        // gfx release //draw and present //draw //not sync scenetree
-
-        // update scenetree
-        gfx_connection_draw_acquire(self->m_gfx_connection);
-        // update animation etc
-        gfx_connection_draw_release(self->m_gfx_connection);
-    }
-
-    mcrt_atomic_store(&self->m_draw_request_thread_running, false);
-    return NULL;
-}
-
-void *wsi_window_x11::app_main(void *arg)
-{
-    wsi_window_x11 *self = static_cast<wsi_window_x11 *>(arg);
-
-    PT_MAYBE_UNUSED bool res_neutral_app_init = wsi_neutral_app_init(self->m_gfx_connection, &self->m_neutral_app_void_instance);
-    assert(res_neutral_app_init);
-    mcrt_atomic_store(&self->m_app_thread_running, true);
-
-    int res_neutral_app_main = wsi_neutral_app_main(self->m_neutral_app_void_instance);
-
-    //mcrt_atomic_store(&self->m_loop, false);
-
-    //wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
-
-    return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
-}
-
-void wsi_window_x11::sync_keysyms()
-{
-    m_min_keycode = m_setup->min_keycode;
-    m_max_keycode = m_setup->max_keycode;
-
-    xcb_get_keyboard_mapping_cookie_t cookie_get_keyboard_mapping = xcb_get_keyboard_mapping(m_xcb_connection, m_min_keycode, (m_max_keycode - m_min_keycode) + 1);
+    xcb_get_keyboard_mapping_cookie_t cookie_get_keyboard_mapping = xcb_get_keyboard_mapping(this->m_xcb_connection, this->m_min_keycode, (this->m_max_keycode - this->m_min_keycode) + 1);
 
     xcb_generic_error_t *error_generic;
-    xcb_get_keyboard_mapping_reply_t *reply_get_keyboard_mapping = xcb_get_keyboard_mapping_reply(m_xcb_connection, cookie_get_keyboard_mapping, &error_generic);
+    xcb_get_keyboard_mapping_reply_t *reply_get_keyboard_mapping = xcb_get_keyboard_mapping_reply(this->m_xcb_connection, cookie_get_keyboard_mapping, &error_generic);
     assert(error_generic == NULL);
 
     xcb_keysym_t *keysym_begin = xcb_get_keyboard_mapping_keysyms(reply_get_keyboard_mapping);
@@ -290,12 +239,12 @@ void wsi_window_x11::sync_keysyms()
     xcb_keysym_t *keysym_end = static_cast<xcb_keysym_t *>(iter_keysym_end.data);
     assert((sizeof(xcb_keysym_t) * (keysym_end - keysym_begin)) == (iter_keysym_end.index - sizeof(xcb_get_keyboard_mapping_reply_t)));
 
-    m_keysym.resize(keysym_end - keysym_begin);
-    assert(sizeof(m_keysym[0]) == sizeof(xcb_keysym_t));
-    mcrt_memcpy(&m_keysym[0], keysym_begin, sizeof(xcb_keysym_t) * (keysym_end - keysym_begin));
+    this->m_keysym.resize(keysym_end - keysym_begin);
+    assert(sizeof(this->m_keysym[0]) == sizeof(xcb_keysym_t));
+    mcrt_memcpy(&this->m_keysym[0], keysym_begin, sizeof(xcb_keysym_t) * (keysym_end - keysym_begin));
 
-    m_keysyms_per_keycode = reply_get_keyboard_mapping->keysyms_per_keycode;
-    assert((keysym_end - keysym_begin) == m_keysyms_per_keycode * ((m_max_keycode - m_min_keycode) + 1));
+    this->m_keysyms_per_keycode = reply_get_keyboard_mapping->keysyms_per_keycode;
+    assert((keysym_end - keysym_begin) == this->m_keysyms_per_keycode * ((this->m_max_keycode - this->m_min_keycode) + 1));
 
     free(reply_get_keyboard_mapping);
 
@@ -307,15 +256,15 @@ void wsi_window_x11::sync_keysyms()
     // libxkbcommon/tools/interactive-x11.c
 }
 
-xcb_keysym_t wsi_window_x11::keycode_to_keysym(xcb_keycode_t keycode)
+xcb_keysym_t wsi_linux_x11::keycode_to_keysym(xcb_keycode_t keycode)
 {
     //https://gitlab.freedesktop.org/xorg/lib/libxcb-keysyms
     //xcb_key_symbols_get_keysym
 
-    if (keycode >= m_min_keycode && keycode <= m_max_keycode)
+    if (keycode >= this->m_min_keycode && keycode <= this->m_max_keycode)
     {
-        assert((m_keysyms_per_keycode * (keycode - m_min_keycode)) < static_cast<uint8_t>(m_keysym.size()));
-        return m_keysym[m_keysyms_per_keycode * (keycode - m_min_keycode)];
+        assert((this->m_keysyms_per_keycode * (keycode - this->m_min_keycode)) < static_cast<uint8_t>(this->m_keysym.size()));
+        return this->m_keysym[this->m_keysyms_per_keycode * (keycode - this->m_min_keycode)];
     }
     else
     {
@@ -323,11 +272,11 @@ xcb_keysym_t wsi_window_x11::keycode_to_keysym(xcb_keycode_t keycode)
     }
 }
 
-void wsi_window_x11::run()
+int wsi_linux_x11::main()
 {
     xcb_generic_event_t *event;
 
-    while (mcrt_atomic_load(&this->m_loop) && ((event = xcb_wait_for_event(m_xcb_connection)) != NULL))
+    while (mcrt_atomic_load(&this->m_x11_main_running) && ((event = xcb_wait_for_event(this->m_xcb_connection)) != NULL))
     {
 
         // The most significant bit(uint8_t(0X80)) in this code is set if the event was generated from a SendEvent request.
@@ -350,8 +299,8 @@ void wsi_window_x11::run()
                 {
                     assert(XK_W == keysym || XK_w == keysym);
 
-                    struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_KEY_PRESS, KEY_SYM_W, 0};
-                    wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
+                    //struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_KEY_PRESS, KEY_SYM_W, 0};
+                    //wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
                 }
                 break;
                 case XK_Shift_L:
@@ -370,7 +319,7 @@ void wsi_window_x11::run()
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
             this->m_window_width = configure_notify->width;
             this->m_window_height = configure_notify->height;
-            gfx_connection_on_wsi_window_resized(m_gfx_connection, this->m_window_width, this->m_window_height);
+            gfx_connection_on_wsi_window_resized(this->m_gfx_connection, this->m_window_width, this->m_window_height);
         }
         break;
         case XCB_MAPPING_NOTIFY:
@@ -395,13 +344,18 @@ void wsi_window_x11::run()
             // WM_DESTROY
             if (client_message->window == m_window && client_message->type == m_atom_wm_protocols && client_message->format == 32U && client_message->data.data32[0] == m_atom_wm_delete_window)
             {
-                mcrt_atomic_store(&this->m_loop, false);
+                mcrt_atomic_store(&this->m_x11_main_running, false);
+                mcrt_atomic_store(&this->m_draw_main_running, false);
+                mcrt_atomic_store(&this->m_app_main_running, false);
 
                 //mcrt_atomic_store(&m_app_has_quit, false);
-                struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_QUIT, 0, 0};
-                wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
+                //struct wsi_neutral_app_input_event_t wsi_neutral_app_input_event = {MESSAGE_CODE_QUIT, 0, 0};
+                //wsi_neutral_app_handle_input_event(&wsi_neutral_app_input_event, this->m_neutral_app_void_instance);
 
-                //move xcb_destroy_window_checked here?
+                xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
+
+                PT_MAYBE_UNUSED xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
+                assert(error_generic == NULL);
             }
         }
         break;
@@ -413,186 +367,86 @@ void wsi_window_x11::run()
 
         free(event);
     }
-}
 
-void wsi_window_x11::destroy()
-{
-    mcrt_native_thread_join(m_app_thread_id);
-    while (!mcrt_atomic_load(&m_app_thread_running))
-    {
-        mcrt_os_yield();
-    }
+    mcrt_native_thread_join(this->m_app_main_thread_id);
 
-    mcrt_native_thread_join(m_draw_request_thread_id);
-    while (mcrt_atomic_load(&m_draw_request_thread_running))
-    {
-        mcrt_os_yield();
-    }
-    gfx_connection_on_wsi_window_destroyed(this->m_gfx_connection);
-    gfx_connection_destroy(this->m_gfx_connection);
-
-    xcb_void_cookie_t cookie_destroy_window = xcb_destroy_window_checked(m_xcb_connection, m_window);
-
-    PT_MAYBE_UNUSED xcb_generic_error_t *error_generic = xcb_request_check(m_xcb_connection, cookie_destroy_window); //implicit xcb_flush
-    assert(error_generic == NULL);
+    mcrt_native_thread_join(this->m_draw_main_thread_id);
 
     xcb_disconnect(m_xcb_connection);
+
+    return 0;
 }
 
-// neutral app file system
-
-#if 0
-#include <map>
-#include <utility>
-#include <pt_mcrt_spinlock.h>
-
-#include <dlfcn.h>
-#include <execinfo.h>
-
-class instance_gfx_input_stream_verify_support
+inline wsi_connection_ref wsi_linux_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
 {
-    mcrt_spinlock_t m_spin_lock;
-    std::map<int, void *> m_fds;
-
-public:
-    inline instance_gfx_input_stream_verify_support()
-    {
-        mcrt_spin_init(&this->m_spin_lock);
-    }
-
-    inline void insert(int fd)
-    {
-        mcrt_spin_lock(&this->m_spin_lock);
-        assert(this->m_fds.end() == this->m_fds.find(fd));
-
-        this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(static_cast<void *>(NULL)));
-#if 0
-        void *addrs_ptr[3];
-        int num_levels = backtrace(addrs_ptr, 3);
-        if (num_levels >= 3)
-        {
-            this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(addrs_ptr[2]));
-        }
-        else
-        {
-            this->m_fds.emplace(std::piecewise_construct, std::forward_as_tuple(fd), std::forward_as_tuple(static_cast<void *>(NULL)));
-        }
-#endif
-        mcrt_spin_unlock(&this->m_spin_lock);
-    }
-
-    inline void erase(int fd)
-    {
-        mcrt_spin_lock(&this->m_spin_lock);
-        auto iter = this->m_fds.find(fd);
-        assert(this->m_fds.end() != iter);
-        this->m_fds.erase(iter);
-        mcrt_spin_unlock(&this->m_spin_lock);
-    }
-
-    inline ~instance_gfx_input_stream_verify_support()
-    {
-        for (auto const &item : this->m_fds)
-        {
-            int fd = item.first;
-            void *funtion_addr = item.second;
-            // set breakpoint here and the debugger can tell you the name of the function by the address
-            assert(0);
-            fd = -1;
-            funtion_addr = NULL;
-        }
-    }
-
-} instance_gfx_input_stream_verify_support;
-#endif
-
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
-{
-    mcrt_string path = "../third_party/assets/";
-    path += initial_filename;
-
-    return gfx_texture_read_input_stream(
-        gfx_connection,
-        texture,
-        path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
-        {
-            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-#if 0
-            if (-1 != fd)
-            {
-                instance_gfx_input_stream_verify_support.insert(fd);
-            }
-#endif
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
-        },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
-        {
-            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return res_read;
-        },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
-        {
-            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return res_lseek;
-        },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
-        {
-            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
-#if 0
-            instance_gfx_input_stream_verify_support.erase(fd);
-#endif
-            close(fd);
-        });
+    return reinterpret_cast<wsi_connection_ref>(wsi_connection);
 }
 
-bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+inline wsi_visual_ref wsi_linux_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
 {
-    mcrt_string path = "../third_party/assets/";
-    path += initial_filename;
-
-    return gfx_mesh_read_input_stream(
-        gfx_connection,
-        mesh,
-        mesh_index,
-        material_index,
-        path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
-        {
-            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-#if 0
-            if (-1 != fd)
-            {
-                instance_gfx_input_stream_verify_support.insert(fd);
-            }
-#endif
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
-        },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
-        {
-            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return res_read;
-        },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
-        {
-            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return res_lseek;
-        },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
-        {
-            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
-#if 0
-            instance_gfx_input_stream_verify_support.erase(fd);
-#endif
-            close(fd);
-        });
+    return reinterpret_cast<wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
 }
 
-static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
-static_assert(SEEK_CUR == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
-static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
+inline wsi_window_ref wsi_linux_x11::wrap_wsi_window(xcb_window_t wsi_window)
+{
+    return reinterpret_cast<wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
+}
+
+void *wsi_linux_x11::draw_main(void *argument)
+{
+    class wsi_linux_x11 *instance = static_cast<class wsi_linux_x11 *>(argument);
+
+    instance->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_visual(instance->m_visual), ".");
+    assert(instance->m_gfx_connection != NULL);
+    mcrt_atomic_store(&instance->m_draw_main_running, true);
+
+    gfx_connection_on_wsi_window_created(instance->m_gfx_connection, wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
+
+    while (mcrt_atomic_load(&instance->m_draw_main_running))
+    {
+        // usage
+        // on_redraw_needed
+        // app update scenetree //maybe in other thread //not depend on accurate time
+        // gfx acquire //sync and flatten scenetree //then frame throttling
+        // app update time-related (animation etc) //frame throttling make the time here less latency //scenetree modify will impact on the next frame
+        // gfx release //draw and present //draw //not sync scenetree
+
+        // update scenetree
+        gfx_connection_draw_acquire(instance->m_gfx_connection);
+
+        // TODO
+        // output visibility set
+
+        // update animation etc
+        gfx_connection_draw_release(instance->m_gfx_connection);
+    }
+
+    gfx_connection_on_wsi_window_destroyed(instance->m_gfx_connection);
+
+    gfx_connection_destroy(instance->m_gfx_connection);
+
+    return NULL;
+}
+
+void *wsi_linux_x11::app_main(void *argument_void)
+{
+    pt_wsi_app_ref wsi_app;
+    int(PT_PTR * wsi_app_main_callback)(pt_wsi_app_ref);
+    // app_init
+    {
+        struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
+        wsi_app = argument->m_wsi_app_init_callback(argument->m_instance->m_gfx_connection);
+        wsi_app_main_callback = argument->m_wsi_app_main_callback;
+        argument->m_instance->m_wsi_app = wsi_app;
+        mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
+    }
+
+    // app_main
+    int res_app_main_callback = wsi_app_main_callback(wsi_app);
+
+    // mcrt_atomic_store(&self->m_loop, false);
+
+    // wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
+
+    return reinterpret_cast<void *>(static_cast<intptr_t>(res_app_main_callback));
+}
