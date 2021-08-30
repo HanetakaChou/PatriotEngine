@@ -34,6 +34,7 @@
             "name": "(Linux Android) Launch",
             "type": "cppdbg",
             "request": "launch",
+            //"preLaunchTask": "linux-android-prepare-debug",
             "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/app_process64", //should set executable in obj here instead of the one in libs
             "args": [],
             "stopAtEntry": false,

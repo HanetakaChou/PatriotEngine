@@ -52,10 +52,10 @@ fi
 APP_INTERNAL_DATA_DIR="${APP_PWD_DIR}/files"
 
 # We need to upload our asset
-MY_ASSET_ARRAY=( $(find "${ASSET_DIR}" -type f -print0 2>/dev/null | xargs -0) )
+MY_ASSET_ARRAY=( $(find "${ASSET_DIR}" -type f -print0 | xargs -0) )
 for ASSET_LOCAL_FULL_PATH in  "${MY_ASSET_ARRAY[@]}"
 do
-    ASSET_PATH="$(realpath --relative-to="${ASSET_DIR}" "${ASSET_LOCAL_FULL_PATH}" 2>/dev/null)"
+    ASSET_PATH="$(realpath --relative-to="${ASSET_DIR}" "${ASSET_LOCAL_FULL_PATH}")"
 
     COPY_DEST_PATH="${APP_INTERNAL_DATA_DIR}/${ASSET_PATH}"
 
