@@ -2517,7 +2517,10 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
 inline bool gfx_connection_vk::init_pipeline_cache_dir(char const *gfx_cache_dirname)
 {
     assert(-1 == this->m_pipeline_cache_dir_fd);
-    this->m_pipeline_cache_dir_fd = openat(AT_FDCWD, gfx_cache_dirname, O_RDONLY);
+    while ((-1 == (this->m_pipeline_cache_dir_fd = openat(AT_FDCWD, gfx_cache_dirname, O_RDONLY))) && (EINTR == errno))
+    {
+        mcrt_os_yield();
+    }
     if (-1 != this->m_pipeline_cache_dir_fd)
     {
         struct stat statbuf;
@@ -2561,8 +2564,11 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
     void *pipeline_cache_data;
     if (-1 != this->m_pipeline_cache_dir_fd)
     {
-        int fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_RDONLY);
-
+        int fd;
+        while ((-1 == (fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_RDONLY))) && (EINTR == errno))
+        {
+            mcrt_os_yield();
+        }
         if (fd != -1)
         {
             struct stat statbuf;
@@ -2572,7 +2578,11 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
             {
                 void *data = mcrt_aligned_malloc(statbuf.st_size, alignof(uint8_t));
 
-                PT_MAYBE_UNUSED ssize_t res_read = read(fd, data, statbuf.st_size);
+                ssize_t res_read;
+                while ((-1 == (res_read = read(fd, data, statbuf.st_size))) && (EINTR == errno))
+                {
+                    mcrt_os_yield();
+                }
                 assert(res_read == statbuf.st_size);
 
                 uint32_t header_length = *reinterpret_cast<uint32_t *>(reinterpret_cast<uint8_t *>(data));
@@ -2650,7 +2660,11 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
 
     if (-1 != this->m_pipeline_cache_dir_fd)
     {
-        int fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+        int fd;
+        while ((-1 == (fd = openat(this->m_pipeline_cache_dir_fd, pipeline_cache_file_name, O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH))) && (EINTR == errno))
+        {
+            mcrt_os_yield();
+        }
         if (-1 != fd)
         {
             struct stat statbuf;
@@ -2677,7 +2691,11 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
                 assert(header_length >= 32 && cache_header_version == VK_PIPELINE_CACHE_HEADER_VERSION_ONE && vendor_id == this->m_device.physical_device_pipeline_vendor_id() && device_id == this->m_device.physical_device_pipeline_device_id() && mcrt_uuid_equal(pipeline_cache_uuid, this->m_device.physical_device_pipeline_cache_uuid()));
 #endif
 
-                PT_MAYBE_UNUSED ssize_t res_write = write(fd, pipeline_cache_data, pipeline_cache_size);
+                ssize_t res_write;
+                while ((-1 == (res_write = write(fd, pipeline_cache_data, pipeline_cache_size))) && (EINTR == errno))
+                {
+                    mcrt_os_yield();
+                }
                 assert(res_write == pipeline_cache_size);
 
                 mcrt_aligned_free(pipeline_cache_data);

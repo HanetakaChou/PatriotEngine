@@ -39,21 +39,24 @@ static ANativeWindow *g_wsi_linux_android_native_window = NULL;
 class wsi_linux_android
 {
 	pt_gfx_connection_ref m_gfx_connection;
-	int m_display_source_write;
-	mcrt_native_thread_id m_display_link_output_main_thread_id;
+	int m_main_thread_alooper_fd_read;
+	int m_main_thread_alooper_fd_write;
+	mcrt_native_thread_id m_periodic_timer_main_thread_id;
 	mcrt_native_thread_id m_app_main_thread_id;
 	pt_wsi_app_ref m_wsi_app;
 
-	static int main_thread_dispatch_source_event_handler(int fd, int events, void *data);
+	static int main_thread_alooper_callback(int fd, int events, void *data);
 
-	struct display_link_output_main_argument_t
+	struct periodic_timer_main_argument_t
 	{
 		class wsi_linux_android *m_instance;
 		bool m_has_inited;
 	};
-	static void *display_link_output_main(void *argument);
+	static void *periodic_timer_main(void *argument);
 
-	void display_link_output_callback();
+	void request_draw_on_main_thread();
+
+	void draw_on_main_thread();
 
 	struct app_main_argument_t
 	{
@@ -63,7 +66,7 @@ class wsi_linux_android
 		int(PT_PTR *m_wsi_app_main_callback)(pt_wsi_app_ref);
 		bool m_has_inited;
 	};
-	static void *android_app_main(void *argument_void);
+	static void *app_main(void *argument_void);
 
 public:
 	bool init(char const *internal_data_path, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref, char const *), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
@@ -223,34 +226,34 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 		ALooper *looper = ALooper_forThread();
 		assert(looper != NULL);
 
-		// we use "SOCK_STREAM" since the "main_thread_dispatch_source_event_handler" may be slower than the "wsi_linux_android_display_link_output_callback"
+		// we use "SOCK_STREAM" since the "draw_on_main_thread" may be slower than the "request_draw_on_main_thread"
 		int sv[2];
 		PT_MAYBE_UNUSED int res_socketpair = socketpair(AF_UNIX, SOCK_STREAM, 0, sv);
 		assert(0 == res_socketpair);
-		int sv_read = sv[0];
-		this->m_display_source_write = sv[1];
+		this->m_main_thread_alooper_fd_read = sv[0];
+		this->m_main_thread_alooper_fd_write = sv[1];
 
-		// the "main_thread_dispatch_source_event_handler"
+		// the "main_thread_alooper_callback"
 		// the identifier is ignored when callback is not NULL
 		// and the ALooper_pollOnce always returns the ALOOPER_POLL_CALLBACK when invoked by the main thread
-		PT_MAYBE_UNUSED int res_looper_add_fd = ALooper_addFd(looper, sv_read, -1, ALOOPER_EVENT_INPUT, main_thread_dispatch_source_event_handler, this);
+		PT_MAYBE_UNUSED int res_looper_add_fd = ALooper_addFd(looper, this->m_main_thread_alooper_fd_read, -1, ALOOPER_EVENT_INPUT, main_thread_alooper_callback, this);
 		assert(1 == res_looper_add_fd);
 
-		// the "wsi_linux_android_display_link_output_callback"
-		struct display_link_output_main_argument_t display_link_output_main_argument;
-		display_link_output_main_argument.m_instance = this;
-		display_link_output_main_argument.m_has_inited = false;
+		// the "periodic_timer_main"
+		struct periodic_timer_main_argument_t periodic_timer_main_argument;
+		periodic_timer_main_argument.m_instance = this;
+		periodic_timer_main_argument.m_has_inited = false;
 
-		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_display_link_output_main_thread_id, display_link_output_main, &display_link_output_main_argument);
+		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_periodic_timer_main_thread_id, periodic_timer_main, &periodic_timer_main_argument);
 		assert(res_native_thread_create);
 
-		while (!mcrt_atomic_load(&display_link_output_main_argument.m_has_inited))
+		while (!mcrt_atomic_load(&periodic_timer_main_argument.m_has_inited))
 		{
 			mcrt_os_yield();
 		}
 	}
 
-	// the "app_main_argument"
+	// the "app_main"
 	{
 		struct app_main_argument_t app_main_argument;
 		app_main_argument.m_instance = this;
@@ -259,7 +262,7 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 		app_main_argument.m_wsi_app_main_callback = pt_wsi_app_main_callback;
 		app_main_argument.m_has_inited = false;
 
-		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_app_main_thread_id, android_app_main, &app_main_argument);
+		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_app_main_thread_id, app_main, &app_main_argument);
 		assert(res_native_thread_create);
 
 		while (!mcrt_atomic_load(&app_main_argument.m_has_inited))
@@ -273,12 +276,14 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 	return true;
 }
 
-int wsi_linux_android::main_thread_dispatch_source_event_handler(int fd, int events, void *data)
+int wsi_linux_android::main_thread_alooper_callback(int fd, int events, void *data)
 {
+	class wsi_linux_android *instance = static_cast<class wsi_linux_android *>(data);
+	assert(instance->m_main_thread_alooper_fd_read == fd);
 	assert(ALOOPER_EVENT_INPUT == events);
 
-	// we use "SOCK_STREAM" since the "main_thread_dispatch_source_event_handler" may be slower than the "display_link_output_callback"
-	// and we read all data here
+	// we use "SOCK_STREAM" since the "draw_on_main_thread" may be slower than the "request_draw_on_main_thread"
+	// and we read all the pending "requests" once here
 	{
 		uint8_t buf[4096];
 		ssize_t res_recv;
@@ -289,21 +294,17 @@ int wsi_linux_android::main_thread_dispatch_source_event_handler(int fd, int eve
 		assert(-1 != res_recv);
 	}
 
-	class wsi_linux_android *instance = static_cast<class wsi_linux_android *>(data);
-
-	gfx_connection_draw_acquire(instance->m_gfx_connection);
-
-	gfx_connection_draw_release(instance->m_gfx_connection);
+	instance->draw_on_main_thread();
 
 	return 1;
 }
 
-void *wsi_linux_android::display_link_output_main(void *argument_void)
+void *wsi_linux_android::periodic_timer_main(void *argument_void)
 {
 	class wsi_linux_android *instance;
 	// display_link_output_init
 	{
-		struct display_link_output_main_argument_t *argument = static_cast<struct display_link_output_main_argument_t *>(argument_void);
+		struct periodic_timer_main_argument_t *argument = static_cast<struct periodic_timer_main_argument_t *>(argument_void);
 		instance = argument->m_instance;
 		mcrt_atomic_store(&argument->m_has_inited, true);
 	}
@@ -315,22 +316,29 @@ void *wsi_linux_android::display_link_output_main(void *argument_void)
 		uint32_t milli_second = 1000U / 60U;
 		mcrt_os_sleep(milli_second);
 
-		instance->display_link_output_callback();
+		instance->request_draw_on_main_thread();
 	}
 }
 
-void wsi_linux_android::display_link_output_callback()
+void wsi_linux_android::request_draw_on_main_thread()
 {
 	uint8_t buf[1] = {7}; // seven is the luck number
 	ssize_t res_send;
-	while ((-1 == (res_send = send(this->m_display_source_write, buf, 1U, 0))) && (EINTR == errno))
+	while ((-1 == (res_send = send(this->m_main_thread_alooper_fd_write, buf, 1U, 0))) && (EINTR == errno))
 	{
 		mcrt_os_yield();
 	}
 	assert(1 == res_send);
 }
 
-void *wsi_linux_android::android_app_main(void *argument_void)
+void wsi_linux_android::draw_on_main_thread()
+{
+	gfx_connection_draw_acquire(this->m_gfx_connection);
+
+	gfx_connection_draw_release(this->m_gfx_connection);
+}
+
+void *wsi_linux_android::app_main(void *argument_void)
 {
 	pt_wsi_app_ref wsi_app;
 	int(PT_PTR * wsi_app_main_callback)(pt_wsi_app_ref);
@@ -365,7 +373,7 @@ void wsi_linux_android::on_window_resized(ANativeWindow *native_window)
 
 void wsi_linux_android::on_window_redraw_needed()
 {
-	this->display_link_output_callback();
+	this->request_draw_on_main_thread();
 	return;
 }
 
