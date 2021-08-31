@@ -20,20 +20,19 @@
 # Sign Xcode applications
 # https://docs.github.com/en/actions/guides/installing-an-apple-certificate-on-macos-runners-for-xcode-development
 
-# create variables
-CERTIFICATE_PATH="${RUNNER_TEMP}/build_certificate.p12"
-PP_PATH_1="${RUNNER_TEMP}/build_pp_1.mobileprovision"
-PP_PATH_2="${RUNNER_TEMP}/build_pp_2.mobileprovision"
-PP_PATH_3="${RUNNER_TEMP}/build_pp_3.mobileprovision"
-PP_PATH_4="${RUNNER_TEMP}/build_pp_4.mobileprovision"         
-KEYCHAIN_PATH="${RUNNER_TEMP}/app-signing.keychain-db"
+MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
+cd ${MY_DIR}
 
-# import certificate and provisioning profile from secrets
-echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output ${CERTIFICATE_PATH}
-echo -n "$BUILD_PROVISION_PROFILE_BASE64_1" | base64 --decode --output ${PP_PATH_1}
-echo -n "$BUILD_PROVISION_PROFILE_BASE64_2" | base64 --decode --output ${PP_PATH_2}
-echo -n "$BUILD_PROVISION_PROFILE_BASE64_3" | base64 --decode --output ${PP_PATH_3}
-echo -n "$BUILD_PROVISION_PROFILE_BASE64_4" | base64 --decode --output ${PP_PATH_4}
+# github secrets
+# P12_PASSWORD
+
+# create variables
+CERTIFICATE_PATH="${MY_DIR}/developer_profile/166480D6762EFCB19E95462DEFB451ED37755575.p12"
+PP_PATH_1="${MY_DIR}/developer_profile/95bd8b63-02b8-484e-8739-ec844e5e7046.mobileprovision"
+PP_PATH_2="${MY_DIR}/developer_profile/699c3cb8-3a60-4c84-a874-430de787ad97.mobileprovision"
+PP_PATH_3="${MY_DIR}/developer_profile/47305c36-bf6b-4b15-ba8b-a464bb186101.mobileprovision"
+PP_PATH_4="${MY_DIR}/developer_profile/de40ac22-2b60-4e08-8a31-f68447bc7c9a.mobileprovision"         
+KEYCHAIN_PATH="${MY_DIR}/accounts.keychain"
 
 # create temporary keychain
 security create-keychain -p "${KEYCHAIN_PASSWORD}" ${KEYCHAIN_PATH}
@@ -45,8 +44,8 @@ security import ${CERTIFICATE_PATH} -P "${P12_PASSWORD}" -A -t cert -f pkcs12 -k
 security list-keychain -d user -s ${KEYCHAIN_PATH}
 
 # apply provisioning profile
-mkdir -p "~/Library/MobileDevice/Provisioning Profiles"
-cp ${PP_PATH_1} "~/Library/MobileDevice/Provisioning Profiles"
-cp ${PP_PATH_2} "~/Library/MobileDevice/Provisioning Profiles"
-cp ${PP_PATH_3} "~/Library/MobileDevice/Provisioning Profiles"
-cp ${PP_PATH_4} "~/Library/MobileDevice/Provisioning Profiles"
+mkdir -p "${HOME}/Library/MobileDevice/Provisioning Profiles"
+cp -f ${PP_PATH_1} "${HOME}/Library/MobileDevice/Provisioning Profiles"
+cp -f ${PP_PATH_2} "${HOME}/Library/MobileDevice/Provisioning Profiles"
+cp -f ${PP_PATH_3} "${HOME}/Library/MobileDevice/Provisioning Profiles"
+cp -f ${PP_PATH_4} "${HOME}/Library/MobileDevice/Provisioning Profiles"
