@@ -21,36 +21,6 @@ jobs:
           BUILD_PROVISION_PROFILE_BASE64_3: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64_3 }}
           BUILD_PROVISION_PROFILE_BASE64_4: ${{ secrets.BUILD_PROVISION_PROFILE_BASE64_4 }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          # create variables
-          CERTIFICATE_PATH="${RUNNER_TEMP}/build_certificate.p12"
-          PP_PATH_1="${RUNNER_TEMP}/build_pp_1.mobileprovision"
-          PP_PATH_2="${RUNNER_TEMP}/build_pp_2.mobileprovision"
-          PP_PATH_3="${RUNNER_TEMP}/build_pp_3.mobileprovision"
-          PP_PATH_4="${RUNNER_TEMP}/build_pp_4.mobileprovision"         
-          KEYCHAIN_PATH="${RUNNER_TEMP}/app-signing.keychain-db"
-
-          # import certificate and provisioning profile from secrets
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output ${CERTIFICATE_PATH}
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64_1" | base64 --decode --output ${PP_PATH_1}
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64_2" | base64 --decode --output ${PP_PATH_2}
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64_3" | base64 --decode --output ${PP_PATH_3}
-          echo -n "$BUILD_PROVISION_PROFILE_BASE64_4" | base64 --decode --output ${PP_PATH_4}
-
-          # create temporary keychain
-          security create-keychain -p "$KEYCHAIN_PASSWORD" ${KEYCHAIN_PATH}
-          security set-keychain-settings -lut 21600 ${KEYCHAIN_PATH}
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" ${KEYCHAIN_PATH}
-
-          # import certificate to keychain
-          security import ${CERTIFICATE_PATH} -P "${P12_PASSWORD}" -A -t cert -f pkcs12 -k ${KEYCHAIN_PATH}
-          security list-keychain -d user -s ${KEYCHAIN_PATH}
-
-          # apply provisioning profile
-          mkdir -p "~/Library/MobileDevice/Provisioning Profiles"
-          cp ${PP_PATH_1} "~/Library/MobileDevice/Provisioning Profiles"
-          cp ${PP_PATH_2} "~/Library/MobileDevice/Provisioning Profiles"
-          cp ${PP_PATH_3} "~/Library/MobileDevice/Provisioning Profiles"
-          cp ${PP_PATH_4} "~/Library/MobileDevice/Provisioning Profiles"
+        run: ./bldsys/posix_mach/xcode_sign.sh
       - name: Build IOS Debug (Universal Binary)
         run: ./bldsys/posix_mach/build.sh debug ios
