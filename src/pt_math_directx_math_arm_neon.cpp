@@ -41,84 +41,84 @@
 #error NEON not supported
 #endif
 
-static_assert(sizeof(math_vec3) == sizeof(DirectX::XMFLOAT3), "");
-static_assert(alignof(math_vec3) == alignof(DirectX::XMFLOAT3), "");
-static_assert(sizeof(math_vec4) == sizeof(DirectX::XMFLOAT4), "");
-static_assert(alignof(math_vec4) == alignof(DirectX::XMFLOAT4), "");
-static_assert(sizeof(math_simd_vec) == sizeof(DirectX::XMVECTOR), "");
-static_assert(alignof(math_simd_vec) == alignof(DirectX::XMVECTOR), "");
-static_assert(sizeof(math_mat4x4) == sizeof(DirectX::XMFLOAT4X4), "");
-static_assert(alignof(math_mat4x4) == alignof(DirectX::XMFLOAT4X4), "");
-static_assert(sizeof(math_alignas16_mat4x4) == sizeof(DirectX::XMFLOAT4X4A), "");
-static_assert(alignof(math_alignas16_mat4x4) == alignof(DirectX::XMFLOAT4X4A), "");
-static_assert(sizeof(math_simd_mat) == sizeof(DirectX::XMMATRIX), "");
-static_assert(alignof(math_simd_mat) == alignof(DirectX::XMMATRIX), "");
+static_assert(sizeof(pt_math_vec3) == sizeof(DirectX::XMFLOAT3), "");
+static_assert(alignof(pt_math_vec3) == alignof(DirectX::XMFLOAT3), "");
+static_assert(sizeof(pt_math_vec4) == sizeof(DirectX::XMFLOAT4), "");
+static_assert(alignof(pt_math_vec4) == alignof(DirectX::XMFLOAT4), "");
+static_assert(sizeof(pt_math_simd_vec) == sizeof(DirectX::XMVECTOR), "");
+static_assert(alignof(pt_math_simd_vec) == alignof(DirectX::XMVECTOR), "");
+static_assert(sizeof(pt_math_mat4x4) == sizeof(DirectX::XMFLOAT4X4), "");
+static_assert(alignof(pt_math_mat4x4) == alignof(DirectX::XMFLOAT4X4), "");
+static_assert(sizeof(pt_math_alignas16_mat4x4) == sizeof(DirectX::XMFLOAT4X4A), "");
+static_assert(alignof(pt_math_alignas16_mat4x4) == alignof(DirectX::XMFLOAT4X4A), "");
+static_assert(sizeof(pt_math_simd_mat) == sizeof(DirectX::XMMATRIX), "");
+static_assert(alignof(pt_math_simd_mat) == alignof(DirectX::XMMATRIX), "");
 
-inline DirectX::XMFLOAT3 *unwrap(math_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 *>(vec3); }
-inline DirectX::XMFLOAT4 *unwrap(math_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 *>(vec4); }
-inline DirectX::XMVECTOR unwrap(math_simd_vec simd_vec) { return (*reinterpret_cast<DirectX::XMVECTOR *>(&simd_vec)); }
-inline math_simd_vec wrap(DirectX::XMVECTOR simd_vec) { return (*reinterpret_cast<math_simd_vec *>(&simd_vec)); }
-inline DirectX::XMFLOAT4X4 *unwrap(math_mat4x4 *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 *>(mat4x4); }
-inline DirectX::XMFLOAT4X4A *unwrap(math_alignas16_mat4x4 *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A *>(alignas16_mat4x4); }
-inline DirectX::XMMATRIX unwrap(math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
-inline math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<math_simd_mat *>(&simd_mat)); }
+inline DirectX::XMFLOAT3 *unwrap(pt_math_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 *>(vec3); }
+inline DirectX::XMFLOAT4 *unwrap(pt_math_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 *>(vec4); }
+inline DirectX::XMVECTOR unwrap(pt_math_simd_vec simd_vec) { return (*reinterpret_cast<DirectX::XMVECTOR *>(&simd_vec)); }
+inline pt_math_simd_vec wrap(DirectX::XMVECTOR simd_vec) { return (*reinterpret_cast<pt_math_simd_vec *>(&simd_vec)); }
+inline DirectX::XMFLOAT4X4 *unwrap(pt_math_mat4x4 *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 *>(mat4x4); }
+inline DirectX::XMFLOAT4X4A *unwrap(pt_math_alignas16_mat4x4 *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A *>(alignas16_mat4x4); }
+inline DirectX::XMMATRIX unwrap(pt_math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
+inline pt_math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<pt_math_simd_mat *>(&simd_mat)); }
 
-math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec3(math_vec3 *source)
+pt_math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec3(pt_math_vec3 *source)
 {
     return wrap(DirectX::XMLoadFloat3(unwrap(source)));
 }
 
-math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec4(math_vec4 *source)
+pt_math_simd_vec PT_VECTORCALL directx_math_arm_neon_load_vec4(pt_math_vec4 *source)
 {
     return wrap(DirectX::XMLoadFloat4(unwrap(source)));
 }
 
-void PT_VECTORCALL directx_math_arm_neon_store_vec3(math_vec3 *source, math_simd_vec v)
+void PT_VECTORCALL directx_math_arm_neon_store_vec3(pt_math_vec3 *source, pt_math_simd_vec v)
 {
     return DirectX::XMStoreFloat3(unwrap(source), unwrap(v));
 }
 
-void PT_VECTORCALL directx_math_arm_neon_store_vec4(math_vec4 *source, math_simd_vec v)
+void PT_VECTORCALL directx_math_arm_neon_store_vec4(pt_math_vec4 *source, pt_math_simd_vec v)
 {
     return DirectX::XMStoreFloat4(unwrap(source), unwrap(v));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source)
 {
     return wrap(DirectX::XMLoadFloat4x4A(unwrap(source)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_mat4x4(math_mat4x4 *source)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_load_mat4x4(pt_math_mat4x4 *source)
 {
     return wrap(DirectX::XMLoadFloat4x4(unwrap(source)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_identity()
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_identity()
 {
     return wrap(DirectX::XMMatrixIdentity());
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2)
 {
     return wrap(DirectX::XMMatrixMultiply(unwrap(m1), unwrap(m2)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction)
 {
     return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
 }
 
-math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
 }
 
-void PT_VECTORCALL directx_math_arm_neon_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+void PT_VECTORCALL directx_math_arm_neon_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4A(unwrap(destination), unwrap(m));
 }
 
-void PT_VECTORCALL directx_math_arm_neon_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
+void PT_VECTORCALL directx_math_arm_neon_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m)
 {
     return DirectX::XMStoreFloat4x4(unwrap(destination), unwrap(m));
 }

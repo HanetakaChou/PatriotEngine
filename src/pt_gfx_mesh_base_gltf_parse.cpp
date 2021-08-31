@@ -25,16 +25,16 @@
 #include "pt_gfx_mesh_base_gltf_lex_yacc.h"
 #include <assert.h>
 
-static_assert(sizeof(math_vec3) == sizeof(float[3]), "");
-static_assert(alignof(math_vec3) == alignof(float[3]), "");
-static_assert(sizeof(math_vec4) == sizeof(float[4]), "");
-static_assert(alignof(math_vec4) == alignof(float[4]), "");
-static_assert(sizeof(math_mat4x4) == sizeof(float[16]), "");
-static_assert(alignof(math_mat4x4) == alignof(float[16]), "");
+static_assert(sizeof(pt_math_vec3) == sizeof(float[3]), "");
+static_assert(alignof(pt_math_vec3) == alignof(float[3]), "");
+static_assert(sizeof(pt_math_vec4) == sizeof(float[4]), "");
+static_assert(alignof(pt_math_vec4) == alignof(float[4]), "");
+static_assert(sizeof(pt_math_mat4x4) == sizeof(float[16]), "");
+static_assert(alignof(pt_math_mat4x4) == alignof(float[16]), "");
 
-inline math_vec3 *unwrap_vec3(float vec3[3]) { return reinterpret_cast<math_vec3 *>(vec3); }
-inline math_vec4 *unwrap_vec4(float vec4[4]) { return reinterpret_cast<math_vec4 *>(vec4); }
-inline math_mat4x4 *unwrap_mat4x4(float mat4x4[16]) { return reinterpret_cast<math_mat4x4 *>(mat4x4); }
+inline pt_math_vec3 *unwrap_vec3(float vec3[3]) { return reinterpret_cast<pt_math_vec3 *>(vec3); }
+inline pt_math_vec4 *unwrap_vec4(float vec4[4]) { return reinterpret_cast<pt_math_vec4 *>(vec4); }
+inline pt_math_mat4x4 *unwrap_mat4x4(float mat4x4[16]) { return reinterpret_cast<pt_math_mat4x4 *>(mat4x4); }
 
 struct gltf_yy_extra_type
 {
@@ -292,7 +292,7 @@ void gltf_yacc_node_set_matrix_callback(int node_index, float mat4x4[16], void *
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_matrix[13]);
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_matrix[14]);
     assert(1.0f == user_defined->m_gltf_root->m_nodes[node_index].m_matrix[15]);
-    math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_nodes[node_index].m_matrix), math_load_mat4x4(unwrap_mat4x4(mat4x4)));
+    pt_math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_nodes[node_index].m_matrix), pt_math_load_mat4x4(unwrap_mat4x4(mat4x4)));
 }
 
 void gltf_yacc_node_set_mesh_callback(int node_index, int mesh_index, void *user_defined_void)
@@ -311,7 +311,7 @@ void gltf_yacc_node_set_rotation_callback(int node_index, float vec4[4], void *u
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_rotation[1]);
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_rotation[2]);
     assert(1.0f == user_defined->m_gltf_root->m_nodes[node_index].m_rotation[3]);
-    math_store_vec4(unwrap_vec4(user_defined->m_gltf_root->m_nodes[node_index].m_rotation), math_load_vec4(unwrap_vec4(vec4)));
+    pt_math_store_vec4(unwrap_vec4(user_defined->m_gltf_root->m_nodes[node_index].m_rotation), pt_math_load_vec4(unwrap_vec4(vec4)));
 }
 
 void gltf_yacc_node_set_scale_callback(int node_index, float vec3[3], void *user_defined_void)
@@ -321,7 +321,7 @@ void gltf_yacc_node_set_scale_callback(int node_index, float vec3[3], void *user
     assert(1.0f == user_defined->m_gltf_root->m_nodes[node_index].m_scale[0]);
     assert(1.0f == user_defined->m_gltf_root->m_nodes[node_index].m_scale[1]);
     assert(1.0f == user_defined->m_gltf_root->m_nodes[node_index].m_scale[2]);
-    math_store_vec3(unwrap_vec3(user_defined->m_gltf_root->m_nodes[node_index].m_scale), math_load_vec3(unwrap_vec3(vec3)));
+    pt_math_store_vec3(unwrap_vec3(user_defined->m_gltf_root->m_nodes[node_index].m_scale), pt_math_load_vec3(unwrap_vec3(vec3)));
 }
 
 void gltf_yacc_node_set_translation_callback(int node_index, float vec3[3], void *user_defined_void)
@@ -331,7 +331,7 @@ void gltf_yacc_node_set_translation_callback(int node_index, float vec3[3], void
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_translation[0]);
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_translation[1]);
     assert(0.0f == user_defined->m_gltf_root->m_nodes[node_index].m_translation[2]);
-    math_store_vec3(unwrap_vec3(user_defined->m_gltf_root->m_nodes[node_index].m_translation), math_load_vec3(unwrap_vec3(vec3)));
+    pt_math_store_vec3(unwrap_vec3(user_defined->m_gltf_root->m_nodes[node_index].m_translation), pt_math_load_vec3(unwrap_vec3(vec3)));
 }
 
 void gltf_yacc_node_set_weights_callback(int node_index, struct temp_float_array_version_t *temp_float_array_version, void *user_defined_void)
@@ -534,7 +534,7 @@ void gltf_yacc_accessor_set_max_callback(int accessor_index, float max[16], void
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[13]);
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[14]);
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_max[15]);
-    math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_max), math_load_mat4x4(unwrap_mat4x4(max)));
+    pt_math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_max), pt_math_load_mat4x4(unwrap_mat4x4(max)));
 }
 
 void gltf_yacc_accessor_set_min_callback(int accessor_index, float min[16], void *user_defined_void)
@@ -557,7 +557,7 @@ void gltf_yacc_accessor_set_min_callback(int accessor_index, float min[16], void
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[13]);
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[14]);
     assert(0.0f == user_defined->m_gltf_root->m_accessors[accessor_index].m_min[15]);
-    math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_min), math_load_mat4x4(unwrap_mat4x4(min)));
+    pt_math_store_mat4x4(unwrap_mat4x4(user_defined->m_gltf_root->m_accessors[accessor_index].m_min), pt_math_load_mat4x4(unwrap_mat4x4(min)));
 }
 
 void gltf_yacc_accessor_set_name_callback(int accessor_index, struct temp_string_version_t *temp_string_version, void *user_defined_void)

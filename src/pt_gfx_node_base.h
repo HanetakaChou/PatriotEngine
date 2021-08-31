@@ -27,7 +27,7 @@
 
 class gfx_node_base
 {
-    math_alignas16_mat4x4 m_mat_m;
+    pt_math_alignas16_mat4x4 m_mat_m;
 
     class gfx_mesh_base *m_gfx_mesh;
 
@@ -36,11 +36,11 @@ class gfx_node_base
 protected:
     inline gfx_node_base() : m_gfx_mesh(NULL), m_gfx_material(NULL)
     {
-        math_store_mat4x4(&this->m_mat_m, math_mat_identity());
+        pt_math_store_mat4x4(&this->m_mat_m, pt_math_mat_identity());
     }
 
 public:
-    inline math_alignas16_mat4x4 get_transform() const { return this->m_mat_m; }
+    inline pt_math_alignas16_mat4x4 get_transform() const { return this->m_mat_m; }
 
     void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh);
 

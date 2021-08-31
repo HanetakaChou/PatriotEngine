@@ -1751,9 +1751,9 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         VkDescriptorSetLayout set_layouts[2] = {this->m_descriptor_set_layout_each_object_shared, this->m_descriptor_set_layout_each_object_private};
 
         this->m_push_constant_mat_vp_offset = 0U;
-        this->m_push_constant_mat_vp_size = sizeof(math_alignas16_mat4x4);
-        this->m_push_constant_mat_m_offset = sizeof(math_alignas16_mat4x4);
-        this->m_push_constant_mat_m_size = sizeof(math_alignas16_mat4x4);
+        this->m_push_constant_mat_vp_size = sizeof(pt_math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_offset = sizeof(pt_math_alignas16_mat4x4);
+        this->m_push_constant_mat_m_size = sizeof(pt_math_alignas16_mat4x4);
 
         VkPushConstantRange push_constant_ranges[1];
         push_constant_ranges[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -1774,8 +1774,8 @@ inline bool gfx_connection_vk::init_pipeline_layout()
         assert(VK_SUCCESS == res_create_pipeline_layout);
     }
 
-    ///math_simd_mat m = math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
-    ///math_store_alignas16_mat4x4(&this->m_mat_vp, m);
+    ///pt_math_simd_mat m = pt_math_mat_perspective_fov_rh(1.57f, 1.0f, 1.0f, 250.0f);
+    ///pt_math_store_alignas16_mat4x4(&this->m_mat_vp, m);
 
     return true;
 }
@@ -2173,15 +2173,15 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         // +Y up
         // +Z front
 
-        math_vec3 eye_position = {0.0f, 3.0f, -5.0f};
-        math_vec3 eye_direction = {0.0f, -0.5f, 1.0f};
-        math_vec3 up_direction = {0.0f, 1.0f, 0.0};
+        pt_math_vec3 eye_position = {0.0f, 3.0f, -5.0f};
+        pt_math_vec3 eye_direction = {0.0f, -0.5f, 1.0f};
+        pt_math_vec3 up_direction = {0.0f, 1.0f, 0.0};
         // eye_direction = focus_position - eye_position
         // focus_position = eye_direction + eye_position
-        math_simd_mat mat_v = math_mat_look_to_rh(math_load_vec3(&eye_position), math_load_vec3(&eye_direction), math_load_vec3(&up_direction));
+        pt_math_simd_mat mat_v = pt_math_mat_look_to_rh(pt_math_load_vec3(&eye_position), pt_math_load_vec3(&eye_direction), pt_math_load_vec3(&up_direction));
 
         // vulkan viewport flip y
-        math_alignas16_mat4x4 mat_vk_y;
+        pt_math_alignas16_mat4x4 mat_vk_y;
         mat_vk_y.m[0][0] = 1.0f;
         mat_vk_y.m[0][1] = 0.0f;
         mat_vk_y.m[0][2] = 0.0f;
@@ -2198,12 +2198,12 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         mat_vk_y.m[3][1] = 0.0f;
         mat_vk_y.m[3][2] = 0.0f;
         mat_vk_y.m[3][3] = 1.0f;
-        math_simd_mat mat_p = math_mat_multiply(math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f), math_load_alignas16_mat4x4(&mat_vk_y));
+        pt_math_simd_mat mat_p = pt_math_mat_multiply(pt_math_mat_perspective_fov_rh(0.785f, gfx_connection->m_aspect_ratio, 0.1f, 100.f), pt_math_load_alignas16_mat4x4(&mat_vk_y));
 
         // directxmath // row vector + row major
         // glsl // colum_major equivalent transpose
-        math_alignas16_mat4x4 mat_vp;
-        math_store_alignas16_mat4x4(&mat_vp, math_mat_multiply(mat_v, mat_p));
+        pt_math_alignas16_mat4x4 mat_vp;
+        pt_math_store_alignas16_mat4x4(&mat_vp, pt_math_mat_multiply(mat_v, mat_p));
 
         gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_vp_offset, gfx_connection->m_push_constant_mat_vp_size, &mat_vp);
     }
@@ -2224,7 +2224,7 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
                 gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
 
                 // bind - each object
-                math_alignas16_mat4x4 mat_m = node->get_transform();
+                pt_math_alignas16_mat4x4 mat_m = node->get_transform();
                 gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
 
                 VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};

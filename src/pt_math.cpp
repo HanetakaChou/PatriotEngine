@@ -22,7 +22,7 @@
 static bool math_support_avx2 = false;
 static bool math_support_avx = false;
 
-PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 *source)
 {
     if (math_support_avx2)
     {
@@ -38,7 +38,7 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
     }
 }
 
-PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 *source)
 {
     if (math_support_avx2)
     {
@@ -54,7 +54,7 @@ PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
     }
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *destination, pt_math_simd_vec v)
 {
     if (math_support_avx2)
     {
@@ -70,7 +70,7 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_sim
     }
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *destination, pt_math_simd_vec v)
 {
     if (math_support_avx2)
     {
@@ -86,7 +86,7 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_sim
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source)
 {
     if (math_support_avx2)
     {
@@ -102,7 +102,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 *source)
 {
     if (math_support_avx2)
     {
@@ -118,7 +118,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity()
 {
     if (math_support_avx2)
     {
@@ -134,7 +134,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2)
 {
     if (math_support_avx2)
     {
@@ -150,7 +150,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, mat
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction)
 {
     if (math_support_avx2)
     {
@@ -166,7 +166,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_p
     }
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     if (math_support_avx2)
     {
@@ -182,7 +182,7 @@ PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_a
     }
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)
 {
     if (math_support_avx2)
     {
@@ -198,7 +198,7 @@ PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x
     }
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m)
 {
     if (math_support_avx2)
     {
@@ -251,62 +251,62 @@ struct math_verify_x86_cpu_support
 };
 static struct math_verify_x86_cpu_support instance_math_verify_x86_cpu_support;
 #elif defined(PT_ARM64) || defined(PT_ARM)
-PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 *source)
 {
     return directx_math_arm_neon_load_vec3(source);
 }
 
-PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 *source)
 {
     return directx_math_arm_neon_load_vec4(source);
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *destination, math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *destination, pt_math_simd_vec v)
 {
     return directx_math_arm_neon_store_vec3(destination, v);
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *destination, math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *destination, pt_math_simd_vec v)
 {
     return directx_math_arm_neon_store_vec4(destination, v);
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source)
 {
     return directx_math_arm_neon_load_alignas16_mat4x4(source);
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 *source)
 {
     return directx_math_arm_neon_load_mat4x4(source);
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity()
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity()
 {
     return directx_math_arm_neon_mat_identity();
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2)
 {
     return directx_math_arm_neon_mat_multiply(m1, m2);
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction)
 {
     return directx_math_arm_neon_mat_look_to_rh(eye_position, eye_direction, up_direction);
 }
 
-PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return directx_math_arm_neon_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)
 {
     return directx_math_arm_neon_store_alignas16_mat4x4(destination, m);
 }
 
-PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m)
 {
     return directx_math_arm_neon_store_mat4x4(destination, m);
 }

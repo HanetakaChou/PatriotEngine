@@ -20,26 +20,26 @@
 
 #include <pt_math_common.h>
 
-typedef struct math_vec3
+typedef struct pt_math_vec3
 {
     float x;
     float y;
     float z;
-} math_vec3;
+} pt_math_vec3;
 
-typedef struct math_vec4
+typedef struct pt_math_vec4
 {
     float x;
     float y;
     float z;
     float w;
-} math_vec4;
+} pt_math_vec4;
 
-typedef struct alignas(16) math_alignas16_vec4 : public math_vec4
+typedef struct alignas(16) pt_math_alignas16_vec4 : public pt_math_vec4
 {
-} math_alignas16_vec4;
+} pt_math_alignas16_vec4;
 
-typedef struct math_mat4x4
+typedef struct pt_math_mat4x4
 {
     union
     {
@@ -52,43 +52,43 @@ typedef struct math_mat4x4
         };
         float m[4][4];
     };
-} math_mat4x4;
+} pt_math_mat4x4;
 
-typedef struct alignas(16) math_alignas16_mat4x4 : public math_mat4x4
+typedef struct alignas(16) pt_math_alignas16_mat4x4 : public pt_math_mat4x4
 {
-} math_alignas16_mat4x4;
+} pt_math_alignas16_mat4x4;
 
 #if defined(PT_X64) || defined(PT_X86)
 #include <xmmintrin.h>
-typedef __m128 math_simd_vec;
+typedef __m128 pt_math_simd_vec;
 #elif defined(PT_ARM64) || defined(PT_ARM)
 #include <arm_neon.h>
-typedef float32x4_t math_simd_vec;
+typedef float32x4_t pt_math_simd_vec;
 #else
 #error Unknown Architecture
 #endif
 
-struct math_simd_mat
+struct pt_math_simd_mat
 {
-    math_simd_vec r[4];
+    pt_math_simd_vec r[4];
 };
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-    PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec3(math_vec3 *source);
-    PT_ATTR_MATH math_simd_vec PT_VECTORCALL math_load_vec4(math_vec4 *source);
-    PT_ATTR_MATH void PT_VECTORCALL math_store_vec3(math_vec3 *source, math_simd_vec v);
-    PT_ATTR_MATH void PT_VECTORCALL math_store_vec4(math_vec4 *source, math_simd_vec v);
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_alignas16_mat4x4(math_alignas16_mat4x4 *source);
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_load_mat4x4(math_mat4x4 *source);
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_identity();
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_multiply(math_simd_mat m1, math_simd_mat m2);
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_look_to_rh(math_simd_vec eye_position, math_simd_vec eye_direction, math_simd_vec up_direction);
-    PT_ATTR_MATH math_simd_mat PT_VECTORCALL math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
-    PT_ATTR_MATH void PT_VECTORCALL math_store_alignas16_mat4x4(math_alignas16_mat4x4 *destination, math_simd_mat m);
-    PT_ATTR_MATH void PT_VECTORCALL math_store_mat4x4(math_mat4x4 *destination, math_simd_mat m);
+    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 *source);
+    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 *source);
+    PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *source, pt_math_simd_vec v);
+    PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *source, pt_math_simd_vec v);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 *source);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity();
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z);
+    PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m);
+    PT_ATTR_MATH void PT_VECTORCALL pt_math_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m);
 #ifdef __cplusplus
 }
 #endif

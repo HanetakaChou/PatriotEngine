@@ -21,6 +21,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_gfx_common.h"
+#include "pt_math.h"
 
 typedef struct _pt_gfx_wsi_connection_t_ *pt_gfx_wsi_connection_ref;
 typedef struct _pt_gfx_wsi_visual_t_ *pt_gfx_wsi_visual_ref;
@@ -46,7 +47,7 @@ extern "C"
 {
 #endif
 
-    PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const* gfx_cache_dirname);
+    PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
     // note that the "on_wsi_window_created"/"on_wsi_window_destroyed" can't be overlapped with the "on_wsi_redraw_needed_acquire"/"on_wsi_redraw_needed_acquire"
     PT_ATTR_GFX bool PT_CALL pt_gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height);
@@ -68,7 +69,7 @@ extern "C"
 
     // the gfx module may use the given window to recreate the swapchain
     // frame throttling
-    
+
     // TODO the acquire may return a visible set by culling
     PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection); //add scene paramater
 
@@ -80,17 +81,20 @@ extern "C"
     // Bottom Level Structure - Mesh Material etc
     PT_ATTR_GFX pt_scene_ref PT_CALL pt_gfx_connection_create_scene(pt_gfx_connection_ref gfx_connection);
     PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_root_node(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_gfx_node_ref gfx_node);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_directional_light_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, float const direction[3]);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_eye_position(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_eye_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_direction);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_up_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *up_direction);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_directional_light_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *direction);
     PT_ATTR_GFX void PT_CALL pt_gfx_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
 
     PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection); // add callback paramter
-    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_transform(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, float const transform[4][4]);
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_transform(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_math_mat4x4 const *transform);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_mesh_ref gfx_mesh);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node);
 
     // merge to "create_node"
-    // callback should not be changed 
+    // callback should not be changed
     // since the destory is asynchrous (perhaps delay to next frame) // you need to use "ref_count" etc to make sure the "user_data" is available
     // PT_ATTR_GFX void PT_CALL pt_gfx_node_set_pre_draw_acquire_callback(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, void (*callback)()); // in acquire we will can this function before culling
 
