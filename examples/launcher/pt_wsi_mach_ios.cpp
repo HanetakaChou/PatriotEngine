@@ -34,6 +34,7 @@
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
 static mcrt_string wsi_mach_ios_library_path;
 
+extern "C" void get_mainbundle_resource_path(char *, size_t *);
 extern "C" void get_library_directory(char *, size_t *);
 extern "C" void cocoa_set_multithreaded(void);
 extern "C" bool cocoa_is_multithreaded(void);
@@ -44,11 +45,11 @@ int main(int argc, char *argv[])
     // Standard Library Directory
     {
         size_t library_directory_path_length_before;
-        get_library_directory(NULL, &library_directory_path_length_before);
+        get_mainbundle_resource_path(NULL, &library_directory_path_length_before);
 
         char *library_directory_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (library_directory_path_length_before + 1), alignof(char)));
         size_t library_directory_path_length;
-        get_library_directory(library_directory_path, &library_directory_path_length);
+        get_mainbundle_resource_path(library_directory_path, &library_directory_path_length);
         assert(library_directory_path_length_before == library_directory_path_length);
 
         wsi_mach_ios_library_path.assign(library_directory_path, library_directory_path + library_directory_path_length);

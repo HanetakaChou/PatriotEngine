@@ -2614,12 +2614,12 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
         }
         else
         {
-            assert(EACCES == (errno) || ENOENT == (errno));
-            if (EACCES == (errno))
+            assert(EACCES == errno || ENOENT == errno || EMFILE == errno);
+            if (EACCES == errno)
             {
                 mcrt_log_print("expected vkpipeline cache file %s can't be accessed!\n", pipeline_cache_file_name);
             }
-            else if (ENOENT == (errno))
+            else if (ENOENT == errno)
             {
                 mcrt_log_print("expected vkpipeline cache file %s doesn't exist!\n", pipeline_cache_file_name);
             }
@@ -2709,7 +2709,7 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
         }
         else
         {
-            assert(EACCES == (errno));
+            //assert(EACCES == (errno));
             if (EACCES == (errno))
             {
                 mcrt_log_print("expected vkpipeline cache file %s can't be accessed!\n", pipeline_cache_file_name);

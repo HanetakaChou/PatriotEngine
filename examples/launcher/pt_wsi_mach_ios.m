@@ -24,7 +24,22 @@
 #include <dispatch/dispatch.h>
 #include <CoreVideo/CoreVideo.h>
 #include <QuartzCore/QuartzCore.h>
-#include <MetalKit/MTKView.h>
+#include <Metal/Metal.h>
+#include <MetalKit/MetalKit.h>
+
+void get_mainbundle_resource_path(char *path, size_t *length)
+{
+    @autoreleasepool
+    {
+        char const *mainbundle_resource_path = [[[NSBundle mainBundle] resourcePath] UTF8String];
+        size_t mainbundle_resource_path_length = strlen(mainbundle_resource_path);
+        (*length) = mainbundle_resource_path_length;
+        if (NULL != path)
+        {
+            memcpy(path, mainbundle_resource_path, sizeof(char) * mainbundle_resource_path_length);
+        }
+    }
+}
 
 void get_library_directory(char *path, size_t *length)
 {
@@ -101,10 +116,15 @@ bool cocoa_is_multithreaded(void)
 
 @interface pt_wsi_mach_ios_application_delegate : NSObject <UIApplicationDelegate>
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions;
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options;
+@end
+
+@interface wsi_mach_ios_scene_delegate : NSObject <UIWindowSceneDelegate>
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions;
+@property(strong, nonatomic) UIWindow *window;
 @end
 
 @interface pt_wsi_mach_ios_view_controller : UIViewController
-- (instancetype)initWithWindow:(UIWindow *)window;
 - (void)loadView;
 - (void)viewDidLoad;
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator;
@@ -113,8 +133,6 @@ bool cocoa_is_multithreaded(void)
 @interface pt_wsi_mach_ios_view : UIView
 + (Class)layerClass;
 - (void)didMoveToWindow;
-- (void)setFrame:(CGRect)frame;
-- (void)resize_drawable:(CGFloat)scaleFactor; // callstack of mtkview
 - (void)display_link_callback;
 @end
 
@@ -127,50 +145,63 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 {
     //@autoreleasepool
     {
-        CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
+        //CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
 
-        UIWindow *window = [[UIWindow alloc] initWithFrame:main_screen_bounds];
+        //UIWindow *window = [[UIWindow alloc] initWithFrame:main_screen_bounds];
 
         //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
-        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow:window];
+        //pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithWindow:window];
 
         //[window setRootViewController:view_controller];
+
+        //[window setBackgroundColor:[UIColor whiteColor]];
+
+        //[window makeKeyAndVisible];
+
+        return TRUE;
+    }
+}
+
+- (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options
+{
+    UISceneConfiguration *scene_configuration = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+    scene_configuration.delegateClass = [wsi_mach_ios_scene_delegate class];
+    return scene_configuration;
+}
+
+@end
+
+@implementation wsi_mach_ios_scene_delegate
+- (void)scene:(UIScene *)scene willConnectToSession:(UISceneSession *)session options:(UISceneConnectionOptions *)connectionOptions
+{
+    @autoreleasepool
+    {
+        assert([scene isKindOfClass:[UIWindowScene class]]);
+
+        CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
+
+        UIWindow *window = [[UIWindow alloc] initWithFrame:main_screen_bounds];
+        [window setWindowScene:(UIWindowScene *)(scene)];
+        [self setWindow:window];
+
+        pt_wsi_mach_ios_view_controller *view_controller = [[pt_wsi_mach_ios_view_controller alloc] initWithNibName:nil bundle:nil];
 
         [window setRootViewController:view_controller];
 
         [window setBackgroundColor:[UIColor whiteColor]];
 
         [window makeKeyAndVisible];
-
-        return TRUE;
     }
 }
 @end
 
 @implementation pt_wsi_mach_ios_view_controller
-{
-    UIWindow *m_window;
-}
-
-// very strange // we need this to make sure the present
-
-- (instancetype)initWithWindow:(UIWindow *)window
-{
-    self = [super initWithNibName:nil bundle:nil];
-    if (self)
-    {
-        self->m_window = window;
-    }
-    return self;
-}
-
 - (void)loadView
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         CGRect main_screen_bounds = [[UIScreen mainScreen] bounds];
-
 
         UIView *view = [[pt_wsi_mach_ios_view alloc] initWithFrame:main_screen_bounds];
 
@@ -188,7 +219,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 // Allow device rotation to resize the swapchain
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
-    
+
     @autoreleasepool
     {
         [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
@@ -206,7 +237,7 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 + (Class)layerClass
 {
-    //@autoreleasepool
+    @autoreleasepool
     {
         return [CAMetalLayer class];
     }
@@ -214,33 +245,32 @@ extern void gfx_connection_redraw_callback(void *gfx_connection);
 
 - (void)didMoveToWindow
 {
-    [super didMoveToWindow];
+    @autoreleasepool
+    {
+        [super didMoveToWindow];
 
-    UIWindow *window = [self window];
-    assert(nil != window);
+        UIWindow *window = [self window];
+        assert(nil != window);
 
-    UIScreen *screen = [window screen];
-    assert(nil != screen);
+        UIScreen *screen = [window screen];
+        assert(nil != screen);
 
-    CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-    assert(nil != layer);
+        CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+        assert(nil != layer);
 
-    // Note !!!
-    // We must create display link after the window is not nil
+        CGSize drawable_size = [layer drawableSize];
+        self->m_gfx_connection = gfx_connection_init_callback((__bridge void *)layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
 
-    CGSize drawable_size = [layer drawableSize];
-    self->m_gfx_connection = gfx_connection_init_callback((__bridge void *)layer, drawable_size.width, drawable_size.height, &self->m_void_instance);
+        // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+        // RENDER_ON_MAIN_THREAD
+        self->m_display_link = [screen displayLinkWithTarget:self selector:@selector(display_link_callback)];
 
-    // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
-    // RENDER_ON_MAIN_THREAD
-    self->m_display_link = [screen displayLinkWithTarget:self
-                                                selector:@selector(display_link_callback)];
+        [self->m_display_link setPreferredFramesPerSecond:60];
 
-    [self->m_display_link setPreferredFramesPerSecond:60];
-
-    // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
-    // the main run loop (since 'viewDidLoad' is always executed from the main thread.
-    [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
+        // the main run loop (since 'viewDidLoad' is always executed from the main thread.
+        [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    }
 }
 
 - (void)display_link_callback
