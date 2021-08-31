@@ -26,7 +26,7 @@ inline gfx_connection_mtl::~gfx_connection_mtl()
 {
 }
 
-bool gfx_connection_mtl::init(wsi_window_ref wsi_window)
+bool gfx_connection_mtl::init(pt_gfx_wsi_window_ref wsi_window)
 {
     return m_api_mtl.init(wsi_window);
 }
@@ -54,7 +54,7 @@ void gfx_connection_mtl::on_wsi_redraw_needed_release()
 {
 }
 
-class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window)
+class gfx_connection_base *gfx_connection_mtl_init(pt_gfx_wsi_window_ref wsi_window)
 {
     //class gfx_connection_mtl *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_mtl), alignof(gfx_connection_mtl))) gfx_connection_mtl();
     //if (connection->init(wsi_window))

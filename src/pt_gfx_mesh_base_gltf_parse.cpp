@@ -38,7 +38,7 @@ inline math_mat4x4 *unwrap_mat4x4(float mat4x4[16]) { return reinterpret_cast<ma
 
 struct gltf_yy_extra_type
 {
-    intptr_t(PT_PTR *m_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
+    intptr_t(PT_PTR *m_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t);
     void *m_error_callback_data;
     void (*m_error_callback)(int line, int column, char const *msg, void *error_callback_data);
     mcrt_string m_temp_string;
@@ -52,11 +52,11 @@ struct gltf_yy_extra_type
 
 // Exported by Lex Yacc
 extern "C" int gltf_yylex_init_extra(void *user_defined, void **yyscanner);
-extern "C" void gltf_yyset_in(gfx_input_stream_ref gfx_input_stream, void *yyscanner);
+extern "C" void gltf_yyset_in(pt_gfx_input_stream_ref gfx_input_stream, void *yyscanner);
 extern "C" int gltf_yylex_destroy(void *yyscanner);
 extern "C" int gltf_yyparse(void *user_defined, void *yyscanner);
 
-bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data))
+bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, pt_gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data))
 {
     struct gltf_yy_extra_type user_defined;
     user_defined.m_input_stream_read_callback = gfx_input_stream_read_callback;
@@ -120,7 +120,7 @@ void gltf_lex_yacc_temp_string_destroy_callback(struct temp_string_version_t *te
 
 ptrdiff_t gltf_lex_input_callback(void *input_stream_void, void *buf, size_t size, void *user_defined_void)
 {
-    gfx_input_stream_ref gfx_input_stream = static_cast<gfx_input_stream_ref>(input_stream_void);
+    pt_gfx_input_stream_ref gfx_input_stream = static_cast<pt_gfx_input_stream_ref>(input_stream_void);
     struct gltf_yy_extra_type *user_defined = static_cast<struct gltf_yy_extra_type *>(user_defined_void);
     return user_defined->m_input_stream_read_callback(gfx_input_stream, buf, size);
 }

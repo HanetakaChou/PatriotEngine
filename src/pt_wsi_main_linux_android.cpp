@@ -229,7 +229,7 @@ inline wsi_linux_android::wsi_linux_android() : m_gfx_connection(NULL), m_main_t
 bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref, char const *), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
 {
 	//
-	this->m_gfx_connection = gfx_connection_init(NULL, NULL, internal_data_path);
+	this->m_gfx_connection = pt_gfx_connection_init(NULL, NULL, internal_data_path);
 	assert(NULL != this->m_gfx_connection);
 
 	// the "display_link_output_main"
@@ -309,9 +309,9 @@ int wsi_linux_android::main_thread_alooper_callback(int fd, int events, void *da
 
 void wsi_linux_android::draw_on_main_thread()
 {
-	gfx_connection_draw_acquire(this->m_gfx_connection);
+	pt_gfx_connection_draw_acquire(this->m_gfx_connection);
 
-	gfx_connection_draw_release(this->m_gfx_connection);
+	pt_gfx_connection_draw_release(this->m_gfx_connection);
 }
 
 void *wsi_linux_android::periodic_timer_main(void *argument_void)
@@ -381,12 +381,12 @@ void wsi_linux_android::on_window_focus_changed(bool has_focus)
 
 bool wsi_linux_android::on_window_created(ANativeWindow *native_window)
 {
-	return gfx_connection_on_wsi_window_created(this->m_gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(native_window), ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
+	return pt_gfx_connection_on_wsi_window_created(this->m_gfx_connection, NULL, reinterpret_cast<pt_gfx_wsi_window_ref>(native_window), ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
 }
 
 void wsi_linux_android::on_window_resized(ANativeWindow *native_window)
 {
-	return gfx_connection_on_wsi_window_resized(this->m_gfx_connection, ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
+	return pt_gfx_connection_on_wsi_window_resized(this->m_gfx_connection, ANativeWindow_getWidth(native_window), ANativeWindow_getHeight(native_window));
 }
 
 void wsi_linux_android::on_window_redraw_needed()
@@ -397,5 +397,5 @@ void wsi_linux_android::on_window_redraw_needed()
 
 void wsi_linux_android::on_window_destroyed()
 {
-	return gfx_connection_on_wsi_window_destroyed(this->m_gfx_connection);
+	return pt_gfx_connection_on_wsi_window_destroyed(this->m_gfx_connection);
 }

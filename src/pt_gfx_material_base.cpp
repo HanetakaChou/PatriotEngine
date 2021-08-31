@@ -206,18 +206,18 @@ void gfx_material_base::unified_destory_execute(class gfx_connection_base *gfx_c
 inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<gfx_material_ref>(gfx_material); }
-inline class gfx_material_base *unwrap(gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
+inline pt_gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<pt_gfx_material_ref>(gfx_material); }
+inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
 
-inline gfx_texture_ref *wrap(class gfx_texture_base **textures) { return reinterpret_cast<gfx_texture_ref *>(textures); }
-inline class gfx_texture_base **unwrap(gfx_texture_ref *textures) { return reinterpret_cast<class gfx_texture_base **>(textures); }
+inline pt_gfx_texture_ref *wrap(class gfx_texture_base **textures) { return reinterpret_cast<pt_gfx_texture_ref *>(textures); }
+inline class gfx_texture_base **unwrap(pt_gfx_texture_ref *textures) { return reinterpret_cast<class gfx_texture_base **>(textures); }
 
-PT_ATTR_GFX bool PT_CALL gfx_material_init_with_texture(pt_gfx_connection_ref gfx_connection, gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, gfx_texture_ref *gfx_textures)
+PT_ATTR_GFX bool PT_CALL pt_gfx_material_init_with_texture(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, pt_gfx_texture_ref *gfx_textures)
 {
     return unwrap(gfx_material)->init_with_texture(unwrap(gfx_connection), material_model, texture_count, unwrap(gfx_textures));
 }
 
-PT_ATTR_GFX void PT_CALL gfx_material_destroy(pt_gfx_connection_ref gfx_connection, gfx_material_ref gfx_material)
+PT_ATTR_GFX void PT_CALL pt_gfx_material_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material)
 {
     return unwrap(gfx_material)->destroy(unwrap(gfx_connection));
 }

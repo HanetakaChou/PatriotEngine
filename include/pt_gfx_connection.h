@@ -22,11 +22,11 @@
 #include <stdint.h>
 #include "pt_gfx_common.h"
 
-typedef struct _wsi_connection_t_ *wsi_connection_ref;
-typedef struct _wsi_visual_t_ *wsi_visual_ref;
-typedef struct _wsi_window_t_ *wsi_window_ref;
+typedef struct _pt_gfx_wsi_connection_t_ *pt_gfx_wsi_connection_ref;
+typedef struct _pt_gfx_wsi_visual_t_ *pt_gfx_wsi_visual_ref;
+typedef struct _pt_gfx_wsi_window_t_ *pt_gfx_wsi_window_ref;
 
-typedef struct _gfx_input_stream_t_ *gfx_input_stream_ref;
+typedef struct _pt_gfx_input_stream_t_ *pt_gfx_input_stream_ref;
 enum
 {
     PT_GFX_INPUT_STREAM_SEEK_SET = 0,
@@ -34,26 +34,26 @@ enum
     PT_GFX_INPUT_STREAM_SEEK_END = 2
 };
 
-typedef struct _gfx_connection_t *pt_gfx_connection_ref;
-typedef struct _gfx_node_t_ *gfx_node_ref;
-typedef struct _gfx_mesh_t_ *gfx_mesh_ref;
-typedef struct _gfx_material_t_ *gfx_material_ref;
-typedef struct _gfx_texture_t_ *gfx_texture_ref;
+typedef struct _pt_gfx_connection_t *pt_gfx_connection_ref;
+typedef struct _pt_gfx_node_t_ *pt_gfx_node_ref;
+typedef struct _pt_gfx_mesh_t_ *pt_gfx_mesh_ref;
+typedef struct _pt_gfx_material_t_ *pt_gfx_material_ref;
+typedef struct _pt_gfx_texture_t_ *pt_gfx_texture_ref;
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    PT_ATTR_GFX pt_gfx_connection_ref PT_CALL gfx_connection_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const* gfx_cache_dirname);
+    PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const* gfx_cache_dirname);
 
     // note that the "on_wsi_window_created"/"on_wsi_window_destroyed" can't be overlapped with the "on_wsi_redraw_needed_acquire"/"on_wsi_redraw_needed_acquire"
-    PT_ATTR_GFX bool PT_CALL gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height);
-    PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_destroyed(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL pt_gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_on_wsi_window_destroyed(pt_gfx_connection_ref gfx_connection);
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
-    PT_ATTR_GFX void PT_CALL gfx_connection_on_wsi_window_resized(pt_gfx_connection_ref gfx_connection, float width, float height);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_on_wsi_window_resized(pt_gfx_connection_ref gfx_connection, float width, float height);
 
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
@@ -69,19 +69,19 @@ extern "C"
     // frame throttling
     
     // TODO the acquire may return a visible set by culling
-    PT_ATTR_GFX void PT_CALL gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection);
 
 
-    PT_ATTR_GFX void PT_CALL gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection);
 
-    PT_ATTR_GFX void PT_CALL gfx_connection_destroy(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_destroy(pt_gfx_connection_ref gfx_connection);
 
     // Top Level Structure - Node
     // Bottom Level Structure - Mesh
-    PT_ATTR_GFX gfx_node_ref PT_CALL gfx_connection_create_node(pt_gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX void PT_CALL gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_mesh_ref gfx_mesh);
-    PT_ATTR_GFX void PT_CALL gfx_node_set_material(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node, gfx_material_ref gfx_material);
-    PT_ATTR_GFX void PT_CALL gfx_node_destroy(pt_gfx_connection_ref gfx_connection, gfx_node_ref gfx_node);
+    PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_mesh_ref gfx_mesh);
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material);
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node);
 
     // We don't support "HdStRenderBuffer" and we support "HdStMesh" instead
     // Because we scarcely share the "buffer" but we may share "mesh" between the node
@@ -109,9 +109,9 @@ extern "C"
     //  HdStRenderDelegate::CreateRprim
     //      HdStMesh HdStBasisCurves HdStPoints HdStVolume
 
-    PT_ATTR_GFX gfx_mesh_ref PT_CALL gfx_connection_create_mesh(pt_gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref));
-    PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh);
+    PT_ATTR_GFX pt_gfx_mesh_ref PT_CALL pt_gfx_connection_create_mesh(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref));
+    PT_ATTR_GFX void PT_CALL pt_gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh);
 
     enum
     {
@@ -150,17 +150,17 @@ extern "C"
         GFX_MATERIAL_MAX_TEXTURE_COUNT = 6
     };
 
-    PT_ATTR_GFX gfx_material_ref PT_CALL gfx_connection_create_material(pt_gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX bool PT_CALL gfx_material_init_with_texture(pt_gfx_connection_ref gfx_connection, gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, gfx_texture_ref *gfx_textures);
-    PT_ATTR_GFX void PT_CALL gfx_material_destroy(pt_gfx_connection_ref gfx_connection, gfx_material_ref gfx_material);
+    PT_ATTR_GFX pt_gfx_material_ref PT_CALL pt_gfx_connection_create_material(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX bool PT_CALL pt_gfx_material_init_with_texture(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, pt_gfx_texture_ref *gfx_textures);
+    PT_ATTR_GFX void PT_CALL pt_gfx_material_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material);
 
-    PT_ATTR_GFX gfx_texture_ref PT_CALL gfx_connection_create_texture(pt_gfx_connection_ref gfx_connection);
-    // the execution of "gfx_texture_read_input_stream" may be overlapped with "gfx_texture_destroy"
-    // but must be after the return of the "gfx_connection_create_texture"
-    PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref));
-    // the execution of "gfx_texture_destroy" may be overlapped with "gfx_texture_read_input_stream"
-    // but must be after the return of the "gfx_connection_create_texture"
-    PT_ATTR_GFX void PT_CALL gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture);
+    PT_ATTR_GFX pt_gfx_texture_ref PT_CALL pt_gfx_connection_create_texture(pt_gfx_connection_ref gfx_connection);
+    // the execution of "pt_gfx_texture_read_input_stream" may be overlapped with "pt_gfx_texture_destroy"
+    // but must be after the return of the "pt_gfx_connection_create_texture"
+    PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename, pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref));
+    // the execution of "pt_gfx_texture_destroy" may be overlapped with "pt_gfx_texture_read_input_stream"
+    // but must be after the return of the "pt_gfx_connection_create_texture"
+    PT_ATTR_GFX void PT_CALL pt_gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture);
 
 #ifdef __cplusplus
 }
@@ -190,12 +190,12 @@ struct gfx_iconnection
 
     // ANativeActivityCallbacks::onNativeWindowResized
     // MTKViewDelegate::drawableSizeWillChange
-    virtual void on_wsi_resized(wsi_window_ref wsi_window, float width, float height) = 0;
+    virtual void on_wsi_resized(pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0;
 
     // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
     // MTKViewDelegate::drawInMTKView
     // the gfx module may use the given window to recreate the swapchain
-    virtual void on_wsi_redraw_needed_acquire(wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
+    virtual void on_wsi_redraw_needed_acquire(pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
 
     // update animation etc
 
@@ -241,10 +241,10 @@ struct gfx_itexture
     // for debug purpose
     // make_resident
     virtual bool read_input_stream(char const *initial_filename,
-                                   gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-                                   intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
-                                   int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-                                   void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref )) = 0;
+                                   pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+                                   intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
+                                   int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
+                                   void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref )) = 0;
 
     virtual void destroy() = 0;
 };

@@ -64,16 +64,16 @@ using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalab
 #include <sys/stat.h>
 #include <fcntl.h>
 
-bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
 {
     mcrt_string path = "../third_party/assets/";
     path += initial_filename;
 
-    return gfx_texture_read_input_stream(
+    return pt_gfx_texture_read_input_stream(
         gfx_connection,
         texture,
         path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
+        [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
 #if 0
@@ -82,19 +82,19 @@ bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref
                 instance_gfx_input_stream_verify_support.insert(fd);
             }
 #endif
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
             ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
             return res_read;
         },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
             off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
             return res_lseek;
         },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
+        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
             int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
 #if 0
@@ -104,18 +104,18 @@ bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref
         });
 }
 
-bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
     mcrt_string path = "../third_party/assets/";
     path += initial_filename;
 
-    return gfx_mesh_read_input_stream(
+    return pt_gfx_mesh_read_input_stream(
         gfx_connection,
         mesh,
         mesh_index,
         material_index,
         path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
+        [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
 #if 0
@@ -124,19 +124,19 @@ bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh,
                 instance_gfx_input_stream_verify_support.insert(fd);
             }
 #endif
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
             ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
             return res_read;
         },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
             off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
             return res_lseek;
         },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
+        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
             int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
 #if 0

@@ -24,14 +24,14 @@
 #include <vulkan/vulkan.h>
 #include <assert.h>
 
-inline ANativeWindow *unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<ANativeWindow *>(wsi_window); }
+inline ANativeWindow *unwrap(pt_gfx_wsi_window_ref wsi_window) { return reinterpret_cast<ANativeWindow *>(wsi_window); }
 
 char const *gfx_device_vk::platform_surface_extension_name()
 {
     return VK_KHR_ANDROID_SURFACE_EXTENSION_NAME;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual)
 {
     // https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/chap33.html#platformQuerySupport_android
     // On Android, all physical devices and queue families must be capable of presentation with any native window. As a result there is no Android-specific query for these capabilities.
@@ -44,7 +44,7 @@ char const *gfx_device_vk::platform_create_surface_function_name()
     return "vkCreateAndroidSurfaceKHR";
 }
 
-VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
 {
     PFN_vkCreateAndroidSurfaceKHR vk_create_android_surface = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_android_surface);

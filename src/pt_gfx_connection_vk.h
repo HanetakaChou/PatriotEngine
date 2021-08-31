@@ -218,15 +218,15 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline gfx_connection_vk();
     inline ~gfx_connection_vk();
-    inline bool init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+    inline bool init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
     void destroy() override;
-    friend class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+    friend class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
     inline bool init_frame(char const *gfx_cache_dirname);
     inline bool init_pipeline_cache_dir(char const* gfx_cache_dirname);
     inline bool init_pipeline_layout();
     inline bool init_shader();
-    inline bool update_surface(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window);
+    inline bool update_surface(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window);
     inline bool update_framebuffer();
     inline bool load_pipeline_cache(char const *pipeline_cache_file_name, VkPipelineCache *pipeline_cache);
     inline void destroy_frame();
@@ -243,7 +243,7 @@ class gfx_connection_vk final : public gfx_connection_base
     class gfx_mesh_base *create_mesh() override;
     class gfx_material_base *create_material() override;
     class gfx_texture_base *create_texture() override;
-    bool on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height) override;
+    bool on_wsi_window_created(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height) override;
     void on_wsi_window_destroyed() override;
     void on_wsi_resized(float width, float height) override;
     void on_wsi_redraw_needed_acquire() override;
@@ -289,7 +289,7 @@ public:
     void free_descriptor_set(VkDescriptorSet descriptor_set);
 };
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
 // Streaming in CryEngine - StatObj
 

@@ -26,15 +26,15 @@ struct mesh_streaming_stage_second_task_data_t
 {
     class gfx_mesh_base *m_gfx_streaming_object;
     class gfx_connection_base *m_gfx_connection;
-    gfx_input_stream_ref m_gfx_input_stream;
-    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
-    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref);
+    pt_gfx_input_stream_ref m_gfx_input_stream;
+    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t);
+    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int);
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref);
 };
 static_assert(sizeof(struct mesh_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 inline struct mesh_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_data_t *task_data) { return reinterpret_cast<struct mesh_streaming_stage_second_task_data_t *>(task_data); }
 
-bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
+bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -53,8 +53,8 @@ bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection,
 
     if (!streaming_cancel)
     {
-        gfx_input_stream_ref gfx_input_stream = gfx_input_stream_init_callback(initial_filename);
-        if (gfx_input_stream_ref(-1) == gfx_input_stream)
+        pt_gfx_input_stream_ref gfx_input_stream = gfx_input_stream_init_callback(initial_filename);
+        if (pt_gfx_input_stream_ref(-1) == gfx_input_stream)
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -269,15 +269,15 @@ void gfx_mesh_base::release(class gfx_connection_base *gfx_connection)
 inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<gfx_mesh_ref>(mesh); }
-inline class gfx_mesh_base *unwrap(gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
+inline pt_gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<pt_gfx_mesh_ref>(mesh); }
+inline class gfx_mesh_base *unwrap(pt_gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-PT_ATTR_GFX bool PT_CALL gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
+PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
 {
     return unwrap(mesh)->read_input_stream(unwrap(gfx_connection), mesh_index, material_index, initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh)
+PT_ATTR_GFX void PT_CALL pt_gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh)
 {
     return unwrap(mesh)->destroy(unwrap(gfx_connection));
 }

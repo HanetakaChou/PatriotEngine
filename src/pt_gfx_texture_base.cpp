@@ -27,10 +27,10 @@ struct texture_streaming_stage_second_task_data_t
 {
     class gfx_texture_base *m_gfx_streaming_object;
     class gfx_connection_base *m_gfx_connection;
-    gfx_input_stream_ref m_gfx_input_stream;
-    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t);
-    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int);
-    void(PT_PTR *m_gfx_input_stream_destroy_callback)(gfx_input_stream_ref);
+    pt_gfx_input_stream_ref m_gfx_input_stream;
+    intptr_t(PT_PTR *m_gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t);
+    int64_t(PT_PTR *m_gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int);
+    void(PT_PTR *m_gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref);
 };
 static_assert(sizeof(struct texture_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
 inline struct texture_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_data_t *task_data) { return reinterpret_cast<struct texture_streaming_stage_second_task_data_t *>(task_data); }
@@ -38,10 +38,10 @@ inline struct texture_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_
 bool gfx_texture_base::read_input_stream(
     class gfx_connection_base *gfx_connection,
     char const *initial_filename,
-    gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-    intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
-    int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
+    pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+    intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
+    int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
+    void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -60,8 +60,8 @@ bool gfx_texture_base::read_input_stream(
 
     if (!streaming_cancel)
     {
-        gfx_input_stream_ref gfx_input_stream = gfx_input_stream_init_callback(initial_filename);
-        if (gfx_input_stream_ref(-1) == gfx_input_stream)
+        pt_gfx_input_stream_ref gfx_input_stream = gfx_input_stream_init_callback(initial_filename);
+        if (pt_gfx_input_stream_ref(-1) == gfx_input_stream)
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -281,22 +281,22 @@ void gfx_texture_base::release(class gfx_connection_base *gfx_connection)
 inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
 inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<gfx_texture_ref>(texture); }
-inline class gfx_texture_base *unwrap(gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
+inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
+inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX bool PT_CALL gfx_texture_read_input_stream(
+PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(
     pt_gfx_connection_ref gfx_connection,
-    gfx_texture_ref texture,
+    pt_gfx_texture_ref texture,
     char const *initial_filename,
-    gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-    intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
-    int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref))
+    pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+    intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
+    int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
+    void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
 {
     return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
 
-PT_ATTR_GFX void PT_CALL gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture)
+PT_ATTR_GFX void PT_CALL pt_gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture)
 {
     return unwrap(texture)->destroy(unwrap(gfx_connection));
 }

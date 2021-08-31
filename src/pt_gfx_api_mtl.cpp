@@ -18,7 +18,7 @@
 #include "pt_gfx_api_mtl.h"
 //#include <pt_apple_sdk_posix_mach_metal.h>
 
-bool gfx_api_mtl::init(wsi_window_ref wsi_window)
+bool gfx_api_mtl::init(pt_gfx_wsi_window_ref wsi_window)
 {
     return true;
 }

@@ -24,16 +24,16 @@
 #include <vulkan/vulkan.h>
 #include <assert.h>
 
-inline xcb_connection_t *unwrap(wsi_connection_ref wsi_connection) { return reinterpret_cast<xcb_connection_t *>(wsi_connection); }
-inline xcb_window_t unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<uintptr_t>(wsi_window); }
-inline xcb_visualid_t unwrap(wsi_visual_ref wsi_visual) { return reinterpret_cast<uintptr_t>(wsi_visual); }
+inline xcb_connection_t *unwrap(pt_gfx_wsi_connection_ref wsi_connection) { return reinterpret_cast<xcb_connection_t *>(wsi_connection); }
+inline xcb_window_t unwrap(pt_gfx_wsi_window_ref wsi_window) { return reinterpret_cast<uintptr_t>(wsi_window); }
+inline xcb_visualid_t unwrap(pt_gfx_wsi_visual_ref wsi_visual) { return reinterpret_cast<uintptr_t>(wsi_visual); }
 
 char const *gfx_device_vk::platform_surface_extension_name()
 {
     return VK_KHR_XCB_SURFACE_EXTENSION_NAME;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual)
 {
     PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR vk_get_physical_device_xcb_presentation_support = reinterpret_cast<PFN_vkGetPhysicalDeviceXcbPresentationSupportKHR>(get_instance_proc_addr(m_instance, "vkGetPhysicalDeviceXcbPresentationSupportKHR"));
 
@@ -47,7 +47,7 @@ char const *gfx_device_vk::platform_create_surface_function_name()
     return "vkCreateXcbSurfaceKHR";
 }
 
-VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
 {
     PFN_vkCreateXcbSurfaceKHR vk_create_xcb_surface = reinterpret_cast<PFN_vkCreateXcbSurfaceKHR>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_xcb_surface);

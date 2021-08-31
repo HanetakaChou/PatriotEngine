@@ -27,7 +27,7 @@ class gfx_api_mtl
     //MTLDevice m_device;
 
 public:
-    bool init(wsi_window_ref wsi_window);
+    bool init(pt_gfx_wsi_window_ref wsi_window);
 };
 
 #endif

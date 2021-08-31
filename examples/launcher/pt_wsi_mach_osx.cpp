@@ -120,8 +120,8 @@ mcrt_native_thread_id wsi_mach_osx_app_main_thread_id;
 
 extern "C" void *gfx_connection_init_callback(void *layer, float width, float height, void **void_instance)
 {
-    pt_gfx_connection_ref gfx_connection = gfx_connection_init(NULL, NULL, wsi_mach_osx_library_path.c_str());
-    PT_MAYBE_UNUSED bool res_on_wsi_window_created = gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<wsi_window_ref>(layer), width, height);
+    pt_gfx_connection_ref gfx_connection = pt_gfx_connection_init(NULL, NULL, wsi_mach_osx_library_path.c_str());
+    PT_MAYBE_UNUSED bool res_on_wsi_window_created = pt_gfx_connection_on_wsi_window_created(gfx_connection, NULL, reinterpret_cast<pt_gfx_wsi_window_ref>(layer), width, height);
     assert(res_on_wsi_window_created);
 
     struct wsi_mach_osx_app_main_argument_t wsi_mach_osx_app_main_argument;
@@ -141,8 +141,8 @@ extern "C" void *gfx_connection_init_callback(void *layer, float width, float he
 extern "C" void gfx_connection_redraw_callback(void *gfx_connection_void)
 {
     pt_gfx_connection_ref gfx_connection = static_cast<pt_gfx_connection_ref>(gfx_connection_void);
-    gfx_connection_draw_acquire(gfx_connection);
-    gfx_connection_draw_release(gfx_connection);
+    pt_gfx_connection_draw_acquire(gfx_connection);
+    pt_gfx_connection_draw_release(gfx_connection);
 }
 
 static void *wsi_mach_osx_app_main(void *argument_void)
@@ -160,65 +160,65 @@ static void *wsi_mach_osx_app_main(void *argument_void)
     return reinterpret_cast<void *>(static_cast<intptr_t>(res_neutral_app_main));
 }
 
-bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, gfx_texture_ref texture, char const *initial_filename)
+bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
 {
     mcrt_string path = wsi_mach_osx_library_path.c_str();
     path += '/';
     path += initial_filename;
 
-    return gfx_texture_read_input_stream(
+    return pt_gfx_texture_read_input_stream(
         gfx_connection,
         texture,
         path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
+        [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
             ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
             return res_read;
         },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
             off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
             return res_lseek;
         },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
+        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
             close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
         });
 }
 
-bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
     mcrt_string path = wsi_mach_osx_library_path.c_str();
     path += '/';
     path += initial_filename;
 
-    return gfx_mesh_read_input_stream(
+    return pt_gfx_mesh_read_input_stream(
         gfx_connection,
         mesh,
         mesh_index,
         material_index,
         path.c_str(),
-        [](char const *initial_filename) -> gfx_input_stream_ref
+        [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-            return reinterpret_cast<gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
-        [](gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
         {
             ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
             return res_read;
         },
-        [](gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
+        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
         {
             off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
             return res_lseek;
         },
-        [](gfx_input_stream_ref gfx_input_stream) -> void
+        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
             close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
         });

@@ -34,14 +34,14 @@ class gfx_connection_mtl : public gfx_connection_base
 
     inline gfx_connection_mtl();
     inline ~gfx_connection_mtl();
-    bool init(wsi_window_ref wsi_window);
+    bool init(pt_gfx_wsi_window_ref wsi_window);
     void destroy() override;
 
-    friend class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+    friend class gfx_connection_base *gfx_connection_mtl_init(pt_gfx_wsi_window_ref wsi_window);
 
 public:
 };
 
-class gfx_connection_base *gfx_connection_mtl_init(wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_mtl_init(pt_gfx_wsi_window_ref wsi_window);
 
 #endif

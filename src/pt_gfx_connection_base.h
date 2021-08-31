@@ -164,7 +164,7 @@ public:
     virtual class gfx_mesh_base *create_mesh() = 0;
     virtual class gfx_material_base *create_material() = 0;
     virtual class gfx_texture_base *create_texture() = 0;
-    virtual bool on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height) = 0;
+    virtual bool on_wsi_window_created(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0;
     virtual void on_wsi_window_destroyed() = 0;
     virtual void on_wsi_resized(float width, float height) = 0;
     virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling
@@ -250,6 +250,6 @@ inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_cl
 #endif
 }
 
-class gfx_connection_base *gfx_connection_common_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, wsi_window_ref wsi_window);
+class gfx_connection_base *gfx_connection_common_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, pt_gfx_wsi_window_ref wsi_window);
 
 #endif

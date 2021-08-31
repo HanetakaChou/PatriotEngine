@@ -167,6 +167,6 @@ struct gltf_root
     mcrt_vector<struct gltf_mesh> m_meshes;
 };
 
-bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data));
+bool gltf_parse_input_stream(struct gltf_root *out_gltf_root, pt_gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), void *error_callback_data, void (*error_callback)(int line, int column, char const *msg, void *error_callback_data));
 
 #endif

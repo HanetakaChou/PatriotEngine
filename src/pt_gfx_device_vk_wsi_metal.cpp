@@ -22,14 +22,14 @@
 #include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 
-inline CAMetalLayer *unwrap(wsi_window_ref wsi_window) { return reinterpret_cast<CAMetalLayer *>(wsi_window); }
+inline CAMetalLayer *unwrap(pt_gfx_wsi_window_ref wsi_window) { return reinterpret_cast<CAMetalLayer *>(wsi_window); }
 
 char const *gfx_device_vk::platform_surface_extension_name()
 {
     return VK_EXT_METAL_SURFACE_EXTENSION_NAME;
 }
 
-bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInstanceProcAddr get_instance_proc_addr, VkPhysicalDevice physical_device, uint32_t queue_family_index, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual)
 {
     // [33.4.9. iOS Platform](https://www.khronos.org/registry/vulkan/specs/1.2-extensions/html/chap33.html#platformQuerySupport_ios)
     // On iOS, all physical devices and queue families must be capable of presentation with any layer. As a result there is no iOS-specific query for these capabilities.
@@ -45,7 +45,7 @@ char const *gfx_device_vk::platform_create_surface_function_name()
     return "vkCreateMetalSurfaceEXT";
 }
 
-VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
 {
     PFN_vkCreateMetalSurfaceEXT vk_create_metal_surface = reinterpret_cast<PFN_vkCreateMetalSurfaceEXT>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_metal_surface);

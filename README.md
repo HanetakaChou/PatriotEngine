@@ -38,30 +38,30 @@ and the hierarchy of the scenetree / scenegraph are analogous to the relationshi
 The asset streaming process is totally asynchronous. This means that the calling thread will not halt at all. Thus we can definitely call these functions in the gameplay logic and no performance penalty will be introduced.
 
 ```  
-    gfx_connection_init
-    gfx_connection_destroy
+    pt_gfx_connection_init
+    pt_gfx_connection_destroy
 
     // scene related
-    gfx_connection_create_node // Top-Level-Structure // to reuse mesh etc 
+    pt_gfx_connection_create_node // Top-Level-Structure // to reuse mesh etc 
     gfx_connection_create_selector //LOD etc  
     gfx_connection_create_...
     
-    gfx_node_set_mesh
-    gfx_node_set_material
+    pt_gfx_node_set_mesh
+    pt_gfx_node_set_material
     gfx_node_set ...
 
     // asset related
-    gfx_connection_create_mesh
+    pt_gfx_connection_create_mesh
     gfx_connection_create_hair
-    gfx_connection_create_texture
+    pt_gfx_connection_create_texture
     gfx_connection_create_light_probe
     gfx_connection_create_...
 
     // asset streaming
-    gfx_mesh_read_input_stream
-    gfx_material_init_with_texture
-    gfx_mesh_destroy
-    gfx_material_destroy
+    pt_gfx_mesh_read_input_stream
+    pt_gfx_material_init_with_texture
+    pt_gfx_mesh_destroy
+    pt_gfx_material_destroy
 
     // wsi related
     gfx_connection_wsi_on_resized

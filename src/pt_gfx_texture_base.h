@@ -49,10 +49,10 @@ public:
     bool read_input_stream(
         class gfx_connection_base *gfx_connection,
         char const *initial_filename,
-        gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-        intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t),
-        int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int),
-        void(PT_PTR *gfx_input_stream_destroy_callback)(gfx_input_stream_ref));
+        pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
+        intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
+        int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
+        void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref));
 };
 
 #endif

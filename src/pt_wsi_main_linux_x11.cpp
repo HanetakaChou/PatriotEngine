@@ -68,9 +68,9 @@ class wsi_linux_x11
     bool m_app_main_running;
     static void *app_main(void *);
 
-    static inline wsi_connection_ref wrap_wsi_connection(xcb_connection_t *wsi_connection);
-    static inline wsi_visual_ref wrap_wsi_visual(xcb_visualid_t wsi_visual);
-    static inline wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window);
+    static inline pt_gfx_wsi_connection_ref wrap_wsi_connection(xcb_connection_t *wsi_connection);
+    static inline pt_gfx_wsi_visual_ref wrap_wsi_visual(xcb_visualid_t wsi_visual);
+    static inline pt_gfx_wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window);
 
 public:
     void init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref));
@@ -319,7 +319,7 @@ int wsi_linux_x11::main()
             xcb_configure_notify_event_t *configure_notify = reinterpret_cast<xcb_configure_notify_event_t *>(event);
             this->m_window_width = configure_notify->width;
             this->m_window_height = configure_notify->height;
-            gfx_connection_on_wsi_window_resized(this->m_gfx_connection, this->m_window_width, this->m_window_height);
+            pt_gfx_connection_on_wsi_window_resized(this->m_gfx_connection, this->m_window_width, this->m_window_height);
         }
         break;
         case XCB_MAPPING_NOTIFY:
@@ -384,30 +384,30 @@ int wsi_linux_x11::main()
     return 0;
 }
 
-inline wsi_connection_ref wsi_linux_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
+inline pt_gfx_wsi_connection_ref wsi_linux_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
 {
-    return reinterpret_cast<wsi_connection_ref>(wsi_connection);
+    return reinterpret_cast<pt_gfx_wsi_connection_ref>(wsi_connection);
 }
 
-inline wsi_visual_ref wsi_linux_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
+inline pt_gfx_wsi_visual_ref wsi_linux_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
 {
-    return reinterpret_cast<wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
+    return reinterpret_cast<pt_gfx_wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
 }
 
-inline wsi_window_ref wsi_linux_x11::wrap_wsi_window(xcb_window_t wsi_window)
+inline pt_gfx_wsi_window_ref wsi_linux_x11::wrap_wsi_window(xcb_window_t wsi_window)
 {
-    return reinterpret_cast<wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
+    return reinterpret_cast<pt_gfx_wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
 }
 
 void *wsi_linux_x11::draw_main(void *argument)
 {
     class wsi_linux_x11 *instance = static_cast<class wsi_linux_x11 *>(argument);
 
-    instance->m_gfx_connection = gfx_connection_init(wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_visual(instance->m_visual), ".");
+    instance->m_gfx_connection = pt_gfx_connection_init(wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_visual(instance->m_visual), ".");
     assert(instance->m_gfx_connection != NULL);
     mcrt_atomic_store(&instance->m_draw_main_running, true);
 
-    gfx_connection_on_wsi_window_created(instance->m_gfx_connection, wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
+    pt_gfx_connection_on_wsi_window_created(instance->m_gfx_connection, wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
 
     while (mcrt_atomic_load(&instance->m_draw_main_running))
     {
@@ -419,18 +419,18 @@ void *wsi_linux_x11::draw_main(void *argument)
         // gfx release //draw and present //draw //not sync scenetree
 
         // update scenetree
-        gfx_connection_draw_acquire(instance->m_gfx_connection);
+        pt_gfx_connection_draw_acquire(instance->m_gfx_connection);
 
         // TODO
         // output visibility set
 
         // update animation etc
-        gfx_connection_draw_release(instance->m_gfx_connection);
+        pt_gfx_connection_draw_release(instance->m_gfx_connection);
     }
 
-    gfx_connection_on_wsi_window_destroyed(instance->m_gfx_connection);
+    pt_gfx_connection_on_wsi_window_destroyed(instance->m_gfx_connection);
 
-    gfx_connection_destroy(instance->m_gfx_connection);
+    pt_gfx_connection_destroy(instance->m_gfx_connection);
 
     return NULL;
 }

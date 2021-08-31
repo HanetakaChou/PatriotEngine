@@ -22,7 +22,7 @@
 #include "pt_gfx_connection_vk.h"
 #include <new>
 
-class gfx_connection_base *gfx_connection_vk_init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
+class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
     if (connection->init(wsi_connection, wsi_visual, gfx_cache_dirname))
@@ -40,7 +40,7 @@ inline gfx_connection_vk::gfx_connection_vk()
 {
 }
 
-inline bool gfx_connection_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
+inline bool gfx_connection_vk::init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     if (!m_device.init(wsi_connection, wsi_visual))
     {
@@ -1008,7 +1008,7 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
     return true;
 }
 
-inline bool gfx_connection_vk::update_surface(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window)
+inline bool gfx_connection_vk::update_surface(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
 {
     // Surface
     assert(VK_NULL_HANDLE == this->m_surface);
@@ -2386,7 +2386,7 @@ inline gfx_connection_vk::~gfx_connection_vk()
 {
 }
 
-bool gfx_connection_vk::on_wsi_window_created(wsi_connection_ref wsi_connection, wsi_window_ref wsi_window, float width, float height)
+bool gfx_connection_vk::on_wsi_window_created(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height)
 {
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

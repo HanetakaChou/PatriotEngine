@@ -57,7 +57,7 @@ private:
 
     bool mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t *const neutral_header) override;
     size_t mesh_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset) override;
-    bool mesh_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(gfx_input_stream_ref, int64_t, int)) override;
+    bool mesh_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, pt_gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int)) override;
 
     void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;

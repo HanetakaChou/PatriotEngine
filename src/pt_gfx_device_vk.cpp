@@ -44,7 +44,7 @@ static VkBool32 VKAPI_PTR __internal_debug_report_callback(VkDebugReportFlagsEXT
 }
 #endif
 
-bool gfx_device_vk::init(wsi_connection_ref wsi_connection, wsi_visual_ref wsi_visual)
+bool gfx_device_vk::init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual)
 {
     this->m_vk_mcrt_allocation_callbacks.pUserData = NULL;
     this->m_vk_mcrt_allocation_callbacks.pfnAllocation = __internal_allocation_callback;
