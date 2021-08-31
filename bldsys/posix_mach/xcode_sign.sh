@@ -25,6 +25,7 @@ cd ${MY_DIR}
 
 # github secrets
 # P12_PASSWORD
+KEYCHAIN_PASSWORD="YuqiaoZhang.HanetakaYuminaga.PatriotEngine"
 
 # create variables
 CERTIFICATE_PATH="${MY_DIR}/developer_profile/166480D6762EFCB19E95462DEFB451ED37755575.p12"
