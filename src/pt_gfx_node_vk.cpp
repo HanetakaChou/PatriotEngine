@@ -22,7 +22,7 @@
 #include "pt_gfx_node_vk.h"
 #include "pt_gfx_mesh_vk.h"
 
-void gfx_node_vk::frame_destroy_callback(class gfx_connection_vk *gfx_connection)
+void gfx_node_vk::post_stream_done_destroy_callback(class gfx_connection_vk *gfx_connection)
 {
     this->~gfx_node_vk();
     mcrt_aligned_free(this);

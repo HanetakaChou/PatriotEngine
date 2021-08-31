@@ -104,7 +104,7 @@ bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection,
     {
         // race condition with the "streaming_done"
         // inevitable since the "transfer_dst_and_sampled_image_alloc" nervertheless races with the "streaming_done"
-        this->streaming_destroy_callback(gfx_connection);
+        this->pre_streaming_done_destroy_callback(gfx_connection);
     }
 
     return true;
@@ -223,7 +223,7 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
         // leave the "steaming_cancel" to the third stage
         // tracker by "slob_lock_busy_count"
 #if 0
-            task_data->m_streaming_object->streaming_destroy_callback();
+            task_data->m_streaming_object->pre_streaming_done_destroy_callback();
 #else
         // pass to the third stage
         mcrt_atomic_store(&task_data->m_gfx_streaming_object->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -254,14 +254,7 @@ void gfx_mesh_base::release(class gfx_connection_base *gfx_connection)
 {
     if (0U == mcrt_atomic_dec_u32(&this->m_ref_count))
     {
-        bool streaming_done;
-        this->streaming_destroy_request(&streaming_done);
-
-        if (streaming_done)
-        {
-            // the object is used by the rendering system
-            this->frame_destroy_request(gfx_connection);
-        }
+        this->streaming_destroy_request(gfx_connection);
     }
 }
 

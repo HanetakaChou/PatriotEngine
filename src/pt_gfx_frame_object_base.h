@@ -24,15 +24,8 @@
 
 class gfx_frame_object_base
 {
-    virtual void frame_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
-
 protected:
     inline gfx_frame_object_base() {}
-
-    void frame_destroy_request(class gfx_connection_base *gfx_connection);
-
-public:
-    void frame_destroy_execute(class gfx_connection_base *gfx_connection);
 };
 
 #endif

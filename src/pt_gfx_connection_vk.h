@@ -99,7 +99,7 @@ class gfx_connection_vk final : public gfx_connection_base
     mcrt_vector<class gfx_node_vk *> m_scene_node_list;
     mcrt_vector<size_t> m_scene_node_list_free_index_list;
 
-    mcrt_vector<class gfx_frame_object_base *> m_frame_object_unused_list[FRAME_THROTTLING_COUNT];
+    mcrt_vector<class gfx_streaming_object_base *> m_streaming_done_object_unused_list[FRAME_THROTTLING_COUNT];
 
     inline VkCommandBuffer frame_task_get_secondary_command_buffer(uint32_t frame_throttling_index, uint32_t frame_thread_index, uint32_t subpass_index);
     inline void acquire_frame();

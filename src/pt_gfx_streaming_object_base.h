@@ -52,10 +52,11 @@ protected:
         mcrt_spin_unlock(&this->m_spinlock_streaming_done);
     }
 
-    virtual void streaming_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
+    virtual void pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
 private:
     virtual bool streaming_done_callback(class gfx_connection_base *gfx_connection) = 0;
+    virtual void post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
 protected:
     inline gfx_streaming_object_base() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false)
@@ -63,10 +64,12 @@ protected:
         mcrt_spin_init(&this->m_spinlock_streaming_done);
     }
 
-    void streaming_destroy_request(bool *streaming_done);
+    void streaming_destroy_request(class gfx_connection_base *gfx_connection);
 
 public:
     void streaming_done_execute(class gfx_connection_base *gfx_connection);
+
+    void post_stream_done_destroy_execute(class gfx_connection_base *gfx_connection);
 
     inline bool is_streaming_error() const
     {

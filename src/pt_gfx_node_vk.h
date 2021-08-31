@@ -27,7 +27,7 @@ class gfx_node_vk final : public gfx_node_base
 public:
     size_t m_frame_node_index;
 
-    void frame_destroy_callback(class gfx_connection_vk *gfx_connection);
+    void post_stream_done_destroy_callback(class gfx_connection_vk *gfx_connection);
 
     inline gfx_node_vk() : gfx_node_base(), m_frame_node_index(-1){};
 };

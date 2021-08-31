@@ -17,13 +17,3 @@
 
 #include <assert.h>
 #include "pt_gfx_frame_object_base.h"
-
-void gfx_frame_object_base::frame_destroy_request(class gfx_connection_base *gfx_connection)
-{
-    return gfx_connection->frame_object_destroy_list_push(this);
-}
-
-void gfx_frame_object_base::frame_destroy_execute(class gfx_connection_base *gfx_connection)
-{
-    return this->frame_destroy_callback(gfx_connection);
-}

@@ -33,9 +33,9 @@ class gfx_material_vk final : public gfx_material_base
 
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
 
-    void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
+    void pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
-    void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
+    void post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
 
     inline void unified_destory_execute(class gfx_connection_vk *gfx_connection);
 

@@ -974,7 +974,7 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
 
             this->m_frame_node_init_list[frame_throttling_index].init();
             this->m_frame_node_destory_list[frame_throttling_index].init();
-            this->m_frame_object_destory_list[frame_throttling_index].init();
+            this->m_streaming_done_object_destory_list[frame_throttling_index].init();
         }
     }
 
@@ -1907,20 +1907,20 @@ inline void gfx_connection_vk::acquire_frame()
                 assert(node == (*user_defined->m_scene_node_list)[node->m_frame_node_index]);
                 (*user_defined->m_scene_node_list)[node->m_frame_node_index] = NULL;
                 (*user_defined->m_scene_node_list_free_index_list).push_back(node->m_frame_node_index);
-                node->frame_destroy_callback(user_defined->m_gfx_connection);
+                node->post_stream_done_destroy_callback(user_defined->m_gfx_connection);
             },
             &user_defined);
     }
 
     // move frame_object_destory_list to frame_object_unused_list
-    assert(0U == this->m_frame_object_unused_list[frame_throttling_index_last].size());
-    this->m_frame_object_destory_list[frame_throttling_index].consume_and_clear(
-        [](class gfx_frame_object_base *value, void *user_defined_void) -> void
+    assert(0U == this->m_streaming_done_object_unused_list[frame_throttling_index_last].size());
+    this->m_streaming_done_object_destory_list[frame_throttling_index].consume_and_clear(
+        [](class gfx_streaming_object_base *value, void *user_defined_void) -> void
         {
-            mcrt_vector<class gfx_frame_object_base *> *user_defined = static_cast<mcrt_vector<class gfx_frame_object_base *> *>(user_defined_void);
+            mcrt_vector<class gfx_streaming_object_base *> *user_defined = static_cast<mcrt_vector<class gfx_streaming_object_base *> *>(user_defined_void);
             user_defined->push_back(value);
         },
-        &this->m_frame_object_unused_list[frame_throttling_index_last]);
+        &this->m_streaming_done_object_unused_list[frame_throttling_index_last]);
 
     VkResult res_acquire_next_image = this->m_device.acquire_next_image(this->m_swapchain, UINT64_MAX, this->m_frame_semaphore_acquire_next_image[frame_throttling_index], VK_NULL_HANDLE, &this->m_frame_swapchain_image_index[frame_throttling_index]);
     assert(VK_SUCCESS == res_acquire_next_image || VK_ERROR_OUT_OF_DATE_KHR == res_acquire_next_image || VK_SUBOPTIMAL_KHR == res_acquire_next_image);
@@ -1957,11 +1957,11 @@ inline void gfx_connection_vk::acquire_frame()
     }
 
     // free unused frame object
-    for (class gfx_frame_object_base *frame_object : this->m_frame_object_unused_list[frame_throttling_index])
+    for (class gfx_streaming_object_base *streaming_object : this->m_streaming_done_object_unused_list[frame_throttling_index])
     {
-        frame_object->frame_destroy_execute(this);
+        streaming_object->post_stream_done_destroy_execute(this);
     }
-    this->m_frame_object_unused_list[frame_throttling_index].clear();
+    this->m_streaming_done_object_unused_list[frame_throttling_index].clear();
 
     // free primary command buffer memory
     {

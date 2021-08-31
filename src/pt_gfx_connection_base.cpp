@@ -26,11 +26,11 @@ void gfx_connection_base::frame_node_destroy_list_push(class gfx_node_base *node
     mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
 }
 
-void gfx_connection_base::frame_object_destroy_list_push(class gfx_frame_object_base *frame_object)
+void gfx_connection_base::streaming_done_object_destroy_list_push(class gfx_streaming_object_base *streaming_done_object)
 {
     mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
-    this->m_frame_object_destory_list[frame_throttling_index].produce(frame_object);
+    this->m_streaming_done_object_destory_list[frame_throttling_index].produce(streaming_done_object);
     mcrt_rwlock_rdunlock(&this->m_rwlock_frame_throttling_index);
 }
 

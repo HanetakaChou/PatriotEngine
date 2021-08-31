@@ -37,7 +37,7 @@ bool gfx_material_vk::streaming_done_callback(class gfx_connection_base *gfx_con
     return res_allocate_frame_object_descriptor_set;
 }
 
-void gfx_material_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
+void gfx_material_vk::pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     // first stage parallel // no desciptor_set
@@ -45,7 +45,7 @@ void gfx_material_vk::streaming_destroy_callback(class gfx_connection_base *gfx_
     this->unified_destory_execute(gfx_connection);
 }
 
-void gfx_material_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
+void gfx_material_vk::post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     // this function is serial

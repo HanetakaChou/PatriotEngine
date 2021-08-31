@@ -95,7 +95,7 @@ protected:
     };
     struct mpsc_list<class gfx_node_base *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
     struct mpsc_list<class gfx_node_base *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_frame_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_frame_object_destory_list[FRAME_THROTTLING_COUNT];
+    struct mpsc_list<class gfx_streaming_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_streaming_done_object_destory_list[FRAME_THROTTLING_COUNT];
 
     // Streaming
     enum
@@ -131,7 +131,7 @@ public:
 
     // Frame
     void frame_node_destroy_list_push(class gfx_node_base *node);
-    void frame_object_destroy_list_push(class gfx_frame_object_base *frame_object);
+    void streaming_done_object_destroy_list_push(class gfx_streaming_object_base *streaming_done_object);
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

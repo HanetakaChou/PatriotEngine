@@ -18,29 +18,38 @@
 #include <assert.h>
 #include "pt_gfx_streaming_object_base.h"
 
-void gfx_streaming_object_base::streaming_destroy_request(bool *streaming_done)
+void gfx_streaming_object_base::streaming_destroy_request(class gfx_connection_base *gfx_connection)
 {
-    // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
-    this->streaming_done_lock();
-
-    streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
-
-    if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+    bool streaming_done;
     {
-        mcrt_atomic_store(&this->m_streaming_cancel, true);
-        (*streaming_done) = false;
-    }
-    else if (STREAMING_STATUS_DONE == streaming_status)
-    {
-        (*streaming_done) = true;
-    }
-    else
-    {
-        assert(0);
-        (*streaming_done) = false;
+        // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
+        this->streaming_done_lock();
+
+        streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
+
+        if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+        {
+            mcrt_atomic_store(&this->m_streaming_cancel, true);
+            streaming_done = false;
+        }
+        else if (STREAMING_STATUS_DONE == streaming_status)
+        {
+            streaming_done = true;
+        }
+        else
+        {
+            assert(0);
+            streaming_done = false;
+        }
+
+        this->streaming_done_unlock();
     }
 
-    this->streaming_done_unlock();
+    if (streaming_done)
+    {
+        // the object is used by the rendering system
+        gfx_connection->streaming_done_object_destroy_list_push(this);
+    }
 }
 
 void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base *gfx_connection)
@@ -66,8 +75,13 @@ void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base
     }
     else
     {
-        this->streaming_destroy_callback(gfx_connection);
+        this->pre_streaming_done_destroy_callback(gfx_connection);
     }
 
     this->streaming_done_unlock();
+}
+
+void gfx_streaming_object_base::post_stream_done_destroy_execute(class gfx_connection_base *gfx_connection)
+{
+    return this->post_stream_done_destroy_callback(gfx_connection);
 }

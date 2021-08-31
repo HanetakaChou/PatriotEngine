@@ -318,7 +318,7 @@ bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback
     return true;
 }
 
-void gfx_mesh_vk::streaming_destroy_callback(class gfx_connection_base *gfx_connection_base)
+void gfx_mesh_vk::pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     this->unified_destory(gfx_connection);
@@ -329,7 +329,7 @@ bool gfx_mesh_vk::streaming_done_callback(class gfx_connection_base *gfx_connect
     return true;
 }
 
-void gfx_mesh_vk::frame_destroy_callback(class gfx_connection_base *gfx_connection_base)
+void gfx_mesh_vk::post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
     this->unified_destory(gfx_connection);

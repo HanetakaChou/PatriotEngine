@@ -44,9 +44,9 @@ class gfx_texture_vk final : public gfx_texture_base
     uint32_t (*texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) override;
     void texture_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest) override;
 
-    void streaming_destroy_callback(class gfx_connection_base *gfx_connection) override;
+    void pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
     bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
-    void frame_destroy_callback(class gfx_connection_base *gfx_connection) override;
+    void post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
     inline void unified_destory(class gfx_connection_vk *gfx_connection);
 
 public:
