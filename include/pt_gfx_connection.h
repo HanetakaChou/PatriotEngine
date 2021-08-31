@@ -35,6 +35,7 @@ enum
 };
 
 typedef struct _pt_gfx_connection_t *pt_gfx_connection_ref;
+typedef struct _pt_gfx_scene_t_ *pt_scene_ref;
 typedef struct _pt_gfx_node_t_ *pt_gfx_node_ref;
 typedef struct _pt_gfx_mesh_t_ *pt_gfx_mesh_ref;
 typedef struct _pt_gfx_material_t_ *pt_gfx_material_ref;
@@ -69,19 +70,29 @@ extern "C"
     // frame throttling
     
     // TODO the acquire may return a visible set by culling
-    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection); //add scene paramater
 
-
-    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection); //add scene paramater
 
     PT_ATTR_GFX void PT_CALL pt_gfx_connection_destroy(pt_gfx_connection_ref gfx_connection);
 
     // Top Level Structure - Node
-    // Bottom Level Structure - Mesh
-    PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection);
+    // Bottom Level Structure - Mesh Material etc
+    PT_ATTR_GFX pt_scene_ref PT_CALL pt_gfx_connection_create_scene(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_root_node(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_gfx_node_ref gfx_node);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_directional_light_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, float const direction[3]);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
+
+    PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection); // add callback paramter
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_transform(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, float const transform[4][4]);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_mesh_ref gfx_mesh);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node);
+
+    // merge to "create_node"
+    // callback should not be changed 
+    // since the destory is asynchrous (perhaps delay to next frame) // you need to use "ref_count" etc to make sure the "user_data" is available
+    // PT_ATTR_GFX void PT_CALL pt_gfx_node_set_pre_draw_acquire_callback(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, void (*callback)()); // in acquire we will can this function before culling
 
     // We don't support "HdStRenderBuffer" and we support "HdStMesh" instead
     // Because we scarcely share the "buffer" but we may share "mesh" between the node
@@ -155,99 +166,11 @@ extern "C"
     PT_ATTR_GFX void PT_CALL pt_gfx_material_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material);
 
     PT_ATTR_GFX pt_gfx_texture_ref PT_CALL pt_gfx_connection_create_texture(pt_gfx_connection_ref gfx_connection);
-    // the execution of "pt_gfx_texture_read_input_stream" may be overlapped with "pt_gfx_texture_destroy"
-    // but must be after the return of the "pt_gfx_connection_create_texture"
     PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename, pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *), intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int), void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref));
-    // the execution of "pt_gfx_texture_destroy" may be overlapped with "pt_gfx_texture_read_input_stream"
-    // but must be after the return of the "pt_gfx_connection_create_texture"
     PT_ATTR_GFX void PT_CALL pt_gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture);
 
 #ifdef __cplusplus
 }
-#endif
-
-#if 0
-
-//struct gfx_imesh;
-//struct gfx_iterrain;
-struct gfx_itexture;
-
-// We may treat the gfx server as the 3D version X11 server.
-struct gfx_iconnection
-{
-    //init_input_stream_callback
-
-    //virtual struct gfx_imesh *create_mesh() = 0;
-
-    virtual struct gfx_itexture *create_texture() = 0;
-
-    // app can use these count to tweak the "create/destroy" strategy
-    // size_t request_count() = 0;
-    // size_t fail_count() =0; // since the loading is async, we prefer fail_count than resident_count
-    // ~~size_t resident_count() = 0~~
-
-    virtual void destroy() = 0;
-
-    // ANativeActivityCallbacks::onNativeWindowResized
-    // MTKViewDelegate::drawableSizeWillChange
-    virtual void on_wsi_resized(pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0;
-
-    // ANativeActivityCallbacks::onNativeWindowRedrawNeeded
-    // MTKViewDelegate::drawInMTKView
-    // the gfx module may use the given window to recreate the swapchain
-    virtual void on_wsi_redraw_needed_acquire(pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0; //frame throttling
-
-    // update animation etc
-
-    virtual void wsi_on_redraw_needed_draw_and_release() = 0;
-};
-
-// gfx_imesh -> X Pixmap
-// mesh_file -> X Bitmap
-// https://www.x.org/releases/X11R7.7/doc/libxcb/tutorial/#pixmapst
-
-struct gfx_imesh
-{
-    //virtual bool put_vertex(/*inputstream*/) = 0; //xcb_put_image_checked
-
-    // PMD GLTF
-    // vertex/index info //ignore others
-    //virual bool attach_input_stream() //associate with file //can change
-
-    virtual bool put_material() = 0;
-
-    virtual bool put_texture() = 0; //MDL Library
-
-    virtual void destroy() = 0;
-};
-
-struct gfx_imaterial
-{
-    // MDL //OSL
-    //virual bool attach_input_stream() //associate with file
-
-    virtual bool read_input_stream() = 0; //XReadBitmapFile //XCreateBitmapFromData
-
-    //is_resident
-
-    virtual void destroy() = 0;
-};
-
-struct gfx_itexture
-{
-    // DDS //PVR
-    //virual bool attach_input_stream(asset_url) //associate with file //gfx automatic evict and resident
-
-    // for debug purpose
-    // make_resident
-    virtual bool read_input_stream(char const *initial_filename,
-                                   pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-                                   intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
-                                   int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
-                                   void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref )) = 0;
-
-    virtual void destroy() = 0;
-};
 #endif
 
 #endif

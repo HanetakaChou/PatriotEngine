@@ -11,7 +11,7 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_device_vk_wsi_android.cpp -o ${workspaceFolder}/obj/src/pt_gfx_device_vk_wsi_android.o",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_device_vk_wsi_android.cpp -o ${workspaceFolder}/obj/src/pt_gfx_device_vk_wsi_android.o",
         "file": "${workspaceFolder}/src/pt_gfx_device_vk_wsi_android.cpp"
     },
     {

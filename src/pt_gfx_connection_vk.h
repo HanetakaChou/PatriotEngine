@@ -96,6 +96,10 @@ class gfx_connection_vk final : public gfx_connection_base
     bool m_frame_swapchain_image_acquired[FRAME_THROTTLING_COUNT];
 
     // Scene
+
+    // concurrent_vector
+    // https://web.archive.org/web/20090301235240/http://software.intel.com/en-us/blogs/2008/07/24/tbbconcurrent_vector-secrets-of-memory-organization/
+
     mcrt_vector<class gfx_node_vk *> m_scene_node_list;
     mcrt_vector<size_t> m_scene_node_list_free_index_list;
 
