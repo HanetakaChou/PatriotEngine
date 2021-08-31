@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -97,6 +97,9 @@ protected:
     struct mpsc_list<class gfx_node_base *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
     struct mpsc_list<class gfx_streaming_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_streaming_done_object_destory_list[FRAME_THROTTLING_COUNT];
 
+    // Perspective Matraix
+    float m_aspect_ratio; //width-divide-height
+
     // Streaming
     enum
     {
@@ -132,6 +135,7 @@ public:
     // Frame
     void frame_node_destroy_list_push(class gfx_node_base *node);
     void streaming_done_object_destroy_list_push(class gfx_streaming_object_base *streaming_done_object);
+    inline float get_aspect_ratio() { return this->m_aspect_ratio; }
 
     // Streaming
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

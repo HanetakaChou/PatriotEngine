@@ -77,12 +77,12 @@ struct pt_math_simd_mat
 extern "C"
 {
 #endif
-    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 *source);
-    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 *source);
+    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 const*source);
+    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 const*source);
     PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *source, pt_math_simd_vec v);
     PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *source, pt_math_simd_vec v);
-    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source);
-    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 *source);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const*source);
+    PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 const*source);
     PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity();
     PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2);
     PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction);

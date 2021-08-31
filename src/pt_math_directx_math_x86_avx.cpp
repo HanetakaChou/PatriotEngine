@@ -61,20 +61,24 @@ static_assert(sizeof(pt_math_simd_mat) == sizeof(DirectX::XMMATRIX), "");
 static_assert(alignof(pt_math_simd_mat) == alignof(DirectX::XMMATRIX), "");
 
 inline DirectX::XMFLOAT3 *unwrap(pt_math_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 *>(vec3); }
+inline DirectX::XMFLOAT3 const *unwrap(pt_math_vec3 const *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 const *>(vec3); }
 inline DirectX::XMFLOAT4 *unwrap(pt_math_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 *>(vec4); }
+inline DirectX::XMFLOAT4 const *unwrap(pt_math_vec4 const *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 const *>(vec4); }
 inline DirectX::XMVECTOR unwrap(pt_math_simd_vec simd_vec) { return (*reinterpret_cast<DirectX::XMVECTOR *>(&simd_vec)); }
 inline pt_math_simd_vec wrap(DirectX::XMVECTOR simd_vec) { return (*reinterpret_cast<pt_math_simd_vec *>(&simd_vec)); }
 inline DirectX::XMFLOAT4X4 *unwrap(pt_math_mat4x4 *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 *>(mat4x4); }
+inline DirectX::XMFLOAT4X4 const *unwrap(pt_math_mat4x4 const *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 const *>(mat4x4); }
 inline DirectX::XMFLOAT4X4A *unwrap(pt_math_alignas16_mat4x4 *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A *>(alignas16_mat4x4); }
+inline DirectX::XMFLOAT4X4A const *unwrap(pt_math_alignas16_mat4x4 const *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A const *>(alignas16_mat4x4); }
 inline DirectX::XMMATRIX unwrap(pt_math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
 inline pt_math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<pt_math_simd_mat *>(&simd_mat)); }
 
-pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec3(pt_math_vec3 *source)
+pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec3(pt_math_vec3 const *source)
 {
     return wrap(DirectX::XMLoadFloat3(unwrap(source)));
 }
 
-pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec4(pt_math_vec4 *source)
+pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx_load_vec4(pt_math_vec4 const *source)
 {
     return wrap(DirectX::XMLoadFloat4(unwrap(source)));
 }
@@ -89,12 +93,12 @@ void PT_VECTORCALL directx_math_x86_avx_store_vec4(pt_math_vec4 *source, pt_math
     return DirectX::XMStoreFloat4(unwrap(source), unwrap(v));
 }
 
-pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 *source)
+pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const *source)
 {
     return wrap(DirectX::XMLoadFloat4x4A(unwrap(source)));
 }
 
-pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_mat4x4(pt_math_mat4x4 *source)
+pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx_load_mat4x4(pt_math_mat4x4 const *source)
 {
     return wrap(DirectX::XMLoadFloat4x4(unwrap(source)));
 }

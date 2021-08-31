@@ -81,9 +81,7 @@ extern "C"
     // Bottom Level Structure - Mesh Material etc
     PT_ATTR_GFX pt_scene_ref PT_CALL pt_gfx_connection_create_scene(pt_gfx_connection_ref gfx_connection);
     PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_root_node(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_gfx_node_ref gfx_node);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_eye_position(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_eye_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_direction);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_up_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *up_direction);
+    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera_eye_position(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction);
     PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_directional_light_direction(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *direction);
     PT_ATTR_GFX void PT_CALL pt_gfx_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
 

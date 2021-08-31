@@ -56,8 +56,18 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_frame_object_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_frame_object_base.o",
-        "file": "${workspaceFolder}/src/pt_gfx_frame_object_base.cpp"
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_scene_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_scene_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_scene_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_scene_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_scene_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_scene_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_node_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_node_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_node_base.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",

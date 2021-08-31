@@ -177,8 +177,7 @@ class gfx_connection_vk final : public gfx_connection_base
     uint32_t m_wsi_width;
     uint32_t m_wsi_height;
 
-    // Perspective Matraix
-    float m_aspect_ratio; //width-divide-height
+
 
     // Window
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

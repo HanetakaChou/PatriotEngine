@@ -33,6 +33,12 @@ class gfx_node_base
 
     class gfx_material_base *m_gfx_material;
 
+    // concurrent_vector
+    // https://web.archive.org/web/20090301235240/http://software.intel.com/en-us/blogs/2008/07/24/tbbconcurrent_vector-secrets-of-memory-organization/
+
+    // mcrt_vector<class gfx_node_vk *> m_child_node_list;
+    // mcrt_vector<size_t> m_child_node_free_index_list;
+
 protected:
     inline gfx_node_base() : m_gfx_mesh(NULL), m_gfx_material(NULL)
     {
