@@ -251,11 +251,11 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 		assert(1 == res_looper_add_fd);
 
 		// the "periodic_timer_main"
-		mcrt_atomic_store(this->m_periodic_timer_main_running, false);
+		mcrt_atomic_store(&this->m_periodic_timer_main_running, false);
 		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_periodic_timer_main_thread_id, periodic_timer_main, this);
 		assert(res_native_thread_create);
 
-		while (!mcrt_atomic_load(&this->periodic_timer_main_running))
+		while (!mcrt_atomic_load(&this->m_periodic_timer_main_running))
 		{
 			mcrt_os_yield();
 		}
