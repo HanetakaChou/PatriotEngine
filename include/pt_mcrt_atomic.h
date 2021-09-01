@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -31,8 +31,12 @@ inline int64_t mcrt_atomic_cas_i64(int64_t volatile *dest, int64_t exch, int64_t
 
 inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint64_t comp);
 
+#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp);
+#else
+#define PT_MCRT_ATOMIC_CAS_PTR(T)
+#endif
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch);
 
@@ -40,8 +44,12 @@ inline uint32_t mcrt_atomic_xchg_u32(uint32_t volatile *dest, uint32_t exch);
 
 inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch);
 
+#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch);
+#else
+#define PT_MCRT_ATOMIC_XCHG_PTR(T)
+#endif
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add);
 inline int64_t mcrt_atomic_add_i64(int64_t volatile *dest, int64_t add);
@@ -54,17 +62,25 @@ inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest);
 inline int32_t mcrt_atomic_fetch_add_i32(int32_t volatile *dest, int32_t add);
 inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add);
 
-// A load operation performs the acquire operation on the affected memory location: 
-// no reads or writes in the current thread can be reordered before this load. 
+// A load operation performs the acquire operation on the affected memory location:
+// no reads or writes in the current thread can be reordered before this load.
 // All writes in other threads that release the same atomic variable are visible in the current thread.
+#ifdef __cplusplus
 template <typename T>
 inline T mcrt_atomic_load(T volatile *src);
+#else
+#define PT_MCRT_ATOMIC_LOAD(T)
+#endif
 
-// A store operation performs the release operation: 
-// no reads or writes in the current thread can be reordered after this store. 
+// A store operation performs the release operation:
+// no reads or writes in the current thread can be reordered after this store.
 // All writes in the current thread are visible in other threads that acquire the same atomic variable.
+#ifdef __cplusplus
 template <typename T>
 inline void mcrt_atomic_store(T volatile *dst, T val);
+#else
+#define PT_MCRT_ATOMIC_STORE(T)
+#endif
 
 #if defined PT_GCC
 #include "pt_mcrt_atomic_gcc.inl"

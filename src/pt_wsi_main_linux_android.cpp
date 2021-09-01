@@ -63,8 +63,8 @@ class wsi_linux_android
 		char const *m_internal_data_path;
 		pt_wsi_app_ref(PT_PTR *m_wsi_app_init_callback)(pt_gfx_connection_ref, char const *);
 		int(PT_PTR *m_wsi_app_main_callback)(pt_wsi_app_ref);
-		bool m_has_inited;
 	};
+	bool m_app_main_running;
 	static void *app_main(void *argument_void);
 
 public:
@@ -268,12 +268,12 @@ bool wsi_linux_android::init(char const *internal_data_path, pt_wsi_app_ref(PT_P
 		app_main_argument.m_internal_data_path = internal_data_path;
 		app_main_argument.m_wsi_app_init_callback = wsi_app_init_callback;
 		app_main_argument.m_wsi_app_main_callback = wsi_app_main_callback;
-		app_main_argument.m_has_inited = false;
+		mcrt_atomic_store(&this->m_app_main_running, false);
 
 		PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&this->m_app_main_thread_id, app_main, &app_main_argument);
 		assert(res_native_thread_create);
 
-		while (!mcrt_atomic_load(&app_main_argument.m_has_inited))
+		while (!mcrt_atomic_load(&this->m_app_main_running))
 		{
 			mcrt_os_yield();
 		}
@@ -361,7 +361,7 @@ void *wsi_linux_android::app_main(void *argument_void)
 		wsi_app = argument->m_wsi_app_init_callback(argument->m_instance->m_gfx_connection, argument->m_internal_data_path);
 		wsi_app_main_callback = argument->m_wsi_app_main_callback;
 		argument->m_instance->m_wsi_app = wsi_app;
-		mcrt_atomic_store(&argument->m_has_inited, true);
+		mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
 	}
 
 	// app_main

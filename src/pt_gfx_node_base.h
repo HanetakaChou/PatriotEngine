@@ -87,7 +87,7 @@ class gfx_node_base
 protected:
     inline gfx_node_base() : m_gfx_mesh(NULL), m_gfx_material(NULL)
     {
-        pt_math_store_mat4x4(&this->m_mat_m, pt_math_mat_identity());
+        pt_math_store_alignas16_mat4x4(&this->m_mat_m, pt_math_mat_identity());
     }
 
 public:

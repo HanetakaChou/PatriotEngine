@@ -20,6 +20,8 @@
 static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection);
 static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app);
 
+extern "C" void get_main_bundle_resource_path(char *, size_t *);
+
 int main(int argc, char *argv[])
 {
     return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
@@ -28,18 +30,18 @@ int main(int argc, char *argv[])
 #include <pt_mcrt_malloc.h>
 #include "pt_wsi_app_base.h"
 
-class wsi_app_linux_11 : public wsi_app_base
+class wsi_app_mach_ios : public wsi_app_base
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);
 };
 
-inline pt_wsi_app_ref wrap(class wsi_app_linux_11 *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
-inline class wsi_app_linux_11 *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_linux_11 *>(wsi_app); }
+inline pt_wsi_app_ref wrap(class wsi_app_mach_ios *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
+inline class wsi_app_mach_ios *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_mach_ios *>(wsi_app); }
 
 static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection)
 {
-    class wsi_app_linux_11 *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_linux_11), alignof(class wsi_app_linux_11))) wsi_app_linux_11();
+    class wsi_app_mach_ios *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_mach_ios), alignof(class wsi_app_mach_ios))) wsi_app_mach_ios();
     wsi_app->init(gfx_connection);
     return wrap(wsi_app);
 }
@@ -49,15 +51,32 @@ static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
     return unwrap(wsi_app)->main();
 }
 
-void wsi_app_linux_11::init(pt_gfx_connection_ref gfx_connection)
-{
-    this->wsi_app_base::init(gfx_connection);
-}
-
 #include <string>
 #include <pt_mcrt_scalable_allocator.h>
 
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+
+mcrt_string wsi_mach_ios_library_path;
+
+void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
+{
+    // Main Bundle Resource Path
+    {
+        size_t main_bundle_resource_path_length_before;
+        get_main_bundle_resource_path(NULL, &main_bundle_resource_path_length_before);
+
+        char *main_bundle_resource_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (main_bundle_resource_path_length_before + 1), alignof(char)));
+        size_t main_bundle_resource_path_length;
+        get_main_bundle_resource_path(main_bundle_resource_path, &main_bundle_resource_path_length);
+        assert(main_bundle_resource_path_length_before == main_bundle_resource_path_length);
+
+        wsi_mach_ios_library_path.assign(main_bundle_resource_path, main_bundle_resource_path + main_bundle_resource_path_length);
+
+        mcrt_aligned_free(main_bundle_resource_path);
+    }
+
+    this->wsi_app_base::init(gfx_connection);
+}
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -66,7 +85,8 @@ using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalab
 
 bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = wsi_mach_ios_library_path.c_str();
+    path += '/';
     path += initial_filename;
 
     return pt_gfx_texture_read_input_stream(
@@ -76,12 +96,6 @@ bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_
         [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-#if 0
-            if (-1 != fd)
-            {
-                instance_gfx_input_stream_verify_support.insert(fd);
-            }
-#endif
             return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
         [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
@@ -96,17 +110,14 @@ bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_
         },
         [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
-            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
-#if 0
-            instance_gfx_input_stream_verify_support.erase(fd);
-#endif
-            close(fd);
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
         });
 }
 
 bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = wsi_mach_ios_library_path.c_str();
+    path += '/';
     path += initial_filename;
 
     return pt_gfx_mesh_read_input_stream(
@@ -118,12 +129,6 @@ bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref me
         [](char const *initial_filename) -> pt_gfx_input_stream_ref
         {
             int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-#if 0
-            if (-1 != fd)
-            {
-                instance_gfx_input_stream_verify_support.insert(fd);
-            }
-#endif
             return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
         },
         [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
@@ -138,11 +143,7 @@ bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref me
         },
         [](pt_gfx_input_stream_ref gfx_input_stream) -> void
         {
-            int fd = static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream));
-#if 0
-            instance_gfx_input_stream_verify_support.erase(fd);
-#endif
-            close(fd);
+            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
         });
 }
 

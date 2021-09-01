@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -60,7 +60,7 @@ inline mcrt_native_thread_id mcrt_native_thread_id_get(void);
 inline bool mcrt_native_thread_id_equal(mcrt_native_thread_id tid_left, mcrt_native_thread_id tid_right);
 
 #if defined(PT_POSIX)
-inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(*destructor)(void *));
+inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void (*destructor)(void *));
 #elif defined(PT_WIN32)
 inline bool mcrt_native_tls_alloc(mcrt_native_tls_key *key, void(NTAPI *destructor)(void *));
 #else
@@ -70,7 +70,7 @@ inline void mcrt_native_tls_free(mcrt_native_tls_key key);
 inline bool mcrt_native_tls_set_value(mcrt_native_tls_key key, void *value);
 inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key);
 
-inline void mcrt_os_yield();
+inline void mcrt_os_yield(void);
 
 inline void mcrt_os_mutex_init(mcrt_mutex_t *mutex);
 inline void mcrt_os_mutex_destroy(mcrt_mutex_t *mutex);
@@ -87,12 +87,12 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond);
 
 typedef struct mcrt_event_t
 {
-#ifndef NDEBUG
+#if defined(__cplusplus) && !defined(NDEBUG)
 private:
 #endif
     bool mcrtp_manual_reset;
     bool mcrtp_state_signalled;
-#ifndef NDEBUG
+#if defined(__cplusplus) && !defined(NDEBUG)
     mcrt_cond_t *mcrtp_condition;
     mcrt_mutex_t *mcrtp_mutex;
 
@@ -123,7 +123,7 @@ inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mut
 //                          If more than one event became signaled during the call, this is the array index of
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The function has failed.
-inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, int nevents, bool waitall);
+inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall);
 // Returns:
 //  If waitall is true:
 //       0 - The return value indicates that the state of all specified events is signaled.
@@ -133,7 +133,7 @@ inline int mcrt_os_event_wait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *conditi
 //                          If more than one event became signaled during the call, this is the array index of
 //                          the signaled event with the smallest index value of all the signaled events.
 //      -1                - The time-out interval elapsed and the conditions specified by the waitall parameter are not satisfied or the function has failed.
-inline int mcrt_os_event_timedwait_multiple(mcrt_mutex_t *mutex, mcrt_cond_t *condition, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms);
+inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms);
 
 inline void mcrt_os_sleep(uint32_t milli_second);
 

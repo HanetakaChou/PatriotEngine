@@ -118,7 +118,7 @@ PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 c
     }
 }
 
-PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity()
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity(void)
 {
     if (math_support_avx2)
     {

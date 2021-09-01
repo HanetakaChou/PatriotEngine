@@ -95,7 +95,7 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 	return (pthread_getspecific(key));
 }
 
-inline void mcrt_os_yield()
+inline void mcrt_os_yield(void)
 {
 #if defined(__linux__)
 #if defined(__BIONIC__)
@@ -209,7 +209,7 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 
 inline void mcrt_os_sleep(uint32_t milli_second)
 {
-	struct timespec request = {static_cast<time_t>(milli_second) / static_cast<time_t>(1000), static_cast<long>(1000000) * (static_cast<long>(milli_second) % static_cast<long>(1000))};
+	struct timespec request = {milli_second / 1000, ((long)1000000) * ((long)milli_second) % ((long)1000)};
 	struct timespec remain;
 
 	int res_sleep;

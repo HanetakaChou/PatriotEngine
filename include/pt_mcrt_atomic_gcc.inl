@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -38,12 +38,26 @@ inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint
     return __sync_val_compare_and_swap(dest, comp, exch);
 }
 
+#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp)
 {
     uintptr_t dest_old = __sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), reinterpret_cast<uintptr_t>(comp), reinterpret_cast<uintptr_t>(exch));
     return reinterpret_cast<T *>(dest_old);
 }
+#else
+#ifdef PT_MCRT_ATOMIC_CAS_PTR
+#undef PT_MCRT_ATOMIC_CAS_PTR
+#define PT_MCRT_ATOMIC_CAS_PTR(T)                                                                                             \
+    PT_ALWAYS_INLINE T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp)                                              \
+    {                                                                                                                         \
+        uintptr_t dest_old = __sync_val_compare_and_swap(((uintptr_t volatile *)dest), ((uintptr_t)comp), ((uintptr_t)exch)); \
+        return ((T)dest_old);                                                                                                 \
+    }
+#else
+#error PT_MCRT_ATOMIC_CAS_PTR
+#endif
+#endif
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
 {
@@ -83,6 +97,7 @@ inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
     return dest_old;
 }
 
+#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
 {
@@ -93,6 +108,23 @@ inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
     } while (__sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), dest_old, reinterpret_cast<uintptr_t>(exch)) != dest_old);
     return reinterpret_cast<T *>(dest_old);
 }
+#else
+#ifdef PT_MCRT_ATOMIC_XCHG_PTR
+#undef PT_MCRT_ATOMIC_XCHG_PTR
+#define PT_MCRT_ATOMIC_XCHG_PTR(T)                                                                                    \
+    PT_ALWAYS_INLINE T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)                                              \
+    {                                                                                                                 \
+        uintptr_t dest_old;                                                                                           \
+        do                                                                                                            \
+        {                                                                                                             \
+            dest_old = (*((uintptr_t volatile *)dest));                                                               \
+        } while (__sync_val_compare_and_swap(((uintptr_t volatile *)dest), dest_old, ((uintptr_t)exch)) != dest_old); \
+        return ((T *)dest_old);                                                                                       \
+    }
+#else
+#error PT_MCRT_ATOMIC_XCHG_PTR
+#endif
+#endif
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)
 {
@@ -106,32 +138,32 @@ inline int64_t mcrt_atomic_add_i64(int64_t volatile *dest, int64_t add)
 
 inline int32_t mcrt_atomic_inc_i32(int32_t volatile *dest)
 {
-    return __sync_add_and_fetch(dest, static_cast<int32_t>(1));
+    return __sync_add_and_fetch(dest, ((int32_t)1));
 }
 
 inline uint32_t mcrt_atomic_inc_u32(uint32_t volatile *dest)
 {
-    return __sync_add_and_fetch(dest, static_cast<uint32_t>(1));
+    return __sync_add_and_fetch(dest, ((uint32_t)1));
 }
 
 inline int64_t mcrt_atomic_inc_i64(int64_t volatile *dest)
 {
-    return __sync_add_and_fetch(dest, static_cast<int64_t>(1));
+    return __sync_add_and_fetch(dest, ((int64_t)1));
 }
 
 inline int32_t mcrt_atomic_dec_i32(int32_t volatile *dest)
 {
-    return __sync_sub_and_fetch(dest, static_cast<int32_t>(1));
+    return __sync_sub_and_fetch(dest, ((int32_t)1));
 }
 
 inline uint32_t mcrt_atomic_dec_u32(uint32_t volatile *dest)
 {
-    return __sync_sub_and_fetch(dest, static_cast<uint32_t>(1));
+    return __sync_sub_and_fetch(dest, ((uint32_t)1));
 }
 
 inline int64_t mcrt_atomic_dec_i64(int64_t volatile *dest)
 {
-    return __sync_sub_and_fetch(dest, static_cast<int64_t>(1));
+    return __sync_sub_and_fetch(dest, ((int64_t)1));
 }
 
 inline int32_t mcrt_atomic_fetch_add_i32(int32_t volatile *dest, int32_t add)
@@ -144,7 +176,7 @@ inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add)
     return __sync_fetch_and_add(dest, add);
 }
 
-inline void mcrt_compiler_read_barrier()
+inline void mcrt_compiler_read_barrier(void)
 {
     __asm__ __volatile__(""
                          :
@@ -152,7 +184,7 @@ inline void mcrt_compiler_read_barrier()
                          : "memory");
 }
 
-inline void mcrt_compiler_write_barrier()
+inline void mcrt_compiler_write_barrier(void)
 {
     __asm__ __volatile__(""
                          :
@@ -160,7 +192,7 @@ inline void mcrt_compiler_write_barrier()
                          : "memory");
 }
 
-inline void mcrt_compiler_read_write_barrier()
+inline void mcrt_compiler_read_write_barrier(void)
 {
     __asm__ __volatile__(""
                          :
@@ -169,21 +201,21 @@ inline void mcrt_compiler_read_write_barrier()
 }
 
 #if defined(PT_ARM)
-inline void mcrt_hardware_read_barrier()
+inline void mcrt_hardware_read_barrier(void)
 {
     __asm__ __volatile__("dmb sy"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_write_barrier()
+inline void mcrt_hardware_write_barrier(void)
 {
     __asm__ __volatile__("dmb st"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_read_write_barrier()
+inline void mcrt_hardware_read_write_barrier(void)
 {
     __asm__ __volatile__("dmb sy"
                          :
@@ -191,21 +223,21 @@ inline void mcrt_hardware_read_write_barrier()
                          : "memory");
 }
 #elif defined(PT_ARM64)
-inline void mcrt_hardware_read_barrier()
+inline void mcrt_hardware_read_barrier(void)
 {
     __asm__ __volatile__("dmb ld"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_write_barrier()
+inline void mcrt_hardware_write_barrier(void)
 {
     __asm__ __volatile__("dmb st"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_read_write_barrier()
+inline void mcrt_hardware_read_write_barrier(void)
 {
     __asm__ __volatile__("dmb sy"
                          :
@@ -213,21 +245,21 @@ inline void mcrt_hardware_read_write_barrier()
                          : "memory");
 }
 #elif defined(PT_X86)
-inline void mcrt_hardware_read_barrier()
+inline void mcrt_hardware_read_barrier(void)
 {
     __asm__ __volatile__("mfence"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_write_barrier()
+inline void mcrt_hardware_write_barrier(void)
 {
     __asm__ __volatile__("mfence"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_read_write_barrier()
+inline void mcrt_hardware_read_write_barrier(void)
 {
     __asm__ __volatile__("mfence"
                          :
@@ -235,21 +267,21 @@ inline void mcrt_hardware_read_write_barrier()
                          : "memory");
 }
 #elif defined(PT_X64)
-inline void mcrt_hardware_read_barrier()
+inline void mcrt_hardware_read_barrier(void)
 {
     __asm__ __volatile__("mf"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_write_barrier()
+inline void mcrt_hardware_write_barrier(void)
 {
     __asm__ __volatile__("mf"
                          :
                          :
                          : "memory");
 }
-inline void mcrt_hardware_read_write_barrier()
+inline void mcrt_hardware_read_write_barrier(void)
 {
     __asm__ __volatile__("mf"
                          :

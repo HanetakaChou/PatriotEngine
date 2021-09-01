@@ -77,7 +77,7 @@ public:
     int main();
 };
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char **argv, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
 {
     wsi_linux_x11 instance;
     instance.init(wsi_app_init_callback, wsi_app_main_callback);

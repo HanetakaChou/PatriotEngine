@@ -7,9 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		620D767B26DB722B001E7BD0 /* pt_wsi_neutral_app.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */; };
-		620D767D26DB728E001E7BD0 /* pt_wsi_mach_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */; };
-		620D768026DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */; };
+		620D767D26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */; };
+		620D768026DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */; };
 		620D770326DB83E3001E7BD0 /* libpt_math_avx2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76E526DB830F001E7BD0 /* libpt_math_avx2.a */; };
 		620D770426DB83E8001E7BD0 /* libpt_math_sse2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76CB26DB8290001E7BD0 /* libpt_math_sse2.a */; };
 		620D770526DB83F7001E7BD0 /* libpt_math_avx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 620D76D826DB82E9001E7BD0 /* libpt_math_avx.a */; };
@@ -85,6 +84,7 @@
 		6273EA0926DAE8160083D849 /* libpt_mcrt.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62D230AC268893240044D96C /* libpt_mcrt.dylib */; };
 		628BEFE026DEA0BB007BC3F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 628BEFD826DE961C007BC3F3 /* Assets.xcassets */; };
 		628BEFE126DEA0C0007BC3F3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 628BEFD826DE961C007BC3F3 /* Assets.xcassets */; };
+		628BEFF426DEBBB5007BC3F3 /* pt_wsi_main_mach_ios.m in Sources */ = {isa = PBXBuildFile; fileRef = 628BEFF126DEBBB5007BC3F3 /* pt_wsi_main_mach_ios.m */; };
 		629186C126D847C5007A708F /* pt_gfx_mesh_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */; };
 		629186C726D847E1007A708F /* pt_gfx_mesh_vk.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */; };
 		629186CA26D8481B007A708F /* pt_gfx_node_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 629186C926D8481B007A708F /* pt_gfx_node_base.cpp */; };
@@ -97,6 +97,9 @@
 		6292C30626DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */; platformFilter = maccatalyst; };
 		6292C30726DBC08C00494EF8 /* libpt_irml_catalyst.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */; platformFilter = maccatalyst; };
 		6292C30926DBC3AE00494EF8 /* libMoltenVK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 6292C30826DBC3AE00494EF8 /* libMoltenVK.a */; platformFilter = ios; };
+		6295436026DFDD7500E49DE6 /* libpt_wsi_ios.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 628BEFE626DEBA64007BC3F3 /* libpt_wsi_ios.a */; };
+		6295436526DFF2BA00E49DE6 /* pt_wsi_app_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6295436426DFF2BA00E49DE6 /* pt_wsi_app_base.cpp */; };
+		6295436726DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6295436626DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp */; };
 		62A5B4352689183B00AE5275 /* libvulkan.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 62A5B4342689183B00AE5275 /* libvulkan.1.dylib */; };
 		62D230882688921E0044D96C /* pt_gfx_device_vk_wsi_metal.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D2306D26888F630044D96C /* pt_gfx_device_vk_wsi_metal.cpp */; };
 		62D230892688921E0044D96C /* pt_gfx_texture_base.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 62D23060268884630044D96C /* pt_gfx_texture_base.cpp */; };
@@ -256,6 +259,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 62D230AB268893240044D96C;
 			remoteInfo = pt_mcrt;
+		};
+		6295435E26DFDD6900E49DE6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 628BEFE526DEBA64007BC3F3;
+			remoteInfo = pt_wsi_ios;
 		};
 		62D230D62688987A0044D96C /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -457,11 +467,20 @@
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		628BEFE426DEBA64007BC3F3 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/$(PRODUCT_NAME)";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_mach_ios.m; path = ../../examples/launcher/pt_wsi_mach_ios.m; sourceTree = "<group>"; };
-		620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_mach_ios.cpp; path = ../../examples/launcher/pt_wsi_mach_ios.cpp; sourceTree = "<group>"; };
+		620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_ios.m; path = ../../examples/launcher/pt_wsi_app_mach_ios.m; sourceTree = "<group>"; };
+		620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_ios.cpp; path = ../../examples/launcher/pt_wsi_app_mach_ios.cpp; sourceTree = "<group>"; };
 		620D768226DB7AB7001E7BD0 /* ios.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ios.entitlements; sourceTree = "<group>"; };
 		620D76BE26DB8269001E7BD0 /* libpt_math.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		620D76CB26DB8290001E7BD0 /* libpt_math_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -493,6 +512,8 @@
 		6277494226894CBA009F2E71 /* pt_gfx_connection.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_connection.h; path = ../../include/pt_gfx_connection.h; sourceTree = SOURCE_ROOT; };
 		627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		628BEFD826DE961C007BC3F3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		628BEFE626DEBA64007BC3F3 /* libpt_wsi_ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_wsi_ios.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		628BEFF126DEBBB5007BC3F3 /* pt_wsi_main_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_main_mach_ios.m; path = ../../src/pt_wsi_main_mach_ios.m; sourceTree = "<group>"; };
 		629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_mesh_base.cpp; path = ../../src/pt_gfx_mesh_base.cpp; sourceTree = "<group>"; };
 		629186C226D847D8007A708F /* pt_gfx_mesh_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_base.h; path = ../../src/pt_gfx_mesh_base.h; sourceTree = "<group>"; };
 		629186C426D847E1007A708F /* pt_gfx_mesh_vk.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_vk.h; path = ../../src/pt_gfx_mesh_vk.h; sourceTree = "<group>"; };
@@ -513,6 +534,11 @@
 		6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc_catalyst.a; sourceTree = "<group>"; };
 		6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml_catalyst.a; sourceTree = "<group>"; };
 		6292C30826DBC3AE00494EF8 /* libMoltenVK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK.a; path = ../../third_party/libs/molten_vk/lib/mach_ios/libMoltenVK.a; sourceTree = "<group>"; };
+		6295436126DFE4AA00E49DE6 /* pt_math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_math.h; path = ../../include/pt_math.h; sourceTree = "<group>"; };
+		6295436226DFED1E00E49DE6 /* pt_mcrt_atomic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_atomic.h; path = ../../include/pt_mcrt_atomic.h; sourceTree = "<group>"; };
+		6295436326DFF2BA00E49DE6 /* pt_wsi_app_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_app_base.h; path = ../../examples/launcher/pt_wsi_app_base.h; sourceTree = "<group>"; };
+		6295436426DFF2BA00E49DE6 /* pt_wsi_app_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_base.cpp; path = ../../examples/launcher/pt_wsi_app_base.cpp; sourceTree = "<group>"; };
+		6295436626DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_main_mach_ios.cpp; path = ../../src/pt_wsi_main_mach_ios.cpp; sourceTree = "<group>"; };
 		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
@@ -710,6 +736,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		628BEFE326DEBA64007BC3F3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		62D230AA268893240044D96C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -771,6 +804,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6295436026DFDD7500E49DE6 /* libpt_wsi_ios.a in Frameworks */,
 				6217808C26DBAFD100DE15BF /* libpt_gfx.a in Frameworks */,
 				6292C30926DBC3AE00494EF8 /* libMoltenVK.a in Frameworks */,
 				6246EFC326DC10D1002BA0B2 /* libMoltenVK_catalyst.a in Frameworks */,
@@ -821,6 +855,7 @@
 			isa = PBXGroup;
 			children = (
 				62D793E525974E7C001CC2AF /* pt_launcher.app */,
+				628BEFE626DEBA64007BC3F3 /* libpt_wsi_ios.a */,
 				620D777D26DB95D4001E7BD0 /* libpt_gfx.a */,
 				620D771226DB8570001E7BD0 /* libpt_mcrt.a */,
 				620D771F26DB8591001E7BD0 /* libpt_mcrt_sse2_ios.a */,
@@ -865,6 +900,8 @@
 		6238290826769285002ECF8A /* include */ = {
 			isa = PBXGroup;
 			children = (
+				6295436226DFED1E00E49DE6 /* pt_mcrt_atomic.h */,
+				6295436126DFE4AA00E49DE6 /* pt_math.h */,
 				6277494226894CBA009F2E71 /* pt_gfx_connection.h */,
 			);
 			name = include;
@@ -928,6 +965,8 @@
 				62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */,
 				62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */,
 				62EF63C526D8F0AE0004F34C /* pt_math.cpp */,
+				628BEFF126DEBBB5007BC3F3 /* pt_wsi_main_mach_ios.m */,
+				6295436626DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp */,
 			);
 			name = src;
 			sourceTree = SOURCE_ROOT;
@@ -949,8 +988,10 @@
 			children = (
 				62EF63BA26D8E7540004F34C /* pt_wsi_mach_osx.m */,
 				62D7940C25975766001CC2AF /* pt_wsi_mach_osx.cpp */,
-				620D767C26DB728E001E7BD0 /* pt_wsi_mach_ios.m */,
-				620D767F26DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp */,
+				6295436326DFF2BA00E49DE6 /* pt_wsi_app_base.h */,
+				6295436426DFF2BA00E49DE6 /* pt_wsi_app_base.cpp */,
+				620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */,
+				620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */,
 				6257EF4A26D9737F00E4917D /* pt_wsi_neutral_app.h */,
 				6257EF4B26D9738500E4917D /* pt_wsi_neutral_app.cpp */,
 			);
@@ -1391,6 +1432,23 @@
 			productReference = 627FF3B426D9419900ED4AB6 /* libpt_mcrt_sse2.a */;
 			productType = "com.apple.product-type.library.static";
 		};
+		628BEFE526DEBA64007BC3F3 /* pt_wsi_ios */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 628BEFEE26DEBA64007BC3F3 /* Build configuration list for PBXNativeTarget "pt_wsi_ios" */;
+			buildPhases = (
+				628BEFE226DEBA64007BC3F3 /* Sources */,
+				628BEFE326DEBA64007BC3F3 /* Frameworks */,
+				628BEFE426DEBA64007BC3F3 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = pt_wsi_ios;
+			productName = pt_wsi_ios;
+			productReference = 628BEFE626DEBA64007BC3F3 /* libpt_wsi_ios.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		62D230AB268893240044D96C /* pt_mcrt_osx */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 62D230AD268893240044D96C /* Build configuration list for PBXNativeTarget "pt_mcrt_osx" */;
@@ -1526,6 +1584,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				6295435F26DFDD6900E49DE6 /* PBXTargetDependency */,
 				620D77A526DB9B65001E7BD0 /* PBXTargetDependency */,
 				620D77A326DB9B5A001E7BD0 /* PBXTargetDependency */,
 			);
@@ -1614,6 +1673,9 @@
 					627FF3B326D9419900ED4AB6 = {
 						CreatedOnToolsVersion = 12.5;
 					};
+					628BEFE526DEBA64007BC3F3 = {
+						CreatedOnToolsVersion = 12.5;
+					};
 					62D230AB268893240044D96C = {
 						CreatedOnToolsVersion = 12.5;
 					};
@@ -1657,6 +1719,7 @@
 			projectRoot = "";
 			targets = (
 				92983F172447725E003F48B6 /* pt_launcher_ios */,
+				628BEFE526DEBA64007BC3F3 /* pt_wsi_ios */,
 				620D777C26DB95D4001E7BD0 /* pt_gfx_ios */,
 				620D771126DB8570001E7BD0 /* pt_mcrt_ios */,
 				620D771E26DB8591001E7BD0 /* pt_mcrt_sse2_ios */,
@@ -1897,6 +1960,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		628BEFE226DEBA64007BC3F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				628BEFF426DEBBB5007BC3F3 /* pt_wsi_main_mach_ios.m in Sources */,
+				6295436726DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		62D230A9268893240044D96C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1963,9 +2035,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				620D767D26DB728E001E7BD0 /* pt_wsi_mach_ios.m in Sources */,
-				620D768026DB72A1001E7BD0 /* pt_wsi_mach_ios.cpp in Sources */,
-				620D767B26DB722B001E7BD0 /* pt_wsi_neutral_app.cpp in Sources */,
+				620D767D26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m in Sources */,
+				620D768026DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp in Sources */,
+				6295436526DFF2BA00E49DE6 /* pt_wsi_app_base.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2061,6 +2133,11 @@
 			isa = PBXTargetDependency;
 			target = 62D230AB268893240044D96C /* pt_mcrt_osx */;
 			targetProxy = 6273EA0726DAE8050083D849 /* PBXContainerItemProxy */;
+		};
+		6295435F26DFDD6900E49DE6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 628BEFE526DEBA64007BC3F3 /* pt_wsi_ios */;
+			targetProxy = 6295435E26DFDD6900E49DE6 /* PBXContainerItemProxy */;
 		};
 		62D230D72688987A0044D96C /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2855,6 +2932,47 @@
 			};
 			name = Release;
 		};
+		628BEFEC26DEBA64007BC3F3 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6MJZWFY372;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"PT_ATTR_WSI=PT_ATTR_EXPORT",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		628BEFED26DEBA64007BC3F3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 6MJZWFY372;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"NDEBUG=1",
+					"PT_ATTR_WSI=PT_ATTR_EXPORT",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos macosx";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		62D230AE268893240044D96C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3577,6 +3695,15 @@
 			buildConfigurations = (
 				627FF3B626D9419900ED4AB6 /* Debug */,
 				627FF3B726D9419900ED4AB6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		628BEFEE26DEBA64007BC3F3 /* Build configuration list for PBXNativeTarget "pt_wsi_ios" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				628BEFEC26DEBA64007BC3F3 /* Debug */,
+				628BEFED26DEBA64007BC3F3 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

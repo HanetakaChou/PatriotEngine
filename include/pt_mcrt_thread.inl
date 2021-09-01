@@ -22,25 +22,23 @@
 
 inline void mcrt_os_event_init(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, bool manual_reset, bool initial_state)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
     assert(event != NULL);
-
-    event->mcrtp_manual_reset = manual_reset;
-    event->mcrtp_state_signalled = initial_state;
-#ifndef NDEBUG
     event->mcrtp_condition = condition;
     event->mcrtp_mutex = mutex;
 #endif
+    event->mcrtp_manual_reset = manual_reset;
+    event->mcrtp_state_signalled = initial_state;
 }
 
 inline void mcrt_os_event_destroy(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
     assert(event != NULL);
-
-#ifndef NDEBUG
     event->mcrtp_condition = NULL;
     event->mcrtp_mutex = NULL;
 #endif
@@ -48,12 +46,13 @@ inline void mcrt_os_event_destroy(mcrt_cond_t *condition, mcrt_mutex_t *mutex, m
 
 inline void mcrt_os_event_set(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
     assert(event != NULL);
-
     assert(event->mcrtp_condition == condition);
     assert(event->mcrtp_mutex == mutex);
+#endif
 
     mcrt_os_mutex_lock(mutex);
 
@@ -68,12 +67,13 @@ inline void mcrt_os_event_set(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_
 
 inline void mcrt_os_event_reset(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
     assert(event != NULL);
-
     assert(event->mcrtp_condition == condition);
     assert(event->mcrtp_mutex == mutex);
+#endif
 
     mcrt_os_mutex_lock(mutex);
 
@@ -84,12 +84,13 @@ inline void mcrt_os_event_reset(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcr
 
 inline int mcrt_os_event_wait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
-    assert(event != NULL);
-
     assert(event->mcrtp_condition == condition);
     assert(event->mcrtp_mutex == mutex);
+#endif
+    assert(event != NULL);
 
     mcrt_os_mutex_lock(mutex);
 
@@ -123,12 +124,13 @@ inline int mcrt_os_event_wait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, m
 
 inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t *event, uint32_t timeout_ms)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
-    assert(event != NULL);
-
     assert(event->mcrtp_condition == condition);
     assert(event->mcrtp_mutex == mutex);
+#endif
+    assert(event != NULL);
 
     mcrt_os_mutex_lock(mutex);
 
@@ -162,18 +164,17 @@ inline int mcrt_os_event_timedwait_one(mcrt_cond_t *condition, mcrt_mutex_t *mut
 
 inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
-    assert(events != NULL);
-    assert(nevents > 0);
-
-#ifndef NDEBUG
     for (int i = 0; i < nevents; ++i)
     {
         assert(events[i]->mcrtp_condition == condition);
         assert(events[i]->mcrtp_mutex == mutex);
     }
 #endif
+    assert(events != NULL);
+    assert(nevents > 0);
 
     if (waitall)
     {
@@ -274,19 +275,18 @@ inline int mcrt_os_event_wait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mut
 
 inline int mcrt_os_event_timedwait_multiple(mcrt_cond_t *condition, mcrt_mutex_t *mutex, mcrt_event_t **events, int nevents, bool waitall, uint32_t timeout_ms)
 {
+#if defined(__cplusplus) && !defined(NDEBUG)
     assert(condition != NULL);
     assert(mutex != NULL);
-    assert(events != NULL);
-    assert(nevents > 0);
-
-#ifndef NDEBUG
     for (int i = 0; i < nevents; ++i)
     {
         assert(events[i]->mcrtp_condition == condition);
         assert(events[i]->mcrtp_mutex == mutex);
     }
 #endif
-
+    assert(events != NULL);
+    assert(nevents > 0);
+    
     if (waitall)
     {
         mcrt_os_mutex_lock(mutex);

@@ -74,6 +74,10 @@
 
 #define PT_MAYBE_UNUSED __attribute__((unused))
 
+#define PT_ALIGN_AS(x) __attribute__((aligned(x)))
+
+#define PT_ALWAYS_INLINE __attribute__((always_inline))
+
 #elif defined(_MSC_VER)
 //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
 
@@ -114,6 +118,10 @@
 #define PT_UNLIKELY(x) (!!(x))
 
 #define PT_MAYBE_UNUSED
+
+#define PT_ALIGN_AS(x) __declspec(align(x))
+
+#define PT_ALWAYS_INLINE __declspec(__forceinline)
 
 #else
 #error Unknown Compiler

@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -48,6 +48,7 @@ inline void mcrt_atomic_acquire_release_barrier()
 #error Unknown Architecture
 #endif
 
+#ifdef __cplusplus
 template <typename T>
 inline T mcrt_atomic_load(T volatile *src)
 {
@@ -55,13 +56,41 @@ inline T mcrt_atomic_load(T volatile *src)
     mcrt_atomic_acquire_barrier();
     return loaded_value;
 }
+#else
+#ifdef PT_MCRT_ATOMIC_LOAD
+#undef PT_MCRT_ATOMIC_LOAD
+#define PT_MCRT_ATOMIC_LOAD(T)                           \
+    PT_ALWAYS_INLINE T mcrt_atomic_load(T volatile *src) \
+    {                                                    \
+        T loaded_value = (*src);                         \
+        mcrt_atomic_acquire_barrier();                   \
+        return loaded_value;                             \
+    }
+#else
+#error PT_MCRT_ATOMIC_LOAD
+#endif
+#endif
 
+#ifdef __cplusplus
 template <typename T>
 inline void mcrt_atomic_store(T volatile *dst, T val)
 {
     mcrt_atomic_release_barrier();
     (*dst) = val;
 }
+#else
+#ifdef PT_MCRT_ATOMIC_STORE
+#undef PT_MCRT_ATOMIC_STORE
+#define PT_MCRT_ATOMIC_STORE(T)                                     \
+    PT_ALWAYS_INLINE void mcrt_atomic_store(T volatile *dst, T val) \
+    {                                                               \
+        mcrt_atomic_release_barrier();                              \
+        (*dst) = val;                                               \
+    }
+#else
+#error PT_MCRT_ATOMIC_STORE
+#endif
+#endif
 
 #else
 #error "Never use <pt_mcrt_atomic.inl> directly; include <pt_mcrt_atomic.h> instead."
