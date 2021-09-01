@@ -27,11 +27,11 @@
 #include <pt_mcrt_scalable_allocator.h>
 #include <pt_wsi_main.h>
 
-template <typename T>
-using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-
 class wsi_linux_x11
 {
+    template <typename T>
+    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+
     xcb_connection_t *m_xcb_connection;
     xcb_setup_t const *m_setup;
     xcb_screen_t *m_screen;

@@ -54,12 +54,14 @@ protected:
     uint32_t m_task_arena_thread_count;
 
     template <typename T, uint32_t LINEAR_LIST_COUNT>
-    struct mpsc_list
+    struct mp_list
     {
         static_assert(std::is_pod<T>::value, "");
 
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-        mcrt_assert_rwlock_t m_asset_rwlock; // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
+        // the "single consumer" is not thread safe
+        // rwlock for the "m_frame_throttling_index" or "m_streaming_throttling_index"
+        mcrt_assert_rwlock_t m_asset_rwlock;
 #endif
 
         uint32_t m_linear_list_count;
@@ -93,9 +95,9 @@ protected:
         NODE_DESTROY_LIST_COUNT = 32U,
         FRAME_OBJECT_DESTROY_LIST_COUNT = 32U,
     };
-    struct mpsc_list<class gfx_node_base *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_node_base *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_streaming_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_streaming_done_object_destory_list[FRAME_THROTTLING_COUNT];
+    struct mp_list<class gfx_node_base *, NODE_INIT_LIST_COUNT> m_frame_node_init_list[FRAME_THROTTLING_COUNT];
+    struct mp_list<class gfx_node_base *, NODE_DESTROY_LIST_COUNT> m_frame_node_destory_list[FRAME_THROTTLING_COUNT];
+    struct mp_list<class gfx_streaming_object_base *, FRAME_OBJECT_DESTROY_LIST_COUNT> m_streaming_done_object_destory_list[FRAME_THROTTLING_COUNT];
 
     // Perspective Matraix
     float m_aspect_ratio; //width-divide-height
@@ -119,8 +121,8 @@ protected:
         STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT = 64U,
         STREAMING_OBJECT_LINEAR_LIST_COUNT = 32U
     };
-    struct mpsc_list<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
-    struct mpsc_list<class gfx_streaming_object_base *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
+    struct mp_list<mcrt_task_ref, STREAMING_TASK_RESPAWN_LINEAR_LIST_COUNT> m_streaming_task_respawn_list[STREAMING_THROTTLING_COUNT];
+    struct mp_list<class gfx_streaming_object_base *, STREAMING_OBJECT_LINEAR_LIST_COUNT> m_streaming_object_list[STREAMING_THROTTLING_COUNT];
 
     // Staging Buffer
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
@@ -176,7 +178,7 @@ public:
 };
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::init()
+inline void gfx_connection_base::mp_list<T, LINEAR_LIST_COUNT>::init()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_assert_rwlock_init(&this->m_asset_rwlock);
@@ -186,7 +188,7 @@ inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::init()
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T value)
+inline void gfx_connection_base::mp_list<T, LINEAR_LIST_COUNT>::produce(T value)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_assert_rwlock_rdlock(&this->m_asset_rwlock);
@@ -224,7 +226,7 @@ inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::produce(T valu
 }
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>
-inline void gfx_connection_base::mpsc_list<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
+inline void gfx_connection_base::mp_list<T, LINEAR_LIST_COUNT>::consume_and_clear(void (*consume_callback)(T value, void *user_defined), void *user_defined)
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_assert_rwlock_wrlock(&this->m_asset_rwlock);
