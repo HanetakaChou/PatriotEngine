@@ -15,19 +15,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <string>
 #include <android/native_activity.h>
 #include <pt_wsi_main.h>
-
-static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path);
-static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app);
-
-extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *savedState, size_t savedStateSize)
-{
-	return pt_wsi_main(native_activity, savedState, savedStateSize, wsi_app_init, wsi_app_main);
-}
-
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include "pt_wsi_app_base.h"
+
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+mcrt_string g_wsi_app_linux_android_internal_data_path;
 
 class wsi_app_linux_android : public wsi_app_base
 {
@@ -35,12 +31,18 @@ public:
 	void init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path);
 };
 
+void wsi_app_linux_android::init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
+{
+	this->wsi_app_base::init(gfx_connection);
+	g_wsi_app_linux_android_internal_data_path = internal_data_path;
+}
+
 inline pt_wsi_app_ref wrap(class wsi_app_linux_android *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
 inline class wsi_app_linux_android *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_linux_android *>(wsi_app); }
 
 static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
 {
-	class wsi_app_linux_android *wsi_app = new(mcrt_aligned_malloc(sizeof(class wsi_app_linux_android), alignof(class wsi_app_linux_android)))wsi_app_linux_android();
+	class wsi_app_linux_android *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_linux_android), alignof(class wsi_app_linux_android))) wsi_app_linux_android();
 	wsi_app->init(gfx_connection, internal_data_path);
 	return wrap(wsi_app);
 }
@@ -50,16 +52,9 @@ static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
 	return unwrap(wsi_app)->main();
 }
 
-#include <string>
-#include <pt_mcrt_scalable_allocator.h>
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-mcrt_string g_wsi_app_linux_android_internal_data_path;
-
-void wsi_app_linux_android::init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
+extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *savedState, size_t savedStateSize)
 {
-	this->wsi_app_base::init(gfx_connection);
-	g_wsi_app_linux_android_internal_data_path = internal_data_path;
+	return pt_wsi_main(native_activity, savedState, savedStateSize, wsi_app_init, wsi_app_main);
 }
 
 #include <unistd.h>

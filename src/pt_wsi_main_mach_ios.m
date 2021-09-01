@@ -36,61 +36,6 @@ extern void wsi_mach_ios_os_yield(void);
 extern bool wsi_mach_ios_atomic_load(bool volatile *src);
 extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
 
-@interface wsi_mach_ios_thread_detach_target : NSObject
-- (instancetype)init;
-- (void)main:(void *)argument;
-@end
-
-@implementation wsi_mach_ios_thread_detach_target
-{
-    bool volatile m_running;
-}
-- (instancetype)init
-{
-    self = [super init];
-    if (self)
-    {
-        self->m_running = false;
-    }
-    return self;
-}
-
-- (void)main:(void *)argument
-{
-    self->m_running = true;
-}
-
-- (bool)running
-{
-    return self->m_running;
-}
-
-@end
-
-void wsi_mach_ios_cocoa_set_multithreaded(void)
-{
-    @autoreleasepool
-    {
-        // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/MemoryMgmt/Articles/mmAutoreleasePools.html
-        wsi_mach_ios_thread_detach_target *thread_detach_target = [[wsi_mach_ios_thread_detach_target alloc] init];
-
-        [NSThread detachNewThreadSelector:@selector(main:) toTarget:thread_detach_target withObject:nil];
-
-        while (![thread_detach_target running])
-        {
-            pthread_yield_np();
-        }
-    }
-}
-
-bool wsi_mach_ios_cocoa_is_multithreaded(void)
-{
-    @autoreleasepool
-    {
-        return [NSThread isMultiThreaded];
-    }
-}
-
 @interface wsi_mach_ios_application_delegate : NSObject <UIApplicationDelegate>
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options;
 @end
@@ -114,9 +59,12 @@ bool wsi_mach_ios_cocoa_is_multithreaded(void)
 @implementation wsi_mach_ios_application_delegate
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options
 {
-    UISceneConfiguration *scene_configuration = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
-    scene_configuration.delegateClass = [wsi_mach_ios_scene_delegate class];
-    return scene_configuration;
+    @autoreleasepool
+    {
+        UISceneConfiguration *scene_configuration = [[UISceneConfiguration alloc] initWithName:@"Default Configuration" sessionRole:connectingSceneSession.role];
+        scene_configuration.delegateClass = [wsi_mach_ios_scene_delegate class];
+        return scene_configuration;
+    }
 }
 @end
 
@@ -197,10 +145,6 @@ static void *app_main(void *argument);
         assert(NULL != self->m_gfx_connection);
 
         //
-        UIWindow *window = [self window];
-        assert(nil != window);
-        UIScreen *screen = [window screen];
-        assert(nil != screen);
         CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
         assert(nil != layer);
         CGSize drawable_size = [layer drawableSize];
@@ -208,6 +152,10 @@ static void *app_main(void *argument);
 
         // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
         // RENDER_ON_MAIN_THREAD
+        UIWindow *window = [self window];
+        assert(nil != window);
+        UIScreen *screen = [window screen];
+        assert(nil != screen);
         self->m_display_link = [screen displayLinkWithTarget:self selector:@selector(display_link_callback)];
 
         [self->m_display_link setPreferredFramesPerSecond:60];
@@ -231,7 +179,7 @@ static void *app_main(void *argument);
         }
 
         assert(NULL != app_main_argument.m_wsi_app);
-        self->m_wsi_app=app_main_argument.m_wsi_app;
+        self->m_wsi_app = app_main_argument.m_wsi_app;
     }
 }
 

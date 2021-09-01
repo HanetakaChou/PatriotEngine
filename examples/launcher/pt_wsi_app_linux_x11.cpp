@@ -15,24 +15,24 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <string>
 #include <pt_wsi_main.h>
-
-static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection);
-static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app);
-
-int main(int argc, char *argv[])
-{
-    return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
-}
-
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
 #include "pt_wsi_app_base.h"
+
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
 
 class wsi_app_linux_11 : public wsi_app_base
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);
 };
+
+void wsi_app_linux_11::init(pt_gfx_connection_ref gfx_connection)
+{
+    this->wsi_app_base::init(gfx_connection);
+}
 
 inline pt_wsi_app_ref wrap(class wsi_app_linux_11 *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
 inline class wsi_app_linux_11 *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_linux_11 *>(wsi_app); }
@@ -49,15 +49,10 @@ static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
     return unwrap(wsi_app)->main();
 }
 
-void wsi_app_linux_11::init(pt_gfx_connection_ref gfx_connection)
+int main(int argc, char *argv[])
 {
-    this->wsi_app_base::init(gfx_connection);
+    return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
 }
-
-#include <string>
-#include <pt_mcrt_scalable_allocator.h>
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 
 #include <unistd.h>
 #include <sys/types.h>

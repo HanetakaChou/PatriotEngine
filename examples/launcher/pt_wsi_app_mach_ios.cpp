@@ -15,48 +15,22 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <string>
 #include <pt_wsi_main.h>
-
-static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection);
-static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app);
+#include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include "pt_wsi_app_base.h"
 
 extern "C" void get_main_bundle_resource_path(char *, size_t *);
 
-int main(int argc, char *argv[])
-{
-    return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
-}
-
-#include <pt_mcrt_malloc.h>
-#include "pt_wsi_app_base.h"
+using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
+mcrt_string wsi_mach_ios_library_path;
 
 class wsi_app_mach_ios : public wsi_app_base
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);
 };
-
-inline pt_wsi_app_ref wrap(class wsi_app_mach_ios *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
-inline class wsi_app_mach_ios *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_mach_ios *>(wsi_app); }
-
-static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection)
-{
-    class wsi_app_mach_ios *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_mach_ios), alignof(class wsi_app_mach_ios))) wsi_app_mach_ios();
-    wsi_app->init(gfx_connection);
-    return wrap(wsi_app);
-}
-
-static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
-{
-    return unwrap(wsi_app)->main();
-}
-
-#include <string>
-#include <pt_mcrt_scalable_allocator.h>
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
-
-mcrt_string wsi_mach_ios_library_path;
 
 void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
 {
@@ -76,6 +50,26 @@ void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
     }
 
     this->wsi_app_base::init(gfx_connection);
+}
+
+inline pt_wsi_app_ref wrap(class wsi_app_mach_ios *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
+inline class wsi_app_mach_ios *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_mach_ios *>(wsi_app); }
+
+static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection)
+{
+    class wsi_app_mach_ios *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_mach_ios), alignof(class wsi_app_mach_ios))) wsi_app_mach_ios();
+    wsi_app->init(gfx_connection);
+    return wrap(wsi_app);
+}
+
+static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
+{
+    return unwrap(wsi_app)->main();
+}
+
+int main(int argc, char *argv[])
+{
+    return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
 }
 
 #include <unistd.h>
