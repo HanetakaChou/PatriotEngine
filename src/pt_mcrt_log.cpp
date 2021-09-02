@@ -16,19 +16,20 @@
 //
 
 #include <stddef.h>
-#include <pt_mcrt_log.h>
+#include <stdint.h>
 #include <stdarg.h>
+#include <string.h>
 #include <stdio.h>
+#include <assert.h>
+#include <pt_mcrt_log.h>
 #if defined(PT_POSIX)
 #include <unistd.h>
 #include <fcntl.h>
-#include <string.h>
 #elif defined(PT_WIN32)
 TODO
 #else
 #error Unknown Platform
 #endif
-#include <assert.h>
 
 int PT_CALL mcrt_log_write(char const *msg)
 {
