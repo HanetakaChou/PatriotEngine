@@ -22,8 +22,6 @@
 #include <sys/time.h>
 #include <errno.h>
 #include <assert.h>
-#include <sys/cdefs.h> //__BIONIC__
-//#include <features.h> //__GLIBC__
 
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
@@ -33,11 +31,11 @@ inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(
 
 inline void mcrt_native_thread_set_name(mcrt_native_thread_id tid, char const *name)
 {
-#if defined(__linux__)
+#if defined(PT_POSIX_LINUX)
 	PT_MAYBE_UNUSED int res = pthread_setname_np(tid, name);
 	assert(res == 0);
 	return;
-#elif defined(__MACH__)
+#elif defined(PT_POSIX_MACH)
 	if (pthread_equal(pthread_self(), tid))
 	{
 		PT_MAYBE_UNUSED int res = pthread_setname_np(name);
@@ -97,19 +95,19 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 
 inline void mcrt_os_yield(void)
 {
-#if defined(__linux__)
-#if defined(__BIONIC__)
+#if defined(PT_POSIX_LINUX)
+#if defined(PT_POSIX_LINUX_ANDROID)
 	PT_MAYBE_UNUSED int res = sched_yield();
 	assert(res == 0);
 	return;
-#elif defined(__GLIBC__)
+#elif defined(PT_POSIX_LINUX_X11)
 	PT_MAYBE_UNUSED int res = pthread_yield();
 	assert(res == 0);
 	return;
 #else
 #error Unknown Platform
 #endif
-#elif defined(__MACH__)
+#elif defined(PT_POSIX_MACH)
 	return pthread_yield_np();
 #else
 #error Unknown Platform
@@ -209,7 +207,13 @@ inline void mcrt_os_cond_broadcast(mcrt_cond_t *cond)
 
 inline void mcrt_os_sleep(uint32_t milli_second)
 {
-	struct timespec request = {((long)milli_second) / ((long)1000), ((long)1000000) * ((long)milli_second) % ((long)1000)};
+#if defined(PT_POSIX_LINUX)
+	struct timespec request = {((time_t)milli_second) / ((time_t)1000), ((long)1000000) * (((long)milli_second) % ((long)1000))};
+#elif defined(PT_POSIX_MACH)
+	struct timespec request = {((__darwin_time_t)milli_second) / ((__darwin_time_t)1000), ((long)1000000) * (((long)milli_second) % ((long)1000))};
+#else
+#error Unknown Platform
+#endif
 	struct timespec remain;
 
 	int res_sleep;
