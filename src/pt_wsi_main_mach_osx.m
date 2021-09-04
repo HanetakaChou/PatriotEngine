@@ -29,10 +29,10 @@
 #include <pt_mcrt_thread.h>
 #include <pt_gfx_connection.h>
 
-extern bool wsi_mach_ios_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
-extern void wsi_mach_ios_os_yield(void);
-extern bool wsi_mach_ios_atomic_load(bool volatile *src);
-extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
+extern bool wsi_mach_osx_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
+extern void wsi_mach_osx_os_yield(void);
+extern bool wsi_mach_osx_atomic_load(bool volatile *src);
+extern void wsi_mach_osx_atomic_store(bool volatile *dst, bool val);
 
 // TODO GPU Capture doesn't work now
 // Before macOS 10.15 and iOS 13.0, captureDesc will just be nil
@@ -189,14 +189,14 @@ static void *app_main(void *argument);
         struct app_main_argument_t app_main_argument;
         app_main_argument.m_gfx_connection = self->m_gfx_connection;
         app_main_argument.m_wsi_app = NULL;
-        wsi_mach_ios_atomic_store(&app_main_argument.m_running, false);
+        wsi_mach_osx_atomic_store(&app_main_argument.m_running, false);
 
-        PT_MAYBE_UNUSED bool res_native_thread_create = wsi_mach_ios_native_thread_create(&self->m_app_main_thread_id, app_main, &app_main_argument);
+        PT_MAYBE_UNUSED bool res_native_thread_create = wsi_mach_osx_native_thread_create(&self->m_app_main_thread_id, app_main, &app_main_argument);
         assert(res_native_thread_create);
 
-        while (!wsi_mach_ios_atomic_load(&app_main_argument.m_running))
+        while (!wsi_mach_osx_atomic_load(&app_main_argument.m_running))
         {
-            wsi_mach_ios_os_yield();
+            wsi_mach_osx_os_yield();
         }
 
         assert(NULL != app_main_argument.m_wsi_app);
@@ -246,7 +246,7 @@ void *app_main(void *argument_void)
         struct app_main_argument_t *argument = ((struct app_main_argument_t *)argument_void);
         wsi_app = g_wsi_app_init_callback(argument->m_gfx_connection);
         argument->m_wsi_app = wsi_app;
-        wsi_mach_ios_atomic_store(&argument->m_running, true);
+        wsi_mach_osx_atomic_store(&argument->m_running, true);
     }
 
     // app_main
