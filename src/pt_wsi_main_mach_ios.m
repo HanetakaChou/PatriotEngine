@@ -37,6 +37,7 @@ extern bool wsi_mach_ios_atomic_load(bool volatile *src);
 extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
 
 @interface wsi_mach_ios_application_delegate : NSObject <UIApplicationDelegate>
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions;
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options;
 @end
 
@@ -57,6 +58,11 @@ extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
 @end
 
 @implementation wsi_mach_ios_application_delegate
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions
+{
+    return TRUE;
+}
+
 - (UISceneConfiguration *)application:(UIApplication *)application configurationForConnectingSceneSession:(UISceneSession *)connectingSceneSession options:(UISceneConnectionOptions *)options
 {
     @autoreleasepool
@@ -121,6 +127,7 @@ static void *app_main(void *argument);
     mcrt_native_thread_id m_app_main_thread_id;
     CADisplayLink *m_display_link;
     pt_gfx_connection_ref m_gfx_connection;
+    bool m_has_create_window;
     pt_wsi_app_ref m_wsi_app;
 }
 
@@ -145,11 +152,8 @@ static void *app_main(void *argument);
         assert(NULL != self->m_gfx_connection);
 
         //
-        CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-        assert(nil != layer);
-        CGSize drawable_size = [layer drawableSize];
-        pt_gfx_connection_on_wsi_window_created(self->m_gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
-
+        self->m_has_create_window = false;
+    
         // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
         // RENDER_ON_MAIN_THREAD
         UIWindow *window = [self window];
@@ -195,9 +199,22 @@ static void *app_main(void *argument);
 {
     @autoreleasepool
     {
-        pt_gfx_connection_draw_acquire(self->m_gfx_connection);
+        if (PT_LIKELY(self->m_has_create_window))
+        {
+            pt_gfx_connection_draw_acquire(self->m_gfx_connection);
 
-        pt_gfx_connection_draw_release(self->m_gfx_connection);
+            pt_gfx_connection_draw_release(self->m_gfx_connection);
+        }
+        else
+        {
+            CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+            if (nil != layer)
+            {
+                CGSize drawable_size = [layer drawableSize];
+                pt_gfx_connection_on_wsi_window_created(self->m_gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
+                self->m_has_create_window = true;
+            }
+        }
     }
 }
 @end

@@ -2443,8 +2443,54 @@ void gfx_connection_vk::on_wsi_resized(float width, float height)
     mcrt_atomic_store(&this->m_wsi_height, uint32_t(height));
 }
 
-void gfx_connection_vk::on_wsi_redraw_needed_acquire()
+#if (!defined(NDEBUG)) && defined(PT_VK_KHR_PORTABILITY_SUBSET) && (PT_VK_KHR_PORTABILITY_SUBSET)
+// Due to the bug of "MoltenVK", we have to wait for the streaming fence after the "vkAcquireNextImage"
+// Otherwise, we can't capture GPU frame
+void gfx_connection_vk::draw_acquire()
 {
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->acquire_frame();
+    }
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+}
+
+void gfx_connection_vk::draw_release()
+{
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+
+    if (VK_NULL_HANDLE != this->m_surface)
+    {
+        this->release_frame();
+    }
+
+    this->reduce_streaming_task();
+
+#if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
+    mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
+#endif
+}
+#else
+void gfx_connection_vk::draw_acquire()
+{
+    // TODO
+    // the following order perhaps better ???
+    // merge the wait of "streaming" and "frame" together
+    //
+    // increse streaming index
+    // increase framing index
+    // spawn streaming task
+    // wait
+
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
@@ -2461,7 +2507,7 @@ void gfx_connection_vk::on_wsi_redraw_needed_acquire()
 #endif
 }
 
-void gfx_connection_vk::on_wsi_redraw_needed_release()
+void gfx_connection_vk::draw_release()
 {
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
     mcrt_assert_spin_lock(&this->m_asset_spinlock_wsi_windiw_exist);
@@ -2476,6 +2522,7 @@ void gfx_connection_vk::on_wsi_redraw_needed_release()
     mcrt_assert_spin_unlock(&this->m_asset_spinlock_wsi_windiw_exist);
 #endif
 }
+#endif
 
 class gfx_node_base *gfx_connection_vk::create_node()
 {

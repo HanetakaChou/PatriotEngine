@@ -249,8 +249,8 @@ class gfx_connection_vk final : public gfx_connection_base
     bool on_wsi_window_created(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height) override;
     void on_wsi_window_destroyed() override;
     void on_wsi_resized(float width, float height) override;
-    void on_wsi_redraw_needed_acquire() override;
-    void on_wsi_redraw_needed_release() override;
+    void draw_acquire() override;
+    void draw_release() override;
 
     inline void copy_vertex_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
 

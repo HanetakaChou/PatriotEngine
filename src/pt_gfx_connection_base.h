@@ -173,8 +173,8 @@ public:
     virtual bool on_wsi_window_created(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height) = 0;
     virtual void on_wsi_window_destroyed() = 0;
     virtual void on_wsi_resized(float width, float height) = 0;
-    virtual void on_wsi_redraw_needed_acquire() = 0; //frame throttling
-    virtual void on_wsi_redraw_needed_release() = 0;
+    virtual void draw_acquire() = 0; //frame throttling
+    virtual void draw_release() = 0;
 };
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>

@@ -113,12 +113,12 @@ PT_ATTR_GFX void PT_CALL pt_gfx_connection_on_wsi_window_resized(pt_gfx_connecti
 
 PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_acquire(pt_gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->on_wsi_redraw_needed_acquire();
+    return unwrap(gfx_connection)->draw_acquire();
 }
 
 PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_release(pt_gfx_connection_ref gfx_connection)
 {
-    return unwrap(gfx_connection)->on_wsi_redraw_needed_release();
+    return unwrap(gfx_connection)->draw_release();
 }
 
 PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection)

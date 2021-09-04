@@ -46,11 +46,11 @@ void gfx_connection_mtl::on_wsi_resized(float width, float height)
 {
 }
 
-void gfx_connection_mtl::on_wsi_redraw_needed_acquire()
+void gfx_connection_mtl::draw_acquire()
 {
 }
 
-void gfx_connection_mtl::on_wsi_redraw_needed_release()
+void gfx_connection_mtl::draw_release()
 {
 }
 

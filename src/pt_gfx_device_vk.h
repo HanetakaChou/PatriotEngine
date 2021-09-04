@@ -44,6 +44,20 @@
 #error Unknown Platform
 #endif
 
+#ifdef PT_POSIX
+#ifdef PT_POSIX_LINUX
+#define PT_VK_KHR_PORTABILITY_SUBSET 0
+#elif defined(PT_POSIX_MACH)
+#define PT_VK_KHR_PORTABILITY_SUBSET 1
+#else
+#error Unknown Platform
+#endif
+#elif defined(PT_WIN32)
+#define PT_VK_KHR_PORTABILITY_SUBSET 0
+#else
+#error Unknown Platform
+#endif
+
 class gfx_device_vk
 {
     VkAllocationCallbacks m_vk_mcrt_allocation_callbacks;

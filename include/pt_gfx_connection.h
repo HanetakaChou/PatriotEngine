@@ -49,7 +49,7 @@ extern "C"
 
     PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
-    // note that the "on_wsi_window_created"/"on_wsi_window_destroyed" can't be overlapped with the "on_wsi_redraw_needed_acquire"/"on_wsi_redraw_needed_acquire"
+    // note that the "on_wsi_window_created"/"on_wsi_window_destroyed" can't be overlapped with the "draw_acquire"/"draw_acquire"
     PT_ATTR_GFX bool PT_CALL pt_gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height);
     PT_ATTR_GFX void PT_CALL pt_gfx_connection_on_wsi_window_destroyed(pt_gfx_connection_ref gfx_connection);
 
