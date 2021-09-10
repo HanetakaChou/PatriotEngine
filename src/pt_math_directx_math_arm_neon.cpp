@@ -16,7 +16,6 @@
 //
 
 #include <pt_math.h>
-#include "pt_math_directx_math.h"
 
 #if defined(PT_ARM) || defined(PT_ARM64)
 
@@ -112,9 +111,48 @@ pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_look_to_rh(pt_math_simd
     return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
 }
 
-pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+pt_math_simd_mat PT_VECTORCALL directx_math_arm_neon_mat_perspective_fov_rh(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 {
-    return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
+    // [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized)
+    //
+    // _  0  0  0
+    // 0  _  0  0
+    // 0  0  b -1
+    // 0  0  a  0
+    //
+    // _  0  0  0
+    // 0  _  0  0
+    // 0  0 zb  -z
+    // 0  0  a
+    //
+    // z' = -b - a/z
+    //
+    // Standard
+    // 0 = -b + a/nearz // z=-nearz
+    // 1 = -b + a/farz  // z=-farz
+    // a = farz*nearz/(nearz - farz)
+    // b = farz/(nearz - farz)
+    //
+    // Reversed-Z
+    // 1 = -b + a/nearz // z=-nearz
+    // 0 = -b + a/farz  // z=-farz
+    // a = farz*nearz/(farz - nearz)
+    // b = nearz/(farz - nearz)
+
+    // DirectX::XMMatrixPerspectiveFovRH
+    float SinFov;
+    float CosFov;
+    DirectX::XMScalarSinCos(&SinFov, &CosFov, 0.5f * FovAngleY);
+    float Height = CosFov / SinFov;
+    float Width = Height / AspectRatio;
+    const DirectX::XMVECTOR Zero = vdupq_n_f32(0);
+
+    DirectX::XMMATRIX M;
+    M.r[0] = vsetq_lane_f32(Width, Zero, 0);
+    M.r[1] = vsetq_lane_f32(Height, Zero, 1);
+    M.r[2] = vsetq_lane_f32(NearZ / (FarZ - NearZ), DirectX::g_XMNegIdentityR3.v, 2);
+    M.r[3] = vsetq_lane_f32((FarZ / (FarZ - NearZ)) * NearZ, Zero, 2);
+    return wrap(M);
 }
 
 void PT_VECTORCALL directx_math_arm_neon_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)

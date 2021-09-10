@@ -131,6 +131,10 @@ typedef struct pt_math_bounding_box
     pt_math_vec3 m_extents;
 } pt_math_bounding_box;
 
+// [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized)
+#define PT_MATH_Z_FARTHEST 0.0f
+#define PT_MATH_Z_NEARER_VK VK_COMPARE_OP_GREATER
+
 #ifdef __cplusplus
 extern "C"
 {

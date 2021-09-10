@@ -16,7 +16,6 @@
 //
 
 #include <pt_math.h>
-#include "pt_math_directx_math.h"
 
 #if defined(PT_X64) || defined(PT_X86)
 
@@ -122,9 +121,9 @@ pt_math_simd_vec PT_VECTORCALL directx_math_x86_sse2_load_alignas16_vec4(pt_math
     return wrap(DirectX::XMLoadFloat4A(unwrap(source)));
 }
 
-pt_math_simd_vec PT_VECTORCALL directx_math_x86_sse2_load_alignas16_ivec3(pt_math_alignas16_ivec3 const* source)
+pt_math_simd_vec PT_VECTORCALL directx_math_x86_sse2_load_alignas16_ivec3(pt_math_alignas16_ivec3 const *source)
 {
-    return wrap(DirectX::XMLoadInt3A(reinterpret_cast<uint32_t const*>(source->v)));
+    return wrap(DirectX::XMLoadInt3A(reinterpret_cast<uint32_t const *>(source->v)));
 }
 
 pt_math_simd_vec PT_VECTORCALL directx_math_x86_sse2_vec_zero()
@@ -247,9 +246,9 @@ void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_vec4(pt_math_alignas16_
     return DirectX::XMStoreFloat4A(unwrap(source), unwrap(v));
 }
 
-void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_ivec3(pt_math_alignas16_ivec3* destination, pt_math_simd_vec v)
+void PT_VECTORCALL directx_math_x86_sse2_store_alignas16_ivec3(pt_math_alignas16_ivec3 *destination, pt_math_simd_vec v)
 {
-    return DirectX::XMStoreInt3A(reinterpret_cast<uint32_t*>(destination->v), unwrap(v));
+    return DirectX::XMStoreInt3A(reinterpret_cast<uint32_t *>(destination->v), unwrap(v));
 }
 
 pt_math_simd_mat PT_VECTORCALL directx_math_x86_sse2_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const *source)
@@ -282,9 +281,74 @@ pt_math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_look_to_rh(pt_math_simd
     return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
 }
 
-pt_math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+pt_math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_perspective_fov_rh(float FovAngleY, float AspectRatio, float NearZ, float FarZ)
 {
-    return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
+    // [Reversed-Z](https://developer.nvidia.com/content/depth-precision-visualized)
+    //
+    // _  0  0  0
+    // 0  _  0  0
+    // 0  0  b -1
+    // 0  0  a  0
+    //
+    // _  0  0  0
+    // 0  _  0  0
+    // 0  0 zb  -z
+    // 0  0  a
+    //
+    // z' = -b - a/z
+    //
+    // Standard
+    // 0 = -b + a/nearz // z=-nearz
+    // 1 = -b + a/farz  // z=-farz
+    // a = farz*nearz/(nearz - farz)
+    // b = farz/(nearz - farz)
+    //
+    // Reversed-Z
+    // 1 = -b + a/nearz // z=-nearz
+    // 0 = -b + a/farz  // z=-farz
+    // a = farz*nearz/(farz - nearz)
+    // b = nearz/(farz - nearz)
+
+    // __m128 _mm_shuffle_ps(__m128 lo,__m128 hi, _MM_SHUFFLE(hi3,hi2,lo1,lo0))
+    // Interleave inputs into low 2 floats and high 2 floats of output. Basically
+    // out[0]=lo[lo0];
+    // out[1]=lo[lo1];
+    // out[2]=hi[hi2];
+    // out[3]=hi[hi3];
+
+    // DirectX::XMMatrixPerspectiveFovRH
+    float SinFov;
+    float CosFov;
+    DirectX::XMScalarSinCos(&SinFov, &CosFov, 0.5f * FovAngleY);
+    // Note: This is recorded on the stack
+    float Height = CosFov / SinFov;
+    DirectX::XMVECTOR rMem = {
+        Height / AspectRatio,
+        Height,
+        NearZ / (FarZ - NearZ),
+        (FarZ / (FarZ - NearZ)) * NearZ};
+    // Copy from memory to SSE register
+    DirectX::XMVECTOR vValues = rMem;
+    DirectX::XMVECTOR vTemp = _mm_setzero_ps();
+    // Copy x only
+    vTemp = _mm_move_ss(vTemp, vValues);
+    // CosFov / SinFov,0,0,0
+    DirectX::XMMATRIX M;
+    M.r[0] = vTemp;
+    // 0,Height / AspectRatio,0,0
+    vTemp = vValues;
+    vTemp = _mm_and_ps(vTemp, DirectX::g_XMMaskY);
+    M.r[1] = vTemp;
+    // x=b,y=a,0,-1.0f
+    vTemp = _mm_setzero_ps();
+    vValues = _mm_shuffle_ps(vValues, DirectX::g_XMNegIdentityR3, _MM_SHUFFLE(3, 2, 3, 2));
+    // 0,0,b,-1.0f
+    vTemp = _mm_shuffle_ps(vTemp, vValues, _MM_SHUFFLE(3, 0, 0, 0));
+    M.r[2] = vTemp;
+    // 0,0,a,0.0f
+    vTemp = _mm_shuffle_ps(vTemp, vValues, _MM_SHUFFLE(2, 1, 0, 0));
+    M.r[3] = vTemp;
+    return wrap(M);
 }
 
 pt_math_simd_mat PT_VECTORCALL directx_math_x86_sse2_mat_transpose(pt_math_simd_mat m)
@@ -315,7 +379,7 @@ pt_math_bounding_sphere PT_VECTORCALL directx_math_x86_sse2_bounding_sphere_crea
 
 bool PT_VECTORCALL directx_math_x86_sse2_bounding_sphere_intersect_ray(pt_math_bounding_sphere const *bounding_sphere, pt_math_simd_vec origin, pt_math_simd_vec direction, float *dist)
 {
-    return unwrap(bounding_sphere)->Intersects(unwrap(origin),unwrap(direction), *dist);
+    return unwrap(bounding_sphere)->Intersects(unwrap(origin), unwrap(direction), *dist);
 }
 
 pt_math_bounding_box PT_VECTORCALL directx_math_x86_sse2_bounding_box_create_from_sphere(pt_math_bounding_sphere const *bounding_sphere)

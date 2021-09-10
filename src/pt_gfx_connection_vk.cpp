@@ -1472,7 +1472,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         depth_stencil_state_create_info.flags = 0U;
         depth_stencil_state_create_info.depthTestEnable = VK_TRUE;
         depth_stencil_state_create_info.depthWriteEnable = VK_TRUE;
-        depth_stencil_state_create_info.depthCompareOp = this->m_z_nearer;
+        depth_stencil_state_create_info.depthCompareOp =  PT_MATH_Z_NEARER_VK;
         depth_stencil_state_create_info.depthBoundsTestEnable = VK_FALSE;
         depth_stencil_state_create_info.stencilTestEnable = VK_FALSE;
         depth_stencil_state_create_info.front.failOp = VK_STENCIL_OP_KEEP;
@@ -2020,7 +2020,7 @@ inline void gfx_connection_vk::release_frame()
             clear_values[0].color.float32[1] = 0.0f;
             clear_values[0].color.float32[2] = 0.0f;
             clear_values[0].color.float32[3] = 0.0f;
-            clear_values[1].depthStencil.depth = m_z_farthest;
+            clear_values[1].depthStencil.depth = PT_MATH_Z_FARTHEST;
 
             VkRenderPassBeginInfo render_pass_begin;
             render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;

@@ -16,7 +16,6 @@
 //
 
 #include <pt_math.h>
-#include "pt_math_directx_math.h"
 
 #if defined(PT_X64) || defined(PT_X86)
 
@@ -118,7 +117,7 @@ pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_alignas16_vec4(pt_math
     return wrap(DirectX::XMLoadFloat4A(unwrap(source)));
 }
 
-pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_alignas16_ivec3(pt_math_alignas16_ivec3 const* source)
+pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_alignas16_ivec3(pt_math_alignas16_ivec3 const *source)
 {
     return wrap(DirectX::XMLoadInt3A(reinterpret_cast<uint32_t const *>(source->v)));
 }
@@ -243,9 +242,9 @@ void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_vec4(pt_math_alignas16_
     return DirectX::XMStoreFloat4A(unwrap(source), unwrap(v));
 }
 
-void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_ivec3(pt_math_alignas16_ivec3* destination, pt_math_simd_vec v)
+void PT_VECTORCALL directx_math_x86_avx2_store_alignas16_ivec3(pt_math_alignas16_ivec3 *destination, pt_math_simd_vec v)
 {
-    return DirectX::XMStoreInt3A(reinterpret_cast<uint32_t*>(destination->v), unwrap(v));
+    return DirectX::XMStoreInt3A(reinterpret_cast<uint32_t *>(destination->v), unwrap(v));
 }
 
 pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx2_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const *source)
@@ -278,11 +277,6 @@ pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_look_to_rh(pt_math_simd
     return wrap(DirectX::XMMatrixLookToRH(unwrap(eye_position), unwrap(eye_direction), unwrap(up_direction)));
 }
 
-pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
-{
-    return wrap(DirectX::XMMatrixPerspectiveFovRH(fov_angle_y, aspect_ratio, near_z, far_z));
-}
-
 pt_math_simd_mat PT_VECTORCALL directx_math_x86_avx2_mat_transpose(pt_math_simd_mat m)
 {
     return wrap(DirectX::XMMatrixTranspose(unwrap(m)));
@@ -311,7 +305,7 @@ pt_math_bounding_sphere PT_VECTORCALL directx_math_x86_avx2_bounding_sphere_crea
 
 bool PT_VECTORCALL directx_math_x86_avx2_bounding_sphere_intersect_ray(pt_math_bounding_sphere const *bounding_sphere, pt_math_simd_vec origin, pt_math_simd_vec direction, float *dist)
 {
-    return unwrap(bounding_sphere)->Intersects(unwrap(origin),unwrap(direction), *dist);
+    return unwrap(bounding_sphere)->Intersects(unwrap(origin), unwrap(direction), *dist);
 }
 
 pt_math_bounding_box PT_VECTORCALL directx_math_x86_avx2_bounding_box_create_from_sphere(pt_math_bounding_sphere const *bounding_sphere)

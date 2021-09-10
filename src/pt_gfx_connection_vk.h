@@ -160,11 +160,6 @@ class gfx_connection_vk final : public gfx_connection_base
     VkPipeline m_pipeline_mesh;
     VkPipelineCache m_pipeline_cache_mesh;
 
-    // reversed-Z
-    // https://developer.nvidia.com/content/depth-precision-visualized
-    static VkCompareOp const m_z_nearer = VK_COMPARE_OP_LESS_OR_EQUAL;
-    static constexpr float const m_z_farthest = 1.0f;
-
     // Framebuffer
     // The memory allocator is not required since the number of the framebuffer images is verily limited
     // Perhaps we should prepare different intermediate textures for differenct frames ???
@@ -176,8 +171,6 @@ class gfx_connection_vk final : public gfx_connection_base
     // WSI
     uint32_t m_wsi_width;
     uint32_t m_wsi_height;
-
-
 
     // Window
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT

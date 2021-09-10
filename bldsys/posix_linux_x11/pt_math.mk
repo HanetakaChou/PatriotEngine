@@ -75,6 +75,7 @@ LOCAL_CFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
+LOCAL_CFLAGS += -Wno-unknown-pragmas
 	
 LOCAL_CFLAGS += -mavx2
 LOCAL_CFLAGS += -mfma
@@ -103,6 +104,7 @@ LOCAL_CFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
+LOCAL_CFLAGS += -Wno-unknown-pragmas
 	
 LOCAL_CFLAGS += -mavx 
 
@@ -132,6 +134,7 @@ LOCAL_CFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
+LOCAL_CFLAGS += -Wno-unknown-pragmas
 	
 ifeq (x86,$(TARGET_ARCH))
 LOCAL_CFLAGS += -msse2
@@ -163,6 +166,7 @@ LOCAL_CFLAGS += -Werror=return-type
 LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
+LOCAL_CFLAGS += -Wno-unknown-pragmas
 	
 ifeq (arm,$(TARGET_ARCH))
 LOCAL_ARM_MODE := arm
