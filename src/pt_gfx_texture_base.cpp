@@ -271,11 +271,11 @@ void gfx_texture_base::release(class gfx_connection_base *gfx_connection)
 }
 
 // API
-inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+static inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+static inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
-inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
+static inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
+static inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
 PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(
     pt_gfx_connection_ref gfx_connection,

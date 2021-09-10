@@ -73,29 +73,29 @@ static_assert(offsetof(pt_math_bounding_box, m_center) == offsetof(DirectX::Boun
 static_assert(sizeof(pt_math_bounding_box::m_extents) == sizeof(DirectX::BoundingBox::Extents), "");
 static_assert(offsetof(pt_math_bounding_box, m_extents) == offsetof(DirectX::BoundingBox, Extents), "");
 
-inline DirectX::XMFLOAT3 *unwrap(pt_math_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 *>(vec3); }
-inline DirectX::XMFLOAT3 const *unwrap(pt_math_vec3 const *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 const *>(vec3); }
-inline DirectX::XMFLOAT3A *unwrap(pt_math_alignas16_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3A *>(vec3); }
-inline DirectX::XMFLOAT3A const *unwrap(pt_math_alignas16_vec3 const *vec3) { return reinterpret_cast<DirectX::XMFLOAT3A const *>(vec3); }
-inline DirectX::XMFLOAT4 *unwrap(pt_math_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 *>(vec4); }
-inline DirectX::XMFLOAT4 const *unwrap(pt_math_vec4 const *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 const *>(vec4); }
-inline DirectX::XMFLOAT4A *unwrap(pt_math_alignas16_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4A *>(vec4); }
-inline DirectX::XMFLOAT4A const *unwrap(pt_math_alignas16_vec4 const *vec4) { return reinterpret_cast<DirectX::XMFLOAT4A const *>(vec4); }
-inline DirectX::XMVECTOR unwrap(pt_math_simd_vec simd_vec) { return (*reinterpret_cast<DirectX::XMVECTOR *>(&simd_vec)); }
-inline DirectX::XMVECTOR *unwrap(pt_math_simd_vec *simd_vec) { return reinterpret_cast<DirectX::XMVECTOR *>(simd_vec); }
-inline pt_math_simd_vec wrap(DirectX::XMVECTOR simd_vec) { return (*reinterpret_cast<pt_math_simd_vec *>(&simd_vec)); }
-inline DirectX::XMFLOAT4X4 *unwrap(pt_math_mat4x4 *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 *>(mat4x4); }
-inline DirectX::XMFLOAT4X4 const *unwrap(pt_math_mat4x4 const *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 const *>(mat4x4); }
-inline DirectX::XMFLOAT4X4A *unwrap(pt_math_alignas16_mat4x4 *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A *>(alignas16_mat4x4); }
-inline DirectX::XMFLOAT4X4A const *unwrap(pt_math_alignas16_mat4x4 const *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A const *>(alignas16_mat4x4); }
-inline DirectX::XMMATRIX unwrap(pt_math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
-inline pt_math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<pt_math_simd_mat *>(&simd_mat)); }
+static inline DirectX::XMFLOAT3 *unwrap(pt_math_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 *>(vec3); }
+static inline DirectX::XMFLOAT3 const *unwrap(pt_math_vec3 const *vec3) { return reinterpret_cast<DirectX::XMFLOAT3 const *>(vec3); }
+static inline DirectX::XMFLOAT3A *unwrap(pt_math_alignas16_vec3 *vec3) { return reinterpret_cast<DirectX::XMFLOAT3A *>(vec3); }
+static inline DirectX::XMFLOAT3A const *unwrap(pt_math_alignas16_vec3 const *vec3) { return reinterpret_cast<DirectX::XMFLOAT3A const *>(vec3); }
+static inline DirectX::XMFLOAT4 *unwrap(pt_math_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 *>(vec4); }
+static inline DirectX::XMFLOAT4 const *unwrap(pt_math_vec4 const *vec4) { return reinterpret_cast<DirectX::XMFLOAT4 const *>(vec4); }
+static inline DirectX::XMFLOAT4A *unwrap(pt_math_alignas16_vec4 *vec4) { return reinterpret_cast<DirectX::XMFLOAT4A *>(vec4); }
+static inline DirectX::XMFLOAT4A const *unwrap(pt_math_alignas16_vec4 const *vec4) { return reinterpret_cast<DirectX::XMFLOAT4A const *>(vec4); }
+static inline DirectX::XMVECTOR unwrap(pt_math_simd_vec simd_vec) { return (*reinterpret_cast<DirectX::XMVECTOR *>(&simd_vec)); }
+static inline DirectX::XMVECTOR *unwrap(pt_math_simd_vec *simd_vec) { return reinterpret_cast<DirectX::XMVECTOR *>(simd_vec); }
+static inline pt_math_simd_vec wrap(DirectX::XMVECTOR simd_vec) { return (*reinterpret_cast<pt_math_simd_vec *>(&simd_vec)); }
+static inline DirectX::XMFLOAT4X4 *unwrap(pt_math_mat4x4 *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 *>(mat4x4); }
+static inline DirectX::XMFLOAT4X4 const *unwrap(pt_math_mat4x4 const *mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4 const *>(mat4x4); }
+static inline DirectX::XMFLOAT4X4A *unwrap(pt_math_alignas16_mat4x4 *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A *>(alignas16_mat4x4); }
+static inline DirectX::XMFLOAT4X4A const *unwrap(pt_math_alignas16_mat4x4 const *alignas16_mat4x4) { return reinterpret_cast<DirectX::XMFLOAT4X4A const *>(alignas16_mat4x4); }
+static inline DirectX::XMMATRIX unwrap(pt_math_simd_mat simd_mat) { return (*reinterpret_cast<DirectX::XMMATRIX *>(&simd_mat)); }
+static inline pt_math_simd_mat wrap(DirectX::XMMATRIX simd_mat) { return (*reinterpret_cast<pt_math_simd_mat *>(&simd_mat)); }
 
-inline DirectX::BoundingSphere const *unwrap(pt_math_bounding_sphere const *bounding_sphere) { return reinterpret_cast<DirectX::BoundingSphere const *>(bounding_sphere); }
-inline pt_math_bounding_sphere wrap(DirectX::BoundingSphere bounding_sphere) { return (*reinterpret_cast<pt_math_bounding_sphere *>(&bounding_sphere)); }
+static inline DirectX::BoundingSphere const *unwrap(pt_math_bounding_sphere const *bounding_sphere) { return reinterpret_cast<DirectX::BoundingSphere const *>(bounding_sphere); }
+static inline pt_math_bounding_sphere wrap(DirectX::BoundingSphere bounding_sphere) { return (*reinterpret_cast<pt_math_bounding_sphere *>(&bounding_sphere)); }
 
-inline DirectX::BoundingBox const *unwrap(pt_math_bounding_box const *bounding_box) { return reinterpret_cast<DirectX::BoundingBox const *>(bounding_box); }
-inline pt_math_bounding_box wrap(DirectX::BoundingBox bounding_box) { return (*reinterpret_cast<pt_math_bounding_box *>(&bounding_box)); }
+static inline DirectX::BoundingBox const *unwrap(pt_math_bounding_box const *bounding_box) { return reinterpret_cast<DirectX::BoundingBox const *>(bounding_box); }
+static inline pt_math_bounding_box wrap(DirectX::BoundingBox bounding_box) { return (*reinterpret_cast<pt_math_bounding_box *>(&bounding_box)); }
 
 pt_math_simd_vec PT_VECTORCALL directx_math_x86_avx2_load_vec3(pt_math_vec3 const *source)
 {

@@ -20,12 +20,11 @@
 #include "pt_gfx_scene_base.h"
 
 // API
-inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+static inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+static inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline pt_scene_ref wrap(class gfx_scene_base *gfx_scene) { return reinterpret_cast<pt_scene_ref>(gfx_scene); }
-inline class gfx_scene_base *unwrap(pt_scene_ref gfx_scene) { return reinterpret_cast<class gfx_scene_base *>(gfx_scene); }
-
+static inline pt_scene_ref wrap(class gfx_scene_base *gfx_scene) { return reinterpret_cast<pt_scene_ref>(gfx_scene); }
+static inline class gfx_scene_base *unwrap(pt_scene_ref gfx_scene) { return reinterpret_cast<class gfx_scene_base *>(gfx_scene); }
 
 PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction)
 {

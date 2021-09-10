@@ -196,14 +196,14 @@ void gfx_material_base::unified_destory_execute(class gfx_connection_base *gfx_c
 }
 
 // API
-inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+static inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+static inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline pt_gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<pt_gfx_material_ref>(gfx_material); }
-inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
+static inline pt_gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<pt_gfx_material_ref>(gfx_material); }
+static inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
 
-inline pt_gfx_texture_ref *wrap(class gfx_texture_base **textures) { return reinterpret_cast<pt_gfx_texture_ref *>(textures); }
-inline class gfx_texture_base **unwrap(pt_gfx_texture_ref *textures) { return reinterpret_cast<class gfx_texture_base **>(textures); }
+static inline pt_gfx_texture_ref *wrap(class gfx_texture_base **textures) { return reinterpret_cast<pt_gfx_texture_ref *>(textures); }
+static inline class gfx_texture_base **unwrap(pt_gfx_texture_ref *textures) { return reinterpret_cast<class gfx_texture_base **>(textures); }
 
 PT_ATTR_GFX bool PT_CALL pt_gfx_material_init_with_texture(pt_gfx_connection_ref gfx_connection, pt_gfx_material_ref gfx_material, uint32_t material_model, uint32_t texture_count, pt_gfx_texture_ref *gfx_textures)
 {

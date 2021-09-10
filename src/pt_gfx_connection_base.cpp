@@ -76,20 +76,20 @@ class gfx_connection_base *gfx_connection_common_init(pt_gfx_wsi_connection_ref 
     return gfx_connection;
 }
 
-inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
-inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
+static inline pt_gfx_connection_ref wrap(class gfx_connection_base *gfx_connection) { return reinterpret_cast<pt_gfx_connection_ref>(gfx_connection); }
+static inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connection) { return reinterpret_cast<class gfx_connection_base *>(gfx_connection); }
 
-inline pt_gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<pt_gfx_node_ref>(node); }
-inline class gfx_node_base *unwrap(pt_gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
+static inline pt_gfx_node_ref wrap(class gfx_node_base *node) { return reinterpret_cast<pt_gfx_node_ref>(node); }
+static inline class gfx_node_base *unwrap(pt_gfx_node_ref node) { return reinterpret_cast<class gfx_node_base *>(node); }
 
-inline pt_gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<pt_gfx_mesh_ref>(mesh); }
-inline class gfx_mesh_base *unwrap(pt_gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
+static inline pt_gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<pt_gfx_mesh_ref>(mesh); }
+static inline class gfx_mesh_base *unwrap(pt_gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-inline pt_gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<pt_gfx_material_ref>(gfx_material); }
-inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
+static inline pt_gfx_material_ref wrap(class gfx_material_base *gfx_material) { return reinterpret_cast<pt_gfx_material_ref>(gfx_material); }
+static inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) { return reinterpret_cast<class gfx_material_base *>(gfx_material); }
 
-inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
-inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
+static inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
+static inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
 PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const* gfx_cache_dirname)
 {
