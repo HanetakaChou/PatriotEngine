@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -31,31 +31,15 @@ PT_ATTR_MCRT void *PT_CALL mcrt_memcpy(void *__restrict dest, void const *__rest
 
 #if defined(PT_X64) || defined(PT_X86)
 #include <string.h>
-static bool rte_memcpy_support_x86_avx512f = false;
-static bool rte_memcpy_support_x86_avx = false;
-static bool rte_memcpy_support_x86_ssse3 = false;
 extern void *rte_memcpy_x86_avx512f(void *__restrict dest, void const *__restrict src, size_t count);
 extern void *rte_memcpy_x86_avx(void *__restrict dest, void const *__restrict src, size_t count);
 extern void *rte_memcpy_x86_ssse3(void *__restrict dest, void const *__restrict src, size_t count);
 
+static void *(*pfn_rte_memcpy)(void *dst, void const *src, size_t n) = NULL;
+
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    if (rte_memcpy_support_x86_avx512f)
-    {
-        return rte_memcpy_x86_avx512f(dest, src, count);
-    }
-    else if (rte_memcpy_support_x86_avx)
-    {
-        return rte_memcpy_x86_avx(dest, src, count);
-    }
-    else if (rte_memcpy_support_x86_ssse3)
-    {
-        return rte_memcpy_x86_ssse3(dest, src, count);
-    }
-    else
-    {
-        return memcpy(dest, src, count);
-    }
+    return pfn_rte_memcpy(dest, src, count);
 }
 
 struct rte_memcpy_verify_x86_cpu_support
@@ -84,9 +68,27 @@ struct rte_memcpy_verify_x86_cpu_support
                 f_7_EBX_ = data_7[1];
             }
         }
-        rte_memcpy_support_x86_avx512f = (((f_7_EBX_ & (1U << 16U)) != 0) ? true : false);
-        rte_memcpy_support_x86_avx = (((f_1_ECX_ & (1U << 28U)) != 0) ? true : false);
-        rte_memcpy_support_x86_ssse3 = (((f_1_ECX_ & (1U << 9U)) != 0) ? true : false);
+
+        bool rte_memcpy_support_x86_avx512f = (((f_7_EBX_ & (1U << 16U)) != 0) ? true : false);
+        bool rte_memcpy_support_x86_avx = (((f_1_ECX_ & (1U << 28U)) != 0) ? true : false);
+        bool rte_memcpy_support_x86_ssse3 = (((f_1_ECX_ & (1U << 9U)) != 0) ? true : false);
+
+        if (rte_memcpy_support_x86_avx512f)
+        {
+            pfn_rte_memcpy = rte_memcpy_x86_avx512f;
+        }
+        else if (rte_memcpy_support_x86_avx)
+        {
+            pfn_rte_memcpy = rte_memcpy_x86_avx;
+        }
+        else if (rte_memcpy_support_x86_ssse3)
+        {
+            pfn_rte_memcpy = rte_memcpy_x86_ssse3;
+        }
+        else
+        {
+            pfn_rte_memcpy = memcpy;
+        }
     }
 };
 static struct rte_memcpy_verify_x86_cpu_support instance_rte_memcpy_verify_x86_cpu_support;
@@ -99,19 +101,13 @@ static struct rte_memcpy_verify_x86_cpu_support instance_rte_memcpy_verify_x86_c
 #include <asm/hwcap.h>
 #include <sys/auxv.h>
 #include <string.h>
-static bool rte_memcpy_support_arm32_neon = false;
 extern void *rte_memcpy_arm32_neon(void *__restrict dest, void const *__restrict src, size_t count);
+
+static void *(*pfn_rte_memcpy)(void *dst, void const *src, size_t n) = NULL;
 
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
-    if (rte_memcpy_support_arm32_neon)
-    {
-        return rte_memcpy_arm32_neon(dest, src, count);
-    }
-    else
-    {
-        return memcpy(dest, src, count);
-    }
+    return pfn_rte_memcpy(dest, src, count);
 }
 
 struct rte_memcpy_verify_arm_cpu_support
@@ -122,10 +118,20 @@ struct rte_memcpy_verify_arm_cpu_support
         // ANDROID_CPU_ARM_FEATURE_NEON
         // https://android.googlesource.com/platform/bionic/+/master/libc/bionic/getauxval.cpp
         // __bionic_getauxval
-        rte_memcpy_support_arm32_neon = ((getauxval(AT_HWCAP) & HWCAP_NEON) != 0) ? true : false;
+        
+        bool rte_memcpy_support_arm32_neon = ((getauxval(AT_HWCAP) & HWCAP_NEON) != 0) ? true : false;
+
+        if (rte_memcpy_support_arm32_neon)
+        {
+            pfn_rte_memcpy = rte_memcpy_arm32_neon;
+        }
+        else
+        {
+            pfn_rte_memcpy = memcpy;
+        }
     }
 };
-static struct rte_memcpy_verify_arm_cpu_support instance_rte_memcpy_verify_arm_cpu_support;
+static struct rte_memcpy_verify_arm_cpu_support instance_rte_memcpy_verify_arm32_cpu_support;
 #elif defined(PT_POSIX_MACH)
 static inline void *rte_memcpy(void *__restrict dest, void const *__restrict src, size_t count)
 {
