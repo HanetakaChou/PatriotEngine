@@ -26,8 +26,10 @@
 
 #if defined(PT_GCC)
 #define PT_VECTORCALL
+#define PT_VECTORPTR
 #elif defined(PT_MSVC)
 #define PT_VECTORCALL __vectorcall
+#define PT_VECTORPTR __vectorcall
 #else
 #error Unknown Compiler
 #endif
