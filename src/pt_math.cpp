@@ -67,244 +67,236 @@ static pt_math_bounding_box(PT_VECTORPTR *pfn_math_bounding_box_create_from_sphe
 static pt_math_bounding_box(PT_VECTORPTR *pfn_math_bounding_box_create_merged)(pt_math_bounding_box const *b1, pt_math_bounding_box const *b2);
 static pt_math_bounding_box(PT_VECTORPTR *pfn_math_bounding_box_create_from_points)(size_t count, pt_math_vec3 const *points, size_t stride);
 
-pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 const *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec3(pt_math_vec3 const *source)
 {
     return pfn_math_load_vec3(source);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec3(pt_math_alignas16_vec3 const *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec3(pt_math_alignas16_vec3 const *source)
 {
     return pfn_math_load_alignas16_vec3(source);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 const *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_vec4(pt_math_vec4 const *source)
 {
     return pfn_math_load_vec4(source);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec4(pt_math_alignas16_vec4 const *source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec4(pt_math_alignas16_vec4 const *source)
 {
     return pfn_math_load_alignas16_vec4(source);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_ivec3(pt_math_alignas16_ivec3 const* source)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_ivec3(pt_math_alignas16_ivec3 const* source)
 {
     return pfn_math_load_alignas16_ivec3(source);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_zero()
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_zero()
 {
     return pfn_math_vec_zero();
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_replicate(float value)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_replicate(float value)
 {
     return pfn_math_vec_replicate(value);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform(pt_math_simd_vec v, pt_math_simd_mat m)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform(pt_math_simd_vec v, pt_math_simd_mat m)
 {
     return pfn_math_vec3_transform(v, m);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform_coord(pt_math_simd_vec v, pt_math_simd_mat m)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform_coord(pt_math_simd_vec v, pt_math_simd_mat m)
 {
     return pfn_math_vec3_transform_coord(v, m);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec3_normalize(pt_math_simd_vec v)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_normalize(pt_math_simd_vec v)
 {
     return pfn_math_vec3_normalize(v);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec3_dot(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_dot(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec3_dot(v1, v2);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec4_dot(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec4_dot(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec4_dot(v1, v2);
 }
 
-float PT_VECTORCALL pt_math_vec_get_x(pt_math_simd_vec v)
+PT_ATTR_MATH float PT_VECTORCALL pt_math_vec_get_x(pt_math_simd_vec v)
 {
     return pfn_math_vec_get_x(v);
 }
 
-float PT_VECTORCALL pt_math_vec_get_y(pt_math_simd_vec v)
+PT_ATTR_MATH float PT_VECTORCALL pt_math_vec_get_y(pt_math_simd_vec v)
 {
     return pfn_math_vec_get_y(v);
 }
-float PT_VECTORCALL pt_math_vec_get_z(pt_math_simd_vec v)
+PT_ATTR_MATH float PT_VECTORCALL pt_math_vec_get_z(pt_math_simd_vec v)
 {
     return pfn_math_vec_get_z(v);
 }
 
-float PT_VECTORCALL pt_math_vec_get_w(pt_math_simd_vec v)
+PT_ATTR_MATH float PT_VECTORCALL pt_math_vec_get_w(pt_math_simd_vec v)
 {
     return pfn_math_vec_get_w(v);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_abs(pt_math_simd_vec v)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_abs(pt_math_simd_vec v)
 {
     return pfn_math_vec_abs(v);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_splat_w(pt_math_simd_vec v)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_splat_w(pt_math_simd_vec v)
 {
     return pfn_math_vec_splat_w(v);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_convert_int_to_float(pt_math_simd_vec vint, uint32_t div_exponent)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_convert_int_to_float(pt_math_simd_vec vint, uint32_t div_exponent)
 {
     return pfn_math_vec_convert_int_to_float(vint, div_exponent);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_convert_float_to_int(pt_math_simd_vec vfloat, uint32_t div_exponent)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_convert_float_to_int(pt_math_simd_vec vfloat, uint32_t div_exponent)
 {
     return pfn_math_vec_convert_float_to_int(vfloat, div_exponent);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_min(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_min(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec_min(v1, v2);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_add(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_add(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec_add(v1, v2);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_subtract(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_subtract(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec_subtract(v1, v2);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_multiply(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_multiply(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec_multiply(v1, v2);
 }
 
-pt_math_simd_vec PT_VECTORCALL pt_math_vec_divide(pt_math_simd_vec v1, pt_math_simd_vec v2)
+PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_divide(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return pfn_math_vec_divide(v1, v2);
 }
 
-void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *destination, pt_math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3 *destination, pt_math_simd_vec v)
 {
     return pfn_math_store_vec3(destination, v);
 }
 
-void PT_VECTORCALL pt_math_store_alignas16_vec3(pt_math_alignas16_vec3 *destination, pt_math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_vec3(pt_math_alignas16_vec3 *destination, pt_math_simd_vec v)
 {
     return pfn_math_store_alignas16_vec3(destination, v);
 }
 
-void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *destination, pt_math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4 *destination, pt_math_simd_vec v)
 {
     return pfn_math_store_vec4(destination, v);
 }
 
-void PT_VECTORCALL pt_math_store_alignas16_vec4(pt_math_alignas16_vec4 *destination, pt_math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_vec4(pt_math_alignas16_vec4 *destination, pt_math_simd_vec v)
 {
     return pfn_math_store_alignas16_vec4(destination, v);
 }
 
-void PT_VECTORCALL pt_math_store_alignas16_ivec3(pt_math_alignas16_ivec3* destination, pt_math_simd_vec v)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_ivec3(pt_math_alignas16_ivec3* destination, pt_math_simd_vec v)
 {
     return pfn_math_store_alignas16_ivec3(destination, v);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_alignas16_mat4x4(pt_math_alignas16_mat4x4 const *source)
 {
     return pfn_math_load_alignas16_mat4x4(source);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 const *source)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_load_mat4x4(pt_math_mat4x4 const *source)
 {
     return pfn_math_load_mat4x4(source);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity(void)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity(void)
 {
     return pfn_math_mat_identity();
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_multiply(pt_math_simd_mat m1, pt_math_simd_mat m2)
 {
     return pfn_math_mat_multiply(m1, m2);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_rotation_y(float angle)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_rotation_y(float angle)
 {
     return pfn_math_mat_rotation_y(angle);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_look_to_rh(pt_math_simd_vec eye_position, pt_math_simd_vec eye_direction, pt_math_simd_vec up_direction)
 {
     return pfn_math_mat_look_to_rh(eye_position, eye_direction, up_direction);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_perspective_fov_rh(float fov_angle_y, float aspect_ratio, float near_z, float far_z)
 {
     return pfn_math_mat_perspective_fov_rh(fov_angle_y, aspect_ratio, near_z, far_z);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_transpose(pt_math_simd_mat m)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_transpose(pt_math_simd_mat m)
 {
     return pfn_math_mat_transpose(m);
 }
 
-pt_math_simd_mat PT_VECTORCALL pt_math_mat_inverse(pt_math_simd_vec *determinant, pt_math_simd_mat m)
+PT_ATTR_MATH pt_math_simd_mat PT_VECTORCALL pt_math_mat_inverse(pt_math_simd_vec *determinant, pt_math_simd_mat m)
 {
     return pfn_math_mat_inverse(determinant, m);
 }
 
-void PT_VECTORCALL pt_math_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_alignas16_mat4x4(pt_math_alignas16_mat4x4 *destination, pt_math_simd_mat m)
 {
     return pfn_math_store_alignas16_mat4x4(destination, m);
 }
 
-void PT_VECTORCALL pt_math_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m)
+PT_ATTR_MATH void PT_VECTORCALL pt_math_store_mat4x4(pt_math_mat4x4 *destination, pt_math_simd_mat m)
 {
     return pfn_math_store_mat4x4(destination, m);
 }
 
-pt_math_bounding_sphere PT_VECTORCALL pt_math_bounding_sphere_create(pt_math_vec3 const *center, float radius)
+PT_ATTR_MATH pt_math_bounding_sphere PT_VECTORCALL pt_math_bounding_sphere_create(pt_math_vec3 const *center, float radius)
 {
     return pfn_math_bounding_sphere_create(center, radius);
 }
 
-bool PT_VECTORCALL pt_math_bounding_sphere_intersect_ray(pt_math_bounding_sphere const *bounding_sphere, pt_math_simd_vec origin, pt_math_simd_vec direction, float *dist)
+PT_ATTR_MATH bool PT_VECTORCALL pt_math_bounding_sphere_intersect_ray(pt_math_bounding_sphere const *bounding_sphere, pt_math_simd_vec origin, pt_math_simd_vec direction, float *dist)
 {
     return pfn_math_bounding_sphere_intersect_ray(bounding_sphere, origin, direction, dist);
 }
 
-pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_from_sphere(pt_math_bounding_sphere const *bounding_sphere)
+PT_ATTR_MATH pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_from_sphere(pt_math_bounding_sphere const *bounding_sphere)
 {
     return pfn_math_bounding_box_create_from_sphere(bounding_sphere);
 }
 
-pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_merged(pt_math_bounding_box const *b1, pt_math_bounding_box const *b2)
+PT_ATTR_MATH pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_merged(pt_math_bounding_box const *b1, pt_math_bounding_box const *b2)
 {
     return pfn_math_bounding_box_create_merged(b1, b2);
 }
 
-pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_from_points(size_t count, pt_math_vec3 const *points, size_t stride)
+PT_ATTR_MATH pt_math_bounding_box PT_VECTORCALL pt_math_bounding_box_create_from_points(size_t count, pt_math_vec3 const *points, size_t stride)
 {
     return pfn_math_bounding_box_create_from_points(count, points, stride);
 }
 
-#if defined(PT_MSVC)
-#include <intrin.h>
-inline void pt_intrin_cpuidex(uint32_t cpuinfo[4], uint32_t function_id, uint32_t subfunction_id)
-{
-    return __cpuidex(((int *)cpuinfo), function_id, subfunction_id);
-}
-#else
-#error Unknown Compiler
-#endif
+#include <pt_mcrt_intrin.h>
 
 struct math_verify_x86_cpu_support
 {
@@ -315,20 +307,20 @@ struct math_verify_x86_cpu_support
         uint32_t f_7_EBX_ = 0;
         {
             uint32_t cpui[4];
-            pt_intrin_cpuidex(cpui, 0, 0);
+            mcrt_intrin_cpuidex(cpui, 0, 0);
             uint32_t nIds = cpui[0];
 
             uint32_t data_1[4];
             if (nIds >= 1)
             {
-                pt_intrin_cpuidex(data_1, 1, 0);
+                mcrt_intrin_cpuidex(data_1, 1, 0);
                 f_1_ECX_ = data_1[2];
             }
 
             uint32_t data_7[4];
             if (nIds >= 7)
             {
-                pt_intrin_cpuidex(data_7, 7, 0);
+                mcrt_intrin_cpuidex(data_7, 7, 0);
                 f_7_EBX_ = data_7[1];
             }
         }

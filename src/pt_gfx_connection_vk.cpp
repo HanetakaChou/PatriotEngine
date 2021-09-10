@@ -2173,9 +2173,9 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         // +Y up
         // +Z front
 
-        pt_math_vec3 eye_position = {0.0f, 3.0f, -5.0f};
-        pt_math_vec3 eye_direction = {0.0f, -0.5f, 1.0f};
-        pt_math_vec3 up_direction = {0.0f, 1.0f, 0.0};
+        pt_math_vec3 eye_position = {{{0.0f, 3.0f, -5.0f}}};
+        pt_math_vec3 eye_direction = {{{0.0f, -0.5f, 1.0f}}};
+        pt_math_vec3 up_direction = {{{0.0f, 1.0f, 0.0}}};
         // eye_direction = focus_position - eye_position
         // focus_position = eye_direction + eye_position
         pt_math_simd_mat mat_v = pt_math_mat_look_to_rh(pt_math_load_vec3(&eye_position), pt_math_load_vec3(&eye_direction), pt_math_load_vec3(&up_direction));
