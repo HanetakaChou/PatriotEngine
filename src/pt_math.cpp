@@ -579,8 +579,8 @@ struct math_verify_x86_cpu_support
             pfn_math_vec_multiply = directx_math_x86_avx_vec_multiply;
             pfn_math_vec_divide = directx_math_x86_avx_vec_divide;
             pfn_math_vec_get_x = directx_math_x86_avx_vec_get_x;
-            pfn_math_vec_get_y = directx_math_x86_avx2_vec_get_y;
-            pfn_math_vec_get_z = directx_math_x86_avx2_vec_get_z;
+            pfn_math_vec_get_y = directx_math_x86_avx_vec_get_y;
+            pfn_math_vec_get_z = directx_math_x86_avx_vec_get_z;
             pfn_math_vec_get_w = directx_math_x86_avx_vec_get_w;
             pfn_math_vec_abs = directx_math_x86_avx_vec_abs;
             pfn_math_vec_splat_w = directx_math_x86_avx_vec_splat_w;
@@ -632,8 +632,8 @@ struct math_verify_x86_cpu_support
             pfn_math_vec_multiply = directx_math_x86_sse2_vec_multiply;
             pfn_math_vec_divide = directx_math_x86_sse2_vec_divide;
             pfn_math_vec_get_x = directx_math_x86_sse2_vec_get_x;
-            pfn_math_vec_get_y = directx_math_x86_avx2_vec_get_y;
-            pfn_math_vec_get_z = directx_math_x86_avx2_vec_get_z;
+            pfn_math_vec_get_y = directx_math_x86_sse2_vec_get_y;
+            pfn_math_vec_get_z = directx_math_x86_sse2_vec_get_z;
             pfn_math_vec_get_w = directx_math_x86_sse2_vec_get_w;
             pfn_math_store_vec3 = directx_math_x86_sse2_store_vec3;
             pfn_math_store_alignas16_vec3 = directx_math_x86_sse2_store_alignas16_vec3;
