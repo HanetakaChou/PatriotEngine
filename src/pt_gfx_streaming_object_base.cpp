@@ -22,7 +22,7 @@ void gfx_streaming_object_base::streaming_destroy_request(class gfx_connection_b
 {
     bool streaming_done;
     {
-        // make sure this function happens before or after the gfx_streaming_object_base::streaming_done
+        // make sure this function happens before or after the gfx_streaming_object_base::streaming_done_execute
         this->streaming_done_lock();
 
         streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);

@@ -52,10 +52,13 @@ protected:
         mcrt_spin_unlock(&this->m_spinlock_streaming_done);
     }
 
+    // destory before "streaming_done"
     virtual void pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
 private:
+    // "streaming_done"
     virtual bool streaming_done_callback(class gfx_connection_base *gfx_connection) = 0;
+    // destory after "streaming_done"
     virtual void post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection) = 0;
 
 protected:

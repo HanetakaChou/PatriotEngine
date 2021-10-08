@@ -72,11 +72,7 @@ topological dimension
 per-primitive, per-face, per-vertex  
 
 HdStMesh::_UpdateDrawItem // dirtyBits  
-```cxx
-/* TOPOLOGY */
-// XXX: _PopulateTopology should be split into two phase
-//      for scene dirtybits and for repr dirtybits.
-```
+  HdInstance::PopulateDrawItem
 
 ### HdMesh(HdRprim)  
 implement the following virtual functions // happen multithreaded "_SyncRPrims::Sync"   

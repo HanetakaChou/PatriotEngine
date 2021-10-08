@@ -39,6 +39,7 @@ typedef struct _pt_gfx_connection_t *pt_gfx_connection_ref;
 typedef struct _pt_gfx_scene_t_ *pt_scene_ref;
 typedef struct _pt_gfx_node_t_ *pt_gfx_node_ref;
 typedef struct _pt_gfx_mesh_t_ *pt_gfx_mesh_ref;
+
 typedef struct _pt_gfx_material_t_ *pt_gfx_material_ref;
 typedef struct _pt_gfx_texture_t_ *pt_gfx_texture_ref;
 
@@ -77,26 +78,40 @@ extern "C"
 
     PT_ATTR_GFX void PT_CALL pt_gfx_connection_destroy(pt_gfx_connection_ref gfx_connection);
 
+    // 
+    // Sync
+    // Prepare
+    // Commit
+    // Execute
+
+
+    // flatten_scene - HdRenderIndex
+    // ??? - HdInstance
+    // flatten_node - HdRprim
+    // Hydra introduces "HdRprimSharedData" - HdBufferArrayRangeContainer - HdBufferArrayRange - HdBufferArray
+
     // Top Level Structure - Node
     // Bottom Level Structure - Mesh Material etc
-    PT_ATTR_GFX pt_scene_ref PT_CALL pt_gfx_connection_create_scene(pt_gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_root_node(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_gfx_node_ref gfx_node);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_camera(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_set_directional_light(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *direction);
-    PT_ATTR_GFX void PT_CALL pt_gfx_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
+    PT_ATTR_GFX pt_scene_ref PT_CALL pt_gfx_connection_create_flatten_scene(pt_gfx_connection_ref gfx_connection);
+    PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_set_root_node(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_gfx_node_ref gfx_node);
+    PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_set_camera(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction);
+    PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_set_directional_light(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *direction);
+    PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
 
     PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection); // add callback paramter
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_transform(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_math_mat4x4 const *transform);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_mesh_ref gfx_mesh);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material);
-    PT_ATTR_GFX void PT_CALL pt_gfx_node_add_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
-    PT_ATTR_GFX void PT_CALL pt_gfx_node_remove_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
+    //PT_ATTR_GFX void PT_CALL pt_gfx_node_add_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
+    //PT_ATTR_GFX void PT_CALL pt_gfx_node_remove_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node);
 
     // merge to "create_node"
     // callback should not be changed
     // since the destory is asynchrous (perhaps delay to next frame) // you need to use "ref_count" etc to make sure the "user_data" is available
     // PT_ATTR_GFX void PT_CALL pt_gfx_node_set_pre_draw_acquire_callback(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, void (*callback)()); // in acquire we will can this function before culling
+
+    // In hydra, there exists "HdInstance"  
 
     // We don't support "HdStRenderBuffer" and we support "HdStMesh" instead
     // Because we scarcely share the "buffer" but we may share "mesh" between the node
