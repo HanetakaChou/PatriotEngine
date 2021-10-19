@@ -59,10 +59,6 @@ ifeq ($(filter $(TARGET_ARCH),x86_64 x86),$(TARGET_ARCH))
 LOCAL_STATIC_LIBRARIES += libpt_mcrt_x86_sse2 pt_mcrt_x86_ssse3 libpt_mcrt_x86_avx libpt_mcrt_x86_avx512f  
 endif
 
-ifeq ($(filter $(TARGET_ARCH),arm64 arm),$(TARGET_ARCH))
-LOCAL_STATIC_LIBRARIES += libpt_mcrt_arm_neon
-endif
-
 ifeq (arm,$(TARGET_ARCH))
 LOCAL_STATIC_LIBRARIES += libpt_mcrt_arm32_neon
 endif
@@ -178,11 +174,11 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 include $(BUILD_STATIC_LIBRARY)
 endif
 
-# -neon / libpt_mcrt_arm_neon
-ifeq ($(filter $(TARGET_ARCH),arm64 arm),$(TARGET_ARCH))
+# -neon / libpt_mcrt_arm32_neon
+ifeq (arm,$(TARGET_ARCH))
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_mcrt_arm_neon
+LOCAL_MODULE := libpt_mcrt_arm32_neon
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_intrin_arm_neon.cpp \
@@ -195,10 +191,8 @@ LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
 
-ifeq (arm,$(TARGET_ARCH))
 LOCAL_ARM_MODE := arm
 LOCAL_ARM_NEON := true
-endif
 
 #LOCAL_CPPFLAGS += -std=c++11
 
@@ -214,6 +208,7 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := libpt_mcrt_arm64_neon
 
 LOCAL_SRC_FILES:= \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_intrin_arm_neon.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
