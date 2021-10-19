@@ -18,8 +18,6 @@
 #define VK_USE_PLATFORM_WIN32_KHR 1
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_atomic.h>
-#include "pt_gfx_device_vk.h"
 // https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers#faster-builds-with-smaller-header-files
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN 1
@@ -41,7 +39,7 @@
 #define NODRAWTEXT 1
 #define NOGDI 1
 #define NOKERNEL 1
-#define NOUSER 1
+// #define NOUSER 1
 #define NONLS 1
 #define NOMB 1
 #define NOMEMMGR 1
@@ -54,7 +52,7 @@
 #define NOSOUND 1
 #define NOTEXTMETRIC 1
 #define NOWH 1
-#define NOWINOFFSETS 1
+// #define NOWINOFFSETS 1
 #define NOCOMM 1
 #define NOKANJI 1
 #define NOHELP 1
@@ -62,13 +60,14 @@
 #define NODEFERWINDOWPOS 1
 #define NOMCX 1
 #include <Windows.h>
+#include <pt_mcrt_atomic.h>
+#include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 #include <assert.h>
 
-inline HINSTANCE unwrap(pt_gfx_wsi_connection_ref wsi_connection) { return reinterpret_cast<HINSTANCE>(wsi_connection); }
 inline HWND unwrap(pt_gfx_wsi_window_ref wsi_window) { return reinterpret_cast<HWND>(wsi_window); }
 
-char const* gfx_device_vk::platform_surface_extension_name()
+char const *gfx_device_vk::platform_surface_extension_name()
 {
     return VK_KHR_WIN32_SURFACE_EXTENSION_NAME;
 }
@@ -82,12 +81,12 @@ bool gfx_device_vk::platform_physical_device_presentation_support(PFN_vkGetInsta
     return (VK_FALSE != res_get_physical_device_win32_presentation_support);
 }
 
-char const* gfx_device_vk::platform_create_surface_function_name()
+char const *gfx_device_vk::platform_create_surface_function_name()
 {
     return "vkCreateWin32SurfaceKHR";
 }
 
-VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR* surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
+VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR *surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window)
 {
     PFN_vkCreateWin32SurfaceKHR vk_create_win32_surface = reinterpret_cast<PFN_vkCreateWin32SurfaceKHR>(this->m_vk_platform_create_surface);
     assert(NULL != vk_create_win32_surface);
@@ -96,7 +95,7 @@ VkResult gfx_device_vk::platform_create_surface(VkSurfaceKHR* surface, pt_gfx_ws
     win32_surface_create_info.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
     win32_surface_create_info.pNext = NULL;
     win32_surface_create_info.flags = 0U;
-    win32_surface_create_info.hinstance = unwrap(wsi_connection);
+    win32_surface_create_info.hinstance = reinterpret_cast<HINSTANCE>(GetClassLongPtrW(unwrap(wsi_window), GCLP_HMODULE));
     win32_surface_create_info.hwnd = unwrap(wsi_window);
 
     return vk_create_win32_surface(this->m_instance, &win32_surface_create_info, this->m_vk_allocation_callbacks, surface);

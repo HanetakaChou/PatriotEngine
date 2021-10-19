@@ -35,7 +35,7 @@ extern "C"
 #elif defined(PT_POSIX_LINUX_X11)
     PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
 #else
-#error Unknown Mach Platform
+#error Unknown Linux Platform
 #endif
 #elif defined(PT_POSIX_MACH)
 #ifdef PT_POSIX_MATH_IOS
@@ -46,10 +46,16 @@ extern "C"
 #error Unknown Mach Platform
 #endif
 #else
-#error Unknown Platform
+#error Unknown Posix Platform
 #endif
 #elif defined(PT_WIN32)
-#define PT_VK_LAYER_KHRONOS_VALIDATION 1
+#ifdef PT_WIN32_DESKTOP
+    PT_ATTR_WSI int PT_CALL pt_wsi_main(wchar_t *cmd_line, int cmd_show, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+#elif defined(PT_WIN32_RUNTIME)
+//
+#else
+#error Unknown Win32 Platform
+#endif
 #else
 #error Unknown Platform
 #endif

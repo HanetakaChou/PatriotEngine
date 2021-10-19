@@ -84,6 +84,9 @@
     <Filter Include="bldsys">
       <UniqueIdentifier>{54f99e20-410c-4f28-bbbf-41bff928b7bf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{76f083d5-5c74-4e04-9112-91a9eefbc7aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\pt_gfx_connection_base.h">
@@ -151,6 +154,12 @@
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_connection_d3d12.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_gfx_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_gfx_connection.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

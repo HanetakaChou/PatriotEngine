@@ -31,7 +31,7 @@ typedef pthread_key_t mcrt_native_tls_key;
 typedef pthread_mutex_t mcrt_mutex_t;
 typedef pthread_cond_t mcrt_cond_t;
 #elif defined(PT_WIN32)
-//https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers#faster-builds-with-smaller-header-files
+// https://docs.microsoft.com/en-us/windows/win32/winprog/using-the-windows-headers#faster-builds-with-smaller-header-files
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN 1
 #define NOGDICAPMASKS 1
