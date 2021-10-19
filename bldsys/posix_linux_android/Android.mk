@@ -46,7 +46,7 @@ ifeq (arm,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_arm/libpt_tbbmalloc$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -69,7 +69,7 @@ ifeq (arm,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_arm/libpt_irml$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)
 
@@ -92,6 +92,6 @@ ifeq (arm,$(TARGET_ARCH))
   LOCAL_SRC_FILES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/lib/bionic_arm/libpt_tbb$(TARGET_SONAME_EXTENSION)
 endif
 
-LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/libs/intel_tbb)/include 
+LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../third_party/intel_tbb)/include 
 
 include $(PREBUILT_SHARED_LIBRARY)

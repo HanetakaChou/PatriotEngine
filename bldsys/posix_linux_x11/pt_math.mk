@@ -48,26 +48,27 @@ LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter # fix m
 LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_math.def
 
 ifeq ($(filter $(TARGET_ARCH),x86_64 x86),$(TARGET_ARCH))
-LOCAL_SHARED_LIBRARIES += libpt_math_directx_math_x86_avx2 libpt_math_directx_math_x86_avx libpt_math_directx_math_x86_sse2
+LOCAL_SHARED_LIBRARIES += libpt_math_x86_sse2 libpt_math_x86_avx libpt_math_x86_avx2
 endif
 
 ifeq ($(filter $(TARGET_ARCH),arm64 arm),$(TARGET_ARCH))
-LOCAL_SHARED_LIBRARIES += libpt_math_directx_math_arm_neon
+LOCAL_SHARED_LIBRARIES += libpt_math_arm_neon
 endif
 
 LOCAL_EXPORT_C_INCLUDES := $(abspath $(LOCAL_PATH)/../../include) 
 
-include $(BUILD_SHARED_LIBRARY)
+include $(BUILD_STATIC_LIBRARY)
 
+# -mavx / libpt_math_x86_sse2
 
-# -mavx2 -mfma / libpt_math_directx_math_x86_avx2
+ifeq ($(filter $(TARGET_ARCH),x86_64 x86),$(TARGET_ARCH))
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_directx_math_x86_avx2
+LOCAL_MODULE := libpt_math_x86_sse2
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_avx2.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_sse2.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -76,9 +77,10 @@ LOCAL_CFLAGS += -fvisibility=hidden
 LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
 LOCAL_CFLAGS += -Wno-unknown-pragmas
-	
-LOCAL_CFLAGS += -mavx2
-LOCAL_CFLAGS += -mfma
+
+ifeq (x86,$(TARGET_ARCH))
+LOCAL_CFLAGS += -msse2
+endif
 
 #LOCAL_CPPFLAGS += -std=c++11
 
@@ -87,13 +89,15 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/
 
 include $(BUILD_STATIC_LIBRARY)
 
-# -mavx / libpt_math_directx_math_x86_avx
+endif
+
+# -mavx / libpt_math_x86_avx
 
 ifeq ($(filter $(TARGET_ARCH),x86_64 x86),$(TARGET_ARCH))
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_directx_math_x86_avx
+LOCAL_MODULE := libpt_math_x86_avx
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_avx.cpp \
@@ -117,16 +121,14 @@ include $(BUILD_STATIC_LIBRARY)
 
 endif
 
-# -mavx / libpt_math_directx_math_x86_sse2
-
-ifeq ($(filter $(TARGET_ARCH),x86_64 x86),$(TARGET_ARCH))
+# -mavx2 -mfma / libpt_math_x86_avx2
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_directx_math_x86_sse2
+LOCAL_MODULE := libpt_math_x86_avx2
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_sse2.cpp \
+	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_x86_avx2.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
@@ -136,9 +138,8 @@ LOCAL_CFLAGS += -DPT_ATTR_MATH=PT_ATTR_EXPORT
 LOCAL_CFLAGS += -Wall
 LOCAL_CFLAGS += -Wno-unknown-pragmas
 	
-ifeq (x86,$(TARGET_ARCH))
-LOCAL_CFLAGS += -msse2
-endif
+LOCAL_CFLAGS += -mavx2
+LOCAL_CFLAGS += -mfma
 
 #LOCAL_CPPFLAGS += -std=c++11
 
@@ -147,15 +148,13 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/
 
 include $(BUILD_STATIC_LIBRARY)
 
-endif
-
-# -neon / pt_math_directx_math_arm_neon
+# -neon / libpt_math_arm_neon
 
 ifeq ($(filter $(TARGET_ARCH),arm64 arm),$(TARGET_ARCH))
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := libpt_math_directx_math_arm_neon
+LOCAL_MODULE := libpt_math_arm_neon
 
 LOCAL_SRC_FILES:= \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_math_directx_math_arm_neon.cpp \
