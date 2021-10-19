@@ -20,22 +20,13 @@
 
 #include <intrin.h>
 
-inline int mcrt_intrin_popcount(uint32_t value)
-{
-    return __popcnt(value);
-}
-inline int mcrt_intrin_popcount(uint64_t value)
-{
-    return __popcnt64(value);
-}
-
 #if defined(PT_X64) || defined(PT_X86)
-inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+inline void mcrt_intrin_cpuidex(uint32_t cpu_info[4], uint32_t function_id, uint32_t subfunction_id)
 {
-    return __cpuidex(cpuinfo, function_id, subfunction_id);
+    return __cpuidex(reinterpret_cast<int *>(cpu_info), function_id, subfunction_id);
 }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+inline void mcrt_intrin_cpuidex(uint32_t cpu_info[4], uint32_t function_id, uint32_t subfunction_id)
 {
     assert(false);
     return;

@@ -62,7 +62,7 @@ class gfx_connection_vk final : public gfx_connection_base
 #if defined(PT_POSIX)
     int m_pipeline_cache_dir_fd;
 #elif defined(PT_WIN32)
-    HANDLE m_pipeline_cache_dir_fd
+    HANDLE m_pipeline_cache_dir_fd;
 #else
 #error Unknown Platform
 #endif

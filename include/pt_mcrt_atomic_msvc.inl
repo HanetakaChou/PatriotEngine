@@ -19,8 +19,48 @@
 #define _PT_MCRT_ATOMIC_MSVC_INL_ 1
 
 #include <sdkddkver.h>
-#define WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN 1
+#define NOGDICAPMASKS 1
+#define NOVIRTUALKEYCODES 1
+#define NOWINMESSAGES 1
+#define NOWINSTYLES 1
+#define NOSYSMETRICS 1
+#define NOMENUS 1
+#define NOICONS 1
+#define NOKEYSTATES 1
+#define NOSYSCOMMANDS 1
+#define NORASTEROPS 1
+#define NOSHOWWINDOW 1
+#define NOATOM 1
+#define NOCLIPBOARD 1
+#define NOCOLOR 1
+#define NOCTLMGR 1
+#define NODRAWTEXT 1
+#define NOGDI 1
+#define NOKERNEL 1
+#define NOUSER 1
+#define NONLS 1
+#define NOMB 1
+#define NOMEMMGR 1
+#define NOMETAFILE 1
+#define NOMINMAX 1
+#define NOMSG 1
+#define NOOPENFILE 1
+#define NOSCROLL 1
+#define NOSERVICE 1
+#define NOSOUND 1
+#define NOTEXTMETRIC 1
+#define NOWH 1
+#define NOWINOFFSETS 1
+#define NOCOMM 1
+#define NOKANJI 1
+#define NOHELP 1
+#define NOPROFILER 1
+#define NODEFERWINDOWPOS 1
+#define NOMCX 1
 #include <Windows.h>
+
+#include <intrin.h>
 
 inline int32_t mcrt_atomic_cas_i32(int32_t volatile *dest, int32_t exch, int32_t comp)
 {
@@ -42,9 +82,10 @@ inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint
     return InterlockedCompareExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch), static_cast<LONGLONG>(comp));
 }
 
-inline void *mcrt_atomic_cas_ptr(void *volatile *dest, void *exch, void *comp)
+template <typename T>
+inline T* mcrt_atomic_cas_ptr(T* volatile* dest, T* exch, T* comp)
 {
-    return InterlockedCompareExchangePointer(dest, exch, comp);
+    return static_cast<T*>(_InterlockedCompareExchangePointer(reinterpret_cast<void* volatile*>(dest), static_cast<void*>(exch), static_cast<void*>(comp)));
 }
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
@@ -62,9 +103,10 @@ inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
     return InterlockedExchange64(reinterpret_cast<LONGLONG volatile *>(dest), static_cast<LONGLONG>(exch));
 }
 
-inline void *mcrt_atomic_xchg_ptr(void *volatile *dest, void *exch)
+template <typename T>
+inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
 {
-    return InterlockedExchangePointer(dest, exch);
+    return static_cast<T *>(_InterlockedExchangePointer(reinterpret_cast<void * volatile *>(dest), static_cast<void *>(exch)));
 }
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)
@@ -119,17 +161,17 @@ inline int64_t mcrt_atomic_fetch_add_i64(int64_t volatile *dest, int64_t add)
 
 inline void mcrt_compiler_read_barrier()
 {
-	ReadBarrier();
+	_ReadBarrier();
 }
 
 inline void mcrt_compiler_write_barrier()
 {
-	WriteBarrier();
+    _WriteBarrier();
 }
 
 inline void mcrt_compiler_read_write_barrier()
 {
-	ReadWriteBarrier();
+    _ReadWriteBarrier();
 }
 
 #if defined(PT_ARM) || defined(PT_ARM64)

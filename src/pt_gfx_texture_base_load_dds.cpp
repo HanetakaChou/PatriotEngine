@@ -1086,29 +1086,31 @@ static inline bool GetSurfaceInfo(size_t width, size_t height, uint32_t fmt, siz
         numBytes = rowBytes * height;
     }
 
-#if defined(_MSC_VER) //https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
-#if defined(_M_IX86) || defined(_M_ARM)
-    static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
-    if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
-    {
-        return false;
-    }
+#if defined(_MSC_VER)
+// https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros
+#if defined(_M_X64) || defined(_M_ARM64)
+    static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
 #elif defined(_M_IX86) || defined(_M_ARM)
-    static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
-#else
-#error Unknown Architecture //未知的架构
-#endif
-#elif defined(__GNUC__) //https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
-#if defined(__i386__) || defined(__arm__)
     static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
     if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
     {
         return false;
     }
-#elif defined(__x86_64__) || defined(__aarch64__)
-    static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
 #else
-#error Unknown Architecture //未知的架构
+#error Unknown Architecture
+#endif
+#elif defined(__GNUC__) 
+// https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
+#if defined(__x86_64__) || defined(__aarch64__)
+        static_assert(sizeof(size_t) == 8, "Not a 64-bit platform!");
+#elif defined(__i386__) || defined(__arm__)
+    static_assert(sizeof(size_t) == 4, "Not a 32-bit platform!");
+    if (numBytes > UINT32_MAX || rowBytes > UINT32_MAX || numRows > UINT32_MAX)
+    {
+        return false;
+    }
+#else
+#error Unknown Architecture
 #endif
 #else
 #error Unknown Compiler

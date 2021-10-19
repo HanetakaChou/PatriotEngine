@@ -26,34 +26,14 @@
 #error Unknown Architecture
 #endif
 
-inline int mcrt_intrin_popcount(uint32_t value)
-{
-    return __builtin_popcount(value);
-}
-
-inline int __mcrt_internal_intrin_popcount64(unsigned long value)
-{
-    return __builtin_popcountl(value);
-}
-
-inline int __mcrt_internal_intrin_popcount64(unsigned long long value)
-{
-    return __builtin_popcountll(value);
-}
-
-inline int mcrt_intrin_popcount(uint64_t value)
-{
-    return __mcrt_internal_intrin_popcount64(value);
-}
-
 #if defined(PT_X64) || defined(PT_X86)
-inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+inline void mcrt_intrin_cpuidex(uint32_t cpu_info[4], uint32_t function_id, uint32_t subfunction_id)
 {
-    __cpuid_count(function_id, subfunction_id, cpuInfo[0], cpuInfo[1], cpuInfo[2], cpuInfo[3]);
+    __cpuid_count(function_id, subfunction_id, cpu_info[0], cpu_info[1], cpu_info[2], cpu_info[3]);
     return;
 }
 #elif defined(PT_ARM64) || defined(PT_ARM)
-inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id)
+inline void mcrt_intrin_cpuidex(uint32_t cpu_info[4], uint32_t function_id, uint32_t subfunction_id)
 {
     assert(false);
     return;

@@ -340,7 +340,7 @@
 			containerPortal = 92F977DC2439099000C5F3C5 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 62FF465A26D944F100CAEF53;
-			remoteInfo = pt_mcrt_avx512f;
+			remoteInfo = pt_mcrt_avx512;
 		};
 		62FF467E26D946A100CAEF53 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -1582,7 +1582,7 @@
 			dependencies = (
 			);
 			name = pt_mcrt_avx512f_osx;
-			productName = pt_mcrt_avx512f;
+			productName = pt_mcrt_avx512;
 			productReference = 62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -3259,7 +3259,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-mavx512f";
-				PRODUCT_NAME = pt_mcrt_avx512f;
+				PRODUCT_NAME = pt_mcrt_avx512;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = macosx;
@@ -3279,7 +3279,7 @@
 				HEADER_SEARCH_PATHS = "$(PROJECT_DIR)/../../include";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-mavx512f";
-				PRODUCT_NAME = pt_mcrt_avx512f;
+				PRODUCT_NAME = pt_mcrt_avx512;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
 				SUPPORTED_PLATFORMS = macosx;

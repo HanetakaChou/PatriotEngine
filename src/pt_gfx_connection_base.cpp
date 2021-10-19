@@ -36,7 +36,7 @@ void gfx_connection_base::streaming_done_object_destroy_list_push(class gfx_stre
 
 // API
 #if defined(PT_WIN32)
-extern class gfx_connection_base *gfx_connection_d3d12_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual)
+extern class gfx_connection_base *gfx_connection_d3d12_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual);
 #endif
 
 #if 0 && defined(PT_POSIX_MACH)
@@ -44,7 +44,7 @@ extern class gfx_connection_base *gfx_connection_mtl_init(pt_gfx_wsi_window_ref 
 #endif
 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
-    extern class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+extern class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 #endif
 
 // API
@@ -91,7 +91,7 @@ static inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) 
 static inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
 static inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const* gfx_cache_dirname)
+PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
 {
     return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, gfx_cache_dirname));
 }

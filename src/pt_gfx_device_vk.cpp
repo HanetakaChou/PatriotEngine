@@ -736,7 +736,7 @@ inline VkBool32 gfx_device_vk::debug_report_callback(VkDebugReportFlagsEXT flags
 }
 #endif
 
-#include <sys/cdefs.h> //__BIONIC__
+//#include <sys/cdefs.h> //__BIONIC__
 //#include <features.h> //__GLIBC__
 
 #if defined(PT_GFX_DEBUG_MALLOC) && PT_GFX_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)

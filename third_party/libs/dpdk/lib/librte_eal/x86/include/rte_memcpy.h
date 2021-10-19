@@ -574,7 +574,7 @@ static inline void rte_mov256(uint8_t *dst, const uint8_t *src)
  * - __m128i <xmm0> ~ <xmm8> must be pre-defined
  */
 #define MOVEUNALIGNED_LEFT47_IMM(dst, src, len, offset)                                                      \
-    __extension__({                                                                                          \
+    {                                                                                                        \
         size_t tmp;                                                                                          \
         while (len >= 128 + 16 - offset)                                                                     \
         {                                                                                                    \
@@ -623,7 +623,7 @@ static inline void rte_mov256(uint8_t *dst, const uint8_t *src)
             src = (const uint8_t *)src + tmp;                                                                \
             dst = (uint8_t *)dst + tmp;                                                                      \
         }                                                                                                    \
-    })
+    }
 
 /**
  * Macro for copying unaligned block from one location to another,
@@ -638,7 +638,7 @@ static inline void rte_mov256(uint8_t *dst, const uint8_t *src)
  * - __m128i <xmm0> ~ <xmm8> used in MOVEUNALIGNED_LEFT47_IMM must be pre-defined
  */
 #define MOVEUNALIGNED_LEFT47(dst, src, len, offset)      \
-    __extension__({                                      \
+    {                                                    \
         switch (offset)                                  \
         {                                                \
         case 0x01:                                       \
@@ -688,7 +688,7 @@ static inline void rte_mov256(uint8_t *dst, const uint8_t *src)
             break;                                       \
         default:;                                        \
         }                                                \
-    })
+    }
 
 static __rte_always_inline void *rte_memcpy_generic(void *dst, const void *src, size_t n)
 {

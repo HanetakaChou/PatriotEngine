@@ -63,7 +63,7 @@ inline bool gfx_connection_vk::init(pt_gfx_wsi_connection_ref wsi_connection, pt
         this->m_task_arena = mcrt_task_arena_attach();
         assert(mcrt_task_arena_is_active(this->m_task_arena));
 
-        this->m_task_arena_thread_count = mcrt_this_task_arena_max_concurrency();
+        this->m_task_arena_thread_count = mcrt_task_arena_max_concurrency(this->m_task_arena);
     }
 
     // Frame
@@ -866,7 +866,7 @@ inline bool gfx_connection_vk::init_frame(char const *gfx_cache_dirname)
 #if defined(PT_POSIX)
     this->m_pipeline_cache_dir_fd = -1;
 #elif defined(PT_WIN32)
-    this->m_
+    this->m_pipeline_cache_dir_fd = INVALID_HANDLE_VALUE;
 #else
 #error Unknown Platform
 #endif
@@ -2773,6 +2773,49 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
 }
 
 #elif defined(PT_WIN32)
+
+inline bool gfx_connection_vk::init_pipeline_cache_dir(char const* gfx_cache_dirname)
+{
+    // TODO
+
+    return true;
+}
+
+inline bool gfx_connection_vk::load_pipeline_cache(char const* pipeline_cache_file_name, VkPipelineCache* pipeline_cache)
+{
+    size_t pipeline_cache_size;
+    void* pipeline_cache_data;
+
+    // TODO
+    pipeline_cache_size = 0U;
+    pipeline_cache_data = NULL;
+
+    assert(VK_NULL_HANDLE == this->m_pipeline_cache_mesh);
+    VkPipelineCacheCreateInfo pipeline_cache_create_info;
+    pipeline_cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+    pipeline_cache_create_info.pNext = NULL;
+    pipeline_cache_create_info.flags = 0;
+    pipeline_cache_create_info.initialDataSize = pipeline_cache_size;
+    pipeline_cache_create_info.pInitialData = pipeline_cache_data;
+    VkResult res_create_pipeline_cache = this->m_device.create_pipeline_cache(&pipeline_cache_create_info, pipeline_cache);
+
+    if (NULL != pipeline_cache_data)
+    {
+        mcrt_aligned_free(pipeline_cache_data);
+    }
+
+    return (VK_SUCCESS == res_create_pipeline_cache);
+}
+
+inline void gfx_connection_vk::store_pipeline_cache(char const* pipeline_cache_file_name, VkPipelineCache* pipeline_cache)
+{
+    assert(VK_NULL_HANDLE != this->m_pipeline_cache_mesh);
+
+    // TODO
+
+    this->m_device.destroy_pipeline_cache(this->m_pipeline_cache_mesh);
+    this->m_pipeline_cache_mesh = VK_NULL_HANDLE;
+}
 
 #else
 #error Unknown Platform

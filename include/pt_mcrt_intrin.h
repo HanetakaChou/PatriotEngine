@@ -23,9 +23,6 @@
 #include "pt_common.h"
 #include "pt_mcrt_common.h"
 
-inline int mcrt_intrin_popcount(uint32_t value);
-inline int mcrt_intrin_popcount(uint64_t value);
-
 inline void mcrt_intrin_cpuidex(uint32_t cpuInfo[4], uint32_t function_id, uint32_t subfunction_id);
 
 template <typename T>

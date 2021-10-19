@@ -16,9 +16,12 @@
 //
 
 #include <pt_mcrt_malloc.h>
+
+#define __TBB_NO_IMPLICIT_LINKAGE 1
+#define __TBBMALLOC_NO_IMPLICIT_LINKAGE 1
 #include <tbb/scalable_allocator.h>
 
-#include <sys/cdefs.h> //__BIONIC__
+//#include <sys/cdefs.h> //__BIONIC__
 //#include <features.h> //__GLIBC__
 
 #if defined(PT_MCRT_DEBUG_MALLOC) && PT_MCRT_DEBUG_MALLOC && defined(PT_POSIX_LINUX) && defined(__GLIBC__)

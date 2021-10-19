@@ -20,9 +20,10 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_task.h>
 
+#define __TBB_NO_IMPLICIT_LINKAGE 1
+#define __TBBMALLOC_NO_IMPLICIT_LINKAGE 1
 #include <tbb/task.h>
 #include <tbb/task_arena.h>
-#include <../src/tbb/scheduler.h>
 
 class mcrt_task_t;
 
@@ -51,7 +52,9 @@ public:
 
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
-static_assert(sizeof(mcrt_task_t) <= tbb::internal::generic_scheduler::quick_task_size, "");
+// #include <../src/tbb/scheduler.h>
+// tbb::internal::generic_scheduler::quick_task_size = 192U
+static_assert(sizeof(mcrt_task_t) <= 192U, "");
 static_assert(std::is_pod<mcrt_task_user_data_t>::value, "");
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
@@ -145,6 +148,13 @@ PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_
     return tbb::task::enqueue((*unwrap(task)), (*unwrap(task_arena)), tbb::priority_normal);
 }
 
+PT_ATTR_MCRT uint32_t PT_CALL mcrt_task_arena_max_concurrency(mcrt_task_arena_ref task_arena)
+{
+    int max_concurrency = unwrap(task_arena)->max_concurrency();
+    return uint32_t(max_concurrency);
+}
+
+
 PT_ATTR_MCRT void PT_CALL mcrt_task_arena_terminate(mcrt_task_arena_ref task_arena)
 {
     unwrap(task_arena)->~task_arena();
@@ -156,10 +166,4 @@ PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_current_thread_index()
 {
     int current_thread_index = tbb::this_task_arena::current_thread_index();
     return (tbb::task_arena::not_initialized != current_thread_index) ? uint32_t(current_thread_index) : uint32_t(-1);
-}
-
-PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency()
-{
-    int max_concurrency = tbb::this_task_arena::max_concurrency();
-    return uint32_t(max_concurrency);
 }

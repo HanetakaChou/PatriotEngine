@@ -34,9 +34,9 @@
         mcrt_task_arena_attach;
         mcrt_task_arena_is_active;
         mcrt_task_enqueue;
+        mcrt_task_arena_max_concurrency;
         mcrt_task_arena_terminate;
         mcrt_this_task_arena_current_thread_index;
-        mcrt_this_task_arena_max_concurrency;
         mcrt_aligned_malloc;
         mcrt_aligned_realloc;
         mcrt_aligned_free;

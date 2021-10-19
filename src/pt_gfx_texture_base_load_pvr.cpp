@@ -162,7 +162,7 @@ static inline constexpr uint64_t Pvr_MakePixelTypeChar(char C1Name, char C2Name,
     return static_cast<uint64_t>(static_cast<uint8_t>(C1Name)) | (static_cast<uint64_t>(static_cast<uint8_t>(C2Name)) << 8) | (static_cast<uint64_t>(static_cast<uint8_t>(C3Name)) << 16) | (static_cast<uint64_t>(static_cast<uint8_t>(C4Name)) << 24) | (static_cast<uint64_t>(static_cast<uint8_t>(C1Bits)) << 32) | (static_cast<uint64_t>(static_cast<uint8_t>(C2Bits)) << 40) | (static_cast<uint64_t>(static_cast<uint8_t>(C3Bits)) << 48) | (static_cast<uint64_t>(static_cast<uint8_t>(C4Bits)) << 56);
 }
 
-enum
+enum : uint64_t
 {
     Pvr_PixelTypeChar_I8 = Pvr_MakePixelTypeChar('i', '\0', '\0', '\0', 8, 0, 0, 0),
     Pvr_PixelTypeChar_R8 = Pvr_MakePixelTypeChar('r', '\0', '\0', '\0', 8, 0, 0, 0),

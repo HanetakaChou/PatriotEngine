@@ -83,13 +83,12 @@ extern "C"
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_ref task_arena);
 
+    PT_ATTR_MCRT uint32_t PT_CALL mcrt_task_arena_max_concurrency(mcrt_task_arena_ref task_arena);
+
     PT_ATTR_MCRT void PT_CALL mcrt_task_arena_terminate(mcrt_task_arena_ref task_arena);
 
     // All master threads have a corresponding task_arena while the work threads don't
     PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_current_thread_index();
-
-    // All master threads have a corresponding task_arena while the work threads don't
-    PT_ATTR_MCRT uint32_t PT_CALL mcrt_this_task_arena_max_concurrency();
 #ifdef __cplusplus
 }
 #endif

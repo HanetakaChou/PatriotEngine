@@ -26,8 +26,8 @@
 extern "C"
 {
 #endif
-    PT_ATTR_MCRT int PT_CALL mcrt_log_write(char const *msg);
-    PT_ATTR_MCRT int PT_CALL mcrt_log_print(char const *fmt, ...);
+    PT_ATTR_MCRT void PT_CALL mcrt_log_write(char const *msg);
+    PT_ATTR_MCRT void PT_CALL mcrt_log_print(char const *fmt, ...);
 #ifdef __cplusplus
 }
 #endif

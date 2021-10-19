@@ -19,6 +19,12 @@
 #include <pt_mcrt_common.h>
 
 #if defined(PT_X64) || defined(PT_X86)
+
+#if defined(PT_MSVC)
+#define __SSSE3__ 1
+#define __extension__(x) x
+#endif
+
 #include "../third_party/libs/dpdk/lib/librte_eal/x86/include/rte_memcpy.h"
 
 extern void *rte_memcpy_x86_ssse3(void *__restrict dest, void const *__restrict src, size_t count)
