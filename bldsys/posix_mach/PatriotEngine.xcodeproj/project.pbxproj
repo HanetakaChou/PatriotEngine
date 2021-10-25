@@ -604,7 +604,6 @@
 		62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_avx2.cpp; path = ../../src/pt_math_directx_math_x86_avx2.cpp; sourceTree = "<group>"; };
 		62EF63C226D8F0AE0004F34C /* pt_math_directx_math_x86_avx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_avx.cpp; path = ../../src/pt_math_directx_math_x86_avx.cpp; sourceTree = "<group>"; };
 		62EF63C326D8F0AE0004F34C /* pt_math_directx_math_arm_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_arm_neon.cpp; path = ../../src/pt_math_directx_math_arm_neon.cpp; sourceTree = "<group>"; };
-		62EF63C426D8F0AE0004F34C /* pt_math_directx_math.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_math_directx_math.h; path = ../../src/pt_math_directx_math.h; sourceTree = "<group>"; };
 		62EF63C526D8F0AE0004F34C /* pt_math.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math.cpp; path = ../../src/pt_math.cpp; sourceTree = "<group>"; };
 		62EF63C626D8F0AE0004F34C /* pt_math_directx_math_x86_sse2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_sse2.cpp; path = ../../src/pt_math_directx_math_x86_sse2.cpp; sourceTree = "<group>"; };
 		62EF63D326D8F3DB0004F34C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm64_neon.cpp; sourceTree = "<group>"; };
@@ -617,7 +616,7 @@
 		62EF63E126D8F78C0004F34C /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		62FF464326D943B000CAEF53 /* libpt_mcrt_sse3.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_sse3.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF464C26D9440700CAEF53 /* libpt_mcrt_avx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx512f.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		62FF465B26D944F100CAEF53 /* libpt_mcrt_avx512f.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libpt_mcrt_avx512f.a; path = libpt_mcrt_avx512.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF466726D9460200CAEF53 /* libpt_math_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF466F26D9461000CAEF53 /* libpt_math_avx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_avx.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		62FF467726D9461E00CAEF53 /* libpt_math_avx2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_avx2.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -997,7 +996,6 @@
 				62EF63DF26D8F6E80004F34C /* pt_mcrt_intrin_x86_sse2.cpp */,
 				62EF63DB26D8F6DB0004F34C /* pt_mcrt_intrin.cpp */,
 				62EF63D926D8F6CE0004F34C /* pt_mcrt_log.cpp */,
-				62EF63C426D8F0AE0004F34C /* pt_math_directx_math.h */,
 				62EF63C626D8F0AE0004F34C /* pt_math_directx_math_x86_sse2.cpp */,
 				62EF63C226D8F0AE0004F34C /* pt_math_directx_math_x86_avx.cpp */,
 				62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */,
@@ -3127,7 +3125,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = "";
@@ -3155,7 +3153,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 				);
 				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = "";
@@ -3553,7 +3551,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
@@ -3617,7 +3615,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/include",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
 					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
 				);
