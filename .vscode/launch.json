@@ -14,7 +14,7 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}/bin",
             "environment": [],
-            "envFile": "${workspaceFolder}/.vscode/cppvsdbg.env",
+            "envFile": "${workspaceFolder}/.vscode/c_cpp_launch.env",
             "externalConsole": false,
             //"targetArchitecture": "x86",
             "MIMode": "gdb",
