@@ -78,6 +78,9 @@ extern "C"
 
     PT_ATTR_GFX void PT_CALL pt_gfx_connection_destroy(pt_gfx_connection_ref gfx_connection);
 
+    // NVIDIA PRO PIPELINE
+    // https://developer.nvidia.com/nvidia-pro-pipeline
+
     // 
     // Sync
     // Prepare
