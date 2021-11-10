@@ -131,22 +131,22 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_malloc.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_malloc.o",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_malloc.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_malloc.o",
         "file": "${workspaceFolder}/src/pt_mcrt_malloc.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy.o",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy.o",
         "file": "${workspaceFolder}/src/pt_mcrt_memcpy.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_task.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_task.o",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_task.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_task.o",
         "file": "${workspaceFolder}/src/pt_mcrt_task.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_log.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_log.o",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_log.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_log.o",
         "file": "${workspaceFolder}/src/pt_mcrt_log.cpp"
     },
     {
@@ -156,22 +156,22 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -msse2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
+        "command": "c++ -c -xc++ -msse2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
         "file": "${workspaceFolder}/src/pt_math_directx_math_x86_sse2.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -mavx -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
+        "command": "c++ -c -xc++ -mavx -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
         "file": "${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx2.o",
+        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx2.o",
         "file": "${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/libs/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_arm_neon.o",
+        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_arm_neon.o",
         "file": "${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp"
     },
     {

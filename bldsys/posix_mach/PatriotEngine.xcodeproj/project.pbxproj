@@ -521,14 +521,14 @@
 		620D774626DB85F7001E7BD0 /* libpt_mcrt_avx512f_ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_avx512f_ios.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		620D775326DB89AF001E7BD0 /* libpt_mcrt_neon_ios.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon_ios.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		620D777D26DB95D4001E7BD0 /* libpt_gfx.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_gfx.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
-		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
-		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/libs/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
-		6217808626DBAF8F00DE15BF /* libpt_irml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml.a; sourceTree = "<group>"; };
-		6217808726DBAF8F00DE15BF /* libpt_tbb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb.a; sourceTree = "<group>"; };
-		6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc.a; sourceTree = "<group>"; };
+		6210AF6926891D4D00047DAB /* libVkLayer_khronos_validation.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libVkLayer_khronos_validation.dylib; path = ../../third_party/vulkan_sdk/lib/mach_osx/libVkLayer_khronos_validation.dylib; sourceTree = SOURCE_ROOT; };
+		6210AF6C26891E1900047DAB /* VkLayer_khronos_validation.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = VkLayer_khronos_validation.json; path = ../../third_party/vulkan_sdk/lib/mach_osx/VkLayer_khronos_validation.json; sourceTree = SOURCE_ROOT; };
+		6210AF722689206A00047DAB /* MoltenVK_icd.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; name = MoltenVK_icd.json; path = ../../third_party/molten_vk/lib/mach_osx/MoltenVK_icd.json; sourceTree = SOURCE_ROOT; };
+		6217808626DBAF8F00DE15BF /* libpt_irml.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_irml.a; sourceTree = "<group>"; };
+		6217808726DBAF8F00DE15BF /* libpt_tbb.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_tbb.a; sourceTree = "<group>"; };
+		6217808826DBAF8F00DE15BF /* libpt_tbbmalloc.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_tbbmalloc.a; sourceTree = "<group>"; };
 		6238290426768846002ECF8A /* libpt_math.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_math.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		6246EFC226DC10D1002BA0B2 /* libMoltenVK_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK_catalyst.a; path = ../../third_party/libs/molten_vk/lib/mach_ios/libMoltenVK_catalyst.a; sourceTree = "<group>"; };
+		6246EFC226DC10D1002BA0B2 /* libMoltenVK_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK_catalyst.a; path = ../../third_party/molten_vk/lib/mach_ios/libMoltenVK_catalyst.a; sourceTree = "<group>"; };
 		6257EF3526D95FF400E4917D /* libpt_mcrt_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_mcrt_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		6257EF4226D9609A00E4917D /* libpt_math_neon.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_neon.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		625D4F2C26775B6F000F087B /* libpt_gfx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_gfx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -555,10 +555,10 @@
 		629186D526D84891007A708F /* pt_gfx_material_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_base.cpp; path = ../../src/pt_gfx_material_base.cpp; sourceTree = "<group>"; };
 		629186D726D8489F007A708F /* pt_gfx_material_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_material_vk.h; path = ../../src/pt_gfx_material_vk.h; sourceTree = "<group>"; };
 		629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_material_vk.cpp; path = ../../src/pt_gfx_material_vk.cpp; sourceTree = "<group>"; };
-		6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a; sourceTree = "<group>"; };
-		6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_tbbmalloc_catalyst.a; sourceTree = "<group>"; };
-		6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml_catalyst.a; path = ../../third_party/libs/intel_tbb/lib/mach_ios/libpt_irml_catalyst.a; sourceTree = "<group>"; };
-		6292C30826DBC3AE00494EF8 /* libMoltenVK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK.a; path = ../../third_party/libs/molten_vk/lib/mach_ios/libMoltenVK.a; sourceTree = "<group>"; };
+		6292C30226DBC08C00494EF8 /* libpt_tbb_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbb_catalyst.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a; sourceTree = "<group>"; };
+		6292C30326DBC08C00494EF8 /* libpt_tbbmalloc_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_tbbmalloc_catalyst.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_tbbmalloc_catalyst.a; sourceTree = "<group>"; };
+		6292C30426DBC08C00494EF8 /* libpt_irml_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libpt_irml_catalyst.a; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_irml_catalyst.a; sourceTree = "<group>"; };
+		6292C30826DBC3AE00494EF8 /* libMoltenVK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK.a; path = ../../third_party/molten_vk/lib/mach_ios/libMoltenVK.a; sourceTree = "<group>"; };
 		6295436126DFE4AA00E49DE6 /* pt_math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_math.h; path = ../../include/pt_math.h; sourceTree = "<group>"; };
 		6295436226DFED1E00E49DE6 /* pt_mcrt_atomic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_atomic.h; path = ../../include/pt_mcrt_atomic.h; sourceTree = "<group>"; };
 		6295436326DFF2BA00E49DE6 /* pt_wsi_app_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_app_base.h; path = ../../examples/launcher/pt_wsi_app_base.h; sourceTree = "<group>"; };
@@ -566,7 +566,7 @@
 		6295436626DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_main_mach_ios.cpp; path = ../../src/pt_wsi_main_mach_ios.cpp; sourceTree = "<group>"; };
 		6295436C26DFFD1200E49DE6 /* libpt_wsi_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_wsi_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6295437026DFFD7000E49DE6 /* pt_wsi_main_mach_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_main_mach_osx.m; path = ../../src/pt_wsi_main_mach_osx.m; sourceTree = "<group>"; };
-		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/libs/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
+		62A5B4342689183B00AE5275 /* libvulkan.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libvulkan.1.dylib; path = ../../third_party/vulkan_sdk/lib/mach_osx/libvulkan.1.dylib; sourceTree = SOURCE_ROOT; };
 		62A69D5926E324950040F887 /* pt_wsi_main_mach_osx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_main_mach_osx.cpp; path = ../../src/pt_wsi_main_mach_osx.cpp; sourceTree = "<group>"; };
 		62D2305F2688845C0044D96C /* pt_gfx_texture_base.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base.h; path = ../../src/pt_gfx_texture_base.h; sourceTree = SOURCE_ROOT; };
 		62D23060268884630044D96C /* pt_gfx_texture_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base.cpp; path = ../../src/pt_gfx_texture_base.cpp; sourceTree = SOURCE_ROOT; };
@@ -583,7 +583,7 @@
 		62D2307426888F8E0044D96C /* pt_gfx_malloc.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_malloc.h; path = ../../src/pt_gfx_malloc.h; sourceTree = SOURCE_ROOT; };
 		62D2307526888F9B0044D96C /* pt_gfx_malloc_vk.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_gfx_malloc_vk.h; path = ../../src/pt_gfx_malloc_vk.h; sourceTree = SOURCE_ROOT; };
 		62D2307626888FA20044D96C /* pt_gfx_malloc_vk.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_malloc_vk.cpp; path = ../../src/pt_gfx_malloc_vk.cpp; sourceTree = SOURCE_ROOT; };
-		62D2307A268890680044D96C /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../../third_party/libs/molten_vk/lib/mach_osx/libMoltenVK.dylib; sourceTree = SOURCE_ROOT; };
+		62D2307A268890680044D96C /* libMoltenVK.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libMoltenVK.dylib; path = ../../third_party/molten_vk/lib/mach_osx/libMoltenVK.dylib; sourceTree = SOURCE_ROOT; };
 		62D230AC268893240044D96C /* libpt_mcrt.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_mcrt.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D230B0268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp; sourceTree = SOURCE_ROOT; };
 		62D230B1268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp; sourceTree = SOURCE_ROOT; };
@@ -592,9 +592,9 @@
 		62D230B7268893540044D96C /* pt_mcrt_malloc.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_malloc.cpp; path = ../../src/pt_mcrt_malloc.cpp; sourceTree = SOURCE_ROOT; };
 		62D230B9268893540044D96C /* pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp; path = ../../src/pt_mcrt_memcpy_dpdk_rte_memcpy_arm32_neon.cpp; sourceTree = SOURCE_ROOT; };
 		62D230BA268893540044D96C /* pt_mcrt_task.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_mcrt_task.cpp; path = ../../src/pt_mcrt_task.cpp; sourceTree = SOURCE_ROOT; };
-		62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbbmalloc.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbbmalloc.dylib; sourceTree = SOURCE_ROOT; };
-		62D230CB268896930044D96C /* libpt_irml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_irml.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_irml.dylib; sourceTree = SOURCE_ROOT; };
-		62D230CC268896930044D96C /* libpt_tbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbb.dylib; path = ../../third_party/libs/intel_tbb/lib/mach_osx/libpt_tbb.dylib; sourceTree = SOURCE_ROOT; };
+		62D230CA268896930044D96C /* libpt_tbbmalloc.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbbmalloc.dylib; path = ../../third_party/intel_tbb/lib/mach_osx/libpt_tbbmalloc.dylib; sourceTree = SOURCE_ROOT; };
+		62D230CB268896930044D96C /* libpt_irml.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_irml.dylib; path = ../../third_party/intel_tbb/lib/mach_osx/libpt_irml.dylib; sourceTree = SOURCE_ROOT; };
+		62D230CC268896930044D96C /* libpt_tbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbb.dylib; path = ../../third_party/intel_tbb/lib/mach_osx/libpt_tbb.dylib; sourceTree = SOURCE_ROOT; };
 		62D793E425974E73001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D7940C25975766001CC2AF /* pt_wsi_app_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_app_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
@@ -2813,7 +2813,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				OTHER_CFLAGS = "";
 				PRODUCT_NAME = pt_math;
@@ -2839,7 +2839,7 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				OTHER_CFLAGS = "";
 				PRODUCT_NAME = pt_math;
@@ -2899,7 +2899,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = pt_math_neon;
@@ -2921,7 +2921,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_NAME = pt_math_neon;
@@ -2947,9 +2947,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -2973,9 +2973,9 @@
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/vulkan_sdk/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/vulkan_sdk/lib/mach_osx";
 				PRODUCT_NAME = pt_gfx;
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -3127,7 +3127,7 @@
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = "";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = macosx;
@@ -3155,7 +3155,7 @@
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_osx";
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/../../third_party/intel_tbb/lib/mach_osx";
 				OTHER_CFLAGS = "";
 				PRODUCT_NAME = pt_mcrt;
 				SDKROOT = macosx;
@@ -3296,7 +3296,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-msse2";
@@ -3319,7 +3319,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-msse2";
@@ -3342,7 +3342,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-mavx";
@@ -3365,7 +3365,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = "-mavx";
@@ -3388,7 +3388,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = (
@@ -3414,7 +3414,7 @@
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				OTHER_CFLAGS = (
@@ -3447,8 +3447,8 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/molten_vk/lib/mach_ios",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
@@ -3482,8 +3482,8 @@
 					"@executable_path/../Frameworks",
 				);
 				LIBRARY_SEARCH_PATHS = (
-					"$(PROJECT_DIR)/../../third_party/libs/intel_tbb/lib/mach_ios",
-					"$(PROJECT_DIR)/../../third_party/libs/molten_vk/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/intel_tbb/lib/mach_ios",
+					"$(PROJECT_DIR)/../../third_party/molten_vk/lib/mach_ios",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = YuqiaoZhang.HanetakaYuminaga.PatriotEngine;
 				PRODUCT_NAME = pt_launcher;
@@ -3552,8 +3552,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
@@ -3616,8 +3616,8 @@
 				HEADER_SEARCH_PATHS = (
 					"$(PROJECT_DIR)/../../include",
 					"$(PROJECT_DIR)/../../third_party/intel_tbb/include",
-					"$(PROJECT_DIR)/../../third_party/libs/vulkan_sdk/include",
-					"$(PROJECT_DIR)/../../third_party/libs/DirectXMath/Inc",
+					"$(PROJECT_DIR)/../../third_party/vulkan_sdk/include",
+					"$(PROJECT_DIR)/../../third_party/DirectXMath/Inc",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;

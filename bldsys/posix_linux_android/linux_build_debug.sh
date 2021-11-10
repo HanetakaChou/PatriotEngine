@@ -62,10 +62,10 @@ rm -rf "${MY_DIR}/libs/debug/lib/x86/gdb.setup"
 rm -rf "${MY_DIR}/libs/debug/lib/x86/gdbserver"
 
 # vulkan_sdk / libVkLayer_khronos_validation 
-cp -f "${MY_DIR}/../../third_party/libs/vulkan_sdk/lib/bionic_arm/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/armeabi-v7a/libVkLayer_khronos_validation.so"
-cp -f "${MY_DIR}/../../third_party/libs/vulkan_sdk/lib/bionic_arm64/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/arm64-v8a/libVkLayer_khronos_validation.so"
-cp -f "${MY_DIR}/../../third_party/libs/vulkan_sdk/lib/bionic_x64/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/x86_64/libVkLayer_khronos_validation.so"
-cp -f "${MY_DIR}/../../third_party/libs/vulkan_sdk/lib/bionic_x86/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/x86/libVkLayer_khronos_validation.so"
+cp -f "${MY_DIR}/../../third_party/vulkan_sdk/lib/bionic_arm/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/armeabi-v7a/libVkLayer_khronos_validation.so"
+cp -f "${MY_DIR}/../../third_party/vulkan_sdk/lib/bionic_arm64/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/arm64-v8a/libVkLayer_khronos_validation.so"
+cp -f "${MY_DIR}/../../third_party/vulkan_sdk/lib/bionic_x64/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/x86_64/libVkLayer_khronos_validation.so"
+cp -f "${MY_DIR}/../../third_party/vulkan_sdk/lib/bionic_x86/libVkLayer_khronos_validation.so" "${MY_DIR}/libs/debug/lib/x86/libVkLayer_khronos_validation.so"
 
 
 "${MY_DIR}/android-sdk/build-tools/29.0.3/aapt" package -f --debug-mode -0 apk -M "${MY_DIR}/AndroidManifest.xml"  -S "${MY_DIR}/res" -I "${MY_DIR}/android-sdk/platforms/android-24/android.jar" -F "${MY_DIR}/bin/Android.Packaging-debug-unaligned.apk" "${MY_DIR}/libs/debug"    

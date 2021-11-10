@@ -85,7 +85,7 @@ endif
 #LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -115,7 +115,7 @@ LOCAL_CFLAGS += -mavx
 #LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -144,7 +144,7 @@ LOCAL_CFLAGS += -mfma
 #LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
@@ -175,7 +175,7 @@ endif
 #LOCAL_CPPFLAGS += -std=c++11
 
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/libs/DirectXMath)/Inc 
+LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../third_party/DirectXMath)/Inc 
 
 include $(BUILD_STATIC_LIBRARY)
 
