@@ -1,31 +1,14 @@
 
 
 ## backend
-The "DriverAPI.inc" lists the abstract common interfaces, which is called the "Driver APIs", for all backends (OpenGL, Vulkan).
 
-Logically, the Renderer calls the Driver APIs of the "DriverApi" which is the synonym for "CommandStream" as defined inside the "DriverApiForward.h".
+Logically, the Renderer calls the Driver APIs of the "DriverApi".  
+However, these Driver APIs are not executed immediately but encoded as "Command"s which will be decoded and executed in another thread "FEngine::loop".  
+Personally, I don't praise this design since we benefit nothing from the encoding and decoding, but introduce extra latency.  
+Besides, this design makes debugging more difficult since we can't use the callstacks collected by the RenderDoc to analyze the FrameGraph of the Renderer.  
+We can use following code to modify the macros "DECL_DRIVER_API" and "DECL_DRIVER_API_RETURN" inside the "CommandStream.h" to remove the encoding and decoding, and make the Driver APIs be executed immediately.
 
-Currently, the "#include "DriverAPI.inc"" is used by both the "CommandStream" and the backend //and the "ConcreteDispatcher"  
-
-The macros "DECL_DRIVER_API", "DECL_DRIVER_API_RETURN" and "DECL_DRIVER_API_SYNCHRONOUS" should be defined before "#include "DriverAPI.inc"".  
-
-The "#include "DriverAPI.inc"" will add all these interfaces as the member functions of the related class "CommandStream" or backend.
-
-The "CommandStream.h" defines DECL_DRIVER_API
-
-"allocateCommand" //circlebuffer
-
-I don't praise this design //performance //DriverApi-CommandStream-backend  
-// not able to tune of the API in a fine-grained way
-
-
-// difficult to debug
-// modify "CommandStream.h"  
 ```c++
-
-// since we are invoking the destructor inside the "Command::execute", we use "std::aligned_storage" and "new" to prevent CXX invoking the destructor implicitly when we exit the function
-
-
 #define DECL_DRIVER_API(methodName, paramsDecl, params)                                         \
     inline void methodName(paramsDecl) {                                                        \
         DEBUG_COMMAND_BEGIN(methodName, false, params);                                         \
@@ -52,6 +35,3 @@ I don't praise this design //performance //DriverApi-CommandStream-backend
         return result;                                                                                          \
     }
 ```
-
-// #define DECL_DRIVER_API(methodName, paramsDecl, params) DECL_DRIVER_API_SYNCHRONOUS(void, methodName, paramsDecl, params)  
-// #define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params) DECL_DRIVER_API_SYNCHRONOUS(RetType, methodName, paramsDecl, params)
