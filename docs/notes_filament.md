@@ -29,25 +29,27 @@ I don't praise this design //performance //DriverApi-CommandStream-backend
 #define DECL_DRIVER_API(methodName, paramsDecl, params)                                         \
     inline void methodName(paramsDecl) {                                                        \
         DEBUG_COMMAND_BEGIN(methodName, false, params);                                         \
+        AutoExecute callOnExit([=](){                                                           \
+            DEBUG_COMMAND_END(methodName, true);                                                \
+        });                                                                                     \
         using Cmd = COMMAND_TYPE(methodName);                                                   \
         std::aligned_storage<sizeof(Cmd), alignof(Cmd)>::type p;                                \
-        Cmd *base = new(&p) Cmd(mDispatcher->methodName##_, APPLY(std::move, params));          \
-        DEBUG_COMMAND_END(methodName, false);                                                   \
-        intptr_t next;                                                                          \
-        Cmd::execute(&Driver::methodName, *mDriver, base, &next);                               \
+        CommandBase *base = new(&p) Cmd(mDispatcher->methodName##_, APPLY(std::move, params));  \
+        base->execute(*mDriver);                                                                \
     }
 
-#define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params)                                 \
-    inline RetType methodName(paramsDecl) {                                                             \
-        DEBUG_COMMAND_BEGIN(methodName, false, params);                                                 \
-        RetType result = mDriver->methodName##S();                                                      \
-        using Cmd = COMMAND_TYPE(methodName##R);                                                        \
-        std::aligned_storage<sizeof(Cmd), alignof(Cmd)>::type p;                                        \
-        Cmd *base = new(&p) Cmd(mDispatcher->methodName##_, RetType(result), APPLY(std::move, params)); \
-        DEBUG_COMMAND_END(methodName, false);                                                           \
-        intptr_t next;                                                                                  \
-        Cmd::execute(&Driver::methodName##R, *mDriver, base, &next);                                    \
-        return result;                                                                                  \
+#define DECL_DRIVER_API_RETURN(RetType, methodName, paramsDecl, params)                                         \
+    inline RetType methodName(paramsDecl) {                                                                     \
+        DEBUG_COMMAND_BEGIN(methodName, false, params);                                                         \
+        AutoExecute callOnExit([=](){                                                                           \
+            DEBUG_COMMAND_END(methodName, true);                                                                \
+        });                                                                                                     \
+        RetType result = mDriver->methodName##S();                                                              \
+        using Cmd = COMMAND_TYPE(methodName##R);                                                                \
+        std::aligned_storage<sizeof(Cmd), alignof(Cmd)>::type p;                                                \
+        CommandBase *base = new(&p) Cmd(mDispatcher->methodName##_, RetType(result), APPLY(std::move, params)); \
+        base->execute(*mDriver);                                                                                \
+        return result;                                                                                          \
     }
 ```
 
