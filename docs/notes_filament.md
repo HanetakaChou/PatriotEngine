@@ -3,10 +3,10 @@
 ## backend
 
 Logically, the Renderer calls the Driver APIs of the "DriverApi".  
-However, these Driver APIs are not executed immediately but encoded as "Command"s which will be decoded and executed in another thread "FEngine::loop".  
-Personally, I don't praise this design since we benefit nothing from the encoding and decoding, but introduce extra latency.  
-Besides, this design makes debugging more difficult since we can't use the callstacks collected by the RenderDoc to analyze the FrameGraph of the Renderer.  
-We can use following code to modify the macros "DECL_DRIVER_API" and "DECL_DRIVER_API_RETURN" inside the "CommandStream.h" to remove the encoding and decoding, and make the Driver APIs be executed immediately.
+However, these Driver APIs are not executed immediately, but encoded as "Command"s which will be decoded and executed in another thread "FEngine::loop".  
+Personally, I don't praise this design, since we benefit nothing from the encoding and decoding, but introduce extra latency. And we are not able to tune the Vulkan APIs in a fine-grained way to improve performance.  
+Besides, this design makes debugging more difficult, since we can't use the callstacks collected by the RenderDoc to analyze the FrameGraph of the Renderer.  
+We can use following code to modify the macros "DECL_DRIVER_API" and "DECL_DRIVER_API_RETURN" inside the "CommandStream.h" to remove the encoding and decoding, and thus the Driver APIs will be executed immediately.
 
 ```c++
 #define DECL_DRIVER_API(methodName, paramsDecl, params)                                         \
