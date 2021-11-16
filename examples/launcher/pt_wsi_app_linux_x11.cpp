@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 
 bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = "./assets/";
     path += initial_filename;
 
     return pt_gfx_texture_read_input_stream(
@@ -101,7 +101,7 @@ bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_
 
 bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
 {
-    mcrt_string path = "../third_party/assets/";
+    mcrt_string path = "./assets/";;
     path += initial_filename;
 
     return pt_gfx_mesh_read_input_stream(

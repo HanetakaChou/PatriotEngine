@@ -191,17 +191,22 @@
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_linux_x11.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_linux_x11.cpp"
-    },
-    {
-        "directory": "${workspaceFolder}/examples/launcher",
         "command": "c++ -c -xc++ -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_linux_android.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_linux_android.o",
         "file": "${workspaceFolder}/examples/launcher/pt_wsi_linux_android.cpp"
     },
     {
         "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_neutral_app.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_neutral_app.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_neutral_app.cpp"
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_linux_x11.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_linux_x11.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_mach_ios.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_mach_ios.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_mach_ios.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/examples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_mach_osx.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_mach_osx.o",
+        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_mach_osx.cpp"
     }
 ]
