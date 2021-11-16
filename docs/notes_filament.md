@@ -1,5 +1,3 @@
-
-
 ## backend
 
 Logically, the Renderer calls the Driver APIs of the "DriverApi".  
