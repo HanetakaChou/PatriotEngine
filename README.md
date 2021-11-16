@@ -1,41 +1,19 @@
 ﻿### Project Description     
-PatriotEngine aims to be a state-of-the-art real-time image synthesis engine and I believe that more and more programmers tend to develop their own engines without being restricted to Unity or UE4. 
+PatriotEngine aims to be a state-of-the-art real-time **image synthesis(rendering)** engine and I believe that more and more Chinese programmers unabatedly endeavor to resist and develop their own engines.  
 
-Although there is no official standard of the **Graphics Rendering** Engine at present, the functionality of the **Graphics Rendering** Engine has steadily stabilized with the evolution of the **Graphics Rendering** Engine in the past few decades and thus has formed the de facto standard.   
+Although there is no official standard of the **rendering** engine at present, the functionality of the **rendering** engine has steadily stabilized due to the evolution of the **rendering** engine during the past few decades and thus has formed the de facto standard.   
 
-It's widely establish that "Program = Data Structure + Algorithm" and this engine will elaborate the **Graphics Rendering** Engine from two aspects: Scene (Data Structure) and Rendering Pipeline (Algorithm). 
+It is widely establish that "program = data structure + algorithm" and this engine will elaborate the **rendering** from two aspects: scene (data structure) and rendering pipeline (algorithm). 
 
-The contents of this engine is likely to be as follows:   
->
-> [PatriotEngine](https://yuqiaozhang.github.io/PatriotEngine/)  
->       
-> ---
-> 
-> [docs/parallel-rendering-overview.md](docs/parallel-rendering-overview.md)  
-> [docs/OIT.md](docs/OIT.md)  
-> [docs/Grass.md](docs/Grass.md)     
-> [docs/Volumetric-Rendering.md](docs/Volumetric-Rendering.md)     
->
-> ---
->
-> [docs/malloc.md](docs/malloc.md)  
-> [docs/malloc.zh_CN.md](docs/malloc.zh_CN.md)  
->
-> --- 
->
-> [docs/tbb.md](docs/tbb.md)  
-> [docs/task.zh_CN.md](docs/task.zh_CN.md)
+Here is the document of this engine: [PatriotEngine](https://yuqiaozhang.github.io/PatriotEngine/)  
 
+### Design Philosophy  
 
----  
-
-### Interfaces   
-     
-We may treat the image synthesis graphics engine as the 3D version X11 server.  
+We may treat the image synthesis engine as the 3D version X11 server.  
 The geometry(e.g. mesh, hair, terrain) / material / texture / light(e.g. directional light, punctual light, area light, light probe) are analogous to the pixmap on X11 server      
 and the hierarchy of the scenetree / scenegraph are analogous to the relationship of the "child-parent" window on X11 server.  
    
-The asset streaming process is totally asynchronous. This means that the calling thread will not halt at all. Thus we can definitely call these functions in the gameplay logic and no performance penalty will be introduced.
+The asset streaming process is totally asynchronous. This means that the calling thread will not halt at all. Thus we can definitely call these functions in the gameplay logic and no performance penalty will be introduced.  
 
 ```  
     pt_gfx_connection_init
@@ -78,84 +56,6 @@ The asset streaming process is totally asynchronous. This means that the calling
 
     gfx_connection_wsi_on_redraw_needed_release
 ```   
- 
----    
-
-### Continuous build status    
-    
-#### Posix Linux X11    
-      
-Build Type | Status     
-:-: | :-:     
-**Ubuntu LTS Release x86** | [![Ubuntu LTS Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x86%22)    
-**Ubuntu LTS Debug x86** | [![Ubuntu LTS Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x86%22)      
-**Ubuntu LTS Release x64** | [![Ubuntu LTS Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x64%22)    
-**Ubuntu LTS Debug x64** | [![Ubuntu LTS Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x64%22)    
-    
-#### Posix Linux Android
-  
-Build Type | Status     
-:-: | :-:     
-**Android Debug (All APP_ABI) (Build On Linux)** | [![Android Debug (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
-**Android Release (All APP_ABI) (Build On Linux)** | [![Android Release (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
-**Android Debug (All APP_ABI) (Build On MacOSX)** | [![Android Debug (All APP_ABI) (Build On MacOSX)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20MacOSX)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+MacOSX%29%22)    
-**Android Release (All APP_ABI) (Build On MacOSX)** | [![Android Release (All APP_ABI) (Build On MacOSX)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20MacOSX)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+MacOSX%29%22)           
-**Android Debug (All APP_ABI) (Build On Windows)** | [![Android Debug (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Windows%29%22)    
-**Android Release (All APP_ABI) (Build On Windows)** | [![Android Release (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Windows%29%22)           
-
-#### Posix Mach        
-     
-Build Type | Status      
-:-: | :-:      
-**MacOSX Release (Universal Binary)** | [![MacOSX Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Release+%28Universal+Binary%29%22)         
-**MacOSX Debug (Universal Binary)** | [![MacOSX Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Debug+%28Universal+Binary%29%22)     
-**Catalyst Release (Universal Binary)** | [![Catalyst Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Release+%28Universal+Binary%29%22)         
-**Catalyst Debug (Universal Binary)** | [![Catalyst Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Debug+%28Universal+Binary%29%22)    
-
----        
-
-### Feature List
-- [ ] Scene  
-  - [ ] SceneGraph / SceneTree   
-  - [ ] Switch Algorithm //LOD ...   
-  - [ ] Culling Algorithm //Frustum Culling, Occlusion Culling ...    
-- [ ] Geometry  
-  - [ ] Mesh   
-  - [ ] Decal  
-  - [ ] Hair 
-  - [ ] Cloth    
-  - [ ] Ocean   
-  - [ ] Terrain    
-  - [ ] Grass  
-  - [ ] Tree
-- [ ] Participating Media   
-  - [ ] Volumetric Lighting/Fog/Cloud ...  
-- [ ] Color
-  - [ ] UHD Display    
-- [ ] Material   
-  - [ ] MDL Frontend   
-  - [ ] OSL Frontend  
-  - [ ] LLVM IR    
-  - [ ] GLSL Backend    
-  - [ ] MSL Backend       
-  - [ ] HLSL Backend   
-- [ ] Light //The first item of the Liouville–Neumann series of the Rendering Equation  
-  - [ ] Illumination //Tiled Shading, Clustered Shading, OIT ...    
-  - [ ] Shadow Map //CSM, PCF, VSM ...
-- [ ] Light Probe //The second item of the Liouville–Neumann series of the Rendering Equation  
-  - [ ] Spherical Function //SH, LTC, Spherical Wavelets ...
-  - [ ] IBL //Importance Sampling ...
-  - [ ] SSR  
-  - [ ] SSAO/HBAO/HBAO+/SSDO
-- [ ] Global Illumination //The Whole Rendering Equation
-  - [ ] Radiosity
-  - [ ] Ray Tracing //VXGI, RTX ...
-- [ ] PostProcess
-  - [ ] Color //UHD Display ...
-  - [ ] AA //FXAA, TAA ...
-  - [ ] Effect //DOF ...  
-    
----   
 
 ### Platform Support  
 - [ ] Vulkan  
@@ -210,11 +110,81 @@ Build Type | Status
     - [ ] USD
     - [ ] FBX
   - [ ] WSI  
-    - [ ] Win32Desktop      
+    - [ ] Win32Desktop  
 
----   
+### Feature List
+- [ ] Scene  
+  - [ ] SceneGraph / SceneTree   
+  - [ ] Switch Algorithm //LOD ...   
+  - [ ] Culling Algorithm //Frustum Culling, Occlusion Culling ...    
+- [ ] Geometry  
+  - [ ] Mesh   
+  - [ ] Decal  
+  - [ ] Hair 
+  - [ ] Cloth    
+  - [ ] Ocean   
+  - [ ] Terrain    
+  - [ ] Grass  
+  - [ ] Tree  
+- [ ] Participating Media   
+  - [ ] Volumetric Lighting/Fog/Cloud ...  
+- [ ] Color  
+  - [ ] UHD Display    
+- [ ] Material   
+  - [ ] MDL Frontend   
+  - [ ] OSL Frontend  
+  - [ ] LLVM IR    
+  - [ ] GLSL Backend    
+  - [ ] MSL Backend       
+  - [ ] HLSL Backend   
+- [ ] Light //The first item of the Liouville–Neumann series of the Rendering Equation  
+  - [ ] Illumination //Tiled Shading, Clustered Shading, OIT ...    
+  - [ ] Shadow Map //CSM, PCF, VSM ...  
+- [ ] Light Probe //The second item of the Liouville–Neumann series of the Rendering Equation  
+  - [ ] Spherical Function //SH, LTC, Spherical Wavelets ...  
+  - [ ] IBL //Importance Sampling ...  
+  - [ ] SSR  
+  - [ ] SSAO/HBAO/HBAO+/SSDO  
+- [ ] Global Illumination //The Whole Rendering Equation  
+  - [ ] Radiosity  
+  - [ ] Ray Tracing //VXGI, RTX ...  
+- [ ] PostProcess  
+  - [ ] Color //UHD Display ...  
+  - [ ] AA //FXAA, TAA ...  
+  - [ ] Effect //DOF ...  
+ 
+### Continuous build status    
+    
+#### Posix Linux X11    
+      
+Build Type | Status     
+:-: | :-:     
+**Ubuntu LTS Release x86** | [![Ubuntu LTS Release x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x86%22)    
+**Ubuntu LTS Debug x86** | [![Ubuntu LTS Debug x86](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x86/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x86%22)      
+**Ubuntu LTS Release x64** | [![Ubuntu LTS Release x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Release%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Release+x64%22)    
+**Ubuntu LTS Debug x64** | [![Ubuntu LTS Debug x64](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Ubuntu%20LTS%20Debug%20x64/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Ubuntu+LTS+Debug+x64%22)    
+    
+#### Posix Linux Android
+  
+Build Type | Status     
+:-: | :-:     
+**Android Debug (All APP_ABI) (Build On Linux)** | [![Android Debug (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
+**Android Release (All APP_ABI) (Build On Linux)** | [![Android Release (All APP_ABI) (Build On Ubuntu LTS)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Ubuntu%20LTS)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Ubuntu+LTS%29%22)    
+**Android Debug (All APP_ABI) (Build On MacOSX)** | [![Android Debug (All APP_ABI) (Build On MacOSX)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20MacOSX)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+MacOSX%29%22)    
+**Android Release (All APP_ABI) (Build On MacOSX)** | [![Android Release (All APP_ABI) (Build On MacOSX)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20MacOSX)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+MacOSX%29%22)           
+**Android Debug (All APP_ABI) (Build On Windows)** | [![Android Debug (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Debug%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Debug+%28All+APP_ABI%29+%28Build+On+Windows%29%22)    
+**Android Release (All APP_ABI) (Build On Windows)** | [![Android Release (All APP_ABI) (Build On Windows)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Android%20Release%20(All%20APP_ABI)%20(Build%20On%20Windows)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Android+Release+%28All+APP_ABI%29+%28Build+On+Windows%29%22)           
 
-### In Progress    
+#### Posix Mach        
+     
+Build Type | Status      
+:-: | :-:      
+**MacOSX Release (Universal Binary)** | [![MacOSX Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Release+%28Universal+Binary%29%22)         
+**MacOSX Debug (Universal Binary)** | [![MacOSX Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/MacOSX%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22MacOSX+Debug+%28Universal+Binary%29%22)     
+**Catalyst Release (Universal Binary)** | [![Catalyst Release (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Release%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Release+%28Universal+Binary%29%22)         
+**Catalyst Debug (Universal Binary)** | [![Catalyst Debug (Universal Binary)](https://github.com/YuqiaoZhang/PatriotEngine/workflows/Catalyst%20Debug%20(Universal%20Binary)/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions?query=workflow%3A%22Catalyst+Debug+%28Universal+Binary%29%22)    
+
+### To Do  
 * 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
 Try to understand the following papers from the perspective of the 2-Manifold:         
 > * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
