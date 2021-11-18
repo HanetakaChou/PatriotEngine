@@ -31,7 +31,7 @@ REM Packaging
 MKDIR "%MY_DIR%/bin"
 
 REM help vscode find the symbol
-SET "OUT_BINS=libpt_mcrt.so libpt_launcher_window_android.so"
+SET "OUT_BINS=libpt_mcrt.so libpt_gfx.so libpt_wsi.so libpt_launcher.so"
 FOR %%i in (%OUT_BINS%) do (
    COPY /y "%MY_DIR%\obj\debug\local\arm64-v8a\%%i" "%MY_DIR%/libs/debug/lib/arm64-v8a/%%i"
    COPY /y "%MY_DIR%\obj\debug\local\armeabi-v7a\%%i" "%MY_DIR%/libs/debug/lib/armeabi-v7a/%%i"

@@ -34,7 +34,7 @@ fi
 mkdir -p "${MY_DIR}/bin"
 
 # help vscode find the symbol
-OUT_BINS=("libpt_math.so" "libpt_mcrt.so" "libpt_gfx.so" "libpt_launcher.so")
+OUT_BINS=("libpt_mcrt.so" "libpt_gfx.so" "libpt_wsi.so" "libpt_launcher.so")
 for i in "${OUT_BINS[@]}"
 do
     # chrpath -r '$ORIGIN' "${MY_DIR}/obj/debug/local/arm64-v8a/${i}"
