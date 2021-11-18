@@ -2711,6 +2711,8 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
             assert(res_write == pipeline_cache_size);
 
             mcrt_aligned_free(pipeline_cache_data);
+
+            this->m_cache_output_stream_destroy_callback(cache_output_stream);
         }
         else
         {

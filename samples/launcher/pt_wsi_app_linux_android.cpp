@@ -25,7 +25,7 @@
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
 mcrt_string g_wsi_app_linux_android_internal_data_path;
 
-class wsi_app_linux_android : public wsi_app_base
+class wsi_app_linux_android : public launcher_app
 {
 public:
 	void init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path);
@@ -33,7 +33,7 @@ public:
 
 void wsi_app_linux_android::init(pt_gfx_connection_ref gfx_connection, char const *internal_data_path)
 {
-	this->wsi_app_base::init(gfx_connection);
+	this->launcher_app::init(gfx_connection);
 	g_wsi_app_linux_android_internal_data_path = internal_data_path;
 }
 

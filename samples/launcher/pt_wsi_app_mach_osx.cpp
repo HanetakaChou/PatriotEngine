@@ -27,7 +27,7 @@ extern "C" void get_library_directory(char *path, size_t *length);
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
 static mcrt_string wsi_mach_osx_library_path;
 
-class wsi_app_mach_osx : public wsi_app_base
+class wsi_app_mach_osx : public launcher_app
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);
@@ -50,7 +50,7 @@ void wsi_app_mach_osx::init(pt_gfx_connection_ref gfx_connection)
         mcrt_aligned_free(library_directory_path);
     }
 
-    this->wsi_app_base::init(gfx_connection);
+    this->launcher_app::init(gfx_connection);
 }
 
 inline pt_wsi_app_ref wrap(class wsi_app_mach_osx *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }

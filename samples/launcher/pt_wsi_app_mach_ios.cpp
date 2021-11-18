@@ -26,7 +26,7 @@ extern "C" void get_main_bundle_resource_path(char *, size_t *);
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
 mcrt_string wsi_mach_ios_library_path;
 
-class wsi_app_mach_ios : public wsi_app_base
+class wsi_app_mach_ios : public launcher_app
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);
@@ -49,7 +49,7 @@ void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
         mcrt_aligned_free(main_bundle_resource_path);
     }
 
-    this->wsi_app_base::init(gfx_connection);
+    this->launcher_app::init(gfx_connection);
 }
 
 inline pt_wsi_app_ref wrap(class wsi_app_mach_ios *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }

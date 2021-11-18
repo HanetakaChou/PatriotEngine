@@ -22,7 +22,7 @@
 #include <pt_wsi_main.h>
 #include <pt_gfx_connection.h>
 
-class wsi_app_base
+class launcher_app
 {
 public:
     void init(pt_gfx_connection_ref gfx_connection);

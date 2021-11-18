@@ -19,14 +19,14 @@
 #include "pt_wsi_app_base.h"
 #include <pt_mcrt_thread.h>
 
-extern bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename);
-extern bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename);
-
 static pt_gfx_connection_ref my_gfx_connection = NULL;
-void wsi_app_base::init(pt_gfx_connection_ref gfx_connection)
+void launcher_app::init(pt_gfx_connection_ref gfx_connection)
 {
     my_gfx_connection = gfx_connection;
 }
+
+static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename);
+static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename);
 
 //static pt_gfx_texture_ref my_texture1 = NULL;
 //static pt_gfx_texture_ref my_texture2 = NULL;
@@ -35,7 +35,7 @@ static pt_gfx_node_ref my_node = NULL;
 static pt_gfx_texture_ref my_texture = NULL;
 static pt_gfx_material_ref my_material = NULL;
 
-int wsi_app_base::main()
+int launcher_app::main()
 {
     pt_gfx_mesh_ref my_mesh1 = pt_gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
@@ -175,4 +175,35 @@ int wsi_app_base::main()
 #endif
 
     return 0;
+}
+
+extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+
+static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
+{
+    return pt_gfx_texture_read_input_stream(
+        gfx_connection,
+        texture,
+        initial_filename,
+        asset_input_stream_init_callback,
+        asset_input_stream_read_callback,
+        asset_input_stream_seek_callback,
+        asset_input_stream_destroy_callback);
+}
+
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+{
+    return pt_gfx_mesh_read_input_stream(
+        gfx_connection,
+        mesh,
+        mesh_index,
+        material_index,
+        initial_filename,
+        asset_input_stream_init_callback,
+        asset_input_stream_read_callback,
+        asset_input_stream_seek_callback,
+        asset_input_stream_destroy_callback);
 }
