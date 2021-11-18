@@ -18,7 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_mcrt_scalable_allocator.h>
-#include "pt_gfx_malloc.h"
+#include "../../src/pt_gfx_malloc.h"
 #include <vector>
 #include <set>
 #include <numeric>

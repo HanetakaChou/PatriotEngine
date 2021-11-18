@@ -21,7 +21,6 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
 #include "pt_gfx_mesh_vk.h"
-#include "pt_gfx_mesh_base_gltf_parse.h"
 #include "pt_gfx_mesh_base_load.h"
 #include <assert.h>
 

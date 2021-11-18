@@ -24,8 +24,8 @@ include $(CLEAR_VARS)
 LOCAL_MODULE := pt_launcher
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_app_base.cpp \
-	$(abspath $(LOCAL_PATH)/../../examples/launcher)/pt_wsi_app_linux_x11.cpp \
+	$(abspath $(LOCAL_PATH)/../../samples/launcher)/pt_wsi_app_base.cpp \
+	$(abspath $(LOCAL_PATH)/../../samples/launcher)/pt_wsi_app_linux_x11.cpp \
 
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc

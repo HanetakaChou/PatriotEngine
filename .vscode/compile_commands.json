@@ -21,8 +21,8 @@
     },
     {
         "directory": "${workspaceFolder}/src",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_test.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_test.o",
-        "file": "${workspaceFolder}/src/pt_gfx_malloc_test.cpp"
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/unit_tests/pt_gfx_malloc_unit_test.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_unit_test.o",
+        "file": "${workspaceFolder}/samples/unit_tests/pt_gfx_malloc_unit_test.cpp"
     },
     {
         "directory": "${workspaceFolder}/src",
@@ -185,28 +185,28 @@
         "file": "${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_base.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_base.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_base.cpp"
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_base.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_linux_android.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_linux_android.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_linux_android.cpp"
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_linux_android.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_linux_android.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_linux_android.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_linux_x11.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_linux_x11.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_linux_x11.cpp"
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_linux_x11.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_linux_x11.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_linux_x11.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_mach_ios.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_mach_ios.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_mach_ios.cpp"
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_mach_ios.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_mach_ios.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_mach_ios.cpp"
     },
     {
-        "directory": "${workspaceFolder}/examples/launcher",
-        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/examples/launcher/pt_wsi_app_mach_osx.cpp -o ${workspaceFolder}/obj/examples/launcher/pt_wsi_app_mach_osx.o",
-        "file": "${workspaceFolder}/examples/launcher/pt_wsi_app_mach_osx.cpp"
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_mach_osx.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_mach_osx.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_mach_osx.cpp"
     }
 ]

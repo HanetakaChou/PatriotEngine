@@ -65,9 +65,9 @@ MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"
 OUT_DIR="${MY_DIR}/../../bin/posix_linux_x11/${OUT_DIR_ARCH}/${OUT_DIR_CONFIG}/"
 
 # run tests 
-if "${OUT_DIR}/pt_gfx_malloc_test"; then
-    echo "pt_gfx_malloc_test passed"
+if "${OUT_DIR}/pt_gfx_malloc_unit_test"; then
+    echo "pt_gfx_malloc_unit_test passed"
 else
-    echo "pt_gfx_malloc_test failed"
+    echo "pt_gfx_malloc_unit_test failed"
     exit 1
 fi

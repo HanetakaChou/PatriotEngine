@@ -506,8 +506,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_ios.m; path = ../../examples/launcher/pt_wsi_app_mach_ios.m; sourceTree = "<group>"; };
-		620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_ios.cpp; path = ../../examples/launcher/pt_wsi_app_mach_ios.cpp; sourceTree = "<group>"; };
+		620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_ios.m; path = ../../samples/launcher/pt_wsi_app_mach_ios.m; sourceTree = "<group>"; };
+		620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_ios.cpp; path = ../../samples/launcher/pt_wsi_app_mach_ios.cpp; sourceTree = "<group>"; };
 		620D768226DB7AB7001E7BD0 /* ios.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ios.entitlements; sourceTree = "<group>"; };
 		620D76BE26DB8269001E7BD0 /* libpt_math.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		620D76CB26DB8290001E7BD0 /* libpt_math_sse2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libpt_math_sse2.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -561,8 +561,8 @@
 		6292C30826DBC3AE00494EF8 /* libMoltenVK.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libMoltenVK.a; path = ../../third_party/molten_vk/lib/mach_ios/libMoltenVK.a; sourceTree = "<group>"; };
 		6295436126DFE4AA00E49DE6 /* pt_math.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_math.h; path = ../../include/pt_math.h; sourceTree = "<group>"; };
 		6295436226DFED1E00E49DE6 /* pt_mcrt_atomic.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = pt_mcrt_atomic.h; path = ../../include/pt_mcrt_atomic.h; sourceTree = "<group>"; };
-		6295436326DFF2BA00E49DE6 /* pt_wsi_app_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_app_base.h; path = ../../examples/launcher/pt_wsi_app_base.h; sourceTree = "<group>"; };
-		6295436426DFF2BA00E49DE6 /* pt_wsi_app_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_base.cpp; path = ../../examples/launcher/pt_wsi_app_base.cpp; sourceTree = "<group>"; };
+		6295436326DFF2BA00E49DE6 /* pt_wsi_app_base.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_wsi_app_base.h; path = ../../samples/launcher/pt_wsi_app_base.h; sourceTree = "<group>"; };
+		6295436426DFF2BA00E49DE6 /* pt_wsi_app_base.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_base.cpp; path = ../../samples/launcher/pt_wsi_app_base.cpp; sourceTree = "<group>"; };
 		6295436626DFF8A200E49DE6 /* pt_wsi_main_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_main_mach_ios.cpp; path = ../../src/pt_wsi_main_mach_ios.cpp; sourceTree = "<group>"; };
 		6295436C26DFFD1200E49DE6 /* libpt_wsi_osx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libpt_wsi_osx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		6295437026DFFD7000E49DE6 /* pt_wsi_main_mach_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_main_mach_osx.m; path = ../../src/pt_wsi_main_mach_osx.m; sourceTree = "<group>"; };
@@ -597,8 +597,8 @@
 		62D230CC268896930044D96C /* libpt_tbb.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpt_tbb.dylib; path = ../../third_party/intel_tbb/lib/mach_osx/libpt_tbb.dylib; sourceTree = SOURCE_ROOT; };
 		62D793E425974E73001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		62D793E525974E7C001CC2AF /* pt_launcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pt_launcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		62D7940C25975766001CC2AF /* pt_wsi_app_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_osx.cpp; path = ../../examples/launcher/pt_wsi_app_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
-		62EF63BA26D8E7540004F34C /* pt_wsi_app_mach_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_osx.m; path = ../../examples/launcher/pt_wsi_app_mach_osx.m; sourceTree = "<group>"; };
+		62D7940C25975766001CC2AF /* pt_wsi_app_mach_osx.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_osx.cpp; path = ../../samples/launcher/pt_wsi_app_mach_osx.cpp; sourceTree = SOURCE_ROOT; };
+		62EF63BA26D8E7540004F34C /* pt_wsi_app_mach_osx.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_osx.m; path = ../../samples/launcher/pt_wsi_app_mach_osx.m; sourceTree = "<group>"; };
 		62EF63BD26D8EBA40004F34C /* pt_gfx_texture_base_load.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_texture_base_load.cpp; path = ../../src/pt_gfx_texture_base_load.cpp; sourceTree = "<group>"; };
 		62EF63BF26D8EBAB0004F34C /* pt_gfx_texture_base_load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_texture_base_load.h; path = ../../src/pt_gfx_texture_base_load.h; sourceTree = "<group>"; };
 		62EF63C126D8F0AD0004F34C /* pt_math_directx_math_x86_avx2.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_math_directx_math_x86_avx2.cpp; path = ../../src/pt_math_directx_math_x86_avx2.cpp; sourceTree = "<group>"; };

@@ -98,15 +98,15 @@ LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
 include $(BUILD_STATIC_LIBRARY)
 
-# pt_gfx_malloc_test
+# pt_gfx_malloc_unit_test
 
 include $(CLEAR_VARS)
 
-LOCAL_MODULE := pt_gfx_malloc_test
+LOCAL_MODULE := pt_gfx_malloc_unit_test
 
 LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc_test.cpp \
 	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
+	$(abspath $(LOCAL_PATH)/../../samples/unit_tests)/pt_gfx_malloc_unit_test.cpp \
 
 #LOCAL_CFLAGS += -fdiagnostics-format=msvc
 LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
