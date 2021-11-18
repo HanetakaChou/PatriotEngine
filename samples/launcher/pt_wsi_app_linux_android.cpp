@@ -44,6 +44,7 @@ mcrt_string g_wsi_app_linux_android_internal_data_path;
 extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *saved_state, size_t saved_state_size)
 {
 	g_wsi_app_linux_android_internal_data_path = native_activity->internalDataPath;
+	
 	return pt_wsi_main(
 		native_activity, saved_state, saved_state_size,
 		cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
