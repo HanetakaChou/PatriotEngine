@@ -86,8 +86,8 @@ class wsi_win32_desktop
     struct app_main_argument_t
     {
         class wsi_win32_desktop *m_instance;
-        pt_wsi_app_ref(PT_PTR *m_wsi_app_init_callback)(pt_gfx_connection_ref);
-        int(PT_PTR *m_wsi_app_main_callback)(pt_wsi_app_ref);
+        pt_wsi_app_init_callback m_app_init_callback;
+        pt_wsi_app_main_callback m_app_main_callback;
     };
     pt_wsi_app_ref m_wsi_app;
     bool m_app_main_running;
@@ -96,15 +96,15 @@ class wsi_win32_desktop
     static inline pt_gfx_wsi_window_ref wrap_wsi_window(HWND wsi_window);
 
 public:
-    inline void init(int cmd_show, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref));
+    inline void init(int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
     inline int main();
     inline LRESULT CALLBACK wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(wchar_t *cmd_line, int cmd_show, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+PT_ATTR_WSI int PT_CALL pt_wsi_main(wchar_t *cmd_line, int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     wsi_win32_desktop instance;
-    instance.init(cmd_show, wsi_app_init_callback, wsi_app_main_callback);
+    instance.init(cmd_show, app_init_callback, app_main_callback);
     return instance.main();
 }
 
@@ -112,7 +112,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 static LRESULT CALLBACK __internal_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     HINSTANCE instance_this_component = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
@@ -172,8 +172,8 @@ inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_ref(PT_PTR *wsi_app
     {
         struct app_main_argument_t app_main_argument;
         app_main_argument.m_instance = this;
-        app_main_argument.m_wsi_app_init_callback = wsi_app_init_callback;
-        app_main_argument.m_wsi_app_main_callback = wsi_app_main_callback;
+        app_main_argument.m_app_init_callback = app_init_callback;
+        app_main_argument.m_app_main_callback = app_main_callback;
         mcrt_atomic_store(&this->m_app_main_running, false);
 
         PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_app_main_thread_id, app_main, &app_main_argument);
@@ -290,18 +290,18 @@ unsigned int wsi_win32_desktop::draw_main(void *argument)
 unsigned int wsi_win32_desktop::app_main(void *argument_void)
 {
     pt_wsi_app_ref wsi_app;
-    int(PT_PTR * wsi_app_main_callback)(pt_wsi_app_ref);
+	pt_wsi_app_main_callback app_main_callback;
     // app_init
     {
         struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
-        wsi_app = argument->m_wsi_app_init_callback(argument->m_instance->m_gfx_connection);
-        wsi_app_main_callback = argument->m_wsi_app_main_callback;
+        wsi_app = argument->m_app_init_callback(argument->m_instance->m_gfx_connection);
+        app_main_callback = argument->m_app_main_callback;
         argument->m_instance->m_wsi_app = wsi_app;
         mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
     }
 
     // app_main
-    int res_app_main_callback = wsi_app_main_callback(wsi_app);
+    int res_app_main_callback = app_main_callback(wsi_app);
 
     // mcrt_atomic_store(&self->m_loop, false);
 

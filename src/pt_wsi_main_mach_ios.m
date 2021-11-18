@@ -240,12 +240,12 @@ void *app_main(void *argument_void)
     return ((void *)((intptr_t)res_app_main_callback));
 }
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     @autoreleasepool
     {
-        g_wsi_app_init_callback = wsi_app_init_callback;
-        g_wsi_app_main_callback = wsi_app_main_callback;
+        g_wsi_app_init_callback = app_init_callback;
+        g_wsi_app_main_callback = app_main_callback;
         return UIApplicationMain(argc, argv, nil, NSStringFromClass([wsi_mach_ios_application_delegate class]));
     }
 }

@@ -25,17 +25,17 @@
 #include <tbb/task.h>
 #include <tbb/task_arena.h>
 
-class mcrt_task_t;
+class pt_mcrt_task;
 
-inline mcrt_task_ref wrap(class mcrt_task_t *task) { return reinterpret_cast<mcrt_task_ref>(task); }
+inline mcrt_task_ref wrap(class pt_mcrt_task *task) { return reinterpret_cast<mcrt_task_ref>(task); }
 
-inline class mcrt_task_t *unwrap(mcrt_task_ref task) { return reinterpret_cast<class mcrt_task_t *>(task); }
+inline class pt_mcrt_task *unwrap(mcrt_task_ref task) { return reinterpret_cast<class pt_mcrt_task *>(task); }
 
 inline mcrt_task_arena_ref wrap(tbb::task_arena *task_arena) { return reinterpret_cast<mcrt_task_arena_ref>(task_arena); }
 
 inline tbb::task_arena *unwrap(mcrt_task_arena_ref task_arena) { return reinterpret_cast<tbb::task_arena *>(task_arena); }
 
-class mcrt_task_t : public tbb::task
+class pt_mcrt_task : public tbb::task
 {
     mcrt_task_ref (*m_execute_callback)(mcrt_task_ref self);
 
@@ -47,27 +47,32 @@ class mcrt_task_t : public tbb::task
         return unwrap(t);
     }
 
+    ~pt_mcrt_task() override
+    {
+
+    }
+
 public:
-    inline mcrt_task_t(mcrt_task_ref (*execute_callback)(mcrt_task_ref self)) : m_execute_callback(execute_callback) {}
+    inline pt_mcrt_task(mcrt_task_ref (*execute_callback)(mcrt_task_ref self)) : m_execute_callback(execute_callback) {}
 
     inline mcrt_task_user_data_t *user_data() { return &m_user_data; }
 };
 // #include <../src/tbb/scheduler.h>
 // tbb::internal::generic_scheduler::quick_task_size = 192U
-static_assert(sizeof(mcrt_task_t) <= 192U, "");
+static_assert(sizeof(pt_mcrt_task) <= 192U, "");
 static_assert(std::is_pod<mcrt_task_user_data_t>::value, "");
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
     // https://gcc.gnu.org/wiki/VerboseDiagnostics#missing_vtable
     // To fix the linker error be sure you have provided a definition for the first non-inline non-pure virtual function declared in the class
-    mcrt_task_t *t = new (tbb::task::allocate_root()) mcrt_task_t(execute_callback);
+    pt_mcrt_task *t = new (tbb::task::allocate_root()) pt_mcrt_task(execute_callback);
     return wrap(t);
 }
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
 {
-    mcrt_task_t *t = new (unwrap(self)->allocate_continuation()) mcrt_task_t(execute_callback);
+    pt_mcrt_task *t = new (unwrap(self)->allocate_continuation()) pt_mcrt_task(execute_callback);
     return wrap(t);
 }
 
@@ -108,7 +113,7 @@ PT_ATTR_MCRT int PT_CALL mcrt_task_decrement_ref_count(mcrt_task_ref self)
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_parent(mcrt_task_ref self)
 {
-    mcrt_task_t *t = static_cast<mcrt_task_t *>(unwrap(self)->parent());
+    pt_mcrt_task *t = static_cast<pt_mcrt_task *>(unwrap(self)->parent());
     return wrap(t);
 }
 

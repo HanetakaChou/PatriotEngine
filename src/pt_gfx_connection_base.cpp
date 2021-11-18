@@ -44,11 +44,29 @@ extern class gfx_connection_base *gfx_connection_mtl_init(pt_gfx_wsi_window_ref 
 #endif
 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
-extern class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+extern class gfx_connection_base *gfx_connection_vk_create(
+    pt_gfx_wsi_connection_ref wsi_connection,
+    pt_gfx_wsi_visual_ref wsi_visual,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
 #endif
 
 // API
-class gfx_connection_base *gfx_connection_common_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
+class gfx_connection_base *gfx_connection_base::create(
+    pt_gfx_wsi_connection_ref wsi_connection,
+    pt_gfx_wsi_visual_ref wsi_visual,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     class gfx_connection_base *gfx_connection = NULL;
 
@@ -69,7 +87,7 @@ class gfx_connection_base *gfx_connection_common_init(pt_gfx_wsi_connection_ref 
 #if defined(PT_POSIX_LINUX) || defined(PT_POSIX_MACH) || defined(PT_WIN32)
     if (NULL == gfx_connection)
     {
-        gfx_connection = gfx_connection_vk_init(wsi_connection, wsi_visual, gfx_cache_dirname);
+        gfx_connection = gfx_connection_vk_create(wsi_connection, wsi_visual, cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
     }
 #endif
 
@@ -91,9 +109,18 @@ static inline class gfx_material_base *unwrap(pt_gfx_material_ref gfx_material) 
 static inline pt_gfx_texture_ref wrap(class gfx_texture_base *texture) { return reinterpret_cast<pt_gfx_texture_ref>(texture); }
 static inline class gfx_texture_base *unwrap(pt_gfx_texture_ref texture) { return reinterpret_cast<class gfx_texture_base *>(texture); }
 
-PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname)
+PT_ATTR_GFX pt_gfx_connection_ref PT_CALL pt_gfx_connection_init(
+    pt_gfx_wsi_connection_ref wsi_connection,
+    pt_gfx_wsi_visual_ref wsi_visual,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
-    return wrap(gfx_connection_common_init(wsi_connection, wsi_visual, gfx_cache_dirname));
+    return wrap(gfx_connection_base::create(wsi_connection, wsi_visual, cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback));
 }
 
 PT_ATTR_GFX bool PT_CALL pt_gfx_connection_on_wsi_window_created(pt_gfx_connection_ref gfx_connection, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window, float width, float height)

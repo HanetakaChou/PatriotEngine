@@ -28,14 +28,14 @@ extern "C"
 {
 #endif
 
-    typedef struct _mcrt_task_t_ *mcrt_task_ref;
+    typedef struct pt_mcrt_opaque_task_t *mcrt_task_ref;
 
     typedef struct mcrt_task_user_data_t
     {
         uint8_t m_user_data[128]; // use mcrt_intrin_round_up
     } mcrt_task_user_data_t;
 
-    typedef struct _mcrt_task_arena_t_ *mcrt_task_arena_ref;
+    typedef struct pt_mcrt_opaque_task_arena_t *mcrt_task_arena_ref;
 
     // Scheduler Bypass
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/scheduler-bypass.html

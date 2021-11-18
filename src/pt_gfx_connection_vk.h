@@ -59,13 +59,13 @@ class gfx_connection_vk final : public gfx_connection_base
 #endif
 
     // Frame
-#if defined(PT_POSIX)
-    int m_pipeline_cache_dir_fd;
-#elif defined(PT_WIN32)
-    HANDLE m_pipeline_cache_dir_fd;
-#else
-#error Unknown Platform
-#endif
+    pt_gfx_input_stream_init_callback m_cache_input_stream_init_callback;
+    pt_gfx_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
+    pt_gfx_input_stream_read_callback m_cache_input_stream_read_callback;
+    pt_gfx_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
+    pt_gfx_output_stream_init_callback m_cache_output_stream_init_callback;
+    pt_gfx_output_stream_write_callback m_cache_output_stream_write_callback;
+    pt_gfx_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
 
     enum
     {
@@ -174,7 +174,7 @@ class gfx_connection_vk final : public gfx_connection_base
 
     // Window
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
-    mcrt_asset_spinlock_t m_asset_spinlock_wsi_windiw_exist;
+    mcrt_asset_spinlock_t m_asset_spinlock_wsi_window_exist;
 #endif
 
     // SwapChain
@@ -214,12 +214,34 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline gfx_connection_vk();
     inline ~gfx_connection_vk();
-    inline bool init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+    inline bool init(
+        pt_gfx_wsi_connection_ref wsi_connection,
+        pt_gfx_wsi_visual_ref wsi_visual,
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
     void destroy() override;
-    friend class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
 
-    inline bool init_frame(char const *gfx_cache_dirname);
-    inline bool init_pipeline_cache_dir(char const* gfx_cache_dirname);
+    inline bool init_frame(
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+    inline bool init_pipeline_cache_callbacks(
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
     inline bool init_pipeline_layout();
     inline bool init_shader();
     inline bool update_surface(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window);
@@ -283,9 +305,29 @@ public:
     bool allocate_descriptor_set(VkDescriptorSet *descriptor_set);
     void init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base const *const *gfx_textures);
     void free_descriptor_set(VkDescriptorSet descriptor_set);
+
+    static gfx_connection_base *create(
+        pt_gfx_wsi_connection_ref wsi_connection,
+        pt_gfx_wsi_visual_ref wsi_visual,
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
 };
 
-class gfx_connection_base *gfx_connection_vk_init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_visual_ref wsi_visual, char const *gfx_cache_dirname);
+class gfx_connection_base *gfx_connection_vk_create(
+    pt_gfx_wsi_connection_ref wsi_connection,
+    pt_gfx_wsi_visual_ref wsi_visual,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
+    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
+    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
+    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
+    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
 
 // Streaming in CryEngine - StatObj
 

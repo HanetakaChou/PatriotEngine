@@ -54,6 +54,17 @@ class wsi_linux_x11
     // TODO
     // padding for cache line
 
+    struct draw_main_argument_t
+    {
+        class wsi_linux_x11 *m_instance;
+        pt_gfx_input_stream_init_callback m_cache_input_stream_init_callback;
+        pt_gfx_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
+        pt_gfx_input_stream_read_callback m_cache_input_stream_read_callback;
+        pt_gfx_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
+        pt_gfx_output_stream_init_callback m_cache_output_stream_init_callback;
+        pt_gfx_output_stream_write_callback m_cache_output_stream_write_callback;
+        pt_gfx_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
+    };
     pt_gfx_connection_ref m_gfx_connection;
     bool m_draw_main_running;
     static void *draw_main(void *);
@@ -61,8 +72,8 @@ class wsi_linux_x11
     struct app_main_argument_t
     {
         class wsi_linux_x11 *m_instance;
-        pt_wsi_app_ref(PT_PTR *m_wsi_app_init_callback)(pt_gfx_connection_ref);
-        int(PT_PTR *m_wsi_app_main_callback)(pt_wsi_app_ref);
+        pt_wsi_app_init_callback m_app_init_callback;
+        pt_wsi_app_main_callback m_app_main_callback;
     };
     pt_wsi_app_ref m_wsi_app;
     bool m_app_main_running;
@@ -73,18 +84,31 @@ class wsi_linux_x11
     static inline pt_gfx_wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window);
 
 public:
-    void init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref));
+    void init(
+        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
     int main();
 };
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+PT_ATTR_WSI int PT_CALL pt_wsi_main(
+    int argc, char *argv[],
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     wsi_linux_x11 instance;
-    instance.init(wsi_app_init_callback, wsi_app_main_callback);
+    instance.init(
+        app_init_callback, app_main_callback,
+        cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
     return instance.main();
 }
 
-void wsi_linux_x11::init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_connection_ref), int(PT_PTR *wsi_app_main_callback)(pt_wsi_app_ref))
+void wsi_linux_x11::init(
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     int scr;
     this->m_xcb_connection = xcb_connect(NULL, &scr);
@@ -180,10 +204,18 @@ void wsi_linux_x11::init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_co
 
     // draw_main
     {
-        this->m_gfx_connection = NULL;
+        struct draw_main_argument_t draw_main_argument;
+        draw_main_argument.m_instance = this;
+        draw_main_argument.m_cache_input_stream_init_callback = cache_input_stream_init_callback;
+        draw_main_argument.m_cache_input_stream_stat_size_callback = cache_input_stream_stat_size_callback;
+        draw_main_argument.m_cache_input_stream_read_callback = cache_input_stream_read_callback;
+        draw_main_argument.m_cache_input_stream_destroy_callback = cache_input_stream_destroy_callback;
+        draw_main_argument.m_cache_output_stream_init_callback = cache_output_stream_init_callback;
+        draw_main_argument.m_cache_output_stream_write_callback = cache_output_stream_write_callback;
+        draw_main_argument.m_cache_output_stream_destroy_callback = cache_output_stream_destroy_callback;
         mcrt_atomic_store(&this->m_draw_main_running, false);
 
-        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_draw_main_thread_id, draw_main, this);
+        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_draw_main_thread_id, draw_main, &draw_main_argument);
         assert(res_native_thread_create);
 
         while (!mcrt_atomic_load(&this->m_draw_main_running))
@@ -198,8 +230,8 @@ void wsi_linux_x11::init(pt_wsi_app_ref(PT_PTR *wsi_app_init_callback)(pt_gfx_co
     {
         struct app_main_argument_t app_main_argument;
         app_main_argument.m_instance = this;
-        app_main_argument.m_wsi_app_init_callback = wsi_app_init_callback;
-        app_main_argument.m_wsi_app_main_callback = wsi_app_main_callback;
+        app_main_argument.m_app_init_callback = app_init_callback;
+        app_main_argument.m_app_main_callback = app_main_callback;
         mcrt_atomic_store(&this->m_app_main_running, false);
 
         PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_app_main_thread_id, app_main, &app_main_argument);
@@ -399,14 +431,24 @@ inline pt_gfx_wsi_window_ref wsi_linux_x11::wrap_wsi_window(xcb_window_t wsi_win
     return reinterpret_cast<pt_gfx_wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
 }
 
-void *wsi_linux_x11::draw_main(void *argument)
+void *wsi_linux_x11::draw_main(void *argument_void)
 {
-    class wsi_linux_x11 *instance = static_cast<class wsi_linux_x11 *>(argument);
+    class wsi_linux_x11 *instance = NULL;
+    // draw_init
+    {
+        struct draw_main_argument_t *argument = static_cast<struct draw_main_argument_t *>(argument_void);
+        argument->m_instance->m_gfx_connection = pt_gfx_connection_init(
+            wrap_wsi_connection(argument->m_instance->m_xcb_connection), wrap_wsi_visual(argument->m_instance->m_visual),
+            argument->m_cache_input_stream_init_callback, argument->m_cache_input_stream_stat_size_callback, argument->m_cache_input_stream_read_callback, argument->m_cache_input_stream_destroy_callback,
+            argument->m_cache_output_stream_init_callback, argument->m_cache_output_stream_write_callback, argument->m_cache_output_stream_destroy_callback);
+        assert(argument->m_instance->m_gfx_connection != NULL);
 
-    instance->m_gfx_connection = pt_gfx_connection_init(wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_visual(instance->m_visual), ".");
-    assert(instance->m_gfx_connection != NULL);
-    mcrt_atomic_store(&instance->m_draw_main_running, true);
+        instance = argument->m_instance;
 
+        mcrt_atomic_store(&argument->m_instance->m_draw_main_running, true);
+    }
+
+    //draw_main
     pt_gfx_connection_on_wsi_window_created(instance->m_gfx_connection, wrap_wsi_connection(instance->m_xcb_connection), wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
 
     while (mcrt_atomic_load(&instance->m_draw_main_running))
@@ -437,19 +479,21 @@ void *wsi_linux_x11::draw_main(void *argument)
 
 void *wsi_linux_x11::app_main(void *argument_void)
 {
-    pt_wsi_app_ref wsi_app;
-    int(PT_PTR * wsi_app_main_callback)(pt_wsi_app_ref);
+    class wsi_linux_x11 *instance = NULL;
+    pt_wsi_app_main_callback app_main_callback = NULL;
     // app_init
     {
         struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
-        wsi_app = argument->m_wsi_app_init_callback(argument->m_instance->m_gfx_connection);
-        wsi_app_main_callback = argument->m_wsi_app_main_callback;
-        argument->m_instance->m_wsi_app = wsi_app;
+        argument->m_instance->m_wsi_app = argument->m_app_init_callback(argument->m_instance->m_gfx_connection);
+
+        instance = argument->m_instance;
+        app_main_callback = argument->m_app_main_callback;
+
         mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
     }
 
     // app_main
-    int res_app_main_callback = wsi_app_main_callback(wsi_app);
+    int res_app_main_callback = app_main_callback(instance->m_wsi_app);
 
     // mcrt_atomic_store(&self->m_loop, false);
 

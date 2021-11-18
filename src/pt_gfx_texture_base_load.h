@@ -245,13 +245,13 @@ struct gfx_texture_neutral_memcpy_dest_t
 
 bool load_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int));
+    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
 
 bool load_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     void *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t), int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int));
+    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
 
 struct gfx_texture_backend_header_t
 {

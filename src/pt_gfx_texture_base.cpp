@@ -38,10 +38,10 @@ inline struct texture_streaming_stage_second_task_data_t *unwrap(mcrt_task_user_
 bool gfx_texture_base::read_input_stream(
     class gfx_connection_base *gfx_connection,
     char const *initial_filename,
-    pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-    intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
-    int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
+    pt_gfx_input_stream_init_callback gfx_input_stream_init_callback,
+    pt_gfx_input_stream_read_callback gfx_input_stream_read_callback,
+    pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
+    pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback)
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -281,10 +281,10 @@ PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(
     pt_gfx_connection_ref gfx_connection,
     pt_gfx_texture_ref texture,
     char const *initial_filename,
-    pt_gfx_input_stream_ref(PT_PTR *gfx_input_stream_init_callback)(char const *),
-    intptr_t(PT_PTR *gfx_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t),
-    int64_t(PT_PTR *gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int),
-    void(PT_PTR *gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref))
+    pt_gfx_input_stream_init_callback gfx_input_stream_init_callback,
+    pt_gfx_input_stream_read_callback gfx_input_stream_read_callback,
+    pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
+    pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback)
 {
     return unwrap(texture)->read_input_stream(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
 }
