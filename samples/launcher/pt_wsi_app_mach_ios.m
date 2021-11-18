@@ -34,3 +34,20 @@ void get_main_bundle_resource_path(char *path, size_t *length)
         }
     }
 }
+
+void get_library_directory(char *path, size_t *length)
+{
+    @autoreleasepool
+    {
+        // Locating Items in the Standard Directories
+        // https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/AccessingFilesandDirectories/AccessingFilesandDirectories.html
+
+        char const *library_directory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask][0] fileSystemRepresentation];
+        size_t library_directory_length = strlen(library_directory);
+        (*length) = library_directory_length;
+        if (NULL != path)
+        {
+            memcpy(path, library_directory, sizeof(char) * library_directory_length);
+        }
+    }
+}

@@ -28,13 +28,12 @@
 #include <QuartzCore/QuartzCore.h>
 #include <pt_wsi_main.h>
 #include <pt_mcrt_thread.h>
-#include <pt_mcrt_atomic.h>
 #include <pt_gfx_connection.h>
 
-extern bool wsi_mach_ios_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
-extern void wsi_mach_ios_os_yield(void);
-extern bool wsi_mach_ios_atomic_load(bool volatile *src);
-extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
+extern bool mcrt_atomic_loadb(bool volatile *src);
+extern void mcrt_atomic_storeb(bool volatile *dst, bool val);
+
+static pt_gfx_connection_ref g_gfx_connection = NULL;
 
 @interface wsi_mach_ios_application_delegate : NSObject <UIApplicationDelegate>
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(nullable NSDictionary<UIApplicationLaunchOptionsKey, id> *)launchOptions;
@@ -54,7 +53,6 @@ extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
 + (Class)layerClass;
 - (void)didMoveToWindow;
 - (void)display_link_callback;
-- (void)draw_on_main_thread;
 @end
 
 @implementation wsi_mach_ios_application_delegate
@@ -112,23 +110,9 @@ extern void wsi_mach_ios_atomic_store(bool volatile *dst, bool val);
 }
 @end
 
-static pt_wsi_app_ref(PT_PTR *g_wsi_app_init_callback)(pt_gfx_connection_ref);
-static int(PT_PTR *g_wsi_app_main_callback)(pt_wsi_app_ref);
-struct app_main_argument_t
-{
-    pt_gfx_connection_ref m_gfx_connection;
-    pt_wsi_app_ref m_wsi_app;
-    bool m_running;
-};
-static void *app_main(void *argument);
-
 @implementation wsi_mach_ios_view
 {
-    mcrt_native_thread_id m_app_main_thread_id;
     CADisplayLink *m_display_link;
-    pt_gfx_connection_ref m_gfx_connection;
-    bool m_has_create_window;
-    pt_wsi_app_ref m_wsi_app;
 }
 
 + (Class)layerClass
@@ -145,45 +129,25 @@ static void *app_main(void *argument);
     {
         [super didMoveToWindow];
 
-        // Locating Items in the Standard Directories
-        // https://developer.apple.com/library/archive/documentation/FileManagement/Conceptual/FileSystemProgrammingGuide/AccessingFilesandDirectories/AccessingFilesandDirectories.html
-        char const *library_directory = [[[NSFileManager defaultManager] URLsForDirectory:NSLibraryDirectory inDomains:NSUserDomainMask][0] fileSystemRepresentation];
-        self->m_gfx_connection = pt_gfx_connection_init(NULL, NULL, library_directory);
-        assert(NULL != self->m_gfx_connection);
-
-        //
-        self->m_has_create_window = false;
-    
         // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
         // RENDER_ON_MAIN_THREAD
         UIWindow *window = [self window];
         assert(nil != window);
         UIScreen *screen = [window screen];
         assert(nil != screen);
+
         self->m_display_link = [screen displayLinkWithTarget:self selector:@selector(display_link_callback)];
 
         [self->m_display_link setPreferredFramesPerSecond:60];
-
         // CADisplayLink callbacks are associated with an 'NSRunLoop'. The currentRunLoop is the
         // the main run loop (since 'viewDidLoad' is always executed from the main thread.
         [self->m_display_link addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 
-        // the "app_main"
-        struct app_main_argument_t app_main_argument;
-        app_main_argument.m_gfx_connection = self->m_gfx_connection;
-        app_main_argument.m_wsi_app = NULL;
-        wsi_mach_ios_atomic_store(&app_main_argument.m_running, false);
+        CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
+        assert(nil != screen);
 
-        PT_MAYBE_UNUSED bool res_native_thread_create = wsi_mach_ios_native_thread_create(&self->m_app_main_thread_id, app_main, &app_main_argument);
-        assert(res_native_thread_create);
-
-        while (!wsi_mach_ios_atomic_load(&app_main_argument.m_running))
-        {
-            wsi_mach_ios_os_yield();
-        }
-
-        assert(NULL != app_main_argument.m_wsi_app);
-        self->m_wsi_app = app_main_argument.m_wsi_app;
+        CGSize drawable_size = [layer drawableSize];
+        pt_gfx_connection_on_wsi_window_created(g_gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
     }
 }
 
@@ -191,61 +155,88 @@ static void *app_main(void *argument);
 {
     @autoreleasepool
     {
-        [self draw_on_main_thread];
-    }
-}
+        pt_gfx_connection_draw_acquire(g_gfx_connection);
 
-- (void)draw_on_main_thread
-{
-    @autoreleasepool
-    {
-        if (PT_LIKELY(self->m_has_create_window))
-        {
-            pt_gfx_connection_draw_acquire(self->m_gfx_connection);
-
-            pt_gfx_connection_draw_release(self->m_gfx_connection);
-        }
-        else
-        {
-            CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
-            if (nil != layer)
-            {
-                CGSize drawable_size = [layer drawableSize];
-                pt_gfx_connection_on_wsi_window_created(self->m_gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
-                self->m_has_create_window = true;
-            }
-        }
+        pt_gfx_connection_draw_release(g_gfx_connection);
     }
 }
 @end
 
-void *app_main(void *argument_void)
+struct app_main_argument_t
 {
-    pt_wsi_app_ref wsi_app;
+    pt_gfx_connection_ref m_gfx_connection;
+    pt_wsi_app_ref m_wsi_app;
+    bool m_app_main_running;
+    int m_argc;
+    char **m_argv;
+    pt_wsi_app_init_callback m_app_init_callback;
+    pt_wsi_app_main_callback m_app_main_callback;
+};
+static void *app_main(void *argument);
+
+PT_ATTR_WSI int PT_CALL pt_wsi_main(
+    int argc, char *argv[],
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
+{
+    @autoreleasepool
+    {
+        // init
+        {
+            g_gfx_connection = pt_gfx_connection_init(
+                NULL, NULL,
+                cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+                cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
+
+            // the "app_main"
+            mcrt_native_thread_id app_main_thread_id;
+
+            struct app_main_argument_t app_main_argument;
+            app_main_argument.m_gfx_connection = g_gfx_connection;
+            app_main_argument.m_wsi_app = NULL;
+            app_main_argument.m_argc = argc;
+            app_main_argument.m_argv = argv;
+            app_main_argument.m_app_init_callback = app_init_callback;
+            app_main_argument.m_app_main_callback = app_main_callback;
+            mcrt_atomic_storeb(&app_main_argument.m_app_main_running, false);
+
+            PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&app_main_thread_id, app_main, &app_main_argument);
+            assert(res_native_thread_create);
+
+            while (!mcrt_atomic_loadb(&app_main_argument.m_app_main_running))
+            {
+                mcrt_os_yield();
+            }
+
+            assert(NULL != app_main_argument.m_wsi_app);
+        }
+
+        return UIApplicationMain(argc, argv, nil, NSStringFromClass([wsi_mach_ios_application_delegate class]));
+    }
+}
+
+static void *app_main(void *argument_void)
+{
+    pt_wsi_app_ref wsi_app = NULL;
+    pt_wsi_app_main_callback app_main_callback = NULL;
     // app_init
     {
         struct app_main_argument_t *argument = ((struct app_main_argument_t *)argument_void);
-        wsi_app = g_wsi_app_init_callback(argument->m_gfx_connection);
-        argument->m_wsi_app = wsi_app;
-        wsi_mach_ios_atomic_store(&argument->m_running, true);
+        argument->m_wsi_app = argument->m_app_init_callback(argument->m_argc, argument->m_argv, argument->m_gfx_connection);
+
+        wsi_app = argument->m_wsi_app;
+        app_main_callback = argument->m_app_main_callback;
+
+        mcrt_atomic_storeb(&argument->m_app_main_running, true);
     }
 
     // app_main
-    int res_app_main_callback = g_wsi_app_main_callback(wsi_app);
+    int res_app_main_callback = app_main_callback(wsi_app);
 
     // mcrt_atomic_store(&self->m_loop, false);
 
     // wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
 
     return ((void *)((intptr_t)res_app_main_callback));
-}
-
-PT_ATTR_WSI int PT_CALL pt_wsi_main(int argc, char *argv[], pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
-{
-    @autoreleasepool
-    {
-        g_wsi_app_init_callback = app_init_callback;
-        g_wsi_app_main_callback = app_main_callback;
-        return UIApplicationMain(argc, argv, nil, NSStringFromClass([wsi_mach_ios_application_delegate class]));
-    }
 }

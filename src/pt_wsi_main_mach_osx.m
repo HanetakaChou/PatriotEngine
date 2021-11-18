@@ -31,12 +31,11 @@
 extern bool mcrt_atomic_loadb(bool volatile *src);
 extern void mcrt_atomic_storeb(bool volatile *dst, bool val);
 static void draw_on_main_thread(void *argument);
+static CVReturn display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext);
 
-// TODO GPU Capture doesn't work now
-// Before macOS 10.15 and iOS 13.0, captureDesc will just be nil
+static pt_gfx_connection_ref g_gfx_connection = NULL;
 
 @interface wsi_mach_osx_application_delegate : NSObject <NSApplicationDelegate>
-- (instancetype)init:(pt_gfx_connection_ref)gfx_connection init_dispatch_source:(dispatch_source_t)dispatch_source;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification;
 - (void)applicationWillTerminate:(NSNotification *)notification;
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)sender;
@@ -55,22 +54,6 @@ static void draw_on_main_thread(void *argument);
 @end
 
 @implementation wsi_mach_osx_application_delegate
-{
-@public
-    pt_gfx_connection_ref m_gfx_connection;
-    dispatch_source_t m_dispatch_source;
-}
-- (instancetype)init:(pt_gfx_connection_ref)gfx_connection init_dispatch_source:(dispatch_source_t)dispatch_source
-{
-    self = [super init];
-    if (self)
-    {
-        self->m_gfx_connection = gfx_connection;
-        self->m_dispatch_source = dispatch_source;
-    }
-    return self;
-}
-
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     @autoreleasepool
@@ -121,6 +104,11 @@ static void draw_on_main_thread(void *argument);
 @end
 
 @implementation wsi_mach_osx_view
+{
+    dispatch_source_t m_dispatch_source;
+    CVDisplayLinkRef m_display_link;
+}
+
 - (BOOL)wantsLayer
 {
     return YES;
@@ -144,20 +132,37 @@ static void draw_on_main_thread(void *argument);
 
 - (void)viewDidMoveToWindow
 {
-    [super viewDidMoveToWindow];
-
     @autoreleasepool
     {
+        [super viewDidMoveToWindow];
+
+        // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
+        // RENDER_ON_MAIN_THREAD
+        self->m_dispatch_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
+
+        dispatch_resume(self->m_dispatch_source);
+
         // Block Implementation Specification
         // https://clang.llvm.org/docs/Block-ABI-Apple.html
         void *const view_void = ((__bridge void *)self);
-        dispatch_source_t dispatch_source = ((wsi_mach_osx_application_delegate *)[[NSApplication sharedApplication] delegate])->m_dispatch_source;
-        dispatch_source_set_event_handler(dispatch_source, ^{
+        dispatch_source_set_event_handler(self->m_dispatch_source, ^{
           @autoreleasepool
           {
               [((wsi_mach_osx_view *)((__bridge id)view_void)) onWindowCreated];
           }
         });
+
+        CGDirectDisplayID display_id =
+            ((CGDirectDisplayID)[self.window.screen.deviceDescription[@"NSScreenNumber"] unsignedIntegerValue]);
+
+        CVReturn res_display_link_create_with_cg_display = CVDisplayLinkCreateWithCGDisplay(display_id, &self->m_display_link);
+        assert(kCVReturnSuccess == res_display_link_create_with_cg_display);
+
+        CVReturn res_display_link_set_output_callback = CVDisplayLinkSetOutputCallback(self->m_display_link, display_link_output_callback, ((__bridge void *)self->m_dispatch_source));
+        assert(kCVReturnSuccess == res_display_link_set_output_callback);
+
+        CVReturn ret_display_link_start = CVDisplayLinkStart(self->m_display_link);
+        assert(kCVReturnSuccess == ret_display_link_start);
     }
 }
 
@@ -168,15 +173,11 @@ static void draw_on_main_thread(void *argument);
         CAMetalLayer *layer = ((CAMetalLayer *)[self layer]);
         if (nil != layer)
         {
-            wsi_mach_osx_application_delegate *application_delegate = ((wsi_mach_osx_application_delegate *)[[NSApplication sharedApplication] delegate]);
-            pt_gfx_connection_ref gfx_connection = application_delegate->m_gfx_connection;
-            dispatch_source_t dispatch_source = application_delegate->m_dispatch_source;
-
             CGSize drawable_size = [layer drawableSize];
-            pt_gfx_connection_on_wsi_window_created(gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
+            pt_gfx_connection_on_wsi_window_created(g_gfx_connection, NULL, ((__bridge void *)layer), drawable_size.width, drawable_size.height);
 
-            void *const connection_void = gfx_connection;
-            dispatch_source_set_event_handler(dispatch_source, ^{
+            void *const connection_void = g_gfx_connection;
+            dispatch_source_set_event_handler(self->m_dispatch_source, ^{
               @autoreleasepool
               {
                   draw_on_main_thread(connection_void);
@@ -186,8 +187,6 @@ static void draw_on_main_thread(void *argument);
     }
 }
 @end
-
-static CVReturn display_link_output_callback(CVDisplayLinkRef displayLink, CVTimeStamp const *inNow, CVTimeStamp const *inOutputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext);
 
 struct app_main_argument_t
 {
@@ -212,34 +211,16 @@ PT_ATTR_WSI int PT_CALL pt_wsi_main(
     {
         // init
         {
-            pt_gfx_connection_ref gfx_connection = pt_gfx_connection_init(
+            g_gfx_connection = pt_gfx_connection_init(
                 NULL, NULL,
                 cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
                 cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
-
-            // the "display_link_output_main"
-            // [Creating a Custom Metal View](https://developer.apple.com/documentation/metal/drawable_objects/creating_a_custom_metal_view)
-            // RENDER_ON_MAIN_THREAD
-            dispatch_source_t dispatch_source = dispatch_source_create(DISPATCH_SOURCE_TYPE_DATA_ADD, 0, 0, dispatch_get_main_queue());
-
-            dispatch_resume(dispatch_source);
-
-            CVDisplayLinkRef display_link;
-
-            CVReturn res_display_link_create_with_active_cg_displays = CVDisplayLinkCreateWithActiveCGDisplays(&display_link);
-            assert(kCVReturnSuccess == res_display_link_create_with_active_cg_displays);
-
-            CVReturn res_display_link_set_output_callback = CVDisplayLinkSetOutputCallback(display_link, display_link_output_callback, ((__bridge void *)dispatch_source));
-            assert(kCVReturnSuccess == res_display_link_set_output_callback);
-
-            CVReturn ret_display_link_start = CVDisplayLinkStart(display_link);
-            assert(kCVReturnSuccess == ret_display_link_start);
 
             // the "app_main"
             mcrt_native_thread_id app_main_thread_id;
 
             struct app_main_argument_t app_main_argument;
-            app_main_argument.m_gfx_connection = gfx_connection;
+            app_main_argument.m_gfx_connection = g_gfx_connection;
             app_main_argument.m_wsi_app = NULL;
             app_main_argument.m_argc = argc;
             app_main_argument.m_argv = argv;
@@ -258,7 +239,7 @@ PT_ATTR_WSI int PT_CALL pt_wsi_main(
             assert(NULL != app_main_argument.m_wsi_app);
 
             //
-            application_delegate = [[wsi_mach_osx_application_delegate alloc] init:gfx_connection init_dispatch_source:dispatch_source];
+            application_delegate = [[wsi_mach_osx_application_delegate alloc] init];
         }
 
         // main

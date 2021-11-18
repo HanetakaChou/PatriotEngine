@@ -22,17 +22,29 @@
 #include "pt_wsi_app_base.h"
 
 extern "C" void get_main_bundle_resource_path(char *, size_t *);
+extern "C" void get_library_directory(char *path, size_t *length);
 
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char> >;
-mcrt_string wsi_mach_ios_library_path;
+mcrt_string g_wsi_app_mach_ios_bundle_resource_path;
+mcrt_string g_wsi_app_mach_ios_library_path;
 
-class wsi_app_mach_ios : public launcher_app
-{
-public:
-    void init(pt_gfx_connection_ref gfx_connection);
-};
+static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection);
+static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app);
 
-void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
+static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
+static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size);
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size);
+static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream);
+static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename);
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size);
+static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream);
+
+extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+
+int main(int argc, char *argv[])
 {
     // Main Bundle Resource Path
     {
@@ -44,103 +56,173 @@ void wsi_app_mach_ios::init(pt_gfx_connection_ref gfx_connection)
         get_main_bundle_resource_path(main_bundle_resource_path, &main_bundle_resource_path_length);
         assert(main_bundle_resource_path_length_before == main_bundle_resource_path_length);
 
-        wsi_mach_ios_library_path.assign(main_bundle_resource_path, main_bundle_resource_path + main_bundle_resource_path_length);
+        g_wsi_app_mach_ios_bundle_resource_path.assign(main_bundle_resource_path, main_bundle_resource_path + main_bundle_resource_path_length);
 
         mcrt_aligned_free(main_bundle_resource_path);
     }
 
-    this->launcher_app::init(gfx_connection);
+    // Standard Library Directory
+    {
+        size_t library_directory_path_length_before;
+        get_library_directory(NULL, &library_directory_path_length_before);
+
+        char *library_directory_path = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * (library_directory_path_length_before + 1), alignof(char)));
+        size_t library_directory_path_length;
+        get_library_directory(library_directory_path, &library_directory_path_length);
+        assert(library_directory_path_length_before == library_directory_path_length);
+
+        g_wsi_app_mach_ios_library_path.assign(library_directory_path, library_directory_path + library_directory_path_length);
+
+        mcrt_aligned_free(library_directory_path);
+    }
+
+    return pt_wsi_main(
+        argc, argv,
+        cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
+        launcher_app_init, launcher_app_main);
 }
 
-inline pt_wsi_app_ref wrap(class wsi_app_mach_ios *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
-inline class wsi_app_mach_ios *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class wsi_app_mach_ios *>(wsi_app); }
+inline pt_wsi_app_ref wrap(class launcher_app *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
+inline class launcher_app *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class launcher_app *>(wsi_app); }
 
-static pt_wsi_app_ref PT_PTR wsi_app_init(pt_gfx_connection_ref gfx_connection)
+static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection)
 {
-    class wsi_app_mach_ios *wsi_app = new (mcrt_aligned_malloc(sizeof(class wsi_app_mach_ios), alignof(class wsi_app_mach_ios))) wsi_app_mach_ios();
+    class launcher_app *wsi_app = new (mcrt_aligned_malloc(sizeof(class launcher_app), alignof(class launcher_app))) launcher_app();
     wsi_app->init(gfx_connection);
     return wrap(wsi_app);
 }
 
-static int PT_PTR wsi_app_main(pt_wsi_app_ref wsi_app)
+static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app)
 {
     return unwrap(wsi_app)->main();
-}
-
-int main(int argc, char *argv[])
-{
-    return pt_wsi_main(argc, argv, wsi_app_init, wsi_app_main);
 }
 
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <pt_mcrt_thread.h>
 
-bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
+static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
 {
-    mcrt_string path = wsi_mach_ios_library_path.c_str();
+    mcrt_string path = g_wsi_app_mach_ios_library_path;
     path += '/';
     path += initial_filename;
 
-    return pt_gfx_texture_read_input_stream(
-        gfx_connection,
-        texture,
-        path.c_str(),
-        [](char const *initial_filename) -> pt_gfx_input_stream_ref
-        {
-            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
-        {
-            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return res_read;
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
-        {
-            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return res_lseek;
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
-        {
-            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
-        });
+    int fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
+
+    return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
 }
 
-bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size)
 {
-    mcrt_string path = wsi_mach_ios_library_path.c_str();
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
+
+    struct stat buf;
+    int res_fstat = fstat(fd, &buf);
+    if (0 == res_fstat)
+    {
+        (*size) = buf.st_size;
+        return 0;
+    }
+    else
+    {
+        (*size) = -1;
+        return -1;
+    }
+}
+
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
+
+    ssize_t res_read;
+    while ((-1 == (res_read = read(fd, data, size))) && (EINTR == errno))
+    {
+        mcrt_os_yield();
+    }
+    return res_read;
+}
+
+static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
+
+    int res_close = close(fd);
+    assert(0 == res_close);
+}
+
+static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
+{
+    mcrt_string path = g_wsi_app_mach_ios_library_path;
     path += '/';
     path += initial_filename;
 
-    return pt_gfx_mesh_read_input_stream(
-        gfx_connection,
-        mesh,
-        mesh_index,
-        material_index,
-        path.c_str(),
-        [](char const *initial_filename) -> pt_gfx_input_stream_ref
-        {
-            int fd = openat(AT_FDCWD, initial_filename, O_RDONLY);
-            return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream, void *buf, size_t count) -> intptr_t
-        {
-            ssize_t res_read = read(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), buf, count);
-            return res_read;
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream, int64_t offset, int whence) -> int64_t
-        {
-            off_t res_lseek = lseek(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)), offset, whence);
-            return res_lseek;
-        },
-        [](pt_gfx_input_stream_ref gfx_input_stream) -> void
-        {
-            close(static_cast<int>(reinterpret_cast<intptr_t>(gfx_input_stream)));
-        });
+    int fd = openat(AT_FDCWD, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+    return reinterpret_cast<pt_gfx_output_stream_ref>(static_cast<intptr_t>(fd));
 }
 
-static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
-static_assert(SEEK_CUR == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
-static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_output_stream));
+
+    ssize_t res_write;
+    while ((-1 == (res_write = write(fd, data, size))) && (EINTR == errno))
+    {
+        mcrt_os_yield();
+    }
+
+    return res_write;
+}
+
+static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_output_stream));
+
+    int res_close = close(fd);
+    assert(0 == res_close);
+}
+
+pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
+{
+    mcrt_string path = g_wsi_app_mach_ios_bundle_resource_path;
+    path += '/';
+    path += initial_filename;
+
+    int fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
+
+    return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+}
+
+intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref asset_input_stream, void *data, size_t size)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
+
+    ssize_t res_read;
+    while ((-1 == (res_read = read(fd, data, size))) && (EINTR == errno))
+    {
+        mcrt_os_yield();
+    }
+    return res_read;
+}
+
+int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref asset_input_stream, int64_t offset, int whence)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
+
+    static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
+    static_assert(SEEK_CUR == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
+    static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
+    off_t res_lseek = lseek(fd, offset, whence);
+    return res_lseek;
+}
+
+void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref asset_input_stream)
+{
+    int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
+
+    int res_close = close(fd);
+    assert(0 == res_close);
+}

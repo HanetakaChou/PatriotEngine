@@ -18,22 +18,12 @@
 #include <pt_mcrt_thread.h>
 #include <pt_mcrt_atomic.h>
 
-extern "C" bool wsi_mach_ios_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
-{
-    return mcrt_native_thread_create(tid, func, arg);
-}
-
-extern "C" void wsi_mach_ios_os_yield(void)
-{
-    return mcrt_os_yield();
-}
-
-extern "C" bool wsi_mach_ios_atomic_load(bool volatile *src)
+extern "C" bool mcrt_atomic_loadb(bool volatile *src)
 {
     return mcrt_atomic_load(src);
 }
 
-extern "C" void wsi_mach_ios_atomic_store(bool volatile *dst, bool val)
+extern "C" void mcrt_atomic_storeb(bool volatile *dst, bool val)
 {
     return mcrt_atomic_store(dst, val);
 }
