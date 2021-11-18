@@ -30,7 +30,7 @@ cd ${MY_DIR}
 
 PACKAGE_NAME=YuqiaoZhang.HanetakaYuminaga.PatriotEngine
 ADB_CMD="${MY_DIR}/android-sdk/platform-tools/adb"
-ASSET_DIR="$(cd "${MY_DIR}/../../third_party/assets" 1>/dev/null 2>/dev/null && pwd)"
+ASSET_DIR="$(cd "${MY_DIR}/../../assets" 1>/dev/null 2>/dev/null && pwd)"
 
 APP_PWD_DIR="$("${ADB_CMD}" shell "run-as "${PACKAGE_NAME}" pwd")"
 if test -z ${APP_PWD_DIR}; then

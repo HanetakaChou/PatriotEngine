@@ -72,6 +72,8 @@ class wsi_linux_x11
     struct app_main_argument_t
     {
         class wsi_linux_x11 *m_instance;
+        int m_argc;
+        char **m_argv;
         pt_wsi_app_init_callback m_app_init_callback;
         pt_wsi_app_main_callback m_app_main_callback;
     };
@@ -79,36 +81,35 @@ class wsi_linux_x11
     bool m_app_main_running;
     static void *app_main(void *);
 
-    static inline pt_gfx_wsi_connection_ref wrap_wsi_connection(xcb_connection_t *wsi_connection);
-    static inline pt_gfx_wsi_visual_ref wrap_wsi_visual(xcb_visualid_t wsi_visual);
-    static inline pt_gfx_wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window);
-
 public:
     void init(
-        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
+        int argc, char *argv[],
         pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
     int main();
 };
 
 PT_ATTR_WSI int PT_CALL pt_wsi_main(
     int argc, char *argv[],
-    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
     pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     wsi_linux_x11 instance;
     instance.init(
-        app_init_callback, app_main_callback,
+        argc, argv,
         cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
-        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
+        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
+        app_init_callback, app_main_callback);
     return instance.main();
 }
 
 void wsi_linux_x11::init(
-    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
+    int argc, char *argv[],
     pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     int scr;
     this->m_xcb_connection = xcb_connect(NULL, &scr);
@@ -230,6 +231,8 @@ void wsi_linux_x11::init(
     {
         struct app_main_argument_t app_main_argument;
         app_main_argument.m_instance = this;
+        app_main_argument.m_argc = argc;
+        app_main_argument.m_argv = argv;
         app_main_argument.m_app_init_callback = app_init_callback;
         app_main_argument.m_app_main_callback = app_main_callback;
         mcrt_atomic_store(&this->m_app_main_running, false);
@@ -416,17 +419,17 @@ int wsi_linux_x11::main()
     return 0;
 }
 
-inline pt_gfx_wsi_connection_ref wsi_linux_x11::wrap_wsi_connection(xcb_connection_t *wsi_connection)
+static inline pt_gfx_wsi_connection_ref wrap_wsi_connection(xcb_connection_t *wsi_connection)
 {
     return reinterpret_cast<pt_gfx_wsi_connection_ref>(wsi_connection);
 }
 
-inline pt_gfx_wsi_visual_ref wsi_linux_x11::wrap_wsi_visual(xcb_visualid_t wsi_visual)
+static inline pt_gfx_wsi_visual_ref wrap_wsi_visual(xcb_visualid_t wsi_visual)
 {
     return reinterpret_cast<pt_gfx_wsi_visual_ref>(static_cast<uintptr_t>(wsi_visual));
 }
 
-inline pt_gfx_wsi_window_ref wsi_linux_x11::wrap_wsi_window(xcb_window_t wsi_window)
+static inline pt_gfx_wsi_window_ref wrap_wsi_window(xcb_window_t wsi_window)
 {
     return reinterpret_cast<pt_gfx_wsi_window_ref>(static_cast<uintptr_t>(wsi_window));
 }
@@ -484,7 +487,7 @@ void *wsi_linux_x11::app_main(void *argument_void)
     // app_init
     {
         struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
-        argument->m_instance->m_wsi_app = argument->m_app_init_callback(argument->m_instance->m_gfx_connection);
+        argument->m_instance->m_wsi_app = argument->m_app_init_callback(argument->m_argc, argument->m_argv, argument->m_instance->m_gfx_connection);
 
         instance = argument->m_instance;
         app_main_callback = argument->m_app_main_callback;

@@ -31,16 +31,23 @@ extern "C"
 #ifdef PT_POSIX
 #ifdef PT_POSIX_LINUX
 #ifdef PT_POSIX_LINUX_ANDROID
-    PT_ATTR_WSI void PT_CALL pt_wsi_main(struct ANativeActivity *native_activity, void *, size_t, pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref, char const *internal_data_path), int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref));
+    typedef pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(struct ANativeActivity *native_activity, void *, size_t, pt_gfx_connection_ref);
+    typedef int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref);
+
+    PT_ATTR_WSI void PT_CALL pt_wsi_main(
+        struct ANativeActivity *native_activity, void *, size_t,
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
 #elif defined(PT_POSIX_LINUX_X11)
-    typedef pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(pt_gfx_connection_ref);
+    typedef pt_wsi_app_ref(PT_PTR *pt_wsi_app_init_callback)(int argc, char *argv[], pt_gfx_connection_ref);
     typedef int(PT_PTR *pt_wsi_app_main_callback)(pt_wsi_app_ref);
 
     PT_ATTR_WSI int PT_CALL pt_wsi_main(
         int argc, char *argv[],
-        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback,
         pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
 #else
 #error Unknown Linux Platform
 #endif

@@ -19,7 +19,7 @@
 #include <pt_mcrt_malloc.h>
 #include "pt_wsi_app_base.h"
 
-static pt_wsi_app_ref PT_PTR launcher_app_init(pt_gfx_connection_ref gfx_connection);
+static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection);
 static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app);
 
 static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
@@ -30,15 +30,24 @@ static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char co
 static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size);
 static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream);
 
+extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+
 int main(int argc, char *argv[])
 {
-    return pt_wsi_main(argc, argv, launcher_app_init, launcher_app_main, cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
+    return pt_wsi_main(
+        argc, argv,
+        cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
+        launcher_app_init, launcher_app_main);
 }
 
 inline pt_wsi_app_ref wrap(class launcher_app *wsi_app) { return reinterpret_cast<pt_wsi_app_ref>(wsi_app); }
 inline class launcher_app *unwrap(pt_wsi_app_ref wsi_app) { return reinterpret_cast<class launcher_app *>(wsi_app); }
 
-static pt_wsi_app_ref PT_PTR launcher_app_init(pt_gfx_connection_ref gfx_connection)
+static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection)
 {
     class launcher_app *wsi_app = new (mcrt_aligned_malloc(sizeof(class launcher_app), alignof(class launcher_app))) launcher_app();
     wsi_app->init(gfx_connection);
@@ -54,13 +63,10 @@ static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
 #include <assert.h>
-
 #include <string>
-
-#include <pt_mcrt_thread.h>
 #include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_thread.h>
 
 using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 
