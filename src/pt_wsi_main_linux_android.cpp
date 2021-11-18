@@ -262,7 +262,7 @@ void wsi_linux_android::request_draw_on_main_thread()
 
 void *wsi_linux_android::app_main(void *argument_void)
 {
-    class wsi_linux_x11 *instance = NULL;
+    class wsi_linux_android *instance = NULL;
 	pt_wsi_app_main_callback app_main_callback;
 	// app_init
 	{
