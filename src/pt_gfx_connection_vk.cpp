@@ -2653,6 +2653,12 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
                     pipeline_cache_data = NULL;
                 }
             }
+            else
+            {
+                mcrt_log_print("The size of the assumed vkpipeline cache file %s can't be determined!\n", pipeline_cache_file_name);
+                pipeline_cache_size = 0U;
+                pipeline_cache_data = NULL;
+            }
 
             this->m_cache_input_stream_destroy_callback(cache_input_stream);
         }

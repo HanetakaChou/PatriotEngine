@@ -185,6 +185,11 @@
         "file": "${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp"
     },
     {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_mach_osx.m -o ${workspaceFolder}/src/pt_wsi_main_mach_osx.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_mach_osx.m"
+    },
+    {
         "directory": "${workspaceFolder}/samples/launcher",
         "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_base.o",
         "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp"

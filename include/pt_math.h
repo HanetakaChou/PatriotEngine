@@ -149,7 +149,7 @@ extern "C"
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec3(pt_math_alignas16_vec3 const *source);
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_vec4(pt_math_alignas16_vec4 const *source);
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_load_alignas16_ivec3(pt_math_alignas16_ivec3 const* source);
-    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_zero();
+    PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_zero(void);
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec_replicate(float value);
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform(pt_math_simd_vec v, pt_math_simd_mat m);
     PT_ATTR_MATH pt_math_simd_vec PT_VECTORCALL pt_math_vec3_transform_coord(pt_math_simd_vec v, pt_math_simd_mat m);

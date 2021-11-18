@@ -262,19 +262,21 @@ void wsi_linux_android::request_draw_on_main_thread()
 
 void *wsi_linux_android::app_main(void *argument_void)
 {
-	pt_wsi_app_ref wsi_app;
+    class wsi_linux_x11 *instance = NULL;
 	pt_wsi_app_main_callback app_main_callback;
 	// app_init
 	{
 		struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
-		wsi_app = argument->m_app_init_callback(argument->m_native_activity, argument->m_saved_state, argument->m_saved_state_size, argument->m_instance->m_gfx_connection);
-		app_main_callback = argument->m_app_main_callback;
-		argument->m_instance->m_wsi_app = wsi_app;
+		argument->m_instance->m_wsi_app = argument->m_app_init_callback(argument->m_native_activity, argument->m_saved_state, argument->m_saved_state_size, argument->m_instance->m_gfx_connection);
+
+  		instance = argument->m_instance;
+        app_main_callback = argument->m_app_main_callback;
+
 		mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
 	}
 
 	// app_main
-	int res_app_main_callback = app_main_callback(wsi_app);
+	int res_app_main_callback = app_main_callback(instance->m_wsi_app);
 
 	//mcrt_atomic_store(&self->m_loop, false);
 

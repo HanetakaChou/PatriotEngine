@@ -21,7 +21,7 @@
 #include <process.h>
 #include <assert.h>
 
-inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall*func)(void *), void *arg)
+static inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall*func)(void *), void *arg)
 {
 	HANDLE thdl = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0U, func, arg, 0U, NULL));
 	assert(thdl != NULL);
@@ -104,7 +104,7 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 	return (FlsGetValue(key));
 }
 
-inline void mcrt_os_yield()
+static inline void mcrt_os_yield()
 {
 	SwitchToThread();
 }

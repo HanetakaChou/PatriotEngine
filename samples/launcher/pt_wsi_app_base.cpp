@@ -140,6 +140,7 @@ int launcher_app::main()
     }
 #endif
 
+#if 1
     pt_gfx_texture_ref my_texture1 = pt_gfx_connection_create_texture(my_gfx_connection);
     gfx_texture_read_file(my_gfx_connection, my_texture1, "lenna/l_hires_rgba.pvr");
 
@@ -156,9 +157,10 @@ int launcher_app::main()
 
     pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
     pt_gfx_node_destroy(my_gfx_connection, my_node);
-
+#endif
+    
 #if 0
-    sleep(15);
+    mcrt_os_sleep(15);
 
     my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
     //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
@@ -168,7 +170,7 @@ int launcher_app::main()
     my_node = pt_gfx_connection_create_node(my_gfx_connection);
     pt_gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
 
-    sleep(15);
+    mcrt_os_sleep(15);
 
     pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
     pt_gfx_node_destroy(my_gfx_connection, my_node);

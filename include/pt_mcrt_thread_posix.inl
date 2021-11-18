@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <assert.h>
 
-inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
+static inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
 	PT_MAYBE_UNUSED int res = pthread_create(tid, NULL, (void *(*)(void *))func, arg);
 	return ((res == 0) ? true : false);
@@ -93,7 +93,7 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 	return (pthread_getspecific(key));
 }
 
-inline void mcrt_os_yield(void)
+static inline void mcrt_os_yield(void)
 {
 #if defined(PT_POSIX_LINUX)
 #if defined(PT_POSIX_LINUX_ANDROID)

@@ -38,26 +38,12 @@ inline uint64_t mcrt_atomic_cas_u64(uint64_t volatile *dest, uint64_t exch, uint
     return __sync_val_compare_and_swap(dest, comp, exch);
 }
 
-#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp)
 {
     uintptr_t dest_old = __sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), reinterpret_cast<uintptr_t>(comp), reinterpret_cast<uintptr_t>(exch));
     return reinterpret_cast<T *>(dest_old);
 }
-#else
-#ifdef PT_MCRT_ATOMIC_CAS_PTR
-#undef PT_MCRT_ATOMIC_CAS_PTR
-#define PT_MCRT_ATOMIC_CAS_PTR(T)                                                                                             \
-    PT_ALWAYS_INLINE T *mcrt_atomic_cas_ptr(T *volatile *dest, T *exch, T *comp)                                              \
-    {                                                                                                                         \
-        uintptr_t dest_old = __sync_val_compare_and_swap(((uintptr_t volatile *)dest), ((uintptr_t)comp), ((uintptr_t)exch)); \
-        return ((T)dest_old);                                                                                                 \
-    }
-#else
-#error PT_MCRT_ATOMIC_CAS_PTR
-#endif
-#endif
 
 inline int32_t mcrt_atomic_xchg_i32(int32_t volatile *dest, int32_t exch)
 {
@@ -97,7 +83,6 @@ inline int64_t mcrt_atomic_xchg_i64(int64_t volatile *dest, int64_t exch)
     return dest_old;
 }
 
-#ifdef __cplusplus
 template <typename T>
 inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
 {
@@ -108,23 +93,6 @@ inline T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)
     } while (__sync_val_compare_and_swap(reinterpret_cast<uintptr_t volatile *>(dest), dest_old, reinterpret_cast<uintptr_t>(exch)) != dest_old);
     return reinterpret_cast<T *>(dest_old);
 }
-#else
-#ifdef PT_MCRT_ATOMIC_XCHG_PTR
-#undef PT_MCRT_ATOMIC_XCHG_PTR
-#define PT_MCRT_ATOMIC_XCHG_PTR(T)                                                                                    \
-    PT_ALWAYS_INLINE T *mcrt_atomic_xchg_ptr(T *volatile *dest, T *exch)                                              \
-    {                                                                                                                 \
-        uintptr_t dest_old;                                                                                           \
-        do                                                                                                            \
-        {                                                                                                             \
-            dest_old = (*((uintptr_t volatile *)dest));                                                               \
-        } while (__sync_val_compare_and_swap(((uintptr_t volatile *)dest), dest_old, ((uintptr_t)exch)) != dest_old); \
-        return ((T *)dest_old);                                                                                       \
-    }
-#else
-#error PT_MCRT_ATOMIC_XCHG_PTR
-#endif
-#endif
 
 inline int32_t mcrt_atomic_add_i32(int32_t volatile *dest, int32_t add)
 {
