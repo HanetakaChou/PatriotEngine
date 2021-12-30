@@ -3,7 +3,7 @@
 The Cornell Box  
 [https://www.graphics.cornell.edu/online/box/](https://www.graphics.cornell.edu/online/box/)  
 
-### B(Radiosity, 辐射度)/M(Radiant Existence, 辐射出射度)
+### B(Radiosity, 辐射度)/M(Radiant Existance, 辐射出射度)
 辐射度（Radiosity，B）是一个已经被弃用的叫法，现代的叫法应当是辐射出射度（Radiant Existance，M）  
 但是，为了和大多数与Radiosity相关的文献中的叫法保持一致，本文统一使用 辐射度（Radiosity，B） 代替 辐射出射度（Radiant Existance，M）  
 
