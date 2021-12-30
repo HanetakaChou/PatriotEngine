@@ -17,7 +17,6 @@
 
 #include <stddef.h>
 #include <assert.h>
-#include "pt_gfx_texture_base.h"
 #include "pt_gfx_texture_base_load.h"
 #include <algorithm>
 

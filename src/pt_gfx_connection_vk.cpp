@@ -1443,6 +1443,10 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_attribute_descriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
         vertex_attribute_descriptions[1].offset = 0U;
 
+        // struct VkFormatProperties physical_device_format_properties;
+        // gfx_connection->get_physical_device_format_properties(VK_FORMAT_R32G32B32_SFLOAT, &physical_device_format_properties);
+        // assert(0 != (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_VERTEX_BUFFER_BIT));
+
         VkPipelineVertexInputStateCreateInfo vertex_input_state;
         vertex_input_state.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
         vertex_input_state.pNext = NULL;
