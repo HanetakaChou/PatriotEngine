@@ -1656,6 +1656,20 @@ inline void gfx_connection_vk::destory_surface()
 
 inline bool gfx_connection_vk::init_pipeline_layout()
 {
+    // In Vulkan, the "DescriptorSet" should be treated as asset, and only be updated on initialized
+
+    // global_layout
+    // global_layout_perframe_uniform_buffer_binding // UNIFORM_BUFFER_DYNAMIC
+    // global_layout_perdrawcall_uniform_buffer_binding // UNIFORM_BUFFER_DYNAMIC
+    // global_layout_***_texture_binding
+
+    // mesh_layout
+    // usually not needed
+
+    // material_layout
+    // material_layout_uniform_buffer_binding // UNIFORM_BUFFER // **NOT** DYNAMIC // copy to DEVICE_LOCAL uniform buffer as vertex/index buffer
+    // material_layout_***_texture_binding
+
     // \[Pettineo 2016\][Matt Pettineo. "Bindless Texturing For Deferred Rendering And Decals." WordPress Blog 2016.](https://mynameismjp.wordpress.com/2016/03/25/bindless-texturing-for-deferred-rendering-and-decals/)
 
     // bindless texture seems meaningless
