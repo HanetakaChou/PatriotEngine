@@ -30,18 +30,20 @@ extern "C"
 
     typedef struct pt_mcrt_opaque_task_t *mcrt_task_ref;
 
+    typedef struct pt_mcrt_opaque_task_arena_t *mcrt_task_arena_ref;
+
+    typedef struct pt_mcrt_opaque_task_group_context_t *mcrt_task_group_context_ref;
+
     typedef struct mcrt_task_user_data_t
     {
         uint8_t m_user_data[128]; // use mcrt_intrin_round_up
     } mcrt_task_user_data_t;
 
-    typedef struct pt_mcrt_opaque_task_arena_t *mcrt_task_arena_ref;
-
     // Scheduler Bypass
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/scheduler-bypass.html
 
     // The tbb task has no destructor! //It's designed to store the lightweight data.
-    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self));
+    PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref), mcrt_task_group_context_ref task_group_context);
 
     // Continuation Passing
     // https://software.intel.com/content/www/us/en/develop/documentation/tbb-documentation/top/intel-threading-building-blocks-developer-guide/the-task-scheduler/useful-task-techniques/continuation-passing.html
@@ -80,6 +82,8 @@ extern "C"
     PT_ATTR_MCRT mcrt_task_arena_ref PT_CALL mcrt_task_arena_attach();
 
     PT_ATTR_MCRT bool PT_CALL mcrt_task_arena_is_active(mcrt_task_arena_ref task_arena);
+
+    PT_ATTR_MCRT mcrt_task_group_context_ref PT_CALL mcrt_task_arena_context(mcrt_task_arena_ref task_arena);
 
     PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_ref task_arena);
 

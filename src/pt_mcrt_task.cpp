@@ -19,6 +19,7 @@
 
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_task.h>
+#include <pt_mcrt_thread.h>
 
 #define __TBB_NO_IMPLICIT_LINKAGE 1
 #define __TBBMALLOC_NO_IMPLICIT_LINKAGE 1
@@ -34,6 +35,10 @@ inline class pt_mcrt_task *unwrap(mcrt_task_ref task) { return reinterpret_cast<
 inline mcrt_task_arena_ref wrap(tbb::task_arena *task_arena) { return reinterpret_cast<mcrt_task_arena_ref>(task_arena); }
 
 inline tbb::task_arena *unwrap(mcrt_task_arena_ref task_arena) { return reinterpret_cast<tbb::task_arena *>(task_arena); }
+
+inline mcrt_task_group_context_ref wrap(tbb::task_group_context* task_group_context) { return reinterpret_cast<mcrt_task_group_context_ref>(task_group_context); }
+
+inline tbb::task_group_context* unwrap(mcrt_task_group_context_ref task_group_context) { return reinterpret_cast<tbb::task_group_context*>(task_group_context); }
 
 class pt_mcrt_task : public tbb::task
 {
@@ -62,12 +67,20 @@ public:
 static_assert(sizeof(pt_mcrt_task) <= 192U, "");
 static_assert(std::is_pod<mcrt_task_user_data_t>::value, "");
 
-PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
+PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_root(mcrt_task_ref (*execute_callback)(mcrt_task_ref), mcrt_task_group_context_ref task_group_context)
 {
     // https://gcc.gnu.org/wiki/VerboseDiagnostics#missing_vtable
     // To fix the linker error be sure you have provided a definition for the first non-inline non-pure virtual function declared in the class
-    pt_mcrt_task *t = new (tbb::task::allocate_root()) pt_mcrt_task(execute_callback);
-    return wrap(t);
+    if (NULL != task_group_context)
+    {
+        pt_mcrt_task* t = new (tbb::task::allocate_root(*unwrap(task_group_context))) pt_mcrt_task(execute_callback);
+        return wrap(t);
+    }
+    else
+    {
+        pt_mcrt_task* t = new (tbb::task::allocate_root()) pt_mcrt_task(execute_callback);
+        return wrap(t);
+    }
 }
 
 PT_ATTR_MCRT mcrt_task_ref PT_CALL mcrt_task_allocate_continuation(mcrt_task_ref self, mcrt_task_ref (*execute_callback)(mcrt_task_ref self))
@@ -146,6 +159,24 @@ PT_ATTR_MCRT mcrt_task_arena_ref PT_CALL mcrt_task_arena_attach()
 PT_ATTR_MCRT bool PT_CALL mcrt_task_arena_is_active(mcrt_task_arena_ref task_arena)
 {
     return unwrap(task_arena)->is_active();
+}
+
+PT_ATTR_MCRT mcrt_task_group_context_ref PT_CALL mcrt_task_arena_context(mcrt_task_arena_ref task_arena)
+{
+    tbb::task_group_context* task_arena_context = NULL;
+
+    unwrap(task_arena)->enqueue(
+        [&task_arena_context]
+        {
+            task_arena_context = tbb::task::self().context();
+        });
+
+    while (NULL == task_arena_context)
+    {
+        mcrt_os_yield();
+    }
+
+    return wrap(task_arena_context);
 }
 
 PT_ATTR_MCRT void PT_CALL mcrt_task_enqueue(mcrt_task_ref task, mcrt_task_arena_ref task_arena)

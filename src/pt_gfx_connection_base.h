@@ -50,6 +50,7 @@ class gfx_connection_base
 protected:
     // MCRT
     mcrt_task_arena_ref m_task_arena;
+    mcrt_task_group_context_ref m_task_group_context;
     mcrt_task_ref m_task_unused;
     uint32_t m_task_arena_thread_count;
 
@@ -133,6 +134,7 @@ protected:
 public:
     // MCRT
     inline mcrt_task_arena_ref task_arena() { return m_task_arena; }
+    inline mcrt_task_group_context_ref task_group_context() { return m_task_group_context; }
 
     // Frame
     void frame_node_destroy_list_push(class gfx_node_base *node);

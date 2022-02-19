@@ -84,7 +84,7 @@ bool gfx_mesh_base::read_input_stream(class gfx_connection_base *gfx_connection,
 
         // pass to the second stage
         {
-            mcrt_task_ref task = mcrt_task_allocate_root(mesh_streaming_stage_second_task_execute);
+            mcrt_task_ref task = mcrt_task_allocate_root(mesh_streaming_stage_second_task_execute, gfx_connection->task_group_context());
             struct mesh_streaming_stage_second_task_data_t *task_data = unwrap(mcrt_task_get_user_data(task));
             task_data->m_gfx_streaming_object = this;
             task_data->m_gfx_connection = gfx_connection;

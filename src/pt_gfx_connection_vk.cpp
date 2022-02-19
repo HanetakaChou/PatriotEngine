@@ -86,7 +86,7 @@ inline bool gfx_connection_vk::init(
 
     // MCRT
     {
-        this->m_task_unused = mcrt_task_allocate_root(NULL);
+        this->m_task_unused = mcrt_task_allocate_root(NULL, NULL);
         mcrt_task_set_ref_count(this->m_task_unused, 1U);
 
         mcrt_task_wait_for_all(this->m_task_unused);
@@ -94,6 +94,8 @@ inline bool gfx_connection_vk::init(
 
         this->m_task_arena = mcrt_task_arena_attach();
         assert(mcrt_task_arena_is_active(this->m_task_arena));
+        this->m_task_group_context = mcrt_task_arena_context(this->m_task_arena);
+        assert(NULL != this->m_task_group_context);
 
         this->m_task_arena_thread_count = mcrt_task_arena_max_concurrency(this->m_task_arena);
     }
@@ -117,7 +119,7 @@ inline bool gfx_connection_vk::init_streaming()
 {
     this->m_streaming_throttling_index = 0U;
     mcrt_rwlock_init(&this->m_rwlock_streaming_throttling_index);
-    this->m_streaming_task_respawn_root = mcrt_task_allocate_root(NULL);
+    this->m_streaming_task_respawn_root = mcrt_task_allocate_root(NULL, this->m_task_group_context);
     mcrt_task_set_ref_count(this->m_streaming_task_respawn_root, 1U);
     this->m_streaming_thread_count = this->m_task_arena_thread_count;
     this->m_streaming_transfer_submit_info_command_buffers = static_cast<VkCommandBuffer *>(mcrt_aligned_malloc(sizeof(VkCommandBuffer) * this->m_streaming_thread_count, alignof(VkCommandBuffer)));
@@ -227,7 +229,7 @@ inline bool gfx_connection_vk::init_streaming()
             assert(VK_SUCCESS == res_create_fence);
         }
 
-        this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL);
+        this->m_streaming_task_root[streaming_throttling_index] = mcrt_task_allocate_root(NULL, this->m_task_group_context);
         mcrt_task_set_ref_count(this->m_streaming_task_root[streaming_throttling_index], 1U);
 
         this->m_streaming_task_respawn_list[streaming_throttling_index].init();
@@ -915,7 +917,7 @@ inline bool gfx_connection_vk::init_frame(
     {
         this->m_frame_throttling_index = 0U;
         mcrt_rwlock_init(&this->m_rwlock_frame_throttling_index);
-        this->m_frame_task_root = mcrt_task_allocate_root(NULL);
+        this->m_frame_task_root = mcrt_task_allocate_root(NULL, this->m_task_group_context);
         mcrt_task_set_ref_count(this->m_frame_task_root, 1U);
         this->m_frame_thread_count = this->m_task_arena_thread_count;
 
@@ -2038,7 +2040,7 @@ inline void gfx_connection_vk::release_frame()
     {
         // multi-thread draw
         {
-            mcrt_task_ref task = mcrt_task_allocate_root(opaque_subpass_task_execute);
+            mcrt_task_ref task = mcrt_task_allocate_root(opaque_subpass_task_execute, this->m_task_group_context);
             static_assert(sizeof(struct opaque_subpass_task_data) <= sizeof(mcrt_task_user_data_t), "");
             struct opaque_subpass_task_data *task_data = reinterpret_cast<struct opaque_subpass_task_data *>(mcrt_task_get_user_data(task));
             // There is no constructor of the POD "mcrt_task_user_data_t"

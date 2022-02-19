@@ -50,7 +50,7 @@ bool gfx_material_base::init_with_texture(class gfx_connection_base *gfx_connect
 
         // pass to the second stage
         {
-            mcrt_task_ref task = mcrt_task_allocate_root(material_streaming_stage_second_task_execute);
+            mcrt_task_ref task = mcrt_task_allocate_root(material_streaming_stage_second_task_execute, gfx_connection->task_group_context());
             static_assert(sizeof(struct material_streaming_stage_second_task_data_t) <= sizeof(mcrt_task_user_data_t), "");
             struct material_streaming_stage_second_task_data_t *task_data = reinterpret_cast<struct material_streaming_stage_second_task_data_t *>(mcrt_task_get_user_data(task));
             task_data->m_gfx_streaming_object = this;
