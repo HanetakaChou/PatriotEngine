@@ -32,7 +32,7 @@
 #define NOKEYSTATES 1
 #define NOSYSCOMMANDS 1
 #define NORASTEROPS 1
-#define NOSHOWWINDOW 1
+//#define NOSHOWWINDOW 1
 #define NOATOM 1
 #define NOCLIPBOARD 1
 #define NOCOLOR 1
@@ -70,8 +70,8 @@ class wsi_win32_desktop
 {
     ATOM m_atom;
     HWND m_window;
-    float m_window_width;
-    float m_window_height;
+    uint32_t m_window_width;
+    uint32_t m_window_height;
     mcrt_native_thread_id m_draw_main_thread_id;
     mcrt_native_thread_id m_app_main_thread_id;
     bool m_win32_desktop_main_running;
@@ -79,6 +79,17 @@ class wsi_win32_desktop
     // TODO
     // padding for cache line
 
+    struct draw_main_argument_t
+    {
+        class wsi_win32_desktop *m_instance;
+        pt_gfx_input_stream_init_callback m_cache_input_stream_init_callback;
+        pt_gfx_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
+        pt_gfx_input_stream_read_callback m_cache_input_stream_read_callback;
+        pt_gfx_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
+        pt_gfx_output_stream_init_callback m_cache_output_stream_init_callback;
+        pt_gfx_output_stream_write_callback m_cache_output_stream_write_callback;
+        pt_gfx_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
+    };
     pt_gfx_connection_ref m_gfx_connection;
     bool m_draw_main_running;
     static unsigned int __stdcall draw_main(void *);
@@ -86,6 +97,8 @@ class wsi_win32_desktop
     struct app_main_argument_t
     {
         class wsi_win32_desktop *m_instance;
+        int m_argc;
+        char **m_argv;
         pt_wsi_app_init_callback m_app_init_callback;
         pt_wsi_app_main_callback m_app_main_callback;
     };
@@ -96,15 +109,28 @@ class wsi_win32_desktop
     static inline pt_gfx_wsi_window_ref wrap_wsi_window(HWND wsi_window);
 
 public:
-    inline void init(int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
+    inline void init(
+        int argc, char *argv[],
+        pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+        pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
     inline int main();
     inline LRESULT CALLBACK wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
-PT_ATTR_WSI int PT_CALL pt_wsi_main(wchar_t *cmd_line, int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
+
+PT_ATTR_WSI int PT_CALL pt_wsi_main(
+    int argc, char* argv[],
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     wsi_win32_desktop instance;
-    instance.init(cmd_show, app_init_callback, app_main_callback);
+    instance.init(
+        argc, argv,
+        cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
+        app_init_callback, app_main_callback);
     return instance.main();
 }
 
@@ -112,7 +138,11 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 static LRESULT CALLBACK __internal_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
+inline void wsi_win32_desktop::init(
+    int argc, char *argv[],
+    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     HINSTANCE instance_this_component = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
@@ -125,11 +155,11 @@ inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_init_callback app_i
         wc.cbClsExtra = 0;
         wc.cbWndExtra = sizeof(class wsi_win32_desktop *);
         wc.hInstance = instance_this_component;
-        wc.hIcon = LoadIconW(instance_this_component, MAKEINTRESOURCEW(IDI_APPLICATION));
+        wc.hIcon = LoadIconW(instance_this_component, IDI_APPLICATION);
         wc.hCursor = LoadCursorW(NULL, IDC_ARROW);
         wc.hbrBackground = NULL;
         wc.lpszMenuName = NULL;
-        wc.lpszClassName = L"111";
+        wc.lpszClassName = L"PatriotEngine";
         wc.hIconSm = wc.hIcon;
         this->m_atom = RegisterClassExW(&wc);
         assert(0 != this->m_atom);
@@ -137,27 +167,31 @@ inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_init_callback app_i
 
     this->m_window_width = 1280;
     this->m_window_height = 720;
-    {
-        this->m_window = CreateWindowExW(WS_EX_APPWINDOW,
-                                         MAKEINTATOM(this->m_atom),
-                                         L"PatriotEngine",
-                                         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX,
-                                         CW_USEDEFAULT, CW_USEDEFAULT, this->m_window_width, this->m_window_height,
-                                         NULL,
-                                         NULL,
-                                         instance_this_component,
-                                         this);
-        assert(NULL != this->m_window);
-        ShowWindow(this->m_window, cmd_show);
-        UpdateWindow(this->m_window);
-    }
-
+    this->m_window = CreateWindowExW(WS_EX_APPWINDOW,
+        MAKEINTATOM(this->m_atom),
+        L"PatriotEngine",
+        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX,
+        CW_USEDEFAULT, CW_USEDEFAULT, this->m_window_width, this->m_window_height,
+        NULL,
+        NULL,
+        instance_this_component,
+        this);
+    assert(NULL != this->m_window);
+        
     // draw_main
     {
-        this->m_gfx_connection = NULL;
+        struct draw_main_argument_t draw_main_argument;
+        draw_main_argument.m_instance = this;
+        draw_main_argument.m_cache_input_stream_init_callback = cache_input_stream_init_callback;
+        draw_main_argument.m_cache_input_stream_stat_size_callback = cache_input_stream_stat_size_callback;
+        draw_main_argument.m_cache_input_stream_read_callback = cache_input_stream_read_callback;
+        draw_main_argument.m_cache_input_stream_destroy_callback = cache_input_stream_destroy_callback;
+        draw_main_argument.m_cache_output_stream_init_callback = cache_output_stream_init_callback;
+        draw_main_argument.m_cache_output_stream_write_callback = cache_output_stream_write_callback;
+        draw_main_argument.m_cache_output_stream_destroy_callback = cache_output_stream_destroy_callback;
         mcrt_atomic_store(&this->m_draw_main_running, false);
 
-        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_draw_main_thread_id, draw_main, this);
+        PT_MAYBE_UNUSED bool res_native_thread_create = mcrt_native_thread_create(&m_draw_main_thread_id, draw_main, &draw_main_argument);
         assert(res_native_thread_create);
 
         while (!mcrt_atomic_load(&this->m_draw_main_running))
@@ -167,6 +201,9 @@ inline void wsi_win32_desktop::init(int cmd_show, pt_wsi_app_init_callback app_i
 
         assert(this->m_gfx_connection != NULL);
     }
+
+    ShowWindow(this->m_window, SW_SHOWDEFAULT);
+    UpdateWindow(this->m_window);
 
     // app_main
     {
@@ -251,14 +288,24 @@ inline pt_gfx_wsi_window_ref wsi_win32_desktop::wrap_wsi_window(HWND wsi_window)
     return reinterpret_cast<pt_gfx_wsi_window_ref>(reinterpret_cast<uintptr_t>(wsi_window));
 }
 
-unsigned int wsi_win32_desktop::draw_main(void *argument)
+unsigned int wsi_win32_desktop::draw_main(void *argument_void)
 {
-    class wsi_win32_desktop *instance = static_cast<class wsi_win32_desktop *>(argument);
+    class wsi_win32_desktop *instance = NULL;
+    // draw_init
+    {
+        struct draw_main_argument_t *argument = static_cast<struct draw_main_argument_t *>(argument_void);
+        argument->m_instance->m_gfx_connection = pt_gfx_connection_init(
+            NULL, NULL,
+            argument->m_cache_input_stream_init_callback, argument->m_cache_input_stream_stat_size_callback, argument->m_cache_input_stream_read_callback, argument->m_cache_input_stream_destroy_callback,
+            argument->m_cache_output_stream_init_callback, argument->m_cache_output_stream_write_callback, argument->m_cache_output_stream_destroy_callback);
+        assert(argument->m_instance->m_gfx_connection != NULL);
 
-    instance->m_gfx_connection = pt_gfx_connection_init(NULL, NULL, ".");
-    assert(instance->m_gfx_connection != NULL);
-    mcrt_atomic_store(&instance->m_draw_main_running, true);
+        instance = argument->m_instance;
 
+        mcrt_atomic_store(&argument->m_instance->m_draw_main_running, true);
+    }
+
+    //draw_main
     pt_gfx_connection_on_wsi_window_created(instance->m_gfx_connection, NULL, wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
 
     while (mcrt_atomic_load(&instance->m_draw_main_running))
@@ -289,19 +336,21 @@ unsigned int wsi_win32_desktop::draw_main(void *argument)
 
 unsigned int wsi_win32_desktop::app_main(void *argument_void)
 {
-    pt_wsi_app_ref wsi_app;
-	pt_wsi_app_main_callback app_main_callback;
+    class wsi_win32_desktop *instance = NULL;
+    pt_wsi_app_main_callback app_main_callback = NULL;
     // app_init
     {
         struct app_main_argument_t *argument = static_cast<struct app_main_argument_t *>(argument_void);
-        wsi_app = argument->m_app_init_callback(argument->m_instance->m_gfx_connection);
+        argument->m_instance->m_wsi_app = argument->m_app_init_callback(argument->m_argc, argument->m_argv, argument->m_instance->m_gfx_connection);
+
+        instance = argument->m_instance;
         app_main_callback = argument->m_app_main_callback;
-        argument->m_instance->m_wsi_app = wsi_app;
+
         mcrt_atomic_store(&argument->m_instance->m_app_main_running, true);
     }
 
     // app_main
-    int res_app_main_callback = app_main_callback(wsi_app);
+    int res_app_main_callback = app_main_callback(instance->m_wsi_app);
 
     // mcrt_atomic_store(&self->m_loop, false);
 

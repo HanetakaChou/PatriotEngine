@@ -43,12 +43,6 @@
     <ClCompile Include="..\..\src\pt_gfx_mesh_base.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_gltf_lex_yacc.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_gltf_parse.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_mesh_vk.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -122,12 +116,6 @@
     <ClInclude Include="..\..\src\pt_gfx_mesh_base.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_gltf_lex_yacc.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_gltf_parse.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_mesh_base_load.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -163,18 +151,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\pt_gfx_mesh_base_gltf_lex.inl">
-      <Filter>src</Filter>
-    </None>
-    <None Include="..\..\src\pt_gfx_mesh_base_gltf_lex.l">
-      <Filter>src</Filter>
-    </None>
-    <None Include="..\..\src\pt_gfx_mesh_base_gltf_yacc.inl">
-      <Filter>src</Filter>
-    </None>
-    <None Include="..\..\src\pt_gfx_mesh_base_gltf_yacc.y">
-      <Filter>src</Filter>
-    </None>
     <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl">
       <Filter>src</Filter>
     </None>

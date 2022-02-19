@@ -2602,9 +2602,6 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
     return gfx_texture;
 }
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <pt_mcrt_scalable_allocator.h>
 #include <string>
 #include <string.h>

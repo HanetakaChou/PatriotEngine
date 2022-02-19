@@ -18,96 +18,35 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\src\pt_gfx_connection_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_connection_d3d12.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_connection_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_device_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_device_vk_wsi_win32.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_frame_object_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_malloc.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_malloc_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_material_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_material_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_node_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_node_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_scene_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_scene_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_streaming_object_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_dds.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_pvr.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_vk.cpp" />
-    <ClCompile Include="pt_dllmain.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\include\pt_gfx_common.h" />
-    <ClInclude Include="..\..\include\pt_gfx_connection.h" />
-    <ClInclude Include="..\..\src\pt_gfx_connection_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_connection_d3d12.h" />
-    <ClInclude Include="..\..\src\pt_gfx_connection_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_device_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_frame_object_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_malloc.h" />
-    <ClInclude Include="..\..\src\pt_gfx_malloc_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_material_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_material_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_node_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_node_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_scene_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_scene_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_streaming_object_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_base_load.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_vk.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl" />
-    <None Include="..\..\src\pt_gfx_shader_mesh_vertex_vk.inl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="pt_math.vcxproj">
-      <Project>{531a56e0-9849-4d24-b8a7-fde4dbf1a39e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="pt_mcrt.vcxproj">
-      <Project>{852991e1-1003-4a40-aac0-04f949045fc9}</Project>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{51e8c786-0aac-4cf7-ae10-547688124284}</ProjectGuid>
-    <RootNamespace>pt_gfx</RootNamespace>
+    <ProjectGuid>{16ea9680-a6c2-4d03-adad-c7314cfa7f4f}</ProjectGuid>
+    <RootNamespace>ptlauncher</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -155,16 +94,13 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;WIN32;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\vulkan_sdk\lib\win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -173,34 +109,28 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;WIN32;NDEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\vulkan_sdk\lib\win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\vulkan_sdk\lib\win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -209,20 +139,35 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;NDEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <SubSystem>Windows</SubSystem>
+      <SubSystem>Console</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\vulkan_sdk\lib\win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_base.cpp" />
+    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_win32_desktop.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="pt_gfx.vcxproj">
+      <Project>{51e8c786-0aac-4cf7-ae10-547688124284}</Project>
+    </ProjectReference>
+    <ProjectReference Include="pt_mcrt.vcxproj">
+      <Project>{852991e1-1003-4a40-aac0-04f949045fc9}</Project>
+    </ProjectReference>
+    <ProjectReference Include="pt_wsi.vcxproj">
+      <Project>{3afc3815-c868-4025-a550-b0aab2616101}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\samples\launcher\pt_wsi_app_base.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

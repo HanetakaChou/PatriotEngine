@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="samples">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="samples\launcher">
+      <UniqueIdentifier>{9ce7c66c-81f1-45b0-abe9-f151c546487b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_base.cpp">
+      <Filter>samples\launcher</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_win32_desktop.cpp">
+      <Filter>samples\launcher</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\samples\launcher\pt_wsi_app_base.h">
+      <Filter>samples\launcher</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
