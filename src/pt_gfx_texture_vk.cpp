@@ -77,48 +77,33 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
 
     assert(VK_NULL_HANDLE == this->m_image);
     {
-        VkImageCreateInfo create_info;
-        create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-        create_info.pNext = NULL;
-        create_info.flags = ((!vk_header.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
-        create_info.imageType = vk_header.imageType;
-        create_info.format = vk_header.format;
-        create_info.extent = vk_header.extent;
-        create_info.mipLevels = vk_header.mip_levels;
-        create_info.arrayLayers = vk_header.array_layers;
-        create_info.samples = VK_SAMPLE_COUNT_1_BIT;
-        create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
-        create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-        create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        create_info.queueFamilyIndexCount = 0U;
-        create_info.pQueueFamilyIndices = NULL;
-        create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        PT_MAYBE_UNUSED VkResult res = gfx_connection->create_image(&create_info, &this->m_image);
-        assert(VK_SUCCESS == res);
-    }
+        VkImageCreateInfo image_create_info;
+        image_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+        image_create_info.pNext = NULL;
+        image_create_info.flags = ((!vk_header.isCubeCompatible) ? 0U : VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT);
+        image_create_info.imageType = vk_header.imageType;
+        image_create_info.format = vk_header.format;
+        image_create_info.extent = vk_header.extent;
+        image_create_info.mipLevels = vk_header.mip_levels;
+        image_create_info.arrayLayers = vk_header.array_layers;
+        image_create_info.samples = VK_SAMPLE_COUNT_1_BIT;
+        image_create_info.tiling = VK_IMAGE_TILING_OPTIMAL;
+        image_create_info.usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        image_create_info.queueFamilyIndexCount = 0U;
+        image_create_info.pQueueFamilyIndices = NULL;
+        image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-    assert(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory);
-    {
-        VkMemoryRequirements memory_requirements;
-        gfx_connection->get_image_memory_requirements(m_image, &memory_requirements);
-
+        // TODO: multi-threading
         // vkAllocateMemory
         // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-        this->m_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_sampled_image_alloc(&memory_requirements, &this->m_gfx_malloc_page_handle, &this->m_gfx_malloc_offset, &this->m_gfx_malloc_size);
-        if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_gfx_malloc_device_memory))
+        bool res_asset_image_alloc = gfx_connection->asset_image_alloc(&image_create_info, &this->m_image, &this->m_image_allocation);
+        if (PT_UNLIKELY(!res_asset_image_alloc))
         {
-            gfx_connection->destroy_image(this->m_image);
             this->m_image = VK_NULL_HANDLE;
             return false;
         }
-    }
-    assert(VK_NULL_HANDLE != this->m_gfx_malloc_device_memory);
-
-    // bind memory
-    {
-        PT_MAYBE_UNUSED VkResult res_bind_image_memory = gfx_connection->bind_image_memory(this->m_image, this->m_gfx_malloc_device_memory, this->m_gfx_malloc_offset);
-        assert(VK_SUCCESS == res_bind_image_memory);
     }
 
     // image view
@@ -234,12 +219,7 @@ inline void gfx_texture_vk::unified_destory(class gfx_connection_vk *gfx_connect
 
     if (VK_NULL_HANDLE != this->m_image)
     {
-        gfx_connection->destroy_image(this->m_image);
-    }
-
-    if (VK_NULL_HANDLE != this->m_gfx_malloc_device_memory)
-    {
-        gfx_connection->transfer_dst_and_sampled_image_free(this->m_gfx_malloc_page_handle, this->m_gfx_malloc_offset, this->m_gfx_malloc_size, this->m_gfx_malloc_device_memory);
+        gfx_connection->asset_image_free(this->m_image, &this->m_image_allocation);
     }
 
     this->~gfx_texture_vk();

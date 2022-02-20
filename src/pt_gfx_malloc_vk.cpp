@@ -368,6 +368,22 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
     assert(VK_MAX_MEMORY_TYPES > transfer_src_memory_index);
     assert(physical_device_memory_properties.memoryTypeCount > transfer_src_memory_index);
 
+    // asset allocator
+    VmaVulkanFunctions vulkan_functions = {};
+    vulkan_functions.vkGetInstanceProcAddr = gfx_device->vk_get_instance_proc_addr();
+    vulkan_functions.vkGetDeviceProcAddr = gfx_device->vk_get_device_proc_addr();
+
+    VmaAllocatorCreateInfo allocator_create_info = {};
+    allocator_create_info.vulkanApiVersion = gfx_device->api_version();
+    allocator_create_info.physicalDevice = gfx_device->physical_device();
+    allocator_create_info.device = gfx_device->device();
+    allocator_create_info.instance = gfx_device->instance();
+    allocator_create_info.pAllocationCallbacks = gfx_device->vk_allocation_callbacks();
+    allocator_create_info.pVulkanFunctions = &vulkan_functions;
+
+    vmaCreateAllocator(&allocator_create_info, &this->m_asset_allocator);
+
+    // asset vertex buffer
     this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
         uint32_t memory_requirements_memory_type_bits_vertex_buffer = 0U;
@@ -455,6 +471,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
         return false;
     }
     assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index);
+    this->m_asset_vertex_buffer_memory_index = m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
+    this->m_asset_index_buffer_memory_index = m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
 
     this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index);
     this->gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_init(this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size);
@@ -600,6 +618,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
     this->m_transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_sampled_image_memory_index);
     this->gfx_malloc::transfer_dst_and_sampled_image_init(this->m_transfer_dst_and_sampled_image_page_size);
 
+    this->m_asset_image_memory_index = this->m_transfer_dst_and_sampled_image_memory_index;
+
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
     // combination of values for the format member, the tiling member, the VK_IMAGE_CREATE_SPARSE_BINDING_BIT bit of the flags member, and
@@ -681,6 +701,8 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
 
 void gfx_malloc_vk::destroy(class gfx_device_vk *gfx_device)
 {
+    vmaDestroyAllocator(this->m_asset_allocator);
+
     assert(VK_NULL_HANDLE != this->m_transfer_src_buffer);
     gfx_device->destroy_buffer(this->m_transfer_src_buffer);
 
@@ -732,6 +754,54 @@ void gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buf
     static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
     gfx_device->free_memory((VkDeviceMemory)page_memory_handle);
     return;
+}
+
+bool gfx_malloc_vk::asset_vertex_buffer_alloc(class gfx_device_vk* gfx_device, VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation)
+{
+    VmaAllocationCreateInfo allocation_create_info = {};
+    allocation_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocation_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    allocation_create_info.memoryTypeBits = 1 << this->m_asset_vertex_buffer_memory_index;
+
+    VkResult res_vma_create_buffer = vmaCreateBuffer(this->m_asset_allocator, buffer_create_info, &allocation_create_info, buffer, &allocation->m_vma_allocation, NULL);
+    return (VK_SUCCESS == res_vma_create_buffer);
+}
+
+void gfx_malloc_vk::asset_vertex_buffer_free(class gfx_device_vk*, VkBuffer buffer, struct gfx_malloc_allocation_vk const* allocation)
+{
+    vmaDestroyBuffer(this->m_asset_allocator, buffer, allocation->m_vma_allocation);
+}
+
+bool gfx_malloc_vk::asset_index_buffer_alloc(class gfx_device_vk* gfx_device, VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation)
+{
+    VmaAllocationCreateInfo allocation_create_info = {};
+    allocation_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocation_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    allocation_create_info.memoryTypeBits = 1 << this->m_asset_index_buffer_memory_index;
+
+    VkResult res_vma_create_buffer = vmaCreateBuffer(this->m_asset_allocator, buffer_create_info, &allocation_create_info, buffer, &allocation->m_vma_allocation, NULL);
+    return (VK_SUCCESS == res_vma_create_buffer);
+}
+
+void gfx_malloc_vk::asset_index_buffer_free(class gfx_device_vk*, VkBuffer buffer, struct gfx_malloc_allocation_vk const* allocation)
+{
+    vmaDestroyBuffer(this->m_asset_allocator, buffer, allocation->m_vma_allocation);
+}
+
+bool gfx_malloc_vk::asset_image_alloc(class gfx_device_vk *gfx_device, VkImageCreateInfo const* image_create_info, VkImage *image, struct gfx_malloc_allocation_vk *allocation)
+{
+    VmaAllocationCreateInfo allocation_create_info = {};
+    allocation_create_info.usage = VMA_MEMORY_USAGE_GPU_ONLY;
+    allocation_create_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+    allocation_create_info.memoryTypeBits = 1 << this->m_asset_image_memory_index;
+
+    VkResult res_vma_create_image = vmaCreateImage(this->m_asset_allocator, image_create_info, &allocation_create_info, image, &allocation->m_vma_allocation, NULL);
+    return (VK_SUCCESS == res_vma_create_image);
+}
+
+void gfx_malloc_vk::asset_image_free(class gfx_device_vk* gfx_device, VkImage image, struct gfx_malloc_allocation_vk const* allocation)
+{
+    vmaDestroyImage(this->m_asset_allocator, image, allocation->m_vma_allocation);
 }
 
 VkDeviceMemory gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)

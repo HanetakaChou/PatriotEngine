@@ -286,10 +286,30 @@ public:
 
     inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return this->m_device.create_buffer(create_info, buffer); }
     inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return this->m_device.get_buffer_memory_requirements(buffer, memory_requirements); }
-    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
     inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) { return this->m_device.bind_buffer_memory(buffer, memory, memory_offset); }
-    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(&this->m_device, page_handle, offset, size, device_memory); }
     inline void destroy_buffer(VkBuffer buffer) { return this->m_device.destroy_buffer(buffer); }
+
+    inline bool asset_vertex_buffer_alloc(VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation) {
+        return this->m_malloc.asset_vertex_buffer_alloc(&this->m_device, buffer_create_info, buffer, allocation);
+    }
+    inline void asset_vertex_buffer_free(VkBuffer buffer, struct gfx_malloc_allocation_vk const* allocation) {
+        return this->m_malloc.asset_vertex_buffer_free(&this->m_device, buffer, allocation);
+    }
+    inline bool asset_index_buffer_alloc(VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation) {
+        return this->m_malloc.asset_index_buffer_alloc(&this->m_device, buffer_create_info, buffer, allocation);
+    }
+    inline void asset_index_buffer_free(VkBuffer buffer, struct gfx_malloc_allocation_vk const* allocation) {
+        return this->m_malloc.asset_index_buffer_free(&this->m_device, buffer, allocation);
+    }
+    inline bool asset_image_alloc(VkImageCreateInfo const* image_create_info, VkImage* image, struct gfx_malloc_allocation_vk* allocation) {
+        return this->m_malloc.asset_image_alloc(&this->m_device, image_create_info, image, allocation);
+    }
+    inline void asset_image_free(VkImage image, struct gfx_malloc_allocation_vk const* allocation) {
+        return this->m_malloc.asset_image_free(&this->m_device, image, allocation);
+    }
+
+    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const* memory_requirements, void** out_page_handle, uint64_t* out_offset, uint64_t* out_size) { return this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
+    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(void* page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(&this->m_device, page_handle, offset, size, device_memory); }
 
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_device.get_physical_device_format_properties(format, format_properties); }
     inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }

@@ -2282,7 +2282,7 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
                 VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
                 VkDeviceSize offsets[2] = {0U, 0U};
                 gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
-                gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, mesh->m_index_buffer, 0U, mesh->m_indexType);
+                gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, mesh->m_index_buffer, 0U, mesh->m_index_type);
 
                 gfx_connection->m_device.cmd_draw(secondary_command_buffer, 36U, 1U, 0U, 0U);
             }

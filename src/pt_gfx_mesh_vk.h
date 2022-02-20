@@ -30,47 +30,37 @@ class gfx_mesh_vk final : public gfx_mesh_base
     // seperate position and varying
 public:
     VkBuffer m_vertex_position_buffer;
-
 private:
-    uint64_t m_vertex_position_gfx_malloc_offset;
-    uint64_t m_vertex_position_gfx_malloc_size;
-    void *m_vertex_position_gfx_malloc_page_handle;
-    VkDeviceMemory m_vertex_position_gfx_malloc_device_memory;
+    struct gfx_malloc_allocation_vk m_vertex_position_allocation;
 
 public:
     VkBuffer m_vertex_varying_buffer;
-
 private:
-    uint64_t m_vertex_varying_gfx_malloc_offset;
-    uint64_t m_vertex_varying_gfx_malloc_size;
-    void *m_vertex_varying_gfx_malloc_page_handle;
-    VkDeviceMemory m_vertex_varying_gfx_malloc_device_memory;
+    struct gfx_malloc_allocation_vk m_vertex_varying_allocation;
 
 public:
     VkBuffer m_index_buffer;
-    VkIndexType m_indexType;
+    VkIndexType m_index_type;
 private:
-    uint64_t m_index_gfx_malloc_offset;
-    uint64_t m_index_gfx_malloc_size;
-    void *m_index_gfx_malloc_page_handle;
-    VkDeviceMemory m_index_gfx_malloc_device_memory;
+    struct gfx_malloc_allocation_vk m_index_allocation;
 
-    bool mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t *const neutral_header) override;
-    size_t mesh_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset) override;
-    bool mesh_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback) override;
+    bool mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base* gfx_connection, struct gfx_mesh_neutral_header_t* const neutral_header) override;
+    size_t mesh_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base* gfx_connection, struct gfx_mesh_neutral_header_t const* neutral_header, struct gfx_mesh_neutral_memcpy_dest_t* memcpy_dest, uint64_t base_offset) override;
+    bool mesh_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base* gfx_connection, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const* neutral_header, struct gfx_mesh_neutral_memcpy_dest_t* memcpy_dest, pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback) override;
 
-    void pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
-    bool streaming_done_callback(class gfx_connection_base *gfx_connection) override;
-    void post_stream_done_destroy_callback(class gfx_connection_base *gfx_connection) override;
-    inline void unified_destory(class gfx_connection_vk *gfx_connection);
+    void pre_streaming_done_destroy_callback(class gfx_connection_base* gfx_connection) override;
+    bool streaming_done_callback(class gfx_connection_base* gfx_connection) override;
+    void post_stream_done_destroy_callback(class gfx_connection_base* gfx_connection) override;
+    inline void unified_destory(class gfx_connection_vk* gfx_connection);
 
 public:
-    inline gfx_mesh_vk() : gfx_mesh_base(),
-                           m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_position_gfx_malloc_offset(uint64_t(-1)), m_vertex_position_gfx_malloc_size(uint64_t(-1)), m_vertex_position_gfx_malloc_page_handle(NULL), m_vertex_position_gfx_malloc_device_memory(VK_NULL_HANDLE),
-                           m_vertex_varying_buffer(VK_NULL_HANDLE), m_vertex_varying_gfx_malloc_offset(uint64_t(-1)), m_vertex_varying_gfx_malloc_size(uint64_t(-1)), m_vertex_varying_gfx_malloc_page_handle(NULL), m_vertex_varying_gfx_malloc_device_memory(VK_NULL_HANDLE),
-                           m_index_buffer(VK_NULL_HANDLE), m_index_gfx_malloc_offset(uint64_t(-1)), m_index_gfx_malloc_size(uint64_t(-1)), m_index_gfx_malloc_page_handle(NULL), m_index_gfx_malloc_device_memory(VK_NULL_HANDLE)
+    inline gfx_mesh_vk() : gfx_mesh_base(), m_vertex_position_buffer(VK_NULL_HANDLE), m_vertex_varying_buffer(VK_NULL_HANDLE), m_index_buffer(VK_NULL_HANDLE)
     {
+
     }
+
+private:
+    inline ~gfx_mesh_vk() {}
 };
 
 #endif

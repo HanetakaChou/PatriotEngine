@@ -34,12 +34,12 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
     if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT16 == neutral_header->index_type)
     {
         index_size = 2U;
-        this->m_indexType = VK_INDEX_TYPE_UINT16;
+        this->m_index_type = VK_INDEX_TYPE_UINT16;
     }
     else if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT32 == neutral_header->index_type)
     {
         index_size = 4U;
-        this->m_indexType = VK_INDEX_TYPE_UINT32;
+        this->m_index_type = VK_INDEX_TYPE_UINT32;
     }
     else
     {
@@ -62,31 +62,16 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             buffer_create_info.queueFamilyIndexCount = 0U;
             buffer_create_info.pQueueFamilyIndices = NULL;
 
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_vertex_position_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_vertex_position_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_vertex_position_buffer, &memory_requirements);
-
+            // TODO: multi-threading
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            this->m_vertex_position_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_vertex_position_gfx_malloc_page_handle, &this->m_vertex_position_gfx_malloc_offset, &this->m_vertex_position_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_vertex_position_gfx_malloc_device_memory))
+            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_vertex_position_buffer, &this->m_vertex_position_allocation);
+            if (PT_UNLIKELY(!res_asset_vertex_buffer_alloc))
             {
-                gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
                 this->m_vertex_position_buffer = VK_NULL_HANDLE;
                 return false;
             }
-        }
-        assert(VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_vertex_position_buffer, this->m_vertex_position_gfx_malloc_device_memory, this->m_vertex_position_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
         }
     }
 
@@ -104,31 +89,16 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             buffer_create_info.queueFamilyIndexCount = 0U;
             buffer_create_info.pQueueFamilyIndices = NULL;
 
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_vertex_varying_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_vertex_varying_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_vertex_varying_buffer, &memory_requirements);
-
+            // TODO: multi-threading
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            this->m_vertex_varying_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_vertex_varying_gfx_malloc_page_handle, &this->m_vertex_varying_gfx_malloc_offset, &this->m_vertex_varying_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_vertex_varying_gfx_malloc_device_memory))
+            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_vertex_varying_buffer, &this->m_vertex_varying_allocation);
+            if (PT_UNLIKELY(!res_asset_vertex_buffer_alloc))
             {
-                gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
                 this->m_vertex_varying_buffer = VK_NULL_HANDLE;
                 return false;
             }
-        }
-        assert(VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_vertex_varying_buffer, this->m_vertex_varying_gfx_malloc_device_memory, this->m_vertex_varying_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
         }
     }
 
@@ -146,31 +116,16 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             buffer_create_info.queueFamilyIndexCount = 0U;
             buffer_create_info.pQueueFamilyIndices = NULL;
 
-            PT_MAYBE_UNUSED VkResult res = gfx_connection->create_buffer(&buffer_create_info, &this->m_index_buffer);
-            assert(VK_SUCCESS == res);
-        }
-
-        assert(VK_NULL_HANDLE == this->m_index_gfx_malloc_device_memory);
-        {
-            VkMemoryRequirements memory_requirements;
-            gfx_connection->get_buffer_memory_requirements(this->m_index_buffer, &memory_requirements);
-
+            // TODO: multi-threading
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            this->m_index_gfx_malloc_device_memory = gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&memory_requirements, &this->m_index_gfx_malloc_page_handle, &this->m_index_gfx_malloc_offset, &this->m_index_gfx_malloc_size);
-            if (PT_UNLIKELY(VK_NULL_HANDLE == this->m_index_gfx_malloc_device_memory))
+            bool res_asset_index_buffer_alloc = gfx_connection->asset_index_buffer_alloc(&buffer_create_info, &this->m_index_buffer, &this->m_index_allocation);
+            if (PT_UNLIKELY(!res_asset_index_buffer_alloc))
             {
-                gfx_connection->destroy_buffer(this->m_index_buffer);
                 this->m_index_buffer = VK_NULL_HANDLE;
                 return false;
             }
-        }
-        assert(VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory);
-
-        {
-            PT_MAYBE_UNUSED VkResult res_bind_buffer_memory = gfx_connection->bind_buffer_memory(this->m_index_buffer, this->m_index_gfx_malloc_device_memory, this->m_index_gfx_malloc_offset);
-            assert(VK_SUCCESS == res_bind_buffer_memory);
         }
     }
 
@@ -340,34 +295,20 @@ inline void gfx_mesh_vk::unified_destory(class gfx_connection_vk *gfx_connection
 
     if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
     {
-        gfx_connection->destroy_buffer(this->m_vertex_position_buffer);
+        gfx_connection->asset_vertex_buffer_free(this->m_vertex_position_buffer, &this->m_vertex_position_allocation);
     }
 
     if (VK_NULL_HANDLE != this->m_vertex_varying_buffer)
     {
-        gfx_connection->destroy_buffer(this->m_vertex_varying_buffer);
+        gfx_connection->asset_vertex_buffer_free(this->m_vertex_varying_buffer, &this->m_vertex_varying_allocation);
     }
 
     if (VK_NULL_HANDLE != this->m_index_buffer)
     {
-        gfx_connection->destroy_buffer(this->m_index_buffer);
-    }
-
-    if (VK_NULL_HANDLE != this->m_vertex_position_gfx_malloc_device_memory)
-    {
-        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_position_gfx_malloc_page_handle, this->m_vertex_position_gfx_malloc_offset, this->m_vertex_position_gfx_malloc_size, this->m_vertex_position_gfx_malloc_device_memory);
-    }
-
-    if (VK_NULL_HANDLE != this->m_vertex_varying_gfx_malloc_device_memory)
-    {
-        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_vertex_varying_gfx_malloc_page_handle, this->m_vertex_varying_gfx_malloc_offset, this->m_vertex_varying_gfx_malloc_size, this->m_vertex_varying_gfx_malloc_device_memory);
-    }
-
-    if (VK_NULL_HANDLE != this->m_index_gfx_malloc_device_memory)
-    {
-        gfx_connection->transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(this->m_index_gfx_malloc_page_handle, this->m_index_gfx_malloc_offset, this->m_index_gfx_malloc_size, this->m_index_gfx_malloc_device_memory);
+        gfx_connection->asset_index_buffer_free(this->m_index_buffer, &this->m_index_allocation);
     }
 
     this->~gfx_mesh_vk();
+
     mcrt_aligned_free(this);
 }

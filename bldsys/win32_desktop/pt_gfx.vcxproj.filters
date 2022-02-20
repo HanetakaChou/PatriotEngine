@@ -70,6 +70,9 @@
     <ClCompile Include="..\..\src\pt_gfx_device_vk_wsi_win32.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\third_party\vma\src\vk_mem_alloc.cpp">
+      <Filter>third_party\vma\src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -80,6 +83,18 @@
     </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{76f083d5-5c74-4e04-9112-91a9eefbc7aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{c6193f04-d320-4fe3-b964-267aef9e6581}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vma">
+      <UniqueIdentifier>{ba5ee064-2dc9-4ec4-98e6-c7429634c2e1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vma\include">
+      <UniqueIdentifier>{aea32474-ec0c-4a9a-8c78-1286f89b3d00}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vma\src">
+      <UniqueIdentifier>{39748041-e6f9-4f52-a8df-099d91574664}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -148,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="..\..\include\pt_gfx_connection.h">
       <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\third_party\vma\include\vk_mem_alloc.h">
+      <Filter>third_party\vma\include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

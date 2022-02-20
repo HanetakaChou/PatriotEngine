@@ -63,7 +63,9 @@ class gfx_device_vk
     VkAllocationCallbacks m_vk_mcrt_allocation_callbacks;
     VkAllocationCallbacks *m_vk_allocation_callbacks;
 
+    uint32_t m_api_version;
     VkInstance m_instance;
+    PFN_vkGetInstanceProcAddr m_vk_get_instance_proc_addr;
 
 #if (!defined(NDEBUG)) && defined(PT_VK_LAYER_KHRONOS_VALIDATION) && (PT_VK_LAYER_KHRONOS_VALIDATION)
     VkDebugReportCallbackEXT m_debug_report_callback;
@@ -82,6 +84,7 @@ class gfx_device_vk
     bool m_physical_device_feature_texture_compression_BC;
 
     VkDevice m_device;
+    PFN_vkGetDeviceProcAddr m_vk_get_device_proc_addr;
     bool m_has_dedicated_transfer_queue;
     uint32_t m_queue_graphics_family_index;
     uint32_t m_queue_transfer_family_index;
@@ -182,10 +185,16 @@ public:
     inline VkBool32 debug_report_callback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objectType, uint64_t object, size_t location, int32_t messageCode, const char *pLayerPrefix, const char *pMessage);
 #endif
 
-    inline uint32_t physical_device_pipeline_vendor_id()
-    {
-        return m_physical_device_pipeline_vendor_id;
-    }
+    // VMA
+    inline uint32_t api_version(){ return m_api_version; }
+    inline VkInstance instance() { return m_instance; }
+    inline PFN_vkGetInstanceProcAddr vk_get_instance_proc_addr() { return m_vk_get_instance_proc_addr; }
+    inline VkPhysicalDevice physical_device() { return m_physical_device; }
+    inline VkDevice device() { return m_device; }
+    inline PFN_vkGetDeviceProcAddr vk_get_device_proc_addr() { return m_vk_get_device_proc_addr; }
+    inline VkAllocationCallbacks* vk_allocation_callbacks() { return m_vk_allocation_callbacks; }
+
+    inline uint32_t physical_device_pipeline_vendor_id() { return m_physical_device_pipeline_vendor_id; }
     inline uint32_t physical_device_pipeline_device_id() { return m_physical_device_pipeline_device_id; }
     inline mcrt_uuid physical_device_pipeline_cache_uuid() { return m_physical_device_pipeline_cache_uuid; }
 

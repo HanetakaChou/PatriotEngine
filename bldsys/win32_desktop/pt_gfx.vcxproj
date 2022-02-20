@@ -41,6 +41,7 @@
     <ClCompile Include="..\..\src\pt_gfx_texture_base_load_dds.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_texture_base_load_pvr.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_texture_vk.cpp" />
+    <ClCompile Include="..\..\third_party\vma\src\vk_mem_alloc.cpp" />
     <ClCompile Include="pt_dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -66,6 +67,7 @@
     <ClInclude Include="..\..\src\pt_gfx_texture_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_texture_base_load.h" />
     <ClInclude Include="..\..\src\pt_gfx_texture_vk.h" />
+    <ClInclude Include="..\..\third_party\vma\include\vk_mem_alloc.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl" />
@@ -157,7 +159,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;WIN32;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;$(SolutionDir)\..\..\third_party\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -175,7 +177,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;WIN32;NDEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;$(SolutionDir)\..\..\third_party\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -193,7 +195,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;$(SolutionDir)\..\..\third_party\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -211,7 +213,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;NDEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\vulkan_sdk\include;$(SolutionDir)\..\..\third_party\vma\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
