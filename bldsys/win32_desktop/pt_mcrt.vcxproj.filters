@@ -10,6 +10,21 @@
     <Filter Include="include">
       <UniqueIdentifier>{f23ce42f-b13a-457b-8829-84aadf3897b4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{48056ea1-39b2-48da-a94c-55d41f0e2107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb">
+      <UniqueIdentifier>{ddfc33ec-fb45-4bc1-b3c7-298eb19818c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib">
+      <UniqueIdentifier>{6759eb02-53ef-4df8-bb3c-8f3596813bbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib\win32_desktop_x64">
+      <UniqueIdentifier>{44c6eafa-8daa-4264-bfd0-dee67866cdfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib\win32_desktop_x86">
+      <UniqueIdentifier>{94efef89-4a97-4b3f-94a8-1863b20fb295}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pt_dllmain.cpp">
@@ -109,5 +124,25 @@
     <None Include="..\..\include\pt_mcrt_thread_win32.inl">
       <Filter>include</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_irml.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbb.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbbmalloc.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_irml.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbb.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbbmalloc.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

@@ -125,6 +125,7 @@ mcrt_task_ref gfx_material_base::material_streaming_stage_second_task_execute(mc
             if (!task_data->m_gfx_streaming_object->m_gfx_textures[texture_index]->is_streaming_done())
             {
                 // recycle to prevent free_task
+                mcrt_task_set_parent(self, NULL);
                 mcrt_task_recycle_as_child_of(self, task_data->m_gfx_connection->streaming_task_respawn_root());
 
                 task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);

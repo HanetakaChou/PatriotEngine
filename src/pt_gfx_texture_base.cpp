@@ -188,6 +188,7 @@ mcrt_task_ref gfx_texture_base::texture_streaming_stage_second_task_execute(mcrt
                 if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
                 {
                     // recycle to prevent free_task
+                    mcrt_task_set_parent(self, NULL);
                     mcrt_task_recycle_as_child_of(self, task_data->m_gfx_connection->streaming_task_respawn_root());
 
                     task_data->m_gfx_connection->streaming_task_respawn_list_push(streaming_throttling_index, self);

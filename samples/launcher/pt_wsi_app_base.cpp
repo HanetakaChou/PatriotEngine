@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#include <time.h>
 #include <vector>
 #include "pt_wsi_app_base.h"
 #include <pt_mcrt_thread.h>
@@ -82,11 +83,11 @@ int launcher_app::main()
 
     std::vector<pt_gfx_texture_ref> my_textures;
 
-    unsigned rand_buf = (unsigned)time(NULL);
+    srand((unsigned)time(NULL));
 
     for (int i = 0; i < 500; ++i)
     {
-        long int r1 = rand_r(&rand_buf);
+        long int r1 = rand();
 
         if (0 == r1 % 9 || 1 == r1 % 9 || 2 == r1 % 9 || 3 == r1 % 9)
         {
@@ -116,7 +117,7 @@ int launcher_app::main()
         {
             if (!my_textures.empty())
             {
-                long int r2 = rand_r(&rand_buf);
+                long int r2 = rand();
                 size_t vec_idx = (r2 % (my_textures.size() / 2 + 1));
                 pt_gfx_texture_ref my_texture = my_textures[vec_idx];
                 my_textures[vec_idx] = my_textures.back();
