@@ -60,8 +60,7 @@ The asset streaming process is totally asynchronous. This means that the calling
 ### Platform Support  
 - [ ] Vulkan  
   - [ ] MemoryAllocator  
-    - [x] SLOB  
-    - [ ] RingBuffer  
+    - [x] VMA  
   - [ ] TextureLoader  
     - [x] DDS  
     - [x] PVR  
@@ -72,16 +71,13 @@ The asset streaming process is totally asynchronous. This means that the calling
     - [ ] ALEMBIC
     - [ ] USD
     - [ ] FBX
-  - [ ] WSI  
+  - [x] WSI  
     - [x] PosixLinuxX11  
     - [x] PosixLinuxAndroid  
     - [x] PosixMachOSX
     - [x] PosixMachIOS
-    - [ ] Win32Desktop  
+    - [x] Win32Desktop  
 - [ ] Metal  
-  - [ ] MemoryAllocator  
-    - [x] SLOB  
-    - [ ] RingBuffer  
   - [ ] TextureLoader  
     - [ ] DDS  
     - [ ] PVR  
@@ -97,8 +93,7 @@ The asset streaming process is totally asynchronous. This means that the calling
     - [ ] PosixMachIOS  
 - [ ] Direct3D12  
   - [ ] MemoryAllocator  
-    - [x] SLOB  
-    - [ ] RingBuffer  
+    - [ ] AMD VMA  
   - [ ] TextureLoader  
     - [ ] DDS  
     - [ ] PVR  

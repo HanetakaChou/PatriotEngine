@@ -20,7 +20,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "pt_gfx_malloc.h"
 #include "pt_gfx_device_vk.h"
 #include <vulkan/vulkan.h>
 #include <vk_mem_alloc.h>
@@ -30,7 +29,7 @@ struct gfx_malloc_allocation_vk
     VmaAllocation m_vma_allocation;
 };
 
-class gfx_malloc_vk : public gfx_malloc
+class gfx_malloc_vk
 {
     // constant buffer
     VkDeviceSize m_uniform_buffer_size;
@@ -57,44 +56,6 @@ class gfx_malloc_vk : public gfx_malloc
     uint32_t m_asset_index_buffer_memory_index;
     uint32_t m_asset_image_memory_index;
 
-    // We never use a buffer as both the vertex buffer and the index buffer
-    uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-    VkDeviceSize m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
-
-    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data
-    {
-        class gfx_device_vk *m_gfx_device;
-        uint32_t m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-        VkDeviceSize m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
-    };
-    static uint64_t transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *);
-    static void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_free_pages(uint64_t, void *);
-
-
-    // We seperate buffer and optimal-tiling-image
-    // We have no linear-tiling-image
-    // ---
-    // Buffer-Image Granularity
-    // ---
-    // VkPhysicalDeviceLimits::bufferImageGranularity
-    // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/chap13.html#resources-bufferimagegranularity
-    // This restriction is only needed when a linear (BUFFER / IMAGE_TILING_LINEAR) resource and a non-linear (IMAGE_TILING_OPTIMAL) resource are adjacent in memory and will be used simultaneously.
-    // ---
-    // [VulkanMemoryAllocator](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
-    // VmaBlocksOnSamePage
-    // VmaIsBufferImageGranularityConflict
-    uint32_t m_transfer_dst_and_sampled_image_memory_index;
-    VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
-
-    struct transfer_dst_and_sampled_image_slob_new_pages_callback_data
-    {
-        class gfx_device_vk *m_gfx_device;
-        uint32_t m_transfer_dst_and_sampled_image_memory_index;
-        VkDeviceSize m_transfer_dst_and_sampled_image_page_size;
-    };
-    static uint64_t transfer_dst_and_sampled_image_slob_new_pages(void *);
-    static void transfer_dst_and_sampled_image_slob_free_pages(uint64_t, void *);
-
 public:
     gfx_malloc_vk();
     bool init(class gfx_device_vk *gfx_device);
@@ -119,12 +80,6 @@ public:
 
     bool asset_image_alloc(class gfx_device_vk* gfx_device, VkImageCreateInfo const* image_create_info, VkImage* image, struct gfx_malloc_allocation_vk* allocation);
     void asset_image_free(class gfx_device_vk* gfx_device, VkImage image, struct gfx_malloc_allocation_vk const* allocation);
-
-    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
-    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
-
-    VkDeviceMemory transfer_dst_and_sampled_image_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size);
-    void transfer_dst_and_sampled_image_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory);
 };
 
 #endif

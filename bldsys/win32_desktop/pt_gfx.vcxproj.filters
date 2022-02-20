@@ -28,9 +28,6 @@
     <ClCompile Include="..\..\src\pt_gfx_frame_object_base.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_malloc.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_malloc_vk.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -114,9 +111,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_frame_object_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_malloc.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_malloc_vk.h">

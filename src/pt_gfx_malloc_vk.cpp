@@ -18,7 +18,6 @@
 #include <pt_common.h>
 #include <pt_mcrt_intrin.h>
 #include <pt_gfx_common.h>
-#include "pt_gfx_malloc.h"
 #include "pt_gfx_malloc_vk.h"
 #include "pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
@@ -384,7 +383,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
     vmaCreateAllocator(&allocator_create_info, &this->m_asset_allocator);
 
     // asset vertex buffer
-    this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    this->m_asset_vertex_buffer_memory_index = VK_MAX_MEMORY_TYPES;
     {
         uint32_t memory_requirements_memory_type_bits_vertex_buffer = 0U;
         {
@@ -411,6 +410,46 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
             gfx_device->destroy_buffer(dummy_buf);
         }
 
+        uint32_t memory_requirements_memory_type_bits = memory_requirements_memory_type_bits_vertex_buffer;
+
+        for (uint32_t memory_type_index;
+             (0U != memory_requirements_memory_type_bits) &&
+             // NOT HOST_VISIBLE
+             // The UMA driver may compress the buffer/texture to boost performance
+             (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)));
+             memory_requirements_memory_type_bits ^= (1U << memory_type_index))
+        {
+            assert(VK_MAX_MEMORY_TYPES > memory_type_index);
+            assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
+            uint32_t heap_index = physical_device_memory_properties.memoryTypes[memory_type_index].heapIndex;
+            assert(VK_MAX_MEMORY_TYPES > heap_index);
+            assert(physical_device_memory_properties.memoryHeapCount > heap_index);
+            VkDeviceSize heap_size = physical_device_memory_properties.memoryHeaps[heap_index].size;
+
+            if (heap_size >= VMA_SMALL_HEAP_MAX_SIZE)
+            {
+                this->m_asset_vertex_buffer_memory_index = memory_type_index;
+                break;
+            }
+            else
+            {
+                // The lower index indicates the more performance
+                if (VK_MAX_MEMORY_TYPES != this->m_asset_vertex_buffer_memory_index)
+                {
+                    this->m_asset_vertex_buffer_memory_index = memory_type_index;
+                }
+            }
+        }
+    }
+    if (VK_MAX_MEMORY_TYPES == this->m_asset_vertex_buffer_memory_index)
+    {
+        return false;
+    }
+    assert(VK_MAX_MEMORY_TYPES > this->m_asset_vertex_buffer_memory_index);
+
+    // asset index buffer
+    this->m_asset_index_buffer_memory_index = VK_MAX_MEMORY_TYPES;
+    {
         uint32_t memory_requirements_memory_type_bits_index_buffer = 0U;
         {
             struct VkBufferCreateInfo buffer_create_info_transfer_dst_and_index_buffer;
@@ -435,14 +474,14 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
             gfx_device->destroy_buffer(dummy_buf);
         }
 
-        uint32_t memory_requirements_memory_type_bits = (memory_requirements_memory_type_bits_vertex_buffer & memory_requirements_memory_type_bits_index_buffer);
+        uint32_t memory_requirements_memory_type_bits = memory_requirements_memory_type_bits_index_buffer;
 
         for (uint32_t memory_type_index;
-             (0U != memory_requirements_memory_type_bits) &&
-             // NOT HOST_VISIBLE
-             // The UMA driver may compress the buffer/texture to boost performance
-             (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)));
-             memory_requirements_memory_type_bits ^= (1U << memory_type_index))
+            (0U != memory_requirements_memory_type_bits) &&
+            // NOT HOST_VISIBLE
+            // The UMA driver may compress the buffer/texture to boost performance
+            (VK_MAX_MEMORY_TYPES != (memory_type_index = __internal_find_lowest_memory_type_index(&physical_device_memory_properties, memory_requirements_memory_type_bits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)));
+            memory_requirements_memory_type_bits ^= (1U << memory_type_index))
         {
             assert(VK_MAX_MEMORY_TYPES > memory_type_index);
             assert(physical_device_memory_properties.memoryTypeCount > memory_type_index);
@@ -453,29 +492,24 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
 
             if (heap_size >= VMA_SMALL_HEAP_MAX_SIZE)
             {
-                this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = memory_type_index;
+                this->m_asset_index_buffer_memory_index = memory_type_index;
                 break;
             }
             else
             {
                 // The lower index indicates the more performance
-                if (VK_MAX_MEMORY_TYPES != this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index)
+                if (VK_MAX_MEMORY_TYPES != this->m_asset_index_buffer_memory_index)
                 {
-                    this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = memory_type_index;
+                    this->m_asset_index_buffer_memory_index = memory_type_index;
                 }
             }
         }
     }
-    if (VK_MAX_MEMORY_TYPES == this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index)
+    if (VK_MAX_MEMORY_TYPES == this->m_asset_index_buffer_memory_index)
     {
         return false;
     }
-    assert(VK_MAX_MEMORY_TYPES > m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index);
-    this->m_asset_vertex_buffer_memory_index = m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-    this->m_asset_index_buffer_memory_index = m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-
-    this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index);
-    this->gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_init(this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size);
+    assert(VK_MAX_MEMORY_TYPES > this->m_asset_index_buffer_memory_index);
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a color format, the memoryTypeBits member is identical for all VkImage objects created with the
@@ -614,11 +648,7 @@ bool gfx_malloc_vk::init(class gfx_device_vk *gfx_device)
 
     this->m_color_attachment_and_input_attachment_and_transient_attachment_memory_index = color_format_transient_tiling_optimal_memory_index;
     this->m_color_attachment_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
-    this->m_transfer_dst_and_sampled_image_memory_index = color_format_regular_optimal_memory_index;
-    this->m_transfer_dst_and_sampled_image_page_size = __internal_calc_preferred_block_size(&physical_device_memory_properties, m_transfer_dst_and_sampled_image_memory_index);
-    this->gfx_malloc::transfer_dst_and_sampled_image_init(this->m_transfer_dst_and_sampled_image_page_size);
-
-    this->m_asset_image_memory_index = this->m_transfer_dst_and_sampled_image_memory_index;
+    this->m_asset_image_memory_index = color_format_regular_optimal_memory_index;
 
     // https://www.khronos.org/registry/vulkan/specs/1.0/html/chap13.html#VkMemoryRequirements
     // For images created with a depth/stencil format, the memoryTypeBits member is identical for all VkImage objects created with the same
@@ -721,41 +751,6 @@ gfx_malloc_vk::~gfx_malloc_vk()
     return;
 }
 
-uint64_t gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages(void *slob_new_pages_callback_data_void)
-{
-    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *slob_new_pages_callback_data = static_cast<struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data *>(slob_new_pages_callback_data_void);
-
-    VkDeviceMemory device_memory;
-    VkResult res_allocate_memory;
-    {
-        VkMemoryAllocateInfo memory_allocate_info;
-        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = slob_new_pages_callback_data->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
-        memory_allocate_info.memoryTypeIndex = slob_new_pages_callback_data->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-        res_allocate_memory = slob_new_pages_callback_data->m_gfx_device->allocate_memory(&memory_allocate_info, &device_memory);
-    }
-    assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
-
-    if (VK_SUCCESS == res_allocate_memory)
-    {
-        static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-        return (uint64_t)device_memory;
-    }
-    else
-    {
-        return PAGE_MEMORY_HANDLE_POISON;
-    }
-}
-
-void gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_free_pages(uint64_t page_memory_handle, void *gfx_device_void)
-{
-    class gfx_device_vk *gfx_device = static_cast<class gfx_device_vk *>(gfx_device_void);
-    static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-    gfx_device->free_memory((VkDeviceMemory)page_memory_handle);
-    return;
-}
-
 bool gfx_malloc_vk::asset_vertex_buffer_alloc(class gfx_device_vk* gfx_device, VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation)
 {
     VmaAllocationCreateInfo allocation_create_info = {};
@@ -802,103 +797,4 @@ bool gfx_malloc_vk::asset_image_alloc(class gfx_device_vk *gfx_device, VkImageCr
 void gfx_malloc_vk::asset_image_free(class gfx_device_vk* gfx_device, VkImage image, struct gfx_malloc_allocation_vk const* allocation)
 {
     vmaDestroyImage(this->m_asset_allocator, image, allocation->m_vma_allocation);
-}
-
-VkDeviceMemory gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)
-{
-    assert(((1U << m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index) & memory_requirements->memoryTypeBits) != 0);
-
-    struct transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages_callback_data slob_new_pages_callback_data;
-    slob_new_pages_callback_data.m_gfx_device = gfx_device;
-    slob_new_pages_callback_data.m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index = this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_memory_index;
-    slob_new_pages_callback_data.m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size = this->m_transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_page_size;
-
-    void *page_handle;
-    uint64_t page_memory_handle = this->gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(
-        memory_requirements->size, memory_requirements->alignment,
-        transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_new_pages, &slob_new_pages_callback_data, &page_handle, out_offset);
-
-    if (PAGE_MEMORY_HANDLE_POISON != page_memory_handle)
-    {
-        (*out_page_handle) = page_handle;
-        (*out_size) = memory_requirements->size;
-        return ((VkDeviceMemory)page_memory_handle);
-    }
-    else
-    {
-        (*out_page_handle) = NULL;
-        (*out_size) = 0U;
-        return VK_NULL_HANDLE;
-    }
-}
-
-void gfx_malloc_vk::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
-{
-    return this->gfx_malloc::transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(page_handle, offset, size, (uint64_t)device_memory, transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_slob_free_pages, gfx_device);
-}
-
-uint64_t gfx_malloc_vk::transfer_dst_and_sampled_image_slob_new_pages(void *slob_new_pages_callback_data_void)
-{
-    struct transfer_dst_and_sampled_image_slob_new_pages_callback_data *slob_new_pages_callback_data = static_cast<struct transfer_dst_and_sampled_image_slob_new_pages_callback_data *>(slob_new_pages_callback_data_void);
-
-    VkDeviceMemory device_memory;
-    VkResult res_allocate_memory;
-    {
-        VkMemoryAllocateInfo memory_allocate_info;
-        memory_allocate_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        memory_allocate_info.pNext = NULL;
-        memory_allocate_info.allocationSize = slob_new_pages_callback_data->m_transfer_dst_and_sampled_image_page_size;
-        memory_allocate_info.memoryTypeIndex = slob_new_pages_callback_data->m_transfer_dst_and_sampled_image_memory_index;
-        res_allocate_memory = slob_new_pages_callback_data->m_gfx_device->allocate_memory(&memory_allocate_info, &device_memory);
-    }
-    assert(VK_SUCCESS == res_allocate_memory || VK_ERROR_OUT_OF_HOST_MEMORY == res_allocate_memory || VK_ERROR_OUT_OF_DEVICE_MEMORY == res_allocate_memory);
-
-    if (VK_SUCCESS == res_allocate_memory)
-    {
-        static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-        return (uint64_t)device_memory;
-    }
-    else
-    {
-        return PAGE_MEMORY_HANDLE_POISON;
-    }
-}
-
-void gfx_malloc_vk::transfer_dst_and_sampled_image_slob_free_pages(uint64_t page_memory_handle, void *gfx_device_void)
-{
-    class gfx_device_vk *gfx_device = static_cast<class gfx_device_vk *>(gfx_device_void);
-    static_assert(sizeof(VkDeviceMemory) == sizeof(uint64_t), "");
-    gfx_device->free_memory((VkDeviceMemory)page_memory_handle);
-    return;
-}
-
-VkDeviceMemory gfx_malloc_vk::transfer_dst_and_sampled_image_alloc(class gfx_device_vk *gfx_device, VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size)
-{
-    assert(((1U << m_transfer_dst_and_sampled_image_memory_index) & memory_requirements->memoryTypeBits) != 0);
-
-    struct transfer_dst_and_sampled_image_slob_new_pages_callback_data slob_new_pages_callback_data;
-    slob_new_pages_callback_data.m_gfx_device = gfx_device;
-    slob_new_pages_callback_data.m_transfer_dst_and_sampled_image_memory_index = this->m_transfer_dst_and_sampled_image_memory_index;
-    slob_new_pages_callback_data.m_transfer_dst_and_sampled_image_page_size = this->m_transfer_dst_and_sampled_image_page_size;
-
-    void *page_handle;
-    uint64_t page_memory_handle = this->gfx_malloc::transfer_dst_and_sampled_image_alloc(memory_requirements->size, memory_requirements->alignment, transfer_dst_and_sampled_image_slob_new_pages, &slob_new_pages_callback_data, &page_handle, out_offset);
-
-    if (PAGE_MEMORY_HANDLE_POISON != page_memory_handle)
-    {
-        (*out_page_handle) = page_handle;
-        (*out_size) = memory_requirements->size;
-        return ((VkDeviceMemory)page_memory_handle);
-    }
-    else
-    {
-        (*out_page_handle) = NULL;
-        (*out_size) = 0U;
-        return VK_NULL_HANDLE;
-    }
-}
-
-void gfx_malloc_vk::transfer_dst_and_sampled_image_free(class gfx_device_vk *gfx_device, void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory)
-{
-    return this->gfx_malloc::transfer_dst_and_sampled_image_free(page_handle, offset, size, (uint64_t)device_memory, transfer_dst_and_sampled_image_slob_free_pages, gfx_device);
 }

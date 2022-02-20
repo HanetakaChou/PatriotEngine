@@ -16,5 +16,3 @@ jobs:
         run: sudo ./bldsys/posix_linux_x11/install_ubuntu_dependencies.sh x64
       - name: Build Ubuntu LTS Release
         run: ./bldsys/posix_linux_x11/build.sh release x64
-      - name: Test Ubuntu LTS Release
-        run: ./bldsys/posix_linux_x11/run_tests.sh release x64

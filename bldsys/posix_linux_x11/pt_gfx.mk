@@ -97,32 +97,3 @@ LOCAL_CPPFLAGS += -std=c99
 LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
 
 include $(BUILD_STATIC_LIBRARY)
-
-# pt_gfx_malloc_unit_test
-
-include $(CLEAR_VARS)
-
-LOCAL_MODULE := pt_gfx_malloc_unit_test
-
-LOCAL_SRC_FILES:= \
-	$(abspath $(LOCAL_PATH)/../../src)/pt_gfx_malloc.cpp \
-	$(abspath $(LOCAL_PATH)/../../samples/unit_tests)/pt_gfx_malloc_unit_test.cpp \
-
-#LOCAL_CFLAGS += -fdiagnostics-format=msvc
-LOCAL_CFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
-LOCAL_CFLAGS += -Werror=return-type
-LOCAL_CFLAGS += -fvisibility=hidden
-LOCAL_CFLAGS += -Wall
-
-#LOCAL_CPPFLAGS += -std=c++11
-
-LOCAL_C_INCLUDES += $(abspath $(LOCAL_PATH)/../../include)
-
-LOCAL_LDFLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
-LOCAL_LDFLAGS += -Wl,--enable-new-dtags # the linker can't recognize the old dtags
-LOCAL_LDFLAGS += -Wl,-rpath,XORIGIN # chrpath can only make path shorter
-LOCAL_LDFLAGS += -Wl,--version-script,$(abspath $(LOCAL_PATH))/pt_executable.def
-
-LOCAL_SHARED_LIBRARIES := libpt_mcrt
-
-include $(BUILD_EXECUTABLE)

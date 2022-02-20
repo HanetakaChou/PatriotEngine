@@ -25,7 +25,6 @@
     <ClCompile Include="..\..\src\pt_gfx_device_vk.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_device_vk_wsi_win32.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_frame_object_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_malloc.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_malloc_vk.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_material_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_material_vk.cpp" />
@@ -52,7 +51,6 @@
     <ClInclude Include="..\..\src\pt_gfx_connection_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_device_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_frame_object_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_malloc.h" />
     <ClInclude Include="..\..\src\pt_gfx_malloc_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_material_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_material_vk.h" />

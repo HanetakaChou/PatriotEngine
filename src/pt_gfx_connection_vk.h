@@ -289,6 +289,15 @@ public:
     inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) { return this->m_device.bind_buffer_memory(buffer, memory, memory_offset); }
     inline void destroy_buffer(VkBuffer buffer) { return this->m_device.destroy_buffer(buffer); }
 
+    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_device.get_physical_device_format_properties(format, format_properties); }
+    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
+    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
+    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
+    inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
+
+    inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_device.create_image_view(create_info, view); }
+    inline void destroy_image_view(VkImageView image_view) { return this->m_device.destroy_image_view(image_view); }
+
     inline bool asset_vertex_buffer_alloc(VkBufferCreateInfo const* buffer_create_info, VkBuffer* buffer, struct gfx_malloc_allocation_vk* allocation) {
         return this->m_malloc.asset_vertex_buffer_alloc(&this->m_device, buffer_create_info, buffer, allocation);
     }
@@ -307,20 +316,6 @@ public:
     inline void asset_image_free(VkImage image, struct gfx_malloc_allocation_vk const* allocation) {
         return this->m_malloc.asset_image_free(&this->m_device, image, allocation);
     }
-
-    VkDeviceMemory transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(VkMemoryRequirements const* memory_requirements, void** out_page_handle, uint64_t* out_offset, uint64_t* out_size) { return this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
-    void transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(void* page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { this->m_malloc.transfer_dst_and_vertex_buffer_or_transfer_dst_and_index_buffer_free(&this->m_device, page_handle, offset, size, device_memory); }
-
-    inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_device.get_physical_device_format_properties(format, format_properties); }
-    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
-    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
-    inline VkDeviceMemory transfer_dst_and_sampled_image_alloc(VkMemoryRequirements const *memory_requirements, void **out_page_handle, uint64_t *out_offset, uint64_t *out_size) { return this->m_malloc.transfer_dst_and_sampled_image_alloc(&this->m_device, memory_requirements, out_page_handle, out_offset, out_size); }
-    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
-    inline void transfer_dst_and_sampled_image_free(void *page_handle, uint64_t offset, uint64_t size, VkDeviceMemory device_memory) { return this->m_malloc.transfer_dst_and_sampled_image_free(&this->m_device, page_handle, offset, size, device_memory); }
-    inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
-
-    inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_device.create_image_view(create_info, view); }
-    inline void destroy_image_view(VkImageView image_view) { return this->m_device.destroy_image_view(image_view); }
 
     bool allocate_descriptor_set(VkDescriptorSet *descriptor_set);
     void init_descriptor_set(VkDescriptorSet descriptor_set, uint32_t texture_count, class gfx_texture_base const *const *gfx_textures);
