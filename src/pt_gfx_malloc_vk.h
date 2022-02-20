@@ -38,10 +38,10 @@ class gfx_malloc_vk
     void *m_uniform_buffer_device_memory_pointer;
 
     // staging buffer
-    VkDeviceSize m_transfer_src_buffer_size;
-    VkBuffer m_transfer_src_buffer;
-    VkDeviceMemory m_transfer_src_buffer_device_memory;
-    void *m_transfer_src_buffer_device_memory_pointer;
+    VkDeviceSize m_staging_buffer_size;
+    VkBuffer m_staging_buffer;
+    VkDeviceMemory m_staging_buffer_device_memory;
+    void *m_staging_buffer_device_memory_pointer;
 
     // framebuffer attachment
     uint32_t m_color_attachment_and_input_attachment_and_transient_attachment_memory_index;
@@ -64,9 +64,9 @@ public:
 
     inline void *uniform_buffer_pointer() { return this->m_uniform_buffer_device_memory_pointer; }
 
-    inline void *transfer_src_buffer_pointer() { return this->m_transfer_src_buffer_device_memory_pointer; }
-    inline VkDeviceSize transfer_src_buffer_size() { return this->m_transfer_src_buffer_size; }
-    inline VkBuffer transfer_src_buffer() { return this->m_transfer_src_buffer; }
+    inline void *staging_buffer_pointer() { return this->m_staging_buffer_device_memory_pointer; }
+    inline VkDeviceSize staging_buffer_size() { return this->m_staging_buffer_size; }
+    inline VkBuffer staging_buffer() { return this->m_staging_buffer; }
 
     inline VkFormat format_depth() { return this->m_format_depth; }
     inline VkFormat format_depth_stencil() { return this->m_format_depth_stencil; }

@@ -118,19 +118,72 @@ public:
     inline LRESULT CALLBACK wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
+static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInCharsLeft, uint8_t* pOutBuf, uint32_t* pOutCharsLeft);
 
 PT_ATTR_WSI int PT_CALL pt_wsi_main(
-    int argc, char* argv[],
+    wchar_t* wide_cmd_line, int cmd_show,
     pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
     pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     wsi_win32_desktop instance;
-    instance.init(
-        argc, argv,
-        cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
-        cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
-        app_init_callback, app_main_callback);
+    {
+        char cmd_line[4096];
+        uint32_t in_chars_left = static_cast<uint32_t>(wcslen(wide_cmd_line));
+        uint32_t out_chars_left = 4096;
+        bool res_internal_utf8_to_utf16 = internal_utf16_to_utf8(reinterpret_cast<uint16_t*>(wide_cmd_line), &in_chars_left, reinterpret_cast<uint8_t*>(cmd_line), &out_chars_left);
+        assert(res_internal_utf8_to_utf16);
+        cmd_line[4096 - out_chars_left] = '\0';
+
+        char executable_name[] = { "PatriotEngine" };
+        char* argv[64] = { executable_name, NULL };
+        int argc = 1;
+        // CommandLineToArgvW 
+        {
+            //lexer
+            enum
+            {
+                WhiteSpace,
+                Text
+            }StateMachine = WhiteSpace;
+
+            for (size_t i = 0U; cmd_line[i] != '\0'; ++i)
+            {
+                switch (StateMachine)
+                {
+                case WhiteSpace:
+                {
+                    if (!((cmd_line[i] == ' ' || cmd_line[i] == '\t' || cmd_line[i] == '\r' || cmd_line[i] == '\n')))
+                    {
+                        assert(argc < 64);
+                        argv[argc] = cmd_line + i;
+                        ++argc;
+                        StateMachine = Text;
+                    }
+                }
+                case Text:
+                {
+                    if ((cmd_line[i] == ' ' || cmd_line[i] == '\t' || cmd_line[i] == '\r' || cmd_line[i] == '\n'))
+                    {
+                        cmd_line[i] = '\0';
+                        StateMachine = WhiteSpace;
+                    }
+                }
+                }
+
+                assert(i < 4096);
+            }
+
+            assert(argc < 64);
+            argv[argc] = NULL;
+        }
+
+        instance.init(
+            argc, argv,
+            cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
+            cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
+            app_init_callback, app_main_callback);
+    }
     return instance.main();
 }
 
@@ -357,4 +410,140 @@ unsigned int wsi_win32_desktop::app_main(void *argument_void)
     // wsi_window_app_destroy() //used in run //wsi_window_app_handle_event
 
     return static_cast<unsigned int>(res_app_main_callback);
+}
+
+static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInCharsLeft, uint8_t* pOutBuf, uint32_t* pOutCharsLeft)
+{
+    while ((*pInCharsLeft) >= 1)
+    {
+        uint32_t ucs4code = 0;//Accumulator
+
+        //UTF-16 To UCS-4
+        if ((*pInBuf) >= 0XD800U && (*pInBuf) <= 0XDBFFU)//110110xxxxxxxxxx
+        {
+            if ((*pInCharsLeft) >= 2)
+            {
+                ucs4code += (((*pInBuf) - 0XD800U) << 10U);//Accumulate
+
+                ++pInBuf;
+                --(*pInCharsLeft);
+
+                if ((*pInBuf) >= 0XDC00U && (*pInBuf) <= 0XDFFF)//110111xxxxxxxxxx
+                {
+                    ucs4code += ((*pInBuf) - 0XDC00U);//Accumulate
+
+                    ++pInBuf;
+                    --(*pInCharsLeft);
+                }
+                else
+                {
+                    return false;
+                }
+
+                ucs4code += 0X10000U;
+
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else
+        {
+            ucs4code += (*pInBuf);//Accumulate
+
+            ++pInBuf;
+            --(*pInCharsLeft);
+        }
+
+        //UCS-4 To UTF-16
+        if (ucs4code < 128U)//0XXX XXXX
+        {
+            if ((*pOutCharsLeft) >= 1)
+            {
+                (*pOutBuf) = static_cast<uint8_t>(ucs4code);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (ucs4code < 2048U)//110X XXXX 10XX XXXX
+        {
+            if ((*pOutCharsLeft) >= 2)
+            {
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X7C0U) >> 6U) + 192U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (ucs4code < 0X10000U)//1110 XXXX 10XX XXXX 10XX XXXX
+        {
+            if ((*pOutCharsLeft) >= 3)
+            {
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XF000U) >> 12U) + 224U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else if (ucs4code < 0X200000U)//1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
+        {
+            if ((*pOutCharsLeft) >= 4)
+            {
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X1C0000U) >> 18U) + 240U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X3F000U) >> 12U) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+
+                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
+
+                ++pOutBuf;
+                --(*pOutCharsLeft);
+            }
+            else//ucs4code >= 0X200000U
+            {
+                return false;
+            }
+        }
+    }
+
+    return true;
 }

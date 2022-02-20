@@ -159,7 +159,7 @@ size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callb
 void *gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    return gfx_connection->transfer_src_buffer_pointer();
+    return gfx_connection->staging_buffer_pointer();
 }
 
 uint32_t (*gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)
@@ -175,7 +175,7 @@ void gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_ca
     // copy_buffer_to_image
     {
         uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-        VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
+        VkBuffer staging_buffer = gfx_connection->staging_buffer();
 
         VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(VkBufferImageCopy) * subresource_num, alignof(VkBufferImageCopy)));
         get_copyable_footprints_cmdcpy(vk_header, subresource_num, memcpy_dest, cmdcopy_dest);
@@ -186,7 +186,7 @@ void gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_ca
             VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(vk_header->format, aspect_index), 0U, vk_header->mip_levels, 0U, vk_header->array_layers};
             uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(vk_header->array_layers, vk_header->mip_levels);
             uint32_t aspect_subresource_begin = calculate_subresource_index_vk(0U, 0U, aspect_index, vk_header->mip_levels, vk_header->array_layers);
-            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, cmdcopy_dest + aspect_subresource_begin);
+            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, cmdcopy_dest + aspect_subresource_begin);
         }
 
         mcrt_aligned_free(cmdcopy_dest);

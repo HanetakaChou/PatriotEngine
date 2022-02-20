@@ -274,8 +274,8 @@ public:
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
     // Streaming
-    inline void *transfer_src_buffer_pointer() { return m_malloc.transfer_src_buffer_pointer(); }
-    inline VkBuffer transfer_src_buffer() { return m_malloc.transfer_src_buffer(); }
+    inline void *staging_buffer_pointer() { return m_malloc.staging_buffer_pointer(); }
+    inline VkBuffer staging_buffer() { return m_malloc.staging_buffer(); }
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_row_pitch_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_row_pitch_alignment(); }
@@ -284,16 +284,7 @@ public:
     void copy_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
     void copy_buffer_to_image(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkBuffer src_buffer, VkImage dst_image, VkImageSubresourceRange const *subresource_range, uint32_t region_count, const VkBufferImageCopy *regions);
 
-    inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return this->m_device.create_buffer(create_info, buffer); }
-    inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return this->m_device.get_buffer_memory_requirements(buffer, memory_requirements); }
-    inline VkResult bind_buffer_memory(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize memory_offset) { return this->m_device.bind_buffer_memory(buffer, memory, memory_offset); }
-    inline void destroy_buffer(VkBuffer buffer) { return this->m_device.destroy_buffer(buffer); }
-
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_device.get_physical_device_format_properties(format, format_properties); }
-    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_device.create_image(create_info, image); }
-    inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_device.get_image_memory_requirements(image, memory_requirements); }
-    inline VkResult bind_image_memory(VkImage image, VkDeviceMemory memory, VkDeviceSize memory_offset) { return m_device.bind_image_memory(image, memory, memory_offset); }
-    inline void destroy_image(VkImage image) { return this->m_device.destroy_image(image); }
 
     inline VkResult create_image_view(VkImageViewCreateInfo const *create_info, VkImageView *view) { return this->m_device.create_image_view(create_info, view); }
     inline void destroy_image_view(VkImageView image_view) { return this->m_device.destroy_image_view(image_view); }

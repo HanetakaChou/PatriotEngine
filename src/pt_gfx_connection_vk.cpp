@@ -130,9 +130,9 @@ inline bool gfx_connection_vk::init_streaming()
 #if defined(PT_GFX_DEBUG_MCRT) && PT_GFX_DEBUG_MCRT
         mcrt_assert_rwlock_init(&this->m_asset_rwlock_streaming_throttling_index[streaming_throttling_index]);
 #endif
-        this->m_transfer_src_buffer_begin[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
-        this->m_transfer_src_buffer_end[streaming_throttling_index] = this->m_transfer_src_buffer_begin[streaming_throttling_index];
-        this->m_transfer_src_buffer_size[streaming_throttling_index] = ((this->m_malloc.transfer_src_buffer_size() * (streaming_throttling_index + 1U)) / 3U) - ((this->m_malloc.transfer_src_buffer_size() * streaming_throttling_index) / 3U);
+        this->m_staging_buffer_begin[streaming_throttling_index] = ((this->m_malloc.staging_buffer_size() * streaming_throttling_index) / 3U);
+        this->m_staging_buffer_end[streaming_throttling_index] = this->m_staging_buffer_begin[streaming_throttling_index];
+        this->m_staging_buffer_size[streaming_throttling_index] = ((this->m_malloc.staging_buffer_size() * (streaming_throttling_index + 1U)) / 3U) - ((this->m_malloc.staging_buffer_size() * streaming_throttling_index) / 3U);
 
         this->m_streaming_thread_block[streaming_throttling_index] = static_cast<struct streaming_thread_block *>(mcrt_aligned_malloc(sizeof(struct streaming_thread_block) * this->m_streaming_thread_count, alignof(struct streaming_thread_block)));
 
@@ -776,17 +776,17 @@ void gfx_connection_vk::reduce_streaming_task()
 
     // free transfer_src buffer memory
     {
-        uint64_t transfer_src_buffer_begin = this->m_transfer_src_buffer_begin[streaming_throttling_index];
+        uint64_t staging_buffer_begin = this->m_staging_buffer_begin[streaming_throttling_index];
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-        uint64_t transfer_src_buffer_end = this->m_transfer_src_buffer_end[streaming_throttling_index];
+        uint64_t staging_buffer_end = this->m_staging_buffer_end[streaming_throttling_index];
 #endif
-        this->m_transfer_src_buffer_end[streaming_throttling_index] = transfer_src_buffer_begin;
+        this->m_staging_buffer_end[streaming_throttling_index] = staging_buffer_begin;
 #if defined(PT_GFX_PROFILE) && PT_GFX_PROFILE
-        uint64_t transfer_src_buffer_size = this->m_transfer_src_buffer_size[streaming_throttling_index];
-        uint64_t transfer_src_buffer_used = (transfer_src_buffer_end - transfer_src_buffer_begin);
-        if (transfer_src_buffer_used > 0U)
+        uint64_t staging_buffer_size = this->m_staging_buffer_size[streaming_throttling_index];
+        uint64_t staging_buffer_used = (staging_buffer_end - staging_buffer_begin);
+        if (staging_buffer_used > 0U)
         {
-            mcrt_log_print("index %i: transfer_src_buffer unused memory %f mb\n", int(streaming_throttling_index), float(transfer_src_buffer_size - transfer_src_buffer_used) / 1024.0f / 1024.0f);
+            mcrt_log_print("index %i: staging_buffer unused memory %f mb\n", int(streaming_throttling_index), float(staging_buffer_size - staging_buffer_used) / 1024.0f / 1024.0f);
         }
 #endif
     }
@@ -1286,7 +1286,7 @@ inline bool gfx_connection_vk::update_framebuffer()
             image_create_info.pQueueFamilyIndices = NULL;
             image_create_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-            PT_MAYBE_UNUSED VkResult res_create_image = this->m_device.create_image(&image_create_info, &this->m_depth_image);
+            PT_MAYBE_UNUSED VkResult res_create_image = this->m_device.create_global_image(&image_create_info, &this->m_depth_image);
             assert(VK_SUCCESS == res_create_image);
         }
 
@@ -1619,7 +1619,7 @@ inline void gfx_connection_vk::destory_framebuffer()
         assert(VK_NULL_HANDLE != this->m_depth_image);
         assert(VK_NULL_HANDLE != this->m_depth_device_memory);
         this->m_device.destroy_image_view(this->m_depth_image_view);
-        this->m_device.destroy_image(this->m_depth_image);
+        this->m_device.destroy_global_image(this->m_depth_image);
         this->m_device.free_memory(this->m_depth_device_memory);
         this->m_depth_image_view = VK_NULL_HANDLE;
         this->m_depth_image = VK_NULL_HANDLE;

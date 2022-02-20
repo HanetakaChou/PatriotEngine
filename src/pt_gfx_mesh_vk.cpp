@@ -200,7 +200,7 @@ bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback
         {
             return false;
         }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[0].staging_offset), input_vertex_position_length);
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[0].staging_offset), input_vertex_position_length);
         if (res_read == -1 || res_read != input_vertex_position_length)
         {
             return false;
@@ -214,9 +214,9 @@ bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback
         {
             return false;
         }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[1].staging_offset), input_vertex_varying_length);
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[1].staging_offset), input_vertex_varying_length);
 
-        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[1].staging_offset);
+        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[1].staging_offset);
         for (int i = 0; i < 72; ++i)
         {
             texcoord0[i] = ((texcoord0[i] > 0) ? texcoord0[i] : (-texcoord0[i]));
@@ -235,7 +235,7 @@ bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback
         {
             return false;
         }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->transfer_src_buffer_pointer()) + memcpy_dest[2].staging_offset), input_index_length);
+        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[2].staging_offset), input_index_length);
         if (res_read == -1 || res_read != input_index_length)
         {
             return false;
@@ -245,27 +245,27 @@ bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback
     // cmd copy
     {
         uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-        VkBuffer transfer_src_buffer = gfx_connection->transfer_src_buffer();
+        VkBuffer staging_buffer = gfx_connection->staging_buffer();
         {
             VkBufferCopy regions[1];
             regions[0].srcOffset = memcpy_dest[0].staging_offset;
             regions[0].dstOffset = 0U;
             regions[0].size = memcpy_dest[0].output_size;
-            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_vertex_position_buffer, 1U, regions);
+            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_vertex_position_buffer, 1U, regions);
         }
         {
             VkBufferCopy regions[1];
             regions[0].srcOffset = memcpy_dest[1].staging_offset;
             regions[0].dstOffset = 0U;
             regions[0].size = memcpy_dest[1].output_size;
-            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_vertex_varying_buffer, 1U, regions);
+            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_vertex_varying_buffer, 1U, regions);
         }
         {
             VkBufferCopy regions[1];
             regions[0].srcOffset = memcpy_dest[2].staging_offset;
             regions[0].dstOffset = 0U;
             regions[0].size = memcpy_dest[2].output_size;
-            gfx_connection->copy_index_buffer(streaming_throttling_index, streaming_thread_index, transfer_src_buffer, this->m_index_buffer, 1U, regions);
+            gfx_connection->copy_index_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_index_buffer, 1U, regions);
         }
     }
 

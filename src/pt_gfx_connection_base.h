@@ -127,9 +127,9 @@ protected:
 
     // Staging Buffer
     // [RingBuffer](https://docs.microsoft.com/en-us/windows/win32/direct3d12/fence-based-resource-management) related
-    uint64_t m_transfer_src_buffer_begin[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_end[STREAMING_THROTTLING_COUNT];
-    uint64_t m_transfer_src_buffer_size[STREAMING_THROTTLING_COUNT];
+    uint64_t m_staging_buffer_begin[STREAMING_THROTTLING_COUNT];
+    uint64_t m_staging_buffer_end[STREAMING_THROTTLING_COUNT];
+    uint64_t m_staging_buffer_size[STREAMING_THROTTLING_COUNT];
 
 public:
     // MCRT
@@ -162,9 +162,9 @@ public:
     inline void streaming_object_list_push(uint32_t streaming_throttling_index, class gfx_streaming_object_base *streaming_object) { return this->m_streaming_object_list[streaming_throttling_index].produce(streaming_object); }
     inline void streaming_task_respawn_list_push(uint32_t streaming_throttling_index, mcrt_task_ref streaming_task) { return this->m_streaming_task_respawn_list[streaming_throttling_index].produce(streaming_task); }
 
-    inline uint64_t transfer_src_buffer_begin(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_begin[streaming_throttling_index]; }
-    inline uint64_t *transfer_src_buffer_end(uint32_t streaming_throttling_index) { return &m_transfer_src_buffer_end[streaming_throttling_index]; }
-    inline uint64_t transfer_src_buffer_size(uint32_t streaming_throttling_index) { return m_transfer_src_buffer_size[streaming_throttling_index]; }
+    inline uint64_t staging_buffer_begin(uint32_t streaming_throttling_index) { return m_staging_buffer_begin[streaming_throttling_index]; }
+    inline uint64_t *staging_buffer_end(uint32_t streaming_throttling_index) { return &m_staging_buffer_end[streaming_throttling_index]; }
+    inline uint64_t staging_buffer_size(uint32_t streaming_throttling_index) { return m_staging_buffer_size[streaming_throttling_index]; }
 
     // API
     virtual void destroy() = 0;

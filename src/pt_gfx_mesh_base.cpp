@@ -166,22 +166,22 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
 
         // try to allocate memory from staging buffer
         {
-            uint64_t transfer_src_buffer_begin = task_data->m_gfx_connection->transfer_src_buffer_begin(streaming_throttling_index);
-            uint64_t transfer_src_buffer_end = uint64_t(-1);
-            uint64_t transfer_src_buffer_size = task_data->m_gfx_connection->transfer_src_buffer_size(streaming_throttling_index);
+            uint64_t staging_buffer_begin = task_data->m_gfx_connection->staging_buffer_begin(streaming_throttling_index);
+            uint64_t staging_buffer_end = uint64_t(-1);
+            uint64_t staging_buffer_size = task_data->m_gfx_connection->staging_buffer_size(streaming_throttling_index);
             uint64_t base_offset = uint64_t(-1);
 
             do
             {
-                base_offset = mcrt_atomic_load(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index));
+                base_offset = mcrt_atomic_load(task_data->m_gfx_connection->staging_buffer_end(streaming_throttling_index));
 
                 size_t total_size = task_data->m_gfx_streaming_object->mesh_streaming_stage_second_calculate_total_size_callback(task_data->m_gfx_connection, &neutral_header, memcpy_dest, base_offset);
 
-                transfer_src_buffer_end = (base_offset + total_size);
-                //assert((transfer_src_buffer_end - transfer_src_buffer_begin) <= transfer_src_buffer_size);
+                staging_buffer_end = (base_offset + total_size);
+                //assert((staging_buffer_end - staging_buffer_begin) <= staging_buffer_size);
 
                 // respawn if memory not enough
-                if ((transfer_src_buffer_end - transfer_src_buffer_begin) > transfer_src_buffer_size)
+                if ((staging_buffer_end - staging_buffer_begin) > staging_buffer_size)
                 {
                     // recycle to prevent free_task
                     mcrt_task_set_parent(self, NULL);
@@ -198,7 +198,7 @@ mcrt_task_ref gfx_mesh_base::mesh_streaming_stage_second_task_execute(mcrt_task_
                     return NULL;
                 }
 
-            } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_connection->transfer_src_buffer_end(streaming_throttling_index), transfer_src_buffer_end, base_offset));
+            } while (base_offset != mcrt_atomic_cas_u64(task_data->m_gfx_connection->staging_buffer_end(streaming_throttling_index), staging_buffer_end, base_offset));
         }
 
         // post calculate total size

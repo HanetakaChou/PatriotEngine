@@ -220,9 +220,9 @@ public:
     inline void get_physical_device_memory_properties(VkPhysicalDeviceMemoryProperties *memory_properties) { return m_vk_get_physical_device_memory_properties(m_physical_device, memory_properties); }
     inline void get_physical_device_format_properties(VkFormat format, VkFormatProperties *format_properties) { return m_vk_get_physical_device_format_properties(m_physical_device, format, format_properties); }
     inline VkResult create_buffer(VkBufferCreateInfo const *create_info, VkBuffer *buffer) { return m_vk_create_buffer(m_device, create_info, this->m_vk_allocation_callbacks, buffer); }
-    inline VkResult create_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_vk_create_image(m_device, create_info, this->m_vk_allocation_callbacks, image); }
-    inline void destroy_buffer(VkBuffer buffer) { return m_vk_destroy_buffer(m_device, buffer, this->m_vk_allocation_callbacks); }
-    inline void destroy_image(VkImage image) { return m_vk_destroy_image(m_device, image, this->m_vk_allocation_callbacks); }
+    inline VkResult create_global_image(VkImageCreateInfo const *create_info, VkImage *image) { return m_vk_create_image(m_device, create_info, this->m_vk_allocation_callbacks, image); }
+    inline void destroy_global_buffer(VkBuffer buffer) { return m_vk_destroy_buffer(m_device, buffer, this->m_vk_allocation_callbacks); }
+    inline void destroy_global_image(VkImage image) { return m_vk_destroy_image(m_device, image, this->m_vk_allocation_callbacks); }
     inline void get_buffer_memory_requirements(VkBuffer buffer, VkMemoryRequirements *memory_requirements) { return m_vk_get_buffer_memory_requirements(m_device, buffer, memory_requirements); }
     inline void get_image_memory_requirements(VkImage image, VkMemoryRequirements *memory_requirements) { return m_vk_get_image_memory_requirements(m_device, image, memory_requirements); }
     inline VkResult allocate_memory(VkMemoryAllocateInfo const *allocate_info, VkDeviceMemory *out_device_memory) { return m_vk_allocate_memory(m_device, allocate_info, this->m_vk_allocation_callbacks, out_device_memory); }
