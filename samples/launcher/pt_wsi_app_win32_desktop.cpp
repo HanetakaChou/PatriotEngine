@@ -77,7 +77,7 @@ extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref,
 extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
 extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
 
-int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR cmd_line, int cmd_show)
+int WINAPI wWinMain(HINSTANCE, HINSTANCE, LPWSTR cmd_line, int cmd_show)
 {
     return pt_wsi_main(
 		cmd_line, cmd_show,

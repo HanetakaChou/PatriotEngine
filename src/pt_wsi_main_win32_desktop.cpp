@@ -110,7 +110,7 @@ class wsi_win32_desktop
 
 public:
     inline void init(
-        int argc, char *argv[],
+        int argc, char *argv[], int cmd_show,
         pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
         pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
         pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
@@ -179,7 +179,7 @@ PT_ATTR_WSI int PT_CALL pt_wsi_main(
         }
 
         instance.init(
-            argc, argv,
+            argc, argv, cmd_show,
             cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback,
             cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback,
             app_init_callback, app_main_callback);
@@ -192,7 +192,7 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 static LRESULT CALLBACK __internal_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 inline void wsi_win32_desktop::init(
-    int argc, char *argv[],
+    int argc, char *argv[], int cmd_show,
     pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
     pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
@@ -255,7 +255,7 @@ inline void wsi_win32_desktop::init(
         assert(this->m_gfx_connection != NULL);
     }
 
-    ShowWindow(this->m_window, SW_SHOWDEFAULT);
+    ShowWindow(this->m_window, cmd_show);
     UpdateWindow(this->m_window);
 
     // app_main
