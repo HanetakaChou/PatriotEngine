@@ -20,7 +20,8 @@
 layout(location = 0) in highp vec3 position;
 layout(location = 1) in highp vec2 attr;
 
-layout(location = 0) out highp vec2 texcoord;
+layout(location = 0) out highp vec3 out_position_world_space;
+layout(location = 1) out highp vec2 texcoord;
 
 layout(push_constant, column_major) uniform _unused_name_uniform_buffer
 {
@@ -28,10 +29,15 @@ layout(push_constant, column_major) uniform _unused_name_uniform_buffer
         highp mat4x4 M;
 };
 
+
 void main()
 {
+        //VP * M2 * vec4(position, 1.0f);
+
         //1.01 depth clip
-        vec4 position = VP * M * vec4(position, 1.01f); //VP * M2 * vec4(position, 1.0f);
+        out_position_world_space = (M * vec4(position, 1.01f)).xyz;
+
+        vec4 position = VP *vec4(out_position_world_space, 1.01f); 
 
         gl_Position = position;
 

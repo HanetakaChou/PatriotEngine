@@ -17,16 +17,16 @@
 
 all: \
 	pt_gfx_shader_mesh_vertex_vk.inl pt_gfx_shader_mesh_fragment_vk.inl \
-	pt_gfx_shader_mesh_point_shadow_vert_vk.inl pt_gfx_shader_mesh_point_shadow_geom_vk.inl pt_gfx_shader_mesh_point_shadow_frag_vk.inl
+	pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl
 
 pt_gfx_shader_mesh_vertex_vk.inl : pt_gfx_shader_mesh_vertex_vk.glsl
 	glslangValidator -S vert -V100 -o pt_gfx_shader_mesh_vertex_vk.inl -x pt_gfx_shader_mesh_vertex_vk.glsl
 pt_gfx_shader_mesh_fragment_vk.inl : pt_gfx_shader_mesh_fragment_vk.glsl
 	glslangValidator -S frag -V100 -o pt_gfx_shader_mesh_fragment_vk.inl -x pt_gfx_shader_mesh_fragment_vk.glsl
 
-pt_gfx_shader_mesh_point_shadow_vert_vk.inl : pt_gfx_shader_mesh_point_shadow_vert_vk.glsl
-	glslangValidator -S vert -V100 -o pt_gfx_shader_mesh_point_shadow_vert_vk.inl -x pt_gfx_shader_mesh_point_shadow_vert_vk.glsl
-pt_gfx_shader_mesh_point_shadow_geom_vk.inl : pt_gfx_shader_mesh_point_shadow_geom_vk.glsl
-	glslangValidator -S geom -V100 -o pt_gfx_shader_mesh_point_shadow_geom_vk.inl -x pt_gfx_shader_mesh_point_shadow_geom_vk.glsl
-pt_gfx_shader_mesh_point_shadow_frag_vk.inl : pt_gfx_shader_mesh_point_shadow_frag_vk.glsl
-	glslangValidator -S frag -V100 -o pt_gfx_shader_mesh_point_shadow_frag_vk.inl -x pt_gfx_shader_mesh_point_shadow_frag_vk.glsl
+pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl : pt_gfx_shader_point_light_shadow_mesh_vert_vk.glsl
+	glslangValidator -S vert -V100 -o pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_vert_vk.glsl
+pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl : pt_gfx_shader_point_light_shadow_mesh_geom_vk.glsl
+	glslangValidator -S geom -V100 -o pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_geom_vk.glsl
+pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl : pt_gfx_shader_point_light_shadow_mesh_frag_vk.glsl
+	glslangValidator -S frag -V100 -o pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_frag_vk.glsl
