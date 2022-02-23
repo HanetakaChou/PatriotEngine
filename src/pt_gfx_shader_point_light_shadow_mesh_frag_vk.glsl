@@ -46,6 +46,6 @@ void main()
     highp float ratio = length(position_view_space) / point_light_radius;
 
     // Trick: we don't write to depth, and thus we can use early depth test
-    // gl_FragDepth = ratio;  
+    gl_FragDepth = ratio;  
     out_depth = ratio;
 }

@@ -81,7 +81,7 @@ void main()
                 highp vec4 position_clip;
                 position_clip.xy = position_spherical_function_domain.xy;
                 position_clip.w = layer_position_spherical_function_domain_z[layer_index] + 1.0;
-                position_clip.z = 0.5 * position_clip.w;
+                position_clip.z = 0.5 * position_clip.w; // length(position_view_space) * position_clip.w / point_light_radius
                 gl_Position = position_clip;
 
                 out_inv_length = 1.0f / length(position_view_space);
