@@ -76,6 +76,16 @@
     },
     {
         "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_load.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_load.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_load.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_load_pmx.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_load_pmx.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_load_pmx.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
         "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_vk.o",
         "file": "${workspaceFolder}/src/pt_gfx_mesh_vk.cpp"
     },

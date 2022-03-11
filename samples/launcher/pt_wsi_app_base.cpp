@@ -27,7 +27,7 @@ void launcher_app::init(pt_gfx_connection_ref gfx_connection)
 }
 
 static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename);
-static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename);
+static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename);
 
 //static pt_gfx_texture_ref my_texture1 = NULL;
 //static pt_gfx_texture_ref my_texture2 = NULL;
@@ -39,12 +39,10 @@ static pt_gfx_material_ref my_material = NULL;
 int launcher_app::main()
 {
     pt_gfx_mesh_ref my_mesh1 = pt_gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh1, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh1, "genshin_impact/assets/ayaka_kamisato/ayaka_kamisato.pmx");
 
     my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, "genshin_impact/assets/ayaka_kamisato/ayaka_kamisato.pmx");
     //pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
     my_node = pt_gfx_connection_create_node(my_gfx_connection);
@@ -141,7 +139,7 @@ int launcher_app::main()
     }
 #endif
 
-#if 1
+#if 0
     pt_gfx_texture_ref my_texture1 = pt_gfx_connection_create_texture(my_gfx_connection);
     gfx_texture_read_file(my_gfx_connection, my_texture1, "lenna/l_hires_rgba.pvr");
 
@@ -197,13 +195,11 @@ static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_t
         asset_input_stream_destroy_callback);
 }
 
-bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename)
+bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename)
 {
     return pt_gfx_mesh_read_input_stream(
         gfx_connection,
         mesh,
-        mesh_index,
-        material_index,
         initial_filename,
         asset_input_stream_init_callback,
         asset_input_stream_read_callback,

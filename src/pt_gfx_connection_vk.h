@@ -269,12 +269,14 @@ class gfx_connection_vk final : public gfx_connection_base
 
     inline void copy_vertex_index_buffer(uint32_t streaming_throttling_index, uint32_t streaming_thread_index, VkAccessFlags dst_access_mask, VkBuffer src_buffer, VkBuffer dst_buffer, uint32_t region_count, VkBufferCopy *const regions);
 
+    // streaming 
+    void *staging_buffer_pointer() override { return m_malloc.staging_buffer_pointer(); }
+
 public:
     //uniform buffer
     //assert(0 == (pMemoryRequirements->alignment % m_physical_device_limits_min_uniform_buffer_offset_alignment)
 
     // Streaming
-    inline void *staging_buffer_pointer() { return m_malloc.staging_buffer_pointer(); }
     inline VkBuffer staging_buffer() { return m_malloc.staging_buffer(); }
 
     inline VkDeviceSize physical_device_limits_optimal_buffer_copy_offset_alignment() { return m_device.physical_device_limits_optimal_buffer_copy_offset_alignment(); }

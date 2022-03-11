@@ -40,6 +40,17 @@ typedef intptr_t(PT_PTR *pt_gfx_input_stream_read_callback)(pt_gfx_input_stream_
 typedef int64_t(PT_PTR *pt_gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int);
 typedef void(PT_PTR *pt_gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref);
 
+// pt_gfx_input_stream_read_callback -> read_function
+
+struct pt_gfx_input_stream_callbacks_t
+{
+    pt_gfx_input_stream_init_callback pfn_create;
+    pt_gfx_input_stream_stat_size_callback pfn_get_size;
+    pt_gfx_input_stream_read_callback pfn_read;
+    pt_gfx_input_stream_seek_callback pfn_seek;
+    pt_gfx_input_stream_destroy_callback pfn_close;
+};
+
 typedef struct pt_gfx_opaque_output_stream_t *pt_gfx_output_stream_ref;
 typedef pt_gfx_output_stream_ref(PT_PTR *pt_gfx_output_stream_init_callback)(char const *);
 typedef intptr_t(PT_PTR *pt_gfx_output_stream_write_callback)(pt_gfx_output_stream_ref, void *, size_t);
@@ -161,7 +172,7 @@ extern "C"
     //      HdStMesh HdStBasisCurves HdStPoints HdStVolume
 
     PT_ATTR_GFX pt_gfx_mesh_ref PT_CALL pt_gfx_connection_create_mesh(pt_gfx_connection_ref gfx_connection);
-    PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, uint32_t mesh_index, uint32_t material_index, char const *initial_filename, pt_gfx_input_stream_init_callback gfx_input_stream_init_callback, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback, pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback);
+    PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename, pt_gfx_input_stream_init_callback gfx_input_stream_init_callback, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback, pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback);
     PT_ATTR_GFX void PT_CALL pt_gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh);
 
     enum

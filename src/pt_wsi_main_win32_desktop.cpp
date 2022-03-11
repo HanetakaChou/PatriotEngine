@@ -118,10 +118,10 @@ public:
     inline LRESULT CALLBACK wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
-static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInCharsLeft, uint8_t* pOutBuf, uint32_t* pOutCharsLeft);
+static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft);
 
 PT_ATTR_WSI int PT_CALL pt_wsi_main(
-    wchar_t* wide_cmd_line, int cmd_show,
+    wchar_t *wide_cmd_line, int cmd_show,
     pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
     pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
@@ -131,21 +131,21 @@ PT_ATTR_WSI int PT_CALL pt_wsi_main(
         char cmd_line[4096];
         uint32_t in_chars_left = static_cast<uint32_t>(wcslen(wide_cmd_line));
         uint32_t out_chars_left = 4096;
-        bool res_internal_utf8_to_utf16 = internal_utf16_to_utf8(reinterpret_cast<uint16_t*>(wide_cmd_line), &in_chars_left, reinterpret_cast<uint8_t*>(cmd_line), &out_chars_left);
+        bool res_internal_utf8_to_utf16 = internal_utf16_to_utf8(reinterpret_cast<uint16_t *>(wide_cmd_line), &in_chars_left, reinterpret_cast<uint8_t *>(cmd_line), &out_chars_left);
         assert(res_internal_utf8_to_utf16);
         cmd_line[4096 - out_chars_left] = '\0';
 
-        char executable_name[] = { "PatriotEngine" };
-        char* argv[64] = { executable_name, NULL };
+        char executable_name[] = {"PatriotEngine"};
+        char *argv[64] = {executable_name, NULL};
         int argc = 1;
-        // CommandLineToArgvW 
+        // CommandLineToArgvW
         {
-            //lexer
+            // lexer
             enum
             {
                 WhiteSpace,
                 Text
-            }StateMachine = WhiteSpace;
+            } StateMachine = WhiteSpace;
 
             for (size_t i = 0U; cmd_line[i] != '\0'; ++i)
             {
@@ -199,7 +199,7 @@ inline void wsi_win32_desktop::init(
 {
     HINSTANCE instance_this_component = reinterpret_cast<HINSTANCE>(&__ImageBase);
 
-    //ATOM
+    // ATOM
     {
         WNDCLASSEXW wc;
         wc.cbSize = sizeof(WNDCLASSEXW);
@@ -221,16 +221,16 @@ inline void wsi_win32_desktop::init(
     this->m_window_width = 1280;
     this->m_window_height = 720;
     this->m_window = CreateWindowExW(WS_EX_APPWINDOW,
-        MAKEINTATOM(this->m_atom),
-        L"PatriotEngine",
-        WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX,
-        CW_USEDEFAULT, CW_USEDEFAULT, this->m_window_width, this->m_window_height,
-        NULL,
-        NULL,
-        instance_this_component,
-        this);
+                                     MAKEINTATOM(this->m_atom),
+                                     L"PatriotEngine",
+                                     WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX | WS_SIZEBOX,
+                                     CW_USEDEFAULT, CW_USEDEFAULT, this->m_window_width, this->m_window_height,
+                                     NULL,
+                                     NULL,
+                                     instance_this_component,
+                                     this);
     assert(NULL != this->m_window);
-        
+
     // draw_main
     {
         struct draw_main_argument_t draw_main_argument;
@@ -291,10 +291,8 @@ inline int wsi_win32_desktop::main()
     }
 
     mcrt_native_thread_join(this->m_app_main_thread_id);
-
     mcrt_native_thread_join(this->m_draw_main_thread_id);
-
-    DestroyWindow(this->m_window);
+    //DestroyWindow(this->m_window);
 
     return 0;
 }
@@ -331,6 +329,12 @@ inline LRESULT CALLBACK wsi_win32_desktop::wnd_proc(HWND hWnd, UINT uMsg, WPARAM
         pt_gfx_connection_on_wsi_window_resized(this->m_gfx_connection, this->m_window_width, this->m_window_height);
         return 0;
     }
+    case WM_DESTROY:
+    {
+        mcrt_atomic_store(&this->m_draw_main_running, false);
+        mcrt_atomic_store(&this->m_app_main_running, false);
+        PostQuitMessage(0);
+    }
     default:
         return DefWindowProcW(hWnd, uMsg, wParam, lParam);
     }
@@ -358,7 +362,7 @@ unsigned int wsi_win32_desktop::draw_main(void *argument_void)
         mcrt_atomic_store(&argument->m_instance->m_draw_main_running, true);
     }
 
-    //draw_main
+    // draw_main
     pt_gfx_connection_on_wsi_window_created(instance->m_gfx_connection, NULL, wrap_wsi_window(instance->m_window), instance->m_window_height, instance->m_window_width);
 
     while (mcrt_atomic_load(&instance->m_draw_main_running))
@@ -412,25 +416,25 @@ unsigned int wsi_win32_desktop::app_main(void *argument_void)
     return static_cast<unsigned int>(res_app_main_callback);
 }
 
-static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInCharsLeft, uint8_t* pOutBuf, uint32_t* pOutCharsLeft)
+static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft)
 {
     while ((*pInCharsLeft) >= 1)
     {
-        uint32_t ucs4code = 0;//Accumulator
+        uint32_t ucs4code = 0; // Accumulator
 
-        //UTF-16 To UCS-4
-        if ((*pInBuf) >= 0XD800U && (*pInBuf) <= 0XDBFFU)//110110xxxxxxxxxx
+        // UTF-16 To UCS-4
+        if ((*pInBuf) >= 0XD800U && (*pInBuf) <= 0XDBFFU) // 110110xxxxxxxxxx
         {
             if ((*pInCharsLeft) >= 2)
             {
-                ucs4code += (((*pInBuf) - 0XD800U) << 10U);//Accumulate
+                ucs4code += (((*pInBuf) - 0XD800U) << 10U); // Accumulate
 
                 ++pInBuf;
                 --(*pInCharsLeft);
 
-                if ((*pInBuf) >= 0XDC00U && (*pInBuf) <= 0XDFFF)//110111xxxxxxxxxx
+                if ((*pInBuf) >= 0XDC00U && (*pInBuf) <= 0XDFFF) // 110111xxxxxxxxxx
                 {
-                    ucs4code += ((*pInBuf) - 0XDC00U);//Accumulate
+                    ucs4code += ((*pInBuf) - 0XDC00U); // Accumulate
 
                     ++pInBuf;
                     --(*pInCharsLeft);
@@ -441,7 +445,6 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
                 }
 
                 ucs4code += 0X10000U;
-
             }
             else
             {
@@ -450,14 +453,14 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
         }
         else
         {
-            ucs4code += (*pInBuf);//Accumulate
+            ucs4code += (*pInBuf); // Accumulate
 
             ++pInBuf;
             --(*pInCharsLeft);
         }
 
-        //UCS-4 To UTF-16
-        if (ucs4code < 128U)//0XXX XXXX
+        // UCS-4 To UTF-16
+        if (ucs4code < 128U) // 0XXX XXXX
         {
             if ((*pOutCharsLeft) >= 1)
             {
@@ -471,7 +474,7 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
                 return false;
             }
         }
-        else if (ucs4code < 2048U)//110X XXXX 10XX XXXX
+        else if (ucs4code < 2048U) // 110X XXXX 10XX XXXX
         {
             if ((*pOutCharsLeft) >= 2)
             {
@@ -490,7 +493,7 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
                 return false;
             }
         }
-        else if (ucs4code < 0X10000U)//1110 XXXX 10XX XXXX 10XX XXXX
+        else if (ucs4code < 0X10000U) // 1110 XXXX 10XX XXXX 10XX XXXX
         {
             if ((*pOutCharsLeft) >= 3)
             {
@@ -514,7 +517,7 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
                 return false;
             }
         }
-        else if (ucs4code < 0X200000U)//1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
+        else if (ucs4code < 0X200000U) // 1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
         {
             if ((*pOutCharsLeft) >= 4)
             {
@@ -538,7 +541,7 @@ static inline bool internal_utf16_to_utf8(uint16_t const* pInBuf, uint32_t* pInC
                 ++pOutBuf;
                 --(*pOutCharsLeft);
             }
-            else//ucs4code >= 0X200000U
+            else // ucs4code >= 0X200000U
             {
                 return false;
             }

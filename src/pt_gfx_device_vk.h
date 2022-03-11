@@ -169,6 +169,7 @@ class gfx_device_vk
     PFN_vkCmdPushConstants m_vk_cmd_push_constants;
     PFN_vkCmdBindDescriptorSets m_vk_cmd_bind_descriptor_sets;
     PFN_vkCmdDraw m_vk_cmd_draw;
+    PFN_vkCmdDrawIndexed m_vk_cmd_draw_indexed;
     PFN_vkCmdEndRenderPass m_vk_cmd_end_render_pass;
 
     static char const *platform_surface_extension_name();
@@ -303,6 +304,7 @@ public:
     inline void cmd_push_constants(VkCommandBuffer command_buffer, VkPipelineLayout layout, VkShaderStageFlags stage_flags, uint32_t offset, uint32_t size, void const *values) { return this->m_vk_cmd_push_constants(command_buffer, layout, stage_flags, offset, size, values); }
     inline void cmd_bind_descriptor_sets(VkCommandBuffer command_buffer, VkPipelineBindPoint pipeline_bind_point, VkPipelineLayout layout, uint32_t first_set, uint32_t descriptor_set_count, const VkDescriptorSet *descriptor_sets, uint32_t dynamic_offset_count, const uint32_t *dynamic_offsets) { return this->m_vk_cmd_bind_descriptor_sets(command_buffer, pipeline_bind_point, layout, first_set, descriptor_set_count, descriptor_sets, dynamic_offset_count, dynamic_offsets); }
     inline void cmd_draw(VkCommandBuffer command_buffer, uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) { return this->m_vk_cmd_draw(command_buffer, vertex_count, instance_count, first_vertex, first_instance); }
+    inline void cmd_draw_indexed(VkCommandBuffer command_buffer, uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) { return this->m_vk_cmd_draw_indexed(command_buffer, index_count, instance_count, first_index, vertex_offset, first_instance); }
     inline void cmd_end_render_pass(VkCommandBuffer command_buffer) { return this->m_vk_cmd_end_render_pass(command_buffer); }
 
     VkResult platform_create_surface(VkSurfaceKHR *surface, pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window);

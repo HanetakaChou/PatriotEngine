@@ -661,6 +661,9 @@ bool gfx_device_vk::init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_vi
     this->m_vk_cmd_draw = reinterpret_cast<PFN_vkCmdDraw>(this->m_vk_get_device_proc_addr(this->m_device, "vkCmdDraw"));
     assert(NULL != this->m_vk_cmd_draw);
 
+    this->m_vk_cmd_draw_indexed = reinterpret_cast<PFN_vkCmdDrawIndexed>(this->m_vk_get_device_proc_addr(this->m_device, "vkCmdDrawIndexed"));
+    assert(NULL != this->m_vk_cmd_draw_indexed);
+
     this->m_vk_cmd_end_render_pass = reinterpret_cast<PFN_vkCmdEndRenderPass>(this->m_vk_get_device_proc_addr(this->m_device, "vkCmdEndRenderPass"));
     assert(NULL != this->m_vk_cmd_end_render_pass);
 

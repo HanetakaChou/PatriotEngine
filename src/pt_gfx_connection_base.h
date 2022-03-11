@@ -166,6 +166,8 @@ public:
     inline uint64_t *staging_buffer_end(uint32_t streaming_throttling_index) { return &m_staging_buffer_end[streaming_throttling_index]; }
     inline uint64_t staging_buffer_size(uint32_t streaming_throttling_index) { return m_staging_buffer_size[streaming_throttling_index]; }
 
+    virtual void *staging_buffer_pointer() = 0;
+
     // API
     virtual void destroy() = 0;
     virtual class gfx_node_base *create_node() = 0;

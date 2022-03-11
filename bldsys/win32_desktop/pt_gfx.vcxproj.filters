@@ -70,6 +70,12 @@
     <ClCompile Include="..\..\third_party\vma\src\vk_mem_alloc.cpp">
       <Filter>third_party\vma\src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load_pmx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -92,6 +98,18 @@
     </Filter>
     <Filter Include="third_party\vma\src">
       <UniqueIdentifier>{39748041-e6f9-4f52-a8df-099d91574664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vulkan_sdk">
+      <UniqueIdentifier>{5c0210f0-2f21-45c7-a7c4-eb7f0fc13b44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vulkan_sdk\lib">
+      <UniqueIdentifier>{4d5273a7-2914-453e-8738-3048943a0cf3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vulkan_sdk\lib\win32_desktop_x64">
+      <UniqueIdentifier>{2dd0cedf-3e1f-43c5-a645-fdfab6efbeb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\vulkan_sdk\lib\win32_desktop_x86">
+      <UniqueIdentifier>{6bd27f48-36e4-41cd-aa78-b90fa650622e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +179,9 @@
     <ClInclude Include="..\..\third_party\vma\include\vk_mem_alloc.h">
       <Filter>third_party\vma\include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load_pmx.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl">
@@ -169,5 +190,19 @@
     <None Include="..\..\src\pt_gfx_shader_mesh_vertex_vk.inl">
       <Filter>src</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\third_party\vulkan_sdk\lib\win32_desktop_x64\VkLayer_khronos_validation.json">
+      <Filter>third_party\vulkan_sdk\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\vulkan_sdk\lib\win32_desktop_x64\VkLayer_khronos_validation.dll">
+      <Filter>third_party\vulkan_sdk\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\vulkan_sdk\lib\win32_desktop_x86\VkLayer_khronos_validation.json">
+      <Filter>third_party\vulkan_sdk\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\vulkan_sdk\lib\win32_desktop_x86\VkLayer_khronos_validation.dll">
+      <Filter>third_party\vulkan_sdk\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
   </ItemGroup>
 </Project>

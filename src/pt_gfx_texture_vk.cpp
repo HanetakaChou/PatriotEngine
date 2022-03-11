@@ -159,7 +159,7 @@ size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callb
 void *gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection_base)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    return gfx_connection->staging_buffer_pointer();
+    return static_cast<class gfx_connection_base *>(gfx_connection)->staging_buffer_pointer();
 }
 
 uint32_t (*gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)

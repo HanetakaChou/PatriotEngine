@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaYuminaga)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -24,39 +24,30 @@
 #include "pt_gfx_mesh_base_load.h"
 #include <assert.h>
 
-bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct gfx_mesh_neutral_header_t *const neutral_header)
+bool gfx_mesh_vk::read_input_stream_alloc_asset_buffers(class gfx_connection_base *gfx_connection_base, struct pt_gfx_mesh_neutral_header_t *const neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    uint32_t vertex_position_length = (sizeof(float) * 3U) * neutral_header->vertex_count;
-    uint32_t vertex_varying_length = (sizeof(float) * 2U) * neutral_header->vertex_count;
 
-    uint32_t index_size;
-    if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT16 == neutral_header->index_type)
-    {
-        index_size = 2U;
-        this->m_index_type = VK_INDEX_TYPE_UINT16;
-    }
-    else if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT32 == neutral_header->index_type)
-    {
-        index_size = 4U;
-        this->m_index_type = VK_INDEX_TYPE_UINT32;
-    }
-    else
-    {
-        assert(0);
-        index_size = -1;
-    }
-    uint32_t index_length = index_size * neutral_header->index_count;
+    m_primitives.resize(neutral_header->primitive_count);
 
-    // Vertex Position
+    for (uint32_t primitive_index = 0U; primitive_index < neutral_header->primitive_count; ++primitive_index)
     {
-        assert(VK_NULL_HANDLE == this->m_vertex_position_buffer);
+        size_t const vertex_position_size = sizeof(pt_gfx_mesh_neutral_vertex_position);
+        size_t const vertex_varying_size = sizeof(pt_gfx_mesh_neutral_vertex_varying);
+        size_t const index_size = (neutral_primitive_headers[primitive_index].is_index_type_uint16 ? sizeof(uint16_t) : sizeof(uint32_t));
+
+        VkDeviceSize vertex_position_buffer_size = vertex_position_size * neutral_primitive_headers[primitive_index].vertex_count;
+        VkDeviceSize vertex_varying_buffer_size = vertex_varying_size * neutral_primitive_headers[primitive_index].vertex_count;
+        VkDeviceSize index_buffer_size = index_size * neutral_primitive_headers[primitive_index].index_count;
+
+        // vertex position buffer
+        assert(VK_NULL_HANDLE == this->m_primitives[primitive_index].m_vertex_position_buffer);
         {
             VkBufferCreateInfo buffer_create_info;
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info.pNext = NULL;
             buffer_create_info.flags = 0U;
-            buffer_create_info.size = vertex_position_length;
+            buffer_create_info.size = vertex_position_buffer_size;
             buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 0U;
@@ -66,24 +57,22 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_vertex_position_buffer, &this->m_vertex_position_allocation);
+            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_primitives[primitive_index].m_vertex_position_buffer, &this->m_primitives[primitive_index].m_vertex_position_allocation);
             if (PT_UNLIKELY(!res_asset_vertex_buffer_alloc))
             {
-                this->m_vertex_position_buffer = VK_NULL_HANDLE;
+                this->m_primitives[primitive_index].m_vertex_position_buffer = VK_NULL_HANDLE;
                 return false;
             }
         }
-    }
 
-    // Vertex Varying
-    {
-        assert(VK_NULL_HANDLE == this->m_vertex_varying_buffer);
+        // vertex varying buffer
+        assert(VK_NULL_HANDLE == this->m_primitives[primitive_index].m_vertex_varying_buffer);
         {
             VkBufferCreateInfo buffer_create_info;
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info.pNext = NULL;
             buffer_create_info.flags = 0U;
-            buffer_create_info.size = vertex_varying_length;
+            buffer_create_info.size = vertex_varying_buffer_size;
             buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 0U;
@@ -93,24 +82,25 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_vertex_varying_buffer, &this->m_vertex_varying_allocation);
+            bool res_asset_vertex_buffer_alloc = gfx_connection->asset_vertex_buffer_alloc(&buffer_create_info, &this->m_primitives[primitive_index].m_vertex_varying_buffer, &this->m_primitives[primitive_index].m_vertex_varying_allocation);
             if (PT_UNLIKELY(!res_asset_vertex_buffer_alloc))
             {
-                this->m_vertex_varying_buffer = VK_NULL_HANDLE;
+                this->m_primitives[primitive_index].m_vertex_varying_buffer = VK_NULL_HANDLE;
                 return false;
             }
         }
-    }
 
-    // Index
-    {
-        assert(VK_NULL_HANDLE == this->m_index_buffer);
+        // index buffer
+        this->m_primitives[primitive_index].m_index_type = (neutral_primitive_headers[primitive_index].is_index_type_uint16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+        this->m_primitives[primitive_index].m_index_count = neutral_primitive_headers[primitive_index].index_count;
+
+        assert(VK_NULL_HANDLE == this->m_primitives[primitive_index].m_index_buffer);
         {
             VkBufferCreateInfo buffer_create_info;
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info.pNext = NULL;
             buffer_create_info.flags = 0U;
-            buffer_create_info.size = index_length;
+            buffer_create_info.size = index_buffer_size;
             buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 0U;
@@ -120,10 +110,10 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
             // vkAllocateMemory
             // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-            bool res_asset_index_buffer_alloc = gfx_connection->asset_index_buffer_alloc(&buffer_create_info, &this->m_index_buffer, &this->m_index_allocation);
+            bool res_asset_index_buffer_alloc = gfx_connection->asset_index_buffer_alloc(&buffer_create_info, &this->m_primitives[primitive_index].m_index_buffer, &this->m_primitives[primitive_index].m_index_allocation);
             if (PT_UNLIKELY(!res_asset_index_buffer_alloc))
             {
-                this->m_index_buffer = VK_NULL_HANDLE;
+                this->m_primitives[primitive_index].m_index_buffer = VK_NULL_HANDLE;
                 return false;
             }
         }
@@ -132,144 +122,72 @@ bool gfx_mesh_vk::mesh_streaming_stage_first_pre_populate_task_data_callback(cla
     return true;
 }
 
-size_t gfx_mesh_vk::mesh_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest_void, uint64_t base_offset)
+size_t gfx_mesh_vk::read_input_stream_calculate_total_size(struct pt_gfx_mesh_neutral_header_t const *neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers, uint64_t base_offset, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t *out_memcpy_dests)
 {
-    struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest = static_cast<struct gfx_mesh_neutral_memcpy_dest_t *>(memcpy_dest_void);
-    //VkBufferCopy *cmdcopy_dest = static_cast<VkBufferCopy *>(cmdcopy_dest_void);
+    size_t staging_offset = base_offset;
+    size_t total_bytes = 0U;
 
-    // calculate length
-    uint32_t vertex_position_length = (sizeof(float) * 3U) * neutral_header->vertex_count;
-    uint32_t vertex_varying_length = (sizeof(float) * 2U) * neutral_header->vertex_count;
-    uint32_t index_size;
-    if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT16 == neutral_header->index_type)
+    for (uint32_t primitive_index = 0U; primitive_index < neutral_header->primitive_count; ++primitive_index)
     {
-        index_size = 2U;
+        size_t const vertex_position_size = sizeof(pt_gfx_mesh_neutral_vertex_position);
+        size_t const vertex_varying_size = sizeof(pt_gfx_mesh_neutral_vertex_varying);
+        size_t const index_size = (neutral_primitive_headers[primitive_index].is_index_type_uint16 ? sizeof(uint16_t) : sizeof(uint32_t));
+
+        out_memcpy_dests[primitive_index].position_staging_offset = staging_offset;
+        out_memcpy_dests[primitive_index].position_staging_size = vertex_position_size * neutral_primitive_headers[primitive_index].vertex_count;
+        // no alignment required
+        size_t new_staging_offset = staging_offset + out_memcpy_dests[primitive_index].position_staging_size;
+        total_bytes += (new_staging_offset - staging_offset);
+        staging_offset = new_staging_offset;
+
+        out_memcpy_dests[primitive_index].varying_staging_offset = staging_offset;
+        out_memcpy_dests[primitive_index].varying_staging_size = vertex_varying_size * neutral_primitive_headers[primitive_index].vertex_count;
+        new_staging_offset = staging_offset + out_memcpy_dests[primitive_index].varying_staging_size;
+        total_bytes += (new_staging_offset - staging_offset);
+        staging_offset = new_staging_offset;
+
+        out_memcpy_dests[primitive_index].index_staging_offset = staging_offset;
+        out_memcpy_dests[primitive_index].index_staging_size = index_size * neutral_primitive_headers[primitive_index].index_count;
+        new_staging_offset = staging_offset + out_memcpy_dests[primitive_index].index_staging_size;
+        total_bytes += (new_staging_offset - staging_offset);
+        staging_offset = new_staging_offset;
     }
-    else if (PT_GFX_MESH_NEUTRAL_INDEX_TYPE_UINT32 == neutral_header->index_type)
-    {
-        index_size = 4U;
-    }
-    else
-    {
-        assert(0);
-        index_size = -1;
-    }
-    uint32_t index_length = index_size * neutral_header->index_count;
 
-    // vertex position
-    memcpy_dest[0].staging_offset = base_offset;
-    memcpy_dest[0].output_size = vertex_position_length;
-    //cmdcopy_dest[0].srcOffset = base_offset;
-    //cmdcopy_dest[0].dstOffset = 0U;
-    //cmdcopy_dest[0].size = vertex_position_length;
-
-    // vertex varying
-    memcpy_dest[1].staging_offset = base_offset + vertex_position_length;
-    memcpy_dest[1].output_size = vertex_varying_length;
-    //cmdcopy_dest[1].srcOffset = base_offset + vertex_position_length;
-    //cmdcopy_dest[1].dstOffset = 0U;
-    //cmdcopy_dest[1].size = vertex_varying_length;
-
-    // index
-    memcpy_dest[2].staging_offset = base_offset + vertex_position_length + vertex_varying_length;
-    memcpy_dest[2].output_size = index_length;
-    //cmdcopy_dest[2].srcOffset = base_offset + vertex_position_length + vertex_varying_length;
-    //cmdcopy_dest[2].dstOffset = 0U;
-    //cmdcopy_dest[2].size = index_length;
-
-    return (vertex_position_length + vertex_varying_length + index_length);
+    return total_bytes;
 }
 
-bool gfx_mesh_vk::mesh_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct gfx_mesh_neutral_header_t const *neutral_header, struct gfx_mesh_neutral_memcpy_dest_t *memcpy_dest, pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+void gfx_mesh_vk::read_input_stream_record_copy_commands(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests)
 {
     class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
+    VkBuffer staging_buffer = gfx_connection->staging_buffer();
 
-    int input_vertex_position_offset = 132;
-    int input_vertex_position_length = 432;
-
-    int input_vertex_varying_offset = 1572;
-    int input_vertex_varying_length = 288;
-
-    int input_index_offset = 60;
-    int input_index_length = 72;
-
-    // vertex position
+    uint32_t primitive_count = static_cast<uint32_t>(this->m_primitives.size());
+    for (uint32_t primitive_index = 0U; primitive_index < primitive_count; ++primitive_index)
     {
-        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_vertex_position_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
-        if (res_seek == -1 || res_seek != input_vertex_position_offset)
-        {
-            return false;
-        }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[0].staging_offset), input_vertex_position_length);
-        if (res_read == -1 || res_read != input_vertex_position_length)
-        {
-            return false;
-        }
+        VkBufferCopy region_position[1];
+        region_position[0].srcOffset = memcpy_dests[primitive_index].position_staging_offset;
+        region_position[0].dstOffset = 0U;
+        region_position[0].size = memcpy_dests[primitive_index].position_staging_size;
+        gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_primitives[primitive_index].m_vertex_position_buffer, 1U, region_position);
+
+        VkBufferCopy region_varying[1];
+        region_varying[0].srcOffset = memcpy_dests[primitive_index].varying_staging_offset;
+        region_varying[0].dstOffset = 0U;
+        region_varying[0].size = memcpy_dests[primitive_index].varying_staging_size;
+        gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_primitives[primitive_index].m_vertex_varying_buffer, 1U, region_varying);
+
+        VkBufferCopy region_index[1];
+        region_index[0].srcOffset = memcpy_dests[primitive_index].index_staging_offset;
+        region_index[0].dstOffset = 0U;
+        region_index[0].size = memcpy_dests[primitive_index].index_staging_size;
+        gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_primitives[primitive_index].m_index_buffer, 1U, region_index);
     }
+}
 
-    // vertex varying
-    {
-        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_vertex_varying_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
-        if (res_seek == -1 || res_seek != input_vertex_varying_offset)
-        {
-            return false;
-        }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[1].staging_offset), input_vertex_varying_length);
-
-        float *texcoord0 = reinterpret_cast<float(*)>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[1].staging_offset);
-        for (int i = 0; i < 72; ++i)
-        {
-            texcoord0[i] = ((texcoord0[i] > 0) ? texcoord0[i] : (-texcoord0[i]));
-        }
-
-        if (res_read == -1 || res_read != input_vertex_varying_length)
-        {
-            return false;
-        }
-    }
-
-    // index
-    {
-        int64_t res_seek = gfx_input_stream_seek_callback(gfx_input_stream, input_index_offset, PT_GFX_INPUT_STREAM_SEEK_SET);
-        if (res_seek == -1 || res_seek != input_index_offset)
-        {
-            return false;
-        }
-        ptrdiff_t res_read = gfx_input_stream_read_callback(gfx_input_stream, reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(gfx_connection->staging_buffer_pointer()) + memcpy_dest[2].staging_offset), input_index_length);
-        if (res_read == -1 || res_read != input_index_length)
-        {
-            return false;
-        }
-    }
-
-    // cmd copy
-    {
-        uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-        VkBuffer staging_buffer = gfx_connection->staging_buffer();
-        {
-            VkBufferCopy regions[1];
-            regions[0].srcOffset = memcpy_dest[0].staging_offset;
-            regions[0].dstOffset = 0U;
-            regions[0].size = memcpy_dest[0].output_size;
-            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_vertex_position_buffer, 1U, regions);
-        }
-        {
-            VkBufferCopy regions[1];
-            regions[0].srcOffset = memcpy_dest[1].staging_offset;
-            regions[0].dstOffset = 0U;
-            regions[0].size = memcpy_dest[1].output_size;
-            gfx_connection->copy_vertex_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_vertex_varying_buffer, 1U, regions);
-        }
-        {
-            VkBufferCopy regions[1];
-            regions[0].srcOffset = memcpy_dest[2].staging_offset;
-            regions[0].dstOffset = 0U;
-            regions[0].size = memcpy_dest[2].output_size;
-            gfx_connection->copy_index_buffer(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_index_buffer, 1U, regions);
-        }
-    }
-
-    return true;
+mcrt_vector<gfx_mesh_primitive_vk> const& gfx_mesh_vk::primitives_get() const
+{
+    return m_primitives;
 }
 
 void gfx_mesh_vk::pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
@@ -291,21 +209,25 @@ void gfx_mesh_vk::post_stream_done_destroy_callback(class gfx_connection_base *g
 
 inline void gfx_mesh_vk::unified_destory(class gfx_connection_vk *gfx_connection)
 {
-    //assert(0U == mcrt_atomic_load(&this->m_ref_count));
+    // assert(0U == mcrt_atomic_load(&this->m_ref_count));
 
-    if (VK_NULL_HANDLE != this->m_vertex_position_buffer)
+    uint32_t primitive_count = static_cast<uint32_t>(this->m_primitives.size());
+    for (uint32_t primitive_index = 0U; primitive_index < primitive_count; ++primitive_index)
     {
-        gfx_connection->asset_vertex_buffer_free(this->m_vertex_position_buffer, &this->m_vertex_position_allocation);
-    }
+        if (VK_NULL_HANDLE != this->m_primitives[primitive_index].m_vertex_position_buffer)
+        {
+            gfx_connection->asset_vertex_buffer_free(this->m_primitives[primitive_index].m_vertex_position_buffer, &this->m_primitives[primitive_index].m_vertex_position_allocation);
+        }
 
-    if (VK_NULL_HANDLE != this->m_vertex_varying_buffer)
-    {
-        gfx_connection->asset_vertex_buffer_free(this->m_vertex_varying_buffer, &this->m_vertex_varying_allocation);
-    }
+        if (VK_NULL_HANDLE != this->m_primitives[primitive_index].m_vertex_varying_buffer)
+        {
+            gfx_connection->asset_vertex_buffer_free(this->m_primitives[primitive_index].m_vertex_varying_buffer, &this->m_primitives[primitive_index].m_vertex_varying_allocation);
+        }
 
-    if (VK_NULL_HANDLE != this->m_index_buffer)
-    {
-        gfx_connection->asset_index_buffer_free(this->m_index_buffer, &this->m_index_allocation);
+        if (VK_NULL_HANDLE != this->m_primitives[primitive_index].m_index_buffer)
+        {
+            gfx_connection->asset_index_buffer_free(this->m_primitives[primitive_index].m_index_buffer, &this->m_primitives[primitive_index].m_index_allocation);
+        }
     }
 
     this->~gfx_mesh_vk();

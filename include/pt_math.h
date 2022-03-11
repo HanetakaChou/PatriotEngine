@@ -22,6 +22,20 @@
 #include <stdint.h>
 #include <pt_math_common.h>
 
+typedef struct pt_math_vec2
+{
+    union
+    {
+        struct
+        {
+            float x;
+            float y;
+        };
+        float v[2];
+    };
+} pt_math_vec2;
+
+
 typedef struct pt_math_vec3
 {
     union

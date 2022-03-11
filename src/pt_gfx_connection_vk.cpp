@@ -20,6 +20,7 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
+#include "pt_gfx_mesh_base_load.h"
 #include <new>
 
 class gfx_connection_base *gfx_connection_vk::create(
@@ -1429,21 +1430,29 @@ inline bool gfx_connection_vk::update_framebuffer()
         // seperate position and varying
         VkVertexInputBindingDescription vertex_binding_descriptions[2];
         vertex_binding_descriptions[0].binding = 0;
-        vertex_binding_descriptions[0].stride = sizeof(float) * 3;
+        vertex_binding_descriptions[0].stride = sizeof(pt_gfx_mesh_neutral_vertex_position);
         vertex_binding_descriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         vertex_binding_descriptions[1].binding = 1;
-        vertex_binding_descriptions[1].stride = sizeof(float) * 2;
+        vertex_binding_descriptions[1].stride = sizeof(pt_gfx_mesh_neutral_vertex_varying);
         vertex_binding_descriptions[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-        VkVertexInputAttributeDescription vertex_attribute_descriptions[2];
-        vertex_attribute_descriptions[0].location = 0U; //To shader
-        vertex_attribute_descriptions[0].binding = 0U;  //To vertexbuffer
+        VkVertexInputAttributeDescription vertex_attribute_descriptions[4];
+        vertex_attribute_descriptions[0].location = 0U; 
+        vertex_attribute_descriptions[0].binding = 0U; 
         vertex_attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        vertex_attribute_descriptions[0].offset = 0U;
-        vertex_attribute_descriptions[1].location = 1U; //To shader
-        vertex_attribute_descriptions[1].binding = 1U;  //To vertexbuffer
-        vertex_attribute_descriptions[1].format = VK_FORMAT_R32G32_SFLOAT;
-        vertex_attribute_descriptions[1].offset = 0U;
+        vertex_attribute_descriptions[0].offset = offsetof(pt_gfx_mesh_neutral_vertex_position, position);
+        vertex_attribute_descriptions[1].location = 1U; 
+        vertex_attribute_descriptions[1].binding = 1U;  
+        vertex_attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        vertex_attribute_descriptions[1].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, normal);
+        vertex_attribute_descriptions[2].location = 2U; 
+        vertex_attribute_descriptions[2].binding = 1U; 
+        vertex_attribute_descriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+        vertex_attribute_descriptions[2].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, tangent);
+        vertex_attribute_descriptions[3].location = 3U; 
+        vertex_attribute_descriptions[3].binding = 1U; 
+        vertex_attribute_descriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
+        vertex_attribute_descriptions[3].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, uv);
 
         // struct VkFormatProperties physical_device_format_properties;
         // gfx_connection->get_physical_device_format_properties(VK_FORMAT_R32G32B32_SFLOAT, &physical_device_format_properties);
@@ -1455,7 +1464,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_input_state.flags = 0U;
         vertex_input_state.vertexBindingDescriptionCount = 2U;
         vertex_input_state.pVertexBindingDescriptions = vertex_binding_descriptions;
-        vertex_input_state.vertexAttributeDescriptionCount = 2U;
+        vertex_input_state.vertexAttributeDescriptionCount = 4U;
         vertex_input_state.pVertexAttributeDescriptions = vertex_attribute_descriptions;
 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info;
@@ -2279,12 +2288,16 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
                 pt_math_alignas16_mat4x4 mat_m = node->get_transform();
                 gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
 
-                VkBuffer buffers[2] = {mesh->m_vertex_position_buffer, mesh->m_vertex_varying_buffer};
-                VkDeviceSize offsets[2] = {0U, 0U};
-                gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
-                gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, mesh->m_index_buffer, 0U, mesh->m_index_type);
+                for (gfx_mesh_primitive_vk const& primitive : mesh->primitives_get())
+                {
+                    VkBuffer buffers[2] = { primitive.m_vertex_position_buffer, primitive.m_vertex_varying_buffer };
 
-                gfx_connection->m_device.cmd_draw(secondary_command_buffer, 36U, 1U, 0U, 0U);
+                    VkDeviceSize offsets[2] = { 0U, 0U };
+                    gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
+                    gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, primitive.m_index_buffer, 0U, primitive.m_index_type);
+
+                    gfx_connection->m_device.cmd_draw_indexed(secondary_command_buffer, primitive.m_index_count, 1U, 0U, 0U, 0U);
+                }
             }
         }
     }
