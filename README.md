@@ -150,6 +150,10 @@ The asset streaming process is totally asynchronous. This means that the calling
  
 ### Continuous build status    
     
+Build Type | Status      
+:-: | :-:  
+**Build Win32** | [![Build Win32](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build-win32.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build-win32.yml)
+
 #### Posix Linux X11    
       
 Build Type | Status     
