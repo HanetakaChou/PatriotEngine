@@ -1,0 +1,19 @@
+name: Build Win32
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+        matrix:
+            platform: [x86, x64]
+            configuration: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v2
+      - name: MSBuild
+        run: msbuild ./bldsys/win32_desktop/PatriotEngine.sln x86 /p:Configuration=${{matrix.configuration}} /p:Platform==${{matrix.platform}}
