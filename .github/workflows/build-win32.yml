@@ -16,4 +16,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: MSBuild
-        run: msbuild ./bldsys/win32_desktop/PatriotEngine.sln x86 /p:Configuration=${{matrix.configuration}} /p:Platform==${{matrix.platform}}
+        run: msbuild .\bldsys\win32_desktop\PatriotEngine.sln x86 /p:Configuration=${{matrix.configuration}} /p:Platform==${{matrix.platform}}
