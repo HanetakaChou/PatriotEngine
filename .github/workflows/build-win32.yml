@@ -15,6 +15,7 @@ jobs:
             configuration: [Debug, Release]
     steps:
       - uses: actions/checkout@v2
-      - run: git submodule update --init --recursive
+        with:
+          submodules: 'true'
       - uses: microsoft/setup-msbuild@v1.1
       - run: msbuild .\bldsys\win32_desktop\PatriotEngine.sln /p:Configuration=${{matrix.configuration}} /p:Platform=${{matrix.platform}}
