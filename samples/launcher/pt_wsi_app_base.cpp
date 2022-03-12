@@ -43,7 +43,6 @@ int launcher_app::main()
 
     my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
     gfx_mesh_read_file(my_gfx_connection, my_mesh, "genshin_impact/assets/ayaka_kamisato/ayaka_kamisato.pmx");
-    //pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
     my_node = pt_gfx_connection_create_node(my_gfx_connection);
     pt_gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
@@ -139,7 +138,7 @@ int launcher_app::main()
     }
 #endif
 
-#if 0
+#if 1
     pt_gfx_texture_ref my_texture1 = pt_gfx_connection_create_texture(my_gfx_connection);
     gfx_texture_read_file(my_gfx_connection, my_texture1, "lenna/l_hires_rgba.pvr");
 
@@ -162,9 +161,7 @@ int launcher_app::main()
     mcrt_os_sleep(15);
 
     my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
-    //gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.gltf");
-    gfx_mesh_read_file(my_gfx_connection, my_mesh, 0, 0, "glTF-Sample-Models/AnimatedCube/glTF/AnimatedCube.bin");
-    //pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, "genshin_impact/assets/ayaka_kamisato/ayaka_kamisato.pmx");
 
     my_node = pt_gfx_connection_create_node(my_gfx_connection);
     pt_gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);

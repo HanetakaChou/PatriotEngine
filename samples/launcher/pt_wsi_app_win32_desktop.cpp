@@ -17,7 +17,10 @@
 
 #include <pt_wsi_main.h>
 #include <pt_mcrt_malloc.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_string.h>
 #include "pt_wsi_app_base.h"
+#include <assert.h>
 
 #include <sdkddkver.h>
 #define WIN32_LEAN_AND_MEAN 1
@@ -61,6 +64,8 @@
 #define NOMCX 1
 #include <Windows.h>
 
+static mcrt_wstring g_wsi_app_win32_desktop_executable_path;
+
 static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection);
 static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app);
 
@@ -79,14 +84,27 @@ extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR cmd_line, int cmd_show)
 {
-	// Lunarg Vulkan SDK
+	// Win32 Desktop Path
 	{
 		WCHAR file_name[4096];
 		GetModuleFileNameW(hInstance, file_name, 4096);
 
 		(*wcsrchr(file_name, L'\\')) = L'\0';
 
-		SetEnvironmentVariableW(L"VK_LAYER_PATH", file_name);
+		g_wsi_app_win32_desktop_executable_path.assign(file_name);
+	}
+
+	// Lunarg Vulkan SDK
+	{
+		mcrt_wstring layer_path = g_wsi_app_win32_desktop_executable_path;
+#if defined(PT_X64)
+		layer_path += L"\\..\\..\\..\\third_party\\vulkan_sdk\\lib\\win32_desktop_x64";
+#elif defined(PT_X86)
+		layer_path += L"\\..\\..\\..\\third_party\\vulkan_sdk\\lib\\win32_desktop_x86";
+#else
+#error Unknown Architecture
+#endif
+		SetEnvironmentVariableW(L"VK_LAYER_PATH", layer_path.c_str());
 	}
 
 	return pt_wsi_main(
@@ -111,28 +129,26 @@ static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app)
 	return unwrap(wsi_app)->main();
 }
 
-#include <assert.h>
-#include <string>
-#include <pt_mcrt_scalable_allocator.h>
-#include <pt_mcrt_thread.h>
-
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
 static inline bool internal_utf8_to_utf16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutBuf, uint32_t *pOutCharsLeft);
 
 static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
 {
-	mcrt_string path = "./bin/";
-	path += initial_filename;
+	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
+	full_path += L"\\..\\../";
 
-	wchar_t wide_file_name[0X10000];
-	uint32_t in_chars_left = path.length();
-	uint32_t out_chars_left = 0X10000U;
-	bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(path.c_str()), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
-	assert(res_internal_utf8_to_utf16);
-	wide_file_name[0X10000U - out_chars_left] = L'\0';
+	// UTF8 to UTF16
+	{
+		wchar_t wide_file_name[4096];
+		uint32_t in_chars_left = strlen(initial_filename);
+		uint32_t out_chars_left = 4096;
+		bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(initial_filename), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
+		assert(res_internal_utf8_to_utf16);
+		wide_file_name[4096 - out_chars_left] = L'\0';
 
-	HANDLE hFile = CreateFileW(wide_file_name, FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		full_path += wide_file_name;
+	}
+
+	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_input_stream_ref>(hFile) : pt_gfx_input_stream_ref(-1);
 }
@@ -181,17 +197,22 @@ static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref c
 
 static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
 {
-	mcrt_string path = "./bin/";
-	path += initial_filename;
+	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
+	full_path += L"\\..\\../";
 
-	wchar_t wide_file_name[0X10000];
-	uint32_t in_chars_left = path.length();
-	uint32_t out_chars_left = 0X10000U;
-	bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(path.c_str()), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
-	assert(res_internal_utf8_to_utf16);
-	wide_file_name[0X10000U - out_chars_left] = L'\0';
+	// UTF8 to UTF16
+	{
+		wchar_t wide_file_name[4096];
+		uint32_t in_chars_left = strlen(initial_filename);
+		uint32_t out_chars_left = 4096;
+		bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(initial_filename), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
+		assert(res_internal_utf8_to_utf16);
+		wide_file_name[4096 - out_chars_left] = L'\0';
 
-	HANDLE hFile = CreateFileW(wide_file_name, FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES, 0U, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+		full_path += wide_file_name;
+	}
+
+	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES, 0U, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_output_stream_ref>(hFile) : pt_gfx_output_stream_ref(-1);
 }
@@ -222,17 +243,22 @@ static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref
 
 pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
 {
-	mcrt_string path = "./assets/";
-	path += initial_filename;
+	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
+	full_path += L"\\..\\..\\..\\assets/";
 
-	wchar_t wide_file_name[0X10000];
-	uint32_t in_chars_left = path.length();
-	uint32_t out_chars_left = 0X10000U;
-	bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(path.c_str()), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
-	assert(res_internal_utf8_to_utf16);
-	wide_file_name[0X10000U - out_chars_left] = L'\0';
+	// UTF8 to UTF16
+	{
+		wchar_t wide_file_name[4096];
+		uint32_t in_chars_left = strlen(initial_filename);
+		uint32_t out_chars_left = 4096;
+		bool res_internal_utf8_to_utf16 = internal_utf8_to_utf16(reinterpret_cast<uint8_t const *>(initial_filename), &in_chars_left, reinterpret_cast<uint16_t *>(wide_file_name), &out_chars_left);
+		assert(res_internal_utf8_to_utf16);
+		wide_file_name[4096 - out_chars_left] = L'\0';
 
-	HANDLE hFile = CreateFileW(wide_file_name, FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+		full_path += wide_file_name;
+	}
+
+	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_input_stream_ref>(hFile) : pt_gfx_input_stream_ref(-1);
 }
