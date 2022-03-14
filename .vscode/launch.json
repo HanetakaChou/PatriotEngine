@@ -1,0 +1,71 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "(Linux X11) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            //"preLaunchTask": "build-centos-glibc-debug-x86", //x86 doesn't support validation layer
+            "program": "${workspaceFolder}/bin/posix_linux_x11/x64/debug/pt_launcher", //should set executable in obj here instead of the one in libs
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "envFile": "${workspaceFolder}/.vscode/c_cpp_launch.env",
+            "externalConsole": false,
+            //"targetArchitecture": "x86",
+            "MIMode": "gdb",
+            //"miDebuggerPath": "${env:HOME}/.local/libexec/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb", //either gdb from ndk or your linux distribution is OK
+            //"miDebuggerArgs": "--init-command=${workspaceFolder}/Solution/PosixLinuxX11/libs/x86/gdb.setup",
+            //"additionalSOLibSearchPath": "${workspaceFolder}/bin/posix_linux_x11/x64/debug",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        //https://android.googlesource.com/platform/development/+/master/scripts/gdbclient.py/generate_vscode_gdb_script
+        {
+            "name": "(Linux Android) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            //"preLaunchTask": "linux-android-prepare-debug",
+            "program": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a/app_process64", //should set executable in obj here instead of the one in libs
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "miDebuggerServerAddress": "localhost:5039", //Use gdbserver
+            "targetArchitecture": "arm64",
+            "MIMode": "gdb",
+            "miDebuggerPath": "${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/prebuilt/linux-x86_64/bin/gdb",
+            //"miDebuggerArgs": "--init-command=${workspaceFolder}/bldsys/posix_linux_android/libs/debug/lib/arm64-v8a/gdb.setup",
+            //"additionalSOLibSearchPath": "${workspaceFolder}/bldsys/posix_linux_android/obj/debug/local/arm64-v8a",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": false //true
+                }
+            ]
+        },
+        {
+            "name": "(Mach OSX) Launch",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/bin/posix_mach/Products/Debug/pt_launcher.app/Contents/MacOS/pt_launcher",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+    ]
+}

@@ -1,0 +1,319 @@
+﻿PixelFormat 
+DescribePixelFormat Index 从1开始
+SetPixelFormat
+
+注意 PixelFormat定义的是交换链 cDepthBits和cStencilBits应该为0 与FrameBuffer解耦
+
+纹理单元 本质是一个映射 (Target，Selector) -> Texture 目的在于在远程桌面中减少参数从而减少网络流量
+
+glGenTextures
+
+glActiveTexture GL_TEXTURE0 - GL_TEXTURE31 //远程桌面 glBindTexture依赖于ActiveTexture
+glGetIntegerv GL_ACTIVE_TEXTURE 查询
+
+glBindTexture GL_TEXTURE_2D //确定纹理类型 glTexStorage2D根据（Target，Selector）唯一标识纹理单元（TextureUnit）中的一个纹理
+
+glTexStorage2D //远程桌面 Target作为参数传入 Selector作为状态缓存
+                Color -> GL_RGBA8 (即_UNORM)
+                DepthStencil -> GL_DEPTH_COMPONENT32F
+
+glTexStorage2DMultisample / glBindTexture / glFramebufferTexture2D || target -> GL_TEXTURE_2D_MULTISAMPLE 不要误传GL_TEXTURE_2D || ColorBuffer和DepthBuffer的MultiSample个数必须一致
+
+
+//glTexImage2D和glCompressedTexImage2D已被弃用 （可变格式）
+
+初始化数据 //CPU  || TexCopy -> GPU
+glTexSubImage2D
+内部格式             外部格式
+GL_RGB8(_UNORM) -> GL_RGB + GL_UNSIGNED_BYTE -> 即GLubyte[3]*width*height
+                     分量数         类型
+
+glCompressedTextureSubImage2D
+
+//2D Array
+//glCompressedTexImage3DOES GL_TEXTURE_2D_ARRAY_EXT depth->ArraySize
+//
+
+//Block Compression
+http://msdn.microsoft.com/en-us/library/hh308955
+R5 G6 B5 A0-1 UNORM             ->  DXGI_FORMAT_BC1_UNORM           D3DFMT_DXT1                     VK_FORMAT_BC1_RGBA_UNORM_BLOCK      GL_COMPRESSED_RGBA_S3TC_DXT1_EXT
+                                    DXGI_FORMAT_BC1_UNORM_SRGB                                      VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+R5 G6 B5 A4 UNORM               ->  DXGI_FORMAT_BC2_UNORM           D3DFMT_DXT2/D3DFMT_DXT3         VK_FORMAT_BC2_UNORM_BLOCK           GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
+                                    DXGI_FORMAT_BC2_UNORM_SRGB                                      VK_FORMAT_BC2_SRGB_BLOCK
+R5 G6 B5 A8 UNORM               ->  DXGI_FORMAT_BC3_UNORM           D3DFMT_DXT4/D3DFMT_DXT5         VK_FORMAT_BC3_UNORM_BLOCK           GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
+                                    DXGI_FORMAT_BC3_UNORM_SRGB                                      VK_FORMAT_BC3_SRGB_BLOCK
+DXGI_FORMAT_R8_UNORM            ->  DXGI_FORMAT_BC4_UNORM           MAKEFOURCC('A','T','I','1')     VK_FORMAT_BC4_UNORM_BLOCK           GL_COMPRESSED_RED_RGTC1
+DXGI_FORMAT_R8_SNORM            ->  DXGI_FORMAT_BC4_SNORM                                           VK_FORMAT_BC4_SNORM_BLOCK           GL_COMPRESSED_SIGNED_RED_RGTC1
+DXGI_FORMAT_R8G8_UNORM          ->  DXGI_FORMAT_BC5_UNORM           MAKEFOURCC('A','T','I','2')     VK_FORMAT_BC5_UNORM_BLOCK           GL_COMPRESSED_RG_RGTC2
+DXGI_FORMAT_R8G8_SNORM          ->  DXGI_FORMAT_BC5_SNORM                                           VK_FORMAT_BC5_SNORM_BLOCK           GL_COMPRESSED_SIGNED_RG_RGTC2
+R16 G16 B16 UFLOAT (HDR)        ->  DXGI_FORMAT_BC6H_UF16                                           VK_FORMAT_BC6H_UFLOAT_BLOCK         GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT
+R16 G16 B16 SFLOAT (HDR)        ->  DXGI_FORMAT_BC6H_SF16                                           VK_FORMAT_BC6H_SFLOAT_BLOCK         GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT
+B4-7 G4-7 R4-7 A0-8 UNORM       ->  DXGI_FORMAT_BC7_UNORM                                           VK_FORMAT_BC7_UNORM_BLOCK           GL_COMPRESSED_RGBA_BPTC_UNORM
+                                ->  DXGI_FORMAT_BC7_UNORM_SRGB                                      VK_FORMAT_BC7_SRGB_BLOCK            GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM
+
+
+//CubeMap
+GLuint hTextureEnvironmentMap
+glGenTextures(1, &hTextureEnvironmentMap)
+glActiveTexture(GL_TEXTURE13)
+glBindTexture(GL_TEXTURE_CUBE_MAP, hTextureEnvironmentMap)
+glActiveTexture(GL_TEXTURE13)
+glTexStorage2D(GL_TEXTURE_CUBE_MAP, 1, GL_RGB8, 4, 4)
+glTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, ..., GL_RGB, GL_UNSIGNED_BYTE
+	...
+	...
+	...
+glActiveTexture(GL_TEXTURE13)
+glBindTexture(GL_TEXTURE_CUBE_MAP, 0)
+
+
+//
+layout(binding=XXX) uniform samplerCube
+
+glActiveTexture(GL_TEXTURE17);
+glBindTexture(GL_TEXTURE_CUBE_MAP, hTextureEnvironmentMap);
+
+
+采样器
+glGenSamplers
+glSamplerParameteri GL_TEXTURE_WRAP_S/T/R GL_TEXTURE_MIN/MAG_FILTER GLint
+glSamplerParameterfv GL_TEXTURE_BORDER_COLOR GLfloat[3]
+
+
+资源绑定
+
+Vulkan Combined Image Sampler
+sampler2D = texture2D + sampler //GL_KHR_vulkan_glsl
+
+OpenGL中texture2D和sampler不可分离
+
+layout(binding = 13) uniform sampler2D tex; //GL_ARB_shading_language_420pack
+
+大坑！！！
+如果没有绑定Sampler，Texture2D有一个默认的Sampler
+glBindSampler(13, ...)
+
+绑定Texture2D
+glActiveTexture(GL_TEXTURE13);
+glBindTexture(GL_TEXTURE_2D, ...);
+
+
+glGenFramebuffers
+
+FrameBuffer -> D3D12 着色器不可见 描述符堆
+ 
+glBindFramebuffer -> ID3D12GraphicsCommandList::OMSetRenderTargets
+设置RTV/DSV + 远程桌面
+framebuffer传入0 即绑定MakeCurrent时的WGL表面
+GL_DRAW_FRAMEBUFFER GL_READ_FRAMEBUFFER -> wglMakeContextCurrentARB
+GL_FRAMEBUFFER -> wglMakeCurrent
+
+AttachMent -> D3D RTV/DSV
+glFramebufferTexture2D GL_FRAMEBUFFER <-> GL_DRAW_FRAMEBUFFER GL中不存在ImageView，直接作为参数传入
+远程桌面
+glFramebufferTexture2D -> GL_DRAW_FRAMEBUFFER -————————————————————> framebuffer
+                          GL_READ_FRAMEBUFFER  glBindFramebuffer
+
+//OpenGL中启用MRT还需要调用glDrawBuffers
+GLenum bufs[2] = { GL_COLOR_ATTACHMENT0 ,GL_COLOR_ATTACHMENT1 };
+glDrawBuffers(2, bufs);
+
+//由于远程桌面 glBindFramebuffer对DRAW和READ分别调用一次 而glFramebufferTexture2D总共只需调用一次
+//glCheckFramebufferStatus测试结果正确
+
+//在写法上glBindFramebuffer用于远程桌面时 可写作GL_FRAMEBUFFER 强调不区分DRAW和READ 并在完成后使用Bind 0U强调
+
+GL_COLOR_ATTACHMENT0 - GL_COLOR_ATTACHMENT7 
+FragmentShader layout(location = 0) - layout(location = 7)
+
+GL_DEPTH_ATTACHMENT
+GL_DEPTH_STENCIL_ATTACHMENT
+
+glCheckFramebufferStatus 用于检查 正确->GL_FRAMEBUFFER_COMPLETE
+
+glCreateShader
+
+glShaderSource
+glCompileShader
+glGetShaderiv GL_COMPILE_STATUS -> GL_TRUE
+
+在源文件中以字符串常量存储源代码 在#version 450 core之后一定要加上\n 在 //注释XXXX 之后一定要加上\n
+
+GL_ARB_gl_spirv
+glslangValidator -G %(FullPath) -x -o XXXX.h //-G -> OpenGL -V -> Vulkan
+glShaderBinary GL_SHADER_BINARY_FORMAT_SPIR_V_ARB
+glSpecializeShader "main" 0 NULL NULL
+
+大坑
+GL中VS和PS之间对应关系用location=XXX来确定 实际上是一个二维空间<location=XXX,in/out> 将in误写为out是没有任何错误提示的！！！（未初始化时为默认值，被认为是合法的！！！）
+
+
+glCreateProgram
+glAttachShader
+glLinkProgram
+glGetProgramiv GL_LINK_STATUS GL_TRUE
+glGetProgramInfoLog -> info
+
+glUseProgram VSSetShader + HSSetShader + DSSetShader + GSSetShader + PSSetShader
+             CSSetShader
+
+glGenBuffers
+glBindBuffer D3D12 VBV IBV + 远程桌面 确定D3D11_BIND
+VertexBuffer->GL_ARRAY_BUFFER
+IndexBuffer->GL_ELEMENT_ARRAY_BUFFER 
+
+//usage仅仅是暗示 flags反而能决定存储类型
+//glBufferData -> usage 被弃用
+
+glBufferStorage -> flags 现代化API
+
+GL_DYNAMIC_STORAGE_BIT -> D3D11_USAGE_DYNAMIC //使用glBufferSubData而非glMapBuffer时，必须设置
+            Not Set -> D3D11_USAGE_IMMUTABLE
+
+GL_MAP_READ_BIT/GL_MAP_WRITE_BIT ->D3D10_CPU_ACCESS_READ/D3D10_CPU_ACCESS_WRITE
+
+MAP_COHERENT_BIT -> 区分D3D11_MAP_WRITE_DISCARD和D3D11_MAP_WRITE 在D3D12中体现为WRITE_COMBINE OpenGL中不再需要glFlushMappedBufferRange
+
+GL_MAP_PERSISTENT_BIT -> 用于支持D3D11_MAP_WRITE_NO_OVERWRITE 不再需要UnMap
+
+资源绑定
+
+ GL_ARB_shading_language_420pack //#version 310 es
+
+常量缓冲
+layout(row_major, binding = XXX) uniform XXXX
+{
+
+};
+
+//#extension GL_EXT_shader_io_blocks : enable
+//#extension GL_OES_shader_io_blocks : enable
+//同时写上 不支持会warning 不会失败
+out gl_PerVertex {
+    vec4 gl_Position;
+};
+
+大坑！！！！
+shared 在着色器间共享 与D3D不一致 但是Spir-V只支持shared   不同着色器之间的Binding必须不同，并且uniform块名也必须不同
+
+std140 无法与Vulkan一致 std430必须用buffer而非uniform 会导致成为SRV而非CBV
+row_major OpenGL作用于列向量 与D3D（行向量 column_major）一致
+binding = XXX 用于绑定
+
+glBindBuffer GL_UNIFORM_BUFFER -> 用于设置D3D11_BIND_FLAG 并允许glBufferStorage以远程桌面风格标识Buffer
+glBindBufferBase -> ID3D11DeviceContext::XSSetConstantBuffers //注意OpenGL中Binding = XXX必须在不同着色器间共享，无法与Direct3D一致
+
+
+远程桌面
+glBufferStorage -> Target ---------------> buffer
+                            glBindBuffer
+
+#version 4.3 Core
+VertexArrayObject -> InputLayout
+
+glGenVertexArrays
+glBindVertexArray
+
+    SemanticName&Index <-----------> InputElement <--------------------------------> InputSlot <--------------> VertexBuffer
+    AttribIndex <------------------> VertexAttrib <-------------------------------> BindingIndex <----------> VertexBuffer
+glEnableVertexAttribArray        glVertexAttrib*Format    glVertexAttribBinding                 glBindVertexBuffer
+
+GLSL
+layout(location = AttribIndex) in XXXX;
+
+glVertexBindingDivisor -> D3D中InstanceDataStepRate
+
+大坑！！！
+在OpenGL中 VertexArrayObject中所有Attrib默认是禁用的，需要用glEnableVertexAttribArray启用
+据说是为了兼容固定功能属性
+
+在RenderDoc中每个VertexAttribute都有一个Enabled属性！！！
+
+在用RenderDoc调试时 可以在Pipeline State中的Vertex Input阶段的Vertex Attribute Formats窗口中查看Enabled是否启用
+
+远程桌面
+glEnableVertexAttribArray ->
+
+glVertexAttrib*Format -> Target(VERTEX_ARRAY_BINDING) -> VertexArrayObject
+                                               glBindVertexArray
+glVertexAttribBinding ->
+
+glVertexBindingDivisor ->
+
+在完成对VertexArrayObject的修改后 可以用glBindVertexArray(0U)表示强调
+
+
+其中
+glEnableVertexAttribArray/glVertexAttrib*Format/glVertexAttribBinding/glVertexBindingDivisor作用于VertexArrayObject
+
+IA阶段
+glBindVertexBuffer 作用于渲染流水线状态 -> ID3D11DeviceContext::IASetVertexBuffers ||之前的 glBindBuffer GL_ARRAY_BUFFER 已被取代
+glBindBuffer 作用于渲染流水线状态 GL_ELEMENT_ARRAY_BUFFER -> ID3D11DeviceContext::IASetIndexBuffer
+
+glDraw* / mode -> ID3D11DeviceContext::IASetPrimitiveTopology
+GL_TRIANGLES -> 三角列表
+GL_TRIANGLE_STRIP -> 三角条带
+
+glDrawElements / type -> GL_UNSIGNED_SHORT（DXGI_FORMAT_R16_UINT） GL_UNSIGNED_INT（DXGI_FORMAT_R32_UINT）两种
+               / indices 虽然类型是void const*，但语义上应当是size_t 对应于IASetIndexBuffer中的Offset 
+               ||可以用reinterpret_cast<void const *>(sizeof(uint16_t/uint32_t)*NumIndex)转换  //单位为字节
+               D3D中的StartIndexLocation在OpenGL中没有对应的选项
+
+在OpenGL中 条带重启动可以用glPrimitiveRestartIndex设置 -> D3D固定为-1
+
+//光栅化相关
+//与Direct3D一致
+glFrontFace()
+glClipControl(GL_LOWER_LEFT,  GL_ZERO_TO_ONE);
+glViewportArrayv
+
+//OM
+glEnable GL_DEPTH_TEST
+
+glEnable GL_
+
+
+垂直同步
+wglSwapIntervalEXT用于控制IDXGISwapChain::Present中的SyncInterval
+SwapBuffers(GDI32.dll导出)即相当于调用Present
+
+一般 0 -> 关闭垂直同步 1 -> 开启垂直同步
+
+归零Clear
+GLfloat color[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+glClearBufferfv(GL_COLOR, 0-7, color);
+GLfloat depth = 1.0f;
+glClearBufferfv(GL_DEPTH, 0, &depth);
+
+始终打开EarlyDepthStencil
+//layout (early_fragment_tests) in;
+
+//MSAA
+
+着色器中用centroid或sample以区分执行几次 
+//#extension GL_OES_shader_multisample_interpolation :enable
+sample需要扩展
+centroid不需要扩展
+
+//#extension GL_ARB_derivative_control : enable 
+dFdxFine
+dFdyFine
+//但dFdx/dFdy不需要扩展 
+
+ESSL
+Default Precision Qualifiers
+Vertex
+precision highp float;
+precision highp int;
+precision lowp sampler2D;
+precision lowp samplerCube;
+
+Fragment shaders
+precision mediump int;
+precision lowp sampler2D;
+precision lowp samplerCube;
+//float不存在默认精度 所有变量(in out 局部变）都需要指定 //在语法上，构造函数不需要指定
+
+glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0U);
+glBindFramebuffer(GL_READ_FRAMEBUFFER, hFrameBuffer);
+glBlitFramebuffer(0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, GL_COLOR_BUFFER_BIT, GL_LINEAR); -> 相当于D3D中的Resolve

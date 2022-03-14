@@ -1,0 +1,148 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="bldsys">
+      <UniqueIdentifier>{e90a0dd1-8545-43e7-8ad7-214fa5764618}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{cec4ee36-cad8-4930-afd6-6494f03bddb2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="include">
+      <UniqueIdentifier>{f23ce42f-b13a-457b-8829-84aadf3897b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{48056ea1-39b2-48da-a94c-55d41f0e2107}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb">
+      <UniqueIdentifier>{ddfc33ec-fb45-4bc1-b3c7-298eb19818c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib">
+      <UniqueIdentifier>{6759eb02-53ef-4df8-bb3c-8f3596813bbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib\win32_desktop_x64">
+      <UniqueIdentifier>{44c6eafa-8daa-4264-bfd0-dee67866cdfc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\intel_tbb\lib\win32_desktop_x86">
+      <UniqueIdentifier>{94efef89-4a97-4b3f-94a8-1863b20fb295}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="pt_dllmain.cpp">
+      <Filter>bldsys</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memset.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_task.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_intrin.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_log.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_malloc.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcmp.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\pt_mcrt_assert.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_atomic.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_intrin.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_log.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_malloc.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_memcmp.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_memcpy.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_memset.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_rwlock.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_scalable_allocator.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_spinlock.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_task.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_mcrt_thread.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\include\pt_mcrt_atomic.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_atomic_msvc.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_intrin.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_intrin_msvc.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_rwlock.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_spinlock.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_thread.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_thread_posix.inl">
+      <Filter>include</Filter>
+    </None>
+    <None Include="..\..\include\pt_mcrt_thread_win32.inl">
+      <Filter>include</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_irml.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbb.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbbmalloc.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_irml.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbb.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbbmalloc.dll">
+      <Filter>third_party\intel_tbb\lib\win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

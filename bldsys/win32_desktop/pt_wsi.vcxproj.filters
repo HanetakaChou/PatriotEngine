@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{0f63866f-6d44-43a4-9409-3a322881346a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{8e1a6dd3-ff4b-4f62-a265-f66ddf04d62f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="bldsys">
+      <UniqueIdentifier>{d8cb46e2-bde8-4feb-a233-696fd3bef974}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\pt_wsi_main_win32_desktop.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="pt_dllmain.cpp">
+      <Filter>bldsys</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\pt_wsi_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_wsi_main.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

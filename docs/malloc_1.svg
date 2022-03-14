@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="873.73mm" height="659.26mm" version="1.1" viewBox="0 0 873.73 659.26" xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+ <defs>
+  <marker id="a" overflow="visible" orient="auto">
+   <path transform="matrix(-.8 0 0 -.8 -10 0)" d="m0 0 5-5-17.5 5 17.5 5z" fill-rule="evenodd" stroke="#000" stroke-width="1pt"/>
+  </marker>
+  <marker id="b" overflow="visible" orient="auto">
+   <path transform="matrix(.8 0 0 .8 10 0)" d="m0 0 5-5-17.5 5 17.5 5z" fill-rule="evenodd" stroke="#000" stroke-width="1pt"/>
+  </marker>
+ </defs>
+ <metadata>
+  <rdf:RDF>
+   <cc:Work rdf:about="">
+    <dc:format>image/svg+xml</dc:format>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:title/>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <g transform="translate(155.64,312.64)">
+  <rect x="-154.89" y="-311.89" width="872.23" height="657.76" fill="#fff" stroke="#000" stroke-width=".5"/>
+  <g transform="translate(127.05,159.41)">
+   <rect x="366" y="137.03" width="96.99" height="34.43" fill="none" stroke="#000" stroke-width=".55894"/>
+   <text x="376.84473" y="156.74814" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" stroke-width=".5" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Backend Allocator</text>
+  </g>
+  <g stroke-width=".5">
+   <text x="474.30652" y="267.73889" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Slab</text>
+   <path d="m445.09 229.65 76.691 66.786" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+   <path d="m651 51.025-102.27 245.41" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+   <g transform="translate(442.25,-136.58)">
+    <rect x="177.19" y="153.11" width="77.48" height="34.489" fill="none" stroke="#000"/>
+    <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Large Object</text>
+   </g>
+   <g transform="translate(0,94.563)">
+    <g transform="translate(-11.177,-21.431)">
+     <rect x="-43.835" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="-38.444103" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-38.444103" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-38.444103" y="85.567093">buf</tspan><tspan x="-24.574152" y="85.567093" dx="0"/></tspan></text>
+     <rect x="-17.53" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="-12.138915" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-12.138915" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-12.138915" y="85.567093">buf</tspan><tspan x="1.7310365" y="85.567093" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(-2.9104,-26.194)">
+     <rect x=".50838" y="78.322" width="48.33" height="16.951" fill="none" stroke="#000"/>
+     <text x="21.831406" y="87.961639" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="21.831406" y="87.961639" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="21.831406" y="87.961639">...</tspan><tspan x="35.701355" y="87.961639" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(10.848,-21.431)">
+     <rect x="35.08" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="40.471466" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="40.471466" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="40.471466" y="85.567093">buf</tspan><tspan x="54.341415" y="85.567093" dx="0"/></tspan></text>
+     <rect x="61.419" y="73.593" width="36.346" height="16.884" fill="none" stroke="#000"/>
+     <text x="64.130821" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="64.130821" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="64.130821" y="85.037926">unused</tspan><tspan x="78.000771" y="85.037926" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(7.6649,-21.458)">
+     <rect x="100.95" y="73.62" width="45.679" height="16.83" fill="none" stroke="#000"/>
+     <text x="104.69157" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="104.69157" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="104.69157" y="85.037926">slab data</tspan><tspan x="118.56149" y="85.037926" dx="0"/></tspan></text>
+    </g>
+   </g>
+   <g transform="translate(0,39.633)">
+    <g transform="translate(-11.177,-21.431)">
+     <rect x="-43.835" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="-38.444103" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-38.444103" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-38.444103" y="85.567093">buf</tspan><tspan x="-24.574152" y="85.567093" dx="0"/></tspan></text>
+     <rect x="-17.53" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="-12.138915" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-12.138915" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-12.138915" y="85.567093">buf</tspan><tspan x="1.7310365" y="85.567093" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(-2.9104,-26.194)">
+     <rect x=".50838" y="78.322" width="48.33" height="16.951" fill="none" stroke="#000"/>
+     <text x="21.831406" y="87.961639" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="21.831406" y="87.961639" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="21.831406" y="87.961639">...</tspan><tspan x="35.701355" y="87.961639" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(10.848,-21.431)">
+     <rect x="35.08" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+     <text x="40.471466" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="40.471466" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="40.471466" y="85.567093">buf</tspan><tspan x="54.341415" y="85.567093" dx="0"/></tspan></text>
+     <rect x="61.419" y="73.593" width="36.346" height="16.884" fill="none" stroke="#000"/>
+     <text x="64.130821" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="64.130821" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="64.130821" y="85.037926">unused</tspan><tspan x="78.000771" y="85.037926" dx="0"/></tspan></text>
+    </g>
+    <g transform="translate(7.6649,-21.458)">
+     <rect x="100.95" y="73.62" width="45.679" height="16.83" fill="none" stroke="#000"/>
+     <text x="104.69157" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="104.69157" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="104.69157" y="85.037926">slab data</tspan><tspan x="118.56149" y="85.037926" dx="0"/></tspan></text>
+    </g>
+   </g>
+   <path d="m131.67 72.745-0.14757 19.05" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+   <path d="m131.45 108.62v38.1" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000" stroke-dasharray="1, 3"/>
+   <g transform="translate(9.3544,164.09)">
+    <rect x="108.56" y="20.459" width="27.084" height="16.943" fill="none" stroke="#000" stroke-dasharray="1, 3"/>
+    <text x="112.35643" y="30.875031" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="112.35643" y="30.875031" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="112.35643" y="30.875031">next</tspan><tspan x="126.22636" y="30.875031" dx="0"/></tspan></text>
+   </g>
+   <g transform="translate(9.3544,-10.395)">
+    <rect x="108.56" y="20.459" width="27.084" height="16.943" fill="none" stroke="#000" stroke-dasharray="1, 3"/>
+    <text x="112.35643" y="30.875031" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="112.35643" y="30.875031" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="112.35643" y="30.875031">prev</tspan><tspan x="126.22636" y="30.875031" dx="0"/></tspan></text>
+   </g>
+   <path d="m131.51 27.007 0.17959 28.909" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+   <path d="m131.45 163.55-1e-5 20.989" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+   <g transform="translate(22.825,98.409)">
+    <rect x="151.98" y="-14.966" width="97.335" height="34.436" fill="none" stroke="#000"/>
+    <g font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px">
+     <text x="162.83742" y="-4.971221" style="line-height:1.25" xml:space="preserve">Freelist Pointer</text>
+     <text x="169.16862" y="4.7573895" style="line-height:1.25" xml:space="preserve">which means</text>
+     <text x="155.69826" y="15.608533" style="line-height:1.25" xml:space="preserve">Cache's Head Pointer</text>
+    </g>
+   </g>
+   <path d="m174.8 100.42-20.508-0.10032" fill="none" marker-end="url(#a)" stroke="#000"/>
+   <g transform="translate(-11.177,-17.677)">
+    <rect x="-43.835" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+    <text x="-38.444103" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-38.444103" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-38.444103" y="85.567093">buf</tspan><tspan x="-24.574152" y="85.567093" dx="0"/></tspan></text>
+    <rect x="-17.53" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+    <text x="-12.138915" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="-12.138915" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="-12.138915" y="85.567093">buf</tspan><tspan x="1.7310365" y="85.567093" dx="0"/></tspan></text>
+   </g>
+   <g transform="translate(-2.9104,-22.44)">
+    <rect x=".50838" y="78.322" width="48.33" height="16.951" fill="none" stroke="#000"/>
+    <text x="21.831406" y="87.961639" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="21.831406" y="87.961639" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="21.831406" y="87.961639">...</tspan><tspan x="35.701355" y="87.961639" dx="0"/></tspan></text>
+   </g>
+   <g transform="translate(10.848,-17.677)">
+    <rect x="35.08" y="73.56" width="26.305" height="16.951" fill="none" stroke="#000"/>
+    <text x="40.471466" y="85.567093" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="40.471466" y="85.567093" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="40.471466" y="85.567093">buf</tspan><tspan x="54.341415" y="85.567093" dx="0"/></tspan></text>
+    <rect x="61.419" y="73.593" width="36.346" height="16.884" fill="none" stroke="#000"/>
+    <text x="64.130821" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="64.130821" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="64.130821" y="85.037926">unused</tspan><tspan x="78.000771" y="85.037926" dx="0"/></tspan></text>
+   </g>
+   <g transform="translate(7.6649,-17.705)">
+    <rect x="100.95" y="73.62" width="45.679" height="16.83" fill="none" stroke="#000"/>
+    <text x="104.69157" y="85.037926" fill="#000000" font-family="'BPG Serif Modern GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve"><tspan x="104.69157" y="85.037926" font-family="'BPG Classic GPL&amp;GNU'" stroke-width=".5"><tspan x="104.69157" y="85.037926">slab data</tspan><tspan x="118.56149" y="85.037926" dx="0"/></tspan></text>
+   </g>
+   <rect x="-70.417" y="37.884" width="226.83" height="37.626" fill="none" stroke="#000"/>
+   <text x="-65.767426" y="50.127186" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Slab</text>
+   <rect x="-82.547" y="2.8817" width="361.4" height="204.62" fill="none" stroke="#000"/>
+   <text x="-77.682884" y="15.446075" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Cache</text>
+   <g transform="translate(150.65,168.73)">
+    <text x="144.35576" y="-153.12088" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Cache</text>
+    <rect x="139.32" y="-165.85" width="40.224" height="204.95" fill="none" stroke="#000"/>
+   </g>
+   <g transform="translate(171.64,-69.698)">
+    <rect x="177.22" y="153.14" width="97.335" height="34.436" fill="none" stroke="#000"/>
+    <text x="222.98674" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">...</text>
+   </g>
+   <g transform="translate(327.39,168.73)">
+    <text x="144.35576" y="-153.12088" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Cache</text>
+    <rect x="139.32" y="-165.85" width="40.224" height="204.95" fill="none" stroke="#000"/>
+   </g>
+  </g>
+  <g transform="translate(202.65,-232.45)">
+   <rect x="177.24" y="153.16" width="116.86" height="34.388" fill="none" stroke="#000" stroke-width=".54747"/>
+   <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" stroke-width=".5" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Indexed by Buffer Size</text>
+  </g>
+  <g stroke-width=".5">
+   <g fill="none" stroke="#000">
+    <path d="m415.62-44.901-169.42 128.34" marker-end="url(#a)"/>
+    <path d="m425.15-44.901-94.956 124" marker-end="url(#a)"/>
+    <path d="m443.3-44.901 23.422 80.841" marker-end="url(#a)"/>
+   </g>
+   <rect x="-97.368" y="-159.42" width="638.14" height="389.07" fill="none" stroke="#000"/>
+   <text x="-90.462036" y="-144.66083" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Small Object</text>
+   <g transform="translate(322.7,-366.24)">
+    <rect x="177.25" y="153.17" width="114.81" height="34.381" fill="none" stroke="#000"/>
+    <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Routed by Object Size</text>
+   </g>
+   <path d="m542.06-178.69-88.446 99.404" fill="none" marker-end="url(#a)" stroke="#000"/>
+   <path d="m564.9-178.69 85.709 195.23" fill="none" marker-end="url(#a)" stroke="#000"/>
+   <text x="-121.91213" y="-208.16878" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Slab Allocator</text>
+   <rect x="-131.4" y="-225.41" width="835.87" height="467.04" fill="none" stroke="#000" stroke-width=".5"/>
+   <g transform="translate(327.64,-440.3)">
+    <rect x="177.24" y="153.16" width="105.88" height="34.401" fill="none" stroke="#000"/>
+    <text x="188.06221" y="172.86372" fill="#000000" font-family="'BPG Classic GPL&amp;GNU'" font-size="10.583px" letter-spacing="0px" word-spacing="0px" style="line-height:1.25" xml:space="preserve">Application Request</text>
+   </g>
+   <path d="m558.13-252.24-1.0881 38.864" fill="none" marker-end="url(#a)" marker-start="url(#b)" stroke="#000"/>
+  </g>
+ </g>
+</svg>

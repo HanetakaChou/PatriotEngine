@@ -1,0 +1,222 @@
+[
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_device_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_api_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_device_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_device_vk_wsi_x11.cpp -o ${workspaceFolder}/obj/src/pt_gfx_device_vk_wsi_x11.o",
+        "file": "${workspaceFolder}/src/pt_gfx_device_vk_wsi_x11.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_device_vk_wsi_android.cpp -o ${workspaceFolder}/obj/src/pt_gfx_device_vk_wsi_android.o",
+        "file": "${workspaceFolder}/src/pt_gfx_device_vk_wsi_android.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_malloc_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_malloc_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_malloc_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_connection_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection_d3d12.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection_d3d12.o",
+        "file": "${workspaceFolder}/src/pt_gfx_connection_d3d12.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection_mtl.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection_mtl.o",
+        "file": "${workspaceFolder}/src/pt_gfx_connection_mtl.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_connection_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_connection_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_connection_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_streaming_object_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_streaming_object_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_streaming_object_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_scene_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_scene_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_scene_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_scene_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_scene_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_scene_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_node_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_node_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_node_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_node_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_node_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_node_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_node_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_node_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_node_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_load.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_load.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_load.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_base_load_pmx.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_base_load_pmx.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_base_load_pmx.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_mesh_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_mesh_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_mesh_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_material_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_material_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_material_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_material_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_material_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_material_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base_load.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base_load.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_base_load.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base_load_dds.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base_load_dds.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_base_load_dds.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_base_load_pvr.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_base_load_pvr.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_base_load_pvr.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_GFX=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_gfx_texture_vk.cpp -o ${workspaceFolder}/obj/src/pt_gfx_texture_vk.o",
+        "file": "${workspaceFolder}/src/pt_gfx_texture_vk.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_memcpy.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_memcpy.o",
+        "file": "${workspaceFolder}/src/pt_mcrt_memcpy.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_task.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_task.o",
+        "file": "${workspaceFolder}/src/pt_mcrt_task.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_MCRT=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/intel_tbb/include ${workspaceFolder}/src/pt_mcrt_log.cpp -o ${workspaceFolder}/obj/src/pt_mcrt_log.o",
+        "file": "${workspaceFolder}/src/pt_mcrt_log.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_math.cpp -o ${workspaceFolder}/obj/src/pt_math.o",
+        "file": "${workspaceFolder}/src/pt_math.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -msse2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
+        "file": "${workspaceFolder}/src/pt_math_directx_math_x86_sse2.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -mavx -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx.o",
+        "file": "${workspaceFolder}/src/pt_math_directx_math_x86_avx.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_x86_avx2.o",
+        "file": "${workspaceFolder}/src/pt_math_directx_math_x86_avx2.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -mavx2 -DPT_ATTR_MATH=PT_ATTR_EXPORT -I${workspaceFolder}/include -I${workspaceFolder}/third_party/DirectXMath/Inc ${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp -o ${workspaceFolder}/obj/src/pt_math_directx_math_arm_neon.o",
+        "file": "${workspaceFolder}/src/pt_math_directx_math_arm_neon.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_linux_android.cpp -o ${workspaceFolder}/src/pt_wsi_main_linux_android.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_linux_android.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp -o ${workspaceFolder}/src/pt_wsi_main_linux_x11.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_linux_x11.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_mach_ios.m -o ${workspaceFolder}/src/pt_wsi_main_mach_ios.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_mach_ios.m"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_mach_osx.m -o ${workspaceFolder}/src/pt_wsi_main_mach_osx.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_mach_osx.m"
+    },
+    {
+        "directory": "${workspaceFolder}/src",
+        "command": "c++ -c -xc++ -DPT_ATTR_WSI=PT_ATTR_EXPORT -I${workspaceFolder}/include ${workspaceFolder}/src/pt_wsi_main_win32_desktop.cpp -o ${workspaceFolder}/src/pt_wsi_main_win32_desktop.o",
+        "file": "${workspaceFolder}/src/pt_wsi_main_win32_desktop.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_base.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_base.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -nostdinc -nostdinc++ -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/platforms/android-24/arch-x86_64/usr/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/cxx-stl/llvm-libc++abi/include -I${workspaceFolder}/bldsys/posix_linux_android/android-ndk-r14b/sources/android/support/include -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_linux_android.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_linux_android.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_linux_android.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_linux_x11.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_linux_x11.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_linux_x11.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_mach_ios.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_mach_ios.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_mach_ios.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_mach_osx.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_mach_osx.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_mach_osx.cpp"
+    },
+    {
+        "directory": "${workspaceFolder}/samples/launcher",
+        "command": "c++ -c -xc++ -I${workspaceFolder}/include ${workspaceFolder}/samples/launcher/pt_wsi_app_win32_desktop.cpp -o ${workspaceFolder}/obj/samples/launcher/pt_wsi_app_win32_desktop.o",
+        "file": "${workspaceFolder}/samples/launcher/pt_wsi_app_win32_desktop.cpp"
+    }
+]

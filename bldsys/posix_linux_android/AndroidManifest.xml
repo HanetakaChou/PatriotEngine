@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="YuqiaoZhang.HanetakaChou.PatriotEngine" android:versionCode="1" android:versionName="1.0">
+  <uses-sdk android:minSdkVersion="24" android:targetSdkVersion="24"/>
+  <uses-permission android:name="android.permission.INTERNET"/>
+  <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE"/>
+  <!-- <uses-permission android:name="android.permission.RECORD_AUDIO"/> -->
+  <!-- <uses-permission android:name="android.permission.CAPTURE_AUDIO_OUTPUT"/> -->
+  <!-- <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>-->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <application android:label="PatriotEngine" android:icon="@drawable/icon" android:hasCode="false">
+    <activity android:name="android.app.NativeActivity" android:label="PatriotEngine" android:screenOrientation="landscape" android:configChanges="keyboardHidden">
+      <!-- android:configChanges="orientation|keyboardHidden" -->
+      <meta-data android:name="android.app.lib_name" android:value="pt_launcher"/>
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN"/>
+        <category android:name="android.intent.category.LAUNCHER"/>
+      </intent-filter>
+    </activity>
+  </application>
+</manifest>

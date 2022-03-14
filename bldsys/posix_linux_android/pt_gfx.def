@@ -1,0 +1,42 @@
+/*
+ * Copyright (C) YuqiaoZhang(HanetakaChou)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+{
+    global:
+        pt_gfx_connection_init;
+        pt_gfx_connection_on_wsi_window_created;
+        pt_gfx_connection_on_wsi_window_destroyed;
+        pt_gfx_connection_on_wsi_window_resized;
+        pt_gfx_connection_draw_acquire;
+        pt_gfx_connection_draw_release;
+        pt_gfx_connection_destroy;
+        pt_gfx_connection_create_node;
+        pt_gfx_node_set_mesh;
+        pt_gfx_node_set_material;
+        pt_gfx_node_destroy;
+        pt_gfx_connection_create_mesh;
+        pt_gfx_mesh_read_input_stream;
+        pt_gfx_mesh_destroy;
+        pt_gfx_connection_create_material;
+        pt_gfx_material_init_with_texture;
+        pt_gfx_material_destroy;
+        pt_gfx_connection_create_texture;
+        pt_gfx_texture_read_input_stream;
+        pt_gfx_texture_destroy;
+    local:
+        *;
+};
