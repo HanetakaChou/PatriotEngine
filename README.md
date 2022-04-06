@@ -7,6 +7,17 @@ It is widely establish that "program = data structure + algorithm" and this engi
 
 Here is the document of this engine: [https://yuqiaozhang.github.io/PatriotEngine/index.html](https://yuqiaozhang.github.io/PatriotEngine/index.html)  
 
+### Continuous build status    
+    
+Build Type | Status  
+:-: | :-:  
+**Build Posix Linux X11 On Ubuntu** | [![Build Posix Linux X11 On Ubuntu](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_x11_on_ubuntu.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_x11_on_ubuntu.yml)  
+**Build Win32 Desktop** | [![Build Win32](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_win32_desktop.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_win32_desktop.yml)  
+**Build Posix Linux Android On Ubuntu** | [![Build Posix Linux Android On Ubuntu](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_ubuntu.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_ubuntu.yml)  
+**Build Posix Linux Android On MacOSX** | [![Build Posix Linux Android On MacOSX](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_macosx.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_macosx.yml)  
+**Build Posix Mach OSX** | [![Build Posix Mach OSX](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_osx.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_osx.yml)  
+**Build Posix Mach Catalyst** | [![Build Posix Mach Catalyst](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_catalyst.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_catalyst.yml)  
+
 ### Design Philosophy  
 
 We may treat the image synthesis engine as the 3D version X11 server.  
@@ -147,27 +158,3 @@ The asset streaming process is totally asynchronous. This means that the calling
   - [ ] Color //UHD Display ...  
   - [ ] AA //FXAA, TAA ...  
   - [ ] Effect //DOF ...  
- 
-### Continuous build status    
-    
-Build Type | Status  
-:-: | :-:  
-**Build Posix Linux X11 On Ubuntu** | [![Build Posix Linux X11 On Ubuntu](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_x11_on_ubuntu.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_x11_on_ubuntu.yml)  
-**Build Win32 Desktop** | [![Build Win32](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_win32_desktop.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_win32_desktop.yml)  
-**Build Posix Linux Android On Ubuntu** | [![Build Posix Linux Android On Ubuntu](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_ubuntu.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_ubuntu.yml)  
-**Build Posix Linux Android On MacOSX** | [![Build Posix Linux Android On MacOSX](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_macosx.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_linux_android_on_macosx.yml)  
-**Build Posix Mach OSX** | [![Build Posix Mach OSX](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_osx.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_osx.yml)  
-**Build Posix Mach Catalyst** | [![Build Posix Mach Catalyst](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_catalyst.yml/badge.svg)](https://github.com/YuqiaoZhang/PatriotEngine/actions/workflows/build_posix_mach_catalyst.yml)  
-
-### To Do  
-* 1\.To learn the Differential Geometry and try to treat the Steradian as the 2-Manifold which reduces the dimensions from 3(R^3) to 2(S^2) and simplifies the integral over the sphere surface when one calculates the lighting.      
-Try to understand the following papers from the perspective of the 2-Manifold:         
-> * An Introduction to Manifolds / Example 23.11 (Integral over a sphere)     
-\[Tu 2011\] Loring Tu. "An Introduction to Manifolds, Second Edition." Springer 2011.    
-> * LTC  
-\[Heitz 2016\] [Eric Heitz, Jonathan Dupuy, Stephen Hill and David Neubelt. "Real-Time Polygonal-Light Shading with Linearly Transformed Cosines." SIGGRAPH 2016](https://eheitzresearch.wordpress.com/415-2/)     
-
-* To my pleasure, someone seems to have the similar idea which I find on the Google Scholar:      
-> * \[Herholz 2018\] Sebastian Herholz, Oskar Elek, Jens Schindel, Jaroslav krivanek, Hendrik Lensch. "A Unified Manifold Framework for Efficient BRDF Sampling based on Parametric Mixture Models." EGSR 2018.    
-* The traditional Euclidean-Space method may be replaced by the efficient 2-Manifold method in the next few years.    
-    
