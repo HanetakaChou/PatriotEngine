@@ -15,10 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _PT_GFX_GLSLANGH_
-#define _PT_GFX_GLSLANGH_ 1
+#ifndef _PT_GFX_SHADER_BRDF_GLSLANGH_
+#define _PT_GFX_SHADER_BRDF_GLSLANGH_ 1
 
-#define INV_PI 0.31830988618379067154
+#include "pt_gfx_shader_math_consts.glslangh"
 
 highp float D_GGX(highp float alpha, highp float NdotH)
 {
