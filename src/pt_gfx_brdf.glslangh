@@ -1,0 +1,98 @@
+//
+// Copyright (C) YuqiaoZhang(HanetakaChou)
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+// 
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+#ifndef _PT_GFX_GLSLANGH_
+#define _PT_GFX_GLSLANGH_ 1
+
+#define INV_PI 0.31830988618379067154
+
+highp float D_GGX(highp float alpha, highp float NdotH)
+{
+	// Equation 9.41 of Real-Time Rendering Fourth Edition
+	highp float alpha2 = alpha * alpha;
+	highp float denominator = 1.0 + NdotH * (NdotH * alpha2 - NdotH);
+	return INV_PI * (alpha2 / (denominator * denominator));
+}
+
+highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
+{
+    // UE: [F_Schlick](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L415)	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+	highp float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
+
+	// Equation 9.18 of Real-Time Rendering Fourth Edition
+	highp float x = 1.0 - LdotH;
+    highp float x2 = x * x;
+    highp float x5 = x2 * x2 * x;
+	return ((1.0 - x5) * f0 + f90 * x5);
+}
+
+highp float V_SmithJointGGX(highp float alpha, highp float NdotV, highp float NdotL)
+{
+	highp float Vis_SmithV = NdotL * (NdotV * (1.0 - alpha ) + alpha);
+	highp float Vis_SmithL = NdotV * (NdotL * (1.0 - alpha ) + alpha);
+	return (0.5 / (Vis_SmithV + Vis_SmithL));
+}
+
+highp vec3 Specular_GGX(highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+{
+	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
+	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
+	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
+    
+    // Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
+	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
+	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
+	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
+	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
+	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
+	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
+    // UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
+    // U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
+	highp float invLenH = inversesqrt(2.0 + 2.0 * NdotL);
+	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
+	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
+
+    // Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions : "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
+    highp float alpha = roughness * roughness;
+
+	highp float D = D_GGX(alpha, NdotH);
+	highp float Vis = V_SmithJointGGX(alpha, NdotV, NdotL);
+	highp vec3 F = F_Schlick(specular_color, LdotH);
+	return (D * Vis) * F;
+}
+
+highp vec3 Dual_Specular_GGX(highp float material_roughness_0, highp float material_roughness_1, highp float material_lobe_mix, highp float subsurface_mask, highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+{
+	highp float material_roughness_average = mix(material_roughness_0, material_roughness_1, material_lobe_mix);
+	highp float average_to_roughness_0 = material_roughness_0 / material_roughness_average;
+	highp float average_to_roughness_1 = material_roughness_1 / material_roughness_average;
+
+	highp float surface_roughness_average = roughness;
+	highp float surface_roughness_0 = clamp(average_to_roughness_0 * surface_roughness_average, 0.02, 1.0);
+	highp float surface_roughness_1 = clamp(average_to_roughness_1 * surface_roughness_average, 0.0, 1.0);
+
+	// UE4: SubsurfaceProfileBxDF
+	surface_roughness_0 = mix(1.0, surface_roughness_0, clamp(10.0 * subsurface_mask, 0.0, 1.0));
+	surface_roughness_1 = mix(1.0, surface_roughness_1, clamp(10.0 * subsurface_mask, 0.0, 1.0));
+
+	highp vec3 radiance_specular_0 = Specular_GGX(surface_roughness_0, specular_color, N, V, L);
+	highp vec3 radiance_specular_1 = Specular_GGX(surface_roughness_1, specular_color, N, V, L);
+	highp vec3 radiance_specular = mix(radiance_specular_0, radiance_specular_1, material_lobe_mix);
+	return radiance_specular;
+}
+
+#endif
