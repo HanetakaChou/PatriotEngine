@@ -15,18 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
+# -g -Od should only be used in debug version
+
 all: \
-	pt_gfx_glsl_vulkan_lighting_mesh_vert.inl pt_gfx_glsl_vulkan_lighting_mesh_frag.inl \
-	pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl
+	pt_gfx_glsl_vulkan_lighting_mesh_vert.inl \
+	pt_gfx_glsl_vulkan_lighting_mesh_frag.inl
 
-pt_gfx_glsl_vulkan_lighting_mesh_vert.inl : pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl
+pt_gfx_glsl_vulkan_lighting_mesh_vert.inl : pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl pt_gfx_shader_brdf.glslangh
 	glslangValidator -S vert -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_vert.inl -x pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl
-pt_gfx_glsl_vulkan_lighting_mesh_frag.inl : pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl
+pt_gfx_glsl_vulkan_lighting_mesh_frag.inl : pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl pt_gfx_shader_brdf.glslangh
 	glslangValidator -S frag -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_frag.inl -x pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl
-
-pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl : pt_gfx_shader_point_light_shadow_mesh_vert_vk.glsl
-	glslangValidator -S vert -V100 -o pt_gfx_shader_point_light_shadow_mesh_vert_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_vert_vk.glsl
-pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl : pt_gfx_shader_point_light_shadow_mesh_geom_vk.glsl
-	glslangValidator -S geom -V100 -o pt_gfx_shader_point_light_shadow_mesh_geom_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_geom_vk.glsl
-pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl : pt_gfx_shader_point_light_shadow_mesh_frag_vk.glsl
-	glslangValidator -S frag -V100 -o pt_gfx_shader_point_light_shadow_mesh_frag_vk.inl -x pt_gfx_shader_point_light_shadow_mesh_frag_vk.glsl

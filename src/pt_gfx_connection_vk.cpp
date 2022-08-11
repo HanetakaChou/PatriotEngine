@@ -1436,6 +1436,10 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_binding_descriptions[1].stride = sizeof(pt_gfx_mesh_neutral_vertex_varying);
         vertex_binding_descriptions[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
+        // TODO: reference UE
+        // Normal Tangent: R8G8B8A8_SNORM
+        // UV: R16G16_FLOAT
+
         VkVertexInputAttributeDescription vertex_attribute_descriptions[4];
         vertex_attribute_descriptions[0].location = 0U; 
         vertex_attribute_descriptions[0].binding = 0U; 

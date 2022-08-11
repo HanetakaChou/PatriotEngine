@@ -17,6 +17,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#extension GL_GOOGLE_include_directive : enable
+
+#include "pt_gfx_shader_brdf.glslangh"
+#include "pt_gfx_shader_ao.glslangh"
+
 layout(set = 0, binding = 5) uniform highp sampler2DArray point_lights_shadow;
 
 layout(set = 1, binding = 0) uniform highp sampler2D tex;

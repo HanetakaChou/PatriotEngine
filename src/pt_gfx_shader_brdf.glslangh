@@ -20,17 +20,50 @@
 
 #include "pt_gfx_shader_math_consts.glslangh"
 
-highp float D_GGX(highp float alpha, highp float NdotH)
+highp float D_TR(highp float alpha, highp float NdotH)
 {
-	// Equation 9.41 of Real-Time Rendering Fourth Edition
+	// Trowbridge-Reitz
+
+	// Equation 9.41 of Real-Time Rendering Fourth Edition: "Although “Trowbridge-Reitz distribution” is technically the correct name"
+	// Equation 8.11 of PBR Book: https://pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#MicrofacetDistributionFunctions
 	highp float alpha2 = alpha * alpha;
 	highp float denominator = 1.0 + NdotH * (NdotH * alpha2 - NdotH);
 	return INV_PI * (alpha2 / (denominator * denominator));
 }
 
+highp float V_HC_TR(highp float alpha, highp float NdotV, highp float NdotL)
+{
+    // Height-Correlated Trowbridge-Reitz
+
+	// Lambda:
+	// Equation 8.13 of PBR Book: https://pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#MaskingandShadowing
+
+    // Lambda for Trowbridge-Reitz:
+	// Equation 9.42 of Real-Time Rendering Fourth Edition
+	// Figure 8.18 of PBR Book: https://pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#MaskingandShadowing
+	// Λ(V) = 0.5*(-1.0 + (1.0/NoV)*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2))  
+	// Λ(L) = 0.5*(-1.0 + (1.0/NoL)*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))  
+
+    // G2
+	// Equation 9.31 of Real-Time Rendering Fourth Edition
+    // PBR Book / 8.4.3 Masking and Shadowing: "A more accurate model can be derived assuming that microfacet visibility is more likely the higher up a given point on a microface"
+    // G2 = 1.0/(1.0 + Λ(V) + Λ(L)) = (2.0*NoV*NoL)/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
+
+	// V = G2/(4.0*NoV*NoL) = 0.5/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
+	
+	highp float alpha2 = alpha * alpha;
+	highp float Term_V = NdotL * sqrt(alpha2 + (1.0 - alpha2)*NdotV*NdotV);
+	highp float Term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2)*NdotL*NdotL);
+	// UE: [Vis_SmithJointApprox](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L380)
+	// highp float Term_V = NdotL * (alpha + (1.0 - alpha)*NdotV);
+	// highp float Term_L = NdotV * (alpha + (1.0 - alpha)*NdotL);
+	return (0.5 / (Term_V + Term_L));
+}
+
 highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
 {
-    // UE: [F_Schlick](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L415)	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+    // UE: [F_Schlick](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L415)	
+	// Anything less than 2% is physically impossible and is instead considered to be shadowing
 	highp float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
 
 	// Equation 9.18 of Real-Time Rendering Fourth Edition
@@ -40,14 +73,7 @@ highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
 	return ((1.0 - x5) * f0 + f90 * x5);
 }
 
-highp float V_SmithJointGGX(highp float alpha, highp float NdotV, highp float NdotL)
-{
-	highp float Vis_SmithV = NdotL * (NdotV * (1.0 - alpha ) + alpha);
-	highp float Vis_SmithL = NdotV * (NdotL * (1.0 - alpha ) + alpha);
-	return (0.5 / (Vis_SmithV + Vis_SmithL));
-}
-
-highp vec3 Specular_GGX(highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 Specular_TR(highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
 {
 	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
 	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
@@ -66,16 +92,16 @@ highp vec3 Specular_GGX(highp float roughness, highp vec3 specular_color, highp 
 	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
 	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
 
-    // Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions : "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
+    // Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions: "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
     highp float alpha = roughness * roughness;
 
-	highp float D = D_GGX(alpha, NdotH);
-	highp float Vis = V_SmithJointGGX(alpha, NdotV, NdotL);
+	highp float D = D_TR(alpha, NdotH);
+	highp float BRDF_V = V_HC_TR(alpha, NdotV, NdotL);
 	highp vec3 F = F_Schlick(specular_color, LdotH);
-	return (D * Vis) * F;
+	return (D * BRDF_V) * F;
 }
 
-highp vec3 Dual_Specular_GGX(highp float material_roughness_0, highp float material_roughness_1, highp float material_lobe_mix, highp float subsurface_mask, highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float material_roughness_1, highp float material_lobe_mix, highp float subsurface_mask, highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
 {
 	highp float material_roughness_average = mix(material_roughness_0, material_roughness_1, material_lobe_mix);
 	highp float average_to_roughness_0 = material_roughness_0 / material_roughness_average;
@@ -89,8 +115,8 @@ highp vec3 Dual_Specular_GGX(highp float material_roughness_0, highp float mater
 	surface_roughness_0 = mix(1.0, surface_roughness_0, clamp(10.0 * subsurface_mask, 0.0, 1.0));
 	surface_roughness_1 = mix(1.0, surface_roughness_1, clamp(10.0 * subsurface_mask, 0.0, 1.0));
 
-	highp vec3 radiance_specular_0 = Specular_GGX(surface_roughness_0, specular_color, N, V, L);
-	highp vec3 radiance_specular_1 = Specular_GGX(surface_roughness_1, specular_color, N, V, L);
+	highp vec3 radiance_specular_0 = Specular_TR(surface_roughness_0, specular_color, N, V, L);
+	highp vec3 radiance_specular_1 = Specular_TR(surface_roughness_1, specular_color, N, V, L);
 	highp vec3 radiance_specular = mix(radiance_specular_0, radiance_specular_1, material_lobe_mix);
 	return radiance_specular;
 }
