@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaChou)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -33,44 +33,80 @@ highp float D_TR(highp float alpha, highp float NdotH)
 
 highp float V_HC_TR(highp float alpha, highp float NdotV, highp float NdotL)
 {
-    // Height-Correlated Trowbridge-Reitz
+	// Height-Correlated Trowbridge-Reitz
 
 	// Lambda:
 	// Equation 8.13 of PBR Book: https://pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#MaskingandShadowing
 
-    // Lambda for Trowbridge-Reitz:
+	// Lambda for Trowbridge-Reitz:
 	// Equation 9.42 of Real-Time Rendering Fourth Edition
 	// Figure 8.18 of PBR Book: https://pbr-book.org/3ed-2018/Reflection_Models/Microfacet_Models#MaskingandShadowing
-	// Λ(V) = 0.5*(-1.0 + (1.0/NoV)*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2))  
-	// Λ(L) = 0.5*(-1.0 + (1.0/NoL)*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))  
+	// Λ(V) = 0.5*(-1.0 + (1.0/NoV)*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2))
+	// Λ(L) = 0.5*(-1.0 + (1.0/NoL)*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
 
-    // G2
+	// G2
 	// Equation 9.31 of Real-Time Rendering Fourth Edition
-    // PBR Book / 8.4.3 Masking and Shadowing: "A more accurate model can be derived assuming that microfacet visibility is more likely the higher up a given point on a microface"
-    // G2 = 1.0/(1.0 + Λ(V) + Λ(L)) = (2.0*NoV*NoL)/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
+	// PBR Book / 8.4.3 Masking and Shadowing: "A more accurate model can be derived assuming that microfacet visibility is more likely the higher up a given point on a microface"
+	// G2 = 1.0/(1.0 + Λ(V) + Λ(L)) = (2.0*NoV*NoL)/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
 
 	// V = G2/(4.0*NoV*NoL) = 0.5/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
-	
+
 	highp float alpha2 = alpha * alpha;
-	highp float Term_V = NdotL * sqrt(alpha2 + (1.0 - alpha2)*NdotV*NdotV);
-	highp float Term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2)*NdotL*NdotL);
+	highp float Term_V = NdotL * sqrt(alpha2 + (1.0 - alpha2) * NdotV * NdotV);
+	highp float Term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2) * NdotL * NdotL);
 	// UE: [Vis_SmithJointApprox](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L380)
 	// highp float Term_V = NdotL * (alpha + (1.0 - alpha)*NdotV);
 	// highp float Term_L = NdotV * (alpha + (1.0 - alpha)*NdotL);
 	return (0.5 / (Term_V + Term_L));
 }
 
+highp vec3 F_Schlick(highp vec3 f0, highp float f90, highp float LdotH)
+{
+	// Equation 9.18 of Real-Time Rendering Fourth Edition
+	// U3D: [F_Schlick](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/BSDF.hlsl#L45)
+	highp float x = 1.0 - LdotH;
+	highp float x2 = x * x;
+	highp float x5 = x2 * x2 * x;
+	return ((1.0 - x5) * f0 + f90 * x5);
+}
+
 highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
 {
-    // UE: [F_Schlick](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L415)	
+	// UE: [F_Schlick](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L415)
 	// Anything less than 2% is physically impossible and is instead considered to be shadowing
 	highp float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
 
-	// Equation 9.18 of Real-Time Rendering Fourth Edition
-	highp float x = 1.0 - LdotH;
-    highp float x2 = x * x;
-    highp float x5 = x2 * x2 * x;
-	return ((1.0 - x5) * f0 + f90 * x5);
+	return F_Schlick(f0, f90, LdotH);
+}
+
+highp vec3 Diffuse_Disney(highp vec3 diffuse_color, highp float roughness, highp vec3 N, highp vec3 V, highp vec3 L)
+{
+	// UE: [Diffuse_Burley](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L253)
+	// U3D: [DisneyDiffuse](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/BSDF.hlsl#L414)
+
+	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
+	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
+	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
+
+	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
+	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
+	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
+	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
+	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
+	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
+	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
+	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
+	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
+	highp float invLenH = inversesqrt(2.0 + 2.0 * NdotL);
+	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
+	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
+
+	highp float f90 = 0.5 + 2.0 * LdotH * LdotH * roughness;
+
+	highp vec3 Term_V = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotV);
+	highp vec3 Term_L = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotL);
+
+	return diffuse_color * (INV_PI * Term_V * Term_L);
 }
 
 highp vec3 Specular_TR(highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
@@ -78,22 +114,22 @@ highp vec3 Specular_TR(highp float roughness, highp vec3 specular_color, highp v
 	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
 	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
 	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
-    
-    // Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
+
+	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
 	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
 	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
 	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
 	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
 	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
 	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
-    // UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
-    // U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
+	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
+	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
 	highp float invLenH = inversesqrt(2.0 + 2.0 * NdotL);
 	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
 	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
 
-    // Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions: "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
-    highp float alpha = roughness * roughness;
+	// Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions: "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
+	highp float alpha = roughness * roughness;
 
 	highp float D = D_TR(alpha, NdotH);
 	highp float BRDF_V = V_HC_TR(alpha, NdotV, NdotL);
