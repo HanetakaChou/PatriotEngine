@@ -52,12 +52,12 @@ highp float V_HC_TR(highp float alpha, highp float NdotV, highp float NdotL)
 	// V = G2/(4.0*NoV*NoL) = 0.5/(NoL*sqrt(alpha^2 + (1.0 - alpha^2)*NoV^2) + NoV*sqrt(alpha^2 + (1.0 - alpha^2)*NoL^2))
 
 	highp float alpha2 = alpha * alpha;
-	highp float Term_V = NdotL * sqrt(alpha2 + (1.0 - alpha2) * NdotV * NdotV);
-	highp float Term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2) * NdotL * NdotL);
+	highp float term_v = NdotL * sqrt(alpha2 + (1.0 - alpha2) * NdotV * NdotV);
+	highp float term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2) * NdotL * NdotL);
 	// UE: [Vis_SmithJointApprox](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L380)
-	// highp float Term_V = NdotL * (alpha + (1.0 - alpha)*NdotV);
-	// highp float Term_L = NdotV * (alpha + (1.0 - alpha)*NdotL);
-	return (0.5 / (Term_V + Term_L));
+	// highp float term_v = NdotL * (alpha + (1.0 - alpha)*NdotV);
+	// highp float term_L = NdotV * (alpha + (1.0 - alpha)*NdotL);
+	return (0.5 / (term_v + term_L));
 }
 
 highp vec3 F_Schlick(highp vec3 f0, highp float f90, highp float LdotH)
@@ -79,55 +79,21 @@ highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
 	return F_Schlick(f0, f90, LdotH);
 }
 
-highp vec3 Diffuse_Disney(highp vec3 diffuse_color, highp float roughness, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 Diffuse_Burley(highp vec3 diffuse_color, highp float roughness, highp float NdotV, highp float NdotL, highp float LdotH)
 {
 	// UE: [Diffuse_Burley](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L253)
 	// U3D: [DisneyDiffuse](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/BSDF.hlsl#L414)
 
-	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
-	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
-	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
-
-	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
-	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
-	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
-	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
-	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
-	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
-	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
-	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
-	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
-	highp float invLenH = inversesqrt(2.0 + 2.0 * NdotL);
-	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
-	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
-
 	highp float f90 = 0.5 + 2.0 * LdotH * LdotH * roughness;
 
-	highp vec3 Term_V = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotV);
-	highp vec3 Term_L = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotL);
+	highp vec3 term_v = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotV);
+	highp vec3 term_L = F_Schlick(vec3(1.0, 1.0, 1.0), f90, NdotL);
 
-	return diffuse_color * (INV_PI * Term_V * Term_L);
+	return diffuse_color * (INV_PI * term_v * term_L);
 }
 
-highp vec3 Specular_TR(highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 Specular_TR(highp vec3 specular_color, highp float roughness, highp float NdotV, highp float NdotL, highp float NdotH, highp float LdotH)
 {
-	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
-	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
-	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
-
-	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
-	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
-	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
-	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
-	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
-	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
-	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
-	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
-	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
-	highp float invLenH = inversesqrt(2.0 + 2.0 * NdotL);
-	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
-	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
-
 	// Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions: "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
 	highp float alpha = roughness * roughness;
 
@@ -137,7 +103,7 @@ highp vec3 Specular_TR(highp float roughness, highp vec3 specular_color, highp v
 	return (D * BRDF_V) * F;
 }
 
-highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float material_roughness_1, highp float material_lobe_mix, highp float subsurface_mask, highp float roughness, highp vec3 specular_color, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float material_roughness_1, highp float material_lobe_mix, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp float NdotV, highp float NdotL, highp float NdotH, highp float LdotH)
 {
 	highp float material_roughness_average = mix(material_roughness_0, material_roughness_1, material_lobe_mix);
 	highp float average_to_roughness_0 = material_roughness_0 / material_roughness_average;
@@ -151,10 +117,42 @@ highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float materi
 	surface_roughness_0 = mix(1.0, surface_roughness_0, clamp(10.0 * subsurface_mask, 0.0, 1.0));
 	surface_roughness_1 = mix(1.0, surface_roughness_1, clamp(10.0 * subsurface_mask, 0.0, 1.0));
 
-	highp vec3 radiance_specular_0 = Specular_TR(surface_roughness_0, specular_color, N, V, L);
-	highp vec3 radiance_specular_1 = Specular_TR(surface_roughness_1, specular_color, N, V, L);
+	highp vec3 radiance_specular_0 = Specular_TR(specular_color, surface_roughness_0, NdotV, NdotL, NdotH, LdotH);
+	highp vec3 radiance_specular_1 = Specular_TR(specular_color, surface_roughness_1, NdotV, NdotL, NdotH, LdotH);
 	highp vec3 radiance_specular = mix(radiance_specular_0, radiance_specular_1, material_lobe_mix);
 	return radiance_specular;
+}
+
+highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp float N, highp float V, highp float L)
+{
+	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
+	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
+
+	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
+	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
+	// N·H = N·((L + V)/(|L + V|)) = (N·L + N·V)/(|L + V|)
+	// L·H = L·((L + V)/(|L + V|)) = (L^2 + L·V)/(|L + V|)
+	// V·H = V·((L + V)/(|L + V|)) = (L·V + V^2)/(|L + V|)
+	// 2L·H = 2V·H = L·H + V·H = (L^2 + L·V + L·V + V^2)/(|L + V|) = (|L + V|^2)/(|L + V|) = |L + V| = 1 + 1 + 2L·V
+	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
+	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
+	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
+	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
+	highp float invLenH = inversesqrt(2.0 + 2.0 * VdotL);
+	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
+	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
+
+    // Type == Skin
+	highp vec3 term_diffuse = Diffuse_Burley(diffuse_color, roughness, NdotV, NdotL, LdotH);
+
+    // UE: [FSubsurfaceProfileStruct](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/Engine/Classes/Engine/SubsurfaceProfile.h#L97)
+	highp const float material_roughness_0 = 0.75;
+	highp const float material_roughness_1 = 1.30;
+	highp const float material_lobe_mix = 0.85;
+
+	highp vec3 term_specular = Dual_Specular_TR(material_roughness_0, material_roughness_1, material_lobe_mix, specular_color, roughness, subsurface_mask, NdotV, NdotL, NdotH, LdotH);
+	
+	return term_diffuse+ term_specular;
 }
 
 #endif
