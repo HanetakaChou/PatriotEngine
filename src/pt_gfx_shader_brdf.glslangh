@@ -55,8 +55,8 @@ highp float V_HC_TR(highp float alpha, highp float NdotV, highp float NdotL)
 	highp float term_v = NdotL * sqrt(alpha2 + (1.0 - alpha2) * NdotV * NdotV);
 	highp float term_L = NdotV * sqrt(alpha2 + (1.0 - alpha2) * NdotL * NdotL);
 	// UE: [Vis_SmithJointApprox](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L380)
-	// highp float term_v = NdotL * (alpha + (1.0 - alpha)*NdotV);
-	// highp float term_L = NdotV * (alpha + (1.0 - alpha)*NdotL);
+	// highp float term_v = NdotL * (alpha + (1.0 - alpha) * NdotV);
+	// highp float term_L = NdotV * (alpha + (1.0 - alpha) * NdotL);
 	return (0.5 / (term_v + term_L));
 }
 
@@ -125,8 +125,8 @@ highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float materi
 
 highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp float N, highp float V, highp float L)
 {
-	highp float NdotV = clamp(dot(N, V), 0.0, 1.0);
-	highp float NdotL = clamp(dot(N, L), 0.0, 1.0);
+	highp float non_clamped_NdotV = dot(N, V);
+	highp float non_clamped_NdotL = dot(N, L);
 
 	// Real-Time Rendering Fourth Edition / 9.8 BRDF Models for Surface Reflection: "Hammon[657]. Hammon also shows a method to optimize the BRDF implementation by calculating n·h and l·h without calculating the vector h itself."
 	// |L + V|^2 = L^2 + V^2 + 2L·V = 1 + 1 + 2L·V
@@ -137,10 +137,15 @@ highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specu
 	// ⇒ L·H = 0.5 * |L + V| = (0.5 * |L + V|^2)/(|L + V|) =(0.5 * (1 + 1 + 2L·V))/(|L + V|) = 1/(|L + V|) + (L·V)/(|L + V|)
 	// UE: [Init](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L31)
 	// U3D: [GetBSDFAngle](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L361)
-	highp float VdotL = clamp(dot(V, L), 0.0, 1.0);
-	highp float invLenH = inversesqrt(2.0 + 2.0 * VdotL);
-	highp float NdotH = clamp((NdotL + NdotV) * invLenH, 0.0, 1.0);
-	highp float LdotH = clamp(invLenH * VdotL + invLenH, 0.0, 1.0);
+	highp float non_clamped_VdotL = dot(V, L);
+	highp float invLenH = inversesqrt(2.0 + 2.0 * non_clamped_VdotL);
+	highp float NdotH = clamp((non_clamped_NdotL + non_clamped_NdotV) * invLenH, 0.0, 1.0);
+	highp float LdotH = clamp(invLenH * non_clamped_VdotL + invLenH, 0.0, 1.0);
+
+    // UE: [DefaultLitBxDF]https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ShadingModels.ush#L218
+	// U3D: [ClampNdotV](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L349)
+    highp float NdotV = clamp(non_clamped_NdotV, 0.0001, 1.0);
+    highp float NdotL = clamp(non_clamped_NdotL, 0.0, 1.0);
 
     // Type == Skin
 	highp vec3 term_diffuse = Diffuse_Burley(diffuse_color, roughness, NdotV, NdotL, LdotH);
