@@ -1,16 +1,16 @@
 //
 // Copyright (C) YuqiaoZhang(HanetakaChou)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -18,12 +18,38 @@
 #ifndef _PT_GFX_SHADER_AO_GLSLANGH_
 #define _PT_GFX_SHADER_AO_GLSLANGH_ 1
 
-highp float AO_InterReflections(highp vec3 albedo, highp float ao)
+highp float AO_BentNormal(highp float ao, highp vec3 bent_normal)
+{
+    // Equation 11.10 of Real-Time Rendering Fourth Edition: "Landis [974] also computes an average unoccluded direction, known as a bent normal"
+    // UE: [ApplyBentNormal](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L725)
+
+    // skipped when 'bent_normal' is NOT provided by the material
+    return ao;
+}
+
+highp float DO_BentNormal(highp float ao, highp vec3 bent_normal)
+{
+    // Figure 11.18 of Real-Time Rendering Fourth Edition: "Using a bent normal effectively shifts the cosine lobe toward the unoccluded portions of the sky"
+    // UE: [ApplyBentNormal](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L725)
+    // U3D: [GetSpecularOcclusionFromBentAO](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L282)
+
+    // skipped when 'bent_normal' is NOT provided by the material
+    return ao;
+}
+
+highp vec3 AO_InterReflections(highp float ao, highp vec3 albedo)
 {
     // Real-Time Rendering Fourth Edition / 11.3.3 Accounting for Interreflections: "Jimenez et al. [835]." "Based on these examples, they fit cubic polynomials to approximate the function f that maps from the ambient occlusion value kA and subsurface albedo ρss to the occlusion value kA′, which is brightened by the interreflected light."
     // UE: [AOMultiBounce](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L627)
     // U3D: [GTAOMultiBounce](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L238)
-    return ao;
+
+    highp vec3 a = 2.0404 * albedo - 0.3324;
+    highp vec3 b = -4.7951 * albedo + 0.6417;
+    highp vec3 c = 2.7552 * albedo + 0.6903;
+
+    highp float x = ao;
+    highp vec3 ao_interreflections = max(vec3(x, x, x), ((x * a + b) * x + c) * x);
+    return ao_interreflections;
 }
 
 #endif
