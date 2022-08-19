@@ -18,10 +18,12 @@
 #ifndef _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_
 #define _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_ 1
 
-// The name "“environment lighting" is from "10.2 Environment Lighting" of "Real-Time Rendering Fourth Edition": "While we will generally talk about indirect and “environment” lighting here, we are not going to investigate global illumination algorithms. The key distinction is that in this chapter all the shading mathematics does not depend on the knowledge of other surfaces in the scene, but rather on a small set of light primitives."  
+// The name "environment lighting" is from "10.2 Environment Lighting" of "Real-Time Rendering Fourth Edition": "While we will generally talk about indirect and "environment" lighting here, we are not going to investigate global illumination algorithms. The key distinction is that in this chapter all the shading mathematics does not depend on the knowledge of other surfaces in the scene, but rather on a small set of light primitives."  
 
 highp vec3 EvaluateDiffuseEnvironmentLighting()
 {
+    // UE: [ComputeSkyEnvMapDiffuseIrradianceCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L534)
+    // UE: [GetSkyLighting](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L557)
     // U3D: [AmbientProbeConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/AmbientProbeConvolution.compute#L36)
     // U3D: [ProbeVolumeEvaluateSphericalHarmonics](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L553)
 
@@ -29,6 +31,8 @@ highp vec3 EvaluateDiffuseEnvironmentLighting()
 
 highp vec3 EvaluateSpecularEnvironmentLighting()
 {
+    // UE: [FilterCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L319)
+    // UE: [EnvBRDF](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentPixelShader.usf#L334)
     // U3D: [RenderCubemapGGXConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyManager.cs#L508)
     // U3D: [EvaluateBSDF_Env](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L454)
 
