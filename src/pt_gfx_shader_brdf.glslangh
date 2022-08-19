@@ -157,7 +157,7 @@ highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specu
 
 	highp vec3 term_specular = Dual_Specular_TR(material_roughness_0, material_roughness_1, material_lobe_mix, specular_color, roughness, subsurface_mask, NdotV, NdotL, NdotH, LdotH);
 	
-	return term_diffuse+ term_specular;
+	return term_diffuse + term_specular;
 }
 
 #endif
