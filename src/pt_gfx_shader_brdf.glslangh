@@ -123,7 +123,7 @@ highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float materi
 	return radiance_specular;
 }
 
-highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp float N, highp float V, highp float L)
+highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp vec3 N, highp vec3 V, highp vec3 L)
 {
 	highp float non_clamped_NdotV = dot(N, V);
 	highp float non_clamped_NdotL = dot(N, L);
