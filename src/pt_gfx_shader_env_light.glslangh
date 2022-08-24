@@ -18,32 +18,73 @@
 #ifndef _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_
 #define _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_ 1
 
-// The name "environment lighting" is from "10.2 Environment Lighting" of "Real-Time Rendering Fourth Edition": "While we will generally talk about indirect and "environment" lighting here, we are not going to investigate global illumination algorithms. The key distinction is that in this chapter all the shading mathematics does not depend on the knowledge of other surfaces in the scene, but rather on a small set of light primitives."  
-
-highp vec3 EvaluateDiffuseEnvironmentLighting()
+highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec4 irradiance_environment_lighting[7], highp vec3 N)
 {
     // UE: [DiffuseIrradianceCopyPS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L438)
     // UE: [ComputeSkyEnvMapDiffuseIrradianceCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L534)
-    // UE: [GetSkyLighting](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L557)
     // U3D: [AmbientProbeConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/AmbientProbeConvolution.compute#L36)
-    // U3D: [ProbeVolumeEvaluateSphericalHarmonics](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L553)
 
+    highp vec3 irradiance;
+    {
+        // UE: [GetSkyLighting](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L557)
+        // U3D: [ProbeVolumeEvaluateSphericalHarmonics](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L553)
+
+        // "Stupid Spherical Harmonics (SH)" / "Appendix A10 Shader/CPU code for Irradiance Environment Maps"
+
+        // P(0, 0) =  0.282094791773878140
+        // P(1,-1) = -0.488602511902919920*y
+        // P(1, 0) =  0.488602511902919920*z
+        // P(1, 1) = -0.488602511902919920*x
+        // P(2,-2) =  1.092548430592079200*x*y
+        // P(2,-1) = -1.092548430592079200*y*z
+        // P(2, 0) =  0.946174695757560080*z*z + -0.315391565252520050
+        // P(2, 1) = -1.092548430592079200*x*z
+        // P(2, 2) =  0.546274215296039590*(x*x - y*y)
+
+        // x: P(1, 1)
+        // y: P(1,-1)
+        // z: P(1, 0)
+        // w: P(0, 0) + part of P(2, 0)
+        highp vec4 cAr = irradiance_environment_lighting[0];
+        highp vec4 cAg = irradiance_environment_lighting[1];
+        highp vec4 cAb = irradiance_environment_lighting[2];
+        highp vec3 x1 = vec3(dot(cAr, vec4(N, 1.0)), dot(cAg, vec4(N, 1.0)), dot(cAb, vec4(N, 1.0)));
+
+        // x: P(2,-2)
+        // y: P(2,-1)
+        // z: part of P(2, 0)
+        // w: P(2, 1)
+        highp vec4 cBr = irradiance_environment_lighting[3];
+        highp vec4 cBg = irradiance_environment_lighting[4];
+        highp vec4 cBb = irradiance_environment_lighting[5];
+        highp vec4 vB = N.xyzz * N.yzzx;
+        highp vec3 x2 = vec3(dot(cBr, vB), dot(cBg, vB), dot(cBb, vB));
+
+        // r: P(2, 2)
+        // g: P(2, 2)
+        // b: P(2, 2)
+        highp float vC = N.x * N.x - N.y * N.y;
+        highp vec4 cC = irradiance_environment_lighting[6];
+        highp vec3 x3 = cC.rgb * vC;
+
+        irradiance = x1 + x2 + x3;
+    }
+
+    return irradiance;
 }
 
-highp vec3 EvaluateSpecularEnvironmentLighting()
+void EvaluateSpecularEnvironmentLighting()
 {
     // UE: [FilterPS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L330)
     // UE: [FilterCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L319)
     // UE: [EnvBRDF](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentPixelShader.usf#L334)
     // U3D: [RenderCubemapGGXConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyManager.cs#L508)
     // U3D: [EvaluateBSDF_Env](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L454)
-
 }
 
-highp vec3 EvaluateEnvironmentLighting()
+void EvaluateEnvironmentLighting()
 {
     // U3D: [ApplyAmbientOcclusionFactor](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl#L2020)
-
 }
 
 #endif
