@@ -18,13 +18,15 @@
 #ifndef _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_
 #define _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_ 1
 
-highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec4 irradiance_environment_lighting[7], highp vec3 N)
+#include "pt_gfx_shader_brdf.glslangh"
+
+highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp vec3 N, highp vec4 irradiance_normal_distribution[7])
 {
     // UE: [DiffuseIrradianceCopyPS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L438)
     // UE: [ComputeSkyEnvMapDiffuseIrradianceCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L534)
     // U3D: [AmbientProbeConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/AmbientProbeConvolution.compute#L36)
 
-    highp vec3 irradiance;
+    highp vec3 irradiance_normal;
     {
         // UE: [GetSkyLighting](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L557)
         // U3D: [ProbeVolumeEvaluateSphericalHarmonics](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L553)
@@ -45,18 +47,18 @@ highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec4 irradiance_environment_
         // y: P(1,-1)
         // z: P(1, 0)
         // w: P(0, 0) + part of P(2, 0)
-        highp vec4 cAr = irradiance_environment_lighting[0];
-        highp vec4 cAg = irradiance_environment_lighting[1];
-        highp vec4 cAb = irradiance_environment_lighting[2];
+        highp vec4 cAr = irradiance_normal_distribution[0];
+        highp vec4 cAg = irradiance_normal_distribution[1];
+        highp vec4 cAb = irradiance_normal_distribution[2];
         highp vec3 x1 = vec3(dot(cAr, vec4(N, 1.0)), dot(cAg, vec4(N, 1.0)), dot(cAb, vec4(N, 1.0)));
 
         // x: P(2,-2)
         // y: P(2,-1)
         // z: part of P(2, 0)
         // w: P(2, 1)
-        highp vec4 cBr = irradiance_environment_lighting[3];
-        highp vec4 cBg = irradiance_environment_lighting[4];
-        highp vec4 cBb = irradiance_environment_lighting[5];
+        highp vec4 cBr = irradiance_normal_distribution[3];
+        highp vec4 cBg = irradiance_normal_distribution[4];
+        highp vec4 cBb = irradiance_normal_distribution[5];
         highp vec4 vB = N.xyzz * N.yzzx;
         highp vec3 x2 = vec3(dot(cBr, vB), dot(cBg, vB), dot(cBb, vB));
 
@@ -64,13 +66,16 @@ highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec4 irradiance_environment_
         // g: P(2, 2)
         // b: P(2, 2)
         highp float vC = N.x * N.x - N.y * N.y;
-        highp vec4 cC = irradiance_environment_lighting[6];
+        highp vec4 cC = irradiance_normal_distribution[6];
         highp vec3 x3 = cC.rgb * vC;
 
-        irradiance = x1 + x2 + x3;
+        irradiance_normal = x1 + x2 + x3;
     }
 
-    return irradiance;
+    // TODO: why NOT multiply "INV_PI" ?
+    highp vec3 diffuse_radiance = (Diffuse_Lambert(diffuse_color) * PI) * irradiance_normal;
+
+    return diffuse_radiance;
 }
 
 void EvaluateSpecularEnvironmentLighting()

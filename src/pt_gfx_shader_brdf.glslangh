@@ -79,6 +79,14 @@ highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
 	return F_Schlick(f0, f90, LdotH);
 }
 
+highp vec3 Diffuse_Lambert(highp vec3 diffuse_color)
+{
+	// UE: [Diffuse_Lambert](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L247)
+	// U3D: [Lambert](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/BSDF.hlsl#L391)
+
+	return diffuse_color * INV_PI;
+}
+
 highp vec3 Diffuse_Burley(highp vec3 diffuse_color, highp float roughness, highp float NdotV, highp float NdotL, highp float LdotH)
 {
 	// UE: [Diffuse_Burley](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BRDF.ush#L253)
@@ -123,7 +131,7 @@ highp vec3 Dual_Specular_TR(highp float material_roughness_0, highp float materi
 	return radiance_specular;
 }
 
-highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp vec3 N, highp vec3 V, highp vec3 L)
+highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp float subsurface_mask, highp vec3 N, highp vec3 V, highp vec3 L, highp vec3 irradiance_light)
 {
 	highp float non_clamped_NdotV = dot(N, V);
 	highp float non_clamped_NdotL = dot(N, L);
@@ -148,16 +156,16 @@ highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specu
     highp float NdotL = clamp(non_clamped_NdotL, 0.0, 1.0);
 
     // Type == Skin
-	highp vec3 term_diffuse = Diffuse_Burley(diffuse_color, roughness, NdotV, NdotL, LdotH);
+	highp vec3 diffuse_radiance = Diffuse_Burley(diffuse_color, roughness, NdotV, NdotL, LdotH) * NdotL * irradiance_light;
 
     // UE: [FSubsurfaceProfileStruct](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/Engine/Classes/Engine/SubsurfaceProfile.h#L97)
 	highp const float material_roughness_0 = 0.75;
 	highp const float material_roughness_1 = 1.30;
 	highp const float material_lobe_mix = 0.85;
 
-	highp vec3 term_specular = Dual_Specular_TR(material_roughness_0, material_roughness_1, material_lobe_mix, specular_color, roughness, subsurface_mask, NdotV, NdotL, NdotH, LdotH);
+	highp vec3 specular_radiance = Dual_Specular_TR(material_roughness_0, material_roughness_1, material_lobe_mix, specular_color, roughness, subsurface_mask, NdotV, NdotL, NdotH, LdotH) * NdotL * irradiance_light;
 	
-	return term_diffuse + term_specular;
+	return diffuse_radiance + specular_radiance;
 }
 
 #endif
