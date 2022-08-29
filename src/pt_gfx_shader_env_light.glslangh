@@ -19,6 +19,18 @@
 #define _PT_GFX_SHADER_ENV_LIGHT_GLSLANGH_ 1
 
 #include "pt_gfx_shader_brdf.glslangh"
+#include "pt_gfx_shader_preint_hdr.glslangh"
+
+// set 0: global
+// set 1: per mesh
+// set 2: per material
+
+layout(set = 0, binding = 0) uniform global_set_perframe_binding
+{
+    highp vec4 g_irradiance_normal_distribution[7];
+};
+
+layout(set = 0, binding = 2) uniform samplerCube g_SkyLightCubemap;
 
 highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp vec3 N, highp vec4 irradiance_normal_distribution[7])
 {
@@ -79,22 +91,68 @@ highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp ve
     return diffuse_radiance;
 }
 
-void EvaluateSpecularEnvironmentLighting()
+highp vec3 EvaluateSpecularEnvironmentLighting(highp vec3 specular_color, highp float roughness, highp vec3 N, highp vec3 R, highp float NdotV)
 {
     // UE: [FilterPS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L330)
     // UE: [FilterCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L319)
     // U3D: [RenderCubemapGGXConvolution](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Sky/SkyManager.cs#L508)
 
-    // UE: [EnvBRDF](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentPixelShader.usf#L334)
+    // UE: [ReflectionEnvironment](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentPixelShader.usf#L205)
     // U3D: [EvaluateBSDF_Env](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightLoop/LightLoop.hlsl#L454)
 
+    highp vec3 DVF = PreIntegratedHDR_TR(specular_color, roughness, NdotV);
 
-    
+    // UE: [GetOffSpecularPeakReflectionDir](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShared.ush#L120)
+    // U3D: [GetSpecularDominantDir](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/ImageBasedLighting.hlsl#L105)
+    highp vec3 specular_R;
+    {
+        // Real-Time Rendering Fourth Edition / 9.8.1 Normal Distribution Functions: "In the Disney principled shading model, Burley[214] exposes the roughness control to users as αg = r2, where r is the user-interface roughness parameter value between 0 and 1."
+        highp float alpha = roughness * roughness;
+
+        specular_R = mix(N, R, (sqrt(1.0 - alpha) + alpha) * (1.0 - alpha));
+    }
+
+    // UE: [GetSkyLightReflection](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShared.ush#L38)
+    // U3D: [SampleEnvWithDistanceBaseRoughness](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Lighting/LightEvaluation.hlsl#L600)
+    highp vec3 LD;
+    {
+#if defined(GL_EXT_samplerless_texture_functions) && (GL_EXT_samplerless_texture_functions)
+        highp int CubemapMaxMip = textureQueryLevels(g_SkyLightCubemap);
+#else
+        //#error
+        highp int CubemapMaxMip = 7;
+#endif
+        highp const float REFLECTION_CAPTURE_ROUGHEST_MIP = 1.0;
+        highp const float REFLECTION_CAPTURE_ROUGHNESS_MIP_SCALE = 1.2;
+        highp float LevelFrom1x1 = REFLECTION_CAPTURE_ROUGHEST_MIP - REFLECTION_CAPTURE_ROUGHNESS_MIP_SCALE * log2(max(roughness, 0.001));
+
+        highp float AbsoluteSpecularMip = float(CubemapMaxMip) - 1.0 - LevelFrom1x1;
+
+        LD = texture(g_SkyLightCubemap, specular_R, AbsoluteSpecularMip).rgb;
+    }
+
+    highp vec3 specular_radiance = LD * DVF;
+
+    return specular_radiance;
 }
 
-void EvaluateEnvironmentLighting()
+highp vec3 EvaluateEnvironmentLighting(highp vec3 diffuse_color, highp vec3 specular_color, highp float roughness, highp vec3 N, highp vec3 V, highp float raw_ambient_occlusion)
 {
+    // highp vec3 R = reflect(-V, N);
+    highp vec3 R = 2.0 * dot(V, N) * N - V;
+
+    // UE: [DefaultLitBxDF]https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ShadingModels.ush#L218
+    // U3D: [ClampNdotV](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L349)
+    highp float NdotV = clamp(dot(N, V), 0.0001, 1.0);
+
+    highp vec3 diffuse_radiance = EvaluateDiffuseEnvironmentLighting(diffuse_color, N, g_irradiance_normal_distribution);
+    highp vec3 specular_radiance = EvaluateSpecularEnvironmentLighting(specular_color, roughness, N, R, NdotV);
+
     // U3D: [ApplyAmbientOcclusionFactor](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl#L2020)
+    highp vec3 ambient_occlusion = AO_InterReflections(AO_BentNormal(raw_ambient_occlusion, N), diffuse_color);
+    highp float directional_occlusion = DO_FromAO(raw_ambient_occlusion, roughness, NdotV);
+
+    return (diffuse_radiance * ambient_occlusion + specular_radiance * directional_occlusion);
 }
 
 #endif

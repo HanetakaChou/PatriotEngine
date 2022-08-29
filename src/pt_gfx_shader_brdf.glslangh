@@ -67,7 +67,7 @@ highp vec3 F_Schlick(highp vec3 f0, highp float f90, highp float LdotH)
 	highp float x = 1.0 - LdotH;
 	highp float x2 = x * x;
 	highp float x5 = x2 * x2 * x;
-	return ((1.0 - x5) * f0 + f90 * x5);
+	return (f0 * (1.0 - x5) + vec3(f90, f90, f90) * x5);
 }
 
 highp vec3 F_Schlick(highp vec3 f0, highp float LdotH)
@@ -150,21 +150,21 @@ highp vec3 EvaluateBRDF_Infinitesimal(highp vec3 diffuse_color, highp vec3 specu
 	highp float NdotH = clamp((non_clamped_NdotL + non_clamped_NdotV) * invLenH, 0.0, 1.0);
 	highp float LdotH = clamp(invLenH * non_clamped_VdotL + invLenH, 0.0, 1.0);
 
-    // UE: [DefaultLitBxDF]https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ShadingModels.ush#L218
+	// UE: [DefaultLitBxDF]https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ShadingModels.ush#L218
 	// U3D: [ClampNdotV](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L349)
-    highp float NdotV = clamp(non_clamped_NdotV, 0.0001, 1.0);
-    highp float NdotL = clamp(non_clamped_NdotL, 0.0, 1.0);
+	highp float NdotV = clamp(non_clamped_NdotV, 0.0001, 1.0);
+	highp float NdotL = clamp(non_clamped_NdotL, 0.0, 1.0);
 
-    // Type == Skin
+	// Type == Skin
 	highp vec3 diffuse_radiance = Diffuse_Burley(diffuse_color, roughness, NdotV, NdotL, LdotH) * NdotL * irradiance_light;
 
-    // UE: [FSubsurfaceProfileStruct](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/Engine/Classes/Engine/SubsurfaceProfile.h#L97)
+	// UE: [FSubsurfaceProfileStruct](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/Engine/Classes/Engine/SubsurfaceProfile.h#L97)
 	highp const float material_roughness_0 = 0.75;
 	highp const float material_roughness_1 = 1.30;
 	highp const float material_lobe_mix = 0.85;
 
 	highp vec3 specular_radiance = Dual_Specular_TR(material_roughness_0, material_roughness_1, material_lobe_mix, specular_color, roughness, subsurface_mask, NdotV, NdotL, NdotH, LdotH) * NdotL * irradiance_light;
-	
+
 	return diffuse_radiance + specular_radiance;
 }
 
