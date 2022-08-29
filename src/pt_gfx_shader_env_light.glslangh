@@ -27,10 +27,10 @@
 
 layout(set = 0, binding = 0) uniform global_set_perframe_binding
 {
-    highp vec4 g_irradiance_normal_distribution[7];
+    highp vec4 g_diffuse_irradiance_normal_distribution[7];
 };
 
-layout(set = 0, binding = 2) uniform samplerCube g_SkyLightCubemap;
+layout(set = 0, binding = 2) uniform samplerCube g_specular_LD_distribution;
 
 highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp vec3 N, highp vec4 irradiance_normal_distribution[7])
 {
@@ -91,7 +91,7 @@ highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp ve
     return diffuse_radiance;
 }
 
-highp vec3 EvaluateSpecularEnvironmentLighting(highp vec3 specular_color, highp float roughness, highp vec3 N, highp vec3 R, highp float NdotV)
+highp vec3 EvaluateSpecularEnvironmentLighting(highp vec3 specular_color, highp float roughness, highp vec3 N, highp vec3 R, highp float NdotV, samplerCube LD_distribution)
 {
     // UE: [FilterPS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L330)
     // UE: [FilterCS](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ReflectionEnvironmentShaders.usf#L319)
@@ -117,7 +117,7 @@ highp vec3 EvaluateSpecularEnvironmentLighting(highp vec3 specular_color, highp 
     highp vec3 LD;
     {
 #if defined(GL_EXT_samplerless_texture_functions) && (GL_EXT_samplerless_texture_functions)
-        highp int CubemapMaxMip = textureQueryLevels(g_SkyLightCubemap);
+        highp int CubemapMaxMip = textureQueryLevels(LD_distribution);
 #else
         //#error
         highp int CubemapMaxMip = 7;
@@ -128,7 +128,7 @@ highp vec3 EvaluateSpecularEnvironmentLighting(highp vec3 specular_color, highp 
 
         highp float AbsoluteSpecularMip = float(CubemapMaxMip) - 1.0 - LevelFrom1x1;
 
-        LD = texture(g_SkyLightCubemap, specular_R, AbsoluteSpecularMip).rgb;
+        LD = texture(LD_distribution, specular_R, AbsoluteSpecularMip).rgb;
     }
 
     highp vec3 specular_radiance = LD * DVF;
@@ -145,8 +145,8 @@ highp vec3 EvaluateEnvironmentLighting(highp vec3 diffuse_color, highp vec3 spec
     // U3D: [ClampNdotV](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L349)
     highp float NdotV = clamp(dot(N, V), 0.0001, 1.0);
 
-    highp vec3 diffuse_radiance = EvaluateDiffuseEnvironmentLighting(diffuse_color, N, g_irradiance_normal_distribution);
-    highp vec3 specular_radiance = EvaluateSpecularEnvironmentLighting(specular_color, roughness, N, R, NdotV);
+    highp vec3 diffuse_radiance = EvaluateDiffuseEnvironmentLighting(diffuse_color, N, g_diffuse_irradiance_normal_distribution);
+    highp vec3 specular_radiance = EvaluateSpecularEnvironmentLighting(specular_color, roughness, N, R, NdotV, g_specular_LD_distribution);
 
     // U3D: [ApplyAmbientOcclusionFactor](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl#L2020)
     highp vec3 ambient_occlusion = AO_InterReflections(AO_BentNormal(raw_ambient_occlusion, N), diffuse_color);
