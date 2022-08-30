@@ -22,7 +22,8 @@
 // HDR (Hemispherical Directional Reflectance)
 // HDR (High Dynamic Range)
 
-layout(set = 0, binding = 1) uniform sampler2D g_LUT_PreIntegratedHDR_TR;
+layout(set = 0, binding = 1) uniform highp sampler2DArray PreIntegratedHDR_LUT;
+#define PreIntegratedHDR_LUT_TR_INDEX 0
 
 highp vec3 PreIntegratedHDR_TR(highp vec3 f0, highp float f90, highp float roughness, highp float NdotV)
 {
@@ -32,12 +33,12 @@ highp vec3 PreIntegratedHDR_TR(highp vec3 f0, highp float f90, highp float rough
     // Remap: [0, 1] -> [0.5/size, 1.0 - 0.5/size]
     // U3D: [Remap01ToHalfTexelCoord](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl#L661)
     // UE: [N/A](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/RectLight.ush#L450)
-    highp ivec2 lut_texture_size = textureSize(g_LUT_PreIntegratedHDR_TR, 0);
+    highp ivec3 lut_texture_size = textureSize(PreIntegratedHDR_LUT, 0);
     highp vec2 lut_bias = vec2(0.5, 0.5) / vec2(lut_texture_size.x, lut_texture_size.y);
     highp vec2 lut_scale = vec2(1.0, 1.0) - vec2(1.0, 1.0) / vec2(lut_texture_size.x, lut_texture_size.y);
     highp vec2 lut_uv = lut_bias + lut_scale * vec2(NdotV, roughness);
 
-    highp vec2 n_RG = textureLod(g_LUT_PreIntegratedHDR_TR, lut_uv, 0.0).rg;
+    highp vec2 n_RG = textureLod(PreIntegratedHDR_LUT, vec3(lut_uv, PreIntegratedHDR_LUT_TR_INDEX), 0.0).rg;
     highp float n_R = n_RG.r;
     highp float n_G = n_RG.g;
 
