@@ -147,13 +147,18 @@ highp vec3 EvaluateEnvironmentLighting(highp vec3 diffuse_color, highp vec3 spec
     highp vec3 R = 2.0 * dot(V, N) * N - V;
     // UE: [DefaultLitBxDF]https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/ShadingModels.ush#L218
     // U3D: [ClampNdotV](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.core/ShaderLibrary/CommonLighting.hlsl#L349)
-    highp float NdotV = clamp(dot(N, V), 0.0001, 1.0);
+    highp float NdotV = clamp(dot(N, V), 0.0, 1.0); // 0.0001, 1.0);
 
     highp vec3 diffuse_radiance = EvaluateDiffuseEnvironmentLighting(diffuse_color, specular_color, N, Diffuse_Irradiance_Normal_Distribution);
     highp vec3 specular_radiance = EvaluateSpecularEnvironmentLighting(specular_color, roughness, N, R, NdotV, Specular_PreIntegratedLD_Distribution);
 
     highp vec3 ambient_occlusion = AO_InterReflections(AO_BentNormal(raw_ambient_occlusion, N), diffuse_color);
-    highp float directional_occlusion = DO_FromAO(raw_ambient_occlusion, roughness, NdotV);
+
+    // UE: [GBufferAO](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Shaders/Private/BasePassPixelShader.usf#L1072)
+    highp float specular_color_luminance = dot(specular_color, vec3(0.3, 0.59, 0.11));
+    highp float raw_directional_occlusion = AO_InterReflections(DO_BentNormal(raw_ambient_occlusion, N), vec3(specular_color_luminance, specular_color_luminance, specular_color_luminance)).g;
+
+    highp float directional_occlusion = DO_FromAO(raw_directional_occlusion, roughness, NdotV);
 
     // U3D: [ApplyAmbientOcclusionFactor](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl#L2020)
     return (diffuse_radiance * ambient_occlusion + specular_radiance * directional_occlusion);
