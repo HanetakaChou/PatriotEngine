@@ -91,8 +91,8 @@ highp vec3 EvaluateDiffuseEnvironmentLighting(highp vec3 diffuse_color, highp ve
         diffuse_color = diffuse_color + specular_color * 0.45;
     }
 
-    // TODO: why NOT multiply "INV_PI" ?
-    highp vec3 diffuse_radiance = (Diffuse_Lambert(diffuse_color) * PI) * irradiance_normal;
+    // By "Equation (11.9)" of Real-Time Rendering Fourth Edition, "ambient_occlusion" should be multiplied by "π".  
+    highp vec3 diffuse_radiance = Diffuse_Lambert(diffuse_color) * irradiance_normal;
 
     return diffuse_radiance;
 }
@@ -161,7 +161,9 @@ highp vec3 EvaluateEnvironmentLighting(highp vec3 diffuse_color, highp vec3 spec
     highp float directional_occlusion = DO_FromAO(raw_directional_occlusion, roughness, NdotV);
 
     // U3D: [ApplyAmbientOcclusionFactor](https://github.com/Unity-Technologies/Graphics/blob/v10.8.0/com.unity.render-pipelines.high-definition/Runtime/Material/Lit/Lit.hlsl#L2020)
-    return (diffuse_radiance * ambient_occlusion + specular_radiance * directional_occlusion);
+
+    // By "Equation (11.9)" of Real-Time Rendering Fourth Edition, "ambient_occlusion" should be multiplied by "PI".  
+    return (diffuse_radiance * PI * ambient_occlusion + specular_radiance * directional_occlusion);
 }
 
 #endif
