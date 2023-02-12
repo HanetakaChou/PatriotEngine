@@ -373,7 +373,7 @@ bool gfx_device_vk::init(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_vi
 
     // perhaps due to bugs
     // the instance may free the same memory multiple times
-    this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
+    // this->m_vk_allocation_callbacks = &m_vk_mcrt_allocation_callbacks;
 
     this->m_device = VK_NULL_HANDLE;
     {

@@ -32,9 +32,6 @@ struct gfx_texture_vk_header_t
     uint32_t mip_levels;
     uint32_t array_layers;
 };
-static_assert(sizeof(struct gfx_texture_vk_header_t) <= sizeof(struct gfx_texture_backend_header_t), "");
-inline struct gfx_texture_vk_header_t *unwrap(struct gfx_texture_backend_header_t *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t *>(vk_header); }
-inline struct gfx_texture_vk_header_t const *unwrap(struct gfx_texture_backend_header_t const *vk_header) { return reinterpret_cast<struct gfx_texture_vk_header_t const *>(vk_header); }
 
 static inline struct gfx_texture_vk_header_t common_to_specific_header_translate(struct gfx_texture_neutral_header_t const *neutral_header);
 static inline enum VkImageType common_to_vulkan_type_translate(enum gfx_texture_neutral_type_t common_type);
@@ -58,11 +55,32 @@ static inline uint32_t get_compressed_format_block_height(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
 
-bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callback(class gfx_connection_base *gfx_connection_base, struct gfx_texture_neutral_header_t const *neutral_header)
+bool gfx_texture_vk::load_header_callback(
+    pt_gfx_input_stream_ref input_stream,
+    pt_gfx_input_stream_read_callback input_stream_read_callback,
+    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    class gfx_connection_base *gfx_connection_base,
+    size_t *out_memcpy_dests_size,
+    size_t *out_memcpy_dests_align)
 {
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    // 1. load header
+    if (!texture_load_header_from_input_stream(&this->m_texture_asset_header, &this->m_texture_asset_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
+    {
+        return false;
+    }
 
-    struct gfx_texture_vk_header_t vk_header = common_to_specific_header_translate(neutral_header);
+    struct gfx_texture_vk_header_t vk_header = common_to_specific_header_translate(&this->m_texture_asset_header);
+
+    assert(NULL != out_memcpy_dests_size);
+    assert(NULL != out_memcpy_dests_align);
+    {
+        uint32_t subresource_num = get_format_aspect_count(vk_header.format) * calc_aspect_subresource_num_vk(vk_header.array_layers, vk_header.mip_levels);
+        (*out_memcpy_dests_size) = sizeof(struct gfx_texture_neutral_memcpy_dest_t) * subresource_num;
+        (*out_memcpy_dests_align) = alignof(struct gfx_texture_neutral_memcpy_dest_t);
+    }
+
+    // 2. create the device resource
+    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
 
     // vkGetPhysicalDeviceFormatProperties
     // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
@@ -141,56 +159,78 @@ bool gfx_texture_vk::texture_streaming_stage_first_pre_populate_task_data_callba
     return true;
 }
 
-void gfx_texture_vk::texture_streaming_stage_second_pre_calculate_total_size_callback(struct gfx_texture_neutral_header_t const *neutral_header, struct gfx_texture_backend_header_t *out_backend_header, uint32_t *out_subresource_num)
+size_t gfx_texture_vk::calculate_staging_buffer_total_size_callback(
+    size_t base_offset,
+    class gfx_connection_base *connection,
+    void *out_memcpy_dests)
 {
-    struct gfx_texture_vk_header_t *vk_header = unwrap(out_backend_header);
-    (*vk_header) = common_to_specific_header_translate(neutral_header);
-    (*out_subresource_num) = get_format_aspect_count(vk_header->format) * calc_aspect_subresource_num_vk(vk_header->array_layers, vk_header->mip_levels);
-}
+    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
 
-size_t gfx_texture_vk::texture_streaming_stage_second_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest, uint64_t base_offset)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct gfx_texture_vk_header_t const *vk_header = unwrap(backend_header);
-    size_t total_size = get_copyable_footprints_memcpy(vk_header, gfx_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(), gfx_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(), base_offset, subresource_num, memcpy_dest);
+    struct gfx_texture_vk_header_t texture_asset_vk_header = common_to_specific_header_translate(&this->m_texture_asset_header);
+
+    uint32_t subresource_num = get_format_aspect_count(texture_asset_vk_header.format) * calc_aspect_subresource_num_vk(texture_asset_vk_header.array_layers, texture_asset_vk_header.mip_levels);
+
+    size_t total_size = get_copyable_footprints_memcpy(
+        &texture_asset_vk_header,
+        vk_connection->physical_device_limits_optimal_buffer_copy_offset_alignment(),
+        vk_connection->physical_device_limits_optimal_buffer_copy_row_pitch_alignment(),
+        base_offset,
+        subresource_num,
+        static_cast<struct gfx_texture_neutral_memcpy_dest_t *>(out_memcpy_dests));
+
     return total_size;
 }
 
-void *gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_staging_buffer_pointer_callback(class gfx_connection_base *gfx_connection_base)
+bool gfx_texture_vk::load_data_callback(
+    pt_gfx_input_stream_ref input_stream,
+    pt_gfx_input_stream_read_callback input_stream_read_callback,
+    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    class gfx_connection_base *connection,
+    void const *memcpy_dests,
+    uint32_t streaming_throttling_index)
 {
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    return static_cast<class gfx_connection_base *>(gfx_connection)->staging_buffer_pointer();
-}
+    struct gfx_texture_vk_header_t texture_asset_vk_header = common_to_specific_header_translate(&this->m_texture_asset_header);
 
-uint32_t (*gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_get_calculate_subresource_index_callback())(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t)
-{
-    return calculate_subresource_index_vk;
-}
+    uint32_t subresource_num = get_format_aspect_count(texture_asset_vk_header.format) * calc_aspect_subresource_num_vk(texture_asset_vk_header.array_layers, texture_asset_vk_header.mip_levels);
 
-void gfx_texture_vk::texture_streaming_stage_second_post_calculate_total_size_callback(class gfx_connection_base *gfx_connection_base, uint32_t streaming_throttling_index, struct gfx_texture_backend_header_t const *backend_header, uint32_t subresource_num, struct gfx_texture_neutral_memcpy_dest_t *memcpy_dest)
-{
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
-    struct gfx_texture_vk_header_t const *vk_header = unwrap(backend_header);
-
-    // copy_buffer_to_image
+    // 1. load the asset data into staging buffer according to the 'memcpy_dests'
+    if (!texture_load_data_from_input_stream(
+            &this->m_texture_asset_header, &this->m_texture_asset_data_offset,
+            connection->staging_buffer_pointer(),
+            subresource_num,
+            static_cast<struct gfx_texture_neutral_memcpy_dest_t const *>(memcpy_dests),
+            calculate_subresource_index_vk,
+            input_stream,
+            input_stream_read_callback,
+            input_stream_seek_callback))
     {
-        uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-        VkBuffer staging_buffer = gfx_connection->staging_buffer();
-
-        VkBufferImageCopy *cmdcopy_dest = static_cast<VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(VkBufferImageCopy) * subresource_num, alignof(VkBufferImageCopy)));
-        get_copyable_footprints_cmdcpy(vk_header, subresource_num, memcpy_dest, cmdcopy_dest);
-
-        uint32_t aspect_count = get_format_aspect_count(vk_header->format);
-        for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
-        {
-            VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(vk_header->format, aspect_index), 0U, vk_header->mip_levels, 0U, vk_header->array_layers};
-            uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(vk_header->array_layers, vk_header->mip_levels);
-            uint32_t aspect_subresource_begin = calculate_subresource_index_vk(0U, 0U, aspect_index, vk_header->mip_levels, vk_header->array_layers);
-            gfx_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, cmdcopy_dest + aspect_subresource_begin);
-        }
-
-        mcrt_aligned_free(cmdcopy_dest);
+        return false;
     }
+
+    // 2. copy the data into image from staging buffer
+    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
+
+    uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
+
+    VkBuffer staging_buffer = vk_connection->staging_buffer();
+
+    VkBufferImageCopy *cmdcopy_dests = static_cast<VkBufferImageCopy *>(mcrt_aligned_malloc(sizeof(VkBufferImageCopy) * subresource_num, alignof(VkBufferImageCopy)));
+    assert(NULL != cmdcopy_dests);
+
+    get_copyable_footprints_cmdcpy(&texture_asset_vk_header, subresource_num, static_cast<struct gfx_texture_neutral_memcpy_dest_t const *>(memcpy_dests), cmdcopy_dests);
+
+    uint32_t aspect_count = get_format_aspect_count(texture_asset_vk_header.format);
+    for (uint32_t aspect_index = 0U; aspect_index < aspect_count; ++aspect_index)
+    {
+        VkImageSubresourceRange aspect_subresource_range = {get_format_aspect_mask(texture_asset_vk_header.format, aspect_index), 0U, texture_asset_vk_header.mip_levels, 0U, texture_asset_vk_header.array_layers};
+        uint32_t aspect_subresource_num = calc_aspect_subresource_num_vk(texture_asset_vk_header.array_layers, texture_asset_vk_header.mip_levels);
+        uint32_t aspect_subresource_begin = calculate_subresource_index_vk(0U, 0U, aspect_index, texture_asset_vk_header.mip_levels, texture_asset_vk_header.array_layers);
+        vk_connection->copy_buffer_to_image(streaming_throttling_index, streaming_thread_index, staging_buffer, this->m_image, &aspect_subresource_range, aspect_subresource_num, cmdcopy_dests + aspect_subresource_begin);
+    }
+
+    mcrt_aligned_free(cmdcopy_dests);
+
+    return true;
 }
 
 void gfx_texture_vk::pre_streaming_done_destroy_callback(class gfx_connection_base *gfx_connection_base)
@@ -264,8 +304,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                 uint32_t output_slice_pitch;
                 uint32_t output_num_slices;
 
-                //uint32_t bufferRowLength;
-                //uint32_t bufferImageHeight;
+                // uint32_t bufferRowLength;
+                // uint32_t bufferImageHeight;
 
                 uint32_t texel_block_size;
 
@@ -307,11 +347,11 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     //
                     // ```
 
-                    //bufferRowLength = (output_row_pitch / get_compressed_format_block_size_in_bytes(vk_header->format)) * get_compressed_format_block_width(vk_header->format);
-                    //bufferImageHeight = output_num_rows * get_compressed_format_block_height(vk_header->format);
+                    // bufferRowLength = (output_row_pitch / get_compressed_format_block_size_in_bytes(vk_header->format)) * get_compressed_format_block_width(vk_header->format);
+                    // bufferImageHeight = output_num_rows * get_compressed_format_block_height(vk_header->format);
 
-                    //bufferRowLength = mcrt_intrin_round_up(vk_header->extent.width, get_compressed_format_block_width(vk_header->format));
-                    //bufferImageHeight = mcrt_intrin_round_up(vk_header->extent.height, get_compressed_format_block_height(vk_header->format));
+                    // bufferRowLength = mcrt_intrin_round_up(vk_header->extent.width, get_compressed_format_block_width(vk_header->format));
+                    // bufferImageHeight = mcrt_intrin_round_up(vk_header->extent.height, get_compressed_format_block_height(vk_header->format));
 
                     texel_block_size = get_compressed_format_block_size_in_bytes(vk_header->format);
                 }
@@ -327,8 +367,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     assert((static_cast<size_t>(output_row_pitch) * static_cast<size_t>(output_num_rows)) <= UINT32_MAX);
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    //bufferRowLength = output_row_pitch / get_rgba_format_pixel_bytes(vk_header->format);
-                    //bufferImageHeight = output_num_rows;
+                    // bufferRowLength = output_row_pitch / get_rgba_format_pixel_bytes(vk_header->format);
+                    // bufferImageHeight = output_num_rows;
 
                     texel_block_size = get_rgba_format_pixel_bytes(vk_header->format);
                 }
@@ -344,8 +384,8 @@ static inline size_t get_copyable_footprints_memcpy(struct gfx_texture_vk_header
                     assert((static_cast<size_t>(output_row_pitch) * static_cast<size_t>(output_num_rows)) <= UINT32_MAX);
                     output_slice_pitch = output_row_pitch * output_num_rows;
 
-                    //bufferRowLength = output_row_pitch / get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
-                    //bufferImageHeight = output_num_rows;
+                    // bufferRowLength = output_row_pitch / get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
+                    // bufferImageHeight = output_num_rows;
 
                     texel_block_size = get_depth_stencil_format_pixel_bytes(vk_header->format, aspectIndex);
                 }
@@ -805,129 +845,129 @@ static inline uint32_t get_rgba_format_pixel_bytes(VkFormat vk_format)
         uint32_t m_pixel_bytes;
 
     } const vulkan_rgba_format_info_table[] = {
-        {1},  //VK_FORMAT_R4G4_UNORM_PACK8
-        {2},  //VK_FORMAT_R4G4B4A4_UNORM_PACK16
-        {2},  //VK_FORMAT_B4G4R4A4_UNORM_PACK16
-        {2},  //VK_FORMAT_R5G6B5_UNORM_PACK16
-        {2},  //VK_FORMAT_B5G6R5_UNORM_PACK16
-        {2},  //VK_FORMAT_R5G5B5A1_UNORM_PACK16
-        {2},  //VK_FORMAT_B5G5R5A1_UNORM_PACK16
-        {2},  //VK_FORMAT_A1R5G5B5_UNORM_PACK16
-        {1},  //VK_FORMAT_R8_UNORM
-        {1},  //VK_FORMAT_R8_SNORM
-        {1},  //VK_FORMAT_R8_USCALED
-        {1},  //VK_FORMAT_R8_SSCALED
-        {1},  //VK_FORMAT_R8_UINT
-        {1},  //VK_FORMAT_R8_SINT
-        {1},  //VK_FORMAT_R8_SRGB
-        {2},  //VK_FORMAT_R8G8_UNORM
-        {2},  //VK_FORMAT_R8G8_SNORM
-        {2},  //VK_FORMAT_R8G8_USCALED
-        {2},  //VK_FORMAT_R8G8_SSCALED
-        {2},  //VK_FORMAT_R8G8_UINT
-        {2},  //VK_FORMAT_R8G8_SINT
-        {2},  //VK_FORMAT_R8G8_SRGB
-        {3},  //VK_FORMAT_R8G8B8_UNORM
-        {3},  //VK_FORMAT_R8G8B8_SNORM
-        {3},  //VK_FORMAT_R8G8B8_USCALED
-        {3},  //VK_FORMAT_R8G8B8_SSCALED
-        {3},  //VK_FORMAT_R8G8B8_UINT
-        {3},  //VK_FORMAT_R8G8B8_SINT
-        {3},  //VK_FORMAT_R8G8B8_SRGB
-        {3},  //VK_FORMAT_B8G8R8_UNORM
-        {3},  //VK_FORMAT_B8G8R8_SNORM
-        {3},  //VK_FORMAT_B8G8R8_USCALED
-        {3},  //VK_FORMAT_B8G8R8_SSCALED
-        {3},  //VK_FORMAT_B8G8R8_UINT
-        {3},  //VK_FORMAT_B8G8R8_SINT
-        {3},  //VK_FORMAT_B8G8R8_SRGB
-        {4},  //VK_FORMAT_R8G8B8A8_UNORM
-        {4},  //VK_FORMAT_R8G8B8A8_SNORM
-        {4},  //VK_FORMAT_R8G8B8A8_USCALED
-        {4},  //VK_FORMAT_R8G8B8A8_SSCALED
-        {4},  //VK_FORMAT_R8G8B8A8_UINT
-        {4},  //VK_FORMAT_R8G8B8A8_SINT
-        {4},  //VK_FORMAT_R8G8B8A8_SRGB
-        {4},  //VK_FORMAT_B8G8R8A8_UNORM
-        {4},  //VK_FORMAT_B8G8R8A8_SNORM
-        {4},  //VK_FORMAT_B8G8R8A8_USCALED
-        {4},  //VK_FORMAT_B8G8R8A8_SSCALED
-        {4},  //VK_FORMAT_B8G8R8A8_UINT
-        {4},  //VK_FORMAT_B8G8R8A8_SINT
-        {4},  //VK_FORMAT_B8G8R8A8_SRGB
-        {4},  //VK_FORMAT_A8B8G8R8_UNORM_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_SNORM_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_USCALED_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_SSCALED_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_UINT_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_SINT_PACK32
-        {4},  //VK_FORMAT_A8B8G8R8_SRGB_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_UNORM_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_SNORM_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_USCALED_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_SSCALED_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_UINT_PACK32
-        {4},  //VK_FORMAT_A2R10G10B10_SINT_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_UNORM_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_SNORM_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_USCALED_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_SSCALED_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_UINT_PACK32
-        {4},  //VK_FORMAT_A2B10G10R10_SINT_PACK32
-        {2},  //VK_FORMAT_R16_UNORM
-        {2},  //VK_FORMAT_R16_SNORM
-        {2},  //VK_FORMAT_R16_USCALED
-        {2},  //VK_FORMAT_R16_SSCALED
-        {2},  //VK_FORMAT_R16_UINT
-        {2},  //VK_FORMAT_R16_SINT
-        {2},  //VK_FORMAT_R16_SFLOAT
-        {4},  //VK_FORMAT_R16G16_UNORM
-        {4},  //VK_FORMAT_R16G16_SNORM
-        {4},  //VK_FORMAT_R16G16_USCALED
-        {4},  //VK_FORMAT_R16G16_SSCALED
-        {4},  //VK_FORMAT_R16G16_UINT
-        {4},  //VK_FORMAT_R16G16_SINT
-        {4},  //VK_FORMAT_R16G16_SFLOAT
-        {6},  //VK_FORMAT_R16G16B16_UNORM
-        {6},  //VK_FORMAT_R16G16B16_SNORM
-        {6},  //VK_FORMAT_R16G16B16_USCALED
-        {6},  //VK_FORMAT_R16G16B16_SSCALED
-        {6},  //VK_FORMAT_R16G16B16_UINT
-        {6},  //VK_FORMAT_R16G16B16_SINT
-        {6},  //VK_FORMAT_R16G16B16_SFLOAT
-        {8},  //VK_FORMAT_R16G16B16A16_UNORM
-        {8},  //VK_FORMAT_R16G16B16A16_SNORM
-        {8},  //VK_FORMAT_R16G16B16A16_USCALED
-        {8},  //VK_FORMAT_R16G16B16A16_SSCALED
-        {8},  //VK_FORMAT_R16G16B16A16_UINT
-        {8},  //VK_FORMAT_R16G16B16A16_SINT
-        {8},  //VK_FORMAT_R16G16B16A16_SFLOAT
-        {4},  //VK_FORMAT_R32_UINT
-        {4},  //VK_FORMAT_R32_SINT
-        {4},  //VK_FORMAT_R32_SFLOAT
-        {8},  //VK_FORMAT_R32G32_UINT
-        {8},  //VK_FORMAT_R32G32_SINT
-        {8},  //VK_FORMAT_R32G32_SFLOAT
-        {12}, //VK_FORMAT_R32G32B32_UINT
-        {12}, //VK_FORMAT_R32G32B32_SINT
-        {12}, //VK_FORMAT_R32G32B32_SFLOAT
-        {16}, //VK_FORMAT_R32G32B32A32_UINT
-        {16}, //VK_FORMAT_R32G32B32A32_SINT
-        {16}, //VK_FORMAT_R32G32B32A32_SFLOAT
-        {8},  //VK_FORMAT_R64_UINT
-        {8},  //VK_FORMAT_R64_SINT
-        {8},  //VK_FORMAT_R64_SFLOAT
-        {16}, //VK_FORMAT_R64G64_UINT
-        {16}, //VK_FORMAT_R64G64_SINT
-        {16}, //VK_FORMAT_R64G64_SFLOAT
-        {24}, //VK_FORMAT_R64G64B64_UINT
-        {24}, //VK_FORMAT_R64G64B64_SINT
-        {24}, //VK_FORMAT_R64G64B64_SFLOAT
-        {32}, //VK_FORMAT_R64G64B64A64_UINT
-        {32}, //VK_FORMAT_R64G64B64A64_SINT
-        {32}, //VK_FORMAT_R64G64B64A64_SFLOAT
-        {4},  //VK_FORMAT_B10G11R11_UFLOAT_PACK32
-        {4}   //VK_FORMAT_E5B9G9R9_UFLOAT_PACK32
+        {1},  // VK_FORMAT_R4G4_UNORM_PACK8
+        {2},  // VK_FORMAT_R4G4B4A4_UNORM_PACK16
+        {2},  // VK_FORMAT_B4G4R4A4_UNORM_PACK16
+        {2},  // VK_FORMAT_R5G6B5_UNORM_PACK16
+        {2},  // VK_FORMAT_B5G6R5_UNORM_PACK16
+        {2},  // VK_FORMAT_R5G5B5A1_UNORM_PACK16
+        {2},  // VK_FORMAT_B5G5R5A1_UNORM_PACK16
+        {2},  // VK_FORMAT_A1R5G5B5_UNORM_PACK16
+        {1},  // VK_FORMAT_R8_UNORM
+        {1},  // VK_FORMAT_R8_SNORM
+        {1},  // VK_FORMAT_R8_USCALED
+        {1},  // VK_FORMAT_R8_SSCALED
+        {1},  // VK_FORMAT_R8_UINT
+        {1},  // VK_FORMAT_R8_SINT
+        {1},  // VK_FORMAT_R8_SRGB
+        {2},  // VK_FORMAT_R8G8_UNORM
+        {2},  // VK_FORMAT_R8G8_SNORM
+        {2},  // VK_FORMAT_R8G8_USCALED
+        {2},  // VK_FORMAT_R8G8_SSCALED
+        {2},  // VK_FORMAT_R8G8_UINT
+        {2},  // VK_FORMAT_R8G8_SINT
+        {2},  // VK_FORMAT_R8G8_SRGB
+        {3},  // VK_FORMAT_R8G8B8_UNORM
+        {3},  // VK_FORMAT_R8G8B8_SNORM
+        {3},  // VK_FORMAT_R8G8B8_USCALED
+        {3},  // VK_FORMAT_R8G8B8_SSCALED
+        {3},  // VK_FORMAT_R8G8B8_UINT
+        {3},  // VK_FORMAT_R8G8B8_SINT
+        {3},  // VK_FORMAT_R8G8B8_SRGB
+        {3},  // VK_FORMAT_B8G8R8_UNORM
+        {3},  // VK_FORMAT_B8G8R8_SNORM
+        {3},  // VK_FORMAT_B8G8R8_USCALED
+        {3},  // VK_FORMAT_B8G8R8_SSCALED
+        {3},  // VK_FORMAT_B8G8R8_UINT
+        {3},  // VK_FORMAT_B8G8R8_SINT
+        {3},  // VK_FORMAT_B8G8R8_SRGB
+        {4},  // VK_FORMAT_R8G8B8A8_UNORM
+        {4},  // VK_FORMAT_R8G8B8A8_SNORM
+        {4},  // VK_FORMAT_R8G8B8A8_USCALED
+        {4},  // VK_FORMAT_R8G8B8A8_SSCALED
+        {4},  // VK_FORMAT_R8G8B8A8_UINT
+        {4},  // VK_FORMAT_R8G8B8A8_SINT
+        {4},  // VK_FORMAT_R8G8B8A8_SRGB
+        {4},  // VK_FORMAT_B8G8R8A8_UNORM
+        {4},  // VK_FORMAT_B8G8R8A8_SNORM
+        {4},  // VK_FORMAT_B8G8R8A8_USCALED
+        {4},  // VK_FORMAT_B8G8R8A8_SSCALED
+        {4},  // VK_FORMAT_B8G8R8A8_UINT
+        {4},  // VK_FORMAT_B8G8R8A8_SINT
+        {4},  // VK_FORMAT_B8G8R8A8_SRGB
+        {4},  // VK_FORMAT_A8B8G8R8_UNORM_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_SNORM_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_USCALED_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_SSCALED_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_UINT_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_SINT_PACK32
+        {4},  // VK_FORMAT_A8B8G8R8_SRGB_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_UNORM_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_SNORM_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_USCALED_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_SSCALED_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_UINT_PACK32
+        {4},  // VK_FORMAT_A2R10G10B10_SINT_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_UNORM_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_SNORM_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_USCALED_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_SSCALED_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_UINT_PACK32
+        {4},  // VK_FORMAT_A2B10G10R10_SINT_PACK32
+        {2},  // VK_FORMAT_R16_UNORM
+        {2},  // VK_FORMAT_R16_SNORM
+        {2},  // VK_FORMAT_R16_USCALED
+        {2},  // VK_FORMAT_R16_SSCALED
+        {2},  // VK_FORMAT_R16_UINT
+        {2},  // VK_FORMAT_R16_SINT
+        {2},  // VK_FORMAT_R16_SFLOAT
+        {4},  // VK_FORMAT_R16G16_UNORM
+        {4},  // VK_FORMAT_R16G16_SNORM
+        {4},  // VK_FORMAT_R16G16_USCALED
+        {4},  // VK_FORMAT_R16G16_SSCALED
+        {4},  // VK_FORMAT_R16G16_UINT
+        {4},  // VK_FORMAT_R16G16_SINT
+        {4},  // VK_FORMAT_R16G16_SFLOAT
+        {6},  // VK_FORMAT_R16G16B16_UNORM
+        {6},  // VK_FORMAT_R16G16B16_SNORM
+        {6},  // VK_FORMAT_R16G16B16_USCALED
+        {6},  // VK_FORMAT_R16G16B16_SSCALED
+        {6},  // VK_FORMAT_R16G16B16_UINT
+        {6},  // VK_FORMAT_R16G16B16_SINT
+        {6},  // VK_FORMAT_R16G16B16_SFLOAT
+        {8},  // VK_FORMAT_R16G16B16A16_UNORM
+        {8},  // VK_FORMAT_R16G16B16A16_SNORM
+        {8},  // VK_FORMAT_R16G16B16A16_USCALED
+        {8},  // VK_FORMAT_R16G16B16A16_SSCALED
+        {8},  // VK_FORMAT_R16G16B16A16_UINT
+        {8},  // VK_FORMAT_R16G16B16A16_SINT
+        {8},  // VK_FORMAT_R16G16B16A16_SFLOAT
+        {4},  // VK_FORMAT_R32_UINT
+        {4},  // VK_FORMAT_R32_SINT
+        {4},  // VK_FORMAT_R32_SFLOAT
+        {8},  // VK_FORMAT_R32G32_UINT
+        {8},  // VK_FORMAT_R32G32_SINT
+        {8},  // VK_FORMAT_R32G32_SFLOAT
+        {12}, // VK_FORMAT_R32G32B32_UINT
+        {12}, // VK_FORMAT_R32G32B32_SINT
+        {12}, // VK_FORMAT_R32G32B32_SFLOAT
+        {16}, // VK_FORMAT_R32G32B32A32_UINT
+        {16}, // VK_FORMAT_R32G32B32A32_SINT
+        {16}, // VK_FORMAT_R32G32B32A32_SFLOAT
+        {8},  // VK_FORMAT_R64_UINT
+        {8},  // VK_FORMAT_R64_SINT
+        {8},  // VK_FORMAT_R64_SFLOAT
+        {16}, // VK_FORMAT_R64G64_UINT
+        {16}, // VK_FORMAT_R64G64_SINT
+        {16}, // VK_FORMAT_R64G64_SFLOAT
+        {24}, // VK_FORMAT_R64G64B64_UINT
+        {24}, // VK_FORMAT_R64G64B64_SINT
+        {24}, // VK_FORMAT_R64G64B64_SFLOAT
+        {32}, // VK_FORMAT_R64G64B64A64_UINT
+        {32}, // VK_FORMAT_R64G64B64A64_SINT
+        {32}, // VK_FORMAT_R64G64B64A64_SFLOAT
+        {4},  // VK_FORMAT_B10G11R11_UFLOAT_PACK32
+        {4}   // VK_FORMAT_E5B9G9R9_UFLOAT_PACK32
     };
 
     uint32_t format_info_index = (vk_format - VK_FORMAT_R4G4_UNORM_PACK8);
@@ -945,13 +985,13 @@ static inline uint32_t get_depth_stencil_format_pixel_bytes(VkFormat vk_format, 
         uint32_t m_depth_bytes;
         uint32_t m_stencil_bytes;
     } const vulkan_depth_stencil_format_info_table[] = {
-        {2, 0}, //VK_FORMAT_D16_UNORM
-        {4, 0}, //VK_FORMAT_X8_D24_UNORM_PACK32
-        {4, 0}, //VK_FORMAT_D32_SFLOAT
-        {0, 1}, //VK_FORMAT_S8_UINT
-        {2, 2}, //VK_FORMAT_D16_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_D16_UNORM or VK_FORMAT_D16_UNORM_S8_UINT format is tightly packed with one VK_FORMAT_D16_UNORM value per texel.
-        {4, 4}, //VK_FORMAT_D24_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D24_UNORM_S8_UINT format is packed with one 32-bit word per texel with the D24 value in the LSBs of the word, and undefined values in the eight MSBs.
-        {4, 4}  //VK_FORMAT_D32_SFLOAT_S8_UINT        //data copied to or from the depth aspect of a VK_FORMAT_D32_SFLOAT or VK_FORMAT_D32_SFLOAT_S8_UINT format is tightly packed with one VK_FORMAT_D32_SFLOAT value per texel.
+        {2, 0}, // VK_FORMAT_D16_UNORM
+        {4, 0}, // VK_FORMAT_X8_D24_UNORM_PACK32
+        {4, 0}, // VK_FORMAT_D32_SFLOAT
+        {0, 1}, // VK_FORMAT_S8_UINT
+        {2, 2}, // VK_FORMAT_D16_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_D16_UNORM or VK_FORMAT_D16_UNORM_S8_UINT format is tightly packed with one VK_FORMAT_D16_UNORM value per texel.
+        {4, 4}, // VK_FORMAT_D24_UNORM_S8_UINT         //data copied to or from the depth aspect of a VK_FORMAT_X8_D24_UNORM_PACK32 or VK_FORMAT_D24_UNORM_S8_UINT format is packed with one 32-bit word per texel with the D24 value in the LSBs of the word, and undefined values in the eight MSBs.
+        {4, 4}  // VK_FORMAT_D32_SFLOAT_S8_UINT        //data copied to or from the depth aspect of a VK_FORMAT_D32_SFLOAT or VK_FORMAT_D32_SFLOAT_S8_UINT format is tightly packed with one VK_FORMAT_D32_SFLOAT value per texel.
     };
 
     uint32_t format_info_index = (vk_format - VK_FORMAT_D16_UNORM);
@@ -986,60 +1026,60 @@ static inline uint32_t get_compressed_format_block_width(VkFormat vk_format)
         uint32_t compressedBlockDepth;
         uint32_t compressedBlockSizeInBytes;
     } const vulkan_compressed_format_info_table[] = {
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
-        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
-        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  // VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
     };
     uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
     assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
@@ -1058,60 +1098,60 @@ static inline uint32_t get_compressed_format_block_height(VkFormat vk_format)
         uint32_t compressedBlockDepth;
         uint32_t compressedBlockSizeInBytes;
     } const vulkan_compressed_format_info_table[] = {
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
-        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
-        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  // VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
     };
     uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
     assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
@@ -1130,60 +1170,60 @@ static inline PT_MAYBE_UNUSED uint32_t get_compressed_format_block_depth(VkForma
         uint32_t compressedBlockDepth;
         uint32_t compressedBlockSizeInBytes;
     } const vulkan_compressed_format_info_table[] = {
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
-        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
-        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  // VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
     };
     uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
     assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));
@@ -1202,60 +1242,60 @@ static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_for
         uint32_t compressedBlockDepth;
         uint32_t compressedBlockSizeInBytes;
     } const vulkan_compressed_format_info_table[] = {
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGB_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC1_RGBA_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC2_SRGB_BLOCK
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC3_SRGB_BLOCK
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
-        {4, 4, 1, (64 / 8)},    //VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
-        {4, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
-        {5, 4, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
-        {5, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
-        {6, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
-        {6, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
-        {8, 5, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
-        {8, 6, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
-        {8, 8, 1, (128 / 8)},   //VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
-        {10, 5, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
-        {10, 6, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
-        {10, 8, 1, (128 / 8)},  //VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
-        {10, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
-        {12, 10, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
-        {12, 12, 1, (128 / 8)}, //VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
-        {12, 12, 1, (128 / 8)}  //VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_UNORM_BLOCK       //GL_COMPRESSED_RGB_S3TC_DXT1_EXT           //R5G6B5_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGB_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_UNORM_BLOCK      //GL_COMPRESSED_RGBA_S3TC_DXT1_EXT          //R5G6B5A1_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC1_RGBA_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT3_ANGLE        //R5G6B5A4_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC2_SRGB_BLOCK
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_UNORM_BLOCK           //GL_COMPRESSED_RGBA_S3TC_DXT5_ANGLE        //R5G6B5A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC3_SRGB_BLOCK
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_UNORM_BLOCK           //GL_COMPRESSED_RED_RGTC1_EXT               //R8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_BC4_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_RGTC1_EXT        //R8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_UNORM_BLOCK           //GL_COMPRESSED_RED_GREEN_RGTC2_EXT         //R8G8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC5_SNORM_BLOCK           //GL_COMPRESSED_SIGNED_RED_GREEN_RGTC2_EXT  //R8G8_SNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_UFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_UNSIGNED_FLOAT     //R16G16B16_UFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC6H_SFLOAT_BLOCK         //GL_COMPRESSED_RGB_BPTC_SIGNED_FLOAT       //R16G16B16_SFLOAT (HDR)
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_UNORM_BLOCK           //GL_COMPRESSED_RGBA_BPTC_UNORM_EXT         //B7G7R7A8_UNORM
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_BC7_SRGB_BLOCK            //GL_COMPRESSED_SRGB_ALPHA_BPTC_UNORM_EXT   //B7G7R7A8_UNORM
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK   //GL_COMPRESSED_RGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8_SRGB_BLOCK    //GL_COMPRESSED_SRGB8_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_UNORM_BLOCK //GL_COMPRESSED_RGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_ETC2_R8G8B8A1_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_PUNCHTHROUGH_ALPHA1_ETC2
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK //GL_COMPRESSED_RGBA8_ETC2_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK  //GL_COMPRESSED_SRGB8_ALPHA8_ETC2_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_UNORM_BLOCK       //GL_COMPRESSED_R11_EAC
+        {4, 4, 1, (64 / 8)},    // VK_FORMAT_EAC_R11_SNORM_BLOCK       //GL_COMPRESSED_SIGNED_R11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_UNORM_BLOCK    //GL_COMPRESSED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_EAC_R11G11_SNORM_BLOCK    //GL_COMPRESSED_SIGNED_RG11_EAC
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_4x4_KHR             //VK_EXT_astc_decode_mode
+        {4, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_4x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_4x4_KHR     //VK_EXT_texture_compression_astc_hdr
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x4_KHR             //
+        {5, 4, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x4_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x4_KHR     //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_5x5_KHR             //
+        {5, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_5x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_5x5_KHR     //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x5_KHR             //
+        {6, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x5_KHR     //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_6x6_KHR             //
+        {6, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_6x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_6x6_KHR     //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x5_KHR             //
+        {8, 5, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x5_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x5_KHR     //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x6_KHR             //
+        {8, 6, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x6_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x6_KHR     //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_UNORM_BLOCK      //GL_COMPRESSED_RGBA_ASTC_8x8_KHR             //
+        {8, 8, 1, (128 / 8)},   // VK_FORMAT_ASTC_8x8_SRGB_BLOCK       //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_8x8_KHR     //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x5_KHR            //
+        {10, 5, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x5_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x5_KHR    //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x6_KHR            //
+        {10, 6, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x6_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x6_KHR    //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_UNORM_BLOCK     //GL_COMPRESSED_RGBA_ASTC_10x8_KHR            //
+        {10, 8, 1, (128 / 8)},  // VK_FORMAT_ASTC_10x8_SRGB_BLOCK      //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x8_KHR    //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_10x10_KHR           //
+        {10, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_10x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_10x10_KHR   //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x10_KHR           //
+        {12, 10, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x10_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x10_KHR   //
+        {12, 12, 1, (128 / 8)}, // VK_FORMAT_ASTC_12x12_UNORM_BLOCK    //GL_COMPRESSED_RGBA_ASTC_12x12_KHR           //
+        {12, 12, 1, (128 / 8)}  // VK_FORMAT_ASTC_12x12_SRGB_BLOCK     //GL_COMPRESSED_SRGB8_ALPHA8_ASTC_12x12_KHR   //
     };
     uint32_t format_info_index = (vk_format - VK_FORMAT_BC1_RGB_UNORM_BLOCK);
     assert(format_info_index < (sizeof(vulkan_compressed_format_info_table) / sizeof(vulkan_compressed_format_info_table[0])));

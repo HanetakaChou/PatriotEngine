@@ -76,6 +76,9 @@
     <ClCompile Include="..\..\src\pt_gfx_malloc_vma.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\imaging\streaming_object.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -86,6 +89,12 @@
     </Filter>
     <Filter Include="include">
       <UniqueIdentifier>{76f083d5-5c74-4e04-9112-91a9eefbc7aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\imaging">
+      <UniqueIdentifier>{17dec8b2-f43e-44d2-a390-6414204f1d26}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\imaging\vk">
+      <UniqueIdentifier>{b2a5d29a-afcc-4bc9-b959-300505eb0572}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +163,15 @@
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_mesh_base_load_pmx.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\streaming_object.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\vk\vk_texture_load.h">
+      <Filter>src\imaging\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\texture_load.h">
+      <Filter>src\imaging</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

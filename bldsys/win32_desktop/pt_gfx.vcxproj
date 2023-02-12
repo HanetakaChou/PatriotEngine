@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\imaging\streaming_object.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_d3d12.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_vk.cpp" />
@@ -48,6 +49,9 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\pt_gfx_common.h" />
     <ClInclude Include="..\..\include\pt_gfx_connection.h" />
+    <ClInclude Include="..\..\src\imaging\streaming_object.h" />
+    <ClInclude Include="..\..\src\imaging\texture_load.h" />
+    <ClInclude Include="..\..\src\imaging\vk\vk_texture_load.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_d3d12.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_vk.h" />
@@ -87,6 +91,7 @@
     <ProjectGuid>{51e8c786-0aac-4cf7-ae10-547688124284}</ProjectGuid>
     <RootNamespace>pt_gfx</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>imaging_vk</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
