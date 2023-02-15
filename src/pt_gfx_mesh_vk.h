@@ -34,8 +34,6 @@ struct gfx_mesh_primitive_vk
     struct gfx_malloc_allocation_vk m_vertex_position_allocation;
     VkBuffer m_vertex_varying_buffer;
     struct gfx_malloc_allocation_vk m_vertex_varying_allocation;
-    VkIndexType m_index_type;
-    uint32_t m_index_count;
     VkBuffer m_index_buffer;
     struct gfx_malloc_allocation_vk m_index_allocation;
 };
@@ -44,14 +42,30 @@ class gfx_mesh_vk final : public gfx_mesh_base
 {
     mcrt_vector<gfx_mesh_primitive_vk> m_primitives;
 
-    // create
-    bool read_input_stream_alloc_asset_buffers(class gfx_connection_base *gfx_connection, struct pt_gfx_mesh_neutral_header_t *const neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers) override;
-    size_t read_input_stream_calculate_total_size(struct pt_gfx_mesh_neutral_header_t const *neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers, uint64_t base_offset, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t *out_memcpy_dests) override;
-    void read_input_stream_record_copy_commands(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests) override;
+   bool load_header_callback(
+        pt_gfx_input_stream_ref input_stream,
+        pt_gfx_input_stream_read_callback input_stream_read_callback,
+        pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+        class gfx_connection_base* connection,
+        size_t* out_memcpy_dests_size,
+        size_t* out_memcpy_dests_align) final;
+
+   size_t calculate_staging_buffer_total_size_callback(
+       size_t base_offset,
+       class gfx_connection_base* connection,
+       void* out_memcpy_dests) final;
+
+   bool load_data_callback(
+       pt_gfx_input_stream_ref input_stream,
+       pt_gfx_input_stream_read_callback input_stream_read_callback,
+       pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+       class gfx_connection_base* connection,
+       void const* memcpy_dests,
+       uint32_t streaming_throttling_index) final;
 
 public:
     // in use
-    mcrt_vector<gfx_mesh_primitive_vk> const &primitives_get() const;
+    void record_draw_command_buffer(class gfx_device_vk* vk_device, VkCommandBuffer draw_command_buffer) const;
 
 private:
     // destroy
@@ -63,10 +77,14 @@ private:
 public:
     inline gfx_mesh_vk() : gfx_mesh_base()
     {
+
     }
 
 private:
-    inline ~gfx_mesh_vk() {}
+    inline ~gfx_mesh_vk() 
+    {
+
+    }
 };
 
 #endif

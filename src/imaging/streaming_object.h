@@ -66,7 +66,7 @@ private:
         pt_gfx_input_stream_ref input_stream,
         pt_gfx_input_stream_read_callback input_stream_read_callback,
         pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-        class gfx_connection_base *gfx_connection,
+        class gfx_connection_base *connection,
         size_t *out_memcpy_dests_size,
         size_t *out_memcpy_dests_align)
     {
@@ -77,7 +77,7 @@ private:
     static mcrt_task_ref load_task_execute(mcrt_task_ref self);
     virtual size_t calculate_staging_buffer_total_size_callback(
         size_t base_offset,
-        class gfx_connection_base *gfx_connection,
+        class gfx_connection_base *connection,
         void *out_memcpy_dests)
     {
         return -1;
@@ -86,7 +86,7 @@ private:
         pt_gfx_input_stream_ref input_stream,
         pt_gfx_input_stream_read_callback input_stream_read_callback,
         pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-        class gfx_connection_base *gfx_connection,
+        class gfx_connection_base *connection,
         void const *memcpy_dests,
         uint32_t streaming_throttling_index)
     {

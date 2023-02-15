@@ -41,7 +41,7 @@ class gfx_texture_vk final : public gfx_texture_base
         pt_gfx_input_stream_ref input_stream,
         pt_gfx_input_stream_read_callback input_stream_read_callback,
         pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-        class gfx_connection_base *gfx_connection,
+        class gfx_connection_base *connection,
         size_t *out_memcpy_dests_size,
         size_t *out_memcpy_dests_align) final;
 

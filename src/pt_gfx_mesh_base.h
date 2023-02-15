@@ -21,23 +21,20 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
+#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_vector.h>
 #include "pt_gfx_streaming_object_base.h"
 #include "pt_gfx_frame_object_base.h"
+#include "pt_gfx_mesh_base_load.h"
 
 class gfx_mesh_base : public gfx_streaming_object_base, public gfx_frame_object_base
 {
     uint32_t m_ref_count;
 
-    // first stage
-    virtual bool read_input_stream_alloc_asset_buffers(class gfx_connection_base *gfx_connection, struct pt_gfx_mesh_neutral_header_t *const neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers) = 0;
-    bool read_input_stream_task_spawn(class gfx_connection_base *gfx_connection, char const *file_name, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
-
-    // second stage
-    virtual size_t read_input_stream_calculate_total_size(struct pt_gfx_mesh_neutral_header_t const *neutral_header, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers, uint64_t base_offset, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t *out_memcpy_dests) = 0;
-    virtual void read_input_stream_record_copy_commands(class gfx_connection_base *gfx_connection, uint32_t streaming_throttling_index, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests) = 0;
-    static mcrt_task_ref read_input_stream_task_execute(mcrt_task_ref self);
-
 protected:
+    struct pt_gfx_mesh_neutral_header_t m_mesh_asset_header;
+    mcrt_vector<struct pt_gfx_mesh_neutral_primitive_header_t> m_mesh_asset_primitive_headers;
+
     inline gfx_mesh_base() : gfx_streaming_object_base(), gfx_frame_object_base(), m_ref_count(1U) {}
 
 public:

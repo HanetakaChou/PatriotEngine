@@ -59,11 +59,11 @@ bool gfx_texture_vk::load_header_callback(
     pt_gfx_input_stream_ref input_stream,
     pt_gfx_input_stream_read_callback input_stream_read_callback,
     pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-    class gfx_connection_base *gfx_connection_base,
+    class gfx_connection_base *connection,
     size_t *out_memcpy_dests_size,
     size_t *out_memcpy_dests_align)
 {
-    // 1. load header
+    // 1. load the asset header
     if (!texture_load_header_from_input_stream(&this->m_texture_asset_header, &this->m_texture_asset_data_offset, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
@@ -79,14 +79,14 @@ bool gfx_texture_vk::load_header_callback(
         (*out_memcpy_dests_align) = alignof(struct gfx_texture_neutral_memcpy_dest_t);
     }
 
-    // 2. create the device resource
-    class gfx_connection_vk *gfx_connection = static_cast<class gfx_connection_vk *>(gfx_connection_base);
+    // 2. allocate device resources
+    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
 
     // vkGetPhysicalDeviceFormatProperties
     // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
     {
         struct VkFormatProperties physical_device_format_properties;
-        gfx_connection->get_physical_device_format_properties(vk_header.format, &physical_device_format_properties);
+        vk_connection->get_physical_device_format_properties(vk_header.format, &physical_device_format_properties);
         if (PT_UNLIKELY(0 == (physical_device_format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT)))
         {
             return false;
@@ -116,7 +116,7 @@ bool gfx_texture_vk::load_header_callback(
         // vkAllocateMemory
         // https://www.khronos.org/registry/vulkan/specs/1.0-extensions/html/vkspec.html#fundamentals-threadingbehavior
 
-        bool res_asset_image_alloc = gfx_connection->asset_image_alloc(&image_create_info, &this->m_image, &this->m_image_allocation);
+        bool res_asset_image_alloc = vk_connection->asset_image_alloc(&image_create_info, &this->m_image, &this->m_image_allocation);
         if (PT_UNLIKELY(!res_asset_image_alloc))
         {
             this->m_image = VK_NULL_HANDLE;
@@ -152,7 +152,7 @@ bool gfx_texture_vk::load_header_callback(
         image_view_create_info.subresourceRange.baseArrayLayer = 0U;
         image_view_create_info.subresourceRange.layerCount = vk_header.array_layers;
 
-        PT_MAYBE_UNUSED VkResult res_create_image_view = gfx_connection->create_image_view(&image_view_create_info, &this->m_image_view);
+        PT_MAYBE_UNUSED VkResult res_create_image_view = vk_connection->create_image_view(&image_view_create_info, &this->m_image_view);
         assert(VK_SUCCESS == res_create_image_view);
     }
 
@@ -209,7 +209,7 @@ bool gfx_texture_vk::load_data_callback(
 
     // 2. copy the data into image from staging buffer
     class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
-
+        
     uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
 
     VkBuffer staging_buffer = vk_connection->staging_buffer();

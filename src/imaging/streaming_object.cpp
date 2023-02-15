@@ -67,9 +67,9 @@ bool gfx_streaming_object_base::load(
         }
 
         // pre task spawn callback
-        // usually load the asset header and create the device resource
-        size_t memcpy_dests_size;
-        size_t memcpy_dests_align;
+        // usually load the asset header and allocate device resources
+        size_t memcpy_dests_size = -1;
+        size_t memcpy_dests_align = -1;
         if (!this->load_header_callback(gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_connection, &memcpy_dests_size, &memcpy_dests_align))
         {
             gfx_input_stream_destroy_callback(gfx_input_stream);

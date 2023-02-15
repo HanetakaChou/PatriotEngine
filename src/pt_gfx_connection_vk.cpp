@@ -2295,16 +2295,8 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
                 pt_math_alignas16_mat4x4 mat_m = node->get_transform();
                 gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
 
-                for (gfx_mesh_primitive_vk const& primitive : mesh->primitives_get())
-                {
-                    VkBuffer buffers[2] = { primitive.m_vertex_position_buffer, primitive.m_vertex_varying_buffer };
-
-                    VkDeviceSize offsets[2] = { 0U, 0U };
-                    gfx_connection->m_device.cmd_bind_vertex_buffers(secondary_command_buffer, 0, 2, buffers, offsets);
-                    gfx_connection->m_device.cmd_bind_index_buffer(secondary_command_buffer, primitive.m_index_buffer, 0U, primitive.m_index_type);
-
-                    gfx_connection->m_device.cmd_draw_indexed(secondary_command_buffer, primitive.m_index_count, 1U, 0U, 0U, 0U);
-                }
+                // draw
+                mesh->record_draw_command_buffer(&gfx_connection->m_device, secondary_command_buffer);
             }
         }
     }
