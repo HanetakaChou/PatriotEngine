@@ -253,7 +253,7 @@ class gfx_connection_vk final : public gfx_connection_base
     inline bool init_streaming();
     inline void destroy_streaming();
 
-    class gfx_node_base *create_node() override;
+    class gfx_node_base *create_node(uint32_t material_count) override;
     class gfx_mesh_base *create_mesh() override;
     class gfx_material_base *create_material() override;
     class gfx_texture_base *create_texture() override;

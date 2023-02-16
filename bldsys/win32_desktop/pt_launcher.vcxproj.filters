@@ -8,6 +8,9 @@
     <Filter Include="samples\launcher">
       <UniqueIdentifier>{9ce7c66c-81f1-45b0-abe9-f151c546487b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="samples\asset">
+      <UniqueIdentifier>{9ca327ad-9deb-49db-9599-6dc183f6ea2f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\samples\launcher\pt_wsi_app_base.cpp">
@@ -16,10 +19,16 @@
     <ClCompile Include="..\..\samples\launcher\pt_wsi_app_win32_desktop.cpp">
       <Filter>samples\launcher</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\samples\asset\material_asset_load_pmx.cpp">
+      <Filter>samples\asset</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\samples\launcher\pt_wsi_app_base.h">
       <Filter>samples\launcher</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\samples\asset\material_asset_load_pmx.h">
+      <Filter>samples\asset</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -118,193 +118,88 @@ static bool inline internal_load_pmx_header_from_input_stream(
     {
         return false;
     }
+
     bool is_text_encoding_utf8 = header_globals[0];
 
-    if (is_text_encoding_utf8)
+    // model name local
     {
-        // model name local
+        int32_t text_byte_count;
         {
-            int32_t text_byte_count;
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
+                return false;
             }
         }
 
-        // model name universal
+        if (0 != text_byte_count)
         {
-            int32_t text_byte_count;
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // comments local
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // comments universal
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-    }
-    else
-    {
-        // model name local
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
-                {
-                    return false;
-                }
-
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // model name universal
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
-                {
-                    return false;
-                }
-
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // comments local
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
-                {
-                    return false;
-                }
-
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // comments universal
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
-                {
-                    return false;
-                }
-
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }
 
+    // model name universal
+    {
+        int32_t text_byte_count;
+        {
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+            {
+                return false;
+            }
+        }
+
+        if (0 != text_byte_count)
+        {
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
+            {
+                return false;
+            }
+        }
+    }
+
+    // comments local
+    {
+        int32_t text_byte_count;
+        {
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+            {
+                return false;
+            }
+        }
+
+        if (0 != text_byte_count)
+        {
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
+            {
+                return false;
+            }
+        }
+    }
+
+    // comments universal
+    {
+        int32_t text_byte_count;
+        {
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+            {
+                return false;
+            }
+        }
+
+        if (0 != text_byte_count)
+        {
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
+            {
+                return false;
+            }
+        }
+    }
     if (!(0 == header_globals[1] || 1 == header_globals[1] || 2 == header_globals[1] || 3U == header_globals[1] || 4 == header_globals[1]))
     {
         return false;
@@ -470,40 +365,20 @@ static bool inline internal_load_pmx_header_from_input_stream(
     for (int32_t texture_index = 0; texture_index < texture_count; ++texture_index)
     {
         // path
-        if (is_text_encoding_utf8)
+        int32_t text_byte_count;
         {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
             intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
                 return false;
             }
+        }
 
-            if (0 != text_byte_count)
+        if (0 != text_byte_count)
+        {
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
+                return false;
             }
         }
     }
@@ -680,7 +555,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
     for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
     {
         // material name local
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -689,23 +563,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -718,7 +575,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
         }
 
         // material name universal
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -727,23 +583,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -819,7 +658,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
         }
 
         // meta data
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -828,23 +666,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -904,8 +725,6 @@ extern bool mesh_load_pmx_primitive_headers_from_input_stream(
 
     return true;
 }
-
-static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft);
 
 extern bool mesh_load_pmx_primitive_data_from_input_stream(
     struct mesh_asset_header_t const *mesh_asset_header_for_validate,
@@ -1162,66 +981,23 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     // validate internal header
     assert(mesh_asset_pmx_header.texture_count == texture_count);
 
-    mcrt_vector<mcrt_vector<uint8_t>> mesh_texture_paths(static_cast<size_t>(texture_count));
+    for (int32_t texture_index = 0; texture_index < texture_count; ++texture_index)
     {
-        for (int32_t texture_index = 0; texture_index < texture_count; ++texture_index)
+        // path
+        int32_t text_byte_count;
         {
-            // path
-            if (mesh_asset_pmx_header.is_text_encoding_utf8)
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                int32_t text_byte_count;
-                {
-                    intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                    if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                    {
-                        return false;
-                    }
-                }
-
-                if (0 != text_byte_count)
-                {
-                    mesh_texture_paths[texture_index].resize(text_byte_count);
-
-                    intptr_t res_read = input_stream_read_callback(input_stream, &mesh_texture_paths[texture_index][0], text_byte_count);
-                    if (res_read == -1 || text_byte_count != static_cast<size_t>(res_read))
-                    {
-                        return false;
-                    }
-                }
+                return false;
             }
-            else
+        }
+
+        if (0 != text_byte_count)
+        {
+            if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
             {
-                int32_t text_byte_count;
-                {
-                    intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                    if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-                    {
-                        return false;
-                    }
-                }
-
-                if (0 != text_byte_count)
-                {
-                    uint16_t *text_utf16 = static_cast<uint16_t *>(mcrt_aligned_malloc(text_byte_count, alignof(uint16_t)));
-                    if (-1 == input_stream_read_callback(input_stream, &text_utf16[0], text_byte_count))
-                    {
-                        mcrt_aligned_free(text_utf16);
-                        return false;
-                    }
-
-                    uint8_t *text_utf8 = static_cast<uint8_t *>(mcrt_aligned_malloc(4U * (text_byte_count / sizeof(uint16_t)), alignof(uint8_t)));
-
-                    uint32_t text_utf16_char_count_left = text_byte_count / sizeof(uint16_t);
-                    uint32_t text_utf8_char_count_left = 4U * (text_byte_count / sizeof(uint16_t));
-                    bool success_utf16_to_utf8 = internal_utf16_to_utf8(&text_utf16[0], &text_utf16_char_count_left, &text_utf8[0], &text_utf8_char_count_left);
-                    assert(success_utf16_to_utf8);
-                    mcrt_aligned_free(text_utf16);
-
-                    mesh_texture_paths[texture_index].resize((4U * (text_byte_count / sizeof(uint16_t)) - text_utf8_char_count_left) + 1U);
-                    mcrt_memcpy(&mesh_texture_paths[texture_index][0], &text_utf8[0], 4U * (text_byte_count / sizeof(uint16_t)) - text_utf8_char_count_left);
-                    mcrt_aligned_free(text_utf8);
-                    mesh_texture_paths[texture_index][4U * (text_byte_count / sizeof(uint16_t)) - text_utf8_char_count_left] = '\0';
-                }
+                return false;
             }
         }
     }
@@ -1254,7 +1030,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
     {
         // material name local
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -1263,23 +1038,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -1292,7 +1050,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         }
 
         // material name universal
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -1301,23 +1058,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -1344,70 +1084,11 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                           // edge colour
                           + sizeof(float) * 4U
                           // edge scale
-                          + sizeof(float),
-                      PT_INPUT_STREAM_SEEK_CUR))
-        {
-            return false;
-        }
-
-        // texture index
-        uint32_t texture_index;
-        {
-            if (1U == mesh_asset_pmx_header.texture_index_size)
-            {
-                int8_t texture_index_int8;
-                {
-                    intptr_t res_read = input_stream_read_callback(input_stream, &texture_index_int8, sizeof(int8_t));
-                    if (res_read == -1 || sizeof(int8_t) != static_cast<size_t>(res_read) || 0 > texture_index_int8)
-                    {
-                        return false;
-                    }
-                }
-
-                texture_index = texture_index_int8;
-            }
-            else if (2U == mesh_asset_pmx_header.texture_index_size)
-            {
-                int16_t texture_index_int16;
-                {
-                    intptr_t res_read = input_stream_read_callback(input_stream, &texture_index_int16, sizeof(int16_t));
-                    if (res_read == -1 || sizeof(int16_t) != static_cast<size_t>(res_read) || 0 > texture_index_int16)
-                    {
-                        return false;
-                    }
-                }
-
-                texture_index = texture_index_int16;
-            }
-            else if (4U == mesh_asset_pmx_header.texture_index_size)
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &texture_index, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > texture_index)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        mcrt_vector<uint8_t> const &material_texture_path = mesh_texture_paths[texture_index];
-        if (out_material_texture_size)
-        {
-            out_material_texture_size[material_index] = material_texture_path.size();
-        }
-
-        if (out_material_texture_path)
-        {
-            mcrt_memcpy(out_material_texture_path[material_index], &material_texture_path[0], material_texture_path.size());
-        }
-
-        if (-1 == input_stream_seek_callback(
-                      input_stream,
-                      // environment index
-                      mesh_asset_pmx_header.texture_index_size
+                          + sizeof(float)
+                          // texture index
+                          + mesh_asset_pmx_header.texture_index_size
+                          // environment index
+                          + mesh_asset_pmx_header.texture_index_size
                           // environment blend mode
                           + sizeof(int8_t),
                       PT_INPUT_STREAM_SEEK_CUR))
@@ -1452,7 +1133,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         }
 
         // meta data
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
             {
@@ -1461,23 +1141,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                 {
                     return false;
                 }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
             }
 
             if (0 != text_byte_count)
@@ -1589,141 +1252,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     assert(surface_count == material_total_surface_count);
-
-    return true;
-}
-
-static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft)
-{
-    while ((*pInCharsLeft) >= 1)
-    {
-        uint32_t ucs4code = 0; // Accumulator
-
-        // UTF-16 To UCS-4
-        if ((*pInBuf) >= 0XD800U && (*pInBuf) <= 0XDBFFU) // 110110xxxxxxxxxx
-        {
-            if ((*pInCharsLeft) >= 2)
-            {
-                ucs4code += (((*pInBuf) - 0XD800U) << 10U); // Accumulate
-
-                ++pInBuf;
-                --(*pInCharsLeft);
-
-                if ((*pInBuf) >= 0XDC00U && (*pInBuf) <= 0XDFFF) // 110111xxxxxxxxxx
-                {
-                    ucs4code += ((*pInBuf) - 0XDC00U); // Accumulate
-
-                    ++pInBuf;
-                    --(*pInCharsLeft);
-                }
-                else
-                {
-                    return false;
-                }
-
-                ucs4code += 0X10000U;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            ucs4code += (*pInBuf); // Accumulate
-
-            ++pInBuf;
-            --(*pInCharsLeft);
-        }
-
-        // UCS-4 To UTF-16
-        if (ucs4code < 128U) // 0XXX XXXX
-        {
-            if ((*pOutCharsLeft) >= 1)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(ucs4code);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 2048U) // 110X XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 2)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X7C0U) >> 6U) + 192U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 0X10000U) // 1110 XXXX 10XX XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 3)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XF000U) >> 12U) + 224U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 0X200000U) // 1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 4)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X1C0000U) >> 18U) + 240U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X3F000U) >> 12U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else // ucs4code >= 0X200000U
-            {
-                return false;
-            }
-        }
-    }
 
     return true;
 }

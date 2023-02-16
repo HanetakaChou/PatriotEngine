@@ -38,6 +38,8 @@ protected:
     inline gfx_mesh_base() : gfx_streaming_object_base(), gfx_frame_object_base(), m_ref_count(1U) {}
 
 public:
+    inline uint32_t get_primitive_count() { return this->m_mesh_asset_header.primitive_count; }
+
     void destroy(class gfx_connection_base *gfx_connection);
 
     void addref();

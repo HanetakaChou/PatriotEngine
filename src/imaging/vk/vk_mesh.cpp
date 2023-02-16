@@ -224,9 +224,9 @@ bool gfx_mesh_vk::load_data_callback(
     return true;
 }
 
-void gfx_mesh_vk::record_draw_command_buffer(class gfx_device_vk *vk_device, VkCommandBuffer draw_command_buffer) const
+void gfx_mesh_vk::record_draw_command_buffer(uint32_t primitive_index, class gfx_device_vk *vk_device, VkCommandBuffer draw_command_buffer) const
 {
-    for (uint32_t primitive_index = 0U; primitive_index < this->m_mesh_asset_header.primitive_count; ++primitive_index)
+    if (primitive_index < this->m_mesh_asset_header.primitive_count)
     {
         VkBuffer buffers[2] = {this->m_primitives[primitive_index].m_vertex_position_buffer, this->m_primitives[primitive_index].m_vertex_varying_buffer};
         VkDeviceSize offsets[2] = {0U, 0U};
@@ -235,6 +235,10 @@ void gfx_mesh_vk::record_draw_command_buffer(class gfx_device_vk *vk_device, VkC
         vk_device->cmd_bind_index_buffer(draw_command_buffer, this->m_primitives[primitive_index].m_index_buffer, 0U, this->m_mesh_asset_primitive_headers[primitive_index].is_index_type_uint16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 
         vk_device->cmd_draw_indexed(draw_command_buffer, this->m_mesh_asset_primitive_headers[primitive_index].index_count, 1U, 0U, 0U, 0U);
+    }
+    else
+    {
+        assert(0);
     }
 }
 

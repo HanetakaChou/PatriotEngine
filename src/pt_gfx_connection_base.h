@@ -170,7 +170,7 @@ public:
 
     // API
     virtual void destroy() = 0;
-    virtual class gfx_node_base *create_node() = 0;
+    virtual class gfx_node_base *create_node(uint32_t material_count) = 0;
     virtual class gfx_mesh_base *create_mesh() = 0;
     virtual class gfx_material_base *create_material() = 0;
     virtual class gfx_texture_base *create_texture() = 0;

@@ -65,7 +65,7 @@ class gfx_mesh_vk final : public gfx_mesh_base
 
 public:
     // in use
-    void record_draw_command_buffer(class gfx_device_vk* vk_device, VkCommandBuffer draw_command_buffer) const;
+    void record_draw_command_buffer(uint32_t primitive_index, class gfx_device_vk* vk_device, VkCommandBuffer draw_command_buffer) const;
 
 private:
     // destroy

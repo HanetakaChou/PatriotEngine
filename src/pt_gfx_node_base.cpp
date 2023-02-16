@@ -19,49 +19,72 @@
 #include <stdint.h>
 #include "pt_gfx_node_base.h"
 
-void gfx_node_base::set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh)
+void gfx_node_base::set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *future_mesh)
 {
-    class gfx_mesh_base *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, gfx_mesh);
+    class gfx_mesh_base *current_mesh = mcrt_atomic_xchg_ptr(&this->m_mesh, future_mesh);
 
-    if (gfx_mesh != gfx_mesh_old)
+    if (future_mesh != current_mesh)
     {
-        if (NULL != gfx_mesh)
+        if (NULL != future_mesh)
         {
-            gfx_mesh->addref();
+            future_mesh->addref();
         }
 
-        if (NULL != gfx_mesh_old)
+        if (NULL != current_mesh)
         {
-            gfx_mesh_old->release(gfx_connection);
+            current_mesh->release(gfx_connection);
         }
     }
 }
 
-void gfx_node_base::set_material(class gfx_connection_base *gfx_connection, class gfx_material_base *gfx_material)
+void gfx_node_base::set_material(class gfx_connection_base *gfx_connection, uint32_t material_index, class gfx_material_base *future_material)
 {
-    class gfx_material_base *gfx_material_old = mcrt_atomic_xchg_ptr(&this->m_gfx_material, gfx_material);
-
-    if (gfx_material != gfx_material_old)
+    if (material_index < this->m_material_count)
     {
-        if (NULL != gfx_material)
+        class gfx_material_base *current_material = mcrt_atomic_xchg_ptr(&this->m_materials[material_index], future_material);
+        if (future_material != current_material)
         {
-            gfx_material->addref();
-        }
+            if (NULL != future_material)
+            {
+                future_material->addref();
+            }
 
-        if (NULL != gfx_material_old)
-        {
-            gfx_material_old->release(gfx_connection);
+            if (NULL != current_material)
+            {
+                current_material->release(gfx_connection);
+            }
         }
+    }
+    else
+    {
+        assert(0);
+    }
+
+}
+
+class gfx_material_base* gfx_node_base::get_material(uint32_t material_index) const
+{ 
+    if (material_index < this->m_material_count)
+    {
+        return this->m_materials[material_index];
+    }
+    else
+    {
+        assert(0);
+        return NULL;
     }
 }
 
 void gfx_node_base::destroy(class gfx_connection_base *gfx_connection)
 {
-    class gfx_mesh_base *gfx_mesh_old = mcrt_atomic_xchg_ptr(&this->m_gfx_mesh, static_cast<class gfx_mesh_base *>(NULL));
-    gfx_mesh_old->release(gfx_connection);
+    this->set_mesh(gfx_connection, NULL);
 
-    class gfx_material_base *gfx_material_old = mcrt_atomic_xchg_ptr(&this->m_gfx_material, static_cast<class gfx_material_base *>(NULL));
-    gfx_material_old->release(gfx_connection);
+    for (uint32_t material_index = 0U; material_index < this->m_material_count; ++material_index)
+    {
+        this->set_material(gfx_connection, material_index, NULL);
+    }
+
+    mcrt_aligned_free(this->m_materials);
 
     gfx_connection->frame_node_destroy_list_push(this);
 }
@@ -84,9 +107,9 @@ PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connecti
     return unwrap(gfx_node)->set_mesh(unwrap(gfx_connection), unwrap(gfx_mesh));
 }
 
-PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material)
+PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, uint32_t material_index, pt_gfx_material_ref gfx_material)
 {
-    return unwrap(gfx_node)->set_material(unwrap(gfx_connection), unwrap(gfx_material));
+    return unwrap(gfx_node)->set_material(unwrap(gfx_connection), material_index, unwrap(gfx_material));
 }
 
 PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node)

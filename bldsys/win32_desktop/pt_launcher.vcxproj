@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\samples\asset\material_asset_load_pmx.cpp" />
     <ClCompile Include="..\..\samples\launcher\pt_wsi_app_base.cpp" />
     <ClCompile Include="..\..\samples\launcher\pt_wsi_app_win32_desktop.cpp" />
   </ItemGroup>
@@ -166,6 +167,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\samples\asset\material_asset_load_pmx.h" />
     <ClInclude Include="..\..\samples\launcher\pt_wsi_app_base.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

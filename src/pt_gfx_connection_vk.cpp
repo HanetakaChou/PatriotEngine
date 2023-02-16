@@ -2283,19 +2283,26 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         if (NULL != node)
         {
             class gfx_mesh_vk *mesh = static_cast<class gfx_mesh_vk *>(node->get_mesh());
-            class gfx_material_vk *material = static_cast<class gfx_material_vk *>(node->get_material());
-            if (NULL != mesh && (!mesh->is_streaming_error()) && mesh->is_streaming_done() && NULL != material && (!material->is_streaming_error()) && material->is_streaming_done())
+            if (NULL != mesh && (!mesh->is_streaming_error()) && mesh->is_streaming_done()) 
             {
-                // bind - each material // sort multiple mesh share the same material
-                VkDescriptorSet descriptor_sets[1] = {material->get_descriptor_set()};
-                gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
+                uint32_t primitive_count = mesh->get_primitive_count();
+                for (uint32_t primitive_index = 0U; primitive_index < primitive_count; ++primitive_index)
+                {
+                    class gfx_material_vk* material = static_cast<class gfx_material_vk*>(node->get_material(primitive_index));
+                    if (NULL != material && (!material->is_streaming_error()) && material->is_streaming_done())
+                    {
+                        // bind - each material // sort multiple mesh share the same material
+                        VkDescriptorSet descriptor_sets[1] = { material->get_descriptor_set() };
+                        gfx_connection->m_device.cmd_bind_descriptor_sets(secondary_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, gfx_connection->m_pipeline_layout, 1U, 1U, descriptor_sets, 0U, NULL);
 
-                // bind - each object
-                pt_math_alignas16_mat4x4 mat_m = node->get_transform();
-                gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
+                        // bind - each object
+                        pt_math_alignas16_mat4x4 mat_m = node->get_transform();
+                        gfx_connection->m_device.cmd_push_constants(secondary_command_buffer, gfx_connection->m_pipeline_layout, VK_SHADER_STAGE_VERTEX_BIT, gfx_connection->m_push_constant_mat_m_offset, gfx_connection->m_push_constant_mat_m_size, &mat_m);
 
-                // draw
-                mesh->record_draw_command_buffer(&gfx_connection->m_device, secondary_command_buffer);
+                        // draw
+                        mesh->record_draw_command_buffer(primitive_index, &gfx_connection->m_device, secondary_command_buffer);
+                    }
+                }
             }
         }
     }
@@ -2587,9 +2594,9 @@ void gfx_connection_vk::draw_release()
 }
 #endif
 
-class gfx_node_base *gfx_connection_vk::create_node()
+class gfx_node_base *gfx_connection_vk::create_node(uint32_t material_count)
 {
-    class gfx_node_vk *gfx_node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk();
+    class gfx_node_vk *gfx_node = new (mcrt_aligned_malloc(sizeof(gfx_node_vk), alignof(gfx_node_vk))) gfx_node_vk(material_count);
     mcrt_rwlock_rdlock(&this->m_rwlock_frame_throttling_index);
     uint32_t frame_throttling_index = mcrt_atomic_load(&this->m_frame_throttling_index);
     this->m_frame_node_init_list[frame_throttling_index].produce(gfx_node);

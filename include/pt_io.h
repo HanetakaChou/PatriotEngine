@@ -18,6 +18,8 @@
 #ifndef _PT_IO_H_
 #define _PT_IO_H_ 1
 
+#include <stddef.h>
+#include <stdint.h>
 #include <pt_common.h>
 
 typedef struct pt_opaque_input_stream_t *pt_input_stream_ref;

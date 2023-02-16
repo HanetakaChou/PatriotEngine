@@ -51,9 +51,10 @@ class gfx_node_base
 
     pt_math_alignas16_mat4x4 m_mat_m;
 
-    class gfx_mesh_base *m_gfx_mesh;
+    class gfx_mesh_base *m_mesh;
 
-    class gfx_material_base *m_gfx_material;
+    uint32_t m_material_count;
+    class gfx_material_base **m_materials;
 
     // concurrent_vector
     // https://web.archive.org/web/20090301235240/http://software.intel.com/en-us/blogs/2008/07/24/tbbconcurrent_vector-secrets-of-memory-organization/
@@ -82,21 +83,27 @@ class gfx_node_base
     //mpsc_list<class gfx_node_vk *> m_child_node_to_remove_list;
 
 protected:
-    inline gfx_node_base() : m_gfx_mesh(NULL), m_gfx_material(NULL)
+    inline gfx_node_base(uint32_t material_count) : m_mesh(NULL), m_material_count(material_count)
     {
         pt_math_store_alignas16_mat4x4(&this->m_mat_m, pt_math_mat_identity());
+
+        this->m_materials = static_cast<class gfx_material_base **>(mcrt_aligned_malloc(sizeof(class gfx_material_base*) * this->m_material_count, alignof(class gfx_material_base*)));
+        for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
+        {
+            this->m_materials[material_index] = NULL;
+        }
     }
 
 public:
     inline pt_math_alignas16_mat4x4 get_transform() const { return this->m_mat_m; }
 
-    void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *gfx_mesh);
+    void set_mesh(class gfx_connection_base *gfx_connection, class gfx_mesh_base *future_mesh);
 
-    inline class gfx_mesh_base *get_mesh() const { return this->m_gfx_mesh; }
+    inline class gfx_mesh_base *get_mesh() const { return this->m_mesh; }
 
-    void set_material(class gfx_connection_base *gfx_connection, class gfx_material_base *gfx_material);
+    void set_material(class gfx_connection_base *gfx_connection, uint32_t material_index, class gfx_material_base *future_material);
 
-    inline class gfx_material_base *get_material() const { return this->m_gfx_material; }
+    class gfx_material_base* get_material(uint32_t material_index) const;
 
     void destroy(class gfx_connection_base *gfx_connection);
 };

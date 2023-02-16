@@ -140,9 +140,6 @@
     <ClInclude Include="..\..\src\imaging\streaming_object.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\pz_asset.h">
-      <Filter>include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\imaging\mesh_asset_load.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
@@ -163,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\imaging\vk\vk_texture.h">
       <Filter>src\imaging\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_io.h">
+      <Filter>include</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

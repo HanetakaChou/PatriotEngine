@@ -15,30 +15,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _IMAGING_MATERIAL_LOAD_PMX_H_
-#define _IMAGING_MATERIAL_LOAD_PMX_H_ 1
+#ifndef _IMAGING_MATERIAL_ASSET_LOAD_PMX_H_
+#define _IMAGING_MATERIAL_ASSET_LOAD_PMX_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_gfx_connection.h>
-
-struct material_asset_pmx_header
-{
-    bool is_text_encoding_utf8;
-    uint32_t texture_index_size;
-    uint32_t texture_count;
-    uint32_t material_count;
-    int64_t texture_section_offset;
-    int64_t material_section_offset;
-};
+#include <pt_io.h>
 
 extern bool material_asset_load_pmx_header_from_input_stream(
-    struct material_asset_pmx_header *out_mateiral_asset_pmx_header, 
-    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback,
+    size_t *out_material_count);
 
-
-extern bool mesh_load_pmx_primitive_data_from_input_stream(
-    struct material_asset_pmx_header const *mateiral_asset_pmx_header_for_validate, 
-    char **out_material_texture_path, size_t * out_material_texture_size);
+extern bool mmaterial_asset_load_pmx_primitive_data_from_input_stream(
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback,
+    char **out_material_texture_paths, size_t *out_material_texture_size);
 
 #endif

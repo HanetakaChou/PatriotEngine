@@ -148,9 +148,9 @@ PT_ATTR_GFX void PT_CALL pt_gfx_connection_draw_release(pt_gfx_connection_ref gf
     return unwrap(gfx_connection)->draw_release();
 }
 
-PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection)
+PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection, uint32_t material_count)
 {
-    return wrap(unwrap(gfx_connection)->create_node());
+    return wrap(unwrap(gfx_connection)->create_node(material_count));
 }
 
 PT_ATTR_GFX pt_gfx_mesh_ref PT_CALL pt_gfx_connection_create_mesh(pt_gfx_connection_ref gfx_connection)

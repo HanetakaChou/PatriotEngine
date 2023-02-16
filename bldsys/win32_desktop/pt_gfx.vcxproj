@@ -48,7 +48,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\pt_gfx_common.h" />
     <ClInclude Include="..\..\include\pt_gfx_connection.h" />
-    <ClInclude Include="..\..\include\pz_asset.h" />
+    <ClInclude Include="..\..\include\pt_io.h" />
     <ClInclude Include="..\..\src\imaging\mesh_asset_load.h" />
     <ClInclude Include="..\..\src\imaging\mesh_asset_load_pmx.h" />
     <ClInclude Include="..\..\src\imaging\mesh.h" />

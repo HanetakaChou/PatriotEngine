@@ -33,6 +33,11 @@ bool gfx_material_vk::streaming_done_callback(class gfx_connection_base *gfx_con
     {
         gfx_connection->init_descriptor_set(this->m_desciptor_set, this->get_texture_count(), this->get_textures());
     }
+    else
+    {
+        // TODO:
+        assert(0);
+    }
 
     return res_allocate_frame_object_descriptor_set;
 }

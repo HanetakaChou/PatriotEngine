@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _IMAGING_MESH_LOAD_H_
-#define _IMAGING_MESH_LOAD_H_ 1
+#ifndef _IMAGING_MESH_ASSET_LOAD_H_
+#define _IMAGING_MESH_ASSET_LOAD_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>

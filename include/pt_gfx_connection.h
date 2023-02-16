@@ -102,16 +102,16 @@ extern "C"
     PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_set_directional_light(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene, pt_math_vec3 const *direction);
     PT_ATTR_GFX void PT_CALL pt_gfx_flatten_scene_destroy(pt_gfx_connection_ref gfx_connection, pt_scene_ref gfx_scene);
 
-    PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection); // add callback paramter
+    PT_ATTR_GFX pt_gfx_node_ref PT_CALL pt_gfx_connection_create_node(pt_gfx_connection_ref gfx_connection, uint32_t material_count); // add callback paramter
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_transform(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_math_mat4x4 const *transform);
     PT_ATTR_GFX void PT_CALL pt_gfx_node_set_mesh(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_mesh_ref gfx_mesh);
-    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_material_ref gfx_material);
+    // UE4: one mesh - different elements - different materials
+    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_material(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, uint32_t material_index, pt_gfx_material_ref gfx_material);
+
     //PT_ATTR_GFX void PT_CALL pt_gfx_node_add_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
     //PT_ATTR_GFX void PT_CALL pt_gfx_node_remove_child(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, pt_gfx_node_ref gfx_child_node);
     
-    // UE4
-    // one mesh - different elements - different materials
-    PT_ATTR_GFX void PT_CALL pt_gfx_node_set_materials(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node, uint32_t first_material, uint32_t material_count, pt_gfx_material_ref *gfx_materials);
+
     
     PT_ATTR_GFX void PT_CALL pt_gfx_node_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_node_ref gfx_node);
 

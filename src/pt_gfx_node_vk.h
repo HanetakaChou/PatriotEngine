@@ -29,7 +29,7 @@ public:
 
     void post_stream_done_destroy_callback(class gfx_connection_vk *gfx_connection);
 
-    inline gfx_node_vk() : gfx_node_base(), m_frame_node_index(-1){};
+    inline gfx_node_vk(uint32_t material_count) : gfx_node_base(material_count), m_frame_node_index(-1){};
 };
 
 #endif
