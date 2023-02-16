@@ -26,27 +26,23 @@
 #include <pt_mcrt_rwlock.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
-#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_vector.h>
+#include <pt_mcrt_string.h>
 #include "pt_gfx_connection_base.h"
 #include "pt_gfx_device_vk.h"
 #include "pt_gfx_malloc_vk.h"
-#include "pt_gfx_streaming_object_base.h"
+#include "imaging/streaming_object.h"
 #include "pt_gfx_frame_object_base.h"
 #include "pt_gfx_node_vk.h"
-#include "pt_gfx_mesh_vk.h"
+#include "imaging/vk/vk_mesh.h"
 #include "pt_gfx_material_vk.h"
-#include "pt_gfx_texture_vk.h"
+#include "imaging/vk/vk_texture.h"
 #include <vulkan/vulkan.h>
 #include <vector>
 #include <string>
 
 class gfx_connection_vk final : public gfx_connection_base
 {
-    template <typename T>
-    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-
-    using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
     class gfx_device_vk m_device;
     class gfx_malloc_vk m_malloc;
 
@@ -59,13 +55,13 @@ class gfx_connection_vk final : public gfx_connection_base
 #endif
 
     // Frame
-    pt_gfx_input_stream_init_callback m_cache_input_stream_init_callback;
-    pt_gfx_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
-    pt_gfx_input_stream_read_callback m_cache_input_stream_read_callback;
-    pt_gfx_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
-    pt_gfx_output_stream_init_callback m_cache_output_stream_init_callback;
-    pt_gfx_output_stream_write_callback m_cache_output_stream_write_callback;
-    pt_gfx_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
+    pt_input_stream_init_callback m_cache_input_stream_init_callback;
+    pt_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
+    pt_input_stream_read_callback m_cache_input_stream_read_callback;
+    pt_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
+    pt_output_stream_init_callback m_cache_output_stream_init_callback;
+    pt_output_stream_write_callback m_cache_output_stream_write_callback;
+    pt_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
 
     enum
     {
@@ -217,31 +213,31 @@ class gfx_connection_vk final : public gfx_connection_base
     inline bool init(
         pt_gfx_wsi_connection_ref wsi_connection,
         pt_gfx_wsi_visual_ref wsi_visual,
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_input_stream_init_callback cache_input_stream_init_callback,
+        pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_input_stream_read_callback cache_input_stream_read_callback,
+        pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback,
+        pt_output_stream_write_callback cache_output_stream_write_callback,
+        pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
     void destroy() override;
 
     inline bool init_frame(
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_input_stream_init_callback cache_input_stream_init_callback,
+        pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_input_stream_read_callback cache_input_stream_read_callback,
+        pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback,
+        pt_output_stream_write_callback cache_output_stream_write_callback,
+        pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
     inline bool init_pipeline_cache_callbacks(
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_input_stream_init_callback cache_input_stream_init_callback,
+        pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_input_stream_read_callback cache_input_stream_read_callback,
+        pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback,
+        pt_output_stream_write_callback cache_output_stream_write_callback,
+        pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
     inline bool init_pipeline_layout();
     inline bool init_shader();
     inline bool update_surface(pt_gfx_wsi_connection_ref wsi_connection, pt_gfx_wsi_window_ref wsi_window);
@@ -317,25 +313,25 @@ public:
     static gfx_connection_base *create(
         pt_gfx_wsi_connection_ref wsi_connection,
         pt_gfx_wsi_visual_ref wsi_visual,
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_input_stream_init_callback cache_input_stream_init_callback,
+        pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_input_stream_read_callback cache_input_stream_read_callback,
+        pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback,
+        pt_output_stream_write_callback cache_output_stream_write_callback,
+        pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
 };
 
 class gfx_connection_base *gfx_connection_vk_create(
     pt_gfx_wsi_connection_ref wsi_connection,
     pt_gfx_wsi_visual_ref wsi_visual,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
 
 // Streaming in CryEngine - StatObj
 

@@ -15,15 +15,15 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _PT_GFX_MESH_VK_H_
-#define _PT_GFX_MESH_VK_H_ 1
+#ifndef _IMAGING_VK_MESH_H_
+#define _IMAGING_VK_MESH_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_allocator.h>
 #include <pt_mcrt_vector.h>
-#include "pt_gfx_mesh_base.h"
-#include "pt_gfx_connection_vk.h"
+#include "../mesh.h"
+#include "../../pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 
 struct gfx_mesh_primitive_vk
@@ -43,9 +43,9 @@ class gfx_mesh_vk final : public gfx_mesh_base
     mcrt_vector<gfx_mesh_primitive_vk> m_primitives;
 
    bool load_header_callback(
-        pt_gfx_input_stream_ref input_stream,
-        pt_gfx_input_stream_read_callback input_stream_read_callback,
-        pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+        pt_input_stream_ref input_stream,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
         class gfx_connection_base* connection,
         size_t* out_memcpy_dests_size,
         size_t* out_memcpy_dests_align) final;
@@ -56,9 +56,9 @@ class gfx_mesh_vk final : public gfx_mesh_base
        void* out_memcpy_dests) final;
 
    bool load_data_callback(
-       pt_gfx_input_stream_ref input_stream,
-       pt_gfx_input_stream_read_callback input_stream_read_callback,
-       pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+       pt_input_stream_ref input_stream,
+       pt_input_stream_read_callback input_stream_read_callback,
+       pt_input_stream_seek_callback input_stream_seek_callback,
        class gfx_connection_base* connection,
        void const* memcpy_dests,
        uint32_t streaming_throttling_index) final;

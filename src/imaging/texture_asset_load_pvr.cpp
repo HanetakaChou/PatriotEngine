@@ -17,18 +17,18 @@
 
 #include <stddef.h>
 #include <assert.h>
-#include "pt_gfx_texture_base_load.h"
 #include <algorithm>
+#include "texture_asset_load.h"
 
 extern bool load_pvr_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 extern bool load_pvr_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/FileDefinesPVR.h
 //https://github.com/powervr-graphics/Native_SDK/blob/master/framework/PVRCore/textureio/TextureReaderPVR.h
@@ -313,26 +313,26 @@ static inline uint32_t pvr_get_format_plane_count(uint64_t pixelFormat);
 
 static inline bool pvr_format_is_depth_stencil(uint64_t pixelFormat);
 
-static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
+static inline bool internal_load_pvr_header_from_input_stream(pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback,
                                                               struct TextureLoader_PVRHeader *internal_pvr_header, size_t *pvr_data_offset)
 {
     assert(internal_pvr_header != NULL);
     assert(pvr_data_offset != NULL);
 
-    if (gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    if (input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_SET) == -1)
     {
         return false;
     }
 
     // Read the texture header version
     uint32_t version;
-    gfx_input_stream_read_callback(gfx_input_stream, &version, sizeof(version));
+    input_stream_read_callback(gfx_input_stream, &version, sizeof(version));
     if (Pvr_HeaderVersionV3 == version)
     {
         Pvr_HeaderV3 header;
         header.version = version;
         {
-            ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
+            ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &header.flags, sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize));
             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(header.flags) + sizeof(header.pixelFormat) + sizeof(header.colorSpace) + sizeof(header.channelType) + sizeof(header.height) + sizeof(header.width) + sizeof(header.depth) + sizeof(header.numSurfaces) + sizeof(header.numFaces) + sizeof(header.numMipMaps) + sizeof(header.metaDataSize)))
             {
                 return false;
@@ -360,7 +360,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
         {
             Pvr_MetaData metadata;
             {
-                ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &metadata, sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
+                ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &metadata, sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize));
                 if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(metadata._fourCC) + sizeof(metadata._key) + sizeof(metadata._dataSize)))
                 {
                     return false;
@@ -378,7 +378,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 {
                     //The UV has been baked into meshes
                     assert(0 == (metadata._dataSize % (sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t) + sizeof(uint32_t))));
-                    if (-1 == gfx_input_stream_seek_callback(gfx_input_stream, metadata._dataSize, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                    if (-1 == input_stream_seek_callback(gfx_input_stream, metadata._dataSize, PT_INPUT_STREAM_SEEK_CUR))
                     {
                         return false;
                     }
@@ -388,7 +388,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 case 1:
                 {
                     assert(sizeof(internal_pvr_header->bumpData) == metadata._dataSize);
-                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &internal_pvr_header->bumpData, metadata._dataSize);
+                    ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &internal_pvr_header->bumpData, metadata._dataSize);
                     if (BytesRead == -1 || BytesRead < metadata._dataSize)
                     {
                         return false;
@@ -400,7 +400,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 case 2:
                 {
                     assert(sizeof(internal_pvr_header->cubeMapOrder) == metadata._dataSize);
-                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &internal_pvr_header->cubeMapOrder, metadata._dataSize);
+                    ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &internal_pvr_header->cubeMapOrder, metadata._dataSize);
                     if (BytesRead == -1 || BytesRead < metadata._dataSize)
                     {
                         return false;
@@ -412,7 +412,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 case 3:
                 {
                     assert(sizeof(internal_pvr_header->textureOrientation) == metadata._dataSize);
-                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &internal_pvr_header->textureOrientation, metadata._dataSize);
+                    ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &internal_pvr_header->textureOrientation, metadata._dataSize);
                     if (BytesRead == -1 || BytesRead < metadata._dataSize)
                     {
                         return false;
@@ -424,7 +424,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 case 4:
                 {
                     assert(sizeof(internal_pvr_header->borderData) == metadata._dataSize);
-                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, &internal_pvr_header->borderData, metadata._dataSize);
+                    ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, &internal_pvr_header->borderData, metadata._dataSize);
                     if (BytesRead == -1 || BytesRead < metadata._dataSize)
                     {
                         return false;
@@ -435,7 +435,7 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
                 break;
                 case 5:
                 {
-                    if (-1 == gfx_input_stream_seek_callback(gfx_input_stream, metadata._dataSize, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                    if (-1 == input_stream_seek_callback(gfx_input_stream, metadata._dataSize, PT_INPUT_STREAM_SEEK_CUR))
                     {
                         return false;
                     }
@@ -464,11 +464,11 @@ static inline bool internal_load_pvr_header_from_input_stream(pt_gfx_input_strea
 
 bool load_pvr_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
     struct TextureLoader_PVRHeader pvr_texture_header;
     size_t pvr_texture_data_offset;
-    if (internal_load_pvr_header_from_input_stream(gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, &pvr_texture_header, &pvr_texture_data_offset))
+    if (internal_load_pvr_header_from_input_stream(gfx_input_stream, input_stream_read_callback, input_stream_seek_callback, &pvr_texture_header, &pvr_texture_data_offset))
     {
         neutral_header->type = pvr_get_common_type(pvr_texture_header.height, pvr_texture_header.depth);
         assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != neutral_header->type);
@@ -501,11 +501,11 @@ bool load_pvr_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
     struct TextureLoader_PVRHeader internal_pvr_header;
     size_t pvr_data_offset;
-    if (!internal_load_pvr_header_from_input_stream(gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, &internal_pvr_header, &pvr_data_offset))
+    if (!internal_load_pvr_header_from_input_stream(gfx_input_stream, input_stream_read_callback, input_stream_seek_callback, &internal_pvr_header, &pvr_data_offset))
     {
         return false;
     }
@@ -616,10 +616,10 @@ bool load_pvr_data_from_input_stream(
                     {
                         {
                             PT_MAYBE_UNUSED int64_t offset_cur;
-                            assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                            assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                         }
 
-                        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + memcpy_dest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
+                        ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + memcpy_dest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
                         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                         {
                             return false;
@@ -633,10 +633,10 @@ bool load_pvr_data_from_input_stream(
                         {
                             {
                                 PT_MAYBE_UNUSED int64_t offset_cur;
-                                assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                             }
 
-                            ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z), inputSliceSize);
+                            ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z), inputSliceSize);
                             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                             {
                                 return false;
@@ -654,10 +654,10 @@ bool load_pvr_data_from_input_stream(
                             {
                                 {
                                     PT_MAYBE_UNUSED int64_t offset_cur;
-                                    assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                    assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                                 }
 
-                                ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z + memcpy_dest[dstSubresource].output_row_pitch * y), inputRowSize);
+                                ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z + memcpy_dest[dstSubresource].output_row_pitch * y), inputRowSize);
                                 if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                                 {
                                     return false;
@@ -673,7 +673,7 @@ bool load_pvr_data_from_input_stream(
     }
 
     PT_MAYBE_UNUSED uint8_t u_assert_only[1];
-    assert(0 == gfx_input_stream_read_callback(gfx_input_stream, u_assert_only, sizeof(uint8_t)));
+    assert(0 == input_stream_read_callback(gfx_input_stream, u_assert_only, sizeof(uint8_t)));
     return true;
 }
 

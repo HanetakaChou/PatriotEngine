@@ -13,18 +13,6 @@
     <ClCompile Include="..\..\src\pt_gfx_connection_base.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_dds.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_pvr.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_texture_vk.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_frame_object_base.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -35,12 +23,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_material_vk.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_vk.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_node_base.cpp">
@@ -55,22 +37,10 @@
     <ClCompile Include="..\..\src\pt_gfx_scene_vk.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_streaming_object_base.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_texture_base.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_connection_d3d12.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_device_vk_wsi_win32.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load_pmx.cpp">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\pt_gfx_malloc_vma.cpp">
@@ -78,6 +48,33 @@
     </ClCompile>
     <ClCompile Include="..\..\src\imaging\streaming_object.cpp">
       <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\mesh_asset_load.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\mesh_asset_load_pmx.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\texture_asset_load.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\texture_asset_load_dds.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\texture_asset_load_pvr.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\mesh.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\vk\vk_mesh.cpp">
+      <Filter>src\imaging\vk</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\texture.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\imaging\vk\vk_texture.cpp">
+      <Filter>src\imaging\vk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -107,12 +104,6 @@
     <ClInclude Include="..\..\src\pt_gfx_device_vk.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_texture_base_load.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_texture_vk.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_frame_object_base.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -123,15 +114,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_material_vk.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_vk.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_node_base.h">
@@ -146,12 +128,6 @@
     <ClInclude Include="..\..\src\pt_gfx_scene_vk.h">
       <Filter>src</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_streaming_object_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_texture_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\pt_gfx_connection_d3d12.h">
       <Filter>src</Filter>
     </ClInclude>
@@ -161,25 +137,32 @@
     <ClInclude Include="..\..\include\pt_gfx_connection.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load_pmx.h">
-      <Filter>src</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\imaging\streaming_object.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\imaging\vk\vk_texture_load.h">
-      <Filter>src\imaging\vk</Filter>
+    <ClInclude Include="..\..\include\pz_asset.h">
+      <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\imaging\texture_load.h">
+    <ClInclude Include="..\..\src\imaging\mesh_asset_load.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl">
-      <Filter>src</Filter>
-    </None>
-    <None Include="..\..\src\pt_gfx_shader_mesh_vertex_vk.inl">
-      <Filter>src</Filter>
-    </None>
+    <ClInclude Include="..\..\src\imaging\mesh_asset_load_pmx.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\texture_asset_load.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\mesh.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\vk\vk_mesh.h">
+      <Filter>src\imaging\vk</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\texture.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\imaging\vk\vk_texture.h">
+      <Filter>src\imaging\vk</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

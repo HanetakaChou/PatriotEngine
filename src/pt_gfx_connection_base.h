@@ -183,13 +183,13 @@ public:
     static class gfx_connection_base *create(
         pt_gfx_wsi_connection_ref wsi_connection,
         pt_gfx_wsi_visual_ref wsi_visual,
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-        pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-        pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-        pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-        pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-        pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback);
+        pt_input_stream_init_callback cache_input_stream_init_callback,
+        pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+        pt_input_stream_read_callback cache_input_stream_read_callback,
+        pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback,
+        pt_output_stream_write_callback cache_output_stream_write_callback,
+        pt_output_stream_destroy_callback cache_output_stream_destroy_callback);
 };
 
 template <typename T, uint32_t LINEAR_LIST_COUNT>

@@ -23,7 +23,7 @@
 #include <pt_mcrt_task.h>
 #include "pt_gfx_material_base.h"
 #include "pt_gfx_connection_vk.h"
-#include "pt_gfx_texture_vk.h"
+#include "imaging/vk/vk_texture.h"
 #include "pt_gfx_frame_object_base.h"
 #include <vulkan/vulkan.h>
 

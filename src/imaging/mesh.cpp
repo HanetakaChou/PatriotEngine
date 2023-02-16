@@ -18,8 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_mcrt_atomic.h>
-#include "pt_gfx_mesh_base.h"
-#include "pt_gfx_mesh_base_load.h"
+#include "mesh.h"
 #include <assert.h>
 
 void gfx_mesh_base::destroy(class gfx_connection_base *gfx_connection)
@@ -49,9 +48,9 @@ static inline class gfx_connection_base *unwrap(pt_gfx_connection_ref gfx_connec
 static inline pt_gfx_mesh_ref wrap(class gfx_mesh_base *mesh) { return reinterpret_cast<pt_gfx_mesh_ref>(mesh); }
 static inline class gfx_mesh_base *unwrap(pt_gfx_mesh_ref mesh) { return reinterpret_cast<class gfx_mesh_base *>(mesh); }
 
-PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename, pt_gfx_input_stream_init_callback gfx_input_stream_init_callback, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback, pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback)
+PT_ATTR_GFX bool PT_CALL pt_gfx_mesh_read_input_stream(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename, pt_input_stream_init_callback input_stream_init_callback, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback, pt_input_stream_destroy_callback input_stream_destroy_callback)
 {
-    return unwrap(mesh)->load(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
+    return unwrap(mesh)->load(unwrap(gfx_connection), initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
 }
 
 PT_ATTR_GFX void PT_CALL pt_gfx_mesh_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh)

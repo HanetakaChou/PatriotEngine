@@ -19,26 +19,25 @@
 #include <string>
 #include <pt_wsi_main.h>
 #include <pt_mcrt_malloc.h>
-#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_string.h>
 #include "pt_wsi_app_base.h"
 
 static pt_wsi_app_ref PT_PTR launcher_app_init(ANativeActivity *native_activity, void *saved_state, size_t saved_state_size, pt_gfx_connection_ref gfx_connection);
 static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app);
 
-static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
-static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size);
-static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size);
-static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream);
-static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename);
-static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size);
-static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream);
+static pt_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
+static int PT_CALL cache_input_stream_stat_size_callback(pt_input_stream_ref cache_input_stream, int64_t *size);
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_input_stream_ref cache_input_stream, void *data, size_t size);
+static void PT_PTR cache_input_stream_destroy_callback(pt_input_stream_ref cache_input_stream);
+static pt_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename);
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_output_stream_ref cache_output_stream, void *data, size_t size);
+static void PT_PTR cache_output_stream_destroy_callback(pt_output_stream_ref cache_output_stream);
 
-extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
-extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
-extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
-extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+extern pt_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_input_stream_ref);
 
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
 mcrt_string g_wsi_app_linux_android_internal_data_path;
 
 extern "C" JNIEXPORT void ANativeActivity_onCreate(ANativeActivity *native_activity, void *saved_state, size_t saved_state_size)
@@ -73,7 +72,7 @@ static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app)
 #include <fcntl.h>
 #include <pt_mcrt_thread.h>
 
-static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
+static pt_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
 {
 	mcrt_string path = g_wsi_app_linux_android_internal_data_path;
 	path += '/';
@@ -81,10 +80,10 @@ static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char con
 
 	int fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
 
-	return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+	return reinterpret_cast<pt_input_stream_ref>(static_cast<intptr_t>(fd));
 }
 
-static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size)
+static int PT_CALL cache_input_stream_stat_size_callback(pt_input_stream_ref cache_input_stream, int64_t *size)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
 
@@ -102,7 +101,7 @@ static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref
 	}
 }
 
-static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size)
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_input_stream_ref cache_input_stream, void *data, size_t size)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
 
@@ -114,7 +113,7 @@ static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref 
 	return res_read;
 }
 
-static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream)
+static void PT_PTR cache_input_stream_destroy_callback(pt_input_stream_ref cache_input_stream)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_input_stream));
 
@@ -122,7 +121,7 @@ static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref c
 	assert(0 == res_close);
 }
 
-static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
+static pt_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
 {
 	mcrt_string path = g_wsi_app_linux_android_internal_data_path;
 	path += '/';
@@ -130,10 +129,10 @@ static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char co
 
 	int fd = openat(AT_FDCWD, path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
 
-	return reinterpret_cast<pt_gfx_output_stream_ref>(static_cast<intptr_t>(fd));
+	return reinterpret_cast<pt_output_stream_ref>(static_cast<intptr_t>(fd));
 }
 
-static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size)
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_output_stream_ref cache_output_stream, void *data, size_t size)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_output_stream));
 
@@ -146,7 +145,7 @@ static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_r
 	return res_write;
 }
 
-static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream)
+static void PT_PTR cache_output_stream_destroy_callback(pt_output_stream_ref cache_output_stream)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(cache_output_stream));
 
@@ -154,7 +153,7 @@ static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref
 	assert(0 == res_close);
 }
 
-pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
+pt_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
 {
 	mcrt_string path = g_wsi_app_linux_android_internal_data_path;
 	path += '/';
@@ -162,10 +161,10 @@ pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *init
 
 	int fd = openat(AT_FDCWD, path.c_str(), O_RDONLY);
 
-	return reinterpret_cast<pt_gfx_input_stream_ref>(static_cast<intptr_t>(fd));
+	return reinterpret_cast<pt_input_stream_ref>(static_cast<intptr_t>(fd));
 }
 
-intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref asset_input_stream, void *data, size_t size)
+intptr_t PT_PTR asset_input_stream_read_callback(pt_input_stream_ref asset_input_stream, void *data, size_t size)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
 
@@ -177,18 +176,18 @@ intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref asset_i
 	return res_read;
 }
 
-int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref asset_input_stream, int64_t offset, int whence)
+int64_t PT_PTR asset_input_stream_seek_callback(pt_input_stream_ref asset_input_stream, int64_t offset, int whence)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
 
-	static_assert(SEEK_SET == PT_GFX_INPUT_STREAM_SEEK_SET, "");
-	static_assert(SEEK_CUR == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
-	static_assert(SEEK_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
+	static_assert(SEEK_SET == PT_INPUT_STREAM_SEEK_SET, "");
+	static_assert(SEEK_CUR == PT_INPUT_STREAM_SEEK_CUR, "");
+	static_assert(SEEK_END == PT_INPUT_STREAM_SEEK_END, "");
 	off_t res_lseek = lseek(fd, offset, whence);
 	return res_lseek;
 }
 
-void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref asset_input_stream)
+void PT_PTR asset_input_stream_destroy_callback(pt_input_stream_ref asset_input_stream)
 {
 	int fd = static_cast<int>(reinterpret_cast<intptr_t>(asset_input_stream));
 

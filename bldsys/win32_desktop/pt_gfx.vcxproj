@@ -19,7 +19,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\imaging\mesh_asset_load.cpp" />
+    <ClCompile Include="..\..\src\imaging\mesh_asset_load_pmx.cpp" />
+    <ClCompile Include="..\..\src\imaging\mesh.cpp" />
+    <ClCompile Include="..\..\src\imaging\texture.cpp" />
+    <ClCompile Include="..\..\src\imaging\texture_asset_load.cpp" />
+    <ClCompile Include="..\..\src\imaging\texture_asset_load_dds.cpp" />
+    <ClCompile Include="..\..\src\imaging\texture_asset_load_pvr.cpp" />
     <ClCompile Include="..\..\src\imaging\streaming_object.cpp" />
+    <ClCompile Include="..\..\src\imaging\vk\vk_texture.cpp" />
+    <ClCompile Include="..\..\src\imaging\vk\vk_mesh.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_d3d12.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_connection_vk.cpp" />
@@ -30,28 +39,24 @@
     <ClCompile Include="..\..\src\pt_gfx_malloc_vma.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_material_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_material_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_base_load_pmx.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_mesh_vk.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_node_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_node_vk.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_scene_base.cpp" />
     <ClCompile Include="..\..\src\pt_gfx_scene_vk.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_streaming_object_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_dds.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_base_load_pvr.cpp" />
-    <ClCompile Include="..\..\src\pt_gfx_texture_vk.cpp" />
     <ClCompile Include="pt_dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\pt_gfx_common.h" />
     <ClInclude Include="..\..\include\pt_gfx_connection.h" />
+    <ClInclude Include="..\..\include\pz_asset.h" />
+    <ClInclude Include="..\..\src\imaging\mesh_asset_load.h" />
+    <ClInclude Include="..\..\src\imaging\mesh_asset_load_pmx.h" />
+    <ClInclude Include="..\..\src\imaging\mesh.h" />
+    <ClInclude Include="..\..\src\imaging\texture.h" />
     <ClInclude Include="..\..\src\imaging\streaming_object.h" />
-    <ClInclude Include="..\..\src\imaging\texture_load.h" />
-    <ClInclude Include="..\..\src\imaging\vk\vk_texture_load.h" />
+    <ClInclude Include="..\..\src\imaging\texture_asset_load.h" />
+    <ClInclude Include="..\..\src\imaging\vk\vk_texture.h" />
+    <ClInclude Include="..\..\src\imaging\vk\vk_mesh.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_d3d12.h" />
     <ClInclude Include="..\..\src\pt_gfx_connection_vk.h" />
@@ -60,22 +65,10 @@
     <ClInclude Include="..\..\src\pt_gfx_malloc_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_material_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_material_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_base_load_pmx.h" />
-    <ClInclude Include="..\..\src\pt_gfx_mesh_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_node_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_node_vk.h" />
     <ClInclude Include="..\..\src\pt_gfx_scene_base.h" />
     <ClInclude Include="..\..\src\pt_gfx_scene_vk.h" />
-    <ClInclude Include="..\..\src\pt_gfx_streaming_object_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_base.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_base_load.h" />
-    <ClInclude Include="..\..\src\pt_gfx_texture_vk.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\src\pt_gfx_shader_mesh_fragment_vk.inl" />
-    <None Include="..\..\src\pt_gfx_shader_mesh_vertex_vk.inl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="pt_math.vcxproj">

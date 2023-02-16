@@ -176,8 +176,8 @@ static void *app_main(void *argument);
 
 PT_ATTR_WSI int PT_CALL pt_wsi_main(
     int argc, char *argv[],
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_input_stream_init_callback cache_input_stream_init_callback, pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_input_stream_read_callback cache_input_stream_read_callback, pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback, pt_output_stream_write_callback cache_output_stream_write_callback, pt_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     @autoreleasepool

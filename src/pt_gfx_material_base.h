@@ -21,8 +21,8 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_gfx_connection.h>
-#include "pt_gfx_texture_base.h"
-#include "pt_gfx_streaming_object_base.h"
+#include "imaging/texture.h"
+#include "imaging/streaming_object.h"
 #include <assert.h>
 
 class gfx_material_base : public gfx_streaming_object_base, private gfx_frame_object_base

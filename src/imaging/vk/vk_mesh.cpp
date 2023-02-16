@@ -20,14 +20,14 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
-#include "pt_gfx_mesh_vk.h"
-#include "pt_gfx_mesh_base_load.h"
+#include "vk_mesh.h"
+#include "../mesh_asset_load.h"
 #include <assert.h>
 
 bool gfx_mesh_vk::load_header_callback(
-    pt_gfx_input_stream_ref input_stream,
-    pt_gfx_input_stream_read_callback input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_ref input_stream,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
     class gfx_connection_base *connection,
     size_t *out_memcpy_dests_size,
     size_t *out_memcpy_dests_align)
@@ -177,9 +177,9 @@ size_t gfx_mesh_vk::calculate_staging_buffer_total_size_callback(
 }
 
 bool gfx_mesh_vk::load_data_callback(
-    pt_gfx_input_stream_ref input_stream,
-    pt_gfx_input_stream_read_callback input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_ref input_stream,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
     class gfx_connection_base *connection,
     void const *void_memcpy_dests,
     uint32_t streaming_throttling_index)

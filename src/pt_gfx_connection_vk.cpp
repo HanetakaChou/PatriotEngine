@@ -20,19 +20,18 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
-#include "pt_gfx_mesh_base_load.h"
 #include <new>
 
 class gfx_connection_base *gfx_connection_vk::create(
     pt_gfx_wsi_connection_ref wsi_connection,
     pt_gfx_wsi_visual_ref wsi_visual,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     class gfx_connection_vk *connection = new (mcrt_aligned_malloc(sizeof(gfx_connection_vk), alignof(gfx_connection_vk))) gfx_connection_vk();
     if (connection->init(wsi_connection, wsi_visual, cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback))
@@ -49,13 +48,13 @@ class gfx_connection_base *gfx_connection_vk::create(
 class gfx_connection_base *gfx_connection_vk_create(
     pt_gfx_wsi_connection_ref wsi_connection,
     pt_gfx_wsi_visual_ref wsi_visual,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     return gfx_connection_vk::create(wsi_connection, wsi_visual, cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback);
 }
@@ -67,13 +66,13 @@ inline gfx_connection_vk::gfx_connection_vk()
 inline bool gfx_connection_vk::init(
     pt_gfx_wsi_connection_ref wsi_connection,
     pt_gfx_wsi_visual_ref wsi_visual,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     if (!m_device.init(wsi_connection, wsi_visual))
     {
@@ -896,13 +895,13 @@ void gfx_connection_vk::free_descriptor_set(VkDescriptorSet descriptor_set)
 }
 
 inline bool gfx_connection_vk::init_frame(
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     // Pipeline Cache
     if (!this->init_pipeline_cache_callbacks(cache_input_stream_init_callback, cache_input_stream_stat_size_callback, cache_input_stream_read_callback, cache_input_stream_destroy_callback, cache_output_stream_init_callback, cache_output_stream_write_callback, cache_output_stream_destroy_callback))
@@ -2241,9 +2240,9 @@ mcrt_task_ref gfx_connection_vk::opaque_subpass_task_execute(mcrt_task_ref self)
         // +Y up
         // +Z front
 
-        pt_math_vec3 eye_position = {{{0.0f, 3.0f, -5.0f}}};
-        pt_math_vec3 eye_direction = {{{0.0f, -0.5f, 1.0f}}};
-        pt_math_vec3 up_direction = {{{0.0f, 1.0f, 0.0}}};
+        pt_math_vec3 eye_position = {{{-1.06879699F, 21.6828518F, -28.5209179F}}};
+        pt_math_vec3 eye_direction = {{{-0.0012737799F, -0.351786017F, 0.936079681F}}};
+        pt_math_vec3 up_direction = {{{0.0F, 1.0F, 0.0F}}};
         // eye_direction = focus_position - eye_position
         // focus_position = eye_direction + eye_position
         pt_math_simd_mat mat_v = pt_math_mat_look_to_rh(pt_math_load_vec3(&eye_position), pt_math_load_vec3(&eye_direction), pt_math_load_vec3(&up_direction));
@@ -2616,18 +2615,18 @@ class gfx_texture_base *gfx_connection_vk::create_texture()
     return gfx_texture;
 }
 
-#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_allocator.h>
 #include <string>
 #include <string.h>
 
 inline bool gfx_connection_vk::init_pipeline_cache_callbacks(
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback,
-    pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
-    pt_gfx_input_stream_read_callback cache_input_stream_read_callback,
-    pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback,
-    pt_gfx_output_stream_write_callback cache_output_stream_write_callback,
-    pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback)
+    pt_input_stream_init_callback cache_input_stream_init_callback,
+    pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback,
+    pt_input_stream_read_callback cache_input_stream_read_callback,
+    pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback,
+    pt_output_stream_write_callback cache_output_stream_write_callback,
+    pt_output_stream_destroy_callback cache_output_stream_destroy_callback)
 {
     this->m_cache_input_stream_init_callback = cache_input_stream_init_callback;
     this->m_cache_input_stream_stat_size_callback = cache_input_stream_stat_size_callback;
@@ -2644,8 +2643,8 @@ inline bool gfx_connection_vk::load_pipeline_cache(char const *pipeline_cache_fi
     size_t pipeline_cache_size;
     void *pipeline_cache_data;
     {
-        pt_gfx_input_stream_ref cache_input_stream = this->m_cache_input_stream_init_callback(pipeline_cache_file_name);
-        if (pt_gfx_input_stream_ref(-1) != cache_input_stream)
+        pt_input_stream_ref cache_input_stream = this->m_cache_input_stream_init_callback(pipeline_cache_file_name);
+        if (pt_input_stream_ref(-1) != cache_input_stream)
         {
             int64_t cache_input_stream_size;
             if (0 == this->m_cache_input_stream_stat_size_callback(cache_input_stream, &cache_input_stream_size))
@@ -2720,8 +2719,8 @@ inline void gfx_connection_vk::store_pipeline_cache(char const *pipeline_cache_f
     assert(VK_NULL_HANDLE != this->m_pipeline_cache_lighting_mesh);
 
     {
-        pt_gfx_output_stream_ref cache_output_stream = this->m_cache_output_stream_init_callback(pipeline_cache_file_name);
-        if (pt_gfx_output_stream_ref(-1) != cache_output_stream)
+        pt_output_stream_ref cache_output_stream = this->m_cache_output_stream_init_callback(pipeline_cache_file_name);
+        if (pt_output_stream_ref(-1) != cache_output_stream)
         {
             size_t pipeline_cache_size_before;
             PT_MAYBE_UNUSED VkResult res_get_pipeline_cache_data_before = this->m_device.get_pipeline_cache_data(this->m_pipeline_cache_lighting_mesh, &pipeline_cache_size_before, NULL);

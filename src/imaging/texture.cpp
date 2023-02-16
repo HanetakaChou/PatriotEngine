@@ -19,8 +19,7 @@
 #include <stdint.h>
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_task.h>
-#include "pt_gfx_texture_base.h"
-#include "pt_gfx_texture_base_load.h"
+#include "texture.h"
 #include <assert.h>
 
 void gfx_texture_base::destroy(class gfx_connection_base *gfx_connection)
@@ -54,12 +53,12 @@ PT_ATTR_GFX bool PT_CALL pt_gfx_texture_read_input_stream(
     pt_gfx_connection_ref gfx_connection,
     pt_gfx_texture_ref texture,
     char const *initial_filename,
-    pt_gfx_input_stream_init_callback gfx_input_stream_init_callback,
-    pt_gfx_input_stream_read_callback gfx_input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
-    pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback)
+    pt_input_stream_init_callback input_stream_init_callback,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_destroy_callback input_stream_destroy_callback)
 {
-    return unwrap(texture)->load(unwrap(gfx_connection), initial_filename, gfx_input_stream_init_callback, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_input_stream_destroy_callback);
+    return unwrap(texture)->load(unwrap(gfx_connection), initial_filename, input_stream_init_callback, input_stream_read_callback, input_stream_seek_callback, input_stream_destroy_callback);
 }
 
 PT_ATTR_GFX void PT_CALL pt_gfx_texture_destroy(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture)

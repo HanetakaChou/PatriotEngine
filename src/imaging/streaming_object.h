@@ -63,9 +63,9 @@ private:
 
     // load - first stage
     virtual bool load_header_callback(
-        pt_gfx_input_stream_ref input_stream,
-        pt_gfx_input_stream_read_callback input_stream_read_callback,
-        pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+        pt_input_stream_ref input_stream,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
         class gfx_connection_base *connection,
         size_t *out_memcpy_dests_size,
         size_t *out_memcpy_dests_align)
@@ -83,9 +83,9 @@ private:
         return -1;
     };
     virtual bool load_data_callback(
-        pt_gfx_input_stream_ref input_stream,
-        pt_gfx_input_stream_read_callback input_stream_read_callback,
-        pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+        pt_input_stream_ref input_stream,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
         class gfx_connection_base *connection,
         void const *memcpy_dests,
         uint32_t streaming_throttling_index)
@@ -122,10 +122,10 @@ public:
     bool load(
         class gfx_connection_base *gfx_connection,
         char const *initial_filename,
-        pt_gfx_input_stream_init_callback gfx_input_stream_init_callback,
-        pt_gfx_input_stream_read_callback gfx_input_stream_read_callback,
-        pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
-        pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback);
+        pt_input_stream_init_callback input_stream_init_callback,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
+        pt_input_stream_destroy_callback input_stream_destroy_callback);
 };
 
 #endif

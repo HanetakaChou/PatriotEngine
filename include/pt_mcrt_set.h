@@ -15,13 +15,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _PT_MCRT_STRING_H_
-#define _PT_MCRT_STRING_H_ 1
+#ifndef _PT_MCRT_SET_H_
+#define _PT_MCRT_SET_H_ 1
 
 #include <pt_mcrt_allocator.h>
-#include <string>
+#include <set>
 
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt_allocator<char>>;
-using mcrt_wstring= std::basic_string<wchar_t, std::char_traits<wchar_t>, mcrt_allocator<wchar_t>>;
+template <typename Key>
+using mcrt_set = std::set<Key, std::less<Key>, mcrt_allocator<Key>>;
 
 #endif

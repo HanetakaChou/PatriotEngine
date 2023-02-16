@@ -19,8 +19,8 @@
 #include <assert.h>
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_malloc.h>
-#include "pt_gfx_texture_vk.h"
-#include "pt_gfx_texture_base_load.h"
+#include "vk_texture.h"
+#include "../texture_asset_load.h"
 #include <new>
 
 struct gfx_texture_vk_header_t
@@ -56,9 +56,9 @@ static inline uint32_t get_compressed_format_block_depth(VkFormat vk_format);
 static inline uint32_t get_compressed_format_block_size_in_bytes(VkFormat vk_format);
 
 bool gfx_texture_vk::load_header_callback(
-    pt_gfx_input_stream_ref input_stream,
-    pt_gfx_input_stream_read_callback input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_ref input_stream,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
     class gfx_connection_base *connection,
     size_t *out_memcpy_dests_size,
     size_t *out_memcpy_dests_align)
@@ -182,9 +182,9 @@ size_t gfx_texture_vk::calculate_staging_buffer_total_size_callback(
 }
 
 bool gfx_texture_vk::load_data_callback(
-    pt_gfx_input_stream_ref input_stream,
-    pt_gfx_input_stream_read_callback input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_ref input_stream,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
     class gfx_connection_base *connection,
     void const *memcpy_dests,
     uint32_t streaming_throttling_index)

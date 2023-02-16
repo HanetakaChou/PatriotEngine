@@ -17,18 +17,18 @@
 
 #include <stddef.h>
 #include <assert.h>
-#include "pt_gfx_texture_base_load.h"
 #include <algorithm>
+#include "texture_asset_load.h"
 
 extern bool load_dds_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 extern bool load_dds_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 //--------------------------------------------------------------------------------------
 // Macros
@@ -295,12 +295,12 @@ struct internal_dds_header_t
 
 static inline bool internal_load_dds_header_from_input_stream(
     struct internal_dds_header_t *internal_dds_header, size_t *dds_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
     assert(internal_dds_header != NULL);
     assert(dds_data_offset != NULL);
 
-    if (gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    if (input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_SET) == -1)
     {
         return false;
     }
@@ -308,7 +308,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     uint8_t ddsDataBuf[sizeof(uint32_t) + sizeof(struct DDS_HEADER) + sizeof(struct DDS_HEADER_DXT10)];
     uint8_t const *ddsData = ddsDataBuf;
     {
-        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
+        ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, ddsDataBuf, sizeof(uint32_t) + sizeof(struct DDS_HEADER));
         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (sizeof(uint32_t) + sizeof(struct DDS_HEADER)))
         {
             return false;
@@ -334,7 +334,7 @@ static inline bool internal_load_dds_header_from_input_stream(
     if ((header->ddspf.dwFlags & DDPF_FOURCC) && (DDS_MAKEFOURCC('D', 'X', '1', '0') == header->ddspf.dwFourCC))
     {
         // Must be long enough for both headers and magic value
-        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
+        ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, ddsDataBuf + (sizeof(uint32_t) + sizeof(struct DDS_HEADER)), sizeof(struct DDS_HEADER_DXT10));
         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < sizeof(struct DDS_HEADER_DXT10))
         {
             return false;
@@ -456,7 +456,7 @@ static inline bool internal_load_dds_header_from_input_stream(
 
 bool load_dds_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
 
     assert(neutral_header != NULL);
@@ -464,7 +464,7 @@ bool load_dds_header_from_input_stream(
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
-    if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
+    if (internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         neutral_header->type = dds_get_common_type(internal_dds_header.resDim);
         assert(PT_GFX_TEXTURE_NEUTRAL_TYPE_UNDEFINED != neutral_header->type);
@@ -493,12 +493,12 @@ bool load_dds_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     uint8_t *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback)
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
 
     struct internal_dds_header_t internal_dds_header;
     size_t dds_data_offset;
-    if (!internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback))
+    if (!internal_load_dds_header_from_input_stream(&internal_dds_header, &dds_data_offset, gfx_input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
     }
@@ -515,7 +515,7 @@ bool load_dds_data_from_input_stream(
     );
     assert(dds_data_offset == (*common_data_offset_for_validate));
 
-    //if (gfx_input_stream_seek_callback(gfx_input_stream, dds_data_offset, PT_GFX_INPUT_STREAM_SEEK_SET) == -1)
+    //if (input_stream_seek_callback(gfx_input_stream, dds_data_offset, PT_INPUT_STREAM_SEEK_SET) == -1)
     //{
     //    return false;
     //}
@@ -643,10 +643,10 @@ bool load_dds_data_from_input_stream(
                 {
                     {
                         PT_MAYBE_UNUSED int64_t offset_cur;
-                        assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                        assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                     }
 
-                    ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + memcpy_dest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
+                    ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + memcpy_dest[dstSubresource].staging_offset, inputSliceSize * inputNumSlices);
                     if (BytesRead == -1 || static_cast<size_t>(BytesRead) < (inputSliceSize * inputNumSlices))
                     {
                         return false;
@@ -660,10 +660,10 @@ bool load_dds_data_from_input_stream(
                     {
                         {
                             PT_MAYBE_UNUSED int64_t offset_cur;
-                            assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                            assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                         }
 
-                        ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z), inputSliceSize);
+                        ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z), inputSliceSize);
                         if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputSliceSize)
                         {
                             return false;
@@ -681,10 +681,10 @@ bool load_dds_data_from_input_stream(
                         {
                             {
                                 PT_MAYBE_UNUSED int64_t offset_cur;
-                                assert((offset_cur = gfx_input_stream_seek_callback(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR)) && (gfx_input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_GFX_INPUT_STREAM_SEEK_SET) == offset_cur));
+                                assert((offset_cur = input_stream_seek_callback(gfx_input_stream, 0, PT_INPUT_STREAM_SEEK_CUR)) && (input_stream_seek_callback(gfx_input_stream, inputSkipBytes + inputSliceSize * z + inputRowSize * y, PT_INPUT_STREAM_SEEK_SET) == offset_cur));
                             }
 
-                            ptrdiff_t BytesRead = gfx_input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z + memcpy_dest[dstSubresource].output_row_pitch * y), inputRowSize);
+                            ptrdiff_t BytesRead = input_stream_read_callback(gfx_input_stream, staging_pointer + (memcpy_dest[dstSubresource].staging_offset + memcpy_dest[dstSubresource].output_slice_pitch * z + memcpy_dest[dstSubresource].output_row_pitch * y), inputRowSize);
                             if (BytesRead == -1 || static_cast<size_t>(BytesRead) < inputRowSize)
                             {
                                 return false;
@@ -715,7 +715,7 @@ bool load_dds_data_from_input_stream(
     }
 
     PT_MAYBE_UNUSED uint8_t u_assert_only[1];
-    assert(0 == gfx_input_stream_read_callback(gfx_input_stream, u_assert_only, sizeof(uint8_t)));
+    assert(0 == input_stream_read_callback(gfx_input_stream, u_assert_only, sizeof(uint8_t)));
     return true;
 }
 

@@ -517,8 +517,8 @@
 		52E2984E27DFA5AA007861B2 /* ../../third_party/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = ../../third_party/intel_tbb/lib/mach_ios/libpt_tbb_catalyst.a; sourceTree = "<group>"; };
 		52E2984F27DFA625007861B2 /* pt_gfx_mesh_base_load.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_mesh_base_load.cpp; path = ../../src/pt_gfx_mesh_base_load.cpp; sourceTree = "<group>"; };
 		52E2985227DFA631007861B2 /* pt_gfx_mesh_base_load_pmx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_gfx_mesh_base_load_pmx.cpp; path = ../../src/pt_gfx_mesh_base_load_pmx.cpp; sourceTree = "<group>"; };
-		52E2985527DFA639007861B2 /* pt_gfx_mesh_base_load_pmx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_base_load_pmx.h; path = ../../src/pt_gfx_mesh_base_load_pmx.h; sourceTree = "<group>"; };
-		52E2985727DFA642007861B2 /* pt_gfx_mesh_base_load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = pt_gfx_mesh_base_load.h; path = ../../src/pt_gfx_mesh_base_load.h; sourceTree = "<group>"; };
+		52E2985527DFA639007861B2 /* mesh_asset_load_pmx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_asset_load_pmx.h; path = ../../src/mesh_asset_load_pmx.h; sourceTree = "<group>"; };
+		52E2985727DFA642007861B2 /* mesh_asset_load.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = mesh_asset_load.h; path = ../../src/mesh_asset_load.h; sourceTree = "<group>"; };
 		620D767C26DB728E001E7BD0 /* pt_wsi_app_mach_ios.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = pt_wsi_app_mach_ios.m; path = ../../samples/launcher/pt_wsi_app_mach_ios.m; sourceTree = "<group>"; };
 		620D767F26DB72A1001E7BD0 /* pt_wsi_app_mach_ios.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = pt_wsi_app_mach_ios.cpp; path = ../../samples/launcher/pt_wsi_app_mach_ios.cpp; sourceTree = "<group>"; };
 		620D768226DB7AB7001E7BD0 /* ios.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ios.entitlements; sourceTree = "<group>"; };
@@ -982,9 +982,9 @@
 				629186D826D848A7007A708F /* pt_gfx_material_vk.cpp */,
 				629186C226D847D8007A708F /* pt_gfx_mesh_base.h */,
 				629186C026D847C5007A708F /* pt_gfx_mesh_base.cpp */,
-				52E2985727DFA642007861B2 /* pt_gfx_mesh_base_load.h */,
+				52E2985727DFA642007861B2 /* mesh_asset_load.h */,
 				52E2984F27DFA625007861B2 /* pt_gfx_mesh_base_load.cpp */,
-				52E2985527DFA639007861B2 /* pt_gfx_mesh_base_load_pmx.h */,
+				52E2985527DFA639007861B2 /* mesh_asset_load_pmx.h */,
 				52E2985227DFA631007861B2 /* pt_gfx_mesh_base_load_pmx.cpp */,
 				629186C426D847E1007A708F /* pt_gfx_mesh_vk.h */,
 				629186C526D847E1007A708F /* pt_gfx_mesh_vk.cpp */,

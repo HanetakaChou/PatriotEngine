@@ -82,13 +82,13 @@ class wsi_win32_desktop
     struct draw_main_argument_t
     {
         class wsi_win32_desktop *m_instance;
-        pt_gfx_input_stream_init_callback m_cache_input_stream_init_callback;
-        pt_gfx_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
-        pt_gfx_input_stream_read_callback m_cache_input_stream_read_callback;
-        pt_gfx_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
-        pt_gfx_output_stream_init_callback m_cache_output_stream_init_callback;
-        pt_gfx_output_stream_write_callback m_cache_output_stream_write_callback;
-        pt_gfx_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
+        pt_input_stream_init_callback m_cache_input_stream_init_callback;
+        pt_input_stream_stat_size_callback m_cache_input_stream_stat_size_callback;
+        pt_input_stream_read_callback m_cache_input_stream_read_callback;
+        pt_input_stream_destroy_callback m_cache_input_stream_destroy_callback;
+        pt_output_stream_init_callback m_cache_output_stream_init_callback;
+        pt_output_stream_write_callback m_cache_output_stream_write_callback;
+        pt_output_stream_destroy_callback m_cache_output_stream_destroy_callback;
     };
     pt_gfx_connection_ref m_gfx_connection;
     bool m_draw_main_running;
@@ -111,8 +111,8 @@ class wsi_win32_desktop
 public:
     inline void init(
         int argc, char *argv[], int cmd_show,
-        pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-        pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+        pt_input_stream_init_callback cache_input_stream_init_callback, pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_input_stream_read_callback cache_input_stream_read_callback, pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+        pt_output_stream_init_callback cache_output_stream_init_callback, pt_output_stream_write_callback cache_output_stream_write_callback, pt_output_stream_destroy_callback cache_output_stream_destroy_callback,
         pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback);
     inline int main();
     inline LRESULT CALLBACK wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -122,8 +122,8 @@ static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInC
 
 PT_ATTR_WSI int PT_CALL pt_wsi_main(
     wchar_t *wide_cmd_line, int cmd_show,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_input_stream_init_callback cache_input_stream_init_callback, pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_input_stream_read_callback cache_input_stream_read_callback, pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback, pt_output_stream_write_callback cache_output_stream_write_callback, pt_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     wsi_win32_desktop instance;
@@ -193,8 +193,8 @@ static LRESULT CALLBACK __internal_wnd_proc(HWND hWnd, UINT uMsg, WPARAM wParam,
 
 inline void wsi_win32_desktop::init(
     int argc, char *argv[], int cmd_show,
-    pt_gfx_input_stream_init_callback cache_input_stream_init_callback, pt_gfx_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_gfx_input_stream_read_callback cache_input_stream_read_callback, pt_gfx_input_stream_destroy_callback cache_input_stream_destroy_callback,
-    pt_gfx_output_stream_init_callback cache_output_stream_init_callback, pt_gfx_output_stream_write_callback cache_output_stream_write_callback, pt_gfx_output_stream_destroy_callback cache_output_stream_destroy_callback,
+    pt_input_stream_init_callback cache_input_stream_init_callback, pt_input_stream_stat_size_callback cache_input_stream_stat_size_callback, pt_input_stream_read_callback cache_input_stream_read_callback, pt_input_stream_destroy_callback cache_input_stream_destroy_callback,
+    pt_output_stream_init_callback cache_output_stream_init_callback, pt_output_stream_write_callback cache_output_stream_write_callback, pt_output_stream_destroy_callback cache_output_stream_destroy_callback,
     pt_wsi_app_init_callback app_init_callback, pt_wsi_app_main_callback app_main_callback)
 {
     HINSTANCE instance_this_component = reinterpret_cast<HINSTANCE>(&__ImageBase);

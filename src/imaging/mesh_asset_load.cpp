@@ -18,14 +18,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
-#include "pt_gfx_mesh_base_load.h"
-#include "pt_gfx_mesh_base_load_pmx.h"
+#include "mesh_asset_load.h"
+#include "mesh_asset_load_pmx.h"
 
 extern bool mesh_load_header_from_input_stream(
     struct mesh_asset_header_t *out_mesh_asset_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -52,9 +52,9 @@ extern bool mesh_load_header_from_input_stream(
 
 extern bool mesh_load_primitive_headers_from_input_stream(
     struct mesh_asset_header_t const *mesh_asset_header_for_validate, struct mesh_primitive_asset_header_t *out_mesh_primitive_asset_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -85,9 +85,9 @@ extern bool mesh_load_primitive_data_from_input_stream(
     struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate,
     void *staging_pointer,
     struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }

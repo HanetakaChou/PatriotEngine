@@ -15,71 +15,32 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <stddef.h>
-#include <stdint.h>
+#include "material_asset_load_pmx.h"
 #include <assert.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include "pt_gfx_mesh_base_load.h"
-#include "pt_gfx_mesh_base_load_pmx.h"
-#include <pt_mcrt_memcpy.h>
 
-#include <vector>
-#include <string>
-#include <set>
-#include <map>
+//--------------------------------------------------------------------------------------
+// This is an English description of the .PMX file format used in Miku Miku Dance (MMD)
+//
+// https://gist.github.com/felixjones/f8a06bd48f9da9a4539f
+//--------------------------------------------------------------------------------------
 
-template <typename T>
-using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+// [Model::load](https://github.com/sugiany/blender_mmd_tools/blob/master/mmd_tools/core/pmx/__init__.py)
+// [ReadPMXFile](https://github.com/benikabocha/saba/blob/master/src/Saba/Model/MMD/PMXFile.cpp)
 
-using mcrt_string = std::basic_string<char, std::char_traits<char>, mcrt::scalable_allocator<char>>;
-
-template <typename Key>
-using mcrt_set = std::set<Key, std::less<Key>, mcrt::scalable_allocator<Key>>;
-
-template <typename Key, typename T>
-using mcrt_map = std::map<Key, T, std::less<Key>, mcrt::scalable_allocator<std::pair<const Key, T>>>;
-
-struct mesh_asset_pmx_header_t
+enum
 {
-    bool is_text_encoding_utf8;
-    uint32_t additional_vec4_count;
-    uint32_t bone_index_size;
-    uint32_t vertex_index_size;
-    uint32_t texture_index_size;
-    uint32_t vertex_count;
-    uint32_t surface_count;
-    uint32_t texture_count;
-    uint32_t material_count;
-    int64_t vertex_section_offset;
-    int64_t surface_section_offset;
-    int64_t texture_section_offset;
-    int64_t material_section_offset;
+    PMX_HEADER_SIGNATURE = 0X20584d50, //'P''M''X'' '
 };
 
 static bool inline internal_load_pmx_header_from_input_stream(
-    struct mesh_asset_pmx_header_t *out_mesh_asset_pmx_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
-
-extern bool mesh_load_pmx_header_from_input_stream(
-    struct mesh_asset_header_t *out_mesh_asset_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
-{
-    struct mesh_asset_pmx_header_t mesh_asset_pmx_header;
-    if (!internal_load_pmx_header_from_input_stream(&mesh_asset_pmx_header, input_stream, input_stream_read_callback, input_stream_seek_callback))
-    {
-        return false;
-    }
-
-    out_mesh_asset_header->is_skined = true;
-    out_mesh_asset_header->primitive_count = mesh_asset_pmx_header.material_count;
-    return true;
-}
+    struct material_asset_pmx_header *out_mateiral_asset_pmx_header,
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 static bool inline internal_load_pmx_header_from_input_stream(
-    struct mesh_asset_pmx_header_t *out_mesh_asset_pmx_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
+    struct material_asset_pmx_header *out_mateiral_asset_pmx_header,
+    pt_input_stream_ref input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -107,7 +68,7 @@ static bool inline internal_load_pmx_header_from_input_stream(
         }
     }
 
-    assert(2.0f == header_version || 2.1f == header_version);
+    assert(2.0F == header_version || 2.1F == header_version);
 
     int8_t header_globals_count;
     {
@@ -138,18 +99,17 @@ static bool inline internal_load_pmx_header_from_input_stream(
     {
         // model name local
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf8;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf8, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf8)
                 {
                     return false;
                 }
             }
-
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf8)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf8, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -158,18 +118,17 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // model name universal
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf8;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf8, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf8)
                 {
                     return false;
                 }
             }
-
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf8)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf8, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -178,18 +137,17 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // comments local
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf8;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf8, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf8)
                 {
                     return false;
                 }
             }
-
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf8)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf8, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -198,18 +156,17 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // comments universal
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf8;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf8, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf8)
                 {
                     return false;
                 }
             }
-
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf8)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf8, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -220,23 +177,23 @@ static bool inline internal_load_pmx_header_from_input_stream(
     {
         // model name local
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf16;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf16, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf16)
                 {
                     return false;
                 }
             }
 
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf16)
             {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
+                if (0 != (text_byte_count_utf16 % sizeof(uint16_t)))
                 {
                     return false;
                 }
 
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf16, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -245,23 +202,23 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // model name universal
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf16;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf16, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf16)
                 {
                     return false;
                 }
             }
 
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf16)
             {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
+                if (0 != (text_byte_count_utf16 % sizeof(uint16_t)))
                 {
                     return false;
                 }
 
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf16, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -270,23 +227,23 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // comments local
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf16;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf16, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf16)
                 {
                     return false;
                 }
             }
 
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf16)
             {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
+                if (0 != (text_byte_count_utf16 % sizeof(uint16_t)))
                 {
                     return false;
                 }
 
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf16, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -295,23 +252,23 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
         // comments universal
         {
-            int32_t text_byte_count;
+            int32_t text_byte_count_utf16;
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
+                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count_utf16, sizeof(int32_t));
+                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count_utf16)
                 {
                     return false;
                 }
             }
 
-            if (0 != text_byte_count)
+            if (0 != text_byte_count_utf16)
             {
-                if (0 != (text_byte_count % sizeof(uint16_t)))
+                if (0 != (text_byte_count_utf16 % sizeof(uint16_t)))
                 {
                     return false;
                 }
 
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count_utf16, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -353,7 +310,7 @@ static bool inline internal_load_pmx_header_from_input_stream(
     uint32_t texture_index_size = header_globals[3];
 
     // vertex section
-    int64_t vertex_section_offset = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR);
+    int64_t vertex_section_offset = input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_CUR);
     if (-1 == vertex_section_offset)
     {
         return false;
@@ -379,7 +336,7 @@ static bool inline internal_load_pmx_header_from_input_stream(
         // normal
         // uv
         // additional vec4
-        if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 3U + sizeof(float) * 3U + sizeof(float) * 2U + sizeof(float) * 4U * additional_vec4_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 3U + sizeof(float) * 3U + sizeof(float) * 2U + sizeof(float) * 4U * additional_vec4_count, PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
@@ -431,20 +388,20 @@ static bool inline internal_load_pmx_header_from_input_stream(
             return false;
         }
 
-        if (-1 == input_stream_seek_callback(input_stream, weight_deform_size, PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, weight_deform_size, PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
 
         // Edge scale
-        if (-1 == input_stream_seek_callback(input_stream, sizeof(float), PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, sizeof(float), PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
     }
 
     // surface section
-    int64_t surface_section_offset = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR);
+    int64_t surface_section_offset = input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_CUR);
     if (-1 == surface_section_offset)
     {
         return false;
@@ -464,13 +421,13 @@ static bool inline internal_load_pmx_header_from_input_stream(
         surface_count = surface_count_signed;
     }
 
-    if (-1 == input_stream_seek_callback(input_stream, vertex_index_size * surface_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+    if (-1 == input_stream_seek_callback(input_stream, vertex_index_size * surface_count, PT_INPUT_STREAM_SEEK_CUR))
     {
         return false;
     }
 
     // texture section
-    int64_t texture_section_offset = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR);
+    int64_t texture_section_offset = input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_CUR);
     // [int] texture count | textures
     int32_t texture_count;
     {
@@ -487,17 +444,15 @@ static bool inline internal_load_pmx_header_from_input_stream(
         if (is_text_encoding_utf8)
         {
             int32_t text_byte_count;
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -514,7 +469,7 @@ static bool inline internal_load_pmx_header_from_input_stream(
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -523,7 +478,7 @@ static bool inline internal_load_pmx_header_from_input_stream(
     }
 
     // material section
-    int64_t material_section_offset = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR);
+    int64_t material_section_offset = input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_CUR);
     if (-1 == material_section_offset)
     {
         return false;
@@ -539,408 +494,37 @@ static bool inline internal_load_pmx_header_from_input_stream(
         }
     }
 
-    out_mesh_asset_pmx_header->is_text_encoding_utf8 = is_text_encoding_utf8;
-    out_mesh_asset_pmx_header->additional_vec4_count = additional_vec4_count;
-    out_mesh_asset_pmx_header->bone_index_size = bone_index_size;
-    out_mesh_asset_pmx_header->vertex_index_size = vertex_index_size;
-    out_mesh_asset_pmx_header->texture_index_size = texture_index_size;
-    out_mesh_asset_pmx_header->vertex_count = vertex_count;
-    out_mesh_asset_pmx_header->surface_count = surface_count;
-    out_mesh_asset_pmx_header->texture_count = texture_count;
-    out_mesh_asset_pmx_header->material_count = material_count;
-    out_mesh_asset_pmx_header->vertex_section_offset = vertex_section_offset;
-    out_mesh_asset_pmx_header->surface_section_offset = surface_section_offset;
-    out_mesh_asset_pmx_header->texture_section_offset = texture_section_offset;
-    out_mesh_asset_pmx_header->material_section_offset = material_section_offset;
+    out_internal_header->is_text_encoding_utf8 = is_text_encoding_utf8;
+    out_internal_header->additional_vec4_count = additional_vec4_count;
+    out_internal_header->bone_index_size = bone_index_size;
+    out_internal_header->vertex_index_size = vertex_index_size;
+    out_internal_header->texture_index_size = texture_index_size;
+    out_internal_header->vertex_count = vertex_count;
+    out_internal_header->surface_count = surface_count;
+    out_internal_header->texture_count = texture_count;
+    out_internal_header->material_count = material_count;
+    out_internal_header->vertex_section_offset = vertex_section_offset;
+    out_internal_header->surface_section_offset = surface_section_offset;
+    out_internal_header->texture_section_offset = texture_section_offset;
+    out_internal_header->material_section_offset = material_section_offset;
 
     return true;
 }
 
-extern bool mesh_load_pmx_primitive_headers_from_input_stream(
-    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
-    struct mesh_primitive_asset_header_t *out_mesh_primitive_asset_header,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
+extern bool mesh_load_pmx_primitive_data_from_input_stream(struct mesh_asset_header_t const *mesh_asset_header_for_validate, struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate, void *staging_pointer, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests, pt_input_stream_ref input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks, char **out_material_texture_path, size_t *out_material_texture_size)
 {
-    struct mesh_asset_pmx_header_t mesh_asset_pmx_header;
-    if (!internal_load_pmx_header_from_input_stream(&mesh_asset_pmx_header, input_stream, input_stream_read_callback, input_stream_seek_callback))
+    struct mesh_internal_pmx_header_t internal_header;
+    if (!internal_load_pmx_header_from_input_stream(&internal_header, input_stream, gfx_input_stream_callbacks))
     {
         return false;
     }
 
     // validate neutral header
     assert(mesh_asset_header_for_validate->is_skined == true);
-    assert(mesh_asset_header_for_validate->primitive_count == mesh_asset_pmx_header.material_count);
-
-    // surface section
-    if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.surface_section_offset, PT_GFX_INPUT_STREAM_SEEK_SET))
-    {
-        return false;
-    }
-
-    uint32_t surface_count;
-    {
-        int32_t surface_count_signed;
-        intptr_t res_read = input_stream_read_callback(input_stream, &surface_count_signed, sizeof(int32_t));
-        if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > surface_count_signed)
-        {
-            return false;
-        }
-
-        surface_count = surface_count_signed;
-    }
-
-    // validate internal header
-    assert(mesh_asset_pmx_header.surface_count == surface_count);
-
-    mcrt_vector<uint32_t> mesh_vertex_indices(static_cast<size_t>(surface_count));
-    {
-        switch (mesh_asset_pmx_header.vertex_index_size)
-        {
-        case 1:
-        {
-            uint8_t *surface_data_uint8 = static_cast<uint8_t *>(mcrt_aligned_malloc(sizeof(uint8_t) * static_cast<size_t>(surface_count), alignof(uint8_t)));
-
-            intptr_t res_read = input_stream_read_callback(input_stream, surface_data_uint8, sizeof(uint8_t) * static_cast<size_t>(surface_count));
-            if (res_read == -1 || (sizeof(uint8_t) * static_cast<size_t>(surface_count)) != static_cast<size_t>(res_read))
-            {
-                mcrt_aligned_free(surface_data_uint8);
-                return false;
-            }
-
-            for (uint32_t surface_index = 0U; surface_index < surface_count; ++surface_index)
-            {
-                mesh_vertex_indices[surface_index] = surface_data_uint8[surface_index];
-            }
-
-            mcrt_aligned_free(surface_data_uint8);
-        }
-        break;
-        case 2:
-        {
-            uint16_t *surface_data_uint16 = static_cast<uint16_t *>(mcrt_aligned_malloc(sizeof(uint16_t) * static_cast<size_t>(surface_count), alignof(uint16_t)));
-
-            intptr_t res_read = input_stream_read_callback(input_stream, surface_data_uint16, sizeof(uint16_t) * static_cast<size_t>(surface_count));
-            if (res_read == -1 || (sizeof(uint16_t) * static_cast<size_t>(surface_count)) != static_cast<size_t>(res_read))
-            {
-                mcrt_aligned_free(surface_data_uint16);
-                return false;
-            }
-
-            for (uint32_t surface_index = 0U; surface_index < surface_count; ++surface_index)
-            {
-                mesh_vertex_indices[surface_index] = surface_data_uint16[surface_index];
-            }
-
-            mcrt_aligned_free(surface_data_uint16);
-        }
-        break;
-        case 4:
-        {
-            int32_t *surface_data_int32 = static_cast<int32_t *>(mcrt_aligned_malloc(sizeof(int32_t) * static_cast<size_t>(surface_count), alignof(int32_t)));
-
-            intptr_t res_read = input_stream_read_callback(input_stream, surface_data_int32, sizeof(int32_t) * static_cast<size_t>(surface_count));
-            if (res_read == -1 || (sizeof(int32_t) * static_cast<size_t>(surface_count)) != static_cast<size_t>(res_read))
-            {
-                mcrt_aligned_free(surface_data_int32);
-                return false;
-            }
-
-            for (uint32_t surface_index = 0U; surface_index < surface_count; ++surface_index)
-            {
-                int32_t vertex_index_signed = surface_data_int32[surface_index];
-                if (0 > vertex_index_signed)
-                {
-                    mcrt_aligned_free(surface_data_int32);
-                    return false;
-                }
-                mesh_vertex_indices[surface_index] = vertex_index_signed;
-            }
-
-            mcrt_aligned_free(surface_data_int32);
-        }
-        break;
-        default:
-        {
-            return false;
-        }
-        }
-    }
-
-    // material section
-    if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.material_section_offset, PT_GFX_INPUT_STREAM_SEEK_SET))
-    {
-        return false;
-    }
-
-    uint32_t material_count;
-    {
-        int32_t material_count_signed;
-        intptr_t res_read = input_stream_read_callback(input_stream, &material_count_signed, sizeof(int32_t));
-        if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > material_count_signed)
-        {
-            return false;
-        }
-
-        material_count = material_count_signed;
-    }
-
-    // validate internal header
-    assert(mesh_asset_pmx_header.material_count = material_count);
-
-    // It is based on the offset of the previous material through to the size of the current material.
-    // If you add up all the surface counts for all materials you should end up with the total number of surfaces.
-    uint32_t material_total_surface_count = 0U;
-
-    for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
-    {
-        // material name local
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        // material name universal
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        if (-1 == input_stream_seek_callback(
-                      input_stream,
-                      // diffuse colour
-                      sizeof(float) * 4U
-                          // specular colour
-                          + sizeof(float) * 3U
-                          // specular strength
-                          + sizeof(float)
-                          // ambient colour
-                          + sizeof(float) * 3U
-                          // drawing flags
-                          + sizeof(int8_t)
-                          // edge colour
-                          + sizeof(float) * 4U
-                          // edge scale
-                          + sizeof(float)
-                          // texture index
-                          + mesh_asset_pmx_header.texture_index_size
-                          // environment index
-                          + mesh_asset_pmx_header.texture_index_size
-                          // environment blend mode
-                          + sizeof(int8_t),
-                      PT_GFX_INPUT_STREAM_SEEK_CUR))
-        {
-            return false;
-        }
-
-        int8_t toon_reference;
-        {
-            intptr_t res_read = input_stream_read_callback(input_stream, &toon_reference, sizeof(int8_t));
-            if (res_read == -1 || sizeof(int8_t) != static_cast<size_t>(res_read))
-            {
-                return false;
-            }
-        }
-
-        // toon value
-        switch (toon_reference)
-        {
-        case 0:
-        {
-            // texture reference
-            if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.texture_index_size, PT_GFX_INPUT_STREAM_SEEK_CUR))
-            {
-                return false;
-            }
-        }
-        break;
-        case 1:
-        {
-            // internal reference
-            if (-1 == input_stream_seek_callback(input_stream, sizeof(int8_t), PT_GFX_INPUT_STREAM_SEEK_CUR))
-            {
-                return false;
-            }
-        }
-        break;
-        default:
-        {
-            return false;
-        }
-        }
-
-        // meta data
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
-        {
-            int32_t text_byte_count;
-            {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int32_t text_byte_count;
-            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count || (0 != (text_byte_count % sizeof(uint16_t))))
-            {
-                return false;
-            }
-
-            if (0 != text_byte_count)
-            {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
-                {
-                    return false;
-                }
-            }
-        }
-
-        uint32_t material_surface_count;
-        {
-            int32_t material_surface_count_signed;
-            intptr_t res_read = input_stream_read_callback(input_stream, &material_surface_count_signed, sizeof(int32_t));
-            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > material_surface_count_signed || 0 != (material_surface_count_signed % 3))
-            {
-                return false;
-            }
-
-            material_surface_count = material_surface_count_signed;
-        }
-
-        // IDVS
-        // according to Mali GPU Best Practices
-        // we should split the vertex buffer and create a tightly packed vertex buffer for each primitive to improving cache hitting
-
-        mcrt_set<uint32_t> material_mesh_vertex_indices;
-        for (uint32_t material_surface_index = 0; material_surface_index < material_surface_count; ++material_surface_index)
-        {
-            // https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
-
-            uint32_t mesh_vertex_index = mesh_vertex_indices[material_total_surface_count + material_surface_index];
-
-            material_mesh_vertex_indices.insert(mesh_vertex_index);
-        }
-
-        material_total_surface_count += material_surface_count;
-
-        out_mesh_primitive_asset_header[material_index].vertex_count = static_cast<uint32_t>(material_mesh_vertex_indices.size());
-        out_mesh_primitive_asset_header[material_index].index_count = material_surface_count;
-
-        if (0XFFFFFFFFU > static_cast<uint32_t>(material_mesh_vertex_indices.size()))
-        {
-            out_mesh_primitive_asset_header[material_index].is_index_type_uint16 = true;
-        }
-        else
-        {
-            // validate internal header
-            assert(mesh_asset_pmx_header.vertex_index_size != 1 && mesh_asset_pmx_header.vertex_index_size != 2);
-
-            out_mesh_primitive_asset_header[material_index].is_index_type_uint16 = false;
-        }
-    }
-
-    assert(surface_count == material_total_surface_count);
-
-    return true;
-}
-
-static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft);
-
-extern bool mesh_load_pmx_primitive_data_from_input_stream(
-    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
-    struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate,
-    void *staging_pointer,
-    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests,
-    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-    char **out_material_texture_path, size_t *out_material_texture_size)
-{
-    struct mesh_asset_pmx_header_t mesh_asset_pmx_header;
-    if (!internal_load_pmx_header_from_input_stream(&mesh_asset_pmx_header, input_stream, input_stream_read_callback, input_stream_seek_callback))
-    {
-        return false;
-    }
-
-    // validate neutral header
-    assert(mesh_asset_header_for_validate->is_skined == true);
-    assert(mesh_asset_header_for_validate->primitive_count == mesh_asset_pmx_header.material_count);
+    assert(mesh_asset_header_for_validate->primitive_count == internal_header.material_count);
 
     // vertex section
-    if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.vertex_section_offset, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, internal_header.vertex_section_offset, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -960,7 +544,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // validate internal header
-    assert(mesh_asset_pmx_header.vertex_count = vertex_count);
+    assert(internal_header.vertex_count = vertex_count);
 
     mcrt_vector<pt_math_vec3> vertices_positions(static_cast<size_t>(vertex_count));
     mcrt_vector<pt_math_vec3> vertices_normals(static_cast<size_t>(vertex_count));
@@ -996,7 +580,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         vertices_uvs[vertex_index] = vertex_uv;
 
         // additional vec4
-        if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 4U * mesh_asset_pmx_header.additional_vec4_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 4U * internal_header.additional_vec4_count, PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
@@ -1017,51 +601,51 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         case 0:
         {
             // BDEF 1
-            weight_deform_size = mesh_asset_pmx_header.bone_index_size;
+            weight_deform_size = internal_header.bone_index_size;
         }
         break;
         case 1:
         {
             // BDEF 2
-            weight_deform_size = (mesh_asset_pmx_header.bone_index_size * 2U + sizeof(float));
+            weight_deform_size = (internal_header.bone_index_size * 2U + sizeof(float));
         }
         break;
         case 2:
         {
             // BDEF4
-            weight_deform_size = (mesh_asset_pmx_header.bone_index_size * 4U + sizeof(float) * 4U);
+            weight_deform_size = (internal_header.bone_index_size * 4U + sizeof(float) * 4U);
         }
         break;
         case 3:
         {
             // SDEF
-            weight_deform_size = (mesh_asset_pmx_header.bone_index_size * 2U + sizeof(float) + sizeof(float) * 3U + sizeof(float) * 3U + sizeof(float) * 3U);
+            weight_deform_size = (internal_header.bone_index_size * 2U + sizeof(float) + sizeof(float) * 3U + sizeof(float) * 3U + sizeof(float) * 3U);
         }
         break;
         case 4:
         {
             // QDEF
-            weight_deform_size = (mesh_asset_pmx_header.bone_index_size * 4U + sizeof(float) * 4U);
+            weight_deform_size = (internal_header.bone_index_size * 4U + sizeof(float) * 4U);
         }
         break;
         default:
             return false;
         }
 
-        if (-1 == input_stream_seek_callback(input_stream, weight_deform_size, PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, weight_deform_size, PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
 
         // Edge scale
-        if (-1 == input_stream_seek_callback(input_stream, sizeof(float), PT_GFX_INPUT_STREAM_SEEK_CUR))
+        if (-1 == input_stream_seek_callback(input_stream, sizeof(float), PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
     }
 
     // surface section
-    int64_t surface_section_offset = input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_CUR);
+    int64_t surface_section_offset = input_stream_seek_callback(input_stream, 0, PT_INPUT_STREAM_SEEK_CUR);
     if (-1 == surface_section_offset)
     {
         return false;
@@ -1082,11 +666,11 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // validate internal header
-    assert(mesh_asset_pmx_header.surface_count == surface_count);
+    assert(internal_header.surface_count == surface_count);
 
     mcrt_vector<uint32_t> mesh_vertex_indices(static_cast<size_t>(surface_count));
     {
-        switch (mesh_asset_pmx_header.vertex_index_size)
+        switch (internal_header.vertex_index_size)
         {
         case 1:
         {
@@ -1159,7 +743,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // texture section
-    if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.texture_section_offset, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, internal_header.texture_section_offset, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -1174,14 +758,14 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // validate internal header
-    assert(mesh_asset_pmx_header.texture_count == texture_count);
+    assert(internal_header.texture_count == texture_count);
 
     mcrt_vector<mcrt_vector<uint8_t>> mesh_texture_paths(static_cast<size_t>(texture_count));
     {
         for (int32_t texture_index = 0; texture_index < texture_count; ++texture_index)
         {
             // path
-            if (mesh_asset_pmx_header.is_text_encoding_utf8)
+            if (internal_header.is_text_encoding_utf8)
             {
                 int32_t text_byte_count;
                 {
@@ -1241,7 +825,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // material section
-    if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.material_section_offset, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, internal_header.material_section_offset, PT_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
@@ -1259,7 +843,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     // validate internal header
-    assert(mesh_asset_pmx_header.material_count = material_count);
+    assert(internal_header.material_count = material_count);
 
     // It is based on the offset of the previous material through to the size of the current material.
     // If you add up all the surface counts for all materials you should end up with the total number of surfaces.
@@ -1268,20 +852,18 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
     {
         // material name local
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
+        if (internal_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1298,7 +880,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1306,20 +888,18 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         }
 
         // material name universal
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
+        if (internal_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1336,7 +916,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1359,7 +939,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                           + sizeof(float) * 4U
                           // edge scale
                           + sizeof(float),
-                      PT_GFX_INPUT_STREAM_SEEK_CUR))
+                      PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
@@ -1367,7 +947,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         // texture index
         uint32_t texture_index;
         {
-            if (1U == mesh_asset_pmx_header.texture_index_size)
+            if (1U == internal_header.texture_index_size)
             {
                 int8_t texture_index_int8;
                 {
@@ -1380,7 +960,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
 
                 texture_index = texture_index_int8;
             }
-            else if (2U == mesh_asset_pmx_header.texture_index_size)
+            else if (2U == internal_header.texture_index_size)
             {
                 int16_t texture_index_int16;
                 {
@@ -1393,7 +973,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
 
                 texture_index = texture_index_int16;
             }
-            else if (4U == mesh_asset_pmx_header.texture_index_size)
+            else if (4U == internal_header.texture_index_size)
             {
                 intptr_t res_read = input_stream_read_callback(input_stream, &texture_index, sizeof(int32_t));
                 if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > texture_index)
@@ -1421,10 +1001,10 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         if (-1 == input_stream_seek_callback(
                       input_stream,
                       // environment index
-                      mesh_asset_pmx_header.texture_index_size
+                      internal_header.texture_index_size
                           // environment blend mode
                           + sizeof(int8_t),
-                      PT_GFX_INPUT_STREAM_SEEK_CUR))
+                      PT_INPUT_STREAM_SEEK_CUR))
         {
             return false;
         }
@@ -1444,7 +1024,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         case 0:
         {
             // texture reference
-            if (-1 == input_stream_seek_callback(input_stream, mesh_asset_pmx_header.texture_index_size, PT_GFX_INPUT_STREAM_SEEK_CUR))
+            if (-1 == input_stream_seek_callback(input_stream, internal_header.texture_index_size, PT_INPUT_STREAM_SEEK_CUR))
             {
                 return false;
             }
@@ -1453,7 +1033,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         case 1:
         {
             // internal reference
-            if (-1 == input_stream_seek_callback(input_stream, sizeof(int8_t), PT_GFX_INPUT_STREAM_SEEK_CUR))
+            if (-1 == input_stream_seek_callback(input_stream, sizeof(int8_t), PT_INPUT_STREAM_SEEK_CUR))
             {
                 return false;
             }
@@ -1466,20 +1046,18 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         }
 
         // meta data
-        if (mesh_asset_pmx_header.is_text_encoding_utf8)
+        if (internal_header.is_text_encoding_utf8)
         {
             int32_t text_byte_count;
+            intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
+            if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
             {
-                intptr_t res_read = input_stream_read_callback(input_stream, &text_byte_count, sizeof(int32_t));
-                if (res_read == -1 || sizeof(int32_t) != static_cast<size_t>(res_read) || 0 > text_byte_count)
-                {
-                    return false;
-                }
+                return false;
             }
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1496,7 +1074,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
 
             if (0 != text_byte_count)
             {
-                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_GFX_INPUT_STREAM_SEEK_CUR))
+                if (-1 == input_stream_seek_callback(input_stream, text_byte_count, PT_INPUT_STREAM_SEEK_CUR))
                 {
                     return false;
                 }
@@ -1586,7 +1164,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         else
         {
             // validate internal header
-            assert(mesh_asset_pmx_header.vertex_index_size != 1 && mesh_asset_pmx_header.vertex_index_size != 2);
+            assert(internal_header.vertex_index_size != 1 && internal_header.vertex_index_size != 2);
 
             // validate primitive headers
             assert(!mesh_primitive_asset_header_for_validate[material_index].is_index_type_uint16);
@@ -1603,141 +1181,6 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     }
 
     assert(surface_count == material_total_surface_count);
-
-    return true;
-}
-
-static inline bool internal_utf16_to_utf8(uint16_t const *pInBuf, uint32_t *pInCharsLeft, uint8_t *pOutBuf, uint32_t *pOutCharsLeft)
-{
-    while ((*pInCharsLeft) >= 1)
-    {
-        uint32_t ucs4code = 0; // Accumulator
-
-        // UTF-16 To UCS-4
-        if ((*pInBuf) >= 0XD800U && (*pInBuf) <= 0XDBFFU) // 110110xxxxxxxxxx
-        {
-            if ((*pInCharsLeft) >= 2)
-            {
-                ucs4code += (((*pInBuf) - 0XD800U) << 10U); // Accumulate
-
-                ++pInBuf;
-                --(*pInCharsLeft);
-
-                if ((*pInBuf) >= 0XDC00U && (*pInBuf) <= 0XDFFF) // 110111xxxxxxxxxx
-                {
-                    ucs4code += ((*pInBuf) - 0XDC00U); // Accumulate
-
-                    ++pInBuf;
-                    --(*pInCharsLeft);
-                }
-                else
-                {
-                    return false;
-                }
-
-                ucs4code += 0X10000U;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else
-        {
-            ucs4code += (*pInBuf); // Accumulate
-
-            ++pInBuf;
-            --(*pInCharsLeft);
-        }
-
-        // UCS-4 To UTF-16
-        if (ucs4code < 128U) // 0XXX XXXX
-        {
-            if ((*pOutCharsLeft) >= 1)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(ucs4code);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 2048U) // 110X XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 2)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X7C0U) >> 6U) + 192U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 0X10000U) // 1110 XXXX 10XX XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 3)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XF000U) >> 12U) + 224U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else
-            {
-                return false;
-            }
-        }
-        else if (ucs4code < 0X200000U) // 1111 0XXX 10XX XXXX 10XX XXXX 10XX XXXX
-        {
-            if ((*pOutCharsLeft) >= 4)
-            {
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X1C0000U) >> 18U) + 240U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0X3F000U) >> 12U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>(((ucs4code & 0XFC0U) >> 6U) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-
-                (*pOutBuf) = static_cast<uint8_t>((ucs4code & 0X3FU) + 128U);
-
-                ++pOutBuf;
-                --(*pOutCharsLeft);
-            }
-            else // ucs4code >= 0X200000U
-            {
-                return false;
-            }
-        }
-    }
 
     return true;
 }

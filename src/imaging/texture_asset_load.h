@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _IMAGING_TEXTURE_LOAD_H_
-#define _IMAGING_TEXTURE_LOAD_H_ 1
+#ifndef _IMAGING_TEXTURE_ASSET_LOAD_H_
+#define _IMAGING_TEXTURE_ASSET_LOAD_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -245,12 +245,12 @@ struct gfx_texture_neutral_memcpy_dest_t
 
 bool texture_load_header_from_input_stream(
     struct gfx_texture_neutral_header_t *neutral_header, size_t *neutral_data_offset,
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 bool texture_load_data_from_input_stream(
     struct gfx_texture_neutral_header_t const *common_header_for_validate, size_t const *common_data_offset_for_validate,
     void *staging_pointer, size_t num_subresources, struct gfx_texture_neutral_memcpy_dest_t const *memcpy_dest,
     uint32_t (*calculate_subresource_index_callback)(uint32_t mipLevel, uint32_t arrayLayer, uint32_t aspectIndex, uint32_t mip_levels, uint32_t array_layers),
-    pt_gfx_input_stream_ref gfx_input_stream, pt_gfx_input_stream_read_callback gfx_input_stream_read_callback, pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback);
+    pt_input_stream_ref gfx_input_stream, pt_input_stream_read_callback input_stream_read_callback, pt_input_stream_seek_callback input_stream_seek_callback);
 
 #endif

@@ -21,10 +21,10 @@ struct streaming_object_load_task_data_t
 {
     class gfx_streaming_object_base *m_streaming_object;
     class gfx_connection_base *m_connection;
-    pt_gfx_input_stream_ref m_input_stream;
-    intptr_t(PT_PTR *m_input_stream_read_callback)(pt_gfx_input_stream_ref, void *, size_t);
-    int64_t(PT_PTR *m_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int);
-    void(PT_PTR *m_input_stream_destroy_callback)(pt_gfx_input_stream_ref);
+    pt_input_stream_ref m_input_stream;
+    intptr_t(PT_PTR *m_input_stream_read_callback)(pt_input_stream_ref, void *, size_t);
+    int64_t(PT_PTR *m_input_stream_seek_callback)(pt_input_stream_ref, int64_t, int);
+    void(PT_PTR *m_input_stream_destroy_callback)(pt_input_stream_ref);
     size_t m_memcpy_dests_size;
     size_t m_memcpy_dests_align;
 };
@@ -34,10 +34,10 @@ inline struct streaming_object_load_task_data_t *unwrap(mcrt_task_user_data_t *t
 bool gfx_streaming_object_base::load(
     class gfx_connection_base *gfx_connection,
     char const *initial_filename,
-    pt_gfx_input_stream_init_callback gfx_input_stream_init_callback,
-    pt_gfx_input_stream_read_callback gfx_input_stream_read_callback,
-    pt_gfx_input_stream_seek_callback gfx_input_stream_seek_callback,
-    pt_gfx_input_stream_destroy_callback gfx_input_stream_destroy_callback)
+    pt_input_stream_init_callback input_stream_init_callback,
+    pt_input_stream_read_callback input_stream_read_callback,
+    pt_input_stream_seek_callback input_stream_seek_callback,
+    pt_input_stream_destroy_callback input_stream_destroy_callback)
 {
     // How to implement pipeline "serial - parallel - serial"
     // follow [McCool 2012] "Structured Parallel Programming: Patterns for Efficient Computation." / 9.4.2 Pipeline in Cilk Plus
@@ -53,8 +53,8 @@ bool gfx_streaming_object_base::load(
 
     if (!streaming_cancel)
     {
-        pt_gfx_input_stream_ref gfx_input_stream = gfx_input_stream_init_callback(initial_filename);
-        if (pt_gfx_input_stream_ref(-1) == gfx_input_stream)
+        pt_input_stream_ref gfx_input_stream = input_stream_init_callback(initial_filename);
+        if (pt_input_stream_ref(-1) == gfx_input_stream)
         {
             mcrt_atomic_store(&this->m_streaming_error, true);
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -70,9 +70,9 @@ bool gfx_streaming_object_base::load(
         // usually load the asset header and allocate device resources
         size_t memcpy_dests_size = -1;
         size_t memcpy_dests_align = -1;
-        if (!this->load_header_callback(gfx_input_stream, gfx_input_stream_read_callback, gfx_input_stream_seek_callback, gfx_connection, &memcpy_dests_size, &memcpy_dests_align))
+        if (!this->load_header_callback(gfx_input_stream, input_stream_read_callback, input_stream_seek_callback, gfx_connection, &memcpy_dests_size, &memcpy_dests_align))
         {
-            gfx_input_stream_destroy_callback(gfx_input_stream);
+            input_stream_destroy_callback(gfx_input_stream);
 
             mcrt_atomic_store(&this->m_streaming_error, true);
             mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_STAGE_THIRD);
@@ -90,9 +90,9 @@ bool gfx_streaming_object_base::load(
             task_data->m_streaming_object = this;
             task_data->m_connection = gfx_connection;
             task_data->m_input_stream = gfx_input_stream;
-            task_data->m_input_stream_read_callback = gfx_input_stream_read_callback;
-            task_data->m_input_stream_seek_callback = gfx_input_stream_seek_callback;
-            task_data->m_input_stream_destroy_callback = gfx_input_stream_destroy_callback;
+            task_data->m_input_stream_read_callback = input_stream_read_callback;
+            task_data->m_input_stream_seek_callback = input_stream_seek_callback;
+            task_data->m_input_stream_destroy_callback = input_stream_destroy_callback;
             task_data->m_memcpy_dests_size = memcpy_dests_size;
             task_data->m_memcpy_dests_align = memcpy_dests_align;
 
@@ -249,4 +249,72 @@ mcrt_task_ref gfx_streaming_object_base::load_task_execute(mcrt_task_ref self)
     task_data->m_connection->streaming_task_mark_executie_end(streaming_throttling_index);
 #endif
     return NULL;
+}
+
+void gfx_streaming_object_base::streaming_destroy_request(class gfx_connection_base *gfx_connection)
+{
+    bool streaming_done;
+    {
+        // make sure this function happens before or after the gfx_streaming_object_base::streaming_done_execute
+        this->streaming_done_lock();
+
+        streaming_status_t streaming_status = mcrt_atomic_load(&this->m_streaming_status);
+
+        if (STREAMING_STATUS_STAGE_FIRST == streaming_status || STREAMING_STATUS_STAGE_SECOND == streaming_status || STREAMING_STATUS_STAGE_THIRD == streaming_status)
+        {
+            mcrt_atomic_store(&this->m_streaming_cancel, true);
+            streaming_done = false;
+        }
+        else if (STREAMING_STATUS_DONE == streaming_status)
+        {
+            streaming_done = true;
+        }
+        else
+        {
+            assert(0);
+            streaming_done = false;
+        }
+
+        this->streaming_done_unlock();
+    }
+
+    if (streaming_done)
+    {
+        // the object is used by the rendering system
+        gfx_connection->streaming_done_object_destroy_list_push(this);
+    }
+}
+
+void gfx_streaming_object_base::streaming_done_execute(class gfx_connection_base *gfx_connection)
+{
+    this->streaming_done_lock();
+
+    PT_MAYBE_UNUSED streaming_status_t streaming_status = this->m_streaming_status;
+    bool streaming_error = this->m_streaming_error;
+    bool streaming_cancel = this->m_streaming_cancel;
+    assert(STREAMING_STATUS_STAGE_THIRD == streaming_status);
+
+    if (!streaming_cancel)
+    {
+        if (!streaming_error)
+        {
+            if (!this->streaming_done_callback(gfx_connection))
+            {
+                mcrt_atomic_store(&this->m_streaming_error, true);
+            }
+        }
+
+        mcrt_atomic_store(&this->m_streaming_status, STREAMING_STATUS_DONE);
+    }
+    else
+    {
+        this->pre_streaming_done_destroy_callback(gfx_connection);
+    }
+
+    this->streaming_done_unlock();
+}
+
+void gfx_streaming_object_base::post_stream_done_destroy_execute(class gfx_connection_base *gfx_connection)
+{
+    return this->post_stream_done_destroy_callback(gfx_connection);
 }

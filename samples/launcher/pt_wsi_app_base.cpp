@@ -29,15 +29,35 @@ void launcher_app::init(pt_gfx_connection_ref gfx_connection)
 static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename);
 static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename);
 
-//static pt_gfx_texture_ref my_texture1 = NULL;
-//static pt_gfx_texture_ref my_texture2 = NULL;
-static pt_gfx_mesh_ref my_mesh = NULL;
-static pt_gfx_node_ref my_node = NULL;
-static pt_gfx_texture_ref my_texture = NULL;
-static pt_gfx_material_ref my_material = NULL;
-
 int launcher_app::main()
 {
+    pt_gfx_mesh_ref my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
+
+    gfx_mesh_read_file(my_gfx_connection, my_mesh, "genshin_impact/ayaka_kamisato/ayaka_kamisato.pmx");
+    // gfx_mesh_read_file(my_gfx_connection, my_mesh, "honkai_impact_3rd/herrscher_of_thunder/herrscher_of_thunder.pmx");
+
+    pt_gfx_node_ref my_node = pt_gfx_connection_create_node(my_gfx_connection);
+    pt_gfx_node_set_mesh(my_gfx_connection, my_node, my_mesh);
+
+    pt_gfx_texture_ref my_texture_1 = pt_gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture_1, "genshin_impact/ayaka_kamisato/cloth.dds");
+
+    pt_gfx_texture_ref my_texture_2 = pt_gfx_connection_create_texture(my_gfx_connection);
+    gfx_texture_read_file(my_gfx_connection, my_texture_2, "genshin_impact/ayaka_kamisato/face.dds");
+
+    pt_gfx_material_ref my_material = pt_gfx_connection_create_material(my_gfx_connection);
+    pt_gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, &my_texture_1);
+
+    pt_gfx_node_set_material(my_gfx_connection, my_node, my_material);
+
+#if 0
+    //static pt_gfx_texture_ref my_texture1 = NULL;
+    //static pt_gfx_texture_ref my_texture2 = NULL;
+    static pt_gfx_mesh_ref my_mesh = NULL;
+    static pt_gfx_node_ref my_node = NULL;
+    static pt_gfx_texture_ref my_texture = NULL;
+    static pt_gfx_material_ref my_material = NULL;
+
     pt_gfx_mesh_ref my_mesh1 = pt_gfx_connection_create_mesh(my_gfx_connection);
     gfx_mesh_read_file(my_gfx_connection, my_mesh1, "genshin_impact/ayaka_kamisato/ayaka_kamisato.pmx");
 
@@ -172,13 +192,15 @@ int launcher_app::main()
     pt_gfx_node_destroy(my_gfx_connection, my_node);
 #endif
 
+#endif
+
     return 0;
 }
 
-extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
-extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
-extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
-extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+extern pt_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_input_stream_ref);
 
 static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename)
 {

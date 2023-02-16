@@ -18,9 +18,10 @@
 #ifndef _PT_MCRT_VECTOR_H_
 #define _PT_MCRT_VECTOR_H_ 1
 
+#include <pt_mcrt_allocator.h>
 #include <vector>
 
 template <typename T>
-using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
+using mcrt_vector = std::vector<T, mcrt_allocator<T>>;
 
 #endif

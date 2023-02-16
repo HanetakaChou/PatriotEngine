@@ -17,7 +17,7 @@
 
 #include <pt_wsi_main.h>
 #include <pt_mcrt_malloc.h>
-#include <pt_mcrt_scalable_allocator.h>
+#include <pt_mcrt_allocator.h>
 #include <pt_mcrt_string.h>
 #include "pt_wsi_app_base.h"
 #include <assert.h>
@@ -69,18 +69,18 @@ static mcrt_wstring g_wsi_app_win32_desktop_executable_path;
 static pt_wsi_app_ref PT_PTR launcher_app_init(int argc, char *argv[], pt_gfx_connection_ref gfx_connection);
 static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app);
 
-static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
-static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size);
-static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size);
-static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream);
-static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename);
-static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size);
-static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream);
+static pt_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename);
+static int PT_CALL cache_input_stream_stat_size_callback(pt_input_stream_ref cache_input_stream, int64_t *size);
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_input_stream_ref cache_input_stream, void *data, size_t size);
+static void PT_PTR cache_input_stream_destroy_callback(pt_input_stream_ref cache_input_stream);
+static pt_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename);
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_output_stream_ref cache_output_stream, void *data, size_t size);
+static void PT_PTR cache_output_stream_destroy_callback(pt_output_stream_ref cache_output_stream);
 
-extern pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
-extern intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref, void *, size_t);
-extern int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref, int64_t, int);
-extern void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref);
+extern pt_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *);
+extern intptr_t PT_PTR asset_input_stream_read_callback(pt_input_stream_ref, void *, size_t);
+extern int64_t PT_PTR asset_input_stream_seek_callback(pt_input_stream_ref, int64_t, int);
+extern void PT_PTR asset_input_stream_destroy_callback(pt_input_stream_ref);
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR cmd_line, int cmd_show)
 {
@@ -131,7 +131,7 @@ static int PT_PTR launcher_app_main(pt_wsi_app_ref wsi_app)
 
 static inline bool internal_utf8_to_utf16(uint8_t const *pInBuf, uint32_t *pInCharsLeft, uint16_t *pOutBuf, uint32_t *pOutCharsLeft);
 
-static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
+static pt_input_stream_ref PT_CALL cache_input_stream_init_callback(char const *initial_filename)
 {
 	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
 	full_path += L"\\..\\../";
@@ -150,10 +150,10 @@ static pt_gfx_input_stream_ref PT_CALL cache_input_stream_init_callback(char con
 
 	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_input_stream_ref>(hFile) : pt_gfx_input_stream_ref(-1);
+	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_input_stream_ref>(hFile) : pt_input_stream_ref(-1);
 }
 
-static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref cache_input_stream, int64_t *size)
+static int PT_CALL cache_input_stream_stat_size_callback(pt_input_stream_ref cache_input_stream, int64_t *size)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(cache_input_stream);
 
@@ -171,7 +171,7 @@ static int PT_CALL cache_input_stream_stat_size_callback(pt_gfx_input_stream_ref
 	}
 }
 
-static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref cache_input_stream, void *data, size_t size)
+static intptr_t PT_PTR cache_input_stream_read_callback(pt_input_stream_ref cache_input_stream, void *data, size_t size)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(cache_input_stream);
 
@@ -187,7 +187,7 @@ static intptr_t PT_PTR cache_input_stream_read_callback(pt_gfx_input_stream_ref 
 	}
 }
 
-static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref cache_input_stream)
+static void PT_PTR cache_input_stream_destroy_callback(pt_input_stream_ref cache_input_stream)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(cache_input_stream);
 
@@ -195,7 +195,7 @@ static void PT_PTR cache_input_stream_destroy_callback(pt_gfx_input_stream_ref c
 	assert(FALSE != res_close_handle);
 }
 
-static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
+static pt_output_stream_ref PT_PTR cache_output_stream_init_callback(char const *initial_filename)
 {
 	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
 	full_path += L"\\..\\../";
@@ -214,10 +214,10 @@ static pt_gfx_output_stream_ref PT_PTR cache_output_stream_init_callback(char co
 
 	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_WRITE_DATA | FILE_WRITE_ATTRIBUTES, 0U, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_output_stream_ref>(hFile) : pt_gfx_output_stream_ref(-1);
+	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_output_stream_ref>(hFile) : pt_output_stream_ref(-1);
 }
 
-static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_ref cache_output_stream, void *data, size_t size)
+static intptr_t PT_PTR cache_output_stream_write_callback(pt_output_stream_ref cache_output_stream, void *data, size_t size)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(cache_output_stream);
 
@@ -233,7 +233,7 @@ static intptr_t PT_PTR cache_output_stream_write_callback(pt_gfx_output_stream_r
 	}
 }
 
-static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref cache_output_stream)
+static void PT_PTR cache_output_stream_destroy_callback(pt_output_stream_ref cache_output_stream)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(cache_output_stream);
 
@@ -241,7 +241,7 @@ static void PT_PTR cache_output_stream_destroy_callback(pt_gfx_output_stream_ref
 	assert(FALSE != res_close_handle);
 }
 
-pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
+pt_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *initial_filename)
 {
 	mcrt_wstring full_path = g_wsi_app_win32_desktop_executable_path;
 	full_path += L"\\..\\..\\..\\assets/";
@@ -260,10 +260,10 @@ pt_gfx_input_stream_ref PT_PTR asset_input_stream_init_callback(char const *init
 
 	HANDLE hFile = CreateFileW(full_path.c_str(), FILE_READ_DATA | FILE_READ_ATTRIBUTES, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
-	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_gfx_input_stream_ref>(hFile) : pt_gfx_input_stream_ref(-1);
+	return (INVALID_HANDLE_VALUE != hFile) ? reinterpret_cast<pt_input_stream_ref>(hFile) : pt_input_stream_ref(-1);
 }
 
-intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref asset_input_stream, void *data, size_t size)
+intptr_t PT_PTR asset_input_stream_read_callback(pt_input_stream_ref asset_input_stream, void *data, size_t size)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(asset_input_stream);
 
@@ -279,13 +279,13 @@ intptr_t PT_PTR asset_input_stream_read_callback(pt_gfx_input_stream_ref asset_i
 	}
 }
 
-int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref asset_input_stream, int64_t offset, int whence)
+int64_t PT_PTR asset_input_stream_seek_callback(pt_input_stream_ref asset_input_stream, int64_t offset, int whence)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(asset_input_stream);
 
-	static_assert(FILE_BEGIN == PT_GFX_INPUT_STREAM_SEEK_SET, "");
-	static_assert(FILE_CURRENT == PT_GFX_INPUT_STREAM_SEEK_CUR, "");
-	static_assert(FILE_END == PT_GFX_INPUT_STREAM_SEEK_END, "");
+	static_assert(FILE_BEGIN == PT_INPUT_STREAM_SEEK_SET, "");
+	static_assert(FILE_CURRENT == PT_INPUT_STREAM_SEEK_CUR, "");
+	static_assert(FILE_END == PT_INPUT_STREAM_SEEK_END, "");
 
 	LARGE_INTEGER distance_to_move;
 	distance_to_move.QuadPart = offset;
@@ -301,7 +301,7 @@ int64_t PT_PTR asset_input_stream_seek_callback(pt_gfx_input_stream_ref asset_in
 	}
 }
 
-void PT_PTR asset_input_stream_destroy_callback(pt_gfx_input_stream_ref asset_input_stream)
+void PT_PTR asset_input_stream_destroy_callback(pt_input_stream_ref asset_input_stream)
 {
 	HANDLE hFile = reinterpret_cast<HANDLE>(asset_input_stream);
 

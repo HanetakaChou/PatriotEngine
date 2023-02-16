@@ -23,15 +23,12 @@
 #include <vector>
 #include <pt_gfx_connection.h>
 #include <pt_math.h>
-#include <pt_mcrt_scalable_allocator.h>
-#include "pt_gfx_mesh_base.h"
+#include <pt_mcrt_allocator.h>
+#include "imaging/mesh.h"
 #include "pt_gfx_material_base.h"
 
 class gfx_node_base
 {
-    template <typename T>
-    using mcrt_vector = std::vector<T, mcrt::scalable_allocator<T>>;
-
     // [Hudson 2006] 
     // Richard L. Hudson, Bratin Saha, Ali-Reza Adl-Tabatabai, Benjamin C. Hertzberg. "McRT-Malloc: a scalable transactional memory allocator". ISMM 2006.
     // 3.McRT-MALLOC / 3.2 Non-blocking Operations / Figure 2 Public Free List 
