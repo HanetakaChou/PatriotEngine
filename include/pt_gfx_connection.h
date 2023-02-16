@@ -40,17 +40,6 @@ typedef intptr_t(PT_PTR *pt_gfx_input_stream_read_callback)(pt_gfx_input_stream_
 typedef int64_t(PT_PTR *pt_gfx_input_stream_seek_callback)(pt_gfx_input_stream_ref, int64_t, int);
 typedef void(PT_PTR *pt_gfx_input_stream_destroy_callback)(pt_gfx_input_stream_ref);
 
-// pt_gfx_input_stream_read_callback -> read_function
-
-struct pt_gfx_input_stream_callbacks_t
-{
-    pt_gfx_input_stream_init_callback pfn_create;
-    pt_gfx_input_stream_stat_size_callback pfn_get_size;
-    pt_gfx_input_stream_read_callback pfn_read;
-    pt_gfx_input_stream_seek_callback pfn_seek;
-    pt_gfx_input_stream_destroy_callback pfn_close;
-};
-
 typedef struct pt_gfx_opaque_output_stream_t *pt_gfx_output_stream_ref;
 typedef pt_gfx_output_stream_ref(PT_PTR *pt_gfx_output_stream_init_callback)(char const *);
 typedef intptr_t(PT_PTR *pt_gfx_output_stream_write_callback)(pt_gfx_output_stream_ref, void *, size_t);

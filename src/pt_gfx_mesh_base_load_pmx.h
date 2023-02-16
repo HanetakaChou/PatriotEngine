@@ -22,10 +22,35 @@
 #include <stdint.h>
 #include <pt_gfx_connection.h>
 
-extern bool mesh_load_pmx_header_from_input_stream(struct pt_gfx_mesh_neutral_header_t *out_neutral_header, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+//--------------------------------------------------------------------------------------
+// This is an English description of the .PMX file format used in Miku Miku Dance (MMD)
+//
+// https://gist.github.com/felixjones/f8a06bd48f9da9a4539f
+//--------------------------------------------------------------------------------------
 
-extern bool mesh_load_pmx_primitive_headers_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t *out_neutral_primitive_headers, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+// [Model::load](https://github.com/sugiany/blender_mmd_tools/blob/master/mmd_tools/core/pmx/__init__.py)
+// [ReadPMXFile](https://github.com/benikabocha/saba/blob/master/src/Saba/Model/MMD/PMXFile.cpp)
 
-extern bool mesh_load_pmx_primitive_data_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers_for_validate, void *staging_pointer, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+enum
+{
+    PMX_HEADER_SIGNATURE = 0X20584d50, //'P''M''X'' '
+};
+
+extern bool mesh_load_pmx_header_from_input_stream(
+    struct mesh_asset_header_t *out_mesh_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
+
+extern bool mesh_load_pmx_primitive_headers_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
+    struct mesh_primitive_asset_header_t *out_mesh_primitive_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
+
+extern bool mesh_load_pmx_primitive_data_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
+    struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate,
+    void *staging_pointer,
+    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback,
+    char **out_material_texture_path, size_t *out_material_texture_size);
 
 #endif

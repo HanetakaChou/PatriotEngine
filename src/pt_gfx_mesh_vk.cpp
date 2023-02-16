@@ -28,28 +28,18 @@ bool gfx_mesh_vk::load_header_callback(
     pt_gfx_input_stream_ref input_stream,
     pt_gfx_input_stream_read_callback input_stream_read_callback,
     pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-    class gfx_connection_base* connection,
-    size_t* out_memcpy_dests_size,
-    size_t* out_memcpy_dests_align)
+    class gfx_connection_base *connection,
+    size_t *out_memcpy_dests_size,
+    size_t *out_memcpy_dests_align)
 {
-    struct pt_gfx_input_stream_callbacks_t const input_stream_callbacks =
-    {
-        NULL,
-        NULL,
-        input_stream_read_callback,
-        input_stream_seek_callback,
-        NULL
-    };
-
     // 1. load asset header
-    if (!mesh_load_header_from_input_stream(&this->m_mesh_asset_header, input_stream, &input_stream_callbacks))
+    if (!mesh_load_header_from_input_stream(&this->m_mesh_asset_header, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
     }
 
-
     this->m_mesh_asset_primitive_headers.resize(this->m_mesh_asset_header.primitive_count);
-    if (!mesh_load_primitive_headers_from_input_stream(&this->m_mesh_asset_header, &this->m_mesh_asset_primitive_headers[0], input_stream, &input_stream_callbacks))
+    if (!mesh_load_primitive_headers_from_input_stream(&this->m_mesh_asset_header, &this->m_mesh_asset_primitive_headers[0], input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
     }
@@ -62,7 +52,7 @@ bool gfx_mesh_vk::load_header_callback(
     }
 
     // 1-2. allocate device resources
-    class gfx_connection_vk* vk_connection = static_cast<class gfx_connection_vk*>(connection);
+    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
 
     m_primitives.resize(this->m_mesh_asset_header.primitive_count);
 
@@ -153,10 +143,10 @@ bool gfx_mesh_vk::load_header_callback(
 
 size_t gfx_mesh_vk::calculate_staging_buffer_total_size_callback(
     size_t base_offset,
-    class gfx_connection_base* connection,
-    void* out_void_memcpy_dests)
+    class gfx_connection_base *connection,
+    void *out_void_memcpy_dests)
 {
-    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t* out_memcpy_dests = static_cast<struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t*>(out_void_memcpy_dests);
+    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t *out_memcpy_dests = static_cast<struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t *>(out_void_memcpy_dests);
 
     size_t staging_offset = base_offset;
     size_t total_bytes = 0U;
@@ -190,32 +180,23 @@ bool gfx_mesh_vk::load_data_callback(
     pt_gfx_input_stream_ref input_stream,
     pt_gfx_input_stream_read_callback input_stream_read_callback,
     pt_gfx_input_stream_seek_callback input_stream_seek_callback,
-    class gfx_connection_base* connection,
-    void const* void_memcpy_dests,
+    class gfx_connection_base *connection,
+    void const *void_memcpy_dests,
     uint32_t streaming_throttling_index)
 {
-    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const* memcpy_dests = static_cast<struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const*>(void_memcpy_dests);
+    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests = static_cast<struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *>(void_memcpy_dests);
 
     // 1. load the asset data into staging buffer according to the 'memcpy_dests'
-    struct pt_gfx_input_stream_callbacks_t const input_stream_callbacks =
-    {
-        NULL,
-        NULL,
-        input_stream_read_callback,
-        input_stream_seek_callback,
-        NULL
-    };
-
-    if (!mesh_load_primitive_data_from_input_stream(&this->m_mesh_asset_header, &this->m_mesh_asset_primitive_headers[0], connection->staging_buffer_pointer(), memcpy_dests, input_stream, &input_stream_callbacks))
+    if (!mesh_load_primitive_data_from_input_stream(&this->m_mesh_asset_header, &this->m_mesh_asset_primitive_headers[0], connection->staging_buffer_pointer(), memcpy_dests, input_stream, input_stream_read_callback, input_stream_seek_callback))
     {
         return false;
     }
 
     // 2. copy the data into image from staging buffer
-    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk*>(connection);
-    
+    class gfx_connection_vk *vk_connection = static_cast<class gfx_connection_vk *>(connection);
+
     uint32_t streaming_thread_index = mcrt_this_task_arena_current_thread_index();
-    
+
     VkBuffer staging_buffer = vk_connection->staging_buffer();
 
     uint32_t primitive_count = static_cast<uint32_t>(this->m_primitives.size());
@@ -243,12 +224,12 @@ bool gfx_mesh_vk::load_data_callback(
     return true;
 }
 
-void gfx_mesh_vk::record_draw_command_buffer(class gfx_device_vk* vk_device, VkCommandBuffer draw_command_buffer) const
+void gfx_mesh_vk::record_draw_command_buffer(class gfx_device_vk *vk_device, VkCommandBuffer draw_command_buffer) const
 {
     for (uint32_t primitive_index = 0U; primitive_index < this->m_mesh_asset_header.primitive_count; ++primitive_index)
     {
-        VkBuffer buffers[2] = { this->m_primitives[primitive_index].m_vertex_position_buffer, this->m_primitives[primitive_index].m_vertex_varying_buffer };
-        VkDeviceSize offsets[2] = { 0U, 0U };
+        VkBuffer buffers[2] = {this->m_primitives[primitive_index].m_vertex_position_buffer, this->m_primitives[primitive_index].m_vertex_varying_buffer};
+        VkDeviceSize offsets[2] = {0U, 0U};
 
         vk_device->cmd_bind_vertex_buffers(draw_command_buffer, 0, 2, buffers, offsets);
         vk_device->cmd_bind_index_buffer(draw_command_buffer, this->m_primitives[primitive_index].m_index_buffer, 0U, this->m_mesh_asset_primitive_headers[primitive_index].is_index_type_uint16 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);

@@ -32,13 +32,13 @@
 // the whole pipeline will be affected if the "VertexInputState" is changed and thus we keep the "vertex format" fixed
 // while the "index format" can be changed on-the-fly by "vkCmdBindIndexBuffer"
 
-struct pt_gfx_mesh_neutral_header_t
+struct mesh_asset_header_t
 {
     bool is_skined;
     uint32_t primitive_count; // material count
 };
 
-struct pt_gfx_mesh_neutral_primitive_header_t
+struct mesh_primitive_asset_header_t
 {
     uint32_t vertex_count;
     bool is_index_type_uint16;
@@ -72,10 +72,19 @@ struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t
     size_t index_staging_size;
 };
 
-extern bool mesh_load_header_from_input_stream(struct pt_gfx_mesh_neutral_header_t *out_neutral_header, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+extern bool mesh_load_header_from_input_stream(
+    struct mesh_asset_header_t *out_mesh_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
 
-extern bool mesh_load_primitive_headers_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t *out_neutral_primitive_headers, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+extern bool mesh_load_primitive_headers_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate, struct mesh_primitive_asset_header_t *out_mesh_primitive_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
 
-extern bool mesh_load_primitive_data_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers_for_validate, void *staging_pointer, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
+extern bool mesh_load_primitive_data_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
+    struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate,
+    void *staging_pointer,
+    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback);
 
 #endif

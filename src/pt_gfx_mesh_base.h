@@ -32,14 +32,12 @@ class gfx_mesh_base : public gfx_streaming_object_base, public gfx_frame_object_
     uint32_t m_ref_count;
 
 protected:
-    struct pt_gfx_mesh_neutral_header_t m_mesh_asset_header;
-    mcrt_vector<struct pt_gfx_mesh_neutral_primitive_header_t> m_mesh_asset_primitive_headers;
+    struct mesh_asset_header_t m_mesh_asset_header;
+    mcrt_vector<struct mesh_primitive_asset_header_t> m_mesh_asset_primitive_headers;
 
     inline gfx_mesh_base() : gfx_streaming_object_base(), gfx_frame_object_base(), m_ref_count(1U) {}
 
 public:
-    bool read_input_stream(class gfx_connection_base *gfx_connection, char const *file_name, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks);
-
     void destroy(class gfx_connection_base *gfx_connection);
 
     void addref();

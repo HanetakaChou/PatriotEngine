@@ -21,21 +21,18 @@
 #include "pt_gfx_mesh_base_load.h"
 #include "pt_gfx_mesh_base_load_pmx.h"
 
-enum
+extern bool mesh_load_header_from_input_stream(
+    struct mesh_asset_header_t *out_mesh_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
 {
-    FACADE_PMX_HEADER_SIGNATURE = 0X20584d50, //'P''M''X'' '
-};
-
-extern bool mesh_load_header_from_input_stream(struct pt_gfx_mesh_neutral_header_t *out_neutral_header, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks)
-{
-    if (-1 == gfx_input_stream_callbacks->pfn_seek(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
 
     uint32_t fourcc_signature;
     {
-        intptr_t res_read = gfx_input_stream_callbacks->pfn_read(gfx_input_stream, &fourcc_signature, sizeof(uint32_t));
+        intptr_t res_read = input_stream_read_callback(input_stream, &fourcc_signature, sizeof(uint32_t));
         if (res_read == -1 || sizeof(uint32_t) != static_cast<size_t>(res_read))
         {
             return false;
@@ -44,23 +41,27 @@ extern bool mesh_load_header_from_input_stream(struct pt_gfx_mesh_neutral_header
 
     switch (fourcc_signature)
     {
-    case FACADE_PMX_HEADER_SIGNATURE:
-        return mesh_load_pmx_header_from_input_stream(out_neutral_header, gfx_input_stream, gfx_input_stream_callbacks);
+    case PMX_HEADER_SIGNATURE:
+        return mesh_load_pmx_header_from_input_stream(
+            out_mesh_asset_header,
+            input_stream, input_stream_read_callback, input_stream_seek_callback);
     default:
         return false;
     }
 }
 
-extern bool mesh_load_primitive_headers_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t *out_neutral_primitive_headers, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks)
+extern bool mesh_load_primitive_headers_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate, struct mesh_primitive_asset_header_t *out_mesh_primitive_asset_header,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == gfx_input_stream_callbacks->pfn_seek(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
 
     uint32_t fourcc_signature;
     {
-        intptr_t res_read = gfx_input_stream_callbacks->pfn_read(gfx_input_stream, &fourcc_signature, sizeof(uint32_t));
+        intptr_t res_read = input_stream_read_callback(input_stream, &fourcc_signature, sizeof(uint32_t));
         if (res_read == -1 || sizeof(uint32_t) != static_cast<size_t>(res_read))
         {
             return false;
@@ -69,23 +70,31 @@ extern bool mesh_load_primitive_headers_from_input_stream(struct pt_gfx_mesh_neu
 
     switch (fourcc_signature)
     {
-    case FACADE_PMX_HEADER_SIGNATURE:
-        return mesh_load_pmx_primitive_headers_from_input_stream(neutral_header_for_validate, out_neutral_primitive_headers, gfx_input_stream, gfx_input_stream_callbacks);
+    case PMX_HEADER_SIGNATURE:
+        return mesh_load_pmx_primitive_headers_from_input_stream(
+            mesh_asset_header_for_validate,
+            out_mesh_primitive_asset_header,
+            input_stream, input_stream_read_callback, input_stream_seek_callback);
     default:
         return false;
     }
 }
 
-extern bool mesh_load_primitive_data_from_input_stream(struct pt_gfx_mesh_neutral_header_t const *neutral_header_for_validate, struct pt_gfx_mesh_neutral_primitive_header_t const *neutral_primitive_headers_for_validate, void *staging_pointer, struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests, pt_gfx_input_stream_ref gfx_input_stream, struct pt_gfx_input_stream_callbacks_t const *gfx_input_stream_callbacks)
+extern bool mesh_load_primitive_data_from_input_stream(
+    struct mesh_asset_header_t const *mesh_asset_header_for_validate,
+    struct mesh_primitive_asset_header_t const *mesh_primitive_asset_header_for_validate,
+    void *staging_pointer,
+    struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t const *memcpy_dests,
+    pt_gfx_input_stream_ref input_stream, pt_gfx_input_stream_read_callback input_stream_read_callback, pt_gfx_input_stream_seek_callback input_stream_seek_callback)
 {
-    if (-1 == gfx_input_stream_callbacks->pfn_seek(gfx_input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
+    if (-1 == input_stream_seek_callback(input_stream, 0, PT_GFX_INPUT_STREAM_SEEK_SET))
     {
         return false;
     }
 
     uint32_t fourcc_signature;
     {
-        intptr_t res_read = gfx_input_stream_callbacks->pfn_read(gfx_input_stream, &fourcc_signature, sizeof(uint32_t));
+        intptr_t res_read = input_stream_read_callback(input_stream, &fourcc_signature, sizeof(uint32_t));
         if (res_read == -1 || sizeof(uint32_t) != static_cast<size_t>(res_read))
         {
             return false;
@@ -94,8 +103,14 @@ extern bool mesh_load_primitive_data_from_input_stream(struct pt_gfx_mesh_neutra
 
     switch (fourcc_signature)
     {
-    case FACADE_PMX_HEADER_SIGNATURE:
-        return mesh_load_pmx_primitive_data_from_input_stream(neutral_header_for_validate, neutral_primitive_headers_for_validate, staging_pointer, memcpy_dests, gfx_input_stream, gfx_input_stream_callbacks);
+    case PMX_HEADER_SIGNATURE:
+        return mesh_load_pmx_primitive_data_from_input_stream(
+            mesh_asset_header_for_validate,
+            mesh_primitive_asset_header_for_validate,
+            staging_pointer,
+            memcpy_dests,
+            input_stream, input_stream_read_callback, input_stream_seek_callback,
+            NULL, NULL);
     default:
         return false;
     }
