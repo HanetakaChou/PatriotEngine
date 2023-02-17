@@ -36,9 +36,10 @@ static bool load_material_texture_paths_from_file(char const* initial_filename, 
 
 int launcher_app::main()
 {
-    char const* my_filename = "genshin_impact/ayaka_kamisato/ayaka_kamisato.pmx";
-    // "honkai_impact_3rd/herrscher_of_thunder/herrscher_of_thunder.pmx"
-    char const* my_filename_dirname = "genshin_impact/ayaka_kamisato";
+    // char const* my_filename = "genshin_impact/ayaka_kamisato/ayaka_kamisato.pmx";
+    // char const* my_filename_dirname = "genshin_impact/ayaka_kamisato";
+    char const* my_filename = "honkai_impact_3rd/herrscher_of_thunder/herrscher_of_thunder.pmx";
+    char const* my_filename_dirname = "honkai_impact_3rd/herrscher_of_thunder";
 
     pt_gfx_mesh_ref my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
 
