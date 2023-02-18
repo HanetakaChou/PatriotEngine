@@ -20,6 +20,7 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
+#include "imaging/mesh_vertex.h"
 #include <new>
 
 class gfx_connection_base *gfx_connection_vk::create(
@@ -1429,10 +1430,10 @@ inline bool gfx_connection_vk::update_framebuffer()
         // seperate position and varying
         VkVertexInputBindingDescription vertex_binding_descriptions[2];
         vertex_binding_descriptions[0].binding = 0;
-        vertex_binding_descriptions[0].stride = sizeof(pt_gfx_mesh_neutral_vertex_position);
+        vertex_binding_descriptions[0].stride = sizeof(mesh_vertex_position);
         vertex_binding_descriptions[0].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
         vertex_binding_descriptions[1].binding = 1;
-        vertex_binding_descriptions[1].stride = sizeof(pt_gfx_mesh_neutral_vertex_varying);
+        vertex_binding_descriptions[1].stride = sizeof(mesh_vertex_varying);
         vertex_binding_descriptions[1].inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
         // TODO: reference UE
@@ -1443,19 +1444,19 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_attribute_descriptions[0].location = 0U; 
         vertex_attribute_descriptions[0].binding = 0U; 
         vertex_attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        vertex_attribute_descriptions[0].offset = offsetof(pt_gfx_mesh_neutral_vertex_position, position);
+        vertex_attribute_descriptions[0].offset = offsetof(mesh_vertex_position, position);
         vertex_attribute_descriptions[1].location = 1U; 
         vertex_attribute_descriptions[1].binding = 1U;  
-        vertex_attribute_descriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-        vertex_attribute_descriptions[1].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, normal);
+        vertex_attribute_descriptions[1].format = VK_FORMAT_R8G8B8A8_SNORM;
+        vertex_attribute_descriptions[1].offset = offsetof(mesh_vertex_varying, normal);
         vertex_attribute_descriptions[2].location = 2U; 
         vertex_attribute_descriptions[2].binding = 1U; 
-        vertex_attribute_descriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
-        vertex_attribute_descriptions[2].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, tangent);
+        vertex_attribute_descriptions[2].format = VK_FORMAT_R8G8B8A8_SNORM;
+        vertex_attribute_descriptions[2].offset = offsetof(mesh_vertex_varying, tangent);
         vertex_attribute_descriptions[3].location = 3U; 
         vertex_attribute_descriptions[3].binding = 1U; 
-        vertex_attribute_descriptions[3].format = VK_FORMAT_R32G32_SFLOAT;
-        vertex_attribute_descriptions[3].offset = offsetof(pt_gfx_mesh_neutral_vertex_varying, uv);
+        vertex_attribute_descriptions[3].format = VK_FORMAT_R16G16_UNORM;
+        vertex_attribute_descriptions[3].offset = offsetof(mesh_vertex_varying, uv);
 
         // struct VkFormatProperties physical_device_format_properties;
         // gfx_connection->get_physical_device_format_properties(VK_FORMAT_R32G32B32_SFLOAT, &physical_device_format_properties);
@@ -1494,7 +1495,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         rasterization_state.depthClampEnable = VK_FALSE; //VkPipelineRasterizationDepthClipStateCreateInfoEXT
         rasterization_state.rasterizerDiscardEnable = VK_FALSE;
         rasterization_state.polygonMode = VK_POLYGON_MODE_FILL;
-        rasterization_state.cullMode = VK_CULL_MODE_NONE; //VK_CULL_MODE_BACK_BIT;
+        rasterization_state.cullMode = VK_CULL_MODE_BACK_BIT;
         rasterization_state.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterization_state.depthBiasEnable = VK_FALSE;
         rasterization_state.depthBiasConstantFactor = 0.0f;
@@ -1852,7 +1853,7 @@ inline bool gfx_connection_vk::init_shader()
     //mesh_vertex
     {
         uint32_t const shader_code_lighting_mesh_vertex[] = {
-#include "pt_gfx_glsl_vulkan_lighting_mesh_vert.inl"
+#include "imaging/vk/forward_shading_mesh_vertex.inl"
         };
 
         VkShaderModuleCreateInfo shader_module_create_info;
@@ -1869,7 +1870,7 @@ inline bool gfx_connection_vk::init_shader()
     //mesh_fragment
     {
         uint32_t const shader_code_lighting_mesh_fragment[] = {
-#include "pt_gfx_glsl_vulkan_lighting_mesh_frag.inl"
+#include "imaging/vk/forward_shading_mesh_fragment.inl"
         };
 
         VkShaderModuleCreateInfo shader_module_create_info;

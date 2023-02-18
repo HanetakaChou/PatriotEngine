@@ -20,7 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_gfx_connection.h>
+#include <pt_io.h>
 
 // TODO: vec2 normal and tangent
 // From industrial view, the Z value can be calculated by Z = (1 - X2 - Y2)^(1/2) since the vector is normalized.
@@ -43,23 +43,6 @@ struct mesh_primitive_asset_header_t
     uint32_t vertex_count;
     bool is_index_type_uint16;
     uint32_t index_count;
-};
-
-// vertex bindings/attributes
-// location = 0 binding = 0 position VK_FORMAT_R32G32B32_SFLOAT
-// location = 1 binding = 1 normal VK_FORMAT_R32G32B32_SFLOAT
-// location = 2 binding = 1 tangent VK_FORMAT_R32G32B32_SFLOAT
-// location = 3 binding = 1 uv DXGI_FORMAT_R32G32_FLOAT
-struct pt_gfx_mesh_neutral_vertex_position
-{
-    pt_math_vec3 position;
-};
-
-struct pt_gfx_mesh_neutral_vertex_varying
-{
-    pt_math_vec3 normal;
-    pt_math_vec3 tangent;
-    pt_math_vec2 uv;
 };
 
 struct pt_gfx_mesh_neutral_primitive_memcpy_dest_t

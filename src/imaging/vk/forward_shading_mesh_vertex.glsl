@@ -17,31 +17,38 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-layout(location = 0) in highp vec3 in_position;
+layout(location = 0) in highp vec3 in_position_model_space;
 layout(location = 1) in highp vec3 in_normal;
 layout(location = 2) in highp vec3 in_tangent;
 layout(location = 3) in highp vec2 in_uv;
 
 layout(location = 0) out highp vec3 out_position_world_space;
-layout(location = 1) out highp vec2 out_uv;
+layout(location = 1) out highp vec3 out_normal_world_space;
+layout(location = 2) out highp vec2 out_uv;
 
 layout(push_constant, column_major) uniform _unused_name_uniform_buffer
 {
-        highp mat4x4 VP;
-        highp mat4x4 M;
+        highp mat4x4 projection_view_matrix;
+        highp mat4x4 model_matrix;
 };
 
 
 void main()
 {
-        //VP * M2 * vec4(in_position, 1.0f);
+        // Input
+        highp vec3 position_model_space = in_position_model_space;
 
-        //1.01 depth clip
-        out_position_world_space = (M * vec4(in_position, 1.01f)).xyz;
+        // 1.01 depth clip
+        highp vec3 position_world_space = (model_matrix * vec4(position_model_space, 1.0)).xyz;
+        highp vec4 position_clip_space = projection_view_matrix * vec4(position_world_space, 1.0); 
 
-        vec4 position_clip_space = VP *vec4(out_position_world_space, 1.01f); 
+        // TODO: normal matrix
+        highp mat3x3 tangent_matrix = mat3x3(model_matrix[0].xyz, model_matrix[1].xyz, model_matrix[2].xyz);
+        highp vec3 normal_world_space = normalize(tangent_matrix * in_normal);
 
+        // Output
         gl_Position = position_clip_space;
-
+        out_position_world_space = position_world_space;
+        out_normal_world_space = normal_world_space;
         out_uv = in_uv;
 }

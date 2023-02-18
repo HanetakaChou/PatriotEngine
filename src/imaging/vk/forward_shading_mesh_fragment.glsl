@@ -17,19 +17,20 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#extension GL_GOOGLE_include_directive : enable
+// #extension GL_GOOGLE_include_directive : enable
 
-#include "pt_gfx_shader_brdf.glslangh"
-#include "pt_gfx_shader_ao.glslangh"
+// #include "pt_gfx_shader_brdf.glslangh"
+// #include "pt_gfx_shader_ao.glslangh"
 
 layout(set = 0, binding = 5) uniform highp sampler2DArray point_lights_shadow;
 
 layout(set = 1, binding = 0) uniform highp sampler2D tex;
 
 layout(location = 0) in highp vec3 in_position_world_space;
-layout(location = 1) in highp vec2 in_uv;
+layout(location = 1) in highp vec3 in_normal_world_space;
+layout(location = 2) in highp vec2 in_uv;
 
-layout(location = 0) out highp vec4 uFragColor;
+layout(location = 0) out highp vec4 out_color;
 
 //highp vec2 ndc_to_uv(highp vec2 ndc)
 //{
@@ -38,6 +39,9 @@ layout(location = 0) out highp vec4 uFragColor;
 
 void main()
 {
+   // Input
+   highp vec3 normal_world_space = normalize(in_normal_world_space);
+
 #if 0
    highp float shadow_attenuation;
    {
@@ -73,5 +77,8 @@ void main()
    }
 #endif
 
-   uFragColor = texture(tex, in_uv);
+   highp vec3 diffuse_color = texture(tex, in_uv).rgb;
+
+   // out_color = vec4(normal_world_space, 1.0);
+   out_color = vec4(diffuse_color, 1.0);
 }

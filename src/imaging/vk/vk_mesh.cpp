@@ -21,7 +21,7 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
 #include "vk_mesh.h"
-#include "../mesh_asset_load.h"
+#include "../mesh_vertex.h"
 #include <assert.h>
 
 bool gfx_mesh_vk::load_header_callback(
@@ -66,7 +66,7 @@ bool gfx_mesh_vk::load_header_callback(
                 buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
                 buffer_create_info.pNext = NULL;
                 buffer_create_info.flags = 0U;
-                buffer_create_info.size = sizeof(pt_gfx_mesh_neutral_vertex_position) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
+                buffer_create_info.size = sizeof(mesh_vertex_position) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
                 buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
                 buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
                 buffer_create_info.queueFamilyIndexCount = 0U;
@@ -93,7 +93,7 @@ bool gfx_mesh_vk::load_header_callback(
             buffer_create_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
             buffer_create_info.pNext = NULL;
             buffer_create_info.flags = 0U;
-            buffer_create_info.size = sizeof(pt_gfx_mesh_neutral_vertex_varying) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
+            buffer_create_info.size = sizeof(mesh_vertex_varying) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
             buffer_create_info.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             buffer_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
             buffer_create_info.queueFamilyIndexCount = 0U;
@@ -154,14 +154,14 @@ size_t gfx_mesh_vk::calculate_staging_buffer_total_size_callback(
     for (uint32_t primitive_index = 0U; primitive_index < this->m_mesh_asset_header.primitive_count; ++primitive_index)
     {
         out_memcpy_dests[primitive_index].position_staging_offset = staging_offset;
-        out_memcpy_dests[primitive_index].position_staging_size = sizeof(pt_gfx_mesh_neutral_vertex_position) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
+        out_memcpy_dests[primitive_index].position_staging_size = sizeof(mesh_vertex_position) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
         // no alignment required
         size_t new_staging_offset = staging_offset + out_memcpy_dests[primitive_index].position_staging_size;
         total_bytes += (new_staging_offset - staging_offset);
         staging_offset = new_staging_offset;
 
         out_memcpy_dests[primitive_index].varying_staging_offset = staging_offset;
-        out_memcpy_dests[primitive_index].varying_staging_size = sizeof(pt_gfx_mesh_neutral_vertex_varying) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
+        out_memcpy_dests[primitive_index].varying_staging_size = sizeof(mesh_vertex_varying) * this->m_mesh_asset_primitive_headers[primitive_index].vertex_count;
         new_staging_offset = staging_offset + out_memcpy_dests[primitive_index].varying_staging_size;
         total_bytes += (new_staging_offset - staging_offset);
         staging_offset = new_staging_offset;

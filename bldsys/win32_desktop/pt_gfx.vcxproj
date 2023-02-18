@@ -22,6 +22,7 @@
     <ClCompile Include="..\..\src\imaging\mesh_asset_load.cpp" />
     <ClCompile Include="..\..\src\imaging\mesh_asset_load_pmx.cpp" />
     <ClCompile Include="..\..\src\imaging\mesh.cpp" />
+    <ClCompile Include="..\..\src\imaging\mesh_vertex.cpp" />
     <ClCompile Include="..\..\src\imaging\texture.cpp" />
     <ClCompile Include="..\..\src\imaging\texture_asset_load.cpp" />
     <ClCompile Include="..\..\src\imaging\texture_asset_load_dds.cpp" />
@@ -52,6 +53,7 @@
     <ClInclude Include="..\..\src\imaging\mesh_asset_load.h" />
     <ClInclude Include="..\..\src\imaging\mesh_asset_load_pmx.h" />
     <ClInclude Include="..\..\src\imaging\mesh.h" />
+    <ClInclude Include="..\..\src\imaging\mesh_vertex.h" />
     <ClInclude Include="..\..\src\imaging\texture.h" />
     <ClInclude Include="..\..\src\imaging\streaming_object.h" />
     <ClInclude Include="..\..\src\imaging\texture_asset_load.h" />
@@ -77,6 +79,12 @@
     <ProjectReference Include="pt_mcrt.vcxproj">
       <Project>{852991e1-1003-4a40-aac0-04f949045fc9}</Project>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl" />
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.inl" />
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl" />
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.inl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

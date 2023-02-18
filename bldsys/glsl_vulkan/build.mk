@@ -22,6 +22,6 @@ all: \
 	pt_gfx_glsl_vulkan_lighting_mesh_frag.inl
 
 pt_gfx_glsl_vulkan_lighting_mesh_vert.inl : pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl pt_gfx_shader_brdf.glslangh
-	glslangValidator -S vert -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_vert.inl -x pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl
+	glslangValidator -g -Od -S vert -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_vert.inl -x pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl
 pt_gfx_glsl_vulkan_lighting_mesh_frag.inl : pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl pt_gfx_shader_brdf.glslangh
-	glslangValidator -S frag -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_frag.inl -x pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl
+	glslangValidator -g -Od -S frag -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_frag.inl -x pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl

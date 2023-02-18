@@ -21,8 +21,8 @@
 #include <pt_mcrt_set.h>
 #include <pt_mcrt_map.h>
 #include <pt_mcrt_memcpy.h>
-#include "mesh_asset_load.h"
 #include "mesh_asset_load_pmx.h"
+#include "mesh_vertex.h"
 #include <assert.h>
 
 struct mesh_asset_pmx_header_t
@@ -767,38 +767,44 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     // validate internal header
     assert(mesh_asset_pmx_header.vertex_count = vertex_count);
 
-    mcrt_vector<pt_math_vec3> vertices_positions(static_cast<size_t>(vertex_count));
-    mcrt_vector<pt_math_vec3> vertices_normals(static_cast<size_t>(vertex_count));
-    mcrt_vector<pt_math_vec2> vertices_uvs(static_cast<size_t>(vertex_count));
+    mcrt_vector<decltype(mesh_vertex_position::position)> vertices_positions(static_cast<size_t>(vertex_count));
+    mcrt_vector<decltype(mesh_vertex_varying::normal)> vertices_normals(static_cast<size_t>(vertex_count));
+    mcrt_vector<decltype(mesh_vertex_varying::uv)> vertices_uvs(static_cast<size_t>(vertex_count));
 
     for (uint32_t vertex_index = 0U; vertex_index < vertex_count; ++vertex_index)
     {
         // position
-        pt_math_vec3 vertex_position;
+        float vertex_position[3];
         intptr_t res_read_position = input_stream_read_callback(input_stream, &vertex_position, (sizeof(float) * 3U));
         if (res_read_position == -1 || (sizeof(float) * 3U) != static_cast<size_t>(res_read_position))
         {
             return false;
         }
-        vertices_positions[vertex_index] = vertex_position;
+        vertices_positions[vertex_index][0] = vertex_position[0];
+        vertices_positions[vertex_index][1] = vertex_position[1];
+        vertices_positions[vertex_index][2] = vertex_position[2];
 
         // normal
-        pt_math_vec3 vertex_normal;
+        float vertex_normal[3];
         intptr_t res_read_normal = input_stream_read_callback(input_stream, &vertex_normal, (sizeof(float) * 3U));
         if (res_read_normal == -1 || (sizeof(float) * 3U) != static_cast<size_t>(res_read_normal))
         {
             return false;
         }
-        vertices_normals[vertex_index] = vertex_normal;
+        vertices_normals[vertex_index][0] = mesh_vertex_float_to_8_snorm(vertex_normal[0]);
+        vertices_normals[vertex_index][1] = mesh_vertex_float_to_8_snorm(vertex_normal[1]);
+        vertices_normals[vertex_index][2] = mesh_vertex_float_to_8_snorm(vertex_normal[2]);
+        vertices_normals[vertex_index][3] = mesh_vertex_float_to_8_snorm(1.0F);
 
         // uv
-        pt_math_vec2 vertex_uv;
+        float vertex_uv[2];
         intptr_t res_read_uv = input_stream_read_callback(input_stream, &vertex_uv, (sizeof(float) * 2U));
         if (res_read_uv == -1 || (sizeof(float) * 2U) != static_cast<size_t>(res_read_uv))
         {
             return false;
         }
-        vertices_uvs[vertex_index] = vertex_uv;
+        vertices_uvs[vertex_index][0] = mesh_vertex_float_to_16_unorm(vertex_uv[0]);
+        vertices_uvs[vertex_index][1] = mesh_vertex_float_to_16_unorm(vertex_uv[1]);
 
         // additional vec4
         if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 4U * mesh_asset_pmx_header.additional_vec4_count, PT_INPUT_STREAM_SEEK_CUR))
@@ -1205,17 +1211,23 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
             uint32_t const mesh_vertex_index = pair.first;
             uint32_t const material_vertex_index = pair.second;
 
-            pt_math_vec3 *out_position = reinterpret_cast<pt_math_vec3 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(pt_gfx_mesh_neutral_vertex_position) * material_vertex_index + offsetof(pt_gfx_mesh_neutral_vertex_position, position));
-            (*out_position) = vertices_positions[mesh_vertex_index];
+            decltype(mesh_vertex_position::position) *out_position = reinterpret_cast<decltype(mesh_vertex_position::position) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position));
+            (*out_position)[0] = vertices_positions[mesh_vertex_index][0];
+            (*out_position)[1] = vertices_positions[mesh_vertex_index][1];
+            (*out_position)[2] = vertices_positions[mesh_vertex_index][2];
 
-            pt_math_vec3 *out_normal = reinterpret_cast<pt_math_vec3 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(pt_gfx_mesh_neutral_vertex_varying) * material_vertex_index + offsetof(pt_gfx_mesh_neutral_vertex_varying, normal));
-            (*out_normal) = vertices_normals[mesh_vertex_index];
+            decltype(mesh_vertex_varying::normal) *out_normal = reinterpret_cast<decltype(mesh_vertex_varying::normal) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, normal));
+            (*out_normal)[0] = vertices_normals[mesh_vertex_index][0];
+            (*out_normal)[1] = vertices_normals[mesh_vertex_index][1];
+            (*out_normal)[2] = vertices_normals[mesh_vertex_index][2];
+            (*out_normal)[3] = vertices_normals[mesh_vertex_index][3];
 
-            // pt_math_vec3 *out_tangent = reinterpret_cast<pt_math_vec3 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(pt_gfx_mesh_neutral_vertex_varying) * material_vertex_index + offsetof(pt_gfx_mesh_neutral_vertex_varying, tangent));
+            // pt_math_vec3 *out_tangent = reinterpret_cast<pt_math_vec3 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, tangent));
             //(*out_tangent) =
 
-            pt_math_vec2 *out_uv = reinterpret_cast<pt_math_vec2 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(pt_gfx_mesh_neutral_vertex_varying) * material_vertex_index + offsetof(pt_gfx_mesh_neutral_vertex_varying, uv));
-            (*out_uv) = vertices_uvs[mesh_vertex_index];
+            decltype(mesh_vertex_varying::uv)* out_uv = reinterpret_cast<decltype(mesh_vertex_varying::uv) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, uv));
+            (*out_uv)[0] = vertices_uvs[mesh_vertex_index][0];
+            (*out_uv)[1] = vertices_uvs[mesh_vertex_index][1];
         }
 
         if (0XFFFFFFFFU > mesh_vertex_indices_to_material_vertex_indices.size())

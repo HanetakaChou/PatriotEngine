@@ -76,6 +76,9 @@
     <ClCompile Include="..\..\src\imaging\vk\vk_texture.cpp">
       <Filter>src\imaging\vk</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\imaging\mesh_vertex.cpp">
+      <Filter>src\imaging</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -164,5 +167,22 @@
     <ClInclude Include="..\..\include\pt_io.h">
       <Filter>include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\imaging\mesh_vertex.h">
+      <Filter>src\imaging</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl">
+      <Filter>src\imaging\vk</Filter>
+    </None>
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.inl">
+      <Filter>src\imaging\vk</Filter>
+    </None>
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl">
+      <Filter>src\imaging\vk</Filter>
+    </None>
+    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.inl">
+      <Filter>src\imaging\vk</Filter>
+    </None>
   </ItemGroup>
 </Project>

@@ -20,7 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_gfx_connection.h>
+#include "mesh_asset_load.h"
 
 //--------------------------------------------------------------------------------------
 // This is an English description of the .PMX file format used in Miku Miku Dance (MMD)
