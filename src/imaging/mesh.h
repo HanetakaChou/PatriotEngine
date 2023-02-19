@@ -23,8 +23,8 @@
 #include <pt_gfx_connection.h>
 #include <pt_mcrt_allocator.h>
 #include <pt_mcrt_vector.h>
+#include <pt_gfx_frame_object_base.h>
 #include "streaming_object.h"
-#include "../pt_gfx_frame_object_base.h"
 #include "mesh_asset_load.h"
 
 class gfx_mesh_base : public gfx_streaming_object_base, public gfx_frame_object_base

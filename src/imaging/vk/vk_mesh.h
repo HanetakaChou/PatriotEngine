@@ -22,8 +22,8 @@
 #include <stdint.h>
 #include <pt_mcrt_allocator.h>
 #include <pt_mcrt_vector.h>
-#include "../mesh.h"
-#include "../../pt_gfx_connection_vk.h"
+#include <imaging/mesh.h>
+#include <pt_gfx_connection_vk.h>
 #include <vulkan/vulkan.h>
 
 struct gfx_mesh_primitive_vk

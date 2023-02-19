@@ -20,10 +20,34 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\pt_mcrt_intrin.cpp" />
+    <ClCompile Include="..\..\src\pt_mcrt_intrin_x86_sse2.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
     <ClCompile Include="..\..\src\pt_mcrt_log.cpp" />
     <ClCompile Include="..\..\src\pt_mcrt_malloc.cpp" />
     <ClCompile Include="..\..\src\pt_mcrt_memcmp.cpp" />
     <ClCompile Include="..\..\src\pt_mcrt_memcpy.cpp" />
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp">
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+    </ClCompile>
     <ClCompile Include="..\..\src\pt_mcrt_memset.cpp" />
     <ClCompile Include="..\..\src\pt_mcrt_task.cpp" />
     <ClCompile Include="pt_dllmain.cpp" />
@@ -96,17 +120,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="pt_mcrt_avx.vcxproj">
-      <Project>{eaf9fcce-1d98-4c27-9712-07b05b2f26be}</Project>
-    </ProjectReference>
-    <ProjectReference Include="pt_mcrt_avx512.vcxproj">
-      <Project>{d8fff705-d586-4420-a289-354a0be93e07}</Project>
-    </ProjectReference>
-    <ProjectReference Include="pt_mcrt_sse2.vcxproj">
-      <Project>{a7c88880-fc77-4372-b5a3-5ba0e2a10135}</Project>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

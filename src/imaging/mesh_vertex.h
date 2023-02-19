@@ -20,6 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <pt_math.h>
 
 // vertex bindings/attributes
 // location = 0 binding = 0 position VK_FORMAT_R32G32B32_SFLOAT
@@ -34,10 +35,6 @@ struct mesh_vertex_position
 // location = 3 binding = 1 uv VK_FORMAT_R16G16_UNORM
 struct mesh_vertex_varying
 {
-    // [Frey 2011] Ivo Frey. "Spherical Skinning withDual-Quaternions and Qtangents." SIGGRAPH 2011.
-
-    // represent the tangent frame with the unit quaternion
-    // sign invariant: since the unit quaternion q and -q represent the same rotation transform, we can compress the unit quaternion to three components and use the sign of the w component to denote the reflection (note the +0 and -0 may NOT be distinguished by GPU)
 
     uint8_t normal[4];
     uint8_t tangent[4];
@@ -48,6 +45,12 @@ extern int8_t mesh_vertex_float_to_8_snorm(float unpacked_input);
 
 extern uint16_t mesh_vertex_float_to_16_unorm(float unpacked_input);
 
-
+extern void mesh_vertex_compute_tangent_frame(
+    size_t face_count,
+    uint32_t const* indices,
+    size_t vertex_count,
+    pt_math_vec3 const positions[3],
+    pt_math_vec3 const normals[3],
+    pt_math_vec2 const uvs[3]);
 
 #endif

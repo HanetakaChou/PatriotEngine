@@ -51,6 +51,18 @@
     <ClCompile Include="..\..\src\pt_mcrt_memcpy.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\pt_mcrt_intrin_x86_sse2.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\pt_mcrt_assert.h">

@@ -170,6 +170,15 @@
     <ClInclude Include="..\..\src\imaging\mesh_vertex.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\pt_math.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_math_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\pt_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl">

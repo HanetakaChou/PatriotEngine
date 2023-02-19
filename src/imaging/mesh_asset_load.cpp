@@ -15,9 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <stddef.h>
-#include <stdint.h>
-#include <assert.h>
 #include "mesh_asset_load.h"
 #include "mesh_asset_load_pmx.h"
 

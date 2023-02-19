@@ -20,8 +20,8 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
+#include <imaging/mesh_vertex.h>
 #include "vk_mesh.h"
-#include "../mesh_vertex.h"
 #include <assert.h>
 
 bool gfx_mesh_vk::load_header_callback(

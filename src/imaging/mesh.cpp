@@ -15,9 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include <stddef.h>
-#include <stdint.h>
-#include <pt_mcrt_atomic.h>
 #include "mesh.h"
 #include <assert.h>
 

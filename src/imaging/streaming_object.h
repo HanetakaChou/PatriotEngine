@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <pt_mcrt_task.h>
 #include <pt_mcrt_spinlock.h>
-#include "../pt_gfx_connection_base.h"
+#include <pt_gfx_connection_base.h>
 #include <assert.h>
 
 class gfx_streaming_object_base

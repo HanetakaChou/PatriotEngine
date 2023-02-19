@@ -20,7 +20,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <pt_gfx_connection.h>
+#include <pt_io.h>
 
 enum gfx_texture_neutral_type_t
 {
