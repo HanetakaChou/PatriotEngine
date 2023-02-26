@@ -81,10 +81,27 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl" />
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.inl" />
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl" />
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.inl" />
+    <CustomBuild Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslangValidator</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslangValidator</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename).inl</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)%(Filename).inl</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\..\..\third_party\vulkan_sdk\bin\win32_desktop_x64\glslangValidator.exe -g -Od -S frag -V100 -o %(RootDir)%(Directory)%(Filename).inl  -x %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\..\..\third_party\vulkan_sdk\bin\win32_desktop_x64\glslangValidator.exe -S frag -V100 -o %(RootDir)%(Directory)%(Filename).inl  -x %(FullPath)</Command>
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">vulkan_sdk\bin\win32_desktop_x64</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">vulkan_sdk\bin\win32_desktop_x64</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\..\..\third_party\vulkan_sdk\bin\win32_desktop_x64\glslangValidator.exe -g -Od -S vert -V100 -o %(RootDir)%(Directory)%(Filename).inl  -x %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\..\..\third_party\vulkan_sdk\bin\win32_desktop_x64\glslangValidator.exe -S vert -V100 -o %(RootDir)%(Directory)%(Filename).inl  -x %(FullPath)</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(RootDir)%(Directory)%(Filename).inl</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glslangValidator</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glslangValidator</Message>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(RootDir)%(Directory)%(Filename).inl</Outputs>
+    </CustomBuild>
+    <None Include="..\..\src\imaging\vk\quaternion.glsli" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

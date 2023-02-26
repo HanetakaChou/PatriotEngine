@@ -22,50 +22,142 @@
 #include <pt_mcrt_vector.h>
 #include <assert.h>
 
-extern int8_t mesh_vertex_float_to_8_snorm(float unpacked_input)
+extern uint32_t mesh_vertex_float4_to_r8g8b8a8_snorm(float unpacked_input[4])
 {
     // UE: [FPackedNormal](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/RenderCore/Public/PackedNormal.h#L98)
-
-    assert((-1.01F < unpacked_input) && (unpacked_input < 1.01F));
-
+    //
     // D3DX_DXGIFormatConvert.inl
     // D3DX_FLOAT4_to_R8G8B8A8_SNORM
-    float saturate_signed_float = std::min(std::max(unpacked_input, -1.0F), 1.0F);
-    float float_to_int = saturate_signed_float * static_cast<float>(INT8_MAX) + ((saturate_signed_float >= 0.0F) ? 0.5F : -0.5F);
-    float truncate_float = (float_to_int >= 0.0F) ? std::floor(float_to_int) : std::ceil(float_to_int);
-    int8_t packed_output = static_cast<int8_t>(truncate_float);
+    // DirectXMathConvert.inl
+    // XMConvertVectorFloatToInt
+    assert((-1.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
+    assert((-1.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
+    assert((-1.01F < unpacked_input[2]) && (unpacked_input[2] < 1.01F));
+    assert((-1.01F < unpacked_input[3]) && (unpacked_input[3] < 1.01F));
+
+    float saturate_signed_float[4] = {
+        std::min(std::max(unpacked_input[0], -1.0F), 1.0F),
+        std::min(std::max(unpacked_input[1], -1.0F), 1.0F),
+        std::min(std::max(unpacked_input[2], -1.0F), 1.0F),
+        std::min(std::max(unpacked_input[3], -1.0F), 1.0F),
+    };
+
+    float float_to_int[4] = {
+        saturate_signed_float[0] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[0] >= 0.0F) ? 0.5F : -0.5F),
+        saturate_signed_float[1] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[1] >= 0.0F) ? 0.5F : -0.5F),
+        saturate_signed_float[2] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[2] >= 0.0F) ? 0.5F : -0.5F),
+        saturate_signed_float[3] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[3] >= 0.0F) ? 0.5F : -0.5F)};
+
+    float truncate_float[4] = {
+        (float_to_int[0] >= 0.0F) ? std::floor(float_to_int[0]) : std::ceil(float_to_int[0]),
+        (float_to_int[1] >= 0.0F) ? std::floor(float_to_int[1]) : std::ceil(float_to_int[1]),
+        (float_to_int[2] >= 0.0F) ? std::floor(float_to_int[2]) : std::ceil(float_to_int[2]),
+        (float_to_int[3] >= 0.0F) ? std::floor(float_to_int[3]) : std::ceil(float_to_int[3]),
+    };
+
+    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(UINT8_MAX)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(UINT8_MAX)) << 8U) | ((static_cast<uint32_t>(truncate_float[2]) & static_cast<uint32_t>(UINT8_MAX)) << 16U) | ((static_cast<uint32_t>(truncate_float[3]) & static_cast<uint32_t>(UINT8_MAX)) << 24U);
     return packed_output;
 }
 
-extern uint16_t mesh_vertex_float_to_16_unorm(float unpacked_input)
+extern uint32_t mesh_vertex_float4_to_r10g10b10a2_unorm(float unpacked_input[4])
 {
-    assert((-0.01F < unpacked_input) && (unpacked_input < 1.01F));
+    // D3DX_DXGIFormatConvert.inl
+    // D3DX_FLOAT4_to_R10G10B10A2_UNORM
+    assert((-0.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
+    assert((-0.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
+    assert((-0.01F < unpacked_input[2]) && (unpacked_input[2] < 1.01F));
+    assert((-0.01F < unpacked_input[3]) && (unpacked_input[3] < 1.01F));
 
+    float saturate_float[4] = {
+        std::min(std::max(unpacked_input[0], 0.0F), 1.0F),
+        std::min(std::max(unpacked_input[1], 0.0F), 1.0F),
+        std::min(std::max(unpacked_input[2], 0.0F), 1.0F),
+        std::min(std::max(unpacked_input[3], 0.0F), 1.0F),
+    };
+
+    float float_to_uint[4] = {
+        saturate_float[0] * static_cast<float>(0X3FFU) + 0.5F,
+        saturate_float[1] * static_cast<float>(0X3FFU) + 0.5F,
+        saturate_float[2] * static_cast<float>(0X3FFU) + 0.5F,
+        saturate_float[3] * static_cast<float>(0X3U) + 0.5F};
+
+    float truncate_float[4] = {
+        std::floor(float_to_uint[0]),
+        std::floor(float_to_uint[1]),
+        std::floor(float_to_uint[2]),
+        std::floor(float_to_uint[3]),
+    };
+
+    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(0X3FFU)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(0X3FFU)) << 10U) | ((static_cast<uint32_t>(truncate_float[2]) & static_cast<uint32_t>(0X3FFU)) << 20U) | ((static_cast<uint32_t>(truncate_float[3]) & static_cast<uint32_t>(0X3U)) << 30);
+    return packed_output;
+}
+
+extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2])
+{
     // D3DX_DXGIFormatConvert.inl
     // D3DX_FLOAT4_to_R8G8B8A8_UNORM
-    float saturate_float = std::min(std::max(unpacked_input, 0.0F), 1.0F);
-    float float_to_uint = saturate_float * static_cast<float>(UINT16_MAX) + 0.5F;
-    float truncate_float = std::floor(float_to_uint);
-    uint16_t packed_output = static_cast<uint16_t>(truncate_float);
+    // DirectXMathConvert.inl
+    // XMConvertVectorFloatToUInt
+    assert((-0.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
+    assert((-0.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
+
+    float saturate_float[2] = {
+        std::min(std::max(unpacked_input[0], 0.0F), 1.0F),
+        std::min(std::max(unpacked_input[1], 0.0F), 1.0F),
+    };
+
+    float float_to_uint[2] = {
+        saturate_float[0] * static_cast<float>(UINT16_MAX) + 0.5F,
+        saturate_float[1] * static_cast<float>(UINT16_MAX) + 0.5F};
+
+    float truncate_float[2] = {
+        std::floor(float_to_uint[0]),
+        std::floor(float_to_uint[1])};
+
+    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(UINT16_MAX)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(UINT16_MAX)) << 16U);
     return packed_output;
+}
+
+pt_math_simd_vec unit_quaternion_to_rotation_transform(pt_math_simd_vec r, pt_math_simd_vec p)
+{
+    // "Fig. 6.7" and "Fig. 6.8" of [Quaternions for Computer Graphics](https://link.springer.com/book/10.1007/978-1-4471-7509-4)
+    // "Lemma 4" of [Ladislav Kavan, Steven Collins, Jiri Zara, Carol O'Sullivan. "Geometric Skinning with Approximate Dual Quaternion Blending." SIGGRAPH 2008.](http://www.cs.utah.edu/~ladislav/kavan08geometric/kavan08geometric.html)
+
+    return pt_math_vec_add(p,
+                           pt_math_vec_scale(
+                               pt_math_vec3_cross(r,
+                                                  pt_math_vec_add(
+                                                      pt_math_vec3_cross(r, p),
+                                                      pt_math_vec_scale(p, pt_math_vec_get_w(r)))),
+                               2.0F));
 }
 
 extern void mesh_vertex_compute_tangent_frame(
     size_t face_count,
     uint32_t const *indices,
     size_t vertex_count,
-    pt_math_vec3 const positions[3],
-    pt_math_vec3 const normals[3],
-    pt_math_vec2 const uvs[3])
+    pt_math_vec3 const *positions,
+    pt_math_vec3 const *normals,
+    pt_math_vec2 const *uvs,
+    pt_math_vec4 *out_qtangents,
+    float *out_reflections)
 {
+    // [DirectXMesh Wiki / ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/wiki/ComputeTangentFrame)
     // [DirectX::ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/blob/dec2022/DirectXMesh/DirectXMeshTangentFrame.cpp#L22)
 
-    mcrt_vector<pt_math_alignas16_vec3> tmp_tangents(vertex_count);
-    mcrt_vector<pt_math_alignas16_vec3> tmp_bitangents(vertex_count);
+    // floating-point addition is NOT associative
+    // the "double" is used to improve precision
+    mcrt_vector<double[3]> reduction_tangents(vertex_count);
+    mcrt_vector<double[3]> reduction_bitangents(vertex_count);
     for (size_t vertex_index = 0U; vertex_index < vertex_count; ++vertex_index)
     {
-        pt_math_store_vec3(&tmp_tangents[vertex_index], pt_math_vec_zero());
-        pt_math_store_vec3(&tmp_bitangents[vertex_index], pt_math_vec_zero());
+        reduction_tangents[vertex_index][0] = 0.0;
+        reduction_tangents[vertex_index][1] = 0.0;
+        reduction_tangents[vertex_index][2] = 0.0;
+
+        reduction_bitangents[vertex_index][0] = 0.0;
+        reduction_bitangents[vertex_index][1] = 0.0;
+        reduction_bitangents[vertex_index][2] = 0.0;
     }
 
     for (size_t face_index = 0U; face_index < face_count; ++face_index)
@@ -74,87 +166,308 @@ extern void mesh_vertex_compute_tangent_frame(
         uint32_t i1 = indices[face_index * 3 + 1];
         uint32_t i2 = indices[face_index * 3 + 2];
 
-        pt_math_simd_vec const p0 = XMLoadFloat3(&positions[i0]);
-        pt_math_simd_vec const p1 = XMLoadFloat3(&positions[i1]);
-        pt_math_simd_vec const p2 = XMLoadFloat3(&positions[i2]);
+        pt_math_simd_vec const p0 = pt_math_load_vec3(&positions[i0]);
+        pt_math_simd_vec const p1 = pt_math_load_vec3(&positions[i1]);
+        pt_math_simd_vec const p2 = pt_math_load_vec3(&positions[i2]);
 
-        pt_math_simd_vec const uv0 = pt_math_load_vec2(&uvs[i0]);
-        pt_math_simd_vec const uv1 = pt_math_load_vec2(&uvs[i1]);
-        pt_math_simd_vec const uv2 = pt_math_load_vec2(&uvs[i2]);
+        double u0 = uvs[i0].x;
+        double v0 = uvs[i0].y;
+        double u1 = uvs[i1].x;
+        double v1 = uvs[i1].y;
+        double u2 = uvs[i2].x;
+        double v2 = uvs[i2].y;
 
         // p1 - p0 = (u1 - u0) * t + (v1 - v0) * b
         // p2 - p0 = (u2 - u0) * t + (v2 - v0) * b
         //
-        // [ p1 - p0 ]   | u1 - u0  v1 - v0 |   | t |
-        // [ p2 - p0 ] = | u2 - u0  v2 - v0 | * | b |
+        // [ p1 - p0 ]   [ u1 - u0  v1 - v0 ]   [ t ]
+        // [ p2 - p0 ] = [ u2 - u0  v2 - v0 ] * [ b ]
         //
         // determinant =  (u1 - u0) * (v2 - v0) - (u2 - u0) - (v1 - v0)
         //
-        //                               |   v2 - v0    -(v1 - v0) |
-        // inverse = (1.0 / determinant) | -(u2 - u0)     u1 - u0  |
+        //                                       [   v2 - v0    -(v1 - v0) ]
+        // inverse_mat_v = (1.0 / determinant) * [ -(u2 - u0)     u1 - u0  ]
         //
-        // t = (1.0 / determinant) *   (v2 - v0)  * (p1 - p0) + (1.0 / determinant) * (-(v1 - v0)) * (p2 - p0)
-        // b = (1.0 / determinant) * (-(u2 - u0)) * (p1 - p0) + (1.0 / determinant) *   (u1 - u0)  * (p2 - p0)
+        // [ t ] =                       [   v2 - v0    -(v1 - v0) ] * [ p1 - p0 ]
+        // [ b ] = (1.0 / determinant) * [ -(u2 - u0)     u1 - u0  ] * [ p2 - p0 ]
+        //
+        // t = ((1.0 / determinant) *   (v2 - v0))  * [ p1 - p0 ] + ((1.0 / determinant) * (-(v1 - v0))) * [ p2 - p0 ]
+        // b = ((1.0 / determinant) * (-(u2 - u0))) * [ p1 - p0 ] + ((1.0 / determinant) *   (u1 - u0))  * [ p2 - p0 ]
 
-        // s = [u1 - u0, v1 - v0, u2 - u0, v1 - v0]
-        pt_math_alignas16_vec4 s;
-        pt_math_store_alignas16_vec4(&s, pt_math_vec_merge_xy(pt_math_vec_subtract(uv1, uv0), pt_math_vec_subtract(uv2, uv0)));
+        double mat_uv_r0_c0 = u1 - u0;
+        double mat_uv_r0_c1 = v1 - v0;
+        double mat_uv_r1_c0 = u2 - u0;
+        double mat_uv_r1_c1 = v2 - v0;
 
-        // determinant =  (u1 - u0) * (v2 - v0) - (u2 - u0) - (v1 - v0)
-        float determinant = s.x * s.w - s.z * s.y;
+        double determinant = mat_uv_r0_c0 * mat_uv_r1_c1 - mat_uv_r1_c0 * mat_uv_r0_c1;
 
-        float reciprocal_determinant = (((determinant < (-FLT_EPSILON)) && (determinant > FLT_EPSILON)) ? (1.0F / determinant) : 1.0F);
+        double reciprocal_determinant = (((determinant < (-DBL_EPSILON)) || (determinant > DBL_EPSILON)) ? (1.0 / determinant) : 1.0);
 
-        // (1.0 / determinant) * [v2 - v0, -(u2 - u0), 0, 0]
-        pt_math_alignas16_vec4 inverse_r0(reciprocal_determinant * s.w, reciprocal_determinant * (-s.z), 0.0F, 0.0F);
+        double inverse_mat_uv_r0_c0 = reciprocal_determinant * mat_uv_r1_c1;
+        double inverse_mat_uv_r0_c1 = reciprocal_determinant * (-mat_uv_r0_c1);
+        double inverse_mat_uv_r1_c0 = reciprocal_determinant * (-mat_uv_r1_c0);
+        double inverse_mat_uv_r1_c1 = reciprocal_determinant * mat_uv_r0_c0;
 
-        // (1.0 / determinant) * [-(v1 - v0), u1 - u0, 0, 0]
-        pt_math_alignas16_vec4 inverse_r1(reciprocal_determinant * (-s.y), reciprocal_determinant * s.x, 0.0F, 0.0F);
+        pt_math_simd_vec p0_to_p1 = pt_math_vec_subtract(p1, p0);
+        pt_math_simd_vec p0_to_p2 = pt_math_vec_subtract(p2, p0);
 
-        pt_math_simd_mat inverse;
-        inverse.r[0] = pt_math_load_alignas16_vec4(&inverse_r0);
-        inverse.r[1] = pt_math_load_alignas16_vec4(&inverse_r1);
-        inverse.r[2] = pt_math_vec_zero();
-        inverse.r[3] = pt_math_vec_zero();
-
-        // (p1 - p0)
-        // (p2 - p0)
-        pt_math_simd_mat p;
-        p.r[0] = DirectX::XMVectorSubtract(p1, p0);
-        p.r[1] = DirectX::XMVectorSubtract(p2, p0);
-        p.r[2] = pt_math_vec_zero();
-        p.r[3] = pt_math_vec_zero();
-
-        // t
-        // b
-        pt_math_simd_mat uv = pt_math_mat_multiply(inverse, p);
+        pt_math_alignas16_vec3 tangent;
+        pt_math_store_alignas16_vec3(&tangent, pt_math_vec_add(pt_math_vec_scale(p0_to_p1, static_cast<float>(inverse_mat_uv_r0_c0)), pt_math_vec_scale(p0_to_p2, static_cast<float>(inverse_mat_uv_r0_c1))));
+        pt_math_alignas16_vec3 bitangent;
+        pt_math_store_alignas16_vec3(&bitangent, pt_math_vec_add(pt_math_vec_scale(p0_to_p1, static_cast<float>(inverse_mat_uv_r1_c0)), pt_math_vec_scale(p0_to_p2, static_cast<float>(inverse_mat_uv_r1_c1))));
 
         // blend tangents of the same vertex
-        pt_math_store_alignas16_vec3(&tmp_tangents[i0], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_tangents[i0]), uv.r[0]));
-        pt_math_store_alignas16_vec3(&tmp_tangents[i1], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_tangents[i1]), uv.r[0]));
-        pt_math_store_alignas16_vec3(&tmp_tangents[i2], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_tangents[i2]), uv.r[0]));
-        pt_math_store_alignas16_vec3(&tmp_bitangents[i0], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_bitangents[i0]), uv.r[1]));
-        pt_math_store_alignas16_vec3(&tmp_bitangents[i1], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_bitangents[i1]), uv.r[1]));
-        pt_math_store_alignas16_vec3(&tmp_bitangents[i2], pt_math_vec_add(pt_math_load_alignas16_vec3(&tmp_bitangents[i2]), uv.r[1]));
+        reduction_tangents[i0][0] += tangent.x;
+        reduction_tangents[i0][1] += tangent.y;
+        reduction_tangents[i0][2] += tangent.z;
+        reduction_tangents[i1][0] += tangent.x;
+        reduction_tangents[i1][1] += tangent.y;
+        reduction_tangents[i1][2] += tangent.z;
+        reduction_tangents[i2][0] += tangent.x;
+        reduction_tangents[i2][1] += tangent.y;
+        reduction_tangents[i2][2] += tangent.z;
+        reduction_bitangents[i0][0] += bitangent.x;
+        reduction_bitangents[i0][1] += bitangent.y;
+        reduction_bitangents[i0][2] += bitangent.z;
+        reduction_bitangents[i1][0] += bitangent.x;
+        reduction_bitangents[i1][1] += bitangent.y;
+        reduction_bitangents[i1][2] += bitangent.z;
+        reduction_bitangents[i2][0] += bitangent.x;
+        reduction_bitangents[i2][1] += bitangent.y;
+        reduction_bitangents[i2][2] += bitangent.z;
     }
 
     for (size_t vertex_index = 0U; vertex_index < vertex_count; ++vertex_index)
     {
-        // float4 tangent:
-        // [DirectXMesh Wiki / ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/wiki/ComputeTangentFrame)
-        // "7.5 Tangent Space" of [Lengyel 2019] [Eric Lengyel. "Foundations of Game Engine Development : Volume 2 - Rendering." Terathon Software LLC 2019.](http://foundationsofgameenginedev.com/)
-        // Since the vectors are orthogonal, it is not necessary to store all three of the vectors t, b, and n for each vertex.
-        // Just the normal vector and the tangent vector will always suffice, but we do need one additional bit of information.
-        // The tangent frame can form either a right-handed or left-handed coordinate system, and which one is given by the sign of determinant of matrix tangent.
-        // Calling the sign of this determinant σ, we can reconstitute the bitangent with the cross product b = σ * cross(n, t), and then only the normal and tangent need to be supplied as vertex attributes.
+        pt_math_simd_vec normal;
+        pt_math_simd_vec tangent;
+        pt_math_simd_vec bitangent;
+        {
+            // Gram–Schmidt process
+            // https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process
+            //
+            // (modified) Gram-Schmidt process
+            // "Equation (9.48)" of [Real Time Rendering](https://www.realtimerendering.com/)
+            //
+            // e1 = normalize(v1)
+            // e2 = normalize(v2 - e1 * dot(v2, e1))
+            // e3 = normalize(v3 - e1 * dot(v3, e1) - e2 * dot(v3, e2))
 
-        // float4 quaternion:
-        // [Frey 2011] Ivo Frey. "Spherical Skinning withDual-Quaternions and Qtangents." SIGGRAPH 2011.
-        // represent the tangent frame with the unit quaternion
-        // sign invariant: since the unit quaternion q and -q represent the same rotation transform, we can compress the unit quaternion to three components and use the sign of the w component to denote the reflection (note the +0 and -0 may NOT be distinguished by GPU)
+            pt_math_simd_vec v1 = pt_math_load_vec3(&normals[vertex_index]);
+            pt_math_alignas16_vec3 tmp_v2(static_cast<float>(reduction_tangents[vertex_index][0]), static_cast<float>(reduction_tangents[vertex_index][1]), static_cast<float>(reduction_tangents[vertex_index][2]));
+            pt_math_simd_vec v2 = pt_math_load_alignas16_vec3(&tmp_v2);
+            pt_math_alignas16_vec3 tmp_v3(static_cast<float>(reduction_bitangents[vertex_index][0]), static_cast<float>(reduction_bitangents[vertex_index][1]), static_cast<float>(reduction_bitangents[vertex_index][2]));
+            pt_math_simd_vec v3 = pt_math_load_alignas16_vec3(&tmp_v3);
 
-        // float3 tangent + float3 bitangent:
-        // Gram-Schmidt
-        // 
+#if 1
+            // v1, v2 and v3 should be linearly independent
+            {
+                float length_v1 = pt_math_vec_get_x(pt_math_vec3_length(v1));
+                float length_v2 = pt_math_vec_get_x(pt_math_vec3_length(v2));
+                float length_v3 = pt_math_vec_get_x(pt_math_vec3_length(v3));
+
+                // Handle degenerate vectors
+                if (length_v1 < FLT_EPSILON || length_v2 < FLT_EPSILON || length_v3 < FLT_EPSILON)
+                {
+                    auto reset_from_two_vectors = [](pt_math_simd_vec a, pt_math_simd_vec b, pt_math_simd_vec &c) -> void
+                    {
+                        // Reset c from a and b
+                        pt_math_simd_vec simd_c_from_cross = pt_math_vec3_cross(a, b);
+
+                        pt_math_alignas16_vec3 c_from_cross;
+                        pt_math_store_alignas16_vec3(&c_from_cross, simd_c_from_cross);
+
+                        pt_math_alignas16_vec3 c_from_asset;
+                        pt_math_store_alignas16_vec3(&c_from_asset, c);
+
+                        // +0 and -0 are different
+                        float reflect = ((static_cast<double>(c_from_asset.x) * static_cast<double>(c_from_cross.x) + static_cast<double>(c_from_asset.y) * static_cast<double>(c_from_cross.y) + static_cast<double>(c_from_asset.z) * static_cast<double>(c_from_cross.z)) >= 0.0) ? 1.0F : -1.0F;
+
+                        c = pt_math_vec_scale(simd_c_from_cross, reflect);
+                    };
+
+                    auto reset_from_one_vector = [](pt_math_simd_vec a, pt_math_simd_vec &b, pt_math_simd_vec &c) -> void
+                    {
+                        // Reset both b and c from a
+                        pt_math_alignas16_vec3 tmp_a;
+                        pt_math_store_alignas16_vec3(&tmp_a, a);
+
+                        pt_math_alignas16_vec3 tmp_axis;
+                        if (std::abs(tmp_a.x) < std::abs(tmp_a.y))
+                        {
+                            if (std::abs(tmp_a.x) < std::abs(tmp_a.z))
+                            {
+                                tmp_axis.x = 1.0;
+                                tmp_axis.y = 0.0;
+                                tmp_axis.z = 0.0;
+                            }
+                            else
+                            {
+                                tmp_axis.x = 0.0;
+                                tmp_axis.y = 0.0;
+                                tmp_axis.z = 1.0;
+                            }
+                        }
+                        else
+                        {
+                            if (std::abs(tmp_a.y) < std::abs(tmp_a.z))
+                            {
+                                tmp_axis.x = 0.0;
+                                tmp_axis.y = 1.0;
+                                tmp_axis.z = 0.0;
+                            }
+                            else
+                            {
+                                tmp_axis.x = 0.0;
+                                tmp_axis.y = 0.0;
+                                tmp_axis.z = 1.0;
+                            }
+                        }
+
+                        pt_math_alignas16_vec3 b_from_uv;
+                        pt_math_store_alignas16_vec3(&b_from_uv, b);
+
+                        // +0 and -0 are different
+                        float reflect_b = ((static_cast<double>(b_from_uv.x) * static_cast<double>(tmp_axis.x) + static_cast<double>(b_from_uv.y) * static_cast<double>(tmp_axis.y) + static_cast<double>(b_from_uv.z) * static_cast<double>(tmp_axis.z)) >= 0.0) ? 1.0F : -1.0F;
+
+                        b = pt_math_vec_scale(pt_math_load_alignas16_vec3(&tmp_axis), reflect_b);
+
+                        pt_math_simd_vec simd_c_from_cross = pt_math_vec3_cross(a, b);
+
+                        pt_math_alignas16_vec3 c_from_cross;
+                        pt_math_store_alignas16_vec3(&c_from_cross, simd_c_from_cross);
+
+                        pt_math_alignas16_vec3 c_from_asset;
+                        pt_math_store_alignas16_vec3(&c_from_asset, c);
+
+                        // +0 and -0 are different
+                        float reflect_c = ((static_cast<double>(c_from_asset.x) * static_cast<double>(c_from_cross.x) + static_cast<double>(c_from_asset.y) * static_cast<double>(c_from_cross.y) + static_cast<double>(c_from_asset.z) * static_cast<double>(c_from_cross.z)) >= 0.0) ? 1.0F : -1.0F;
+
+                        c = pt_math_vec_scale(simd_c_from_cross, reflect_c);
+                    };
+
+                    if (length_v1 >= FLT_EPSILON && length_v2 >= FLT_EPSILON)
+                    {
+                        // Reset v3 from v1 and v2
+                        reset_from_two_vectors(v1, v2, v3);
+                    }
+                    else if (length_v2 >= FLT_EPSILON && length_v3 >= FLT_EPSILON)
+                    {
+                        // Reset v1 from v2 and v3
+                        reset_from_two_vectors(v2, v3, v1);
+                    }
+                    else if (length_v3 >= FLT_EPSILON && length_v1 >= FLT_EPSILON)
+                    {
+                        // Reset v2 from v3 and v1
+                        reset_from_two_vectors(v3, v1, v2);
+                    }
+                    else if (length_v1 >= FLT_EPSILON)
+                    {
+                        // Reset both v2 and v3 from v1
+                        reset_from_one_vector(v1, v2, v3);
+                    }
+                    else if (length_v2 >= FLT_EPSILON)
+                    {
+                        // Reset both v3 and v1 from v2
+                        reset_from_one_vector(v2, v3, v1);
+                    }
+                    else if (length_v3 >= FLT_EPSILON)
+                    {
+                        // Reset both v1 and v2 from v3
+                        reset_from_one_vector(v3, v1, v2);
+                    }
+                    else
+                    {
+                        pt_math_alignas16_vec3 z_axis(0.0F, 0.0F, 1.0F);
+                        v1 = pt_math_load_alignas16_vec3(&z_axis);
+
+                        pt_math_alignas16_vec3 x_axis(1.0F, 0.0F, 0.0F);
+                        v2 = pt_math_load_alignas16_vec3(&x_axis);
+
+                        pt_math_alignas16_vec3 y_axis(0.0F, 1.0F, 0.0F);
+                        v3 = pt_math_load_alignas16_vec3(&y_axis);
+                    }
+                }
+            }
+#endif
+
+            pt_math_simd_vec e1 = pt_math_vec3_normalize(v1);
+            pt_math_simd_vec e2 = pt_math_vec3_normalize(pt_math_vec_subtract(v2, pt_math_vec_scale(e1, pt_math_vec_get_x(pt_math_vec3_dot(v2, e1)))));
+            pt_math_simd_vec e3 = pt_math_vec3_normalize(pt_math_vec_subtract(pt_math_vec_subtract(v3, pt_math_vec_scale(e1, pt_math_vec_get_x(pt_math_vec3_dot(v3, e1)))), pt_math_vec_scale(e2, pt_math_vec_get_x(pt_math_vec3_dot(v3, e2)))));
+
+            normal = e1;
+            tangent = e2;
+            bitangent = e3;
+        }
+
+#if 1
+        float tangent_w;
+        {
+            // [DirectXMesh Wiki / ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/wiki/ComputeTangentFrame)
+            //
+            // "7.5 Tangent Space" of [Lengyel 2019] [Eric Lengyel. "Foundations of Game Engine Development : Volume 2 - Rendering." Terathon Software LLC 2019.](http://foundationsofgameenginedev.com/)
+            // Since the vectors are orthogonal, it is not necessary to store all three of the vectors t, b, and n for each vertex.
+            // Just the normal vector and the tangent vector will always suffice, but we do need one additional bit of information.
+            // The tangent frame can form either a right-handed or left-handed coordinate system, and which one is given by the sign of dot(b, cross(n, t)).
+            // Calling the sign of dot(b, cross(n, t)) "tangent_w", we can reconstitute the bitangent with the cross product b = tangent_w * cross(n, t), and then only the normal and tangent need to be supplied as vertex attributes.
+
+            pt_math_simd_vec bitangent_from_cross = pt_math_vec3_cross(normal, tangent);
+            tangent_w = pt_math_vec_get_x(pt_math_vec3_dot(bitangent, bitangent_from_cross)) > 0.0F ? 1.0F : -1.0F;
+        }
+#endif
+
+        out_reflections[vertex_index] = tangent_w;
+
+        pt_math_alignas16_vec4 quaternion_tangent;
+        {
+            // [Frey 2011] Ivo Frey. "Spherical Skinning withDual-Quaternions and Qtangents." SIGGRAPH 2011.
+
+            // NOTE: We should force the handness of the basis to be the same before we use the "XMMatrixDecompose" or "XMQuaternionRotationMatrix".
+            // NOTE: When the "tangent_w" is negative, the result of the "XMMatrixDecompose" or "XMQuaternionRotationMatrix" may NOT be correct.
+            pt_math_simd_vec bitangent_from_cross = pt_math_vec3_cross(normal, tangent);
+
+            pt_math_simd_mat tangent_to_model_transform;
+            {
+                tangent_to_model_transform.r[0] = tangent;
+                tangent_to_model_transform.r[1] = bitangent_from_cross;
+                tangent_to_model_transform.r[2] = normal;
+                pt_math_alignas16_vec4 identity_r3(0.0F, 0.0F, 0.0F, 1.0F);
+                tangent_to_model_transform.r[3] = pt_math_load_alignas16_vec4(&identity_r3);
+            }
+
+#if 1
+            // TODO: Can we prove this is a rotation transform?
+            pt_math_simd_vec unit_quaternion_rotation_transform;
+            {
+                pt_math_simd_vec unused_scale;
+                pt_math_simd_vec unused_translation;
+                bool res_mat_decompose = pt_math_mat_decompose(&unused_scale, &unit_quaternion_rotation_transform, &unused_translation, tangent_to_model_transform);
+                assert(res_mat_decompose);
+
+                assert(pt_math_vec_get_x(pt_math_vec3_length(tangent)) < FLT_EPSILON || std::abs(pt_math_vec_get_x(unused_scale) - 1.0F) < 0.0001F);
+                assert(pt_math_vec_get_x(pt_math_vec3_length(bitangent_from_cross)) < FLT_EPSILON || std::abs(pt_math_vec_get_y(unused_scale) - 1.0F) < 0.0001F);
+                assert(pt_math_vec_get_x(pt_math_vec3_length(normal)) < FLT_EPSILON || std::abs(pt_math_vec_get_z(unused_scale) - 1.0F) < 0.0001F);
+
+                assert(std::abs(pt_math_vec_get_x(unused_translation)) < 0.0001F);
+                assert(std::abs(pt_math_vec_get_y(unused_translation)) < 0.0001F);
+                assert(std::abs(pt_math_vec_get_z(unused_translation)) < 0.0001F);
+            }
+
+#else
+            unit_quaternion_rotation_transform = pt_math_quat_rotation_mat(tangent_to_model_transform);
+#endif
+
+            // Antipodal (Sign Invariant): the unit quaternion q and -q represent the same rotation transform.
+            //
+            // We can use the sign of the w component of the quaternion to denote the "tangent_w".
+            // NOTE: When the w component of the quaternion is close to 0, the sign (+0 or -0) may NOT be distinguished by GPU. A bias may be introduced to avoid this situation.
+            //
+            // Perhaps, we can compress the unit quaternion to three components.
+            // But the precision of the vertex format is much lower. And the result "1.0 - dot(quaternion_tangent.xyz, quaternion_tangent.xyz)" can be negative.
+            // Thus currently we still use four components.
+            pt_math_store_vec4(&quaternion_tangent, unit_quaternion_rotation_transform);
+        }
+
+        out_qtangents[vertex_index] = quaternion_tangent;
     }
 }

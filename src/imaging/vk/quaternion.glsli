@@ -1,0 +1,33 @@
+//
+// Copyright (C) YuqiaoZhang(HanetakaChou)
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+//
+
+//
+// Mapping the unit quaternion to the rotation transformation.
+//
+// [in]    r: The unit quaternion.
+//
+// [out]   p: The 3D vector which represents the position before the rotation transform.
+//
+// [return] : The 3D vector which represents the position after the rotation transform.
+//
+highp vec3 unit_quaternion_to_rotation_transform(in highp vec4 r, in highp vec3 p)
+{
+	// "Fig. 6.7" and "Fig. 6.8" of [Quaternions for Computer Graphics](https://link.springer.com/book/10.1007/978-1-4471-7509-4)
+	// "Lemma 4" of [Ladislav Kavan, Steven Collins, Jiri Zara, Carol O'Sullivan. "Geometric Skinning with Approximate Dual Quaternion Blending." SIGGRAPH 2008.](http://www.cs.utah.edu/~ladislav/kavan08geometric/kavan08geometric.html)
+
+	return (p + 2.0 * cross(r.xyz, cross(r.xyz, p) + r.w * p));
+}

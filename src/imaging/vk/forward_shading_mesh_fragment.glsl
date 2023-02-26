@@ -79,6 +79,6 @@ void main()
 
    highp vec3 diffuse_color = texture(tex, in_uv).rgb;
 
-   // out_color = vec4(normal_world_space, 1.0);
-   out_color = vec4(diffuse_color, 1.0);
+   out_color = vec4(normal_world_space, 1.0);
+   // out_color = vec4(diffuse_color, 1.0);
 }

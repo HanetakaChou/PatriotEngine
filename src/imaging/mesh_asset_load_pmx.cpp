@@ -765,9 +765,9 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
     // validate internal header
     assert(mesh_asset_pmx_header.vertex_count = vertex_count);
 
-    mcrt_vector<decltype(mesh_vertex_position::position)> vertices_positions(static_cast<size_t>(vertex_count));
-    mcrt_vector<decltype(mesh_vertex_varying::normal)> vertices_normals(static_cast<size_t>(vertex_count));
-    mcrt_vector<decltype(mesh_vertex_varying::uv)> vertices_uvs(static_cast<size_t>(vertex_count));
+    mcrt_vector<pt_math_vec3> mesh_vertex_positions(static_cast<size_t>(vertex_count));
+    mcrt_vector<pt_math_vec3> mesh_vertex_normals(static_cast<size_t>(vertex_count));
+    mcrt_vector<pt_math_vec2> mesh_vertex_uvs(static_cast<size_t>(vertex_count));
 
     for (uint32_t vertex_index = 0U; vertex_index < vertex_count; ++vertex_index)
     {
@@ -778,9 +778,9 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         {
             return false;
         }
-        vertices_positions[vertex_index][0] = vertex_position[0];
-        vertices_positions[vertex_index][1] = vertex_position[1];
-        vertices_positions[vertex_index][2] = vertex_position[2];
+        mesh_vertex_positions[vertex_index].x = vertex_position[0];
+        mesh_vertex_positions[vertex_index].y = vertex_position[1];
+        mesh_vertex_positions[vertex_index].z = vertex_position[2];
 
         // normal
         float vertex_normal[3];
@@ -789,10 +789,9 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         {
             return false;
         }
-        vertices_normals[vertex_index][0] = mesh_vertex_float_to_8_snorm(vertex_normal[0]);
-        vertices_normals[vertex_index][1] = mesh_vertex_float_to_8_snorm(vertex_normal[1]);
-        vertices_normals[vertex_index][2] = mesh_vertex_float_to_8_snorm(vertex_normal[2]);
-        vertices_normals[vertex_index][3] = mesh_vertex_float_to_8_snorm(1.0F);
+        mesh_vertex_normals[vertex_index].x = vertex_normal[0];
+        mesh_vertex_normals[vertex_index].y = vertex_normal[1];
+        mesh_vertex_normals[vertex_index].z = vertex_normal[2];
 
         // uv
         float vertex_uv[2];
@@ -801,8 +800,8 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         {
             return false;
         }
-        vertices_uvs[vertex_index][0] = mesh_vertex_float_to_16_unorm(vertex_uv[0]);
-        vertices_uvs[vertex_index][1] = mesh_vertex_float_to_16_unorm(vertex_uv[1]);
+        mesh_vertex_uvs[vertex_index].x = vertex_uv[0];
+        mesh_vertex_uvs[vertex_index].y = vertex_uv[1];
 
         // additional vec4
         if (-1 == input_stream_seek_callback(input_stream, sizeof(float) * 4U * mesh_asset_pmx_header.additional_vec4_count, PT_INPUT_STREAM_SEEK_CUR))
@@ -1171,74 +1170,107 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         // IDVS
         // according to Mali GPU Best Practices
         // we should split the vertex buffer and create a tightly packed vertex buffer for each primitive to improving cache hitting
-
-        mcrt_map<uint32_t, uint32_t> mesh_vertex_indices_to_material_vertex_indices;
-        mcrt_vector<uint32_t> material_indices(static_cast<size_t>(material_surface_count));
-        for (uint32_t material_surface_index = 0; material_surface_index < material_surface_count; ++material_surface_index)
+        uint32_t material_index_count;
+        mcrt_vector<uint32_t> material_indices;
+        uint32_t material_vertex_count;
+        mcrt_vector<pt_math_vec3> material_vertex_positions;
+        mcrt_vector<pt_math_vec3> material_vertex_normals;
+        mcrt_vector<pt_math_vec2> material_vertex_uvs;
         {
-            uint32_t mesh_vertex_index = mesh_vertex_indices[material_total_surface_count + material_surface_index];
+            material_index_count = material_surface_count;
+            material_indices.resize(material_index_count);
 
-            // https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
-            // use "lower_bound" rather than "find"
-            mcrt_map<uint32_t, uint32_t>::iterator iter_lower_bound = mesh_vertex_indices_to_material_vertex_indices.lower_bound(mesh_vertex_index);
-            if (mesh_vertex_indices_to_material_vertex_indices.end() != iter_lower_bound && mesh_vertex_index == iter_lower_bound->first)
+            mcrt_map<uint32_t, uint32_t> mesh_vertex_indices_to_material_vertex_indices;
+            for (uint32_t material_surface_index = 0; material_surface_index < material_surface_count; ++material_surface_index)
             {
-                uint32_t material_vertex_index = iter_lower_bound->second;
-                material_indices[material_surface_index] = material_vertex_index;
+                uint32_t mesh_vertex_index = mesh_vertex_indices[material_total_surface_count + material_surface_index];
+
+                // https://gcc.gnu.org/onlinedocs/libstdc++/manual/associative.html#containers.associative.insert_hints
+                // use "lower_bound" rather than "find"
+                mcrt_map<uint32_t, uint32_t>::iterator iter_lower_bound = mesh_vertex_indices_to_material_vertex_indices.lower_bound(mesh_vertex_index);
+                if (mesh_vertex_indices_to_material_vertex_indices.end() != iter_lower_bound && mesh_vertex_index == iter_lower_bound->first)
+                {
+                    uint32_t material_vertex_index = iter_lower_bound->second;
+                    material_indices[material_surface_index] = material_vertex_index;
+                }
+                else
+                {
+                    uint32_t material_vertex_index = static_cast<uint32_t>(mesh_vertex_indices_to_material_vertex_indices.size());
+
+                    std::pair<int32_t, uint32_t> val(mesh_vertex_index, material_vertex_index);
+                    mesh_vertex_indices_to_material_vertex_indices.insert(iter_lower_bound, val);
+
+                    material_indices[material_surface_index] = material_vertex_index;
+                }
             }
-            else
+
+            material_vertex_count = static_cast<uint32_t>(mesh_vertex_indices_to_material_vertex_indices.size());
+            material_vertex_positions.resize(material_vertex_count);
+            material_vertex_normals.resize(material_vertex_count);
+            material_vertex_uvs.resize(material_vertex_count);
+
+            for (std::pair<int32_t, uint32_t> const &pair : mesh_vertex_indices_to_material_vertex_indices)
             {
-                uint32_t material_vertex_index = static_cast<uint32_t>(mesh_vertex_indices_to_material_vertex_indices.size());
+                uint32_t const mesh_vertex_index = pair.first;
+                uint32_t const material_vertex_index = pair.second;
 
-                std::pair<int32_t, uint32_t> val(mesh_vertex_index, material_vertex_index);
-                mesh_vertex_indices_to_material_vertex_indices.insert(iter_lower_bound, val);
+                material_vertex_positions[material_vertex_index].x = mesh_vertex_positions[mesh_vertex_index].x;
+                material_vertex_positions[material_vertex_index].y = mesh_vertex_positions[mesh_vertex_index].y;
+                material_vertex_positions[material_vertex_index].z = mesh_vertex_positions[mesh_vertex_index].z;
 
-                material_indices[material_surface_index] = material_vertex_index;
+                material_vertex_normals[material_vertex_index].x = mesh_vertex_normals[mesh_vertex_index].x;
+                material_vertex_normals[material_vertex_index].y = mesh_vertex_normals[mesh_vertex_index].y;
+                material_vertex_normals[material_vertex_index].z = mesh_vertex_normals[mesh_vertex_index].z;
+
+                material_vertex_uvs[material_vertex_index].x = mesh_vertex_uvs[mesh_vertex_index].x;
+                material_vertex_uvs[material_vertex_index].y = mesh_vertex_uvs[mesh_vertex_index].y;
             }
         }
-
-        material_total_surface_count += material_surface_count;
 
         // validate primitive headers
-        assert(static_cast<uint32_t>(mesh_vertex_indices_to_material_vertex_indices.size()) == mesh_primitive_asset_header_for_validate[material_index].vertex_count);
-        assert(static_cast<uint32_t>(material_indices.size()) == mesh_primitive_asset_header_for_validate[material_index].index_count);
+        assert(material_vertex_count == mesh_primitive_asset_header_for_validate[material_index].vertex_count);
+        assert(material_index_count == mesh_primitive_asset_header_for_validate[material_index].index_count);
 
+        // calculate tangent frame
+        mcrt_vector<pt_math_vec4> material_vertex_qtangents(material_vertex_count);
+        mcrt_vector<float> material_vertex_reflections(material_vertex_count);
+        assert(0U == (material_index_count % 3U));
+        mesh_vertex_compute_tangent_frame(material_index_count / 3U, &material_indices[0], material_vertex_count, &material_vertex_positions[0], &material_vertex_normals[0], &material_vertex_uvs[0], &material_vertex_qtangents[0], &material_vertex_reflections[0]);
+        
         // write to staging buffer
-        for (std::pair<int32_t, uint32_t> const &pair : mesh_vertex_indices_to_material_vertex_indices)
+        for (uint32_t material_vertex_index = 0U; material_vertex_index < material_vertex_count; ++material_vertex_index)
         {
-            uint32_t const mesh_vertex_index = pair.first;
-            uint32_t const material_vertex_index = pair.second;
-
             decltype(mesh_vertex_position::position) *out_position = reinterpret_cast<decltype(mesh_vertex_position::position) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position));
-            (*out_position)[0] = vertices_positions[mesh_vertex_index][0];
-            (*out_position)[1] = vertices_positions[mesh_vertex_index][1];
-            (*out_position)[2] = vertices_positions[mesh_vertex_index][2];
+            (*out_position)[0] = material_vertex_positions[material_vertex_index].x;
+            (*out_position)[1] = material_vertex_positions[material_vertex_index].y;
+            (*out_position)[2] = material_vertex_positions[material_vertex_index].z;
 
-            decltype(mesh_vertex_varying::normal) *out_normal = reinterpret_cast<decltype(mesh_vertex_varying::normal) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, normal));
-            (*out_normal)[0] = vertices_normals[mesh_vertex_index][0];
-            (*out_normal)[1] = vertices_normals[mesh_vertex_index][1];
-            (*out_normal)[2] = vertices_normals[mesh_vertex_index][2];
-            (*out_normal)[3] = vertices_normals[mesh_vertex_index][3];
+            decltype(mesh_vertex_varying::qtangentxyz_xyz_reflection_w) * out_qtangentxyz_xyz_reflection_w = reinterpret_cast<decltype(mesh_vertex_varying::qtangentxyz_xyz_reflection_w) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, qtangentxyz_xyz_reflection_w));
+            float unpacked_qtangentxyz_xyz_reflection_w[4] = {
+                           0.5F * (material_vertex_qtangents[material_vertex_index].x + 1.0F),
+                           0.5F * (material_vertex_qtangents[material_vertex_index].y + 1.0F),
+                           0.5F * (material_vertex_qtangents[material_vertex_index].z + 1.0F),
+                           0.5F * (material_vertex_reflections[material_vertex_index] + 1.0F) };
+            (*out_qtangentxyz_xyz_reflection_w) = mesh_vertex_float4_to_r10g10b10a2_unorm(unpacked_qtangentxyz_xyz_reflection_w);
 
-            // pt_math_vec3 *out_tangent = reinterpret_cast<pt_math_vec3 *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, tangent));
-            //(*out_tangent) =
-
-            decltype(mesh_vertex_varying::uv)* out_uv = reinterpret_cast<decltype(mesh_vertex_varying::uv) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, uv));
-            (*out_uv)[0] = vertices_uvs[mesh_vertex_index][0];
-            (*out_uv)[1] = vertices_uvs[mesh_vertex_index][1];
+            decltype(mesh_vertex_varying::qtangentw_x_uv_yz)* out_qtangentw_x_uv_yz = reinterpret_cast<decltype(mesh_vertex_varying::qtangentw_x_uv_yz)*>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, qtangentw_x_uv_yz));
+            float unpacked_qtangentw_x_uv_yz[4] = {
+                0.5F * (material_vertex_qtangents[material_vertex_index].w + 1.0F),
+                material_vertex_uvs[material_vertex_index].x,
+                material_vertex_uvs[material_vertex_index].y};
+            (*out_qtangentw_x_uv_yz) = mesh_vertex_float4_to_r10g10b10a2_unorm(unpacked_qtangentw_x_uv_yz);
         }
 
-        if (0XFFFFFFFFU > mesh_vertex_indices_to_material_vertex_indices.size())
+        if (material_vertex_count < 0XFFFFFFFFU)
         {
             // validate primitive headers
             assert(mesh_primitive_asset_header_for_validate[material_index].is_index_type_uint16);
 
-            assert(material_indices.size() == material_surface_count);
-            for (uint32_t material_surface_index = 0; material_surface_index < material_surface_count; ++material_surface_index)
+            for (uint32_t material_index_index = 0; material_index_index < material_index_count; ++material_index_index)
             {
-                uint32_t material_vertex_index = material_indices[material_surface_index];
+                uint32_t material_vertex_index = material_indices[material_index_index];
 
-                uint16_t *out_index = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].index_staging_offset + sizeof(uint16_t) * material_surface_index);
+                uint16_t *out_index = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].index_staging_offset + sizeof(uint16_t) * material_index_index);
                 (*out_index) = material_vertex_index;
             }
         }
@@ -1250,17 +1282,20 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
             // validate primitive headers
             assert(!mesh_primitive_asset_header_for_validate[material_index].is_index_type_uint16);
 
-            assert(material_indices.size() == material_surface_count);
-            for (uint32_t material_surface_index = 0; material_surface_index < material_surface_count; ++material_surface_index)
+            for (uint32_t material_index_index = 0; material_index_index < material_index_count; ++material_index_index)
             {
-                uint32_t material_vertex_index = material_indices[material_surface_index];
+                uint32_t material_vertex_index = material_indices[material_index_index];
 
-                uint32_t *out_index = reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].index_staging_offset + sizeof(uint32_t) * material_surface_index);
+                uint32_t *out_index = reinterpret_cast<uint32_t *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].index_staging_offset + sizeof(uint32_t) * material_index_index);
                 (*out_index) = material_vertex_index;
             }
         }
+
+        // It is based on the offset of the previous material through to the size of the current material.
+        material_total_surface_count += material_surface_count;
     }
 
+    // If you add up all the surface counts for all materials you should end up with the total number of surfaces.
     assert(surface_count == material_total_surface_count);
 
     return true;

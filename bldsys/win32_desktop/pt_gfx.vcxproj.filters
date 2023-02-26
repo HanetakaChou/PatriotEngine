@@ -181,17 +181,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl">
+    <None Include="..\..\src\imaging\vk\quaternion.glsli">
       <Filter>src\imaging\vk</Filter>
     </None>
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.inl">
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\src\imaging\vk\forward_shading_mesh_vertex.glsl">
       <Filter>src\imaging\vk</Filter>
-    </None>
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl">
+    </CustomBuild>
+    <CustomBuild Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.glsl">
       <Filter>src\imaging\vk</Filter>
-    </None>
-    <None Include="..\..\src\imaging\vk\forward_shading_mesh_fragment.inl">
-      <Filter>src\imaging\vk</Filter>
-    </None>
+    </CustomBuild>
   </ItemGroup>
 </Project>

@@ -1440,23 +1440,19 @@ inline bool gfx_connection_vk::update_framebuffer()
         // Normal Tangent: R8G8B8A8_SNORM
         // UV: R16G16_FLOAT
 
-        VkVertexInputAttributeDescription vertex_attribute_descriptions[4];
+        VkVertexInputAttributeDescription vertex_attribute_descriptions[3];
         vertex_attribute_descriptions[0].location = 0U; 
         vertex_attribute_descriptions[0].binding = 0U; 
         vertex_attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
         vertex_attribute_descriptions[0].offset = offsetof(mesh_vertex_position, position);
         vertex_attribute_descriptions[1].location = 1U; 
         vertex_attribute_descriptions[1].binding = 1U;  
-        vertex_attribute_descriptions[1].format = VK_FORMAT_R8G8B8A8_SNORM;
-        vertex_attribute_descriptions[1].offset = offsetof(mesh_vertex_varying, normal);
+        vertex_attribute_descriptions[1].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+        vertex_attribute_descriptions[1].offset = offsetof(mesh_vertex_varying, qtangentxyz_xyz_reflection_w);
         vertex_attribute_descriptions[2].location = 2U; 
         vertex_attribute_descriptions[2].binding = 1U; 
-        vertex_attribute_descriptions[2].format = VK_FORMAT_R8G8B8A8_SNORM;
-        vertex_attribute_descriptions[2].offset = offsetof(mesh_vertex_varying, tangent);
-        vertex_attribute_descriptions[3].location = 3U; 
-        vertex_attribute_descriptions[3].binding = 1U; 
-        vertex_attribute_descriptions[3].format = VK_FORMAT_R16G16_UNORM;
-        vertex_attribute_descriptions[3].offset = offsetof(mesh_vertex_varying, uv);
+        vertex_attribute_descriptions[2].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+        vertex_attribute_descriptions[2].offset = offsetof(mesh_vertex_varying, qtangentw_x_uv_yz);
 
         // struct VkFormatProperties physical_device_format_properties;
         // gfx_connection->get_physical_device_format_properties(VK_FORMAT_R32G32B32_SFLOAT, &physical_device_format_properties);
@@ -1468,7 +1464,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_input_state.flags = 0U;
         vertex_input_state.vertexBindingDescriptionCount = 2U;
         vertex_input_state.pVertexBindingDescriptions = vertex_binding_descriptions;
-        vertex_input_state.vertexAttributeDescriptionCount = 4U;
+        vertex_input_state.vertexAttributeDescriptionCount = 3U;
         vertex_input_state.pVertexAttributeDescriptions = vertex_attribute_descriptions;
 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info;

@@ -25,6 +25,7 @@
 using pt_math_vec2 = DirectX::XMFLOAT2;
 
 using pt_math_vec3 = DirectX::XMFLOAT3;
+using pt_math_vec4 = DirectX::XMFLOAT4;
 using pt_math_alignas16_vec3 = DirectX::XMFLOAT3A;
 using pt_math_alignas16_vec4 = DirectX::XMFLOAT4A;
 
@@ -63,6 +64,11 @@ inline void PT_VECTORCALL pt_math_store_vec3(pt_math_vec3* destination, pt_math_
     return DirectX::XMStoreFloat3(destination, v);
 }
 
+inline void PT_VECTORCALL pt_math_store_vec4(pt_math_vec4* destination, pt_math_simd_vec v)
+{
+    return DirectX::XMStoreFloat4(destination, v);
+}
+
 inline void PT_VECTORCALL pt_math_store_alignas16_vec3(pt_math_alignas16_vec3* destination, pt_math_simd_vec v)
 {
     return DirectX::XMStoreFloat3A(destination, v);
@@ -88,6 +94,46 @@ inline pt_math_simd_vec PT_VECTORCALL pt_math_vec_zero()
     return DirectX::XMVectorZero();
 }
 
+inline float PT_VECTORCALL pt_math_vec_get_x(pt_math_simd_vec v)
+{
+    return DirectX::XMVectorGetX(v);
+}
+
+inline float PT_VECTORCALL pt_math_vec_get_y(pt_math_simd_vec v)
+{
+    return DirectX::XMVectorGetY(v);
+}
+
+inline float PT_VECTORCALL pt_math_vec_get_z(pt_math_simd_vec v)
+{
+    return DirectX::XMVectorGetZ(v);
+}
+
+inline float PT_VECTORCALL pt_math_vec_get_w(pt_math_simd_vec v)
+{
+    return DirectX::XMVectorGetW(v);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec3_length(pt_math_simd_vec v)
+{
+    return DirectX::XMVector3Length(v);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec3_normalize(pt_math_simd_vec v)
+{
+    return DirectX::XMVector3Normalize(v);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec4_normalize(pt_math_simd_vec v)
+{
+    return DirectX::XMVector4Normalize(v);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec_scale(pt_math_simd_vec v, float s)
+{
+    return DirectX::XMVectorScale(v, s);
+}
+
 inline pt_math_simd_vec PT_VECTORCALL pt_math_vec_add(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return DirectX::XMVectorAdd(v1, v2);
@@ -98,9 +144,29 @@ inline pt_math_simd_vec PT_VECTORCALL pt_math_vec_subtract(pt_math_simd_vec v1, 
     return DirectX::XMVectorSubtract(v1, v2);
 }
 
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec3_dot(pt_math_simd_vec v1, pt_math_simd_vec v2)
+{
+    return DirectX::XMVector3Dot(v1, v2);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_vec3_cross(pt_math_simd_vec v1, pt_math_simd_vec v2)
+{
+    return DirectX::XMVector3Cross(v1, v2);
+}
+
 inline pt_math_simd_vec PT_VECTORCALL pt_math_vec_merge_xy(pt_math_simd_vec v1, pt_math_simd_vec v2)
 {
     return DirectX::XMVectorMergeXY(v1, v2);
+}
+
+inline pt_math_simd_vec PT_VECTORCALL pt_math_quat_rotation_mat(pt_math_simd_mat m)
+{
+    return DirectX::XMQuaternionRotationMatrix(m);
+}
+
+inline bool PT_VECTORCALL pt_math_mat_decompose(pt_math_simd_vec *out_scale, pt_math_simd_vec *out_rot_quat, pt_math_simd_vec *out_trans, pt_math_simd_mat m)
+{
+    return DirectX::XMMatrixDecompose(out_scale, out_rot_quat, out_trans, m);
 }
 
 inline pt_math_simd_mat PT_VECTORCALL pt_math_mat_identity()

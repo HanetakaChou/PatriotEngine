@@ -30,27 +30,28 @@ struct mesh_vertex_position
 };
 
 // vertex bindings/attributes
-// location = 1 binding = 1 normal VK_FORMAT_R8G8B8A8_SNORM
-// location = 2 binding = 1 tangent VK_FORMAT_R8G8B8A8_SNORM
-// location = 3 binding = 1 uv VK_FORMAT_R16G16_UNORM
+// location = 1 binding = 1 qtangentxyz_xyz_reflection_w VK_FORMAT_A2B10G10R10_UNORM_PACK32
+// location = 2 binding = 1 qtangentw_x_uv_yz VK_FORMAT_A2B10G10R10_UNORM_PACK32
 struct mesh_vertex_varying
 {
-
-    uint8_t normal[4];
-    uint8_t tangent[4];
-    uint16_t uv[2];
+    uint32_t qtangentxyz_xyz_reflection_w;
+    uint32_t qtangentw_x_uv_yz;
 };
 
-extern int8_t mesh_vertex_float_to_8_snorm(float unpacked_input);
+extern uint32_t mesh_vertex_float4_to_r8g8b8a8_snorm(float unpacked_input[4]);
 
-extern uint16_t mesh_vertex_float_to_16_unorm(float unpacked_input);
+extern uint32_t mesh_vertex_float4_to_r10g10b10a2_unorm(float unpacked_input[4]);
+
+extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2]);
 
 extern void mesh_vertex_compute_tangent_frame(
     size_t face_count,
     uint32_t const* indices,
     size_t vertex_count,
-    pt_math_vec3 const positions[3],
-    pt_math_vec3 const normals[3],
-    pt_math_vec2 const uvs[3]);
+    pt_math_vec3 const *positions,
+    pt_math_vec3 const *normals,
+    pt_math_vec2 const *uvs,
+    pt_math_vec4 *out_qtangents,
+    float* out_reflections);
 
 #endif
