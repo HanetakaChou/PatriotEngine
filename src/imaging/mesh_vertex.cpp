@@ -118,20 +118,6 @@ extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2])
     return packed_output;
 }
 
-pt_math_simd_vec unit_quaternion_to_rotation_transform(pt_math_simd_vec r, pt_math_simd_vec p)
-{
-    // "Fig. 6.7" and "Fig. 6.8" of [Quaternions for Computer Graphics](https://link.springer.com/book/10.1007/978-1-4471-7509-4)
-    // "Lemma 4" of [Ladislav Kavan, Steven Collins, Jiri Zara, Carol O'Sullivan. "Geometric Skinning with Approximate Dual Quaternion Blending." SIGGRAPH 2008.](http://www.cs.utah.edu/~ladislav/kavan08geometric/kavan08geometric.html)
-
-    return pt_math_vec_add(p,
-                           pt_math_vec_scale(
-                               pt_math_vec3_cross(r,
-                                                  pt_math_vec_add(
-                                                      pt_math_vec3_cross(r, p),
-                                                      pt_math_vec_scale(p, pt_math_vec_get_w(r)))),
-                               2.0F));
-}
-
 extern void mesh_vertex_compute_tangent_frame(
     size_t face_count,
     uint32_t const *indices,

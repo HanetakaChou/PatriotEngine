@@ -46,12 +46,12 @@ extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2]);
 
 extern void mesh_vertex_compute_tangent_frame(
     size_t face_count,
-    uint32_t const* indices,
+    uint32_t const *indices,
     size_t vertex_count,
     pt_math_vec3 const *positions,
     pt_math_vec3 const *normals,
     pt_math_vec2 const *uvs,
     pt_math_vec4 *out_qtangents,
-    float* out_reflections);
+    float *out_reflections);
 
 #endif

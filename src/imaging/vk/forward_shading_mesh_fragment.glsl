@@ -2,17 +2,17 @@
 
 //
 // Copyright (C) YuqiaoZhang(HanetakaChou)
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
@@ -28,19 +28,24 @@ layout(set = 1, binding = 0) uniform highp sampler2D tex;
 
 layout(location = 0) in highp vec3 in_position_world_space;
 layout(location = 1) in highp vec3 in_normal_world_space;
-layout(location = 2) in highp vec2 in_uv;
+layout(location = 2) in highp vec3 in_tangent_world_space;
+layout(location = 3) in highp vec3 in_bitangent_world_space;
+layout(location = 4) in highp vec2 in_uv;
 
 layout(location = 0) out highp vec4 out_color;
 
-//highp vec2 ndc_to_uv(highp vec2 ndc)
+// highp vec2 ndc_to_uv(highp vec2 ndc)
 //{
-//   return (ndc * vec2(0.5, 0,5) + vec2(0.5, 0.5));
-//}
+//    return (ndc * vec2(0.5, 0,5) + vec2(0.5, 0.5));
+// }
 
 void main()
 {
-   // Input
-   highp vec3 normal_world_space = normalize(in_normal_world_space);
+    // Input
+    // TODO: Can we interpolate the quaternion?
+    highp vec3 normal_world_space = normalize(in_normal_world_space);
+    highp vec3 tangent_world_space = normalize(in_tangent_world_space);
+    highp vec3 bitangent_world_space = normalize(in_bitangent_world_space);
 
 #if 0
    highp float shadow_attenuation;
@@ -77,8 +82,8 @@ void main()
    }
 #endif
 
-   highp vec3 diffuse_color = texture(tex, in_uv).rgb;
+    highp vec3 diffuse_color = texture(tex, in_uv).rgb;
 
-   out_color = vec4(normal_world_space, 1.0);
-   // out_color = vec4(diffuse_color, 1.0);
+    // out_color = vec4(bitangent_world_space, 1.0);
+    out_color = vec4(diffuse_color, 1.0);
 }
