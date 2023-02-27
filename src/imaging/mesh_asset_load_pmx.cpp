@@ -21,7 +21,7 @@
 #include <pt_mcrt_map.h>
 #include <pt_mcrt_memcpy.h>
 #include <pt_math_pack.h>
-#include "mesh_tangent.h"
+#include "mesh_vertex_tangent.h"
 #include "mesh_vertex.sli"
 #include <assert.h>
 
@@ -1237,7 +1237,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         mcrt_vector<pt_math_vec4> material_vertex_qtangents(material_vertex_count);
         mcrt_vector<float> material_vertex_reflections(material_vertex_count);
         assert(0U == (material_index_count % 3U));
-        mesh_calculate_tangents(material_index_count / 3U, &material_indices[0], material_vertex_count, &material_vertex_positions[0], &material_vertex_normals[0], &material_vertex_uvs[0], &material_vertex_qtangents[0], &material_vertex_reflections[0]);
+        mesh_vertex_calculate_tangents(material_index_count / 3U, &material_indices[0], material_vertex_count, &material_vertex_positions[0], &material_vertex_normals[0], &material_vertex_uvs[0], &material_vertex_qtangents[0], &material_vertex_reflections[0]);
 
         // write to staging buffer
         for (uint32_t material_vertex_index = 0U; material_vertex_index < material_vertex_count; ++material_vertex_index)
@@ -1267,7 +1267,7 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
             (*out_qtangentw_x_uv_yz) = pt_math_float4_to_r10g10b10a2_unorm(unpacked_qtangentw_x_uv_yz);
         }
 
-        if (material_vertex_count < 0XFFFFFFFFU)
+        if (material_vertex_count < static_cast<uint32_t>(UINT16_MAX))
         {
             // validate primitive headers
             assert(mesh_primitive_asset_header_for_validate[material_index].is_index_type_uint16);
@@ -1275,9 +1275,10 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
             for (uint32_t material_index_index = 0; material_index_index < material_index_count; ++material_index_index)
             {
                 uint32_t material_vertex_index = material_indices[material_index_index];
+                assert(material_vertex_index < static_cast<uint32_t>(UINT16_MAX));
 
                 uint16_t *out_index = reinterpret_cast<uint16_t *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].index_staging_offset + sizeof(uint16_t) * material_index_index);
-                (*out_index) = material_vertex_index;
+                (*out_index) = static_cast<uint16_t>(material_vertex_index);
             }
         }
         else

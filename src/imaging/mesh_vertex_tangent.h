@@ -15,8 +15,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _IMAGING_MESH_TANGENT_H_
-#define _IMAGING_MESH_TANGENT_H_ 1
+#ifndef _IMAGING_MESH_VERTEX_TANGENT_H_
+#define _IMAGING_MESH_VERTEX_TANGENT_H_ 1
 
 #include <stddef.h>
 #include <stdint.h>
@@ -24,7 +24,7 @@
 
 // [Frey 2011] Ivo Frey. "Spherical Skinning withDual-Quaternions and Qtangents." SIGGRAPH 2011.
 
-extern void mesh_calculate_tangents(
+extern void mesh_vertex_calculate_tangents(
 	size_t face_count,
 	uint32_t const *indices,
 	size_t vertex_count,

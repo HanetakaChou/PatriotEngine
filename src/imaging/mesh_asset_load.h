@@ -22,16 +22,6 @@
 #include <stdint.h>
 #include <pt_io.h>
 
-// TODO: vec2 normal and tangent
-// From industrial view, the Z value can be calculated by Z = (1 - X2 - Y2)^(1/2) since the vector is normalized.
-// From academic view, the sphere surface is 2-dimensional.
-
-//"QTangent" [Spherical Skinning with Dual-Quaternions and QTangents]
-
-// In Vulkan
-// the whole pipeline will be affected if the "VertexInputState" is changed and thus we keep the "vertex format" fixed
-// while the "index format" can be changed on-the-fly by "vkCmdBindIndexBuffer"
-
 struct mesh_asset_header_t
 {
     bool is_skined;

@@ -24,6 +24,10 @@
 #include <stdint.h>
 #include <pt_math.h>
 
+// In Vulkan
+// The whole pipeline will be affected if the "VertexInputState" is changed and thus we keep the "vertex format" fixed.
+// But the "index format" can be changed on-the-fly by "vkCmdBindIndexBuffer".
+
 // vertex bindings/attributes
 // location = 0 binding = 0 position VK_FORMAT_R16_SFLOAT
 // location = 1 binding = 0 position VK_FORMAT_R16_SFLOAT

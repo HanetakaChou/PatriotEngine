@@ -15,10 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "mesh_tangent.h"
+#include "mesh_vertex_tangent.h"
 #include <pt_mcrt_vector.h>
 
-extern void mesh_calculate_tangents(
+extern void mesh_vertex_calculate_tangents(
     size_t face_count,
     uint32_t const *indices,
     size_t vertex_count,

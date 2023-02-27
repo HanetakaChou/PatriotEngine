@@ -76,7 +76,7 @@
     <ClCompile Include="..\..\src\imaging\vk\vk_texture.cpp">
       <Filter>src\imaging\vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\imaging\mesh_tangent.cpp">
+    <ClCompile Include="..\..\src\imaging\mesh_vertex_tangent.cpp">
       <Filter>src\imaging</Filter>
     </ClCompile>
   </ItemGroup>
@@ -182,7 +182,7 @@
     <ClInclude Include="..\..\include\pt_math_pack.h">
       <Filter>include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\imaging\mesh_tangent.h">
+    <ClInclude Include="..\..\src\imaging\mesh_vertex_tangent.h">
       <Filter>src\imaging</Filter>
     </ClInclude>
   </ItemGroup>

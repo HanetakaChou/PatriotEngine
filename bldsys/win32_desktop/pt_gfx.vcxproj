@@ -22,7 +22,7 @@
     <ClCompile Include="..\..\src\imaging\mesh_asset_load.cpp" />
     <ClCompile Include="..\..\src\imaging\mesh_asset_load_pmx.cpp" />
     <ClCompile Include="..\..\src\imaging\mesh.cpp" />
-    <ClCompile Include="..\..\src\imaging\mesh_tangent.cpp" />
+    <ClCompile Include="..\..\src\imaging\mesh_vertex_tangent.cpp" />
     <ClCompile Include="..\..\src\imaging\texture.cpp" />
     <ClCompile Include="..\..\src\imaging\texture_asset_load.cpp" />
     <ClCompile Include="..\..\src\imaging\texture_asset_load_dds.cpp" />
@@ -57,7 +57,7 @@
     <ClInclude Include="..\..\src\imaging\mesh_asset_load.h" />
     <ClInclude Include="..\..\src\imaging\mesh_asset_load_pmx.h" />
     <ClInclude Include="..\..\src\imaging\mesh.h" />
-    <ClInclude Include="..\..\src\imaging\mesh_tangent.h" />
+    <ClInclude Include="..\..\src\imaging\mesh_vertex_tangent.h" />
     <ClInclude Include="..\..\src\imaging\mesh_vertex.sli" />
     <ClInclude Include="..\..\src\imaging\texture.h" />
     <ClInclude Include="..\..\src\imaging\streaming_object.h" />
