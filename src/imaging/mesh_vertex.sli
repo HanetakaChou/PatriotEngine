@@ -15,43 +15,49 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#ifndef _IMAGING_MESH_VERTEX_H_
-#define _IMAGING_MESH_VERTEX_H_ 1
+#ifndef _IMAGING_MESH_VERTEX_SLI_
+#define _IMAGING_MESH_VERTEX_SLI_ 1
+
+#if defined(__STDC__) || defined(__cplusplus)
 
 #include <stddef.h>
 #include <stdint.h>
 #include <pt_math.h>
 
 // vertex bindings/attributes
-// location = 0 binding = 0 position VK_FORMAT_R32G32B32_SFLOAT
+// location = 0 binding = 0 position VK_FORMAT_R16_SFLOAT
+// location = 1 binding = 0 position VK_FORMAT_R16_SFLOAT
+// location = 2 binding = 0 position VK_FORMAT_R16_SFLOAT
 struct mesh_vertex_position
 {
-    float position[3];
+    uint16_t position_x;
+    uint16_t position_y;
+    uint16_t position_z;
 };
 
 // vertex bindings/attributes
-// location = 1 binding = 1 qtangentxyz_xyz_reflection_w VK_FORMAT_A2B10G10R10_UNORM_PACK32
-// location = 2 binding = 1 qtangentw_x_uv_yz VK_FORMAT_A2B10G10R10_UNORM_PACK32
+// location = 3 binding = 1 qtangentxyz_xyz_reflection_w VK_FORMAT_A2B10G10R10_UNORM_PACK32
+// location = 4 binding = 1 qtangentw_x_uv_yz VK_FORMAT_A2B10G10R10_UNORM_PACK32
 struct mesh_vertex_varying
 {
     uint32_t qtangentxyz_xyz_reflection_w;
     uint32_t qtangentw_x_uv_yz;
 };
 
-extern uint32_t mesh_vertex_float4_to_r8g8b8a8_snorm(float unpacked_input[4]);
+#elif defined(GL_SPIRV) || defined(VULKAN)
 
-extern uint32_t mesh_vertex_float4_to_r10g10b10a2_unorm(float unpacked_input[4]);
+layout(location = 0) in highp float in_position_x;
+layout(location = 1) in highp float in_position_y;
+layout(location = 2) in highp float in_position_z;
+layout(location = 3) in highp vec4 in_qtangentxyz_xyz_reflection_w;
+layout(location = 4) in highp vec4 in_qtangentw_x_uv_yz;
 
-extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2]);
+#elif defined(HLSL_VERSION) || defined(__HLSL_VERSION)
 
-extern void mesh_vertex_compute_tangent_frame(
-    size_t face_count,
-    uint32_t const *indices,
-    size_t vertex_count,
-    pt_math_vec3 const *positions,
-    pt_math_vec3 const *normals,
-    pt_math_vec2 const *uvs,
-    pt_math_vec4 *out_qtangents,
-    float *out_reflections);
+// TODO: HLSL
+
+#else
+#error Unknown Compiler
+#endif
 
 #endif

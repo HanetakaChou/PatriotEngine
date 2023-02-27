@@ -15,110 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
-#include "mesh_vertex.h"
-#include <cfloat>
-#include <cmath>
-#include <algorithm>
+#include "mesh_tangent.h"
 #include <pt_mcrt_vector.h>
-#include <assert.h>
 
-extern uint32_t mesh_vertex_float4_to_r8g8b8a8_snorm(float unpacked_input[4])
-{
-    // UE: [FPackedNormal](https://github.com/EpicGames/UnrealEngine/blob/4.27/Engine/Source/Runtime/RenderCore/Public/PackedNormal.h#L98)
-    //
-    // D3DX_DXGIFormatConvert.inl
-    // D3DX_FLOAT4_to_R8G8B8A8_SNORM
-    // DirectXMathConvert.inl
-    // XMConvertVectorFloatToInt
-    assert((-1.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
-    assert((-1.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
-    assert((-1.01F < unpacked_input[2]) && (unpacked_input[2] < 1.01F));
-    assert((-1.01F < unpacked_input[3]) && (unpacked_input[3] < 1.01F));
-
-    float saturate_signed_float[4] = {
-        std::min(std::max(unpacked_input[0], -1.0F), 1.0F),
-        std::min(std::max(unpacked_input[1], -1.0F), 1.0F),
-        std::min(std::max(unpacked_input[2], -1.0F), 1.0F),
-        std::min(std::max(unpacked_input[3], -1.0F), 1.0F),
-    };
-
-    float float_to_int[4] = {
-        saturate_signed_float[0] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[0] >= 0.0F) ? 0.5F : -0.5F),
-        saturate_signed_float[1] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[1] >= 0.0F) ? 0.5F : -0.5F),
-        saturate_signed_float[2] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[2] >= 0.0F) ? 0.5F : -0.5F),
-        saturate_signed_float[3] * static_cast<float>(INT8_MAX) + ((saturate_signed_float[3] >= 0.0F) ? 0.5F : -0.5F)};
-
-    float truncate_float[4] = {
-        (float_to_int[0] >= 0.0F) ? std::floor(float_to_int[0]) : std::ceil(float_to_int[0]),
-        (float_to_int[1] >= 0.0F) ? std::floor(float_to_int[1]) : std::ceil(float_to_int[1]),
-        (float_to_int[2] >= 0.0F) ? std::floor(float_to_int[2]) : std::ceil(float_to_int[2]),
-        (float_to_int[3] >= 0.0F) ? std::floor(float_to_int[3]) : std::ceil(float_to_int[3]),
-    };
-
-    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(UINT8_MAX)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(UINT8_MAX)) << 8U) | ((static_cast<uint32_t>(truncate_float[2]) & static_cast<uint32_t>(UINT8_MAX)) << 16U) | ((static_cast<uint32_t>(truncate_float[3]) & static_cast<uint32_t>(UINT8_MAX)) << 24U);
-    return packed_output;
-}
-
-extern uint32_t mesh_vertex_float4_to_r10g10b10a2_unorm(float unpacked_input[4])
-{
-    // D3DX_DXGIFormatConvert.inl
-    // D3DX_FLOAT4_to_R10G10B10A2_UNORM
-    assert((-0.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
-    assert((-0.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
-    assert((-0.01F < unpacked_input[2]) && (unpacked_input[2] < 1.01F));
-    assert((-0.01F < unpacked_input[3]) && (unpacked_input[3] < 1.01F));
-
-    float saturate_float[4] = {
-        std::min(std::max(unpacked_input[0], 0.0F), 1.0F),
-        std::min(std::max(unpacked_input[1], 0.0F), 1.0F),
-        std::min(std::max(unpacked_input[2], 0.0F), 1.0F),
-        std::min(std::max(unpacked_input[3], 0.0F), 1.0F),
-    };
-
-    float float_to_uint[4] = {
-        saturate_float[0] * static_cast<float>(0X3FFU) + 0.5F,
-        saturate_float[1] * static_cast<float>(0X3FFU) + 0.5F,
-        saturate_float[2] * static_cast<float>(0X3FFU) + 0.5F,
-        saturate_float[3] * static_cast<float>(0X3U) + 0.5F};
-
-    float truncate_float[4] = {
-        std::floor(float_to_uint[0]),
-        std::floor(float_to_uint[1]),
-        std::floor(float_to_uint[2]),
-        std::floor(float_to_uint[3]),
-    };
-
-    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(0X3FFU)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(0X3FFU)) << 10U) | ((static_cast<uint32_t>(truncate_float[2]) & static_cast<uint32_t>(0X3FFU)) << 20U) | ((static_cast<uint32_t>(truncate_float[3]) & static_cast<uint32_t>(0X3U)) << 30);
-    return packed_output;
-}
-
-extern uint32_t mesh_vertex_float4_to_r16g16_unorm(float unpacked_input[2])
-{
-    // D3DX_DXGIFormatConvert.inl
-    // D3DX_FLOAT4_to_R8G8B8A8_UNORM
-    // DirectXMathConvert.inl
-    // XMConvertVectorFloatToUInt
-    assert((-0.01F < unpacked_input[0]) && (unpacked_input[0] < 1.01F));
-    assert((-0.01F < unpacked_input[1]) && (unpacked_input[1] < 1.01F));
-
-    float saturate_float[2] = {
-        std::min(std::max(unpacked_input[0], 0.0F), 1.0F),
-        std::min(std::max(unpacked_input[1], 0.0F), 1.0F),
-    };
-
-    float float_to_uint[2] = {
-        saturate_float[0] * static_cast<float>(UINT16_MAX) + 0.5F,
-        saturate_float[1] * static_cast<float>(UINT16_MAX) + 0.5F};
-
-    float truncate_float[2] = {
-        std::floor(float_to_uint[0]),
-        std::floor(float_to_uint[1])};
-
-    uint32_t packed_output = (static_cast<uint32_t>(truncate_float[0]) & static_cast<uint32_t>(UINT16_MAX)) | ((static_cast<uint32_t>(truncate_float[1]) & static_cast<uint32_t>(UINT16_MAX)) << 16U);
-    return packed_output;
-}
-
-extern void mesh_vertex_compute_tangent_frame(
+extern void mesh_calculate_tangents(
     size_t face_count,
     uint32_t const *indices,
     size_t vertex_count,
@@ -128,6 +28,7 @@ extern void mesh_vertex_compute_tangent_frame(
     pt_math_vec4 *out_qtangents,
     float *out_reflections)
 {
+
     // [DirectXMesh Wiki / ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/wiki/ComputeTangentFrame)
     // [DirectX::ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/blob/dec2022/DirectXMesh/DirectXMeshTangentFrame.cpp#L22)
 
@@ -386,7 +287,6 @@ extern void mesh_vertex_compute_tangent_frame(
             bitangent = e3;
         }
 
-#if 1
         float tangent_w;
         {
             // [DirectXMesh Wiki / ComputeTangentFrameImpl](https://github.com/microsoft/DirectXMesh/wiki/ComputeTangentFrame)
@@ -400,7 +300,6 @@ extern void mesh_vertex_compute_tangent_frame(
             pt_math_simd_vec bitangent_from_cross = pt_math_vec3_cross(normal, tangent);
             tangent_w = pt_math_vec_get_x(pt_math_vec3_dot(bitangent, bitangent_from_cross)) > 0.0F ? 1.0F : -1.0F;
         }
-#endif
 
         out_reflections[vertex_index] = tangent_w;
 

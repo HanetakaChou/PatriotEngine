@@ -15,6 +15,9 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+#ifndef _IMAGING_VK_QUATERNION_GLSLI_
+#define _IMAGING_VK_QUATERNION_GLSLI_ 1
+
 //
 // Mapping the unit quaternion to the rotation transformation.
 //
@@ -31,3 +34,5 @@ highp vec3 unit_quaternion_to_rotation_transform(in highp vec4 r, in highp vec3 
 
     return (p + 2.0 * cross(r.xyz, cross(r.xyz, p) + r.w * p));
 }
+
+#endif

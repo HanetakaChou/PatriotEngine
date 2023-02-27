@@ -18,8 +18,7 @@
 #ifndef _PT_MATH_H_
 #define _PT_MATH_H_ 1
 
-#include <pt_math_common.h>
-
+#include "pt_math_common.h"
 #include <DirectXMath.h>
 
 using pt_math_vec2 = DirectX::XMFLOAT2;

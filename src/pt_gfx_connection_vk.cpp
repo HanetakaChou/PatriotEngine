@@ -20,7 +20,7 @@
 #include <pt_mcrt_log.h>
 #include <pt_mcrt_assert.h>
 #include "pt_gfx_connection_vk.h"
-#include "imaging/mesh_vertex.h"
+#include "imaging/mesh_vertex.sli"
 #include <new>
 
 class gfx_connection_base *gfx_connection_vk::create(
@@ -1440,19 +1440,27 @@ inline bool gfx_connection_vk::update_framebuffer()
         // Normal Tangent: R8G8B8A8_SNORM
         // UV: R16G16_FLOAT
 
-        VkVertexInputAttributeDescription vertex_attribute_descriptions[3];
+        VkVertexInputAttributeDescription vertex_attribute_descriptions[5];
         vertex_attribute_descriptions[0].location = 0U; 
         vertex_attribute_descriptions[0].binding = 0U; 
-        vertex_attribute_descriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-        vertex_attribute_descriptions[0].offset = offsetof(mesh_vertex_position, position);
-        vertex_attribute_descriptions[1].location = 1U; 
-        vertex_attribute_descriptions[1].binding = 1U;  
-        vertex_attribute_descriptions[1].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
-        vertex_attribute_descriptions[1].offset = offsetof(mesh_vertex_varying, qtangentxyz_xyz_reflection_w);
-        vertex_attribute_descriptions[2].location = 2U; 
-        vertex_attribute_descriptions[2].binding = 1U; 
-        vertex_attribute_descriptions[2].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
-        vertex_attribute_descriptions[2].offset = offsetof(mesh_vertex_varying, qtangentw_x_uv_yz);
+        vertex_attribute_descriptions[0].format = VK_FORMAT_R16_SFLOAT;
+        vertex_attribute_descriptions[0].offset = offsetof(mesh_vertex_position, position_x);
+        vertex_attribute_descriptions[1].location = 1U;
+        vertex_attribute_descriptions[1].binding = 0U;
+        vertex_attribute_descriptions[1].format = VK_FORMAT_R16_SFLOAT;
+        vertex_attribute_descriptions[1].offset = offsetof(mesh_vertex_position, position_y);
+        vertex_attribute_descriptions[2].location = 2U;
+        vertex_attribute_descriptions[2].binding = 0U;
+        vertex_attribute_descriptions[2].format = VK_FORMAT_R16_SFLOAT;
+        vertex_attribute_descriptions[2].offset = offsetof(mesh_vertex_position, position_z);
+        vertex_attribute_descriptions[3].location = 3U; 
+        vertex_attribute_descriptions[3].binding = 1U;  
+        vertex_attribute_descriptions[3].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+        vertex_attribute_descriptions[3].offset = offsetof(mesh_vertex_varying, qtangentxyz_xyz_reflection_w);
+        vertex_attribute_descriptions[4].location = 4U; 
+        vertex_attribute_descriptions[4].binding = 1U; 
+        vertex_attribute_descriptions[4].format = VK_FORMAT_A2B10G10R10_UNORM_PACK32;
+        vertex_attribute_descriptions[4].offset = offsetof(mesh_vertex_varying, qtangentw_x_uv_yz);
 
         // struct VkFormatProperties physical_device_format_properties;
         // gfx_connection->get_physical_device_format_properties(VK_FORMAT_R32G32B32_SFLOAT, &physical_device_format_properties);
@@ -1464,7 +1472,7 @@ inline bool gfx_connection_vk::update_framebuffer()
         vertex_input_state.flags = 0U;
         vertex_input_state.vertexBindingDescriptionCount = 2U;
         vertex_input_state.pVertexBindingDescriptions = vertex_binding_descriptions;
-        vertex_input_state.vertexAttributeDescriptionCount = 3U;
+        vertex_input_state.vertexAttributeDescriptionCount = 5U;
         vertex_input_state.pVertexAttributeDescriptions = vertex_attribute_descriptions;
 
         VkPipelineInputAssemblyStateCreateInfo input_assembly_state_create_info;

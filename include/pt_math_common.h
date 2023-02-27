@@ -20,10 +20,6 @@
 
 #include "pt_common.h"
 
-#ifndef PT_ATTR_MATH
-#define PT_ATTR_MATH
-#endif
-
 #if defined(PT_GCC)
 #define PT_VECTORCALL
 #define PT_VECTORPTR

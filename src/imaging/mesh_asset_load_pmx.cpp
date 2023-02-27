@@ -20,7 +20,9 @@
 #include <pt_mcrt_set.h>
 #include <pt_mcrt_map.h>
 #include <pt_mcrt_memcpy.h>
-#include "mesh_vertex.h"
+#include <pt_math_pack.h>
+#include "mesh_tangent.h"
+#include "mesh_vertex.sli"
 #include <assert.h>
 
 struct mesh_asset_pmx_header_t
@@ -1231,19 +1233,23 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
         assert(material_vertex_count == mesh_primitive_asset_header_for_validate[material_index].vertex_count);
         assert(material_index_count == mesh_primitive_asset_header_for_validate[material_index].index_count);
 
-        // calculate tangent frame
+        // calculate tangents
         mcrt_vector<pt_math_vec4> material_vertex_qtangents(material_vertex_count);
         mcrt_vector<float> material_vertex_reflections(material_vertex_count);
         assert(0U == (material_index_count % 3U));
-        mesh_vertex_compute_tangent_frame(material_index_count / 3U, &material_indices[0], material_vertex_count, &material_vertex_positions[0], &material_vertex_normals[0], &material_vertex_uvs[0], &material_vertex_qtangents[0], &material_vertex_reflections[0]);
+        mesh_calculate_tangents(material_index_count / 3U, &material_indices[0], material_vertex_count, &material_vertex_positions[0], &material_vertex_normals[0], &material_vertex_uvs[0], &material_vertex_qtangents[0], &material_vertex_reflections[0]);
 
         // write to staging buffer
         for (uint32_t material_vertex_index = 0U; material_vertex_index < material_vertex_count; ++material_vertex_index)
         {
-            decltype(mesh_vertex_position::position) *out_position = reinterpret_cast<decltype(mesh_vertex_position::position) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position));
-            (*out_position)[0] = material_vertex_positions[material_vertex_index].x;
-            (*out_position)[1] = material_vertex_positions[material_vertex_index].y;
-            (*out_position)[2] = material_vertex_positions[material_vertex_index].z;
+            decltype(mesh_vertex_position::position_x) *out_position_x = reinterpret_cast<decltype(mesh_vertex_position::position_x) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position_x));
+            (*out_position_x) = pt_math_float_to_r16_float(material_vertex_positions[material_vertex_index].x);
+
+            decltype(mesh_vertex_position::position_y)* out_position_y = reinterpret_cast<decltype(mesh_vertex_position::position_y)*>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position_y));
+            (*out_position_y) = pt_math_float_to_r16_float(material_vertex_positions[material_vertex_index].y);
+
+            decltype(mesh_vertex_position::position_z) *out_position_z = reinterpret_cast<decltype(mesh_vertex_position::position_z) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].position_staging_offset + sizeof(mesh_vertex_position) * material_vertex_index + offsetof(mesh_vertex_position, position_z));
+            (*out_position_z) = pt_math_float_to_r16_float(material_vertex_positions[material_vertex_index].z);
 
             decltype(mesh_vertex_varying::qtangentxyz_xyz_reflection_w) *out_qtangentxyz_xyz_reflection_w = reinterpret_cast<decltype(mesh_vertex_varying::qtangentxyz_xyz_reflection_w) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, qtangentxyz_xyz_reflection_w));
             float unpacked_qtangentxyz_xyz_reflection_w[4] = {
@@ -1251,14 +1257,14 @@ extern bool mesh_load_pmx_primitive_data_from_input_stream(
                 0.5F * (material_vertex_qtangents[material_vertex_index].y + 1.0F),
                 0.5F * (material_vertex_qtangents[material_vertex_index].z + 1.0F),
                 0.5F * (material_vertex_reflections[material_vertex_index] + 1.0F)};
-            (*out_qtangentxyz_xyz_reflection_w) = mesh_vertex_float4_to_r10g10b10a2_unorm(unpacked_qtangentxyz_xyz_reflection_w);
+            (*out_qtangentxyz_xyz_reflection_w) = pt_math_float4_to_r10g10b10a2_unorm(unpacked_qtangentxyz_xyz_reflection_w);
 
             decltype(mesh_vertex_varying::qtangentw_x_uv_yz) *out_qtangentw_x_uv_yz = reinterpret_cast<decltype(mesh_vertex_varying::qtangentw_x_uv_yz) *>(reinterpret_cast<uintptr_t>(staging_pointer) + memcpy_dests[material_index].varying_staging_offset + sizeof(mesh_vertex_varying) * material_vertex_index + offsetof(mesh_vertex_varying, qtangentw_x_uv_yz));
             float unpacked_qtangentw_x_uv_yz[4] = {
                 0.5F * (material_vertex_qtangents[material_vertex_index].w + 1.0F),
                 material_vertex_uvs[material_vertex_index].x,
                 material_vertex_uvs[material_vertex_index].y};
-            (*out_qtangentw_x_uv_yz) = mesh_vertex_float4_to_r10g10b10a2_unorm(unpacked_qtangentw_x_uv_yz);
+            (*out_qtangentw_x_uv_yz) = pt_math_float4_to_r10g10b10a2_unorm(unpacked_qtangentw_x_uv_yz);
         }
 
         if (material_vertex_count < 0XFFFFFFFFU)

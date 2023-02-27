@@ -20,7 +20,7 @@
 #include <pt_mcrt_intrin.h>
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_log.h>
-#include <imaging/mesh_vertex.h>
+#include "../mesh_vertex.sli"
 #include "vk_mesh.h"
 #include <assert.h>
 

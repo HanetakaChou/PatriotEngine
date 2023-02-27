@@ -22,9 +22,7 @@
 
 #include "quaternion.glsli"
 
-layout(location = 0) in highp vec3 in_position;
-layout(location = 1) in highp vec4 in_qtangentxyz_xyz_reflection_w;
-layout(location = 2) in highp vec4 in_qtangentw_x_uv_yz;
+#include "../mesh_vertex.sli"
 
 layout(location = 0) out highp vec3 out_position_world_space;
 layout(location = 1) out highp vec3 out_normal_world_space;
@@ -46,7 +44,7 @@ void main()
     highp float reflection;
     highp vec2 uv;
     {
-        position_model_space = in_position;
+        position_model_space = vec3(in_position_x, in_position_y, in_position_z);
 
         // [Frey 2011] Ivo Frey. "Spherical Skinning withDual-Quaternions and Qtangents." SIGGRAPH 2011.
         //
