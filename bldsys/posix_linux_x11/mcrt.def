@@ -1,0 +1,52 @@
+/*
+ * Copyright (C) YuqiaoZhang(HanetakaChou)
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+{
+    global:
+        mcrt_task_allocate_root;
+        mcrt_task_allocate_continuation;
+        mcrt_task_get_user_data;
+        mcrt_task_destory;
+        mcrt_task_recycle_as_child_of;
+        mcrt_task_ref_count;
+        mcrt_task_set_ref_count;
+        mcrt_task_increment_ref_count;
+        mcrt_task_decrement_ref_count;
+        mcrt_task_parent;
+        mcrt_task_set_parent;
+        mcrt_task_spawn;
+        mcrt_task_wait_for_all;
+        mcrt_task_spawn_and_wait_for_all;
+        mcrt_task_arena_attach;
+        mcrt_task_arena_is_active;
+        mcrt_task_arena_context;
+        mcrt_task_enqueue;
+        mcrt_task_arena_max_concurrency;
+        mcrt_task_arena_terminate;
+        mcrt_this_task_arena_current_thread_index;
+        mcrt_aligned_malloc;
+        mcrt_aligned_realloc;
+        mcrt_aligned_free;
+        mcrt_uuid_load;
+        mcrt_uuid_equal;
+        mcrt_memcmp;
+        mcrt_memcpy;
+        mcrt_memset;
+        mcrt_log_print;
+    local:
+        *;
+};

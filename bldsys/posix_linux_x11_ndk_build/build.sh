@@ -89,7 +89,7 @@ cd ${MY_DIR}
 # rm -rf obj
 # rm -rf libs
 
-if ${NDK_BUILD_CMD_DIR}/ndk-build ${NDK_BUILD_ARGS}; then #V=1 VERBOSE=1 
+if ${NDK_BUILD_CMD_DIR}/ndk-build ${NDK_BUILD_ARGS} V=1 VERBOSE=1 ; then #V=1 VERBOSE=1 
     echo "ndk-build passed"
 else
     echo "ndk-build failed"

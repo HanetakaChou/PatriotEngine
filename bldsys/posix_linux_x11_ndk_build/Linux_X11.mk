@@ -17,15 +17,15 @@
 
 LOCAL_PATH:= $(call my-dir)
 
-include $(LOCAL_PATH)/pt_math.mk
+# include $(LOCAL_PATH)/pt_math.mk
 
 include $(LOCAL_PATH)/pt_mcrt.mk
 
-include $(LOCAL_PATH)/pt_gfx.mk
+# include $(LOCAL_PATH)/pt_gfx.mk
 
-include $(LOCAL_PATH)/pt_wsi.mk
+# include $(LOCAL_PATH)/pt_wsi.mk
 
-include $(LOCAL_PATH)/pt_launcher.mk
+# include $(LOCAL_PATH)/pt_launcher.mk
 
 # intel_tbb / libpt_tbbmalloc 
 

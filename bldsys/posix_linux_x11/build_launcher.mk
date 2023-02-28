@@ -1,0 +1,3 @@
+
+
+LINKER_FLAGS += -pie
