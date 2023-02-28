@@ -15,27 +15,19 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-all: \
-	../../src/imaging/vk/forward_shading_mesh_vertex.inl \
-	../../src/imaging/vk/forward_shading_mesh_fragment.inl
+all: ../../src/imaging/vk/forward_shading_mesh_vertex.inl ../../src/imaging/vk/forward_shading_mesh_fragment.inl
 
 # -g -Od should only be used in debug version
 
-../../src/imaging/vk/forward_shading_mesh_vertex.inl : ../../src/imaging/vk/forward_shading_mesh_vertex.glsl
+../../src/imaging/vk/forward_shading_mesh_vertex.inl obj/imaging/vk/forward_shading_mesh_vertex.d : ../../src/imaging/vk/forward_shading_mesh_vertex.glsl
 	glslangValidator --depfile obj/imaging/vk/forward_shading_mesh_vertex.d -g -Od -S vert -V100 -o ../../src/imaging/vk/forward_shading_mesh_vertex.inl -x ../../src/imaging/vk/forward_shading_mesh_vertex.glsl
 
-obj/imaging/vk/forward_shading_mesh_vertex.d : ../../src/imaging/vk/forward_shading_mesh_vertex.glsl
-	glslangValidator --depfile obj/imaging/vk/forward_shading_mesh_vertex.d -g -Od -S vert -V100 -o ../../src/imaging/vk/forward_shading_mesh_vertex.inl -x ../../src/imaging/vk/forward_shading_mesh_vertex.glsl
-
-obj/imaging/vk/forward_shading_mesh_vertex.d : obj/imaging/vk
-
-../../src/imaging/vk/forward_shading_mesh_fragment.inl : ../../src/imaging/vk/forward_shading_mesh_fragment.glsl 
+../../src/imaging/vk/forward_shading_mesh_fragment.inl obj/imaging/vk/forward_shading_mesh_fragment.d : ../../src/imaging/vk/forward_shading_mesh_fragment.glsl 
 	glslangValidator --depfile obj/imaging/vk/forward_shading_mesh_fragment.d -g -Od -S frag -V100 -o ../../src/imaging/vk/forward_shading_mesh_fragment.inl -x ../../src/imaging/vk/forward_shading_mesh_fragment.glsl
 
-obj/imaging/vk/forward_shading_mesh_fragment.d : ../../src/imaging/vk/forward_shading_mesh_fragment.glsl 
-	glslangValidator --depfile obj/imaging/vk/forward_shading_mesh_fragment.d -g -Od -S frag -V100 -o ../../src/imaging/vk/forward_shading_mesh_fragment.inl -x ../../src/imaging/vk/forward_shading_mesh_fragment.glsl
+# automatic create directory
 
-obj/imaging/vk/forward_shading_mesh_fragment.d : obj/imaging/vk
+obj/imaging/vk/forward_shading_mesh_vertex.d obj/imaging/vk/forward_shading_mesh_fragment.d : obj/imaging/vk
 
 obj/imaging/vk :
 	mkdir -p obj/imaging/vk
