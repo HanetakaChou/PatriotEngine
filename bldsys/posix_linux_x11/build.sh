@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #
 # Copyright (C) YuqiaoZhang(HanetakaChou)
 # 
@@ -15,13 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# -g -Od should only be used in debug version
+MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
 
-all: \
-	pt_gfx_glsl_vulkan_lighting_mesh_vert.inl \
-	pt_gfx_glsl_vulkan_lighting_mesh_frag.inl
+cd ${MY_DIR}
 
-pt_gfx_glsl_vulkan_lighting_mesh_vert.inl : pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl pt_gfx_shader_brdf.glslangh
-	glslangValidator -g -Od -S vert -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_vert.inl -x pt_gfx_glsl_vulkan_lighting_mesh_vert.glsl
-pt_gfx_glsl_vulkan_lighting_mesh_frag.inl : pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl pt_gfx_shader_brdf.glslangh
-	glslangValidator -g -Od -S frag -V100 -o pt_gfx_glsl_vulkan_lighting_mesh_frag.inl -x pt_gfx_glsl_vulkan_lighting_mesh_frag.glsl
+make -C "${MY_DIR}" -f "${MY_DIR}/build.mk"
