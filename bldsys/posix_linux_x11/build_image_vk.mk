@@ -15,32 +15,68 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-CXX_FLAGS:= -g -Od -fPIE -fPIC 
-LINKER_FLAGS:= -shared -pie -Wl,-soname,imaging_vk -Wl,--enable-new-dtags -Wl,-rpath,/XXXXXX -Wl,--no-undefined
-GLSL_FLAGS:= -g -Od
-INT_DIR:= $(abspath ./obj/imaging_vk/debug/)
-SRC_DIR:= $(abspath ../../src/)
+BIN_DIR := $(abspath ../../bin/x64/debug/)
+OBJ_DIR := $(abspath ./obj/imaging_vk/x64/debug/)
+SPIRV_DIR := $(abspath ./spirv/imaging_vk/debug/)
+SRC_DIR := $(abspath ../../src/)
+
+
+CXX := c++
+
+CXX_FLAGS := -g -O0 -UNDEBUG #-fno-limit-debug-info
+CXX_FLAGS += -fPIE -fPIC 
+CXX_FLAGS += -pthread
+CXX_FLAGS += -no-canonical-prefixes
+# CXX_FLAGS += -ffunction-sections -funwind-tables -fstack-protector-strong -Wno-invalid-command-line-argument -Wno-unused-command-line-argument -Wa,--noexecstack -Wformat -Werror=format-security 
+CXX_FLAGS += -fno-exceptions -fno-rtti
+CXX_FLAGS += -Werror=return-type 
+CXX_FLAGS += -Wall 
+CXX_FLAGS += -fvisibility=hidden 
+CXX_FLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8 
+CXX_FLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
+CXX_FLAGS += -I$(abspath ../../include)
+CXX_FLAGS += -I$(SPIRV_DIR)
+
+LINKER := c++
+
+LINKER_FLAGS := -shared -Wl,-soname,libmcrt.so
+LINKER_FLAGS += -fPIE -fPIC 
+LINKER_FLAGS += -pthread
+LINKER_FLAGS += -no-canonical-prefixes
+# LINKER_FLAGS += -fuse-ld=gold
+# LINKER_FLAGS += -Wl,--build-id -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--warn-shared-textrel -Wl,--fatal-warnings
+LINKER_FLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8 
+LINKER_FLAGS += -Wl,--enable-new-dtags '-Wl,-rpath,$$ORIGIN'
+LINKER_FLAGS += -Wl,--no-undefined -Wl,--version-script,$(abspath ./mcrt.def)
+
+GLSLANG := glslangValidator
+
+GLSLANG_FLAGS:= -g -Od
+
+VERBOSE := @
 
 imaging_vk: \
-	$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.inl)\
-	$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.inl)
+	$(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.inl)\
+	$(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.inl)
 
-$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.inl) \
-$(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_vertex.d) : \
-$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.glsl) ; \
-	mkdir -p $(dir $(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_vertex.d)); \
-	glslangValidator --depfile $(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_vertex.d) \
-	-V100 -x $(GLSL_FLAGS) -S vert -o $(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.inl) \
+$(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.inl) \
+$(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_vertex.d) : \
+$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.glsl) ; $(VERBOSE) \
+	mkdir -p $(dir $(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.inl)); \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_vertex.d)); \
+	$(GLSLANG) --depfile $(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_vertex.d) \
+	-V100 -x $(GLSL_FLAGS) -S vert -o $(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.inl) \
 	$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_vertex.glsl)
 
-$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.inl) \
-$(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_fragment.d) : \
-$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.glsl) ; \
-	mkdir -p $(dir $(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_fragment.d)); \
-	glslangValidator --depfile $(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_fragment.d) \
-	-V100 -x $(GLSL_FLAGS) -S frag -o $(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.inl) \
+$(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.inl) \
+$(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_fragment.d) : \
+$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.glsl) ; $(VERBOSE) \
+	mkdir -p $(dir $(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.inl)); \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_fragment.d)); \
+	$(GLSLANG) --depfile $(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_fragment.d) \
+	-V100 -x $(GLSL_FLAGS) -S frag -o $(abspath $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.inl) \
 	$(abspath $(SRC_DIR)/imaging/vk/forward_shading_mesh_fragment.glsl)
 
 include \
-	$(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_vertex.d) \
-	$(abspath $(INT_DIR)/imaging/vk/forward_shading_mesh_fragment.d)
+	$(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_vertex.d) \
+	$(abspath $(OBJ_DIR)/imaging/vk/forward_shading_mesh_fragment.d)

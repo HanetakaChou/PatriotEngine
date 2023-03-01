@@ -15,8 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-OUT_DIR := $(abspath ../../bin/x64/debug/)
-INT_DIR := $(abspath ./obj/mcrt/x64/debug/)
+BIN_DIR := $(abspath ../../bin/x64/debug/)
+OBJ_DIR := $(abspath ./obj/mcrt/x64/debug/)
 SRC_DIR := $(abspath ../../src/)
 
 CXX := c++
@@ -47,153 +47,159 @@ LINKER_FLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8
 LINKER_FLAGS += -Wl,--enable-new-dtags '-Wl,-rpath,$$ORIGIN'
 LINKER_FLAGS += -Wl,--no-undefined -Wl,--version-script,$(abspath ./mcrt.def)
 
+PREBUILT_TBB_MALLOC_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so)
+PREBUILT_TBB_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so)
+PREBUILT_IRML_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_irml.so)
+
 VERBOSE := @
 
 .PHONY: \
-	$(abspath $(OUT_DIR)/libmcrt.so) \
-	$(abspath $(OUT_DIR)/libpt_tbbmalloc.so) \
-	$(abspath $(OUT_DIR)/libpt_tbb.so) \
-	$(abspath $(OUT_DIR)/libpt_irml.so)
+	$(abspath $(BIN_DIR)/libmcrt.so) \
+	$(abspath $(BIN_DIR)/libpt_tbbmalloc.so) \
+	$(abspath $(BIN_DIR)/libpt_tbb.so) \
+	$(abspath $(BIN_DIR)/libpt_irml.so)
 
-$(abspath $(OUT_DIR)/libmcrt.so): \
-	$(abspath $(INT_DIR)/pt_mcrt_log.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_intrin.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memset.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcmp.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcpy.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_malloc.o) \
-	$(abspath $(INT_DIR)/pt_mcrt_task.o) \
-	$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so) \
-	$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so) ; ${VERBOSE} \
-		mkdir -p $(dir $(abspath $(OUT_DIR)/libmcrt.so)); \
-		${LINKER} $(LINKER_FLAGS) -o $(abspath $(OUT_DIR)/libmcrt.so) \
-		$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so) \
-		$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so) \
-		$(abspath $(INT_DIR)/pt_mcrt_log.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_intrin.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memset.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memcmp.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memcpy.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_malloc.o) \
-		$(abspath $(INT_DIR)/pt_mcrt_task.o) ; \
+$(abspath $(BIN_DIR)/libmcrt.so): \
+	$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_task.o) \
+	${PREBUILT_TBB_MALLOC_LIBRARY} \
+	${PREBUILT_TBB_LIBRARY} ; ${VERBOSE} \
+		mkdir -p $(dir $(abspath $(BIN_DIR)/libmcrt.so)); \
+		${LINKER} $(LINKER_FLAGS) -o $(abspath $(BIN_DIR)/libmcrt.so) \
+		${PREBUILT_TBB_MALLOC_LIBRARY} \
+		${PREBUILT_TBB_LIBRARY} \
+		$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_task.o) ; \
 
-$(abspath $(OUT_DIR)/libpt_tbbmalloc.so) : \
-	$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so) ; ${VERBOSE} \
-		mkdir -p $(dir $(abspath $(OUT_DIR)/libmcrt.so)); \
-		cp -f $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so) \
-		$(abspath $(OUT_DIR)/libpt_tbbmalloc.so)
+$(abspath $(BIN_DIR)/libpt_tbbmalloc.so) : \
+	${PREBUILT_TBB_MALLOC_LIBRARY} ; ${VERBOSE} \
+		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_tbbmalloc.so)); \
+		cp -f ${PREBUILT_TBB_MALLOC_LIBRARY} \
+		$(abspath $(BIN_DIR)/libpt_tbbmalloc.so)
 
-$(abspath $(OUT_DIR)/libpt_tbb.so) : \
-	$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so) ; ${VERBOSE} \
-		cp -f $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so) \
-		$(abspath $(OUT_DIR)/libpt_tbb.so)
+$(abspath $(BIN_DIR)/libpt_tbb.so) : \
+	${PREBUILT_TBB_LIBRARY} ; ${VERBOSE} \
+		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_tbb.so)); \
+		cp -f ${PREBUILT_TBB_LIBRARY} \
+		$(abspath $(BIN_DIR)/libpt_tbb.so)
 
-$(abspath $(OUT_DIR)/libpt_irml.so) : \
-	$(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_irml.so) ; ${VERBOSE} \
-		cp -f $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_irml.so) \
-		$(abspath $(OUT_DIR)/libpt_irml.so)
+$(abspath $(BIN_DIR)/libpt_irml.so) : \
+	${PREBUILT_IRML_LIBRARY} ; ${VERBOSE} \
+		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_irml.so)); \
+		cp -f ${PREBUILT_IRML_LIBRARY} \
+		$(abspath $(BIN_DIR)/libpt_irml.so)
 
-$(abspath $(INT_DIR)/pt_mcrt_log.o) \
-$(abspath $(INT_DIR)/pt_mcrt_log.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_log.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_log.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_log.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_log.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_log.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_log.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_log.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_log.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_intrin.o) \
-$(abspath $(INT_DIR)/pt_mcrt_intrin.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_intrin.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_intrin.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_intrin.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_intrin.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_intrin.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_intrin.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_intrin.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_intrin.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.o) \
-$(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_intrin_x86_sse2.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.d) \
-	-c $(CXX_FLAGS) -msse2 -o $(abspath $(INT_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.d) \
+	-c $(CXX_FLAGS) -msse2 -o $(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_intrin_x86_sse2.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memset.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memset.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memset.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memset.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memset.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memset.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_memset.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memset.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memset.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memset.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memcmp.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memcmp.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memcmp.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memcmp.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memcmp.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_memcmp.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memcmp.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memcmp.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memcmp.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memcpy.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memcpy.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memcpy.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memcpy.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memcpy.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_memcpy.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memcpy.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memcpy.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memcpy.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d) \
-	-c $(CXX_FLAGS) -mssse3 -o $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.d) \
+	-c $(CXX_FLAGS) -mssse3 -o $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d) \
-	-c $(CXX_FLAGS) -mavx -o $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.d) \
+	-c $(CXX_FLAGS) -mavx -o $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
-$(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d) \
-	-c $(CXX_FLAGS) -mavx512f -o $(abspath $(INT_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.d) \
+	-c $(CXX_FLAGS) -mavx512f -o $(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_malloc.o) \
-$(abspath $(INT_DIR)/pt_mcrt_malloc.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_malloc.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_malloc.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_malloc.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_malloc.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_malloc.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_malloc.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_malloc.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_malloc.cpp)
 
-$(abspath $(INT_DIR)/pt_mcrt_task.o) \
-$(abspath $(INT_DIR)/pt_mcrt_task.d) : \
+$(abspath $(OBJ_DIR)/pt_mcrt_task.o) \
+$(abspath $(OBJ_DIR)/pt_mcrt_task.d) : \
 $(abspath $(SRC_DIR)/pt_mcrt_task.cpp) ; ${VERBOSE} \
-	mkdir -p $(dir $(abspath $(INT_DIR)/pt_mcrt_task.d)); \
-	$(CXX) -MMD -MP -MF $(abspath $(INT_DIR)/pt_mcrt_task.d) \
-	-c $(CXX_FLAGS) -o $(abspath $(INT_DIR)/pt_mcrt_task.o) \
+	mkdir -p $(dir $(abspath $(OBJ_DIR)/pt_mcrt_task.d)); \
+	$(CXX) -MMD -MP -MF $(abspath $(OBJ_DIR)/pt_mcrt_task.d) \
+	-c $(CXX_FLAGS) -o $(abspath $(OBJ_DIR)/pt_mcrt_task.o) \
 	$(abspath $(SRC_DIR)/pt_mcrt_task.cpp)
 
 include \
-	$(abspath $(INT_DIR)/pt_mcrt_log.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_intrin.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_memset.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcmp.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_memcpy.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_malloc.d) \
-	$(abspath $(INT_DIR)/pt_mcrt_task.d)
+	$(abspath $(OBJ_DIR)/pt_mcrt_log.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_intrin.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memset.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_malloc.d) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_task.d)
