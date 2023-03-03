@@ -15,9 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-BIN_DIR := $(abspath ../../bin/x64/debug/)
-OBJ_DIR := $(abspath ./obj/mcrt/x64/debug/)
-SRC_DIR := $(abspath ../../src/)
+BIN_DIR := $(abspath ../bin/debug/x64/)
+OBJ_DIR := $(abspath ./obj/mcrt/debug/x64/)
+SRC_DIR := $(abspath ../src/)
+
+PREBUILT_TBB_MALLOC_LIBRARY := $(abspath ../third_party/TBB/build_posix_linux_gblic_x64/libpt_tbbmalloc.so)
+PREBUILT_TBB_LIBRARY := $(abspath ../third_party/TBB/build_posix_linux_gblic_x64/libpt_tbb.so)
+PREBUILT_IRML_LIBRARY := $(abspath ../third_party/TBB/build_posix_linux_gblic_x64/libpt_irml.so)
 
 CXX := c++
 
@@ -32,12 +36,12 @@ CXX_FLAGS += -Wall
 CXX_FLAGS += -fvisibility=hidden 
 CXX_FLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8 
 CXX_FLAGS += -DPT_ATTR_MCRT=PT_ATTR_EXPORT
-CXX_FLAGS += -I$(abspath ../../include)
-CXX_FLAGS += -I$(abspath ../../third_party/intel_tbb/include)
+CXX_FLAGS += -I$(abspath ../include)
+CXX_FLAGS += -I$(abspath ../third_party/TBB/include)
 
 LINKER := c++
 
-LINKER_FLAGS := -shared -Wl,-soname,libmcrt.so
+LINKER_FLAGS := -shared -Wl,-soname,libpt_mcrt.so
 LINKER_FLAGS += -fPIE -fPIC 
 LINKER_FLAGS += -pthread
 LINKER_FLAGS += -no-canonical-prefixes
@@ -45,50 +49,20 @@ LINKER_FLAGS += -no-canonical-prefixes
 # LINKER_FLAGS += -Wl,--build-id -Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now -Wl,--warn-shared-textrel -Wl,--fatal-warnings
 LINKER_FLAGS += -finput-charset=UTF-8 -fexec-charset=UTF-8 
 LINKER_FLAGS += -Wl,--enable-new-dtags '-Wl,-rpath,$$ORIGIN'
-LINKER_FLAGS += -Wl,--no-undefined -Wl,--version-script,$(abspath ./mcrt.def)
-
-PREBUILT_TBB_MALLOC_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbbmalloc.so)
-PREBUILT_TBB_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_tbb.so)
-PREBUILT_IRML_LIBRARY := $(abspath ../../third_party/intel_tbb/lib/glibc_x64/libpt_irml.so)
+LINKER_FLAGS += -Wl,--no-undefined -Wl,--version-script,$(abspath ./pt_mcrt.def)
 
 VERBOSE := @
 
-.PHONY: \
-	$(abspath $(BIN_DIR)/libmcrt.so) \
+all: \
 	$(abspath $(BIN_DIR)/libpt_tbbmalloc.so) \
 	$(abspath $(BIN_DIR)/libpt_tbb.so) \
-	$(abspath $(BIN_DIR)/libpt_irml.so)
+	$(abspath $(BIN_DIR)/libpt_irml.so) \
+	$(abspath $(BIN_DIR)/libpt_mcrt.so)
 
-$(abspath $(BIN_DIR)/libmcrt.so): \
-	$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
-	$(abspath $(OBJ_DIR)/pt_mcrt_task.o) \
-	${PREBUILT_TBB_MALLOC_LIBRARY} \
-	${PREBUILT_TBB_LIBRARY} ; ${VERBOSE} \
-		mkdir -p $(dir $(abspath $(BIN_DIR)/libmcrt.so)); \
-		${LINKER} $(LINKER_FLAGS) -o $(abspath $(BIN_DIR)/libmcrt.so) \
-		${PREBUILT_TBB_MALLOC_LIBRARY} \
-		${PREBUILT_TBB_LIBRARY} \
-		$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
-		$(abspath $(OBJ_DIR)/pt_mcrt_task.o) ; \
+.PHONY : \
+	all
 
+# Copy Prebuilt Libraries
 $(abspath $(BIN_DIR)/libpt_tbbmalloc.so) : \
 	${PREBUILT_TBB_MALLOC_LIBRARY} ; ${VERBOSE} \
 		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_tbbmalloc.so)); \
@@ -106,6 +80,37 @@ $(abspath $(BIN_DIR)/libpt_irml.so) : \
 		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_irml.so)); \
 		cp -f ${PREBUILT_IRML_LIBRARY} \
 		$(abspath $(BIN_DIR)/libpt_irml.so)
+
+# Build
+$(abspath $(BIN_DIR)/libpt_mcrt.so): \
+	$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
+	$(abspath $(OBJ_DIR)/pt_mcrt_task.o) \
+	${PREBUILT_TBB_MALLOC_LIBRARY} \
+	${PREBUILT_TBB_LIBRARY} ; ${VERBOSE} \
+		mkdir -p $(dir $(abspath $(BIN_DIR)/libpt_mcrt.so)); \
+		${LINKER} $(LINKER_FLAGS) -o $(abspath $(BIN_DIR)/libpt_mcrt.so) \
+		${PREBUILT_TBB_MALLOC_LIBRARY} \
+		${PREBUILT_TBB_LIBRARY} \
+		$(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_intrin.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_intrin_x86_sse2.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memset.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcmp.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_malloc.o) \
+		$(abspath $(OBJ_DIR)/pt_mcrt_task.o) ; \
 
 $(abspath $(OBJ_DIR)/pt_mcrt_log.o) \
 $(abspath $(OBJ_DIR)/pt_mcrt_log.d) : \

@@ -19,7 +19,7 @@
 #include <pt_mcrt_common.h>
 
 #if defined(PT_X64) || defined(PT_X86)
-#include "../third_party/dpdk/lib/librte_eal/x86/include/rte_memcpy.h"
+#include "../third_party/DPDK/lib/librte_eal/x86/include/rte_memcpy.h"
 
 extern void *rte_memcpy_x86_avx(void *__restrict dest, void const *__restrict src, size_t count)
 {

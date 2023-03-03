@@ -21,5 +21,5 @@ MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"
 
 # cd ${MY_DIR}
 
-make -C "${MY_DIR}" -f "${MY_DIR}/build_mcrt.mk"
-make -C "${MY_DIR}" -f "${MY_DIR}/build_image_vk.mk"
+make -C "${MY_DIR}" -f "${MY_DIR}/pt_mcrt.mk"
+# make -C "${MY_DIR}" -f "${MY_DIR}/build_image_vk.mk"

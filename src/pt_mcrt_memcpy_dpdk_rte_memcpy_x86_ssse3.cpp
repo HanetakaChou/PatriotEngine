@@ -25,7 +25,7 @@
 #define __extension__(x) x
 #endif
 
-#include "../third_party/dpdk/lib/librte_eal/x86/include/rte_memcpy.h"
+#include "../third_party/DPDK/lib/librte_eal/x86/include/rte_memcpy.h"
 
 extern void *rte_memcpy_x86_ssse3(void *__restrict dest, void const *__restrict src, size_t count)
 {
