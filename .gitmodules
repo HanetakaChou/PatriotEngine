@@ -31,3 +31,6 @@
 [submodule "third_party/VulkanMemoryAllocator"]
 	path = third_party/VulkanMemoryAllocator
 	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/CoreRT"]
+	path = third_party/CoreRT
+	url = ../PatriotEngine_ThirdParty.git
