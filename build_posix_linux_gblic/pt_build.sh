@@ -17,9 +17,23 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-MY_DIR="$(cd "$(dirname "$0")" 1>/dev/null 2>/dev/null && pwd)"  
+# configure
+if test \( $# -ne 2 \);
+then
+    echo "Usage: pt_build.sh configuration architecture"
+    echo ""
+    echo "Configurations:"
+    echo " debug - build with the debug configuration"
+    echo " release - build with the release configuration"
+    echo ""
+    echo "Architectures:"
+    echo " x86 - build with the x86 architecture"
+    echo " x64 - build with the x64 architecture"
+    echo ""
+    exit 1
+fi
 
-# cd ${MY_DIR}
+# build
+BUILD_DIR="$(realpath -s "$(dirname "$0")")"  
 
-make -C "${MY_DIR}" -f "${MY_DIR}/pt_mcrt.mk"
-# make -C "${MY_DIR}" -f "${MY_DIR}/build_image_vk.mk"
+make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_mcrt.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2""

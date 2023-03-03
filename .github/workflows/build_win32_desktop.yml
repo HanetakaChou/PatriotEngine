@@ -11,8 +11,8 @@ jobs:
     runs-on: windows-latest
     strategy:
         matrix:
-          platform: [x86, x64]
           configuration: [Debug, Release]
+          platform: [x86, x64]
     steps:
       - uses: actions/checkout@v2
         with:
