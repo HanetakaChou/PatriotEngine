@@ -1,5 +1,8 @@
-[submodule "assets"]
-	path = assets
+[submodule "assets/Genshin_Impact-Ayaka_kamisato"]
+	path = assets/Genshin_Impact-Ayaka_kamisato
+	url = git@github.com:HanetakaChou/PatriotEngine_Assets.git
+[submodule "assets/Honkai_Impact_3rd-Herrscher_of_Thunder"]
+	path = assets/Honkai_Impact_3rd-Herrscher_of_Thunder
 	url = git@github.com:HanetakaChou/PatriotEngine_Assets.git
 [submodule "references"]
 	path = references

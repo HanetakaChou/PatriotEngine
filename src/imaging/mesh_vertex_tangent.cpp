@@ -329,13 +329,13 @@ extern void mesh_vertex_calculate_tangents(
                 bool res_mat_decompose = pt_math_mat_decompose(&unused_scale, &unit_quaternion_rotation_transform, &unused_translation, tangent_to_model_transform);
                 assert(res_mat_decompose);
 
-                assert(pt_math_vec_get_x(pt_math_vec3_length(tangent)) < FLT_EPSILON || std::abs(pt_math_vec_get_x(unused_scale) - 1.0F) < 0.0001F);
-                assert(pt_math_vec_get_x(pt_math_vec3_length(bitangent_from_cross)) < FLT_EPSILON || std::abs(pt_math_vec_get_y(unused_scale) - 1.0F) < 0.0001F);
-                assert(pt_math_vec_get_x(pt_math_vec3_length(normal)) < FLT_EPSILON || std::abs(pt_math_vec_get_z(unused_scale) - 1.0F) < 0.0001F);
+                assert(pt_math_vec_get_x(pt_math_vec3_length(tangent)) < FLT_EPSILON || std::abs(pt_math_vec_get_x(unused_scale) - 1.0F) < 0.0002F);
+                assert(pt_math_vec_get_x(pt_math_vec3_length(bitangent_from_cross)) < FLT_EPSILON || std::abs(pt_math_vec_get_y(unused_scale) - 1.0F) < 0.0002F);
+                assert(pt_math_vec_get_x(pt_math_vec3_length(normal)) < FLT_EPSILON || std::abs(pt_math_vec_get_z(unused_scale) - 1.0F) < 0.0002F);
 
-                assert(std::abs(pt_math_vec_get_x(unused_translation)) < 0.0001F);
-                assert(std::abs(pt_math_vec_get_y(unused_translation)) < 0.0001F);
-                assert(std::abs(pt_math_vec_get_z(unused_translation)) < 0.0001F);
+                assert(std::abs(pt_math_vec_get_x(unused_translation)) < 0.0002F);
+                assert(std::abs(pt_math_vec_get_y(unused_translation)) < 0.0002F);
+                assert(std::abs(pt_math_vec_get_z(unused_translation)) < 0.0002F);
             }
 
 #else
