@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pt_mcrt", "pt_mcrt.vcxproj", "{852991E1-1003-4A40-AAC0-04F949045FC9}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "imaging_vk", "pt_gfx.vcxproj", "{51E8C786-0AAC-4CF7-AE10-547688124284}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pt_imaging_vk", "pt_imaging_vk.vcxproj", "{51E8C786-0AAC-4CF7-AE10-547688124284}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pt_wsi", "pt_wsi.vcxproj", "{3AFC3815-C868-4025-A550-B0AAB2616101}"
 EndProject

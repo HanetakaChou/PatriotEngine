@@ -20,10 +20,10 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <imaging/texture.h>
-#include <imaging/streaming_object.h>
-#include <pt_gfx_frame_object_base.h>
-#include <pt_gfx_connection_vk.h>
+#include "../texture.h"
+#include "../streaming_object.h"
+#include "../../pt_gfx_frame_object_base.h"
+#include "../../pt_gfx_connection_vk.h"
 #include <vulkan/vulkan.h>
 
 class gfx_texture_vk final : public gfx_texture_base

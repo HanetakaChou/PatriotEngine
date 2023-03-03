@@ -13,21 +13,21 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_base.cpp">
+    <ClCompile Include="..\samples\launcher\pt_wsi_app_base.cpp">
       <Filter>samples\launcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\samples\launcher\pt_wsi_app_win32_desktop.cpp">
+    <ClCompile Include="..\samples\launcher\pt_wsi_app_win32_desktop.cpp">
       <Filter>samples\launcher</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\samples\asset\material_asset_load_pmx.cpp">
+    <ClCompile Include="..\samples\asset\material_asset_load_pmx.cpp">
       <Filter>samples\asset</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\samples\launcher\pt_wsi_app_base.h">
+    <ClInclude Include="..\samples\launcher\pt_wsi_app_base.h">
       <Filter>samples\launcher</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\samples\asset\material_asset_load_pmx.h">
+    <ClInclude Include="..\samples\asset\material_asset_load_pmx.h">
       <Filter>samples\asset</Filter>
     </ClInclude>
   </ItemGroup>

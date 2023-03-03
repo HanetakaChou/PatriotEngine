@@ -97,13 +97,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE, LPWSTR cmd_line, int cmd_sho
 	// Lunarg Vulkan SDK
 	{
 		mcrt_wstring layer_path = g_wsi_app_win32_desktop_executable_path;
-#if defined(PT_X64)
-		layer_path += L"\\..\\..\\..\\third_party\\vulkan_sdk\\lib\\win32_desktop_x64";
-#elif defined(PT_X86)
-		layer_path += L"\\..\\..\\..\\third_party\\vulkan_sdk\\lib\\win32_desktop_x86";
-#else
-#error Unknown Architecture
-#endif
 		SetEnvironmentVariableW(L"VK_LAYER_PATH", layer_path.c_str());
 	}
 

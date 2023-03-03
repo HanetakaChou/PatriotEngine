@@ -1,0 +1,56 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{0f63866f-6d44-43a4-9409-3a322881346a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{8e1a6dd3-ff4b-4f62-a265-f66ddf04d62f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="build_win32_desktop">
+      <UniqueIdentifier>{d8cb46e2-bde8-4feb-a233-696fd3bef974}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party">
+      <UniqueIdentifier>{d8127e02-fa1a-4e5c-847b-011f978d5738}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\Vulkan-ValidationLayers">
+      <UniqueIdentifier>{0a85213c-7f5b-4ceb-9659-8da355484d0d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\Vulkan-ValidationLayers\build_win32_desktop_x64">
+      <UniqueIdentifier>{e8147b81-992a-4db2-9329-f513627a941f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="third_party\Vulkan-ValidationLayers\build_win32_desktop_x86">
+      <UniqueIdentifier>{24bc90d3-1296-4c93-879f-db5616e8f26f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\src\pt_wsi_main_win32_desktop.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="pt_dllmain.cpp">
+      <Filter>build_win32_desktop</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\pt_wsi_common.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\pt_wsi_main.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CopyFileToFolders Include="..\third_party\Vulkan-ValidationLayers\build_win32_desktop_x64\VkLayer_khronos_validation.dll">
+      <Filter>third_party\Vulkan-ValidationLayers\build_win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\third_party\Vulkan-ValidationLayers\build_win32_desktop_x64\VkLayer_khronos_validation.json">
+      <Filter>third_party\Vulkan-ValidationLayers\build_win32_desktop_x64</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\third_party\Vulkan-ValidationLayers\build_win32_desktop_x86\VkLayer_khronos_validation.dll">
+      <Filter>third_party\Vulkan-ValidationLayers\build_win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+    <CopyFileToFolders Include="..\third_party\Vulkan-ValidationLayers\build_win32_desktop_x86\VkLayer_khronos_validation.json">
+      <Filter>third_party\Vulkan-ValidationLayers\build_win32_desktop_x86</Filter>
+    </CopyFileToFolders>
+  </ItemGroup>
+</Project>

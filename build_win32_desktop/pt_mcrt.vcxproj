@@ -19,101 +19,101 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\pt_mcrt_intrin.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_intrin_x86_sse2.cpp">
+    <ClCompile Include="..\src\pt_mcrt_intrin.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_intrin_x86_sse2.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_mcrt_log.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_malloc.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_memcmp.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_memcpy.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp">
+    <ClCompile Include="..\src\pt_mcrt_log.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_malloc.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_memcmp.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_memcpy.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions</EnableEnhancedInstructionSet>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp">
+    <ClCompile Include="..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_avx512f.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp">
+    <ClCompile Include="..\src\pt_mcrt_memcpy_dpdk_rte_memcpy_x86_ssse3.cpp">
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <EnableEnhancedInstructionSet Condition="'$(Configuration)|$(Platform)'=='Release|x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
-    <ClCompile Include="..\..\src\pt_mcrt_memset.cpp" />
-    <ClCompile Include="..\..\src\pt_mcrt_task.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_memset.cpp" />
+    <ClCompile Include="..\src\pt_mcrt_task.cpp" />
     <ClCompile Include="pt_dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\include\pt_mcrt_assert.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_atomic.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_common.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_intrin.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_log.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_malloc.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_memcmp.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_memcpy.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_memset.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_rwlock.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_scalable_allocator.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_spinlock.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_task.h" />
-    <ClInclude Include="..\..\include\pt_mcrt_thread.h" />
+    <ClInclude Include="..\include\pt_mcrt_assert.h" />
+    <ClInclude Include="..\include\pt_mcrt_atomic.h" />
+    <ClInclude Include="..\include\pt_mcrt_common.h" />
+    <ClInclude Include="..\include\pt_mcrt_intrin.h" />
+    <ClInclude Include="..\include\pt_mcrt_log.h" />
+    <ClInclude Include="..\include\pt_mcrt_malloc.h" />
+    <ClInclude Include="..\include\pt_mcrt_memcmp.h" />
+    <ClInclude Include="..\include\pt_mcrt_memcpy.h" />
+    <ClInclude Include="..\include\pt_mcrt_memset.h" />
+    <ClInclude Include="..\include\pt_mcrt_rwlock.h" />
+    <ClInclude Include="..\include\pt_mcrt_scalable_allocator.h" />
+    <ClInclude Include="..\include\pt_mcrt_spinlock.h" />
+    <ClInclude Include="..\include\pt_mcrt_task.h" />
+    <ClInclude Include="..\include\pt_mcrt_thread.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\include\pt_mcrt_atomic.inl" />
-    <None Include="..\..\include\pt_mcrt_atomic_msvc.inl" />
-    <None Include="..\..\include\pt_mcrt_intrin.inl" />
-    <None Include="..\..\include\pt_mcrt_intrin_msvc.inl" />
-    <None Include="..\..\include\pt_mcrt_rwlock.inl" />
-    <None Include="..\..\include\pt_mcrt_spinlock.inl" />
-    <None Include="..\..\include\pt_mcrt_thread.inl" />
-    <None Include="..\..\include\pt_mcrt_thread_posix.inl" />
-    <None Include="..\..\include\pt_mcrt_thread_win32.inl" />
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_irml.dll">
+    <None Include="..\include\pt_mcrt_atomic.inl" />
+    <None Include="..\include\pt_mcrt_atomic_msvc.inl" />
+    <None Include="..\include\pt_mcrt_intrin.inl" />
+    <None Include="..\include\pt_mcrt_intrin_msvc.inl" />
+    <None Include="..\include\pt_mcrt_rwlock.inl" />
+    <None Include="..\include\pt_mcrt_spinlock.inl" />
+    <None Include="..\include\pt_mcrt_thread.inl" />
+    <None Include="..\include\pt_mcrt_thread_posix.inl" />
+    <None Include="..\include\pt_mcrt_thread_win32.inl" />
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x64\pt_irml.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbb.dll">
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x64\pt_tbb.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x64\pt_tbbmalloc.dll">
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x64\pt_tbbmalloc.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_irml.dll">
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x86\pt_irml.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbb.dll">
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x86\pt_tbb.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </CopyFileToFolders>
-    <CopyFileToFolders Include="..\..\third_party\intel_tbb\lib\win32_desktop_x86\pt_tbbmalloc.dll">
+    <CopyFileToFolders Include="..\third_party\TBB\build_win32_desktop_x86\pt_tbbmalloc.dll">
       <FileType>Document</FileType>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -175,22 +175,22 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)\..\..\bin\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)\..\bin\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)\obj\$(ProjectName)\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -199,7 +199,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_MCRT=PT_ATTR_EXPORT;WIN32;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\intel_tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;$(SolutionDir)\..\third_party\TBB\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /source-charset:utf-8 /execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -207,7 +207,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>pt_irml.lib;pt_tbb.lib;pt_tbbmalloc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\intel_tbb\lib\win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\third_party\TBB\build_win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -218,7 +218,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_MCRT=PT_ATTR_EXPORT;WIN32;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\intel_tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;$(SolutionDir)\..\third_party\TBB\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /source-charset:utf-8 /execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -228,7 +228,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>pt_irml.lib;pt_tbb.lib;pt_tbbmalloc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\intel_tbb\lib\win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\third_party\TBB\build_win32_desktop_x86;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -237,7 +237,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_MCRT=PT_ATTR_EXPORT;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\intel_tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;$(SolutionDir)\..\third_party\TBB\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /source-charset:utf-8 /execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -245,7 +245,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>pt_irml.lib;pt_tbb.lib;pt_tbbmalloc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\intel_tbb\lib\win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\third_party\TBB\build_win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -256,7 +256,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_MCRT=PT_ATTR_EXPORT;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\..\..\include;$(SolutionDir)\..\..\third_party\intel_tbb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\..\include;$(SolutionDir)\..\third_party\TBB\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions> /source-charset:utf-8 /execution-charset:utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
@@ -266,7 +266,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <AdditionalDependencies>pt_irml.lib;pt_tbb.lib;pt_tbbmalloc.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)\..\..\third_party\intel_tbb\lib\win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)\..\third_party\TBB\build_win32_desktop_x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

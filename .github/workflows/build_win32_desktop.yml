@@ -18,4 +18,4 @@ jobs:
         with:
           submodules: 'true'
       - uses: microsoft/setup-msbuild@v1.1
-      - run: msbuild ./bldsys/win32_desktop/PatriotEngine.sln /p:Configuration=${{matrix.configuration}} /p:Platform=${{matrix.platform}}
+      - run: msbuild ./build_win32_desktop/pt_build.sln /p:Configuration=${{matrix.configuration}} /p:Platform=${{matrix.platform}}
