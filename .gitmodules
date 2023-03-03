@@ -1,0 +1,36 @@
+[submodule "assets"]
+	path = assets
+	url = git@github.com:HanetakaChou/PatriotEngine_Assets.git
+[submodule "references"]
+	path = references
+	url = git@github.com:HanetakaChou/PatriotEngine_References.git
+[submodule "third_party/CoreRT"]
+	path = third_party/CoreRT
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/DirectXMath"]
+	path = third_party/DirectXMath
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/DPDK"]
+	path = third_party/DPDK
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/glslang"]
+	path = third_party/glslang
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/MoltenVK"]
+	path = third_party/MoltenVK
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/TBB"]
+	path = third_party/TBB
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/Vulkan-Headers"]
+	path = third_party/Vulkan-Headers
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/Vulkan-Loader"]
+	path = third_party/Vulkan-Loader
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/Vulkan-ValidationLayers"]
+	path = third_party/Vulkan-ValidationLayers
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
+[submodule "third_party/VulkanMemoryAllocator"]
+	path = third_party/VulkanMemoryAllocator
+	url = git@github.com:HanetakaChou/PatriotEngine_ThirdParty.git
