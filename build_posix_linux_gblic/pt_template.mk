@@ -136,7 +136,7 @@ else
     $(error The configuration "$(BUILD_CONFIGURATION)" is NOT supported!)
 endif
 
-BUILD_VERBOSE = @
+# BUILD_VERBOSE = @
 
 define BUILD_COPY_PREBUILT_LIBRARY =
 $(BIN_DIR)/$(notdir $(1)) : \
