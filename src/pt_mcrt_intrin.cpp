@@ -20,12 +20,12 @@
 
 #if defined(PT_X64) || defined(PT_X86)
 
-extern "C" mcrt_uuid mcrt_uuid_load(uint8_t bytes[16])
+extern "C" mcrt_uuid PT_CALL mcrt_uuid_load(uint8_t bytes[16])
 {
     return _mm_loadu_si128(reinterpret_cast<__m128i*>(&bytes[0]));
 }
 
-extern "C" bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
+extern "C" bool PT_CALL mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 {
     //DirectX::XMVectorEqualIntR
     __m128i v = _mm_cmpeq_epi8(a, b);
@@ -36,12 +36,12 @@ extern "C" bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 
 #elif defined(PT_ARM64) || defined(PT_ARM)
 
-extern "C" mcrt_uuid mcrt_uuid_load(uint8_t bytes[16])
+extern "C" mcrt_uuid PT_CALL mcrt_uuid_load(uint8_t bytes[16])
 {
     return vld1q_u32(reinterpret_cast<uint32_t*>(&bytes[0]));
 }
 
-extern "C" bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
+extern "C" bool PT_CALL mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 {
     //DirectX::XMVectorEqualIntR
     uint32x4_t v_result = vceqq_u32(a, b);
