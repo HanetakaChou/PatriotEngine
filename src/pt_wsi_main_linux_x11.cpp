@@ -25,6 +25,7 @@
 #include <pt_mcrt_atomic.h>
 #include <pt_mcrt_thread.h>
 #include <pt_mcrt_string.h>
+#include <pt_mcrt_vector.h>
 #include <pt_wsi_main.h>
 
 class wsi_linux_x11

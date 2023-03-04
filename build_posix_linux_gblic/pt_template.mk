@@ -53,19 +53,13 @@ ifneq ($(filter $(BUILD_ARCHITECTURE),x64 x86), $(BUILD_ARCHITECTURE))
     $(error "$(TEXT_ERROR_BUILD_ARCHITECTURE)")
 endif
 
-BIN_DIR := ../bin/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/
-OBJ_DIR := ./obj/mcrt/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/
-BUILD_DIR := ./
-INCLUDE_DIR := ../include/
-SRC_DIR := ../src/
-THIRD_PARTY_DIR := ../third_party/
-
-BIN_ABS_DIR := $(abspath ../bin/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/)
-OBJ_ABS_DIR := $(abspath ./obj/mcrt/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/)
-BUILD_ABS_DIR := $(abspath ./)
-INCLUDE_ABS_DIR := $(abspath ../include/)
-SRC_ABS_DIR := $(abspath ../src/)
-THIRD_PARTY_ABS_DIR := $(abspath ../third_party/)
+BUILD_DIR = ./
+OBJ_DIR = ./obj/$(BUILD_MODULE_NAME)/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/
+SPIRV_DIR = ./spirv/$(BUILD_MODULE_NAME)/$(BUILD_CONFIGURATION)/
+BIN_DIR = ../bin/$(BUILD_CONFIGURATION)/$(BUILD_ARCHITECTURE)/
+INCLUDE_DIR = ../include/
+SRC_DIR = ../src/
+THIRD_PARTY_DIR = ../third_party/
 
 CXX_COMPILER = c++
 CXX_LINKER = c++
@@ -88,26 +82,27 @@ CXX_LINKER_FLAGS += -Wl,--no-undefined -Wl,--warn-shared-textrel -Wl,--fatal-war
 CXX_COMPILER_FLAGS += -ffunction-sections -fdata-sections
 CXX_LINKER_FLAGS += -Wl,--gc-sections
 
-CXX_COMPILER_FLAGS += -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
+CXX_COMPILER_FLAGS += -x c++ -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
 CXX_LINKER_FLAGS += -static-libgcc -static-libstdc++
 
 ifeq (debug, $(BUILD_CONFIGURATION))
     CXX_COMPILER_FLAGS += -g -O0 -UNDEBUG
+    GLSL_COMPILER_FLAGS += -g -Od
 else ifeq (release, $(BUILD_CONFIGURATION))
     CXX_COMPILER_FLAGS += -O3 -DNDEBUG -flto
     CXX_LINKER_FLAGS += -flto
 else
-    The configuration "$(BUILD_CONFIGURATION)" is NOT supported!
+    $(error The configuration "$(BUILD_CONFIGURATION)" is NOT supported!)
 endif
 
 ifeq (x64, $(BUILD_ARCHITECTURE))
-    CXX_COMPILER_FLAGS += -m64
+    CXX_COMPILER_FLAGS += -m64 -mavx2 -mf16c -mfma 
     CXX_LINKER_FLAGS += -m64
 else ifeq (x86, $(BUILD_ARCHITECTURE))
-    CXX_COMPILER_FLAGS += -m32
+    CXX_COMPILER_FLAGS += -m32 -mavx2 -mf16c -mfma
     CXX_LINKER_FLAGS += -m32
 else
-    The architecture "$(BUILD_ARCHITECTURE)" is NOT supported!
+    $(error The architecture "$(BUILD_ARCHITECTURE)" is NOT supported!)
 endif
 
 CXX_COMPILER_FLAGS += -fexec-charset=UTF-8 -finput-charset=UTF-8
@@ -116,22 +111,46 @@ CXX_COMPILER_FLAGS += -fvisibility=hidden
 
 CXX_LINKER_FLAGS += -Wl,--enable-new-dtags -Wl,-rpath,'$$ORIGIN'
 
+GLSL_COMPILER = glslangValidator
+
+GLSL_COMPILER_FLAGS =
+
+ifeq (debug, $(BUILD_CONFIGURATION))
+    GLSL_COMPILER_FLAGS += -g -Od
+else ifeq (release, $(BUILD_CONFIGURATION))
+    GLSL_COMPILER_FLAGS += -g0 -Os
+else
+    $(error The configuration "$(BUILD_CONFIGURATION)" is NOT supported!)
+endif
+
 BUILD_VERBOSE = @
 
 define BUILD_COPY_PREBUILT_LIBRARY =
 $(BIN_DIR)/$(notdir $(1)) : \
-    $(1) ; ${BUILD_VERBOSE} \
-        mkdir -p "$(BIN_ABS_DIR)"; \
-        cp -f "$(abspath $(1))" \
-        "$(BIN_ABS_DIR)/$(notdir $(1))"
+$(1) ; ${BUILD_VERBOSE} \
+    mkdir -p "$(abspath  $(dir $(BIN_DIR)/$(notdir $(1))))"; \
+    cp -f "$(abspath $(1))" \
+    "$(abspath $(BIN_DIR))/$(notdir $(1))"
 endef
 
 define BUILD_CXX_COMPILE =
 $(OBJ_DIR)/$(1).o \
 $(OBJ_DIR)/$(1).d : \
 $(SRC_DIR)/$(1).cpp ; ${BUILD_VERBOSE} \
-    mkdir -p "$(OBJ_ABS_DIR)"; \
-    $(CXX_COMPILER) -MMD -MP -MF "$(OBJ_ABS_DIR)/$(1).d" \
-    -c $(CXX_COMPILER_FLAGS) -o "$(OBJ_ABS_DIR)/$(1).o" \
-    "$(SRC_ABS_DIR)/$(1).cpp"
+    mkdir -p "$(abspath $(dir $(OBJ_DIR)/$(1).o))"; \
+    mkdir -p "$(abspath $(dir $(OBJ_DIR)/$(1).d))"; \
+    $(CXX_COMPILER) -MMD -MP -MF "$(abspath $(OBJ_DIR)/$(1).d)" \
+    -c $(CXX_COMPILER_FLAGS) -o "$(abspath $(OBJ_DIR)/$(1).o)" \
+    "$(abspath $(SRC_DIR))/$(1).cpp"
+endef
+
+define BUILD_GLSL_COMPILE =
+$(SPIRV_DIR)/$(2).inl \
+$(SPIRV_DIR)/$(2).d : \
+$(SRC_DIR)/$(2).glsl ; $(BUILD_VERBOSE) \
+	mkdir -p "$(abspath $(dir $(SPIRV_DIR)/$(2).inl))"; \
+	mkdir -p "$(abspath $(dir $(SPIRV_DIR)/$(2).d))"; \
+	$(GLSL_COMPILER) --depfile "$(abspath $(SPIRV_DIR)/$(2).d)" \
+	-V100 -x $(GLSL_COMPILER_FLAGS) -S $(1) -o "$(abspath $(SPIRV_DIR)/$(2).inl)" \
+	"$(abspath $(SRC_DIR)/$(2).glsl)"
 endef

@@ -17,23 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-# configure
-if test \( $# -ne 2 \);
-then
-    echo "Usage: pt_build.sh configuration architecture"
-    echo ""
-    echo "Configurations:"
-    echo " debug - build with the debug configuration"
-    echo " release - build with the release configuration"
-    echo ""
-    echo "Architectures:"
-    echo " x86 - build with the x86 architecture"
-    echo " x64 - build with the x64 architecture"
-    echo ""
-    exit 1
-fi
-
-# build
 BUILD_DIR="$(realpath -s "$(dirname "$0")")"  
 
-make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_mcrt.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2""
+make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_mcrt.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2"" -j32 
+make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_imaging_vk.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2"" -j32 
+make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_wsi.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2"" -j32 
+make -C "${BUILD_DIR}" -f "${BUILD_DIR}/pt_launcher.mk" "BUILD_CONFIGURATION:="$1"" "BUILD_ARCHITECTURE:="$2"" -j32 

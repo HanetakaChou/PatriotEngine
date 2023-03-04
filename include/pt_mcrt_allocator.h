@@ -37,6 +37,7 @@
 // include/tbb/mcrt_allocator.h
 
 #include <new>
+#include <utility>
 
 // Meets "allocator" requirements of ISO C++ Standard, Section 20.1.5
 // The members are ordered the same way they are in section 20.4.1 of the ISO C++ standard.

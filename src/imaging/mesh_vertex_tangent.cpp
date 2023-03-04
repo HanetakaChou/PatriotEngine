@@ -17,6 +17,7 @@
 
 #include "mesh_vertex_tangent.h"
 #include <pt_mcrt_vector.h>
+#include <array>
 
 extern void mesh_vertex_calculate_tangents(
     size_t face_count,
@@ -34,8 +35,8 @@ extern void mesh_vertex_calculate_tangents(
 
     // floating-point addition is NOT associative
     // the "double" is used to improve precision
-    mcrt_vector<double[3]> reduction_tangents(vertex_count);
-    mcrt_vector<double[3]> reduction_bitangents(vertex_count);
+    mcrt_vector<std::array<double, 3U>> reduction_tangents(vertex_count);
+    mcrt_vector<std::array<double, 3U>> reduction_bitangents(vertex_count);
     for (size_t vertex_index = 0U; vertex_index < vertex_count; ++vertex_index)
     {
         reduction_tangents[vertex_index][0] = 0.0;
