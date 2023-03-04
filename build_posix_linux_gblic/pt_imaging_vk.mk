@@ -47,6 +47,10 @@ $(BIN_DIR)/lib$(BUILD_MODULE_NAME).so: \
 	$(OBJ_DIR)/imaging/texture_asset_load_pvr.o \
 	$(OBJ_DIR)/imaging/vk/vk_mesh.o \
 	$(OBJ_DIR)/imaging/vk/vk_texture.o \
+	$(OBJ_DIR)/scene/pt_gfx_node_base.o \
+	$(OBJ_DIR)/scene/pt_gfx_node_vk.o \
+	$(OBJ_DIR)/scene/pt_gfx_scene_base.o \
+	$(OBJ_DIR)/scene/pt_gfx_scene_vk.o \
 	$(OBJ_DIR)/pt_gfx_connection_base.o \
 	$(OBJ_DIR)/pt_gfx_connection_d3d12.o \
 	$(OBJ_DIR)/pt_gfx_connection_vk.o \
@@ -57,10 +61,6 @@ $(BIN_DIR)/lib$(BUILD_MODULE_NAME).so: \
 	$(OBJ_DIR)/pt_gfx_malloc_vma.o \
 	$(OBJ_DIR)/pt_gfx_material_base.o \
 	$(OBJ_DIR)/pt_gfx_material_vk.o \
-	$(OBJ_DIR)/pt_gfx_node_base.o \
-	$(OBJ_DIR)/pt_gfx_node_vk.o \
-	$(OBJ_DIR)/pt_gfx_scene_base.o \
-	$(OBJ_DIR)/pt_gfx_scene_vk.o \
 	$(BIN_DIR)/libpt_mcrt.so \
     $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.inl \
     $(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.inl ; ${BUILD_VERBOSE} \
@@ -77,6 +77,10 @@ $(BIN_DIR)/lib$(BUILD_MODULE_NAME).so: \
 		"$(abspath $(OBJ_DIR)/imaging/texture_asset_load_pvr.o)" \
 		"$(abspath $(OBJ_DIR)/imaging/vk/vk_mesh.o)" \
 		"$(abspath $(OBJ_DIR)/imaging/vk/vk_texture.o)" \
+		"$(abspath $(OBJ_DIR)/scene/pt_gfx_node_base.o)" \
+		"$(abspath $(OBJ_DIR)/scene/pt_gfx_node_vk.o)" \
+		"$(abspath $(OBJ_DIR)/scene/pt_gfx_scene_base.o)" \
+		"$(abspath $(OBJ_DIR)/scene/pt_gfx_scene_vk.o)" \
 		"$(abspath $(OBJ_DIR)/pt_gfx_connection_base.o)" \
 		"$(abspath $(OBJ_DIR)/pt_gfx_connection_d3d12.o)" \
 		"$(abspath $(OBJ_DIR)/pt_gfx_connection_vk.o)" \
@@ -87,10 +91,6 @@ $(BIN_DIR)/lib$(BUILD_MODULE_NAME).so: \
 		"$(abspath $(OBJ_DIR)/pt_gfx_malloc_vma.o)" \
 		"$(abspath $(OBJ_DIR)/pt_gfx_material_base.o)" \
 		"$(abspath $(OBJ_DIR)/pt_gfx_material_vk.o)" \
-		"$(abspath $(OBJ_DIR)/pt_gfx_node_base.o)" \
-		"$(abspath $(OBJ_DIR)/pt_gfx_node_vk.o)" \
-		"$(abspath $(OBJ_DIR)/pt_gfx_scene_base.o)" \
-		"$(abspath $(OBJ_DIR)/pt_gfx_scene_vk.o)" \
 		"$(abspath $(BIN_DIR)/libpt_mcrt.so)"
 
 $(eval $(call BUILD_CXX_COMPILE,imaging/streaming_object))
@@ -104,6 +104,10 @@ $(eval $(call BUILD_CXX_COMPILE,imaging/texture_asset_load_dds))
 $(eval $(call BUILD_CXX_COMPILE,imaging/texture_asset_load_pvr))
 $(eval $(call BUILD_CXX_COMPILE,imaging/vk/vk_mesh))
 $(eval $(call BUILD_CXX_COMPILE,imaging/vk/vk_texture))
+$(eval $(call BUILD_CXX_COMPILE,scene/pt_gfx_node_base))
+$(eval $(call BUILD_CXX_COMPILE,scene/pt_gfx_node_vk))
+$(eval $(call BUILD_CXX_COMPILE,scene/pt_gfx_scene_base))
+$(eval $(call BUILD_CXX_COMPILE,scene/pt_gfx_scene_vk))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_connection_base))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_connection_d3d12))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_connection_vk))
@@ -114,10 +118,6 @@ $(eval $(call BUILD_CXX_COMPILE,pt_gfx_malloc_vk))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_malloc_vma))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_material_base))
 $(eval $(call BUILD_CXX_COMPILE,pt_gfx_material_vk))
-$(eval $(call BUILD_CXX_COMPILE,pt_gfx_node_base))
-$(eval $(call BUILD_CXX_COMPILE,pt_gfx_node_vk))
-$(eval $(call BUILD_CXX_COMPILE,pt_gfx_scene_base))
-$(eval $(call BUILD_CXX_COMPILE,pt_gfx_scene_vk))
 
 $(eval $(call BUILD_GLSL_COMPILE,vert,imaging/vk/forward_shading_mesh_vertex))
 $(eval $(call BUILD_GLSL_COMPILE,frag,imaging/vk/forward_shading_mesh_fragment))
@@ -134,6 +134,10 @@ include \
 	$(OBJ_DIR)/imaging/texture_asset_load_pvr.d \
 	$(OBJ_DIR)/imaging/vk/vk_mesh.d \
 	$(OBJ_DIR)/imaging/vk/vk_texture.d \
+	$(OBJ_DIR)/scene/pt_gfx_node_base.d \
+	$(OBJ_DIR)/scene/pt_gfx_node_vk.d \
+	$(OBJ_DIR)/scene/pt_gfx_scene_base.d \
+	$(OBJ_DIR)/scene/pt_gfx_scene_vk.d \
 	$(OBJ_DIR)/pt_gfx_connection_base.d \
 	$(OBJ_DIR)/pt_gfx_connection_d3d12.d \
 	$(OBJ_DIR)/pt_gfx_connection_vk.d \
@@ -144,9 +148,5 @@ include \
 	$(OBJ_DIR)/pt_gfx_malloc_vma.d \
 	$(OBJ_DIR)/pt_gfx_material_base.d \
 	$(OBJ_DIR)/pt_gfx_material_vk.d \
-	$(OBJ_DIR)/pt_gfx_node_base.d \
-	$(OBJ_DIR)/pt_gfx_node_vk.d \
-	$(OBJ_DIR)/pt_gfx_scene_base.d \
-	$(OBJ_DIR)/pt_gfx_scene_vk.d \
 	$(SPIRV_DIR)/imaging/vk/forward_shading_mesh_vertex.d \
 	$(SPIRV_DIR)/imaging/vk/forward_shading_mesh_fragment.d

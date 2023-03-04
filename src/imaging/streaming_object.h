@@ -66,32 +66,24 @@ private:
         pt_input_stream_ref input_stream,
         pt_input_stream_read_callback input_stream_read_callback,
         pt_input_stream_seek_callback input_stream_seek_callback,
-        class gfx_connection_base *connection,
-        size_t *out_memcpy_dests_size,
-        size_t *out_memcpy_dests_align)
-    {
-        return false;
-    };
+        class gfx_connection_base* connection,
+        size_t* out_memcpy_dests_size,
+        size_t* out_memcpy_dests_align) = 0;
 
     // load - second stage
     static mcrt_task_ref load_task_execute(mcrt_task_ref self);
     virtual size_t calculate_staging_buffer_total_size_callback(
         size_t base_offset,
-        class gfx_connection_base *connection,
-        void *out_memcpy_dests)
-    {
-        return -1;
-    };
+        class gfx_connection_base* connection,
+        void* out_memcpy_dests) = 0;
+
     virtual bool load_data_callback(
         pt_input_stream_ref input_stream,
         pt_input_stream_read_callback input_stream_read_callback,
         pt_input_stream_seek_callback input_stream_seek_callback,
         class gfx_connection_base *connection,
         void const *memcpy_dests,
-        uint32_t streaming_throttling_index)
-    {
-        return false;
-    };
+        uint32_t streaming_throttling_index) = 0;
 
 protected:
     inline gfx_streaming_object_base() : m_streaming_status(STREAMING_STATUS_STAGE_FIRST), m_streaming_error(false), m_streaming_cancel(false)

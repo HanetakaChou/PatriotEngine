@@ -33,7 +33,7 @@
 #include "pt_gfx_malloc_vk.h"
 #include "imaging/streaming_object.h"
 #include "pt_gfx_frame_object_base.h"
-#include "pt_gfx_node_vk.h"
+#include "scene/pt_gfx_node_vk.h"
 #include "imaging/vk/vk_mesh.h"
 #include "pt_gfx_material_vk.h"
 #include "imaging/vk/vk_texture.h"

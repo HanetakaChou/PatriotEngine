@@ -20,7 +20,7 @@
 #include <pt_mcrt_malloc.h>
 #include <pt_mcrt_atomic.h>
 #include "pt_gfx_node_vk.h"
-#include "imaging/vk/vk_mesh.h"
+#include "../imaging/vk/vk_mesh.h"
 
 void gfx_node_vk::post_stream_done_destroy_callback(class gfx_connection_vk *gfx_connection)
 {

@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <assert.h>
 
-static inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
+inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg)
 {
 	PT_MAYBE_UNUSED int res = pthread_create(tid, NULL, (void *(*)(void *))func, arg);
 	return ((res == 0) ? true : false);

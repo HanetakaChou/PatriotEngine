@@ -31,7 +31,7 @@ class gfx_scene_base
 protected:
     pt_math_alignas16_mat4x4 m_camera_view_perspective_transform;
     
-    inline gfx_scene_base();
+    inline gfx_scene_base() {};
 
 public:
     virtual void set_camera(class gfx_connection_base *gfx_connection, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction) = 0;

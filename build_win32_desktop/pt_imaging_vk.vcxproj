@@ -40,10 +40,10 @@
     <ClCompile Include="..\src\pt_gfx_malloc_vma.cpp" />
     <ClCompile Include="..\src\pt_gfx_material_base.cpp" />
     <ClCompile Include="..\src\pt_gfx_material_vk.cpp" />
-    <ClCompile Include="..\src\pt_gfx_node_base.cpp" />
-    <ClCompile Include="..\src\pt_gfx_node_vk.cpp" />
-    <ClCompile Include="..\src\pt_gfx_scene_base.cpp" />
-    <ClCompile Include="..\src\pt_gfx_scene_vk.cpp" />
+    <ClCompile Include="..\src\scene\pt_gfx_node_base.cpp" />
+    <ClCompile Include="..\src\scene\pt_gfx_node_vk.cpp" />
+    <ClCompile Include="..\src\scene\pt_gfx_scene_base.cpp" />
+    <ClCompile Include="..\src\scene\pt_gfx_scene_vk.cpp" />
     <ClCompile Include="pt_dllmain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -72,10 +72,10 @@
     <ClInclude Include="..\src\pt_gfx_malloc_vk.h" />
     <ClInclude Include="..\src\pt_gfx_material_base.h" />
     <ClInclude Include="..\src\pt_gfx_material_vk.h" />
-    <ClInclude Include="..\src\pt_gfx_node_base.h" />
-    <ClInclude Include="..\src\pt_gfx_node_vk.h" />
-    <ClInclude Include="..\src\pt_gfx_scene_base.h" />
-    <ClInclude Include="..\src\pt_gfx_scene_vk.h" />
+    <ClInclude Include="..\src\scene\pt_gfx_node_base.h" />
+    <ClInclude Include="..\src\scene\pt_gfx_node_vk.h" />
+    <ClInclude Include="..\src\scene\pt_gfx_scene_base.h" />
+    <ClInclude Include="..\src\scene\pt_gfx_scene_vk.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="..\src\imaging\vk\forward_shading_mesh_fragment.glsl">
@@ -190,7 +190,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;WIN32;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -207,7 +207,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
@@ -228,7 +228,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_USRDLL;PT_ATTR_GFX=PT_ATTR_EXPORT;_DEBUG;PTGFX_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
@@ -245,7 +245,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>

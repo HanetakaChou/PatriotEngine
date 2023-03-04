@@ -39,6 +39,37 @@ protected:
 
     void unified_destory_execute(class gfx_connection_base *gfx_connection);
 
+    bool load_header_callback(
+        pt_input_stream_ref input_stream,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
+        class gfx_connection_base* connection,
+        size_t* out_memcpy_dests_size,
+        size_t* out_memcpy_dests_align) final 
+    { 
+        return false;
+    }
+
+    // load - second stage
+    size_t calculate_staging_buffer_total_size_callback(
+        size_t base_offset,
+        class gfx_connection_base* connection,
+        void* out_memcpy_dests) final 
+    {
+        return -1;
+    }
+
+    bool load_data_callback(
+        pt_input_stream_ref input_stream,
+        pt_input_stream_read_callback input_stream_read_callback,
+        pt_input_stream_seek_callback input_stream_seek_callback,
+        class gfx_connection_base* connection,
+        void const* memcpy_dests,
+        uint32_t streaming_throttling_index) final
+    {
+        return false;
+    }
+
     inline gfx_material_base() : gfx_streaming_object_base(), gfx_frame_object_base(), m_ref_count(1U), m_texture_count(-1)
     {
         for (uint32_t texture_index = 0U; texture_index < GFX_MATERIAL_MAX_TEXTURE_COUNT; ++texture_index)

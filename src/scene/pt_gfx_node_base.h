@@ -24,8 +24,8 @@
 #include <pt_gfx_connection.h>
 #include <pt_math.h>
 #include <pt_mcrt_allocator.h>
-#include "imaging/mesh.h"
-#include "pt_gfx_material_base.h"
+#include "../imaging/mesh.h"
+#include "../pt_gfx_material_base.h"
 
 class gfx_node_base
 {

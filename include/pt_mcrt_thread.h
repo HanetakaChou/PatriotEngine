@@ -82,7 +82,7 @@ typedef CONDITION_VARIABLE mcrt_cond_t;
 #endif
 
 #if defined(PT_POSIX)
-static inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
+inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, void *(*func)(void *), void *arg);
 #elif defined(PT_WIN32)
 inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall *func)(void *), void *arg);
 #else

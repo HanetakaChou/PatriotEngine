@@ -18,7 +18,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "pt_gfx_scene_vk.h"
-#include "pt_gfx_connection_vk.h"
+#include "../pt_gfx_connection_vk.h"
 
 void gfx_scene_vk::set_camera(class gfx_connection_base *gfx_connection, pt_math_vec3 const *eye_position, pt_math_vec3 const *eye_direction, pt_math_vec3 const *up_direction)
 {

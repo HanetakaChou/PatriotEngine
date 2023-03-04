@@ -21,7 +21,7 @@
 #include <process.h>
 #include <assert.h>
 
-static inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall*func)(void *), void *arg)
+inline bool mcrt_native_thread_create(mcrt_native_thread_id *tid, unsigned(__stdcall*func)(void *), void *arg)
 {
 	HANDLE thdl = reinterpret_cast<HANDLE>(_beginthreadex(NULL, 0U, func, arg, 0U, NULL));
 	assert(thdl != NULL);
@@ -141,8 +141,9 @@ inline void mcrt_os_cond_init(mcrt_cond_t *cond)
 	InitializeConditionVariable(cond);
 }
 
-inline void mcrt_os_cond_destroy(mcrt_cond_t *cond)
+inline void mcrt_os_cond_destroy(mcrt_cond_t *)
 {
+
 }
 
 inline int mcrt_os_cond_wait(mcrt_cond_t *cond, mcrt_mutex_t *mutex)

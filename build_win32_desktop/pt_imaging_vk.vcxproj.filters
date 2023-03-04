@@ -25,18 +25,6 @@
     <ClCompile Include="..\src\pt_gfx_material_vk.cpp">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\pt_gfx_node_base.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\pt_gfx_node_vk.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\pt_gfx_scene_base.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="..\src\pt_gfx_scene_vk.cpp">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\pt_gfx_connection_d3d12.cpp">
       <Filter>src</Filter>
     </ClCompile>
@@ -79,6 +67,18 @@
     <ClCompile Include="..\src\imaging\mesh_vertex_tangent.cpp">
       <Filter>src\imaging</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\scene\pt_gfx_scene_base.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scene\pt_gfx_scene_vk.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scene\pt_gfx_node_base.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\scene\pt_gfx_node_vk.cpp">
+      <Filter>src\scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -95,6 +95,9 @@
     </Filter>
     <Filter Include="src\imaging\vk">
       <UniqueIdentifier>{b2a5d29a-afcc-4bc9-b959-300505eb0572}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\scene">
+      <UniqueIdentifier>{a4eaf793-1aa8-4f3d-ad85-96d1d2841132}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -117,18 +120,6 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pt_gfx_material_vk.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\pt_gfx_node_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\pt_gfx_node_vk.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\pt_gfx_scene_base.h">
-      <Filter>src</Filter>
-    </ClInclude>
-    <ClInclude Include="..\src\pt_gfx_scene_vk.h">
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\src\pt_gfx_connection_d3d12.h">
@@ -184,6 +175,18 @@
     </ClInclude>
     <ClInclude Include="..\src\imaging\mesh_vertex_tangent.h">
       <Filter>src\imaging</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scene\pt_gfx_scene_vk.h">
+      <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scene\pt_gfx_scene_base.h">
+      <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scene\pt_gfx_node_base.h">
+      <Filter>src\scene</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\scene\pt_gfx_node_vk.h">
+      <Filter>src\scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
