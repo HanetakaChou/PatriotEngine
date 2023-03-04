@@ -12,6 +12,7 @@ Here is the document of this engine: [https://hanetakachou.github.io/PatriotEngi
 Build Type | Status  
 :-: | :-:  
 **Build Win32 Desktop** | [![Build Win32](https://github.com/HanetakaChou/PatriotEngine/actions/workflows/build_win32_desktop.yml/badge.svg)](https://github.com/HanetakaChou/PatriotEngine/actions/workflows/build_win32_desktop.yml)  
+**Build Posix Linux Glibc** | [![Build Posix Linux Glibc](https://github.com/HanetakaChou/PatriotEngine/actions/workflows/build_posix_linux_gblic.yml/badge.svg)](https://github.com/HanetakaChou/PatriotEngine/actions/workflows/build_posix_linux_gblic.yml)  
 
 ### Design Philosophy  
 

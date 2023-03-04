@@ -1,0 +1,21 @@
+name: Build Posix Linux Glibc
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        configuration: [debug, release]
+        platform: [x64]
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
+      - run: sudo ./build_posix_linux_gblic/install_ubuntu_dependencies.sh ${{matrix.platform}}
+      - run: ./build_posix_linux_gblic/pt_build.sh ${{matrix.configuration}} ${{matrix.platform}} 
