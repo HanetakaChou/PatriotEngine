@@ -131,7 +131,7 @@ GLSL_COMPILER_FLAGS =
 ifeq (debug, $(BUILD_CONFIGURATION))
     GLSL_COMPILER_FLAGS += -g -Od
 else ifeq (release, $(BUILD_CONFIGURATION))
-    GLSL_COMPILER_FLAGS += -g0 -Os
+    GLSL_COMPILER_FLAGS += -g0
 else
     $(error The configuration "$(BUILD_CONFIGURATION)" is NOT supported!)
 endif
