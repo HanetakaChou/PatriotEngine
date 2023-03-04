@@ -34,15 +34,17 @@ fi
 
 if test \( \( -n "$1" \) -a \( "$1" = "x64" \) \);then
     wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
-    sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
-    sudo apt update
+    wget -qO /etc/apt/sources.list.d/lunarg-vulkan-jammy.list http://packages.lunarg.com/vulkan/lunarg-vulkan-jammy.list
+    apt update
 
-    sudo apt install vulkan-sdk
+    apt install vulkan-sdk
     apt install glslang-tools
     apt install libvulkan-dev
 
     apt install libxcb1-dev
     apt install libx11-dev
+
+    apt install clang
 elif test \( \( -n "$1" \) -a \( "$1" = "x86" \) \);then
     dpkg --add-architecture i386
     apt-get update

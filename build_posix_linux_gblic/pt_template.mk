@@ -73,8 +73,8 @@ INCLUDE_DIR = ../include/
 SRC_DIR = ../src/
 THIRD_PARTY_DIR = ../third_party/
 
-CXX_COMPILER = c++
-CXX_LINKER = c++
+CXX_COMPILER = clang++
+CXX_LINKER = clang++
 
 CXX_COMPILER_FLAGS = 
 CXX_LINKER_FLAGS = 
@@ -95,7 +95,7 @@ CXX_LINKER_FLAGS += -Wl,--no-undefined -Wl,--warn-shared-textrel -Wl,--fatal-war
 CXX_COMPILER_FLAGS += -ffunction-sections -fdata-sections
 CXX_LINKER_FLAGS += -Wl,--gc-sections
 
-CXX_COMPILER_FLAGS += -x c++ -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1 -static-libgcc -static-libstdc++ 
+CXX_COMPILER_FLAGS += -x c++ -std=c++11 -D_GLIBCXX_USE_CXX11_ABI=1
 CXX_LINKER_FLAGS += -static-libgcc -static-libstdc++
 
 ifeq (debug, $(BUILD_CONFIGURATION))
@@ -136,7 +136,7 @@ else
     $(error The configuration "$(BUILD_CONFIGURATION)" is NOT supported!)
 endif
 
-# BUILD_VERBOSE = @
+BUILD_VERBOSE = @
 
 define BUILD_COPY_PREBUILT_LIBRARY =
 $(BIN_DIR)/$(notdir $(1)) : \
