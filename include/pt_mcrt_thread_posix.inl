@@ -96,17 +96,9 @@ inline void *mcrt_native_tls_get_value(mcrt_native_tls_key key)
 static inline void mcrt_os_yield(void)
 {
 #if defined(PT_POSIX_LINUX)
-#if defined(PT_POSIX_LINUX_ANDROID)
 	PT_MAYBE_UNUSED int res = sched_yield();
 	assert(res == 0);
 	return;
-#elif defined(PT_POSIX_LINUX_X11)
-	PT_MAYBE_UNUSED int res = pthread_yield();
-	assert(res == 0);
-	return;
-#else
-#error Unknown Platform
-#endif
 #elif defined(PT_POSIX_MACH)
 	return pthread_yield_np();
 #else

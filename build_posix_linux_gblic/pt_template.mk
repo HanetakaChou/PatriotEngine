@@ -15,7 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 
-ifneq ($(filter $(BUILD_CONFIGURATION),debug release), $(BUILD_CONFIGURATION))
+ifeq (debug, $(BUILD_CONFIGURATION))
+    define TEXT_ERROR_BUILD_CONFIGURATION =
+    endef
+else ifeq (release, $(BUILD_CONFIGURATION))
+    define TEXT_ERROR_BUILD_CONFIGURATION =
+    endef
+else
     define TEXT_ERROR_BUILD_CONFIGURATION =
 
     The configuration "$(BUILD_CONFIGURATION)" is NOT supported!
@@ -34,7 +40,13 @@ ifneq ($(filter $(BUILD_CONFIGURATION),debug release), $(BUILD_CONFIGURATION))
     $(error "$(TEXT_ERROR_BUILD_CONFIGURATION)")
 endif
 
-ifneq ($(filter $(BUILD_ARCHITECTURE),x64 x86), $(BUILD_ARCHITECTURE))
+ifeq (x64, $(BUILD_ARCHITECTURE))
+    define TEXT_ERROR_BUILD_ARCHITECTURE =
+    endef
+else ifeq (x86, $(BUILD_ARCHITECTURE))
+    define TEXT_ERROR_BUILD_ARCHITECTURE =
+    endef
+else
     define TEXT_ERROR_BUILD_ARCHITECTURE =
 
     The architecture "$(BUILD_ARCHITECTURE)" is NOT supported!
@@ -76,7 +88,8 @@ CXX_LINKER_FLAGS += -Wl,-z,relro -Wl,-z,now
 CXX_COMPILER_FLAGS += -fstack-protector-strong -Wa,--noexecstack
 CXX_LINKER_FLAGS += -Wl,-z,noexecstack
 
-CXX_COMPILER_FLAGS += -Wall -Werror=return-type
+# CXX_COMPILER_FLAGS += -Wall 
+CXX_COMPILER_FLAGS += -Werror=return-type
 CXX_LINKER_FLAGS += -Wl,--no-undefined -Wl,--warn-shared-textrel -Wl,--fatal-warnings
 
 CXX_COMPILER_FLAGS += -ffunction-sections -fdata-sections
