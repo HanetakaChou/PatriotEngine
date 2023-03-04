@@ -525,10 +525,6 @@ extern bool mmaterial_asset_load_pmx_primitive_data_from_input_stream(
     // validate internal header
     assert(mateiral_asset_pmx_header.material_count = material_count);
 
-    // It is based on the offset of the previous material through to the size of the current material.
-    // If you add up all the surface counts for all materials you should end up with the total number of surfaces.
-    uint32_t material_total_surface_count = 0U;
-
     for (uint32_t material_index = 0U; material_index < material_count; ++material_index)
     {
         // material name local
@@ -713,7 +709,6 @@ extern bool mmaterial_asset_load_pmx_primitive_data_from_input_stream(
             }
         }
 
-        uint32_t material_surface_count;
         {
             int32_t material_surface_count_signed;
             intptr_t res_read = input_stream_read_callback(input_stream, &material_surface_count_signed, sizeof(int32_t));
@@ -721,8 +716,6 @@ extern bool mmaterial_asset_load_pmx_primitive_data_from_input_stream(
             {
                 return false;
             }
-
-            material_surface_count = material_surface_count_signed;
         }
     }
 

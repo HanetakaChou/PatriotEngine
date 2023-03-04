@@ -88,8 +88,7 @@ CXX_LINKER_FLAGS += -Wl,-z,relro -Wl,-z,now
 CXX_COMPILER_FLAGS += -fstack-protector-strong -Wa,--noexecstack
 CXX_LINKER_FLAGS += -Wl,-z,noexecstack
 
-# CXX_COMPILER_FLAGS += -Wall 
-CXX_COMPILER_FLAGS += -Werror=return-type
+CXX_COMPILER_FLAGS += -Wall -Wno-nullability-completeness -Werror=return-type
 CXX_LINKER_FLAGS += -Wl,--no-undefined -Wl,--warn-shared-textrel -Wl,--fatal-warnings
 
 CXX_COMPILER_FLAGS += -ffunction-sections -fdata-sections

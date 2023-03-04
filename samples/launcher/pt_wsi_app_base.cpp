@@ -31,15 +31,15 @@ void launcher_app::init(pt_gfx_connection_ref gfx_connection)
 
 static bool gfx_texture_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_texture_ref texture, char const *initial_filename);
 static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh_ref mesh, char const *initial_filename);
-static bool load_material_count_from_file(char const* initial_filename, size_t* out_material_count);
-static bool load_material_texture_paths_from_file(char const* initial_filename, char** out_material_texture_paths, size_t* out_material_texture_path_size);
+static bool load_material_count_from_file(char const *initial_filename, size_t *out_material_count);
+static bool load_material_texture_paths_from_file(char const *initial_filename, char **out_material_texture_paths, size_t *out_material_texture_path_size);
 
 int launcher_app::main()
 {
     // char const* my_filename = "Genshin_Impact-Ayaka_kamisato/ayaka_kamisato.pmx";
     // char const* my_filename_dirname = "Genshin_Impact-Ayaka_kamisato";
-    char const* my_filename = "Honkai_Impact_3rd-Herrscher_of_Thunder/herrscher_of_thunder.pmx";
-    char const* my_filename_dirname = "Honkai_Impact_3rd-Herrscher_of_Thunder";
+    char const *my_filename = "Honkai_Impact_3rd-Herrscher_of_Thunder/herrscher_of_thunder.pmx";
+    char const *my_filename_dirname = "Honkai_Impact_3rd-Herrscher_of_Thunder";
 
     pt_gfx_mesh_ref my_mesh = pt_gfx_connection_create_mesh(my_gfx_connection);
 
@@ -55,13 +55,13 @@ int launcher_app::main()
     // node hold the mesh
     pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
 
-    size_t* material_texture_path_size = static_cast<size_t*>(mcrt_aligned_malloc(sizeof(size_t) * material_count, alignof(size_t)));
+    size_t *material_texture_path_size = static_cast<size_t *>(mcrt_aligned_malloc(sizeof(size_t) * material_count, alignof(size_t)));
     load_material_texture_paths_from_file(my_filename, NULL, material_texture_path_size);
 
-    char **material_texture_paths = static_cast<char **>(mcrt_aligned_malloc(sizeof(char*) * material_count, alignof(char*)));
+    char **material_texture_paths = static_cast<char **>(mcrt_aligned_malloc(sizeof(char *) * material_count, alignof(char *)));
     for (size_t material_index = 0U; material_index < material_count; ++material_index)
     {
-        material_texture_paths[material_index] = static_cast<char*>(mcrt_aligned_malloc(sizeof(char) * material_texture_path_size[material_index], alignof(char)));
+        material_texture_paths[material_index] = static_cast<char *>(mcrt_aligned_malloc(sizeof(char) * material_texture_path_size[material_index], alignof(char)));
     }
     load_material_texture_paths_from_file(my_filename, material_texture_paths, NULL);
 
@@ -72,9 +72,9 @@ int launcher_app::main()
         material_texture_path.append(my_filename_dirname);
         material_texture_path.append("/");
         material_texture_path.append(material_texture_paths[material_index]);
-        
+
         size_t material_texture_path_length = material_texture_path.length();
-        if((material_texture_path_length >= 4U) &&
+        if ((material_texture_path_length >= 4U) &&
             ('.' == material_texture_path[material_texture_path_length - 4U]) &&
             ('p' == material_texture_path[material_texture_path_length - 3U] || 'P' == material_texture_path[material_texture_path_length - 3U]) &&
             ('n' == material_texture_path[material_texture_path_length - 2U] || 'N' == material_texture_path[material_texture_path_length - 2U]) &&
@@ -102,7 +102,7 @@ int launcher_app::main()
         }
 
         pt_gfx_material_ref my_material = pt_gfx_connection_create_material(my_gfx_connection);
-        pt_gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, const_cast<pt_gfx_texture_ref*>(&my_texture));
+        pt_gfx_material_init_with_texture(my_gfx_connection, my_material, GFX_MATERIAL_MODEL_PBR_SPECULAR_GLOSSINESS, 1U, const_cast<pt_gfx_texture_ref *>(&my_texture));
 
         pt_gfx_node_set_material(my_gfx_connection, my_node, material_index, my_material);
 
@@ -110,13 +110,12 @@ int launcher_app::main()
         pt_gfx_material_destroy(my_gfx_connection, my_material);
     }
 
-    for (std::pair<mcrt_string, pt_gfx_texture_ref> const& texture_path_pair : my_textures)
+    for (auto const &texture_path_pair : my_textures)
     {
         // material hold the refcount
         pt_gfx_texture_destroy(my_gfx_connection, texture_path_pair.second);
     }
     my_textures.clear();
-
 
     for (size_t material_index = 0U; material_index < material_count; ++material_index)
     {
@@ -257,7 +256,7 @@ int launcher_app::main()
     pt_gfx_mesh_destroy(my_gfx_connection, my_mesh);
     pt_gfx_node_destroy(my_gfx_connection, my_node);
 #endif
-    
+
 #if 0
     mcrt_os_sleep(15);
 
@@ -307,7 +306,7 @@ static bool gfx_mesh_read_file(pt_gfx_connection_ref gfx_connection, pt_gfx_mesh
         asset_input_stream_destroy_callback);
 }
 
-static bool load_material_count_from_file(char const* initial_filename, size_t* out_material_count)
+static bool load_material_count_from_file(char const *initial_filename, size_t *out_material_count)
 {
     pt_input_stream_ref input_stream = asset_input_stream_init_callback(initial_filename);
     if (pt_input_stream_ref(-1) == input_stream)
@@ -325,7 +324,7 @@ static bool load_material_count_from_file(char const* initial_filename, size_t* 
     return true;
 }
 
-static bool load_material_texture_paths_from_file(char const* initial_filename, char** out_material_texture_paths, size_t* out_material_texture_path_size)
+static bool load_material_texture_paths_from_file(char const *initial_filename, char **out_material_texture_paths, size_t *out_material_texture_path_size)
 {
     pt_input_stream_ref input_stream = asset_input_stream_init_callback(initial_filename);
     if (pt_input_stream_ref(-1) == input_stream)
