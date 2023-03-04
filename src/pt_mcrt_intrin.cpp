@@ -19,31 +19,36 @@
 #include <pt_mcrt_intrin.h>
 
 #if defined(PT_X64) || defined(PT_X86)
-extern "C" mcrt_uuid mcrt_uuid_load_x86_sse2(uint8_t bytes[16]);
-extern "C" bool mcrt_uuid_equal_x86_sse2(mcrt_uuid a, mcrt_uuid b);
 
-PT_ATTR_MCRT mcrt_uuid PT_CALL mcrt_uuid_load(uint8_t bytes[16])
+extern "C" mcrt_uuid mcrt_uuid_load(uint8_t bytes[16])
 {
-    return mcrt_uuid_load_x86_sse2(bytes);
+    return _mm_loadu_si128(reinterpret_cast<__m128i*>(&bytes[0]));
 }
 
-PT_ATTR_MCRT bool PT_CALL mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
+extern "C" bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 {
-    return mcrt_uuid_equal_x86_sse2(a, b);
+    //DirectX::XMVectorEqualIntR
+    __m128i v = _mm_cmpeq_epi8(a, b);
+    int mask = _mm_movemask_epi8(v);
+    return (0XFFFF == mask);
 }
+
 
 #elif defined(PT_ARM64) || defined(PT_ARM)
-extern "C" mcrt_uuid mcrt_uuid_load_arm_neon(uint8_t bytes[16]);
-extern "C" bool mcrt_uuid_equal_arm_neon(mcrt_uuid a, mcrt_uuid b);
 
-PT_ATTR_MCRT mcrt_uuid PT_CALL mcrt_uuid_load(uint8_t bytes[16])
+extern "C" mcrt_uuid mcrt_uuid_load(uint8_t bytes[16])
 {
-    return mcrt_uuid_load_arm_neon(bytes);
+    return vld1q_u32(reinterpret_cast<uint32_t*>(&bytes[0]));
 }
 
-PT_ATTR_MCRT bool PT_CALL mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
+extern "C" bool mcrt_uuid_equal(mcrt_uuid a, mcrt_uuid b)
 {
-    return mcrt_uuid_equal_arm_neon(a, b);
+    //DirectX::XMVectorEqualIntR
+    uint32x4_t v_result = vceqq_u32(a, b);
+    uint8x8x2_t v_temp_1 = vzip_u8(vget_low_u8(v_result), vget_high_u8(v_result));
+    uint16x4x2_t v_temp_2 = vzip_u16(v_temp_1.val[0], v_temp_1.val[1]);
+    uint32_t mask = vget_lane_u32(v_temp_2.val[1], 1);
+    return (0xFFFFFFFFU == mask);
 }
 
 #else
